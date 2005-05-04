@@ -9,6 +9,12 @@
 	<META NAME="CREATED" CONTENT="20050429;15271809"/>
 	<META NAME="CLASSIFICATION" CONTENT="Procedure for Audiveris installation"/>
 	<META NAME="DESCRIPTION" CONTENT="How to retrieve the Audiveris software and how to install it on your environment"/>
+
+	<!-- The following links are meant to be solved on my local PC -->
+	<!-- The java.net site uses its own style sheets -->
+ 	<LINK rel="stylesheet" type="text/css" href="../../tigris.css"/>
+ 	<LINK rel="stylesheet" type="text/css" href="../../inst.css"/>
+
     </HEAD>
     <BODY LANG="en-US" DIR="LTR">
 	<H1 ALIGN=CENTER>Audiveris Installation Manual</H1>
@@ -18,7 +24,10 @@
 	<ADDRESS>Updated : 1 May 2005</ADDRESS>
 
 	<H2>Getting Audiveris software</H2>
-	TBD
+
+	The latest version is always available on the <A
+	HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
+	Audiveris download area</A>
 
 	<H2>System Requirements</H2>
 
@@ -173,8 +182,10 @@
 
 	<H2>Installation</H2>
 	
-	The distribution of Audiveris is composed of two archives
-	similar to the following ones :
+	The distribution of Audiveris, downloadable from <A
+	HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
+	the download area</A> is composed of two archives similar to
+	the following ones :
 	<OL>
 	    <LI><I>audiveris-2.0-20050502.zip</I> which contains the
 	    various Audiveris components except the training
@@ -193,23 +204,24 @@
 	<PRE>
 	    /<U>bin</U>
 	    /<U>config</U>
-	    /<U>docs</U>
-	         /<U>api</U>
-	         /<U>images</U>
-	         /<U>manual</U>
 	    /<U>examples</U>
 	    /<U>lib</U>
 	    /<U>train</U>
 	         /<U>core</U>
 	         /<U>sheets</U>
+	    /<U>www</U>
+	         /<U>docs</U>
+	              /<U>api</U>
+	              /<U>images</U>
+	              /<U>manual</U>
 	</PRE>
 
 	<UL>
 	    <LI>The root contains only
 		the <CODE><B>build.xml</B></CODE> build file</LI>
-	    <LI>The <U><CODE>bin</CODE></U> directory contains the
+	    <LI>The <CODE><U>bin</U></CODE> directory contains the
 		<CODE><B>audiveris.bat</B></CODE> launcher file</LI>
-	    <LI>The <U><CODE>config</CODE></U> directory contains
+	    <LI>The <CODE><U>config</U></CODE> directory contains
 		several configuration files :
 		<UL>
 		    <LI><CODE><B>GlyphRegression.def</B></CODE> is a
@@ -243,35 +255,41 @@
 			file located in the user.home directory</LI>
 		</UL>
 	    </LI>
-	    <LI>The <U><CODE>docs</CODE></U> directory is a collection
-		of documentations :
-		<UL>
-		    <LI><U><CODE>api</CODE></U> for all javadoc generated
-			documentation</LI>
-		    <LI><U><CODE>images</CODE></U> gathers images such
-			as screen snapshots used in the
-			documentation.</LI>
-		    <LI><U><CODE>manual</CODE></U> contains the various
-			manuals, including this installation manual.</LI>
-		</UL>
-	    </LI>
-	    <LI>The <U><CODE>examples</CODE></U> directory provides
+	    <LI>The <CODE><U>examples</U></CODE> directory provides
 		several image files of printed music which you can use
 		as input to Audiveris.</LI>
-	    <LI>The <U><CODE>lib</CODE></U> directory contains the
+	    <LI>The <CODE><U>lib</U></CODE> directory contains the
 		Audiveris jar file</LI>
-	    <LI>The <U><CODE>train</CODE></U> directory gathers all
+	    <LI>The <CODE><U>train</U></CODE> directory gathers all
 		glyph files used as training material :
 		<UL>
-		    <LI><U><CODE>core</CODE></U> stores the core training
+		    <LI><CODE><U>core</U></CODE> stores the core training
 			material (not implemented yet) </LI>
-		    <LI><U><CODE>sheets</CODE></U> gathers the training
+		    <LI><CODE><U>sheets</U></CODE> gathers the training
 			material composed by all recognized glyphs stored
 			so far </LI>
 		</UL>
 	    </LI>
+	    <LI>The <CODE><U>www</U></CODE> directory mirrors the
+		Audiveris web-site on java.net.
+		<UL>
+		    <LI>The <CODE><U>docs</U></CODE> directory is a
+			collection of documentations :
+			<UL>
+			    <LI><CODE><U>api</U></CODE> for all javadoc
+				generated documentation</LI>
+			    <LI><CODE><U>images</U></CODE> gathers images
+				such as screen snapshots used in the
+				documentation.</LI>
+			    <LI><CODE><U>manual</U></CODE> contains the
+				various manuals, including this
+				installation manual.</LI>
+			</UL>
+		    </LI>
+		</UL>
+	    </LI>
 	</UL>
-
+	
 	<H3>Build Customization</H3>
 	<P>Before launching any action, you'll have to customize some
 	    environment definitions pre-defined in
@@ -289,37 +307,37 @@
 	    pre-defined properties :</P>
 	
 	<PRE>
-	    # Ant Properties ----------------------------------------------------------
+	    # Ant Properties ----------------------------------------------
 	    ant.dir		= h:/prog/ant
 	    
-	    # Castor Properties -------------------------------------------------------
+	    # Castor Properties -------------------------------------------
 	    castor.dir		= h:/prog/castor
 	    castor.file		= castor-0.9.5.3-xml.jar
 	    
-	    # Xerces Properties -------------------------------------------------------
+	    # Xerces Properties -------------------------------------------
 	    xerces.dir		= h:/prog/ant/lib
 	    
-	    # JGoodies Looks Properties -----------------------------------------------
+	    # JGoodies Looks Properties -----------------------------------
 	    jgoodies.looks.dir	= h:/prog/jgoodies/looks-1.3
 	    jgoodies.looks.file	= looks-1.3.jar
 	    
-	    # JGoodies Forms Properties -----------------------------------------------
+	    # JGoodies Forms Properties -----------------------------------
 	    jgoodies.forms.dir	= h:/prog/jgoodies/forms-1.0.5
 	    jgoodies.forms.file	= forms-1.0.5.jar
 	    
-	    # JFreeChart Properties ---------------------------------------------------
+	    # JFreeChart Properties ---------------------------------------
 	    jfreechart.dir	= h:/prog/jfreechart/lib
 	    jfreechart.file	= jfreechart-1.0.0-pre2.jar
 	    
-	    # JCommon Properties -----------------------------------------------------
+	    # JCommon Properties ------------------------------------------
 	    jcommon.dir		= h:/prog/jfreechart/lib
 	    jcommon.file	= jcommon-1.0.0-pre2.jar
 	    
-	    # Button Icons Properties -------------------------------------------------
+	    # Button Icons Properties -------------------------------------
 	    icons.buttons.dir	= h:/prog/jlfgr
 	    icons.buttons.file	= jlfgr-1_0.jar
 	    
-	    # Log Properties ----------------------------------------------------------
+	    # Log Properties ----------------------------------------------
 	    log.dir		= h:/prog/log4j/dist/lib
 	    log.file		= log4j-1.2.8.jar
 	</PRE>
