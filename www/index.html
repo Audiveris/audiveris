@@ -1,130 +1,179 @@
-<!-- 	$Id$	 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-  <meta http-equiv="content-type"
- content="text/html; charset=ISO-8859-1">
-  <title>Audiveris Home Page</title>
-  <meta name="author" content="Herv&eacute; Bitteur">
-  <style type="text/css">
-    BODY {font-family: sans-serif, cursive}
-  </style>
-</head>
-<body>
-<h1 style="text-align: center;">Audiveris</h1>
-<span style="font-style: italic;">Last modified: 28-October-2004<br>
-<br>
-</span>
-<div style="text-align: justify;"><span
- style="font-weight: bold; font-style: italic;">Nota</span>: <span
- style="font-style: italic;">This
-is a <span style="font-weight: bold;">very preliminary</span> home
-page version, just to let visitors
-of this java.net project get a first idea of what "Audiveris" project
-is about, mainly its goal, current status and contribution
-opportunities.</span><br>
-</div>
-<h4>Project Goals</h4>
-<div style="text-align: justify;">Audiveris is an <span
- style="font-weight: bold;">Optical Music
-Recognition</span> (OMR) module. Starting from the simple bitmap of a
-music sheet (for example by scanning a paper), it is able to infer the
-music informations the sheet
-contains. It can then provide this information to other tools such as a
-Midi Sequencer, or a
-Composition Editor, or any other tool that needs music information as
-input.<br>
-<br>
-There are already commercial tools in this area, such as MusicScan or
-SharpEye. Audiveris will be, to my knowledge, the first
-Java open-source OMR tool.<br>
-<br>
-Audiveris works with printed music sheets only, recognition of
-hand-written scores is at least one order of magnitude harder.<br>
-</div>
-<h4>Current Status</h4>
-<div style="text-align: justify;">Audiveris is still in development,
-based on the lessons learnt
-from a prototype written in Ada several years ago.<br>
-The final version should comprise 3 main phases:<br>
-</div>
-<ol style="text-align: justify;">
-  <li>Automatic <span style="font-weight: bold;">extraction </span>of
-individual music items, essentially based on their appearance and their
-structure. This is by far the most complex part of the automatic tasks.<br>
-  </li>
-  <li>Automatic music <span style="font-weight: bold;">recognition</span>,
-based on the extracted music items, and driven by music grammar.<br>
-  </li>
-  <li>Manual <span style="font-weight: bold;">correction </span>of
-unavoidable remaining errors. This is a rather different domain which
-could be started in parallel (see
-foreseen contributions below). </li>
-</ol>
-<div style="text-align: justify;">The development so far has mainly
-focused on phase #1 (automatic
-music extraction) which now approaches completion. Development of the
-other two phases has not started yet.<br>
-<h4>Foreseen Contributions</h4>
-Here is a preliminary list of domains and tasks for which contribution
-would make sense and be really appreciated:<br>
-<ul style="text-align: justify;">
-  <li>Integrate with a <span style="font-weight: bold;">Visual Music
-Editor</span> for manual correction, for printing, for playing, etc...
-For example Xemo (project as seen on NetBeans) would be a natural
-partnering tool, however the Xemo site doesn't seem
-active anymore. So this task remains fully open. </li>
-  <li>Use <span style="font-weight: bold;">MusicXML </span>as the
-primary vehicle for exchange of music information with other tools.</li>
-  <li>Move to <span style="font-weight: bold;">NetBeans</span>. I'm
-referring to the <span style="font-weight: bold;">platform</span>, not
-the IDE. This would move Audiveris stand-alone application to a much
-better
-integration environment, taking advantage of view and parameter
-management. This should also ease the integration with visual editors.</li>
-</ul>
-<ul style="text-align: justify;">
-  <li>Consider addressing <span style="font-weight: bold;">hand-written
-scores</span>. This domain could take benefit of a significant part of
-Audiveris framework, however this would really be a sub-project on its
-own. To be discussed if anyone is interested by this daunting task.<br>
-  </li>
-</ul>
-</div>
-<h4>Current Implementation</h4>
-<div style="text-align: justify;">Audiveris today is a pure Java
-stand-alone application, which
-represents 200 classes and 50_000 lines of Java code. Source code
-should be uploaded in the coming days.<br>
-</div>
-<h5>Techniques</h5>
-<ul style="text-align: justify;">
-  <li><span style="font-weight: bold;">Linear Adjacency Graphs</span>
-(LAG), a technique to record pixel information as a directed graph
-structure,
-composed of pixel contiguous runs organized in sections linked by
-junctions.</li>
-  <li><span style="font-weight: bold;">Sticks</span>, a technique I
-developed above LAGs to specifically address the structuring sticks of
-a music sheet (staff lines, ledgers and legato signs are horizontal
-sticks, while stems and bar lines are vertical sticks).</li>
-  <li><span style="font-weight: bold;">Neural Network</span>, to allow
-efficient pattern recognition as well as training based on user input
-for continuous improvement of the tool efficiency.<br>
-  </li>
-</ul>
-<h5>Technologies</h5>
-<ul style="text-align: justify;">
-  <li><span style="font-weight: bold;">Java Advanced Imaging</span>
-(JAI) for number crunching in image processing.<br>
-  </li>
-  <li><span style="font-weight: bold;">Swing </span>for user interface.</li>
-  <li><span style="font-weight: bold;">Castor </span>for XML
-persistency.</li>
-  <li><span style="font-weight: bold;">J2SE 5.0</span>, since generics
-are used wherever the compiler can help.</li>
-  <li><span style="font-weight: bold;">Ant </span>for project building.<br>
-  </li>
-</ul>
-</body>
+    <head>
+	<!-- 	$Id$	 -->
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html;
+	charset=windows-1252"/>
+	<title>Audiveris Home Page</title>
+	<meta name="author" content="Herv&eacute; Bitteur"/>
+	<style type="text/css">
+	    BODY {font-family: sans-serif, cursive}
+	</style>
+    </head>
+    <body>
+	<h1 style="text-align: center;">Audiveris</h1>
+	<span style="font-style: italic;">Last modified:
+	    04-May-2005 <br/> <br/>
+	</span>
+	<div style="text-align: justify;">
+	    <FONT COLOR="red"><B>NEW:</B> A first version of the
+	    source code has just been uploaded together with a
+	    starting documentation focused on installation and
+	    launching of Audiveris. See the Download section
+	    below.</FONT>  <br/>
+	</div>
+	
+	<h3>Project Goals</h3>
+	<div style="text-align: justify;">Audiveris is an <span
+		style="font-weight: bold;">Optical Music
+		Recognition</span> (OMR) module. Starting from the
+		simple bitmap of a music sheet (for example by
+		scanning a paper), it is able to infer the music
+		informations the sheet contains. It can then provide
+		this information to other tools such as a Midi
+		Sequencer, or a Composition Editor, or any other tool
+		that needs music information as input.
+	    
+	    <br/> <br/>
+
+	    There are already commercial tools in this area, such as
+	    MusicScan or SharpEye. Audiveris will be, to my knowledge,
+	    the first Java open-source OMR tool.
+
+	    <br/> <br/>
+	    
+	    Audiveris works with printed music sheets only,
+	    recognition of hand-written scores is at least one order
+	    of magnitude harder.
+
+	    <br/>
+	</div>
+	
+	<h3>Download</h3>
+	<div style="text-align: justify;">
+
+	    The application is composed of two archives :
+	    <UL>
+		<LI>Java source code, jar file and documentation files
+		    are available as one zip archive : <A
+		    HREF="audiveris-2.0-20050504.zip">
+		    audiveris-2.0-20050504.zip</A></LI>
+		<LI>XML-coded glyph information, needed to re-train
+		    the evaluators, is available as a separate zip
+		    archive : <A
+		    HREF="audiveris-2.0-train-20050504.zip">
+		    audiveris-2.0-train-20050504.zip </A></LI>
+	    </UL>
+	</div>
+	
+	<h3>Current Status</h3>
+	<div style="text-align: justify;">Audiveris is still in
+	    development, based on the lessons learnt from a prototype
+	    written in Ada several years ago.
+
+	    <br/> The final version should comprise 3 main
+	    phases:<br/>
+	</div>
+	<ol style="text-align: justify;">
+	    <li>Automatic <span style="font-weight: bold;">
+		extraction </span>of individual music items,
+		essentially based on their appearance and their
+		structure. This is by far the most complex part of the
+		automatic tasks.<br/>
+	    </li>
+	    <li>Automatic music <span style="font-weight: bold;">
+		recognition</span>, based on the extracted music
+		items, and driven by music grammar.<br/>
+	    </li>
+	    <li>Manual <span style="font-weight: bold;">
+		correction </span>of unavoidable remaining
+		errors. This is a rather different domain which could
+		be started in parallel (see foreseen contributions
+		below). </li>
+	</ol>
+	<div style="text-align: justify;">The development so far has
+	    mainly focused on phase #1 (automatic music extraction)
+	    which now approaches completion. Development of the other
+	    two phases has not started yet.<br/>
+	</div>
+	
+	<h3>Foreseen Contributions</h3>
+	<div style="text-align: justify;"> Here is a preliminary list
+	    of domains and tasks for which contribution would make
+	    sense and be really appreciated:<br/>
+	    <ul style="text-align: justify;">
+		<li>Integrate with a <span style="font-weight: bold;">
+		    Visual Music Editor</span> for manual correction,
+		    for printing, for playing, etc...  For example
+		    Xemo (project as seen on NetBeans) would be a
+		    natural partnering tool, however the Xemo site
+		    doesn't seem active anymore. So this task remains
+		    fully open. </li>
+		<li>Use <span style="font-weight: bold;">
+		    MusicXML </span> as the primary vehicle for
+		    exchange of music information with other
+		    tools.</li>
+		<li>Move to <span style="font-weight: bold;">
+		    NetBeans</span>. I'm referring to the <span
+		    style="font-weight: bold;">platform</span>, not
+		    the IDE. This would move Audiveris stand-alone
+		    application to a much better integration
+		    environment, taking advantage of view and
+		    parameter management. This should also ease the
+		    integration with visual editors.</li>
+	    </ul>
+	    <ul style="text-align: justify;">
+		<li>Consider addressing <span style="font-weight:
+		    bold;"> hand-written scores</span>. This domain
+		    could take benefit of a significant part of
+		    Audiveris framework, however this would really be
+		    a sub-project on its own. To be discussed if
+		    anyone is interested by this daunting task.<br/>
+		</li>
+	    </ul>
+	</div>
+	
+	<h3>Current Implementation</h3>
+	<div style="text-align: justify;"> Audiveris today is a pure
+	    Java stand-alone application, which represents 200 classes
+	    and 50_000 lines of Java code.<br/>
+	</div>
+	
+	<h5>Techniques</h5>
+	<ul style="text-align: justify;">
+	    <li><span style="font-weight: bold;"> Linear Adjacency
+		Graphs</span> (LAG), a technique to record pixel
+		information as a directed graph structure, composed of
+		pixel contiguous runs organized in sections linked by
+		junctions.</li>
+	    <li><span style="font-weight: bold;"> Sticks </span>, a
+		technique I developed above LAGs to specifically
+		address the structuring sticks of a music sheet (staff
+		lines, ledgers and legato signs are horizontal sticks,
+		while stems and bar lines are vertical sticks).</li>
+	    <li><span style="font-weight: bold;"> Neural
+		Network</span>, to allow efficient pattern recognition
+		as well as training based on user input for continuous
+		improvement of the tool efficiency.<br/>
+	    </li>
+	</ul>
+	
+	<h5>Technologies</h5>
+	<ul style="text-align: justify;">
+	    <li><span style="font-weight: bold;">Java Advanced
+		Imaging</span> (JAI) for number crunching in image
+		processing.<br/>
+	    </li>
+	    <li><span style="font-weight: bold;">Swing </span>for user
+	    interface.</li>
+	    <li><span style="font-weight: bold;">Castor </span>for XML
+		persistency.</li>
+	    <li><span style="font-weight: bold;">J2SE 5.0</span>,
+		since generics are used wherever the compiler can
+		help.</li>
+	    <li><span style="font-weight: bold;">Ant </span>for
+	    project building.<br/>
+	    </li>
+	</ul>
+    </body>
 </html>
