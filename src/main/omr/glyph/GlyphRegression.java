@@ -67,9 +67,9 @@ public class GlyphRegression
 
         // Second, use the system default
         if (shapeDescs == null){
-            File resource = getSystemBackup();
+            String resource = getSystemBackup();
             InputStream is = GlyphRegression.class.getResourceAsStream
-                (resource.toString());
+                (resource);
             if (is != null) {
                 logger.info ("Deserializing GlyphRegression from " +
                              "system resource " + resource);

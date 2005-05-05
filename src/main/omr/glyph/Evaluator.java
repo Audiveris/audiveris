@@ -124,16 +124,16 @@ public abstract class Evaluator
     // getSystemBackup //
     //-----------------//
     /**
-     * Report the default system file used to load the internal evaluator
-     * data
+     * Report the default system resource used to load the internal
+     * evaluator data
      *
      * @return the evaluator system backup file
      */
-    protected File getSystemBackup()
+    protected String getSystemBackup()
     {
         // The system file, is located in the config directory of the
         // application jar file
-        return new File("/config", getName() + BACKUP_EXTENSION);
+        return "/config/" + getName() + BACKUP_EXTENSION;
     }
 
     //------//

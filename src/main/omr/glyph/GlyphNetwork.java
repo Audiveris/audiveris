@@ -75,12 +75,12 @@ public class GlyphNetwork
 
         // Second, use the system default
         if (network == null){
-            File resource = getSystemBackup();
+            String resource = getSystemBackup();
             InputStream is = GlyphNetwork.class.getResourceAsStream
-                (resource.toString());
+                (resource);
             if (is != null) {
                 logger.info ("Deserializing GlyphNetwork from " +
-                             "system resource"+ resource);
+                             "system resource "+ resource);
                 network = NeuralNetwork.deserialize(is);
             } else {
                 logger.warning ("Cannot find system resource " + resource);
