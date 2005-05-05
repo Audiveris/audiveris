@@ -245,7 +245,6 @@ public class Main
     {
         if (trainPath == null) {
             trainPath = new File(homeDir, "train");
-            logger.info("trainPath=" + trainPath);
         }
 
         return trainPath;
