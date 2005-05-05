@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 	$Id$	 -->
+<!--
+    Castor Object Mapping DTD
+
+    <!DOCTYPE mapping PUBLIC "-//EXOLAB/Castor Object Mapping DTD Version 1.0//EN"
+                               "http://castor.exolab.org/mapping.dtd"
+
+    *Note*: This DTD is under evolution and subject to change.
+
+ -->
+
+
+<!--
+    A collection of class mappings. This is the top level element of
+    the mapping.
+
+    All the class mappings within a collection (including all included
+    collections) must be unique. A class cannot be mapped twice in the
+    same collection.
+
+ -->
+<!ELEMENT mapping ( description?, include*, class*, key-generator* )>
+
+
+<!--
+    Includes another collection of mappings in this collection. Can be
+    used to group several mappings from disparate files. The included
+    mapping file is specified by URL.
+
+ -->
+<!ELEMENT include EMPTY>
+<!ATTLIST include
+href  CDATA  #REQUIRED>
+
+
+<!--
+    Describes the mapping between a Java class and an SQL table, an
+    XML element, an LDAP entry, or any other engine.
+
+    A class can be mapped to one or all of these datasources at once,
+    by including all the relevant information in it's mapping.
+    SQL specific information is identifier with the sql-info element,
+    XML specific with the xml-info element, and so on.
+
+    A class is specified by it's Java class name (e.g. 'myapp.Product').
+    If a class extends another class for which mapping is provided,
+    the extends attribute should be used. Do not use the extends
+    attribute to describe Java class inheritance that is not reflected
+    in any mapping.
+
+    To map a class into an SQL table the sql-table element must be
+    specified, and the identity element must be specified.
+
+    All classes can be mapped to XML. The xml-schema element is used
+    with root elements to specify the document type and namespace when
+    producing XML documents from these objects.
+
+    To map a class into LDAP an identity field must be specified.
+
+    The class mapping specifies each field in the class that is
+    mapped. Fields that are not mapped will not be stored, read, or
+    otherwise processed. The order or fields is important when the
+    resulting XML document must preserve the order of elements.
+
+ -->
+<!ELEMENT class ( description?, cache-type?, map-to?, field+ )>
+<!ATTLIST class
+name            ID       #REQUIRED
+extends         IDREF    #IMPLIED
+depends         IDREF    #IMPLIED
+identity        NMTOKENS #IMPLIED
+access          ( read-only | shared | exclusive | db-locked )  "shared"
+key-generator   NMTOKEN  #IMPLIED
+auto-complete   (true|false) "false">
+
+
+<!--
+    Specifies the cache type and capacity used for this class
+ -->
+<!ELEMENT cache-type EMPTY>
+<!ATTLIST cache-type
+type           ( none | count-limited | time-limited | unlimited ) "count-limited"
+capacity       NMTOKEN  #IMPLIED>
+
+<!--
+    Specifies the mapping between a Java class and an SQL table.
+    This element must be specified in order to map a class into an
+    SQL table.
+
+ -->
+<!ELEMENT map-to EMPTY>
+<!ATTLIST map-to
+table      NMTOKEN  #IMPLIED
+xml        NMTOKEN  #IMPLIED
+ns-uri     NMTOKEN  #IMPLIED
+ns-prefix  NMTOKEN  #IMPLIED
+ldap-dn    NMTOKEN  #IMPLIED
+ldap-oc    NMTOKEN  #IMPLIED>
+
+
+<!--
+    Specifies the mapping between a Java field and an SQL table
+    column, an XML element or attribute, an LDAP attribute, etc.
+
+    The mapping is specified from the perspective of the Java class.
+    The field name is required even if not such field exists in the
+    class in order to support field references.
+
+    Unless specified otherwise, the field is accessed through get/set
+    method using the field name (thus, for a field called xyz,
+    <type> getXyz() and void setXyz( <type> )). Collection fields
+    require only a get method with the exception of an array that
+    requires both a get and set method.
+
+    If the accessors (get and set methods) are specified the field
+    will be accessed only through these methods. The methods must be
+    public and not static.
+
+    If the attribute direct is true, the field will be accessed
+    directly. The field must be public, not static and not transient.
+
+    The field type is the proper Java class of the field's value or
+    a short name that maps to a Java class (e.g. integer or
+    java.lang.Integer).
+
+    If the field is a collection, the collection type is specified with
+    the collection attribute and the type of each element with the type
+    attribute.
+
+    If the field should be treated as a container (ie only it's fields
+    should be persisted but not itself) the containter attribute should
+    be set to true. (Currently only supported in Castor XML)
+
+ -->
+<!ELEMENT field ( description?, sql?, bind-xml?, ldap? )>
+<!ATTLIST field
+name           NMTOKEN  #REQUIRED
+type           NMTOKEN  #IMPLIED
+required       ( true | false )  "false"
+direct         ( true | false )  "false"
+lazy           ( true | false )  "false"
+handler        NMTOKEN  #IMPLIED
+get-method     NMTOKEN  #IMPLIED
+set-method     NMTOKEN  #IMPLIED
+create-method  NMTOKEN  #IMPLIED
+transient      (true|false) "false"
+container      ( true | false ) "false"
+collection     ( array | arraylist | vector | hashtable | collection | set | map | enumerate )  #IMPLIED>
+
+
+<!--
+    Field mapping information relevant only for SQL.
+
+    The SQL column name and type should be specified for all fields.
+    The SQL type can be the proper Java class type returned by the
+    JDBC driver or the SQL type without precision (e.g.
+    java.math.BigDecimal or numeric).
+    However, SQL type may contain the parameter for the SQL<->Java type
+    convertors in square brackets (e.g., char[01] for false->0, true->1
+    conversion from Boolean Java type to char SQL type)
+
+ -->
+<!ELEMENT sql EMPTY>
+<!ATTLIST sql
+name        NMTOKENS  #IMPLIED
+type        NMTOKENS    #IMPLIED
+many-key    NMTOKENS  #IMPLIED
+many-table  NMTOKEN  #IMPLIED
+read-only   ( true | false )  "false"
+dirty  ( check | ignore )  "check">
+
+
+<!--
+    Field mapping information relevant only for XML.
+
+    The attribute/element name and XML schema type should be specified
+    for all fields. The node type indicates whether the field maps to
+    an attribute, an element or the textual content of this element.
+    Only simple types (primitives, date, string, etc) can be used for
+    attribute values. Only one field can be specified as the content
+    model in a given object.
+
+    Note: This used to be called "xml" which is an invalid xml element name
+          according to the W3C XML 1.0 recommendation. We still support
+          the "xml" element for backward compatibility, but we will remove
+          support for it in the future.
+ -->
+
+<!ELEMENT bind-xml EMPTY>
+<!ATTLIST bind-xml
+name  NMTOKEN  #IMPLIED
+type  NMTOKEN  #IMPLIED
+matches  NMTOKEN  #IMPLIED
+QName-prefix NMTOKEN #IMPLIED
+reference (true|false) "false"
+node  ( attribute | element | namespace | text )  #IMPLIED
+auto-naming ( deriveByClass | deriveByField ) #IMPLIED
+transient (true|false) "false">
+
+
+<!--
+    Field mapping information relevant only for LDAP.
+
+    The name of the LDAP attribute.
+
+ -->
+<!ELEMENT ldap EMPTY>
+<!ATTLIST ldap
+name  NMTOKEN  #IMPLIED>
+
+
+<!--
+    Specifies parameters for the KeyGenerator (if needed).
+    For example, to obtain sequential values from table SEQTAB use
+
+    <key-generator name="seqtable">
+        <param name="table" value="SEQTAB">
+        <param name="global" value="0">
+    </key-generator>
+    <class ... key-generator="seqtable"> ...
+
+    If you have to use several key generators of the same type for the same
+    database, use aliases:
+
+    <key-generator name="seqtable" alias="seq1">
+        <param name="table" value="SEQTAB">
+        <param name="global" value="0">
+    </key-generator>
+    <key-generator name="seqtable" alias="seq2">
+        <param name="table" value="SEQGLOBAL">
+        <param name="global" value="1">
+    </key-generator>
+    <class ... key-generator="seq2"> ...
+ -->
+
+<!ELEMENT key-generator  ( param* )>
+<!ATTLIST key-generator
+name   ID  #REQUIRED
+alias  NMTOKEN  #IMPLIED>
+
+<!ELEMENT param EMPTY>
+<!ATTLIST param
+name   NMTOKEN  #REQUIRED
+value  NMTOKEN  #REQUIRED>
+
+<!--
+    A textual description.
+
+ -->
+<!ELEMENT description ( #PCDATA )>
+
