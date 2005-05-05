@@ -1,0 +1,124 @@
+//-----------------------------------------------------------------------//
+//                                                                       //
+//                                P e a k                                //
+//                                                                       //
+//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  This software is released under the terms of the GNU General Public  //
+//  License. Please contact the author at herve.bitteur@laposte.net      //
+//  to report bugs & suggestions.                                        //
+//-----------------------------------------------------------------------//
+//      $Id$
+package omr.sheet;
+
+/**
+ * Class <code>Peak</code> encapsulates a peak in the histogram of horizontal
+ * projections. When reading sequentially the projection histogram, a peak is
+ * created when the threshold is passed, and the peak ordinate is extended
+ * until we get under the threshold again.
+ */
+public class Peak
+{
+    //~ Instance variables ------------------------------------------------
+
+    private final int yTop; // Y value at top of the peak
+    private int yBottom; // Y value at bottom of the peak
+    private int max; // Histogram maximum within this peak
+
+    //~ Constructors ------------------------------------------------------
+
+    //------//
+    // Peak //
+    //------//
+
+    /**
+     * Create a peak, starting at ordinate 'y', for which we have 'val'
+     * projections.
+     *
+     * @param y   ordinate value at the beginning of the peak
+     * @param val number of pixels cumulated at 'y' ordinate
+     */
+    public Peak (int y,
+                 int val)
+    {
+        yTop = y;
+        yBottom = y; // To be increased later by peak extensions
+        max = val; // To be increased later by peak extensions
+    }
+
+    //~ Methods -----------------------------------------------------------
+
+    //-----------//
+    // getBottom //
+    //-----------//
+
+    /**
+     * Selector for last ordinate value
+     *
+     * @return bottom ordinate of the peak
+     */
+    public int getBottom ()
+    {
+        return yBottom;
+    }
+
+    //--------//
+    // getMax //
+    //--------//
+
+    /**
+     * Report the maximum histogram value across this peak
+     *
+     * @return the highest histo value
+     */
+    public int getMax ()
+    {
+        return max;
+    }
+
+    //--------//
+    // getTop //
+    //--------//
+
+    /**
+     * Selector for the ordinate value at the beginning of the peak
+     *
+     * @return y for top of the peak
+     */
+    public int getTop ()
+    {
+        return yTop;
+    }
+
+    //--------//
+    // extend //
+    //--------//
+
+    /**
+     * Continues a peak, extending its ordinate range, and perhaps its max
+     * value if this projection is the highest one since the beginning of
+     * the peak.
+     *
+     * @param y   ordinate of this peak horizontal slice
+     * @param val number of pixels cumulated at 'y' ordinate
+     */
+    public void extend (int y,
+                        int val)
+    {
+        yBottom = y;
+        max = Math.max(max, val);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Report a short description of this peak
+     *
+     * @return the description
+     */
+    @Override
+        public String toString ()
+    {
+        return "{Peak " + yTop + "-" + yBottom + " max=" + max + "}";
+    }
+}

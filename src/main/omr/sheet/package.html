@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+    <head>
+	<!-- 	$Id$	 -->
+    </head>
+    <body>
+	Package of sheet processing to extract musical information from the
+	sheet picture.<br/>
+	<br/>
+	<table cellpadding="2" cellspacing="2" border="1"
+	       style="width: 100%; text-align: center;">
+	    <tbody>
+		<tr>
+		    <td
+			style="text-align: center; vertical-align: middle; font-weight: bold;">omr.score<br/>
+		    </td>
+		    <td
+			style="text-align: center; vertical-align: middle; font-weight: bold;">omr.sheet<br/>
+			(model)<br/>
+		    </td>
+		    <td
+			style="text-align: center; vertical-align: middle; font-weight: bold;">omr.sheet<br/>
+			(builder)<br/>
+		    </td>
+		</tr>
+		<tr>
+		    <td style="text-align: center; vertical-align: middle;">Score<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;"><br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;"><br/>
+		    </td>
+		</tr>
+		<tr>
+		    <td style="text-align: center; vertical-align: middle;">Page<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">Sheet<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;"><br/>
+		    </td>
+		</tr>
+		<tr>
+		    <td style="text-align: center; vertical-align: middle;">System<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">SystemInfo<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">BarsBuilder<br/>
+			<br/>
+		    </td>
+		</tr>
+		<tr>
+		    <td style="text-align: center; vertical-align: middle;">Stave<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">StaveInfo<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">StaveBuilder
+			: Processes the (five) line areas, according to the peaks found
+			previously. <br/>
+		    </td>
+		</tr>
+		<tr>
+		    <td style="text-align: center; vertical-align: middle;"><br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">LineInfo<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">LineBuilder
+			: Processes the horizontal area that corresponds to one histogram peak,
+			and thus one stave line.<br/>
+		    </td>
+		</tr>
+		<tr>
+		    <td style="text-align: center; vertical-align: middle;">Measure<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">BarInfo<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">BarsBuilder
+			: Processes the vertical lines that are recognized as bar lines<br/>
+		    </td>
+		</tr>
+		<tr>
+		    <td style="text-align: center; vertical-align: middle;"><br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">Ledger<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">Horizontals
+			: Retrieves horizontal&nbsp; dashes in the given sheet. We use it for
+			all horizontal glyphes (ledgers&nbsp; of course, but also legato signs
+			or alternate endings)<br/>
+		    </td>
+		</tr>
+		<tr>
+		    <td style="text-align: center; vertical-align: middle;"><br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">Ending<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">Horizontals<br/>
+		    </td>
+		</tr>
+		<tr>
+		    <td style="text-align: center; vertical-align: middle;"><br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">Stem<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">Verticals
+			: Retrieves all the vertical&nbsp; sticks of all systems in the sheet
+			at hand. Bars are assumed to have been&nbsp; already recognized, to
+			this accounts for stems, vertical edges of&nbsp; endings, and parts of
+			alterations (sharp, natural, flat)<br/>
+		    </td>
+		</tr>
+		<tr>
+		    <td style="text-align: center; vertical-align: middle;"><br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">Glyph<br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;">GlyphBuilder
+			: Gathers of remaining glyphs out of a sheet<br/>
+		    </td>
+		</tr>
+		<tr>
+		    <td style="text-align: center; vertical-align: middle;"><br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;"><br/>
+		    </td>
+		    <td style="text-align: center; vertical-align: middle;"><br/>
+		    </td>
+		</tr>
+	    </tbody>
+	</table>
+    </body>
+</html>
