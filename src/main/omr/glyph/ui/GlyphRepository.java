@@ -12,8 +12,6 @@
 package omr.glyph.ui;
 
 import omr.Main;
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
@@ -32,72 +30,144 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Collection;
 import java.io.IOException;
+import omr.glyph.ui.GlyphRepository.Monitor;
 
 /**
  * Class <code>GlyphRepository</code> handles the store of known glyphs,
- * across multiple sheets (and possibly multiple runs)
+ * across multiple sheets (and possibly multiple runs).
+ *
+ * <p> A glyph is known by its full name, whose format is
+ * <B>sheetName/Shape.id.xml</B>, regardless of the area it is stored (this
+ * may be the <I>core</I> area or the global <I>sheets</I> area)
+ *
+ * <p> The repository handles a private map of all deserialized glyphs so
+ * far, since the deserialization is a rather expensive operation.
+ *
+ * <p> It handles two bases : the "whole base" (all glyphs) and the "core
+ * base" (just the glyphs of the core) which are accessible by {@link
+ * #getWholeBase} and {@link #getCoreBase} methods.
  */
 public class GlyphRepository
 {
     //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(GlyphRepository.class);
-    private static final Constants constants = new Constants();
+
+    // The single instance of this class
+    private static GlyphRepository INSTANCE;
 
     // Extension for training files
     private static final String FILE_EXTENSION = ".xml";
 
     // Specific subdirectories for training files
-    private static File sheetsPath;
-    private static File corePath;
+    private static final File sheetsPath = new File(Main.getTrainPath(),
+                                                    "sheets");
+    private static final File corePath   = new File(Main.getTrainPath(),
+                                                    "core");
+
+    //~ Instance variables ------------------------------------------------
 
     // Specific glyph Castor mapper
-    private static XmlMapper<Glyph> glyphMapper;
+    private XmlMapper<Glyph> glyphMapper;
 
-    // Map of glyphs
-    private static Map<String,Glyph> glyphsMap
-        = new TreeMap<String,Glyph>();
+    // Map of all glyphs deserialized so far, using full glyph name as key
+    // Full glyph name format is :  sheetName/Shape.id.xml
+    private Map<String,Glyph> glyphsMap = new TreeMap<String,Glyph>();
 
-    // Last collection of glyphs names
-    private static Collection<String> base;
+    // Whole collection of glyphs
+    private Collection<String> wholeBase;
+
+    // Core collection of glyphs
+    private Collection<String> coreBase;
+
+    //~ Constructors ------------------------------------------------------
+
+    // Private (singleton)
+    private GlyphRepository()
+    {
+    }
 
     //~ Methods -----------------------------------------------------------
 
-    //----------//
-    // isLoaded //
-    //----------//
+    //-------------//
+    // getInstance //
+    //-------------//
     /**
-     * Check whether a glyph is already loaded
+     * Report the single instance of this class, after creating it if
+     * needed
      *
-     * @param gName the glyph file name
-     * @return true if loaded
+     * @return the single instance
      */
-    public static boolean isLoaded (String gName)
+    public static GlyphRepository getInstance ()
     {
-        return glyphsMap.get(gName) != null;
+        if (INSTANCE == null) {
+            INSTANCE = new GlyphRepository();
+        }
+        return INSTANCE;
+    }
+
+    //-------------//
+    // getCoreBase //
+    //-------------//
+    /**
+     * Return the names of the core collection of glyphs
+     *
+     * @return the core collection of recorded glyphs
+     */
+    synchronized Collection<String> getCoreBase (Monitor monitor)
+    {
+        if (coreBase == null) {
+            coreBase = loadCoreBase(monitor);
+        }
+
+        return coreBase;
+    }
+
+    //-------------//
+    // getCorePath //
+    //-------------//
+    /**
+     * Report the directory where selected core glyphs are stored
+     *
+     * @return the directory of core material
+     */
+    static File getCorePath()
+    {
+        return corePath;
     }
 
     //----------//
     // getGlyph //
     //----------//
     /**
-     * Return a glyph knowing the name of the corresponding training
-     * material. If not already loaded, the glyph is deserialized from the
-     * training file.
+     * Return a glyph knowing its full glyph name, which is the name of the
+     * corresponding training material. If not already done, the glyph is
+     * deserialized from the training file, searching first in the core
+     * area, then in the global sheets area.
      *
-     * @param gName the glyph file name (the current format is:
-     * sheetName/Shape.id.xml)
+     * @param gName the full glyph name (format is: sheetName/Shape.id.xml)
      *
-     * @return the glyph instance
+     * @return the glyph instance if found, null otherwise
      */
-    public static Glyph getGlyph (String gName)
+    Glyph getGlyph (String gName)
     {
         // First, try the map of glyphs
         Glyph glyph = glyphsMap.get(gName);
 
         // If failed, actually load the glyph from XML Castor file
         if (glyph == null) {
-            File file = new File(getSheetsPath(), gName);
+            // We try to load from the core repository first, then from the
+            // sheets repository
+            File file;
+            file = new File(getCorePath(), gName);
+            if (!file.exists()) {
+                file = new File(getSheetsPath(), gName);
+                if (!file.exists()) {
+                    logger.error("Unable to find file for glyph " + gName);
+                    return null;
+                }
+            }
+
             if (logger.isDebugEnabled()) {
                 logger.debug("Reading " + file);
             }
@@ -112,72 +182,6 @@ public class GlyphRepository
         return glyph;
     }
 
-    //-------------//
-    // removeGlyph //
-    //-------------//
-    /**
-     * Remove a glyph from the repository memory (this does not delete the
-     * actual glyph file on disk)
-     *
-     * @param gName the glyph file name
-     */
-    public static void removeGlyph (String gName)
-    {
-        glyphsMap.remove(gName);
-    }
-
-    //--------------//
-    // getGlyphBase //
-    //--------------//
-    /**
-     * Return the names of selected collection of glyphs
-     *
-     * @return the map of (known) glyphs
-     */
-    public static synchronized
-        Collection<String> getGlyphBase (Monitor monitor)
-    {
-        if (base == null) {
-            loadGlyphBase(monitor);
-        }
-
-        return base;
-    }
-
-    //---------------//
-    // getSheetsPath //
-    //---------------//
-    /**
-     * Report the directory where all sheet glyphs are stored
-     *
-     * @return the directory of all sheets material
-     */
-    public static File getSheetsPath()
-    {
-        if (sheetsPath == null) {
-            sheetsPath = new File(Main.getTrainPath(), "sheets");
-        }
-
-        return sheetsPath;
-    }
-
-    //-------------//
-    // getCorePath //
-    //-------------//
-    /**
-     * Report the directory where selected core glyphs are stored
-     *
-     * @return the directory of core material
-     */
-    public static File getCorePath()
-    {
-        if (corePath == null) {
-            corePath = new File(Main.getTrainPath(), "core");
-        }
-
-        return corePath;
-    }
-
     //---------------------//
     // getSheetDirectories //
     //---------------------//
@@ -187,7 +191,7 @@ public class GlyphRepository
      *
      * @return the list of sheet directories
      */
-    public static synchronized List<File> getSheetDirectories()
+    synchronized List<File> getSheetDirectories()
     {
         // One directory per sheet
         List<File> dirs = new ArrayList<File>();
@@ -213,7 +217,7 @@ public class GlyphRepository
      * @param dir the containing directory
      * @return the list of glyph files
      */
-    public static synchronized List<File> getSheetGlyphs (File dir)
+    synchronized List<File> getSheetGlyphs (File dir)
     {
         List<File> glyphFiles = new ArrayList<File>();
         File[] files = dir.listFiles();
@@ -229,80 +233,61 @@ public class GlyphRepository
     }
 
     //---------------//
-    // loadGlyphBase //
+    // getSheetsPath //
     //---------------//
     /**
-     * Build a map of glyphs, by selecting part of the stored
-     * population of glyphs.
+     * Report the directory where all sheet glyphs are stored
      *
-     * @return a collection of (known) glyphs names
+     * @return the directory of all sheets material
      */
-    public static synchronized
-        Collection<String> loadGlyphBase (Monitor monitor)
+    static File getSheetsPath()
     {
-        // Files in the train directory & its subdirectories
-        List<File> files = new ArrayList<File>(1000);
-        loadDirectory(getSheetsPath(), files);
-        if (monitor != null) {
-            monitor.setTotalGlyphs(files.size());
-        }
-
-        // Make a selection of the files (w/o loading the glyphs)
-        files = selectFiles(files);
-        if (monitor != null) {
-            monitor.setSelectedGlyphs(files.size());
-        }
-
-        // Now, actually load the related glyphs when needed
-        base = new ArrayList<String>();
-        for (File file : files) {
-            String gName = file.getParentFile().getName() +
-                File.separator + file.getName();
-            base.add(gName);
-            Glyph glyph = getGlyph(gName);
-
-            if (monitor != null) {
-                monitor.loadedGlyph(glyph);
-            }
-        }
-
-        return base;
+        return sheetsPath;
     }
 
-    //----------------//
-    // storeGlyphBase //
-    //----------------//
+    //--------------//
+    // getWholeBase //
+    //--------------//
     /**
-     * Store the current glyph selection as the core training material
+     * Return the names of the whole collection of glyphs
+     *
+     * @return the whole collection of recorded glyphs
      */
-    public static void storeGlyphBase ()
+    synchronized Collection<String> getWholeBase (Monitor monitor)
     {
-        // Create the core directory if needed
-        File coreDir = getCorePath();
-        coreDir.mkdirs();
+        if (wholeBase == null) {
+            wholeBase = loadWholeBase(monitor);
+        }
 
-        // Empty the directory
-        FileUtil.deleteAll(coreDir.listFiles());
+        return wholeBase;
+    }
 
-        // Copy the glyph files into the core directory
-        for (String fullName : base) {
-            File source = new File(getSheetsPath(), fullName);
-            File targetDir = new File(coreDir,
-                                      source.getParentFile().getName());
-            targetDir.mkdirs();
-            File target = new File(targetDir, source.getName());
-            if (logger.isDebugEnabled()) {
-                logger.debug("Storing " + fullName + " as core");
-            }
-
-            try {
-                FileUtil.copy(source, target);
-            } catch (IOException ex) {
-                logger.error("Cannot copy " + source + " to " + target);
+    //--------------------//
+    // preloadGlyphMapper //
+    //--------------------//
+    /**
+     * Allows to pre-load (in the background) the Castor mapper, so that it
+     * will be immediately available when an actual glyph load is requested
+     */
+    void preloadGlyphMapper ()
+    {
+        class Worker
+            extends Thread
+        {
+            public void run()
+            {
+                try {
+                    glyphMapper = getGlyphMapper();
+                    logger.info("Glyph XmlMapper preloaded.");
+                } catch (Exception ex) {
+                    logger.error("Could not preload Glyph XmlMapper");
+                }
             }
         }
 
-        logger.info(base.size() + " glyphs copied as core training material");
+        Worker worker = new Worker();
+        worker.setPriority(Thread.MIN_PRIORITY);
+        worker.start();
     }
 
     //-------------------//
@@ -314,7 +299,7 @@ public class GlyphRepository
      *
      * @param sheet the sheet whose glyphs are to be stored
      */
-    public static void recordSheetGlyphs (Sheet sheet)
+    void recordSheetGlyphs (Sheet sheet)
     {
         try {
             // Prepare target directory
@@ -366,65 +351,100 @@ public class GlyphRepository
         }
     }
 
-    //---------------//
-    // setMaxSimilar //
-    //---------------//
+    //-------------//
+    // removeGlyph //
+    //-------------//
     /**
-     * Modify the maximum number of glyph samples for the same shape
+     * Remove a glyph from the repository memory (this does not delete the
+     * actual glyph file on disk). We also remove it from the various bases
+     * which is safer
      *
-     * @param maxSimilar upper limit for glyphs in the same shape
+     * @param gName the full glyph name
      */
-    static void setMaxSimilar (int maxSimilar)
+    synchronized void removeGlyph (String gName)
     {
-        constants.maxSimilar.setValue(maxSimilar);
+        glyphsMap.remove(gName);
+        if (wholeBase != null) {
+            wholeBase.remove(gName);
+        }
+        if (coreBase != null) {
+            coreBase.remove(gName);
+        }
+    }
+
+    //-------------//
+    // setCoreBase //
+    //-------------//
+    /**
+     * Define the provided collection as the core training material
+     * @param base the provided collection
+     */
+    synchronized void setCoreBase (Collection<String> base)
+    {
+        coreBase = base;
+    }
+
+    //---------//
+    // shapeOf //
+    //---------//
+    /**
+     * Infer the shape of a glyph directly from its full name
+     *
+     * @param gName the full glyph name
+     * @return the shape of the known glyph
+     */
+    Shape shapeOf (String gName)
+    {
+        return shapeOf(new File(gName));
     }
 
     //---------------//
-    // getMaxSimilar //
+    // storeCoreBase //
     //---------------//
     /**
-     * Report the current limit on number of glyphs accepted for training
-     * within the same shape
-     *
-     * @return the upper limit
+     * Store the core training material
      */
-    static int getMaxSimilar ()
+    synchronized void storeCoreBase ()
     {
-        return constants.maxSimilar.getValue();
-    }
+        if (coreBase == null) {
+            logger.error("Core base is null");
+            return;
+        }
 
-    //--------------------//
-    // setMaxSimilarRatio //
-    //--------------------//
-    /**
-     * Modify the upper limit for glyphs with the same shape, expressed as
-     * the ratio with regard to the total number of samples in the training
-     * material
-     *
-     * @param maxSimilarRatio upper ratio limit
-     */
-    static void setMaxSimilarRatio (double maxSimilarRatio)
-    {
-        constants.maxSimilarRatio.setValue(maxSimilarRatio);
-    }
+        // Create the core directory if needed
+        File coreDir = getCorePath();
+        coreDir.mkdirs();
 
-    //--------------------//
-    // getMaxSimilarRatio //
-    //--------------------//
-    /**
-     * Report the upper ratio limit for glyphs with the same shape
-     *
-     * @return the upper ratio limit
-     */
-    static double getMaxSimilarRatio ()
-    {
-        return constants.maxSimilarRatio.getValue();
+        // Empty the directory
+        FileUtil.deleteAll(coreDir.listFiles());
+
+        // Copy the glyph files into the core directory
+        for (String gName : coreBase) {
+            File source = new File(getSheetsPath(), gName);
+            File targetDir = new File(coreDir,
+                                      source.getParentFile().getName());
+            targetDir.mkdirs();
+            File target = new File(targetDir, source.getName());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Storing " + gName + " as core");
+            }
+
+            try {
+                FileUtil.copy(source, target);
+            } catch (IOException ex) {
+                logger.error("Cannot copy " + source + " to " + target);
+            }
+        }
+
+        logger.info(coreBase.size() +
+                    " glyphs copied as core training material");
     }
+    //~ Methods Private ---------------------------------------------------
 
     //----------------//
     // getGlyphMapper //
     //----------------//
-    private static synchronized XmlMapper<Glyph> getGlyphMapper ()
+    private synchronized XmlMapper<Glyph> getGlyphMapper ()
         throws Exception
     {
         if (glyphMapper == null) {
@@ -443,39 +463,62 @@ public class GlyphRepository
         return glyphMapper;
     }
 
-    //--------------------//
-    // preloadGlyphMapper //
-    //--------------------//
+    //-------------//
+    // glyphNameOf //
+    //-------------//
     /**
-     * Allows to pre-load (in the background) the Castor mapper, so that it
-     * will be immediately available when an actual glyph load is requested
+     * Build the full glyph name (which will be the unique glyph name) from
+     * the file which contains the glyph description
+     *
+     * @param file the glyph backup file
+     * @return the unique glyph name
      */
-    public static void preloadGlyphMapper ()
+    private static String glyphNameOf (File file)
     {
-        class Worker
-            extends Thread
-        {
-            public void run()
-            {
-                try {
-                    glyphMapper = getGlyphMapper();
-                    logger.info("Glyph XmlMapper preloaded.");
-                } catch (Exception ex) {
-                    logger.error("Could not preload Glyph XmlMapper");
-                }
+        return file.getParentFile().getName() +
+            File.separator + file.getName();
+    }
+
+    //----------//
+    // loadBase //
+    //----------//
+    /**
+     * Build the map and return the collection of glyphs names in a given
+     * directory
+     *
+     * @param path the path of the directory to load
+     * @param monitor the observing entity if any
+     * @return the collection of loaded glyphs names
+     */
+    private synchronized Collection<String> loadBase (File    path,
+                                                      Monitor monitor)
+    {
+        // Files in the provided directory & its subdirectories
+        List<File> files = new ArrayList<File>(1000);
+        loadDirectory(path, files);
+        if (monitor != null) {
+            monitor.setTotalGlyphs(files.size());
+        }
+
+        // Now, actually load the related glyphs if needed
+        Collection<String> base = new ArrayList<String>(1000);
+        for (File file : files) {
+            String gName = glyphNameOf(file);
+            base.add(gName);
+            Glyph glyph = getGlyph(gName);
+            if (monitor != null) {
+                monitor.loadedGlyph(glyph);
             }
         }
 
-        Worker worker = new Worker();
-        worker.setPriority(Thread.MIN_PRIORITY);
-        worker.start();
+        return base;
     }
 
     //---------------//
     // loadDirectory //
     //---------------//
-    private static void loadDirectory (File dir,
-                                       List<File> all)
+    private void loadDirectory (File dir,
+                                List<File> all)
     {
         logger.debug("Recursing through " + dir);
         File[] files = dir.listFiles();
@@ -497,71 +540,30 @@ public class GlyphRepository
         }
     }
 
-    //-------------//
-    // selectFiles //
-    //-------------//
+    //--------------//
+    // loadCoreBase //
+    //--------------//
     /**
-     * Make a fair selection among glyph files
+     * Build the collection of only the core glyphs
      *
-     * @param files [input/output] the file list to be modified
-     *
-     * @return an expurged list of files
+     * @return the collection of core glyphs names
      */
-    private static List<File> selectFiles (List<File> files)
+    private Collection<String> loadCoreBase (Monitor monitor)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Raw list of " + files.size() + " files");
-        }
+        return loadBase(getCorePath(), monitor);
+    }
 
-        // Allocate shape-based buckets
-        List<List<File>> buckets = new ArrayList<List<File>>();
-        for (int i = 0; i < Evaluator.outSize; i++) {
-            buckets.add(new ArrayList<File>(100));
-        }
-
-        // Fill the various buckets
-        for (File file : files) {
-            Shape shape = shapeOf(file);
-            if (shape != null) {
-                try {
-                    buckets.get(shape.ordinal()).add(file);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    logger.info("Curious Shape=" + shape);
-                }
-            }
-        }
-
-        final int maxSimilar = Math.min
-            ((int) (files.size() * constants.maxSimilarRatio.getValue()),
-             constants.maxSimilar.getValue());
-
-        // Print out the size of each bucket
-        if (logger.isDebugEnabled()) {
-            System.out.println("Buckets: (maxSimilar=" + maxSimilar + ")");
-            for (int i = 0; i < Evaluator.outSize; i++) {
-                System.out.printf("%30s -> %4d\n",
-                                  Shape.values()[i],
-                                  buckets.get(i).size());
-            }
-        }
-
-        // Limit the number in each bucket
-        List<File> base = new ArrayList<File>(1000);
-        for (List<File> list : buckets) {
-            Collections.shuffle(list);
-            int k = 0;
-            for (File file : list) {
-                if (k++ < maxSimilar) {
-                    base.add(file);
-                }
-            }
-        }
-
-        logger.info("Loading " + base.size() + " glyph files among "
-                    + files.size() + " ...");
-
-        return base;
+    //---------------//
+    // loadWholeBase //
+    //---------------//
+    /**
+     * Build the complete map of all glyphs recorded so far
+     *
+     * @return a collection of (known) glyphs names
+     */
+    private Collection<String> loadWholeBase (Monitor monitor)
+    {
+        return loadBase(getSheetsPath(), monitor);
     }
 
     //---------//
@@ -573,7 +575,7 @@ public class GlyphRepository
      * @param file the file that describes the glyph
      * @return the shape of the known glyph
      */
-    private static Shape shapeOf (File file)
+    private Shape shapeOf (File file)
     {
         try {
             // ex: THIRTY_SECOND_REST.0105.xml
@@ -588,7 +590,6 @@ public class GlyphRepository
             // Not recognized
             return null;
         }
-
     }
 
     //~ Classes -----------------------------------------------------------
@@ -599,7 +600,6 @@ public class GlyphRepository
     /**
      * Interface <code>Monitor</code> defines the entries to a UI entity
      * which monitors the loading of glyphs by the glyph repository
-     *
      */
     static interface Monitor
     {
@@ -625,26 +625,5 @@ public class GlyphRepository
          * @param total the size of the training material
          */
         void setTotalGlyphs (int total);
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        Constant.Double maxSimilarRatio = new Constant.Double
-                (0.05,
-                 "Maximum ratio of instances for the same shape used in training");
-
-        Constant.Integer maxSimilar = new Constant.Integer
-                (100,
-                 "Absolute maximum number of instances for the same shape used in training");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }
