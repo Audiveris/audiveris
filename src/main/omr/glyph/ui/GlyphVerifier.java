@@ -76,6 +76,9 @@ public class GlyphVerifier
 
     //~ Instance variables ------------------------------------------------
 
+    // Repository of known glyphs
+    private final GlyphRepository repository = GlyphRepository.getInstance();
+
     // The panel in charge of the sheets selection
     private SheetSelector sheetSelector = new SheetSelector();
 
@@ -115,7 +118,7 @@ public class GlyphVerifier
         setVisible(true);
 
         // Launch loading of XML mapper
-        GlyphRepository.preloadGlyphMapper();
+        repository.preloadGlyphMapper();
 
         if (standAlone) {
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -372,7 +375,7 @@ public class GlyphVerifier
         {
             // Populate with all existing sheets
             list.removeAll();
-            for (File file : GlyphRepository.getSheetDirectories()) {
+            for (File file : repository.getSheetDirectories()) {
                 list.add(file.getName());
             }
             updateCardinal();
@@ -400,10 +403,10 @@ public class GlyphVerifier
 
             // Populate with shape names found in selected sheets
             for (String sheetName : sheetSelector.list.getSelectedItems()) {
-                File dir = new File(GlyphRepository.getSheetsPath(),
+                File dir = new File(repository.getSheetsPath(),
                                     sheetName);
                 // Add all glyphs files from this directory
-                for (File file : GlyphRepository.getSheetGlyphs(dir)) {
+                for (File file : repository.getSheetGlyphs(dir)) {
                     shapeSet.add(radixOf(file.getName()));
                 }
             }
@@ -447,10 +450,10 @@ public class GlyphVerifier
             // Populate with all possible glyphs
             list.removeAll();
             for (String sheetName : sheets) {
-                File dir = new File(GlyphRepository.getSheetsPath(),
+                File dir = new File(repository.getSheetsPath(),
                                     sheetName);
                 // Add proper glyphs files from this directory
-                for (File file : GlyphRepository.getSheetGlyphs(dir)) {
+                for (File file : repository.getSheetGlyphs(dir)) {
                     String shapeName = radixOf(file.getName());
                     if (shapeList.contains(shapeName)) {
                         list.add(dir.getName() + "/" + file.getName());
@@ -648,7 +651,7 @@ public class GlyphVerifier
                     name.setText(gName);
 
                     // Load the glyph if needed
-                    glyph = GlyphRepository.getGlyph(gName);
+                    glyph = repository.getGlyph(gName);
                     if (glyph.getLag() != vLag) {
                         glyph.setLag(vLag);
 
@@ -727,7 +730,7 @@ public class GlyphVerifier
         {
             // Delete glyph designated by glyphIndex
             String gName = names[glyphIndex];
-            Glyph glyph = GlyphRepository.getGlyph(gName);
+            Glyph glyph = repository.getGlyph(gName);
 
             // User confirmation is required ?
             if (constants.confirmDeletions.getValue()) {
@@ -747,7 +750,7 @@ public class GlyphVerifier
                              old.length - glyphIndex - 1);
 
             // Update model & display
-            GlyphRepository.removeGlyph(gName);
+            repository.removeGlyph(gName);
             for (GlyphSection section : glyph.getMembers()) {
                 section.delete();
             }
@@ -764,7 +767,7 @@ public class GlyphVerifier
             }
 
             // Perform file deletion
-            File file = new File(GlyphRepository.getSheetsPath(), gName);
+            File file = new File(repository.getSheetsPath(), gName);
             if (file.delete()) {
                 logger.info("Glyph " + gName + " deleted");
             } else {
@@ -826,7 +829,7 @@ public class GlyphVerifier
                 if (names != null) {
                     for (int i = 0; i < names.length; i++) {
                         String gName = names[i];
-                        Glyph glyph = GlyphRepository.getGlyph(gName);
+                        Glyph glyph = repository.getGlyph(gName);
                         if (glyph.getLag() == vLag) {
                             for (GlyphSection section : glyph.getMembers()) {
                                 // Swap of x & y,  this is a vertical lag

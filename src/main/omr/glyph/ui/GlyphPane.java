@@ -58,6 +58,9 @@ public class GlyphPane
 
     //~ Instance variables ------------------------------------------------
 
+    // Repository of known glyphs
+    private final GlyphRepository repository = GlyphRepository.getInstance();
+
     // Glyph builder
     private final GlyphBuilder builder;
 
@@ -577,7 +580,7 @@ public class GlyphPane
                 {
                     public Object construct()
                     {
-                        GlyphRepository.recordSheetGlyphs(sheet);
+                        repository.recordSheetGlyphs(sheet);
                         return null;
                     }
                 };
