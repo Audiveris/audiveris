@@ -31,7 +31,7 @@ public class Audiveris
     public static void main (String[] args)
     {
         omr.Main.main("Audiveris", // Tool Name
-                      "V2.0", // Tool Version
+                      "V2.1", // Tool Version
                       args); // User arguments
     }
 }
