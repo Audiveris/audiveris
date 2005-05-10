@@ -2,8 +2,7 @@
 <HTML>
     <HEAD>
 	<!-- 	$Id$	 -->
-	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html;
-	charset=windows-1252"/>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252"/>
 	<TITLE>Audiveris Installation Manual</TITLE>
 	<META NAME="AUTHOR" CONTENT="Herv&eacute; Bitteur"/>
 	<META NAME="CREATED" CONTENT="20050429;15271809"/>
@@ -17,336 +16,342 @@
 
     </HEAD>
     <BODY LANG="en-US" DIR="LTR">
-
+	
 	<DIV CLASS="app">
-
-	<H1 ALIGN=CENTER>Audiveris Installation Manual</H1>
-	<ADDRESS>Author : <A
-	HREF="mailto:herve.bitteur@laposte.net">:Herv&eacute;
-	Bitteur</A></ADDRESS>
-	<ADDRESS>Updated : 1 May 2005</ADDRESS>
-
-	<H2>Getting Audiveris software</H2>
-
-	The latest version is always available on the <A
-	HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
-	Audiveris download area</A>
-
-	<H2>System Requirements</H2>
-
-	Audiveris is essentially a Java application, and as such
-	should be usable on a wide variety of platforms. Is has been
-	successfully used under Linux in the past and is currently
-	being developed and used under Windows (2000 and XP).
-
-	<P><B>Beware</B> that Audiveris uses many features
-	from <B>Java 5.0</B>, so you must have this version of Java
-	environment available.</P>
-
-	<P>In terms of resources, memory turns out to be more
-	important that CPU power. Make sure you have 256MB of physical
-	memory as a bare minimum, 512MB is much more comfortable. As
-	an example, Audiveris is developed and run today on an old AMD
-	Athlon (0.9 GHz, 768 MB)</P>
-	
-	<H2>Companion tools</H2>
-
-	This section lists all components that are used by Audiveris
-	for various functions, and thus need to be properly installed
-	beforehand.
-	
-	<H3>Music Font (Musette)</H3> This font is used only to
-	provide icons in selection menus. For the time being we use
-	the "Musette" font, a free True-Type font. However, it lacks
-	many items, so we'll have to find out a more complete one some
-	day.
-
-	<P>The font can be downloaded for the following <A
-	    HREF="http://www.canzona.com/music/musette/index.shtml">
-	    Musette web-site</A> dedicated to the "Musette music
-	    editor". The font itself is made available a few
-	    paragraphs down the page, or directly from <A
-	    HREF="http://canzona.com/cgi-bin/musette/countdown.cgi?musttf.exe">here</A>.
-	</P>
-
-	<P>The font must then be installed on Windows just like any
-	other TTF font.</P>
-	
-	
-	<H3>Java Advanced Imaging (JAI)</H3>JAI is a comprehensive
-	framework for image processing, of which Audiveris makes a
-	rather limited use :
-	<UL>
-	    <LI>"<I>fileload</I>" operator : Loading an image file, taking
-		advantage of the long list of supported file formats
-		supported by JAI</LI>
-	    <LI>"<I>mosaic</I>" operator : Combining several images into one</LI>
-	    <LI>"<I>rotate</I>" operator : Rotating an image</LI>
-	    <LI>"<I>affine</I>" operator : Translating an image</LI>
-	</UL>		 
-
-	<P> JAI has its high-level features coded in Java, and
-	low-level primitives delegated to native libraries. It is
-	implemented as a collection of jar files and DLLs (under
-	Windows). It is better installed directly in your JDK (or JRE)
-	by using the installation procedure found at the <A
-	HREF="http://java.sun.com/products/java-media/jai/">JAI
-	web-site</A>. Audiveris uses the latest JAI version
-	(1.1.2).</P>
-	
-	<H3>Other components</H3> All the following components need no
-	special installation procedure, only their jar files have to
-	be made available, for example via the classpath, to Audiveris
-	at build or run time (see the provided file 'build.xml' for
-	build and run examples).
 	    
-	<P><I>Nota : The versions for jar files are the ones used at
-	    the time of this writing, but higher versions should be
-	    usable as well (though not yet tested)</I></P>
-	<TABLE WIDTH=100% BORDER=1>
-	    <TR>
-		<TH>Component</TH>
-		<TH>Purpose</TH>
-		<TH>Jar File(s)</TH>
-		<TH>Provider URL</TH>
-	    </TR>
-	    <TR CLASS="a">
-		<TD><B>Castor</B></TD>
-		<TD>XML databinding framework</TD>
-		<TD>castor-0.9.5.2-xml.jar</TD>
-		<TD><A HREF="http://www.castor.org/">
+	    <H1 ALIGN=CENTER>Audiveris Installation Manual</H1>
+	    <ADDRESS>Author : <A
+				  HREF="mailto:herve.bitteur@laposte.net">:Herv&eacute;
+		Bitteur</A></ADDRESS>
+	    <ADDRESS>Updated : 10 May 2005</ADDRESS>
+	    
+	    <H2>Getting Audiveris software</H2>
+	    
+	    The latest version is always available on the <A
+            HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
+            Audiveris download area</A>
+	    
+	    <H2>System Requirements</H2>
+	    
+	    <P>Audiveris is essentially a Java application, and as
+		such should be usable on a wide variety of platforms. Is
+		has been successfully used under Linux in the past and is
+		currently being developed and used under Windows (2000 and
+		XP).</P>
+	    
+	    <P><B>Beware</B> that Audiveris uses many features
+		from <B>Java 5.0</B>, so you must have this version of Java
+		environment available.</P>
+	    
+	    <P>In terms of resources, memory turns out to be more
+		important that CPU power. Make sure you have 256MB of
+		physical memory as a bare minimum, 512MB is much more
+		comfortable. As an example, Audiveris is developed and
+		run today on an old AMD Athlon (0.9 GHz, 768 MB)</P>
+	    
+	    <H2>Companion tools</H2>
+	    
+	    <P>This section lists all components that are used by
+		Audiveris for various functions, and thus need to be
+		properly installed beforehand.</P>
+	    
+	    <H3>Music Font (Musette)</H3>
+	    <P>This font is used only to provide icons in selection
+		menus. For the time being we use the "Musette" font, a
+		free True-Type font. However, it lacks many items, so
+		we'll have to find out a more complete one some day.</P>
+	    
+	    <P>The font can be downloaded for the following <A
+								HREF="http://www.canzona.com/music/musette/index.shtml">
+		Musette web-site</A> dedicated to the "Musette music
+		editor". The font itself is made available a few
+		paragraphs down the page, or directly from <A
+							       HREF="http://canzona.com/cgi-bin/musette/countdown.cgi?musttf.exe">here</A>.
+	    </P>
+	    
+	    <P>The font must then be installed on Windows just like any
+		other TTF font.</P>
+	    
+	    <H3>Java Advanced Imaging (JAI)</H3>
+	    <P>JAI is a comprehensive framework for image processing,
+		of which Audiveris makes a rather limited use :</P>
+	    <UL>
+		<LI>"<I>fileload</I>" operator : Loading an image
+		    file, taking advantage of the long list of
+		    supported file formats supported by JAI</LI>
+		<LI>"<I>mosaic</I>" operator : Combining several
+		images into one</LI>
+		<LI>"<I>rotate</I>" operator : Rotating an image</LI>
+		<LI>"<I>affine</I>" operator : Translating an image</LI>
+	    </UL>		 
+	    
+	    <P> JAI has its high-level features coded in Java, and
+		low-level primitives delegated to native libraries. It
+		is implemented as a collection of jar files and DLLs
+		(under Windows). It is better installed directly in
+		your JDK (or JRE) by using the installation procedure
+		found at the <A
+		HREF="http://java.sun.com/products/java-media/jai/">JAI
+		web-site</A>. Audiveris uses the latest JAI version
+		(1.1.2).</P>
+	    
+	    <H3>Other components</H3>
+	    <P>All the following components need no special
+		installation procedure, only their jar files have to be
+		made available, for example via the classpath, to
+		Audiveris at build or run time (see the provided file
+		'build.xml' for build and run examples).</P>
+		
+	    <P><I>Nota : The versions for jar files are the ones used at
+		the time of this writing, but higher versions should be
+		usable as well (though not yet tested)</I></P>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH>Component</TH>
+		    <TH>Purpose</TH>
+		    <TH>Jar File(s)</TH>
+		    <TH>Provider URL</TH>
+		</TR>
+		<TR CLASS="a">
+		    <TD><B>Castor</B></TD>
+		    <TD>XML databinding framework</TD>
+		    <TD>castor-0.9.5.2-xml.jar</TD>
+		    <TD><A HREF="http://www.castor.org/">
 			http://www.castor.org/
-		    </A>
-		</TD>
-	    </TR>
-	    <TR CLASS="b">
-		<TD><B>Ant</B></TD>
-		<TD>Xerces implementation needed by Castor</TD>
-		<TD>xercesImpl.jar</TD>
-		<TD><A HREF="http://ant.apache.org/">
-		    http://ant.apache.org/
-		    </A>
-		</TD>
-	    </TR>
-	    <TR CLASS="a">
-		<TD><B>JGoodies/looks</B></TD>
-		<TD>Improvement of appearance of Swing</TD>
-		<TD>looks-1.3.jar</TD>
-		<TD><A HREF="https://looks.dev.java.net/">
-		    https://looks.dev.java.net/
-		    </A>
-		</TD>
-	    </TR>
-	    <TR CLASS="b">
-		<TD><B>JGoodies/forms</B></TD>
-		<TD>Forms layout system for Swing</TD>
-		<TD>forms-1.0.5.jar</TD>
-		<TD>
-		    <A HREF="https://forms.dev.java.net/">
-			https://forms.dev.java.net/
-		    </A>
-		</TD>
-	    </TR>
-	    <TR CLASS="a">
-		<TD><B>JFreeChart</B></TD>
-		<TD>Chart generation, with common utilities</TD>
-		<TD>
-		    jfreechart-1.0.0-pre2.jar
-		    <BR/>
-		    jcommon-1.0.0-pre2.jar
-		</TD>
-		<TD>
-		    <A HREF="http://www.jfree.org/jfreechart/">
-			http://www.jfree.org/jfreechart/
-		    </A>
-		</TD>
-	    </TR>
-	    <TR CLASS="b">
-		<TD><B>Java L&amp;F Graphics Repository</B></TD>
-		<TD>Collection of toolbar button graphics</TD>
-		<TD>jlfgr-1_0.jar</TD>
-		<TD>
-		    <A HREF="http://java.sun.com/developer/techDocs/hi/repository/">
-			http://java.sun.com/developer/techDocs/hi/repository/
-		    </A>
-		</TD>
-	    </TR>
-	    <TR CLASS="a">
-		<TD><B>Log4J</B></TD>
-		<TD>Application logging framework</TD>
-		<TD>log4j-1.2.8.jar</TD>
-		<TD>
-		    <A HREF="http://logging.apache.org/log4j/docs/">
-			http://logging.apache.org/log4j/docs/
-		    </A>
-		</TD>
-	    </TR>
-	</TABLE>
-
-	<H2>Installation</H2>
-	
-	The distribution of Audiveris, downloadable from the <A
-	HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
-	download area</A> is composed of two archives similar to
-	the following ones :
-	<OL>
-	    <LI><I>audiveris-2.0-20050502.zip</I> which contains the
-	    various Audiveris components except the training
-	    material</LI>
-	    <LI><I>audiveris-2.0-train-20050502.zip</I> dedicated to
-	    the training material</LI>
-	</OL>
-
-	You simply need to expand the first archive into a directory
-	of your choice. The train archive is needed only if you want
-	to be able to re-train the evaluators.
-
-	<P>Once expanded, the Audiveris systems provides the
-	    following hierarchy of directories :</P>
-
-	<PRE>
-	    /<U>bin</U>
-	    /<U>config</U>
-	    /<U>examples</U>
-	    /<U>lib</U>
-	    /<U>train</U>
-	         /<U>core</U>
-	         /<U>sheets</U>
-	    /<U>www</U>
-	         /<U>docs</U>
-	              /<U>api</U>
-	              /<U>images</U>
-	              /<U>manual</U>
-	</PRE>
-
-	<UL>
-	    <LI>The root contains only
-		the <CODE><B>build.xml</B></CODE> build file</LI>
-	    <LI>The <CODE><U>bin</U></CODE> directory contains the
-		<CODE><B>audiveris.bat</B></CODE> launcher file</LI>
-	    <LI>The <CODE><U>config</U></CODE> directory contains
-		several configuration files :
-		<UL>
-		    <LI><CODE><B>GlyphRegression.def</B></CODE> is a
-			binary backup of the glyph regression
-			evaluator</LI>
-		    <LI><CODE><B>GlyphNetwork.def</B></CODE> is a
-			binary backup of the glyph neural network
-			evaluator</LI>
-		    <LI><CODE><B>build.default.properties</B></CODE>
-			defines all default property values used by
-			build.xml</LI>
-		    <LI><CODE><B>build.properties</B></CODE> is
-			initially an empty file, meant to override
-			some properties
-			of <CODE><B>build.default.properties</B></CODE>
-			file.</LI>
-		    <LI><CODE><B>castor-glyph-mapping.xml</B></CODE>
-			defines the mapping used by Castor utility to
-			marshal and unmarshal glyphs</LI>
-		    <LI><CODE><B>castor.properties</B></CODE> defines
-			properties that drive the behavior of Castor
-			utility</LI>
-		    <LI><CODE><B>log4j.properties</B></CODE> defines
-			the detailed rules for application
-			logging</LI>
-		    <LI><CODE><B>run.default.properties</B></CODE>
-			defines the property values used by Audiveris
-			at run time. These properties can be
-			overridden
-			by <CODE><B>audiveris.run.properties</B></CODE>
-			file located in the user.home directory</LI>
-		</UL>
-	    </LI>
-	    <LI>The <CODE><U>examples</U></CODE> directory provides
-		several image files of printed music which you can use
-		as input to Audiveris.</LI>
-	    <LI>The <CODE><U>lib</U></CODE> directory contains the
-		Audiveris jar file</LI>
-	    <LI>The <CODE><U>train</U></CODE> directory gathers all
-		glyph files used as training material :
-		<UL>
-		    <LI><CODE><U>core</U></CODE> stores the core training
-			material (not implemented yet) </LI>
-		    <LI><CODE><U>sheets</U></CODE> gathers the training
-			material composed by all recognized glyphs stored
-			so far </LI>
-		</UL>
-	    </LI>
-	    <LI>The <CODE><U>www</U></CODE> directory mirrors the
-		Audiveris web-site on java.net.
-		<UL>
-		    <LI>The <CODE><U>docs</U></CODE> directory is a
-			collection of documentations :
-			<UL>
-			    <LI><CODE><U>api</U></CODE> for all javadoc
-				generated documentation</LI>
-			    <LI><CODE><U>images</U></CODE> gathers images
-				such as screen snapshots used in the
-				documentation.</LI>
-			    <LI><CODE><U>manual</U></CODE> contains the
-				various manuals, including this
-				installation manual.</LI>
-			</UL>
-		    </LI>
-		</UL>
-	    </LI>
-	</UL>
-	
-	<H3>Build Customization</H3>
-	<P>Before launching any action, you'll have to customize some
-	    environment definitions pre-defined in
-	    the <CODE><U>config</U>/<B>build.default.properties</B></CODE>
-	    file which is not meant to be edited by the user. Instead,
-	    you can override these property values, by redefining them
-	    in the <CODE><U>config</U>/<B>build.properties</B></CODE>
-	    file.  These property values can on their turn be
-	    overridden by defining new values in the 
-	    <CODE><B>audiveris.build.properties</B></CODE> file
-	    located in the <I>user.home</I> directory
-	</P>
-
-	<P>Typically your customization could address the following
-	    pre-defined properties :</P>
-	
-	<PRE>
-	    # Ant Properties ----------------------------------------------
-	    ant.dir		= h:/prog/ant
+			</A>
+		    </TD>
+		</TR>
+		<TR CLASS="b">
+		    <TD><B>Ant</B></TD>
+		    <TD>Xerces implementation needed by Castor</TD>
+		    <TD>xercesImpl.jar</TD>
+		    <TD><A HREF="http://ant.apache.org/">
+			http://ant.apache.org/
+			</A>
+		    </TD>
+		</TR>
+		<TR CLASS="a">
+		    <TD><B>JGoodies/looks</B></TD>
+		    <TD>Improvement of appearance of Swing</TD>
+		    <TD>looks-1.3.jar</TD>
+		    <TD><A HREF="https://looks.dev.java.net/">
+			https://looks.dev.java.net/
+			</A>
+		    </TD>
+		</TR>
+		<TR CLASS="b">
+		    <TD><B>JGoodies/forms</B></TD>
+		    <TD>Forms layout system for Swing</TD>
+		    <TD>forms-1.0.5.jar</TD>
+		    <TD>
+			<A HREF="https://forms.dev.java.net/">
+			    https://forms.dev.java.net/
+			</A>
+		    </TD>
+		</TR>
+		<TR CLASS="a">
+		    <TD><B>JFreeChart</B></TD>
+		    <TD>Chart generation, with common utilities</TD>
+		    <TD>
+			jfreechart-1.0.0-pre2.jar
+			<BR/>
+			jcommon-1.0.0-pre2.jar
+		    </TD>
+		    <TD>
+			<A HREF="http://www.jfree.org/jfreechart/">
+			    http://www.jfree.org/jfreechart/
+			</A>
+		    </TD>
+		</TR>
+		<TR CLASS="b">
+		    <TD><B>Java L&amp;F Graphics Repository</B></TD>
+		    <TD>Collection of toolbar button graphics</TD>
+		    <TD>jlfgr-1_0.jar</TD>
+		    <TD>
+			<A HREF="http://java.sun.com/developer/techDocs/hi/repository/">
+			    http://java.sun.com/developer/techDocs/hi/repository/
+			</A>
+		    </TD>
+		</TR>
+		<TR CLASS="a">
+		    <TD><B>Log4J</B></TD>
+		    <TD>Application logging framework</TD>
+		    <TD>log4j-1.2.8.jar</TD>
+		    <TD>
+			<A HREF="http://logging.apache.org/log4j/docs/">
+			    http://logging.apache.org/log4j/docs/
+			</A>
+		    </TD>
+		</TR>
+	    </TABLE>
 	    
-	    # Castor Properties -------------------------------------------
-	    castor.dir		= h:/prog/castor
-	    castor.file		= castor-0.9.5.3-xml.jar
+	    <H2>Installation</H2>
 	    
-	    # Xerces Properties -------------------------------------------
-	    xerces.dir		= h:/prog/ant/lib
+	    <P>The distribution of Audiveris, downloadable from the <A
+		HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
+		download area</A>, is composed of two archives similar to
+		the following ones :</P>
+	    <DL>
+		<DT>audiveris-2.1-20050510.zip</DT>
+		<DD>which contains the various Audiveris components
+		    except the training material</DD>
+		<DT>audiveris-2.1-train-20050510.zip</DT>
+		<DD>dedicated to the training material</DD>
+	    </DL>
 	    
-	    # JGoodies Looks Properties -----------------------------------
-	    jgoodies.looks.dir	= h:/prog/jgoodies/looks-1.3
-	    jgoodies.looks.file	= looks-1.3.jar
+	    <P>You simply need to expand the first archive into a
+		directory of your choice. The train archive is needed only
+		if you want to be able to re-train the evaluators.</P>
 	    
-	    # JGoodies Forms Properties -----------------------------------
-	    jgoodies.forms.dir	= h:/prog/jgoodies/forms-1.0.5
-	    jgoodies.forms.file	= forms-1.0.5.jar
+	    <P>Once expanded, the Audiveris systems provides the
+		following hierarchy of directories :</P>
 	    
-	    # JFreeChart Properties ---------------------------------------
-	    jfreechart.dir	= h:/prog/jfreechart/lib
-	    jfreechart.file	= jfreechart-1.0.0-pre2.jar
+	    <PRE>
+		/<U>bin</U>
+		/<U>config</U>
+		/<U>examples</U>
+		/<U>lib</U>
+		/<U>train</U>
+		     /<U>core</U>
+		     /<U>sheets</U>
+		/<U>www</U>
+		     /<U>docs</U>
+		          /<U>api</U>
+		          /<U>images</U>
+		          /<U>manual</U>
+	    </PRE>
 	    
-	    # JCommon Properties ------------------------------------------
-	    jcommon.dir		= h:/prog/jfreechart/lib
-	    jcommon.file	= jcommon-1.0.0-pre2.jar
+	    <UL>
+		<LI>The root contains only
+		    the <CODE><B>build.xml</B></CODE> build file</LI>
+		<LI>The <CODE><U>bin</U></CODE> directory contains the
+		    <CODE><B>audiveris.bat</B></CODE> launcher file</LI>
+		<LI>The <CODE><U>config</U></CODE> directory contains
+		    several configuration files :
+		    <UL>
+			<LI><CODE><B>GlyphRegression.def</B></CODE> is a
+			    binary backup of the glyph regression
+			    evaluator</LI>
+			<LI><CODE><B>GlyphNetwork.def</B></CODE> is a
+			    binary backup of the glyph neural network
+			    evaluator</LI>
+			<LI><CODE><B>build.default.properties</B></CODE>
+			    defines all default property values used by
+			    build.xml</LI>
+			<LI><CODE><B>build.properties</B></CODE> is
+			    initially an empty file, meant to override
+			    some properties
+			    of <CODE><B>build.default.properties</B></CODE>
+			    file.</LI>
+			<LI><CODE><B>castor-glyph-mapping.xml</B></CODE>
+			    defines the mapping used by Castor utility to
+			    marshal and unmarshal glyphs</LI>
+			<LI><CODE><B>castor.properties</B></CODE> defines
+			    properties that drive the behavior of Castor
+			    utility</LI>
+			<LI><CODE><B>log4j.properties</B></CODE> defines
+			    the detailed rules for application
+			    logging</LI>
+			<LI><CODE><B>run.default.properties</B></CODE>
+			    defines the property values used by Audiveris
+			    at run time. These properties can be
+			    overridden
+			    by <CODE><B>audiveris.run.properties</B></CODE>
+			    file located in the user.home directory</LI>
+		    </UL>
+		</LI>
+		<LI>The <CODE><U>examples</U></CODE> directory provides
+		    several image files of printed music which you can use
+		    as input to Audiveris.</LI>
+		<LI>The <CODE><U>lib</U></CODE> directory contains the
+		    Audiveris jar file</LI>
+		<LI>The <CODE><U>train</U></CODE> directory gathers all
+		    glyph files used as training material :
+		    <UL>
+			<LI><CODE><U>core</U></CODE> stores the core
+			    training material (not implemented
+			    yet) </LI>
+			<LI><CODE><U>sheets</U></CODE> gathers the
+			    training material composed by all
+			    recognized glyphs stored so far </LI>
+		    </UL>
+		</LI>
+		<LI>The <CODE><U>www</U></CODE> directory mirrors the
+		    Audiveris web-site on java.net.
+		    <UL>
+			<LI>The <CODE><U>docs</U></CODE> directory is a
+			    collection of documentations :
+			    <UL>
+				<LI><CODE><U>api</U></CODE> for all javadoc
+				    generated documentation</LI>
+				<LI><CODE><U>images</U></CODE> gathers
+				    images such as screen snapshots
+				    used in the documentation.</LI>
+				<LI><CODE><U>manual</U></CODE> contains the
+				    various manuals, including this
+				    installation manual.</LI>
+			    </UL>
+			</LI>
+		    </UL>
+		</LI>
+	    </UL>
 	    
-	    # Button Icons Properties -------------------------------------
-	    icons.buttons.dir	= h:/prog/jlfgr
-	    icons.buttons.file	= jlfgr-1_0.jar
+	    <H3>Build Customization</H3>
+	    <P>Before launching any action, you'll have to customize
+		some environment definitions pre-defined in
+		the <CODE><U>config</U>/<B>build.default.properties</B>
+		</CODE> file which is not meant to be edited by the
+		user. Instead, you can override these property values,
+		by redefining them in
+		the <CODE><U>config</U>/<B>build.properties</B></CODE>
+		file.  These property values can on their turn be
+		overridden by defining new values in the
+		<CODE><B>audiveris.build.properties</B></CODE> file
+		located in the <I>user.home</I> directory
+	    </P>
 	    
-	    # Log Properties ----------------------------------------------
-	    log.dir		= h:/prog/log4j/dist/lib
-	    log.file		= log4j-1.2.8.jar
-	</PRE>
-
-	<HR/>
-	<I>End of Installation Manual</I>
+	    <P>Typically your customization could address the following
+		pre-defined properties :</P>
+	    
+	    <PRE>
+		# Ant Properties ----------------------------------------------
+		ant.dir		= h:/prog/ant
+		
+		# Castor Properties -------------------------------------------
+		castor.dir		= h:/prog/castor
+		castor.file		= castor-0.9.5.3-xml.jar
+		
+		# Xerces Properties -------------------------------------------
+		xerces.dir		= h:/prog/ant/lib
+		
+		# JGoodies Looks Properties -----------------------------------
+		jgoodies.looks.dir	= h:/prog/jgoodies/looks-1.3
+		jgoodies.looks.file	= looks-1.3.jar
+		
+		# JGoodies Forms Properties -----------------------------------
+		jgoodies.forms.dir	= h:/prog/jgoodies/forms-1.0.5
+		jgoodies.forms.file	= forms-1.0.5.jar
+		
+		# JFreeChart Properties ---------------------------------------
+		jfreechart.dir	= h:/prog/jfreechart/lib
+		jfreechart.file	= jfreechart-1.0.0-pre2.jar
+		
+		# JCommon Properties ------------------------------------------
+		jcommon.dir		= h:/prog/jfreechart/lib
+		jcommon.file	= jcommon-1.0.0-pre2.jar
+		
+		# Button Icons Properties -------------------------------------
+		icons.buttons.dir	= h:/prog/jlfgr
+		icons.buttons.file	= jlfgr-1_0.jar
+		
+		# Log Properties ----------------------------------------------
+		log.dir		= h:/prog/log4j/dist/lib
+		log.file		= log4j-1.2.8.jar
+	    </PRE>
+	    
+	    <HR/>
+	    <I>End of Installation Manual</I>
 	</DIV>
     </BODY>
 </HTML>
