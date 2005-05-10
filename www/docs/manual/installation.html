@@ -12,11 +12,14 @@
 
 	<!-- The following links are meant to be solved on my local PC -->
 	<!-- The java.net site uses its own style sheets -->
- 	<LINK rel="stylesheet" type="text/css" href="../../tigris.css"/>
- 	<LINK rel="stylesheet" type="text/css" href="../../inst.css"/>
+ 	<LINK rel="stylesheet" type="text/css" href="../../style/css/tigris.css"/>
+ 	<LINK rel="stylesheet" type="text/css" href="../../style/css/inst.css"/>
 
     </HEAD>
     <BODY LANG="en-US" DIR="LTR">
+
+	<DIV CLASS="app">
+
 	<H1 ALIGN=CENTER>Audiveris Installation Manual</H1>
 	<ADDRESS>Author : <A
 	HREF="mailto:herve.bitteur@laposte.net">:Herv&eacute;
@@ -101,13 +104,13 @@
 	    the time of this writing, but higher versions should be
 	    usable as well (though not yet tested)</I></P>
 	<TABLE WIDTH=100% BORDER=1>
-	    <TR ALIGN=CENTER>
+	    <TR>
 		<TH>Component</TH>
 		<TH>Purpose</TH>
 		<TH>Jar File(s)</TH>
 		<TH>Provider URL</TH>
 	    </TR>
-	    <TR>
+	    <TR CLASS="a">
 		<TD><B>Castor</B></TD>
 		<TD>XML databinding framework</TD>
 		<TD>castor-0.9.5.2-xml.jar</TD>
@@ -116,7 +119,7 @@
 		    </A>
 		</TD>
 	    </TR>
-	    <TR>
+	    <TR CLASS="b">
 		<TD><B>Ant</B></TD>
 		<TD>Xerces implementation needed by Castor</TD>
 		<TD>xercesImpl.jar</TD>
@@ -125,8 +128,8 @@
 		    </A>
 		</TD>
 	    </TR>
-	    <TR>
-		<TD><B>Jgoodies/looks</B></TD>
+	    <TR CLASS="a">
+		<TD><B>JGoodies/looks</B></TD>
 		<TD>Improvement of appearance of Swing</TD>
 		<TD>looks-1.3.jar</TD>
 		<TD><A HREF="https://looks.dev.java.net/">
@@ -134,8 +137,8 @@
 		    </A>
 		</TD>
 	    </TR>
-	    <TR>
-		<TD><B>Jgoodies/forms</B></TD>
+	    <TR CLASS="b">
+		<TD><B>JGoodies/forms</B></TD>
 		<TD>Forms layout system for Swing</TD>
 		<TD>forms-1.0.5.jar</TD>
 		<TD>
@@ -144,7 +147,7 @@
 		    </A>
 		</TD>
 	    </TR>
-	    <TR>
+	    <TR CLASS="a">
 		<TD><B>JFreeChart</B></TD>
 		<TD>Chart generation, with common utilities</TD>
 		<TD>
@@ -158,7 +161,7 @@
 		    </A>
 		</TD>
 	    </TR>
-	    <TR>
+	    <TR CLASS="b">
 		<TD><B>Java L&amp;F Graphics Repository</B></TD>
 		<TD>Collection of toolbar button graphics</TD>
 		<TD>jlfgr-1_0.jar</TD>
@@ -168,7 +171,7 @@
 		    </A>
 		</TD>
 	    </TR>
-	    <TR>
+	    <TR CLASS="a">
 		<TD><B>Log4J</B></TD>
 		<TD>Application logging framework</TD>
 		<TD>log4j-1.2.8.jar</TD>
@@ -182,9 +185,9 @@
 
 	<H2>Installation</H2>
 	
-	The distribution of Audiveris, downloadable from <A
+	The distribution of Audiveris, downloadable from the <A
 	HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
-	the download area</A> is composed of two archives similar to
+	download area</A> is composed of two archives similar to
 	the following ones :
 	<OL>
 	    <LI><I>audiveris-2.0-20050502.zip</I> which contains the
@@ -344,5 +347,6 @@
 
 	<HR/>
 	<I>End of Installation Manual</I>
+	</DIV>
     </BODY>
 </HTML>

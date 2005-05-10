@@ -2,246 +2,259 @@
 <HTML>
     <HEAD>
 	<!-- 	$Id$	 -->
-	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html;
-	charset=windows-1252"/>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252"/>
 	<TITLE>Audiveris Operation Manual</TITLE>
 	<META NAME="AUTHOR" CONTENT="Herv&eacute; Bitteur"/>
 	<META NAME="CREATED" CONTENT="20050429;15271809"/>
 	<META NAME="CLASSIFICATION" CONTENT="Documentation for Audiveris operation"/>
 	<META NAME="DESCRIPTION" CONTENT="How to operate the Audiveris software"/>
+	
+ 	<LINK rel="stylesheet" type="text/css" href="../../style/css/tigris.css"/>
+ 	<LINK rel="stylesheet" type="text/css" href="../../style/css/inst.css"/>
     </HEAD>
     <BODY LANG="en-US" DIR="LTR">
-	<H1 ALIGN=CENTER>Audiveris Operation Manual</H1>
-	<ADDRESS>Author : <A
-	HREF="mailto:herve.bitteur@laposte.net">:Herv&eacute;
-	Bitteur</A></ADDRESS>
-	<ADDRESS>Updated : 4 May 2005</ADDRESS>
-
-	<H2>Launching Audiveris</H2>
 	
-	Audiveris can be launched by two different means :
-	<OL>
-	    <LI>Using the launch script
-		called <CODE><B>audiveris.bat</B></CODE> and located in
-		the <CODE>/<U>bin</U></CODE> directory.
-		<PRE>
-$&gt; <I>&lt;your-audiveris-install-directory&gt;</I>\bin\audiveris.bat <I>[&lt;arguments&gt;]</I>
-		</PRE>
-	    </LI>
+	<DIV CLASS="app">
+	    <H1 ALIGN=CENTER ID="banner">Audiveris Operation Manual</H1>
+	    <ADDRESS>Author : <A
+				  HREF="mailto:herve.bitteur@laposte.net">:Herv&eacute;
+		Bitteur</A></ADDRESS>
+	    <ADDRESS>Updated : 10 May 2005</ADDRESS>
 	    
-	    <LI>Using ant with the <B>run</B> target on the
-		provided <CODE><B>build.xml</B></CODE> file located in the root
-		directory.
-		<PRE>
+	    <H2>Launching Audiveris</H2>
+	    
+	    <P>Audiveris can be launched by two different means :</P>
+	    <OL>
+		<LI>Using the launch script
+		    called <CODE><B>audiveris.bat</B></CODE> and located in
+		    the <CODE>/<U>bin</U></CODE> directory.
+		    <PRE CLASS="info">
+$&gt; <I>&lt;your-audiveris-install-directory&gt;</I>\bin\audiveris.bat <I>[&lt;arguments&gt;]</I>
+		    </PRE>
+		</LI>
+		
+		<LI>Using ant with the <CODE><B>run</B></CODE> target on the
+		    provided <CODE><B>build.xml</B></CODE> file located in the root
+		    directory.
+		    <PRE CLASS="info">
 $&gt; cd <I>&lt;your-audiveris-install-directory&gt;</I>
 $&gt; ant run
-		</PRE>
-	    </LI>
-	</OL>
-
-	<H3>Run Customization</H3>
-	
-	Each of these means needs a properly defined classpath, that
-	you must customize beforehand to fit your own characteristics.
-	
-	<P>Since <CODE><B>build.xml</B></CODE> provides a target
-	    named <B>launcher</B> which generates the audiveris
-	    launcher based on the defined properties, it is
-	    recommanded to first update these environment properties
-	    (by editing the file
-	    named <CODE><U>config</U>/<B>build.properties</B></CODE>) and
-	    generate that launcher. Then, selecting either launching
-	    means will use the same environment definitions.
-	</P>
-
-	<P>Please refer to the <A HREF="installation.html"> Audiveris
-	Installation Manual</A> for further details on the
-	customization and use of the <CODE><B>build.xml</B></CODE>
-	file.</P>
-
-	<H3>Command-line arguments</H3>
-
-	Most of the time, there is no need for command-line
-	arguments. They are useful when a batch mode (i.e. with no
-	user interface) is required, or to set some parameters beforehand.
-
-	<P>A comprehensive list of command-line arguments is available
-	    in the javadoc API of the <A
-	    HREF="../api/omr/Main.html">Main</A> class.</P>
-
-
-	<H2>Menu description</H2>
-
-	Here is a quick catalog of the various menu items, as found on
-	Audiveris main user interface.
-
-	<H3>File</H3>
-
-	<TABLE WIDTH=100% BORDER=1>
-	    <TR>
-		<TH ALIGN="LEFT" WIDTH="120px">Exit</TH>
-		<TD>Exit Audiveris application</TD>
-	    </TR>
-	</TABLE>
-	
-	<H3>Sheet</H3>
-
-	<TABLE WIDTH=100% BORDER=1>
-	    <TR>
-		<TH ALIGN="LEFT" WIDTH="120px">History</TH>
-		<TD>List the more recent sheet files you've loaded</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Open Sheet</TH>
-		<TD>Select a file that contains a printed sheet of
-		music. Most graphic file formats should be usable,
-		<I><B>provided the pixel info uses a grey scale of 256
-		    values</B></I>. </TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Close Sheet</TH>
-		<TD>Close the current sheet</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Width Fit</TH>
-		<TD>Adjust the zoom ratio so that the sheet WIDTH is
-		fully displayed in the window</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Height Fit</TH>
-		<TD>Adjust the zoom ratio so that the sheet HEIGHT is
-		fully displayed in the window</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Dump all Sheets</TH>
-		<TD>Print on the output console the internal
-		information kept about every currently loaded
-		sheet</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Scale Plot</TH>
-		<TD>Open a chart with histogram of run lengths for
-		    foreground (black) and background (white)
-		    pixels. This gives the general scale (interline
-		    value) of the sheet.</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Skew Plot</TH>
-		<TD>Display histogram of run lengths for foreground
-		    (black) and background (white) pixels</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Scale Plot</TH>
-		<TD>Display histogram of measured slopes of longest
-		    horizontal sticks. This gives the angle to de-skew
-		    the image.</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Line Plot</TH>
-		<TD>Display histogram of horizontal projections of
-		    black pixels. This indicates area for each staff
-		    line. </TD>
-	    </TR>
-	</TABLE>
-	
-	<H3>Step</H3>
-
-	<TABLE WIDTH=100% BORDER=1>
-	    <TR>
-		<TH ALIGN="LEFT" WIDTH="120px">Any Step</TH>
-		<TD>Select the target in this menu which lists in
-		    order the defined processing steps, as described
-		    in <A HREF="../api/omr/sheet/Sheet.html">Sheet</A>
-		    class documentation. Note that you can only move
-		    forward.</TD>
-	    </TR>
-	</TABLE>
-	
-	<H3>Score</H3>
-
-	<TABLE WIDTH=100% BORDER=1>
-	    <TR>
-		<TH ALIGN="LEFT" WIDTH="120px">History</TH>
-		<TD>List the more recent sheet files you've written</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Open Score</TH>
-		<TD>Select a score file for reading. A score file
-		    contains in a binary proprietary format the
-		    information built while processing the original
-		    sheet. Re-loading such a score file saves you the
-		    initial processing, when getting back to the final
-		    steps</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Save Score</TH>
-		<TD>Save the current information about the current
-		    score, for potential later reload</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">View Score</TH>
-		<TD>Display and browse the hierarchical information
-		    about the current score</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Dump Score</TH>
-		<TD>Print main score information on the output
-		    console</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Dump all Scores</TH>
-		<TD>Dump information about every score currently
-		    loaded</TD>
-	    </TR>
-	</TABLE>
-
-	<H3>Tool</H3>
-
-
-	<TABLE WIDTH=100% BORDER=1>
-	    <TR>
-		<TH ALIGN="LEFT" WIDTH="120px">Shape Colors</TH>
-		<TD>Select the color display for each recognized
-		shape</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Training material</TH>
-		<TD>Verify and potentially discard glyph material used
-		to train the evaluators</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Trainer</TH>
-		<TD>Launch and monitor the training phases of the
-		evaluators</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Memory</TH>
-		<TD>Display the current memory occupancy</TD>
-	    </TR>
-	    <TR>
-		<TH ALIGN="LEFT">Options</TH>
-		<TD>Set the various parameters used by Audiveris
-		software</TD>
-	    </TR>
-	</TABLE>
-
-	<H3>Help</H3>
-
-	<TABLE WIDTH=100% BORDER=1>
-	    <TR>
-		<TH ALIGN="LEFT" WIDTH="120px">About</TH>
-		<TD>Display information about Audiveris version and
-		related web-site</TD>
-	    </TR>
-	</TABLE>
-
-	<H2>Operations</H2>
-
-	TO BE PROVIDED IN THE NEXT VERSION OF THIS DOCUMENT
-<!-- 	<IMG SRC="../images/load.png" /> -->
-	
-	<HR/>
-	<I>End of Operation Manual</I>
-	
+		    </PRE>
+		</LI>
+	    </OL>
+	    
+	    <H3>Run Customization</H3>
+	    
+	    <P CLASS="alert">Each of these means needs a properly defined
+		classpath, that you must customize beforehand to fit your
+		own characteristics.</P>
+	    
+	    <P>Since <CODE><B>build.xml</B></CODE> provides a target
+		named <B>launcher</B> which generates the audiveris
+		launcher based on the defined properties, it is
+		recommanded to first update these environment properties
+		(by editing the file
+		named <CODE><U>config</U>/<B>build.properties</B></CODE>) and
+		generate that launcher. Then, selecting either launching
+		means will use the same environment definitions.
+	    </P>
+	    
+	    <P>Please refer to the <A HREF="installation.html"> Audiveris
+		Installation Manual</A> for further details on the
+		customization and use of the <CODE><B>build.xml</B></CODE>
+		file.</P>
+	    
+	    <H3>Command-line arguments</H3>
+	    
+	    <P>Most of the time, there is no need for command-line
+		arguments. They are useful when a batch mode
+		(i.e. with no user interface) is required, or to set
+		some parameters beforehand.</P>
+	    
+	    <P>A comprehensive list of command-line arguments is available
+		in the javadoc API of
+		the <A HREF="../api/omr/Main.html">Main</A> class.</P>
+	    
+	    
+	    <H2>Menu description</H2>
+	    
+	    <P>Here is a quick catalog of the various menu items, as
+		found on Audiveris main user interface.</P>
+	    
+	    <DIV CLASS="axial">
+		
+		<H3>File</H3>
+		
+		<TABLE WIDTH=100% BORDER=1>
+		    <TR>
+			<TH WIDTH="120px">Exit</TH>
+			<TD>Exit Audiveris application</TD>
+		    </TR>
+		</TABLE>
+		
+		<H3>Sheet</H3>
+		
+		<P>All these commands deal with the sheet at hand</P>
+		
+		<TABLE WIDTH=100% BORDER=1>
+		    <TR>
+			<TH WIDTH="120px">History</TH>
+			<TD>List the more recent sheet files you've loaded</TD>
+		    </TR>
+		    <TR>
+			<TH>Open Sheet</TH>
+			<TD>Select a file that contains a printed sheet of
+			    music. Most graphic file formats should be usable,
+			    <EM>provided the pixel info uses a grey scale of 256
+				values</EM>. </TD>
+		    </TR>
+		    <TR>
+			<TH>Close Sheet</TH>
+			<TD>Close the current sheet</TD>
+		    </TR>
+		    <TR>
+			<TH>Width Fit</TH>
+			<TD>Adjust the zoom ratio so that the sheet WIDTH is
+			    fully displayed in the window</TD>
+		    </TR>
+		    <TR>
+			<TH>Height Fit</TH>
+			<TD>Adjust the zoom ratio so that the sheet HEIGHT is
+			    fully displayed in the window</TD>
+		    </TR>
+		    <TR>
+			<TH>Dump all Sheets</TH>
+			<TD>Print on the output console the internal
+			    information kept about every currently loaded
+			    sheet</TD>
+		    </TR>
+		    <TR>
+			<TH>Scale Plot</TH>
+			<TD>Open a chart with histogram of run lengths for
+			    foreground (black) and background (white)
+			    pixels. This gives the general scale (interline
+			    value) of the sheet.</TD>
+		    </TR>
+		    <TR>
+			<TH>Skew Plot</TH>
+			<TD>Display histogram of measured slopes of longest
+			    horizontal sticks. This gives the angle to de-skew
+			    the image.</TD>
+		    </TR>
+		    <TR>
+			<TH>Line Plot</TH>
+			<TD>Display histogram of horizontal projections of
+			    black pixels. This indicates area for each staff
+			    line. </TD>
+		    </TR>
+		</TABLE>
+		
+		<H3>Step</H3>
+		
+		<P>Launch the processing of a step on the sheet at
+		    hand </P>
+		
+		<TABLE WIDTH=100% BORDER=1>
+		    <TR>
+			<TH WIDTH="120px">&lt;Any Step&gt;</TH>
+			<TD>Select the target in this menu which lists in
+			    order the defined processing steps, as described
+			    in <A HREF="../api/omr/sheet/Sheet.html">Sheet</A>
+			    class documentation. Note that you can only move
+			    forward.</TD>
+		    </TR>
+		</TABLE>
+		
+		<H3>Score</H3>
+		
+		<P>All these commands deal with the score part of the
+		    sheet at hand</P>
+		
+		<TABLE WIDTH=100% BORDER=1>
+		    <TR>
+			<TH WIDTH="120px">History</TH>
+			<TD>List the more recent sheet files you've written</TD>
+		    </TR>
+		    <TR>
+			<TH>Open Score</TH>
+			<TD>Select a score file for reading. A score file
+			    contains in a binary proprietary format the
+			    information built while processing the original
+			    sheet. Re-loading such a score file saves you the
+			    initial processing, when getting back to the final
+			    steps</TD>
+		    </TR>
+		    <TR>
+			<TH>Save Score</TH>
+			<TD>Save the current information about the current
+			    score, for potential later reload</TD>
+		    </TR>
+		    <TR>
+			<TH>View Score</TH>
+			<TD>Display and browse the hierarchical information
+			    about the current score</TD>
+		    </TR>
+		    <TR>
+			<TH>Dump Score</TH>
+			<TD>Print main score information on the output
+			    console</TD>
+		    </TR>
+		    <TR>
+			<TH>Dump all Scores</TH>
+			<TD>Dump information about every score currently
+			    loaded</TD>
+		    </TR>
+		</TABLE>
+		
+		<H3>Tool</H3>
+		
+		
+		<TABLE WIDTH=100% BORDER=1>
+		    <TR>
+			<TH WIDTH="120px">Shape Colors</TH>
+			<TD>Select the color display for each recognized
+			    shape</TD>
+		    </TR>
+		    <TR>
+			<TH>Training Material</TH>
+			<TD>Verify and potentially discard glyph material used
+			    to train the evaluators</TD>
+		    </TR>
+		    <TR>
+			<TH>Trainer</TH>
+			<TD>Launch and monitor the training phases of the
+			    evaluators</TD>
+		    </TR>
+		    <TR>
+			<TH>Memory</TH>
+			<TD>Display the current memory occupancy</TD>
+		    </TR>
+		    <TR>
+			<TH>Options</TH>
+			<TD>Set the various parameters used by Audiveris
+			    software</TD>
+		    </TR>
+		</TABLE>
+		
+		<H3>Help</H3>
+		
+		<TABLE WIDTH=100% BORDER=1>
+		    <TR>
+			<TH WIDTH="120px">About</TH>
+			<TD>Display information about Audiveris version and
+			    related web-site</TD>
+		    </TR>
+		</TABLE>
+	    </DIV>
+	    
+	    <H2>Operations</H2>
+	    
+	    TO BE PROVIDED IN THE NEXT VERSION OF THIS DOCUMENT
+	    <!-- 	<IMG SRC="../images/load.png" /> -->
+	    
+	    <HR/>
+	    <I>End of Operation Manual</I>
+	    
+	</DIV>
     </BODY>
 </HTML>
