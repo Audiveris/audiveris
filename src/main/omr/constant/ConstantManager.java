@@ -51,6 +51,7 @@ import java.util.Properties;
  * Linux and Windows binaries might need different values for some
  * constants. The only way to modify the content of this file is to
  * manually edit it, and this should be reserved to omr developer. </li>
+ * <br/>
  *
  * <li> Finally, <b>USER</b> values, may be contained in another property
  * file named <em><b>"audiveris.run.properties"</b></em>. This file is
