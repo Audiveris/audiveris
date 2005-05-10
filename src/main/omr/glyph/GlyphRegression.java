@@ -230,6 +230,23 @@ public class GlyphRegression
         return constants.acceptanceGrade.getValue();
     }
 
+    //-----------------//
+    // measureDistance //
+    //-----------------//
+    /**
+     * Measure the "distance" information between a given glyph and a
+     * shape.
+     *
+     * @param glyph the glyph at hand
+     * @param shape the shape to measure distance from
+     * @return the measured distance
+     */
+    public double measureDistance (Glyph glyph,
+                                   Shape shape)
+    {
+        return shapeDescs[shape.ordinal()].distance(glyph);
+    }
+
     //--------------//
     // dumpDistance //
     //--------------//
