@@ -26,7 +26,6 @@ import omr.ui.Panel;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.debug.*;
 import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
@@ -38,6 +37,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.*;
 import javax.swing.border.*;
+import java.util.Comparator;
+import java.util.Collections;
+import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * Class <code>GlyphTrainer</code> handles a User Interface dedicated to
@@ -72,10 +75,17 @@ public class GlyphTrainer
 
     //~ Instance variables ------------------------------------------------
 
+    // The evaluators
+    private GlyphNetwork network = GlyphNetwork.getInstance();
+    private GlyphRegression regression = GlyphRegression.getInstance();
+
+    // Repository of known glyphs
+    private final GlyphRepository repository = GlyphRepository.getInstance();
+
     // The various panels
-    private RepositoryPanel repositoryPanel;
-    private NetworkPanel    networkPanel;
-    private RegressionPanel regressionPanel;
+    private final RepositoryPanel repositoryPanel;
+    private final NetworkPanel    networkPanel;
+    private final RegressionPanel regressionPanel;
 
     // Counter on loaded glyphs
     private int nbLoaded;
@@ -94,10 +104,6 @@ public class GlyphTrainer
     private GlyphTrainer()
     {
         setTitle(frameTitle);
-
-        // Retrieve / load the proper evaluators
-        GlyphNetwork network = GlyphNetwork.getInstance();
-        GlyphRegression regression = GlyphRegression.getInstance();
 
         repositoryPanel = new RepositoryPanel();
         networkPanel = new NetworkPanel(network);
@@ -210,12 +216,11 @@ public class GlyphTrainer
         protected JProgressBar progressBar = new JProgressBar();
         SelectAction selectAction = new SelectAction();
         StoreAction storeAction = new StoreAction();
+        LoadAction loadAction = new LoadAction();
 
         int filesToselect = 0;
         LIntegerField similar = new LIntegerField
             ("Max Similar", "Max number of similar shapes");
-        LDoubleField similarRatio = new LDoubleField
-            ("Max Ratio", "Max ratio of similar shapes");
         LIntegerField totalFiles = new LIntegerField
             (false, "Total", "Total number of glyph files");
         LIntegerField nbSelectedFiles = new LIntegerField
@@ -239,6 +244,8 @@ public class GlyphTrainer
             storeAction.setEnabled(false);
         }
 
+        //~ Methods -------------------------------------------------------
+
         private void defineLayout()
         {
             FormLayout layout = Panel.makeFormLayout
@@ -253,18 +260,16 @@ public class GlyphTrainer
 
             r += 2;                         // ----------------------------
             builder.add(new JButton(selectAction), cst.xy (3,  r));
+            builder.add(new JButton(storeAction),  cst.xy (5,  r));
 
-            builder.add(similar.getLabel(), cst.xy (9,  r));
-            builder.add(similar.getField(), cst.xy (11, r));
+            builder.add(similar.getLabel(),     cst.xy (9,  r));
+            builder.add(similar.getField(),     cst.xy (11, r));
 
-            builder.add(similarRatio.getLabel(), cst.xy (13, r));
-            builder.add(similarRatio.getField(), cst.xy (15, r));
+            builder.add(totalFiles.getLabel(),  cst.xy (13, r));
+            builder.add(totalFiles.getField(),  cst.xy (15, r));
 
             r += 2;                         // ----------------------------
-            builder.add(new JButton(storeAction), cst.xy (3,  r));
-
-            builder.add(totalFiles.getLabel(),  cst.xy (5, r));
-            builder.add(totalFiles.getField(),  cst.xy (7, r));
+            builder.add(new JButton(loadAction), cst.xy (3,  r));
 
             builder.add(nbSelectedFiles.getLabel(), cst.xy (9,  r));
             builder.add(nbSelectedFiles.getField(), cst.xy (11, r));
@@ -273,12 +278,101 @@ public class GlyphTrainer
             builder.add(nbLoadedFiles.getField(), cst.xy (15, r));
         }
 
+        private void defineCore()
+        {
+            class NotedGlyph
+            {
+                String gName;
+                Glyph  glyph;
+                double grade;
+            }
+
+            nbLoaded = 0;
+            progressBar.setValue(nbLoaded);
+            inputParams();
+
+            // Load ALL glyphs
+            Collection<String> gNames =
+                repository.getWholeBase(repositoryPanel);
+
+            // Train regression on them
+            regressionPanel.trainAction.train(gNames);
+
+            // Measure every glyph
+            List<NotedGlyph> palmares =
+                new ArrayList<NotedGlyph>(gNames.size());
+            for (String gName : gNames){
+                NotedGlyph ng = new NotedGlyph();
+                ng.gName = gName;
+                ng.glyph = repository.getGlyph(gName);
+                ng.grade = regression.measureDistance(ng.glyph,
+                                                      ng.glyph.getShape());
+                palmares.add(ng);
+            }
+
+            // Sort the palmares, shape by shape, by decreasing grade, so
+            // that the worst glyphs are found first
+            Collections.sort(palmares,
+                             new Comparator<NotedGlyph>()
+                             {
+                                 public int compare (NotedGlyph ng1,
+                                                     NotedGlyph ng2)
+                                 {
+                                     if (ng1.grade < ng2.grade) {
+                                         return +1;
+                                     }
+                                     if (ng1.grade > ng2.grade) {
+                                         return -1;
+                                     }
+                                     return 0;
+                                 }
+                             });
+
+            // Allocate shape-based counters
+            int[] counters = new int[Evaluator.outSize];
+            Arrays.fill(counters, 0);
+
+            // Keep only MaxSimilar of each shape
+            int maxSimilar = similar.getValue();
+            for (Iterator<NotedGlyph> it = palmares.iterator();
+                 it.hasNext();) {
+                NotedGlyph ng = it.next();
+                int index = ng.glyph.getShape().ordinal();
+                if (++counters[index] > maxSimilar) {
+                    it.remove();
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(String.format("%.5f Core %s",
+                                                   ng.grade, ng.gName));
+                    }
+                }
+            }
+
+            // Build the core base
+            List<String> base = new ArrayList<String>(palmares.size());
+            for (NotedGlyph ng : palmares) {
+                base.add(ng.gName);
+            }
+
+            repository.setCoreBase(base);
+            repositoryPanel.setSelectedGlyphs(base.size());
+        }
+
         public void enableSelect()
         {
             if (networkPanel.onTraining || regressionPanel.onTraining) {
                 selectAction.setEnabled(false);
             } else {
                 selectAction.setEnabled(true);
+            }
+        }
+
+        public void enableLoad()
+        {
+            if (networkPanel.onTraining || regressionPanel.onTraining) {
+                loadAction.setEnabled(false);
+            } else {
+                loadAction.setEnabled(true);
             }
         }
 
@@ -291,24 +385,22 @@ public class GlyphTrainer
         public void setSelectedGlyphs (int selected)
         {
             nbSelectedFiles.setValue(selected);
-            progressBar.setMaximum(selected);
         }
 
         public void setTotalGlyphs (int total)
         {
             totalFiles.setValue(total);
+            progressBar.setMaximum(total);
         }
 
         private void inputParams()
         {
-            GlyphRepository.setMaxSimilar(similar.getValue());
-            GlyphRepository.setMaxSimilarRatio(similarRatio.getValue());
+            constants.maxSimilar.setValue(similar.getValue());
         }
 
         private void displayParams()
         {
-            similar.setValue(GlyphRepository.getMaxSimilar());
-            similarRatio.setValue(GlyphRepository.getMaxSimilarRatio());
+            similar.setValue(constants.maxSimilar.getValue());
         }
 
         protected class ParamAction
@@ -329,7 +421,7 @@ public class GlyphTrainer
         {
             public SelectAction ()
             {
-                super("Select");
+                super("Select Core");
             }
 
             public void actionPerformed (ActionEvent e)
@@ -338,18 +430,59 @@ public class GlyphTrainer
                     {
                         public void run()
                         {
-                            selectAction.setEnabled(false);
-                            storeAction.setEnabled(false);
+                            // Disable some actions
                             networkPanel.enableTraining(false);
                             regressionPanel.enableTraining(false);
-                            nbLoaded = 0;
-                            progressBar.setValue(nbLoaded);
-                            inputParams();
-                            GlyphRepository.loadGlyphBase
-                                (RepositoryPanel.this);
+                            selectAction.setEnabled(false);
+                            loadAction.setEnabled(false);
+                            storeAction.setEnabled(false);
+
+                            // Define Core from WHole
+                            defineCore();
+
+                            // Enable some actions
                             networkPanel.enableTraining(true);
                             regressionPanel.enableTraining(true);
                             enableSelect();
+                            loadAction.setEnabled(true);
+                            storeAction.setEnabled(true);
+                        }
+                    });
+            }
+        }
+
+        private class LoadAction
+            extends AbstractAction
+        {
+            public LoadAction ()
+            {
+                super("Reload Core");
+            }
+
+            public void actionPerformed (ActionEvent e)
+            {
+                executor.execute(new Runnable()
+                    {
+                        public void run()
+                        {
+                            // Disable some actions
+                            networkPanel.enableTraining(false);
+                            regressionPanel.enableTraining(false);
+                            loadAction.setEnabled(false);
+                            storeAction.setEnabled(false);
+
+                            // Do the work
+                            nbLoaded = 0;
+                            progressBar.setValue(nbLoaded);
+                            inputParams();
+                            Collection<String> gNames =
+                                repository.getCoreBase(RepositoryPanel.this);
+                            repositoryPanel.setSelectedGlyphs(gNames.size());
+
+                            // Enable some actions
+                            networkPanel.enableTraining(true);
+                            regressionPanel.enableTraining(true);
+                            enableLoad();
                             storeAction.setEnabled(true);
                         }
                     });
@@ -361,7 +494,7 @@ public class GlyphTrainer
         {
             public StoreAction ()
             {
-                super("Store");
+                super("Store Core");
             }
 
             public void actionPerformed (ActionEvent e)
@@ -372,7 +505,7 @@ public class GlyphTrainer
                         {
                             // Store the current base as the core material
                             selectAction.setEnabled(false);
-                            GlyphRepository.storeGlyphBase();
+                            repository.storeCoreBase();
                             enableSelect();
                         }
                     });
@@ -416,6 +549,14 @@ public class GlyphTrainer
         protected NegativeAction negativeAction = new NegativeAction();
         protected FalsePositiveAction falsePositiveAction = new FalsePositiveAction();
 
+        // Radio buttons.
+        protected boolean useWhole = true;
+        protected ButtonGroup group = new ButtonGroup();
+        protected JRadioButton wholeButton =
+            new JRadioButton(new WholeAction());
+        protected JRadioButton coreButton =
+            new JRadioButton(new CoreAction());
+
         protected FormLayout      layout;
         protected PanelBuilder    builder;
         protected CellConstraints cst = new CellConstraints();
@@ -437,8 +578,15 @@ public class GlyphTrainer
             negativeAction.setEnabled(false);
             falsePositiveAction.setEnabled(false);
 
+            //Group the radio buttons.
+            group.add(wholeButton);
+            group.add(coreButton);
+            wholeButton.setSelected(true);
+
             defineLayout(validationRow);
         }
+
+        //~ Methods -------------------------------------------------------
 
         protected void defineLayout(int validationRow)
         {
@@ -447,8 +595,17 @@ public class GlyphTrainer
             builder.addSeparator(evaluator.getName(),   cst.xyw(1, r, 7));
             builder.add(progressBar,                    cst.xyw(9, r, 7));
 
+            r += 2;                         // ----------------------------
+            builder.add(wholeButton,                    cst.xy(1,  r));
+
+            r += 2;                         // ----------------------------
+            builder.add(coreButton,                     cst.xy(1,  r));
+
             // Validation part
             r = validationRow;
+            builder.addSeparator("Validation",          cst.xyw(3, r, 13));
+
+            r += 2;                         // ----------------------------
             builder.add(new JButton(validateAction),    cst.xy(3,  r));
             builder.add(positiveValue.getLabel(),       cst.xy(5,  r));
             builder.add(positiveValue.getField(),       cst.xy(7,  r));
@@ -469,16 +626,21 @@ public class GlyphTrainer
         //---------------//
         private void runValidation ()
         {
-            logger.info("Validating " + evaluator.getName() + " on base");
+            logger.info("Validating " + evaluator.getName() + " on " +
+                        (useWhole ? "whole" : "core") + " base");
 
             negatives.clear();
             falsePositives.clear();
 
             int positives = 0;
-            Collection<String> base =
-                GlyphRepository.getGlyphBase(repositoryPanel);
-            for (String gName : base) {
-                Glyph glyph = GlyphRepository.getGlyph(gName);
+            Collection<String> gNames;
+            if (useWhole) {
+                gNames = repository.getWholeBase(repositoryPanel);
+            } else {
+                gNames = repository.getCoreBase(repositoryPanel);
+            }
+            for (String gName : gNames) {
+                Glyph glyph = repository.getGlyph(gName);
                 if (glyph != null) {
                     Shape vote = evaluator.vote(glyph);
                     if (vote == glyph.getShape()) {
@@ -495,7 +657,7 @@ public class GlyphTrainer
                 }
             }
 
-            int total = base.size();
+            int total = gNames.size();
             double pc = (double) positives * 100 / (double) total;
             String pcStr = String.format(" %5.2f%%", pc);
             logger.info(evaluator.getName() + "Evaluator. Ratio=" + pcStr
@@ -514,11 +676,37 @@ public class GlyphTrainer
             falsePositiveAction.setEnabled(false);
         }
 
+        protected class WholeAction
+            extends AbstractAction
+        {
+            public WholeAction ()
+            {
+                super("Whole");
+            }
+
+            public void actionPerformed (ActionEvent e)
+            {
+                useWhole = true;
+            }
+        }
+
+        protected class CoreAction
+            extends AbstractAction
+        {
+            public CoreAction ()
+            {
+                super("Core");
+            }
+
+            public void actionPerformed (ActionEvent e)
+            {
+                useWhole = false;
+            }
+        }
+
         protected class DumpAction
             extends AbstractAction
         {
-            protected boolean reset = true;
-
             public DumpAction ()
             {
                 super("Dump");
@@ -561,30 +749,11 @@ public class GlyphTrainer
                 {
                     public void run()
                     {
-                        onTraining = true;
-                        repositoryPanel.enableSelect();
-                        EvaluatorPanel.this.enableTraining(false);
-
-                        Collection<String> gNames =
-                            GlyphRepository.getGlyphBase(repositoryPanel);
-                        progressBar.setValue(0);
-                        progressBar.setMaximum(gNames.size());
-                        glyphNb = 0;
-                        prologue();
-
-                        List<Glyph> glyphs = new ArrayList<Glyph>();
-                        for (String gName : gNames) {
-                            glyphs.add(GlyphRepository.getGlyph(gName));
+                        if (useWhole) {
+                            train(repository.getWholeBase(repositoryPanel));
+                        } else {
+                            train(repository.getWholeBase(repositoryPanel));
                         }
-
-                        evaluator.train
-                            (glyphs, EvaluatorPanel.this, mode);
-
-                        EvaluatorPanel.this.enableTraining(true);
-
-                        epilogue();
-                        onTraining = false;
-                        repositoryPanel.enableSelect();
                     }
                 }
 
@@ -599,6 +768,30 @@ public class GlyphTrainer
 
             protected void epilogue()
             {
+            }
+
+            public void train (Collection<String> gNames)
+            {
+                onTraining = true;
+                repositoryPanel.enableSelect();
+                EvaluatorPanel.this.enableTraining(false);
+
+                progressBar.setValue(0);
+                progressBar.setMaximum(gNames.size());
+                glyphNb = 0;
+                prologue();
+
+                List<Glyph> glyphs = new ArrayList<Glyph>();
+                for (String gName : gNames) {
+                    glyphs.add(repository.getGlyph(gName));
+                }
+
+                evaluator.train(glyphs, EvaluatorPanel.this, mode);
+
+                EvaluatorPanel.this.enableTraining(true);
+                epilogue();
+                onTraining = false;
+                repositoryPanel.enableSelect();
             }
         }
 
@@ -686,7 +879,7 @@ public class GlyphTrainer
 
         public RegressionPanel(Evaluator evaluator)
         {
-            super(evaluator, 4, 5);
+            super(evaluator, 5, 5);
 
             trainAction = new TrainAction("Re-Train");
             trainAction.setEnabled(false);
@@ -694,6 +887,8 @@ public class GlyphTrainer
 
             defineSpecificLayout();
         }
+
+        //~ Methods -------------------------------------------------------
 
         private void defineSpecificLayout()
         {
@@ -759,7 +954,7 @@ public class GlyphTrainer
 
         public NetworkPanel(GlyphNetwork evaluator)
         {
-            super(evaluator, 7, 11);
+            super(evaluator, 8, 11);
 
             getInputMap
                 (JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
@@ -777,6 +972,8 @@ public class GlyphTrainer
             defineSpecificLayout();
             displayParams();
         }
+
+        //~ Methods -------------------------------------------------------
 
         private void defineSpecificLayout()
         {
@@ -1041,6 +1238,10 @@ public class GlyphTrainer
     private static class Constants
             extends ConstantSet
     {
+        Constant.Integer maxSimilar = new Constant.Integer
+                (20,
+                 "Absolute maximum number of instances for the same shape used in training");
+
         Constant.Double maxSnapError = new Constant.Double
                 (0.3,
                  "Maximum error level to record Network snapshots");
