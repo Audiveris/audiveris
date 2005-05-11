@@ -11,33 +11,37 @@
 
 	<!-- The following links are meant to be solved on my local PC -->
 	<!-- The java.net site uses its own style sheets -->
- 	<LINK rel="stylesheet" type="text/css" href="../../style/css/tigris.css"/>
- 	<LINK rel="stylesheet" type="text/css" href="../../style/css/inst.css"/>
+ 	<LINK rel="stylesheet" type="text/css" href="../../branding/css/tigris.css"/>
+ 	<LINK rel="stylesheet" type="text/css" href="../../branding/css/inst.css"/>
 	
     </HEAD>
-    <BODY LANG="en-US" DIR="LTR">
+    
+    <BODY>
 	
-	<DIV CLASS="app">
+	<DIV CLASS="app" STYLE="text-align: justify;">
+	    
 	    <H1 ALIGN=CENTER>Audiveris Operation Manual</H1>
+	    
 	    <ADDRESS>Author : <A HREF="mailto:herve.bitteur@laposte.net">:Herv&eacute;
 		Bitteur</A></ADDRESS>
-	    <ADDRESS>Updated : 10 May 2005</ADDRESS>
+	    <ADDRESS>Updated : 11 May 2005</ADDRESS>
 	    
 	    <H2>Launching Audiveris</H2>
 	    
 	    <P>Audiveris can be launched by two different means :</P>
 	    <OL>
 		<LI>Using the launch script
-		    called <CODE><B>audiveris.bat</B></CODE> and located in
-		    the <CODE>/<U>bin</U></CODE> directory.
+		    called <CODE><B>audiveris.bat</B></CODE> and
+		    located in the <CODE><U>bin</U>/</CODE> directory
+		    of Audiveris.
 		    <PRE CLASS="info">
 $&gt; <I>&lt;your-audiveris-install-directory&gt;</I>\bin\audiveris.bat <I>[&lt;arguments&gt;]</I>
 		    </PRE>
 		</LI>
 		
-		<LI>Using ant with the <CODE><B>run</B></CODE> target on the
-		    provided <CODE><B>build.xml</B></CODE> file located in the root
-		    directory.
+		<LI>Using ant with the <CODE><B>run</B></CODE> target
+		    on the provided <CODE><B>build.xml</B></CODE> file
+		    located in the root directory of Audiveris.
 		    <PRE CLASS="info">
 $&gt; cd <I>&lt;your-audiveris-install-directory&gt;</I>
 $&gt; ant run
@@ -47,40 +51,43 @@ $&gt; ant run
 	    
 	    <H3>Run Customization</H3>
 	    
-	    <P CLASS="alert">Each of these means needs a properly defined
-		classpath, that you must customize beforehand to fit your
-		own characteristics.</P>
+	    <DIV CLASS="warningmark">
+		<P CLASS="alert">Each of these means needs a properly
+		defined classpath, that you must customize beforehand
+		to fit your own characteristics.</P>
+	    </DIV>
 	    
-	    <P>Since <CODE><B>build.xml</B></CODE> provides a target
+	    <P> Since <CODE><B>build.xml</B></CODE> provides a target
 		named <B>launcher</B> which generates the audiveris
 		launcher based on the defined properties, it is
-		recommanded to first update these environment properties
-		(by editing the file
-		named <CODE><U>config</U>/<B>build.properties</B></CODE>) and
-		generate that launcher. Then, selecting either launching
-		means will use the same environment definitions.
-	    </P>
+		recommanded to first update these environment
+		properties (by editing the file
+		named<CODE><B>build.properties</B></CODE> in
+		the <CODE><U>config</U>/</CODE> directory) and
+		generate that launcher. Then, selecting either
+		launching means will use the same environment
+		definitions.</P>
 	    
-	    <P>Please refer to the <A HREF="installation.html"> Audiveris
+	    <P> Please refer to the <A HREF="installation.html"> Audiveris
 		Installation Manual</A> for further details on the
 		customization and use of the <CODE><B>build.xml</B></CODE>
 		file.</P>
 	    
 	    <H3>Command-line arguments</H3>
 	    
-	    <P>Most of the time, there is no need for command-line
+	    <P> Most of the time, there is no need for command-line
 		arguments. They are useful when a batch mode
 		(i.e. with no user interface) is required, or to set
 		some parameters beforehand.</P>
 	    
-	    <P>A comprehensive list of command-line arguments is available
+	    <P> A comprehensive list of command-line arguments is available
 		in the javadoc API of
-		the <A HREF="/nonav/docs/api/omr/Main.html">Main</A> class.</P>
+		the <A HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/Main.html">Main</A> class.</P>
 	    
 	    
 	    <H2>Menu description</H2>
 	    
-	    <P>Here is a quick catalog of the various menu items, as
+	    <P> Here is a quick catalog of the various menu items, as
 		found on Audiveris main user interface.</P>
 	    
 	    <DIV CLASS="axial">
@@ -153,7 +160,7 @@ $&gt; ant run
 		
 		<H3>Step</H3>
 		
-		<P>Launch the processing of a step on the sheet at
+		<P> Launch the processing of a step on the sheet at
 		    hand </P>
 		
 		<TABLE WIDTH=100% BORDER=1>
@@ -161,7 +168,7 @@ $&gt; ant run
 			<TH WIDTH="120px">&lt;Any Step&gt;</TH>
 			<TD>Select the target in this menu which lists in
 			    order the defined processing steps, as described
-			    in <A HREF="/nonav/docs/api/omr/sheet/Sheet.html">Sheet</A>
+			    in <A HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Sheet.html">Sheet</A>
 			    class documentation. Note that you can only move
 			    forward.</TD>
 		    </TR>
@@ -169,7 +176,7 @@ $&gt; ant run
 		
 		<H3>Score</H3>
 		
-		<P>All these commands deal with the score part of the
+		<P> All these commands deal with the score part of the
 		    sheet at hand</P>
 		
 		<TABLE WIDTH=100% BORDER=1>
@@ -209,7 +216,6 @@ $&gt; ant run
 		</TABLE>
 		
 		<H3>Tool</H3>
-		
 		
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
@@ -252,7 +258,6 @@ $&gt; ant run
 	    <H2>Operations</H2>
 	    
 	    TO BE PROVIDED IN THE NEXT VERSION OF THIS DOCUMENT
-	    <!-- 	<IMG SRC="../images/load.png" /> -->
 	    
 	    <HR/>
 	    <I>End of Operation Manual</I>
