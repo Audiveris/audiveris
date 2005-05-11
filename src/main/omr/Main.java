@@ -256,18 +256,15 @@ public class Main
     /**
      * Usual starting method for the application.
      *
-     * @param toolName    name of the tool
-     * @param toolVersion version of the tool
      * @param args        the command line parameters
      *
      * @see omr.Main the possible command line parameters
      */
-    public static void main (String toolName,
-                             String toolVersion,
-                             String[] args)
+    public static void main (String[] args)
     {
-        Main.toolName = toolName;
-        Main.toolVersion = toolVersion;
+        Package thisPackage = Main.class.getPackage();
+        Main.toolName = thisPackage.getSpecificationTitle();
+        Main.toolVersion = thisPackage.getSpecificationVersion();
 
         // Check installation home
         if (homeDir == null) {

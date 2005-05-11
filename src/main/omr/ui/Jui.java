@@ -653,7 +653,7 @@ public class Jui
         {
             super("About", IconUtil.buttonIconOf("general/About"));
 
-            final String tiptext = "About Audiveris";
+            final String tiptext = "About " + Main.toolName;
             menu.add(this).setToolTipText(tiptext);
         }
 
@@ -664,7 +664,7 @@ public class Jui
             StringBuffer sb = new StringBuffer();
             sb
                 .append("<HTML>")
-                .append("<B>Audiveris</B> ")
+                .append("<B>").append(Main.toolName).append("</B> ")
                 .append("<I>version ").append(Main.toolVersion).append("</I>")
                 .append("<BR>")
                 .append("Refer to <B>https://audiveris.dev.java.net</B>")
