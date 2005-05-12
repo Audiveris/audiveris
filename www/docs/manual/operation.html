@@ -51,7 +51,7 @@ $&gt; ant run
 	    
 	    <H3>Run Customization</H3>
 	    
-	    <DIV CLASS="warningmark">
+	    <DIV CLASS="warningmessage">
 		<P CLASS="alert">Each of these means needs a properly
 		defined classpath, that you must customize beforehand
 		to fit your own characteristics.</P>
@@ -256,8 +256,208 @@ $&gt; ant run
 	    </DIV>
 	    
 	    <H2>Operations</H2>
+
+	    <P> To present the various operations, and the related
+		user interface, we'll use a tour based on the usual
+		sequence of processing steps, since nearly every step
+		has a related view</P>
 	    
-	    TO BE PROVIDED IN THE NEXT VERSION OF THIS DOCUMENT
+	    <H3>Load Step</H3>
+
+	    <P> The following image represents the main window of user
+		interface, just after a picture has been loaded </P>
+	    
+	    <IMG SRC="../images/load-annotated.png"
+		 TITLE="General Window Structure" />
+
+	    <P> The window is organized as follow : </P>
+	    <UL>
+		<LI>The left hand part is dedicated to the sheet display.
+		    <OL>
+			<LI>The <B>Sheet Panel</B> takes the largest
+			    area. It displays one view of the sheet,
+			    here this view is the original
+			    picture.</LI>
+			<LI>The <B>View Tabbed Pane</B> gathers all
+			    views on one sheet, and the tabs allow
+			    navigation between views.</LI>
+			<LI>The <B>Sheet Tabbed Pane</B> gathers all
+			    sheets currently in memory, with one tab
+			    per sheet.</LI>
+			<LI>All the different views of the same sheet
+			    share the same vertical <B>Logarithmic
+			    Slider</B>, which allows to set the
+			    display scale using a logarithmic scale
+			    (factors ranging from 1/8 to 16).</LI>
+		    </OL>
+		</LI>
+		<LI>The right hand part is the <B>Data Panel</B>,
+		    which provides various data boards related to the
+		    current sheet. Its content depends of the current
+		    view. For the view of the original picture in this
+		    example, only informations of the <I>"Pixel"</I>
+		    board are displayed : the x & y coordinate of the
+		    mouse position, as highlighted by the crossing of
+		    vertical and horizontal orange lines.</LI>
+		<LI>At the bottom of the window, the <B>Log Panel</B>
+		    displays the sequential log of messages.</LI>
+	    </UL>
+
+	    <P> In this example, we have a black and white image, so
+		the grey level of the current pixel is either 0 (black
+		foreground) or 255 (white background). The mouse is
+		currently on a pixel of the C Clef, so the "Pixel"
+		board of the data panel reports a 0 value for abscissa
+		236 and ordinate 430.</P>
+
+	    <P> By dragging the mouse, while keeping the shift key
+		pressed, we can define a rectangle. The x and y values
+		are the coordinates of the upper left corner, and the
+		width and height are the dimensions of the defined
+		rectangular area.</P>
+
+	    <H3>Scale Step</H3>
+
+	    <P> This step aims at computing the general "scale" of the
+		music sheet, which is basically the average vertical
+		distance between two staff lines.</P>
+
+	    <P> To do so, we use a very simple algorithm, based on
+		vertical runs of foreground (black) pixels and
+		vertical runs of background (white) pixels.</P>
+
+	    <P> The black histogram gives the average line thickness,
+		and the white histogram the white interval between two
+		staff lines. The interline value is thus defined as
+		the sum of these two values.</P>
+
+	    <P> This step has no related sheet view. But, using the
+		menu <I>Sheet &gt; Scale Plot</I>, we get a separate
+		chart as displayed below :
+		<UL>
+		    <LI>The red histogram describes the lengths of the
+		    black runs, with a sharp peak on value 3 for this
+		    example.</LI>
+		    <LI>The blue histogram displays the white runs,
+		    with also a peak on value 18 for this sheet
+		    example.</LI>
+		</UL>
+
+		<P> For this sheet example, the main interline value
+		    is thus 3 + 18 = 21 pixels. And this value will
+		    drive the computation of nearly all parameters
+		    used in the recognition process.</P>
+	    </P>
+	    
+	    <IMG SRC="../images/scale-chart.png"
+		 TITLE="Histogram of run lengths" />
+
+	    <H3>Skew Step</H3>
+
+	    <P> The purpose of this step is to compute the average
+		skew angle of the staff lines for the whole
+		sheet. This of course is just an average value, since
+		all staff lines may not be strictly parallel.</P>
+
+	    <P> If the absolute value of the computed slope exceeds a
+		given threshold, then the image is rotated
+		(<I>de-skewed</I>) is the opposite direction, so as to
+		ease the later detection of vertical and horizontal
+		sticks.</P>
+
+	    <P> We can display the sheet view related to the skew
+		computation, as in the following
+		picture. The <I>"common"</I> sections are colorized in
+		colors close to green or blue, while the sections that
+		compose the <I>"significant"</I> horizontal sections
+		are colorized in red. We can notice that the staff
+		lines are the main contributors to the long horizontal
+		section.</P>
+
+	    <P> Notice that the Data Panel exhibits two additional
+		boards :
+		<OL>
+		    <LI>The <I>"Run"</I> board displays information
+			about the run designated by the mouse
+			location. The run starts at abscissa 223 (we
+			have horizontal runs in this view) and is 506
+			pixel long. The average grey level along the
+			run is 0, since here it is made of only
+			forground pixels with 0 as grey level.</LI>
+		    <LI>The <I>"Section"</I> board displays data that
+			pertains to the current section (a section is
+			a set of contiguous runs). A section is given
+			an <I>"Id"</I> to ease its future
+			handling. The fields
+			labelled <I>"X"</I>, <I>"Y"</I>, <I>"Width"</I>
+			and <I>"Height"</I> represent the bounding
+			rectangle of this (here horizontal)
+			section. The fields labelled <I>"Layer"</I>
+			and <I>"Dir"</I> are actually not used for
+			this step.</LI>
+		</OL>
+	    </P>
+	    
+	    <IMG SRC="../images/skew.png"
+		 TITLE="Sections for skew computation" />
+
+	    <P> We can also get the following chart, by using the
+		menu <I>Sheet &gt; Skew Plot</I> :</P>
+	    
+	    <IMG SRC="../images/slope-chart.png"
+		 TITLE="Histogram of main slopes" />
+
+	    <H3>Lines Step</H3>
+
+	    <P> This step is about staff lines, to properly detect all
+		staff lines and "remove" them from the sheet.</P>
+
+	    <P> The detection is driven by the horizontal projection
+		of foreground (black) pixels. A dedicated chart,
+		displayed from menu <I>Sheet &gt; Line Plot</I>, makes
+		this more obvious as can be seen on the following
+		chart. We use a threshold (at roughly half the maximum
+		histogram value, and indicated by a vertical red line
+		on the chart), and every regular series of 5 peaks
+		above this threshold defines the 5 stick areas
+		supposed to contain one staff line each.</P>
+	    
+	    <IMG SRC="../images/line-chart.png"
+		 TITLE="Histogram of horizontal projections" />
+
+	    <P> The processing is then performed stick area per stick
+		area. In such area, we retrieve the long horizontal
+		sticks that compose the staff line.</P>
+
+	    <P> The detected lines are then cleaned up : The
+		underlying pixels are erased from the original
+		picture, and a specific algorithm is used to extend
+		crossing objects (objects that were overlaid upon the
+		staff lines).</P>
+
+	    <P> The cleaned data is visible on the following view,
+		where former staff lines have been replaced by
+		synthetic lines :</P>
+	    
+	    <IMG SRC="../images/lines.png"
+		 TITLE="Staff lines detected and cleaned up" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+	    
+	    
+	    <HR/>
+	    TO BE CONTINUED IN THE NEXT VERSION OF THIS DOCUMENT
 	    
 	    <HR/>
 	    <I>End of Operation Manual</I>
