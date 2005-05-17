@@ -158,7 +158,7 @@ $&gt; ant run
 		    </TR>
 		</TABLE>
 		
-		<H3>Step</H3>
+		<H3><A NAME="STEP_LIST">Step</A></H3>
 		
 		<P> Launch the processing of a step on the sheet at
 		    hand </P>
@@ -170,7 +170,24 @@ $&gt; ant run
 			    order the defined processing steps, as described
 			    in <A HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Sheet.html">Sheet</A>
 			    class documentation. Note that you can only move
-			    forward.</TD>
+			    forward.
+			    
+			    <P> Here is a direct access :</P>
+			    <OL>
+				<LI><A href="#LOAD">LOAD</A></LI>
+				<LI><A href="#SCALE">SCALE</A></LI>
+				<LI><A href="#SKEW">SKEW</A></LI>
+				<LI><A href="#LINES">LINES</A></LI>
+				<LI><A href="#HORIZONTALS">HORIZONTALS</A></LI>
+				<LI><A href="#BARS">BARS</A></LI>
+				<LI><A href="#SYMBOLS">SYMBOLS</A></LI>
+				<LI><A href="#SYMBOLS_COMPOUNDS">SYMBOLS_COMPOUNDS</A></LI>
+				<LI><A href="#VERTICALS">VERTICALS</A></LI>
+				<LI><A href="#LEAVES">LEAVES</A></LI>
+				<LI><A href="#LEAVES_COMPOUNDS">LEAVES_COMPOUNDS</A></LI>
+				<LI><A href="#CLEANUP">CLEANUP</A></LI>
+			    </OL>
+			</TD>
 		    </TR>
 		</TABLE>
 		
@@ -261,8 +278,10 @@ $&gt; ant run
 		user interface, we'll use a tour based on the usual
 		sequence of processing steps, since nearly every step
 		has a related view</P>
-	    
-	    <H3>Load Step</H3>
+
+	    <A NAME="LOAD">
+		<H3>Load Step</H3>
+	    </A>
 
 	    <P> The following image represents the main window of user
 		interface, just after a picture has been loaded </P>
@@ -270,7 +289,7 @@ $&gt; ant run
 	    <IMG SRC="../images/load-annotated.png"
 		 TITLE="General Window Structure" />
 
-	    <P> The window is organized as follow : </P>
+	    <P> The window is organized as follows : </P>
 	    <UL>
 		<LI>The left hand part is dedicated to the sheet display.
 		    <OL>
@@ -316,7 +335,12 @@ $&gt; ant run
 		width and height are the dimensions of the defined
 		rectangular area.</P>
 
-	    <H3>Scale Step</H3>
+	    <P></P><BR/>
+	    <A HREF="#STEP_LIST">Back to Step List</A>
+	    <BR/>
+	    <A NAME="SCALE">
+		<H3>Scale Step</H3>
+	    </A>
 
 	    <P> This step aims at computing the general "scale" of the
 		music sheet, which is basically the average vertical
@@ -352,7 +376,12 @@ $&gt; ant run
 	    <IMG SRC="../images/scale-chart.png"
 		 TITLE="Histogram of run lengths" />
 
-	    <H3>Skew Step</H3>
+	    <P></P><BR/>
+	    <A HREF="#STEP_LIST">Back to Step List</A>
+	    <BR/>
+	    <A NAME="SKEW">
+		<H3>Skew Step</H3>
+	    </A>
 
 	    <P> The purpose of this step is to compute the average
 		skew angle of the staff lines for the whole
@@ -407,7 +436,12 @@ $&gt; ant run
 	    <IMG SRC="../images/slope-chart.png"
 		 TITLE="Histogram of main slopes" />
 
-	    <H3>Lines Step</H3>
+	    <P></P><BR/>
+	    <A HREF="#STEP_LIST">Back to Step List</A>
+	    <BR/>
+	    <A NAME="LINES">
+		<H3>Lines Step</H3>
+	    </A>
 
 	    <P> This step is about staff lines, to properly detect all
 		staff lines and "remove" them from the sheet.</P>
@@ -442,20 +476,250 @@ $&gt; ant run
 	    <IMG SRC="../images/lines.png"
 		 TITLE="Staff lines detected and cleaned up" />
 
+	    <P> Note that we can use a toggle button to switch between :
+		<UL>
+		    <LI>The display of the former line pixels
+			(colorized in yellow),</LI>
+		    <LI>The display of synthetic lines and of extended
+			crossing objects.</LI>
+		</UL>
+	    </P>
+
+	    <P> Here is the toggle button :</P>
+	    <IMG SRC="../images/toggle.png"
+		 TITLE="Toggle button" />
+
+	    <P> Here is the display of retrieved staff lines :</P>
+	    <IMG SRC="../images/lines-toggled.png"
+		 TITLE="Display of staff line pixels" />
+
+	    <P> Here are two zoomed view of details from the sheet,
+		first the original staff line pixels, then the
+		resulting data, where line pixels have been removed,
+		and crossing objects have been carefully extended
+		(note the extension goes until the synthetic staff
+		line) : </P>
+
+	    <IMG SRC="../images/lines-toggled-large.png"
+		 TITLE="Focus on staff line pixels" />
+
+	    <IMG SRC="../images/lines-large.png"
+		 TITLE="Focus on object extension" />
+
+	    
+	    <P></P><BR/>
+	    <A HREF="#STEP_LIST">Back to Step List</A>
+	    <BR/>
+	    <A NAME="HORIZONTALS">
+		<H3>Horizontal Step</H3>
+	    </A>
+
+	    <P> This step retrieves and remove the horizontal sticks
+		that are recognized as ledgers of alternate
+		endings. The following figure shows that the ledger
+		for a 'A' note has been removed and the two parts of
+		the note head have been properly joined into one glyph
+		(a black note head.</P>
+
+	    <IMG SRC="../images/horizontals.png"
+		 TITLE="Focus on horizontal ledger" />
+	    
+
+	    <P></P><BR/>
+	    <A HREF="#STEP_LIST">Back to Step List</A>
+	    <BR/>
+	    <A NAME="BARS">
+		<H3>Bars Step</H3>
+	    </A>
+
+	    <P> This step retrieves and does not remove the vertical
+		sticks that are recognized as bar lines (either thick
+		or thin bar lines). Notice in the following figure
+		that the glyph of the bar line is properly assigned
+		the shape name "THIN_BAR_LINE".</P>
+
+	    <IMG SRC="../images/bars.png"
+		 TITLE="Extraction of bar lines" />
+	    
+
+	    <P></P><BR/>
+	    <A HREF="#STEP_LIST">Back to Step List</A>
+	    <BR/>
+	    <A NAME="SYMBOLS">
+		<H3>Symbols Step</H3>
+	    </A>
+
+	    <P> In this step, browsing through the yet unassigned
+		sections, we aggregate connected sections into symbol
+		glyphs, and try to recognize these symbols. This of
+		course works only for symbols with a rather fixed
+		appearance, such as clefs or time signatures on the
+		following picture, it does not work for constructions
+		like notes with stem, chords, etc...</P>
+	    <P> For example, we have correctly recognized "BRACE",
+		"G_CLEF", "G_CLEF_OTTAVA_BASSA", "TIME_TWO_FOUR" and
+		"DOT". Note that we also have mistaken some capital
+		letters (F and P) with PIANO signs. To improve this,
+		we'll need to better train the evaluators and/or
+		properly isolate lines of text (lyrics or others).</P>
+
+	    <P> The mouse is currently on the second clef, and notice
+		that the two evaluators (called Neural and Regression)
+		agree on acceptable interpretation (notified with
+		green color) as a "G_CLEF_OTTAVA_BASSA".</P>
+
+	    <IMG SRC="../images/symbols.png"
+		 TITLE="Extraction of stand-alone symbols" />
+	    
+
+	    <P></P><BR/>
+	    <A HREF="#STEP_LIST">Back to Step List</A>
+	    <BR/>
+	    <A NAME="SYMBOLS_COMPOUNDS">
+		<H3>Symbols_Compounds Step</H3>
+	    </A>
+
+	    <P> This step focuses on non-recognized glyphs that may be
+	    the result of undesired segmentation. This frequently
+	    occurs because of staff line removal for symbols such as
+	    F clef or common time signature.</P>
+
+	    <P> The algorithm used is to browse through all unknown
+		glyphs, ordered by decreasing weight, and to try to
+		aggregate neighbours that are other unknown glyphs of
+		the same system. If the result of this combination
+		leads to some recognized symbol, then we keep it as a
+		(compound) glyph. Otherwise, we don't keep the
+		compound.</P>
+
+	    <IMG SRC="../images/common.png" width="200px"
+		 TITLE="Common time symbol segmented" />
+
+	    <P> The image above exhibits a segmented common time
+		symbol : because of the staff line removal, the
+		initial symbol had been segmented into 3 parts, and
+		nothing has been recognized (everything is displayed
+		in red color). The "symbols_compounds" step has
+		aggregated 2 parts and the result has been recognized
+		as a common sign, as displayed on the following image
+		(notice the non-red color, that signals a recognized
+		glyph).</P>
+
+	    <IMG SRC="../images/common-compound.png" width="200px"
+		 TITLE="Common time symbol as a compound" />
+
+	    <P> There is an obvious limitation in the current
+		algorithm, which deals only with 2-part compounds : we
+		should be able to try more complex compounds (here, we
+		typically need the ability to make a 3-part
+		compound).</P>
+	    
+
+	    <P></P><BR/>
+	    <A HREF="#STEP_LIST">Back to Step List</A>
+	    <BR/>
+	    <A NAME="VERTICALS">
+		<H3>Verticals Step</H3>
+	    </A>
+
+	    <P> This step aims at retrieving all the vertical sticks
+		which are either stems, or vertical parts of alternate
+		endings. (Nota : just the stems are extracted for the
+		time being).</P>
+
+	    <P> The following image shows the various stems detected,
+		displayed in yellow color, each stem with its bounding
+		box, and main line.</P>
+
+	    <P> Notice also that right pointing on a retrieved stem
+		(or on just a candidate stem, still displayed in red)
+		displays a "Filter" board with the detailed result of
+		stem tests.</P>
+
+	    <IMG SRC="../images/verticals.png"
+		 TITLE="Retrieval of vertical sticks" />
+
+	    <P> If you select again the "Glyphs" view, you'll notice
+		that the former red glyphs now have stems in
+		yellow. Handling the "leaves" is the purpose of the
+		next step.</P>
+
+	    <IMG SRC="../images/verticals-glyphs.png"
+		 TITLE="Sticks on glyphs view" />
 
 
+	    <P></P><BR/>
+	    <A HREF="#STEP_LIST">Back to Step List</A>
+	    <BR/>
+	    <A NAME="LEAVES">
+		<H3>Leaves Step</H3>
+	    </A>
+
+	    <P> The stem extraction has led to the creation of
+		numerous "leaves", which we now try to assign a shape
+		to. The "Leaves" step thus recognized all the
+		individual leaves of the following image (most of the
+		time, these leaves are note heads, or flags, or
+		beams).</P>
+
+	    <IMG SRC="../images/leaves.png"
+		 TITLE="Recognized leaves" />
 
 
+	    <P></P><BR/>
+	    <A HREF="#STEP_LIST">Back to Step List</A>
+	    <BR/>
+	    <A NAME="LEAVES_COMPOUNDS">
+		<H3>Leaves_Compounds Step</H3>
+	    </A>
+
+	    <P> Just like symbols, leaves may have been unduely
+		segmented. So the apply another compound step, to
+		recompose these leaves.</P>
+
+	    <IMG SRC="../images/void_notehead-segmented.png"
+		 TITLE="Void notehead unduely segmented" />
+
+	    <P> The difference between the images above and below is
+		the building of a compound, properly recognized as a
+		void notehead.</P>
+
+	    <IMG SRC="../images/void_notehead-compound.png"
+		 TITLE="Void notehead properly recomposed" />
 
 
+	    <P></P><BR/>
+	    <A HREF="#STEP_LIST">Back to Step List</A>
+	    <BR/>
+	    <A NAME="CLEANUP">
+		<H3>Cleanup Step</H3>
+	    </A>
 
+	    <P> This is a final cleaning up step, focused on wrong
+		stems. For example, accidentals such as sharps,
+		naturals or flats are symbols which actually contain
+		one or two (small) stems. If these symbols are not
+		recognized during the SYMBOLS step, then their stems
+		are extracted and new leave glyphs are then tried,
+		generally to no avail.</P>
 
+	    <P> For the time being, we simply call these stems into
+		questions. To do so, we try to cancel any stem which
+		has no connected recognized leave. Then, we build new
+		glyphs from these now unassigned sections. If we get
+		to recognized glyphs, then we keep these glyphs,
+		otherwise we resurrect the stems.</P>
 
-
+	    <IMG SRC="../images/xxx.png"
+		 TITLE="Example of undue stem" />
 
 
 	    
-	    
+
+	    <BR/>
+	    <BR/>
+	    <BR/>
+	    <BR/>
 	    <HR/>
 	    TO BE CONTINUED IN THE NEXT VERSION OF THIS DOCUMENT
 	    
