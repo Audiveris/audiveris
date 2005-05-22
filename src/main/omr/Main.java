@@ -117,6 +117,11 @@ public class Main
      */
     public static String toolVersion;
 
+    /**
+     * Build reference of the application as displayed to the user
+     */
+    public static String toolBuild;
+
     private static final Constants constants = new Constants();
 
     //~ Constructors ------------------------------------------------------
@@ -263,8 +268,9 @@ public class Main
     public static void main (String[] args)
     {
         Package thisPackage = Main.class.getPackage();
-        Main.toolName = thisPackage.getSpecificationTitle();
+        Main.toolName    = thisPackage.getSpecificationTitle();
         Main.toolVersion = thisPackage.getSpecificationVersion();
+        Main.toolBuild   = thisPackage.getImplementationVersion();
 
         // Check installation home
         if (homeDir == null) {
