@@ -665,7 +665,12 @@ public class Jui
             sb
                 .append("<HTML>")
                 .append("<B>").append(Main.toolName).append("</B> ")
-                .append("<I>version ").append(Main.toolVersion).append("</I>")
+                .append("<I>version ")
+                .append(Main.toolVersion)
+                .append("<BR>")
+                .append(" build ")
+                .append(Main.toolBuild)
+                .append("</I>")
                 .append("<BR>")
                 .append("Refer to <B>https://audiveris.dev.java.net</B>")
                 .append("</HTML>");
