@@ -60,6 +60,10 @@ public class LField
     {
         this.label = new JLabel(label, SwingConstants.RIGHT);
 
+        if (tip != null) {
+            this.label.setToolTipText(tip);
+        }
+
         field = new SField(editable, tip);
     }
 
