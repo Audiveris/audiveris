@@ -30,17 +30,19 @@ import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.*;
 import javax.swing.border.*;
-import java.util.Comparator;
-import java.util.Collections;
-import java.util.Arrays;
-import java.util.Iterator;
 
 /**
  * Class <code>GlyphTrainer</code> handles a User Interface dedicated to
@@ -214,17 +216,22 @@ public class GlyphTrainer
             Executors.newSingleThreadExecutor();
 
         protected JProgressBar progressBar = new JProgressBar();
+
+        // To select a core out of whole base
         SelectAction selectAction = new SelectAction();
-        StoreAction storeAction = new StoreAction();
-        LoadAction loadAction = new LoadAction();
+        JButton selectButton = new JButton(selectAction);
 
         int filesToselect = 0;
+
         LIntegerField similar = new LIntegerField
             ("Max Similar", "Max number of similar shapes");
+
         LIntegerField totalFiles = new LIntegerField
             (false, "Total", "Total number of glyph files");
+
         LIntegerField nbSelectedFiles = new LIntegerField
             (false, "Selected", "Number of selected glyph files to load");
+
         LIntegerField nbLoadedFiles = new LIntegerField
             (false, "Loaded", "Number of glyph files loaded so far");
 
@@ -240,8 +247,10 @@ public class GlyphTrainer
 
             displayParams();
 
+            selectButton.setToolTipText
+                ("Build core selection out of whole glyph base");
+
             defineLayout();
-            storeAction.setEnabled(false);
         }
 
         //~ Methods -------------------------------------------------------
@@ -259,8 +268,7 @@ public class GlyphTrainer
             builder.add(progressBar,            cst.xyw(9,  r, 7));
 
             r += 2;                         // ----------------------------
-            builder.add(new JButton(selectAction), cst.xy (3,  r));
-            builder.add(new JButton(storeAction),  cst.xy (5,  r));
+            builder.add(selectButton,           cst.xy (3,  r));
 
             builder.add(similar.getLabel(),     cst.xy (9,  r));
             builder.add(similar.getField(),     cst.xy (11, r));
@@ -269,13 +277,22 @@ public class GlyphTrainer
             builder.add(totalFiles.getField(),  cst.xy (15, r));
 
             r += 2;                         // ----------------------------
-            builder.add(new JButton(loadAction), cst.xy (3,  r));
-
             builder.add(nbSelectedFiles.getLabel(), cst.xy (9,  r));
             builder.add(nbSelectedFiles.getField(), cst.xy (11, r));
 
             builder.add(nbLoadedFiles.getLabel(), cst.xy (13, r));
             builder.add(nbLoadedFiles.getField(), cst.xy (15, r));
+        }
+
+        private Collection<String> getBase (boolean whole)
+        {
+            nbLoaded = 0;
+            progressBar.setValue(nbLoaded);
+            if (whole) {
+                return repository.getWholeBase(this);
+            } else {
+                return repository.getCoreBase(this);
+            }
         }
 
         private void defineCore()
@@ -287,18 +304,13 @@ public class GlyphTrainer
                 double grade;
             }
 
-            nbLoaded = 0;
-            progressBar.setValue(nbLoaded);
-            inputParams();
-
-            // Load ALL glyphs
-            Collection<String> gNames =
-                repository.getWholeBase(repositoryPanel);
+            inputParams();              // What for ? TBD
 
             // Train regression on them
-            regressionPanel.trainAction.train(gNames);
+            regressionPanel.trainAction.train(/* whole => */ true);
 
             // Measure every glyph
+            Collection<String> gNames = getBase(/* whole => */ true);
             List<NotedGlyph> palmares =
                 new ArrayList<NotedGlyph>(gNames.size());
             for (String gName : gNames){
@@ -367,15 +379,6 @@ public class GlyphTrainer
             }
         }
 
-        public void enableLoad()
-        {
-            if (networkPanel.onTraining || regressionPanel.onTraining) {
-                loadAction.setEnabled(false);
-            } else {
-                loadAction.setEnabled(true);
-            }
-        }
-
         public void loadedGlyph (Glyph glyph)
         {
             nbLoadedFiles.setValue(++nbLoaded);
@@ -434,78 +437,14 @@ public class GlyphTrainer
                             networkPanel.enableTraining(false);
                             regressionPanel.enableTraining(false);
                             selectAction.setEnabled(false);
-                            loadAction.setEnabled(false);
-                            storeAction.setEnabled(false);
 
-                            // Define Core from WHole
+                            // Define Core from Whole
                             defineCore();
-
-                            // Enable some actions
-                            networkPanel.enableTraining(true);
-                            regressionPanel.enableTraining(true);
-                            enableSelect();
-                            loadAction.setEnabled(true);
-                            storeAction.setEnabled(true);
-                        }
-                    });
-            }
-        }
-
-        private class LoadAction
-            extends AbstractAction
-        {
-            public LoadAction ()
-            {
-                super("Reload Core");
-            }
-
-            public void actionPerformed (ActionEvent e)
-            {
-                executor.execute(new Runnable()
-                    {
-                        public void run()
-                        {
-                            // Disable some actions
-                            networkPanel.enableTraining(false);
-                            regressionPanel.enableTraining(false);
-                            loadAction.setEnabled(false);
-                            storeAction.setEnabled(false);
-
-                            // Do the work
-                            nbLoaded = 0;
-                            progressBar.setValue(nbLoaded);
-                            inputParams();
-                            Collection<String> gNames =
-                                repository.getCoreBase(RepositoryPanel.this);
-                            repositoryPanel.setSelectedGlyphs(gNames.size());
-
-                            // Enable some actions
-                            networkPanel.enableTraining(true);
-                            regressionPanel.enableTraining(true);
-                            enableLoad();
-                            storeAction.setEnabled(true);
-                        }
-                    });
-            }
-        }
-
-        private class StoreAction
-            extends AbstractAction
-        {
-            public StoreAction ()
-            {
-                super("Store Core");
-            }
-
-            public void actionPerformed (ActionEvent e)
-            {
-                executor.execute(new Runnable()
-                    {
-                        public void run()
-                        {
-                            // Store the current base as the core material
-                            selectAction.setEnabled(false);
                             repository.storeCoreBase();
+
+                            // Enable some actions
+                            networkPanel.enableTraining(true);
+                            regressionPanel.enableTraining(true);
                             enableSelect();
                         }
                     });
@@ -575,12 +514,14 @@ public class GlyphTrainer
             builder = new PanelBuilder(layout, this);
             builder.setDefaultDialogBorder(); // Useful ?
 
-            negativeAction.setEnabled(false);
-            falsePositiveAction.setEnabled(false);
+            negativeAction.setEnabled(negatives.size() > 0);
+            falsePositiveAction.setEnabled(falsePositives.size() > 0);
 
             //Group the radio buttons.
             group.add(wholeButton);
+            wholeButton.setToolTipText("Use the whole glyph base for any action");
             group.add(coreButton);
+            coreButton.setToolTipText("Use only the core glyph base for any action");
             wholeButton.setSelected(true);
 
             defineLayout(validationRow);
@@ -606,7 +547,11 @@ public class GlyphTrainer
             builder.addSeparator("Validation",          cst.xyw(3, r, 13));
 
             r += 2;                         // ----------------------------
-            builder.add(new JButton(validateAction),    cst.xy(3,  r));
+            JButton validateButton = new JButton(validateAction);
+            validateButton.setToolTipText
+                ("Validate the evaluator on current base of glyphs");
+
+            builder.add(validateButton,                 cst.xy(3,  r));
             builder.add(positiveValue.getLabel(),       cst.xy(5,  r));
             builder.add(positiveValue.getField(),       cst.xy(7,  r));
             builder.add(negativeValue.getLabel(),       cst.xy(9,  r));
@@ -615,10 +560,18 @@ public class GlyphTrainer
             builder.add(falsePositiveValue.getField(),  cst.xy(15, r));
 
             r += 2;                         // ----------------------------
-            builder.add(pcValue.getLabel(),             cst.xy(5,  r));
-            builder.add(pcValue.getField(),             cst.xy(7,  r));
-            builder.add(new JButton(negativeAction),    cst.xy(11, r));
-            builder.add(new JButton(falsePositiveAction),cst.xy(15, r));
+            JButton negativeButton = new JButton(negativeAction);
+            negativeButton.setToolTipText
+                ("Display the impacted glyphs for verification");
+
+            JButton falsePositiveButton = new JButton(falsePositiveAction);
+            falsePositiveButton.setToolTipText
+                ("Display the impacted glyphs for verification");
+
+            builder.add(pcValue.getLabel(),     cst.xy(5,  r));
+            builder.add(pcValue.getField(),     cst.xy(7,  r));
+            builder.add(negativeButton,         cst.xy(11, r));
+            builder.add(falsePositiveButton,    cst.xy(15, r));
         }
 
         //---------------//
@@ -626,19 +579,15 @@ public class GlyphTrainer
         //---------------//
         private void runValidation ()
         {
-            logger.info("Validating " + evaluator.getName() + " on " +
+            logger.info("Validating " + evaluator.getName() +
+                        " evaluator on " +
                         (useWhole ? "whole" : "core") + " base");
 
             negatives.clear();
             falsePositives.clear();
 
             int positives = 0;
-            Collection<String> gNames;
-            if (useWhole) {
-                gNames = repository.getWholeBase(repositoryPanel);
-            } else {
-                gNames = repository.getCoreBase(repositoryPanel);
-            }
+            Collection<String> gNames = repositoryPanel.getBase(useWhole);
             for (String gName : gNames) {
                 Glyph glyph = repository.getGlyph(gName);
                 if (glyph != null) {
@@ -671,9 +620,8 @@ public class GlyphTrainer
         public void enableTraining(boolean bool)
         {
             trainAction.setEnabled(bool);
-            validateAction.setEnabled(bool);
-            negativeAction.setEnabled(false);
-            falsePositiveAction.setEnabled(false);
+            negativeAction.setEnabled(negatives.size() > 0);
+            falsePositiveAction.setEnabled(falsePositives.size() > 0);
         }
 
         protected class WholeAction
@@ -749,11 +697,7 @@ public class GlyphTrainer
                 {
                     public void run()
                     {
-                        if (useWhole) {
-                            train(repository.getWholeBase(repositoryPanel));
-                        } else {
-                            train(repository.getWholeBase(repositoryPanel));
-                        }
+                        train(useWhole);
                     }
                 }
 
@@ -770,16 +714,18 @@ public class GlyphTrainer
             {
             }
 
-            public void train (Collection<String> gNames)
+            public void train (boolean useWhole)
             {
                 onTraining = true;
                 repositoryPanel.enableSelect();
                 EvaluatorPanel.this.enableTraining(false);
 
-                progressBar.setValue(0);
-                progressBar.setMaximum(gNames.size());
                 glyphNb = 0;
                 prologue();
+
+                Collection<String> gNames = repositoryPanel.getBase(useWhole);
+                progressBar.setValue(0);
+                progressBar.setMaximum(gNames.size());
 
                 List<Glyph> glyphs = new ArrayList<Glyph>();
                 for (String gName : gNames) {
@@ -809,11 +755,13 @@ public class GlyphTrainer
                     {
                         public void run()
                         {
+                            setEnabled(false);
                             runValidation();
                             negativeAction.setEnabled
                                 (negatives.size() > 0);
                             falsePositiveAction.setEnabled
                                 (falsePositives.size() > 0);
+                            setEnabled(true);
                         }
                     });
             }
@@ -882,8 +830,7 @@ public class GlyphTrainer
             super(evaluator, 5, 5);
 
             trainAction = new TrainAction("Re-Train");
-            trainAction.setEnabled(false);
-            enableTraining(false);
+            enableTraining(true);
 
             defineSpecificLayout();
         }
@@ -893,10 +840,17 @@ public class GlyphTrainer
         private void defineSpecificLayout()
         {
             int r = 3;
-            builder.add(new JButton(new DumpAction()),  cst.xy(3, r));
-            builder.add(new JButton(trainAction),       cst.xy(5, r));
-            builder.add(trainIndex.getLabel(),          cst.xy(9, r));
-            builder.add(trainIndex.getField(),          cst.xy(11, r));
+
+            JButton dumpButton = new JButton(new DumpAction());
+            dumpButton.setToolTipText("Dump the evaluator internals");
+
+            JButton trainButton = new JButton(trainAction);
+            trainButton.setToolTipText("Re-Train the evaluator from scratch");
+
+            builder.add(dumpButton,             cst.xy( 3, r));
+            builder.add(trainButton,            cst.xy( 5, r));
+            builder.add(trainIndex.getLabel(),  cst.xy(13, r));
+            builder.add(trainIndex.getField(),  cst.xy(15, r));
         }
 
         public void glyphProcessed (final Glyph glyph)
@@ -923,6 +877,7 @@ public class GlyphTrainer
     {
         IncrementalTrainAction incrementalTrainAction;
 
+        LField eta = new LField("ETA", "Estimated time for end of training");
         LDoubleField momentum = new LDoubleField
             ("Momentum", "Momentum value for the neural network");
         LDoubleField learningRate = new LDoubleField
@@ -939,7 +894,7 @@ public class GlyphTrainer
         LDoubleField trainError = new LDoubleField
             (false, "Last Error", "Last value of remaining error");
         LDoubleField snapError = new LDoubleField
-            (false, "Snap error", "Best recorded value of remaining error");
+            (false, "Snap Error", "Best recorded value of remaining error");
         LIntegerField trainIndex = new LIntegerField
             (false, "Last Index", "Number of iterations performed so far");
         LIntegerField snapIndex = new LIntegerField
@@ -950,11 +905,16 @@ public class GlyphTrainer
         NeuralNetwork.Backup bestSnap;
         NeuralNetwork.Backup lastSnap;
 
+        long startTime;                 // Training start time
+        DateFormat dateFormat = DateFormat.getDateTimeInstance
+            (DateFormat.MEDIUM,         // Date
+             DateFormat.MEDIUM);        // Time
+
         //~ Constructors --------------------------------------------------
 
         public NetworkPanel(GlyphNetwork evaluator)
         {
-            super(evaluator, 8, 11);
+            super(evaluator, 9, 13);
 
             getInputMap
                 (JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
@@ -967,7 +927,7 @@ public class GlyphTrainer
             stopAction.setEnabled(false);
             lastAction.setEnabled(false);
             snapAction.setEnabled(false);
-            enableTraining(false);
+            enableTraining(true);
 
             defineSpecificLayout();
             displayParams();
@@ -977,8 +937,13 @@ public class GlyphTrainer
 
         private void defineSpecificLayout()
         {
-            // Neural network parameters
             int r = 3;
+            // ETA field
+            builder.add(eta.getLabel(),         cst.xy(  9, r));
+            builder.add(eta.getField(),         cst.xyw(11, r, 5));
+
+            // Neural network parameters
+            r += 2;                         // ----------------------------
             builder.add(momentum.getLabel(),    cst.xy(9,  r));
             builder.add(momentum.getField(),    cst.xy(11, r));
 
@@ -994,26 +959,47 @@ public class GlyphTrainer
 
             // Training entities
             r += 2;                         // ----------------------------
-            builder.add(new JButton(new DumpAction()),  cst.xy(3,  r));
-            builder.add(new JButton(trainAction),       cst.xy(5,  r));
-            builder.add(new JButton(snapAction),        cst.xy(7,  r));
 
-            builder.add(snapError.getLabel(),           cst.xy(9,  r));
-            builder.add(snapError.getField(),           cst.xy(11, r));
+            JButton dumpButton = new JButton(new DumpAction());
+            dumpButton.setToolTipText("Dump the evaluator internals");
 
-            builder.add(snapIndex.getLabel(),           cst.xy(13, r));
-            builder.add(snapIndex.getField(),           cst.xy(15, r));
+            JButton trainButton = new JButton(trainAction);
+            trainButton.setToolTipText("Re-Train the evaluator from scratch");
+
+            JButton snapButton = new JButton(snapAction);
+            snapButton.setToolTipText("Use the weights of best snap");
+
+            builder.add(dumpButton,             cst.xy(3,  r));
+            builder.add(trainButton,            cst.xy(5,  r));
+            builder.add(snapButton,             cst.xy(7,  r));
+
+            builder.add(snapError.getLabel(),   cst.xy(9,  r));
+            builder.add(snapError.getField(),   cst.xy(11, r));
+
+            builder.add(snapIndex.getLabel(),   cst.xy(13, r));
+            builder.add(snapIndex.getField(),   cst.xy(15, r));
 
             r += 2;                         // ----------------------------
-            builder.add(new JButton(stopAction),        cst.xy(3,  r));
-            builder.add(new JButton(incrementalTrainAction),cst.xy(5,  r));
-            builder.add(new JButton(lastAction),        cst.xy(7,  r));
 
-            builder.add(trainError.getLabel(),          cst.xy(9,  r));
-            builder.add(trainError.getField(),          cst.xy(11, r));
+            JButton stopButton = new JButton(stopAction);
+            stopButton.setToolTipText("Stop the training of the evaluator");
 
-            builder.add(trainIndex.getLabel(),          cst.xy(13, r));
-            builder.add(trainIndex.getField(),          cst.xy(15, r));
+            JButton lastButton = new JButton(lastAction);
+            lastButton.setToolTipText("Use the last weights");
+
+            JButton incTrainButton = new JButton(incrementalTrainAction);
+            incTrainButton.setToolTipText
+                ("Incrementally train the evaluator");
+
+            builder.add(stopButton,             cst.xy(3,  r));
+            builder.add(incTrainButton,         cst.xy(5,  r));
+            builder.add(lastButton,             cst.xy(7,  r));
+
+            builder.add(trainError.getLabel(),  cst.xy(9,  r));
+            builder.add(trainError.getField(),  cst.xy(11, r));
+
+            builder.add(trainIndex.getLabel(),  cst.xy(13, r));
+            builder.add(trainIndex.getField(),  cst.xy(15, r));
         }
 
         public void enableTraining(boolean bool)
@@ -1062,6 +1048,9 @@ public class GlyphTrainer
                         snapIndex.setValue(index);
                         snapError.setValue(mse);
                         setFrameTitle(mse);
+
+                        // Remember starting time
+                        startTime = System.currentTimeMillis();
                     }
                 });
         }
@@ -1103,6 +1092,13 @@ public class GlyphTrainer
 
                         // Update progress bar ?
                         progressBar.setValue(index);
+
+                        // Compute ETA
+                        long sofar = System.currentTimeMillis() - startTime;
+                        long total = network.getListEpochs() * sofar / index;
+                        Date etaDate = new Date(startTime + total);
+                        eta.setText(dateFormat.format(etaDate));
+
                         repaint();
                     }
                 });
