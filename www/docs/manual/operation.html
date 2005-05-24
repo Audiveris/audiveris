@@ -11,12 +11,12 @@
 
 	<!-- The following links are meant to be solved on my local PC -->
 	<!-- The java.net site uses its own style sheets -->
- 	<LINK rel="stylesheet" type="text/css" href="../../branding/css/tigris.css"/>
- 	<LINK rel="stylesheet" type="text/css" href="../../branding/css/inst.css"/>
+ 	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/tigris.css"/>
+ 	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/inst.css"/>
 	
     </HEAD>
     
-    <BODY>
+    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="COMPOSITE">
 	
 	<DIV CLASS="app" STYLE="text-align: justify;">
 	    
@@ -24,9 +24,11 @@
 	    
 	    <ADDRESS>Author : <A HREF="mailto:herve.bitteur@laposte.net">:Herv&eacute;
 		Bitteur</A></ADDRESS>
-	    <ADDRESS>Updated : 11 May 2005</ADDRESS>
+	    <ADDRESS>Updated : 24 May 2005</ADDRESS>
 	    
-	    <H2>Launching Audiveris</H2>
+	    <A NAME="LAUNCHING">
+		<H2>Launching Audiveris</H2>
+	    </A>
 	    
 	    <P>Audiveris can be launched by two different means :</P>
 	    <OL>
@@ -48,8 +50,10 @@ $&gt; ant run
 		    </PRE>
 		</LI>
 	    </OL>
-	    
-	    <H3>Run Customization</H3>
+
+	    <A NAME="RUN_CUSTOM">
+		<H3>Run Customization</H3>
+	    </A>
 	    
 	    <DIV CLASS="warningmessage">
 		<P CLASS="alert">Each of these means needs a properly
@@ -62,18 +66,20 @@ $&gt; ant run
 		launcher based on the defined properties, it is
 		recommanded to first update these environment
 		properties (by editing the file
-		named<CODE><B>build.properties</B></CODE> in
+		named <CODE><B>build.properties</B></CODE> in
 		the <CODE><U>config</U>/</CODE> directory) and
 		generate that launcher. Then, selecting either
 		launching means will use the same environment
 		definitions.</P>
 	    
-	    <P> Please refer to the <A HREF="installation.html"> Audiveris
-		Installation Manual</A> for further details on the
-		customization and use of the <CODE><B>build.xml</B></CODE>
-		file.</P>
-	    
-	    <H3>Command-line arguments</H3>
+	    <P> Please refer to the <A target="Pack"
+		href="installation-pack.html"> Audiveris Installation
+		Manual</A> for further details on the customization
+		and use of the <CODE><B>build.xml</B></CODE> file.</P>
+
+	    <A NAME="CLI">
+		<H3>Command-line arguments</H3>
+	    </A>
 	    
 	    <P> Most of the time, there is no need for command-line
 		arguments. They are useful when a batch mode
@@ -84,15 +90,19 @@ $&gt; ant run
 		in the javadoc API of
 		the <A HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/Main.html">Main</A> class.</P>
 	    
-	    
-	    <H2>Menu description</H2>
+
+	    <A NAME="MENUS">
+		<H2>Menu description</H2>
+	    </A>
 	    
 	    <P> Here is a quick catalog of the various menu items, as
 		found on Audiveris main user interface.</P>
 	    
 	    <DIV CLASS="axial">
 		
-		<H3>File</H3>
+		<A NAME="FILE">
+		    <H3>File</H3>
+		</A>
 		
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
@@ -101,7 +111,9 @@ $&gt; ant run
 		    </TR>
 		</TABLE>
 		
-		<H3>Sheet</H3>
+		<A NAME="SHEET">
+		    <H3>Sheet</H3>
+		</A>
 		
 		<P>All these commands deal with the sheet at hand</P>
 		
@@ -158,7 +170,9 @@ $&gt; ant run
 		    </TR>
 		</TABLE>
 		
-		<H3><A NAME="STEP_LIST">Step</A></H3>
+		<A NAME="STEP">
+		    <H3>Step</H3>
+		</A>
 		
 		<P> Launch the processing of a step on the sheet at
 		    hand </P>
@@ -172,26 +186,16 @@ $&gt; ant run
 			    class documentation. Note that you can only move
 			    forward.
 			    
-			    <P> Here is a direct access :</P>
-			    <OL>
-				<LI><A href="#LOAD">LOAD</A></LI>
-				<LI><A href="#SCALE">SCALE</A></LI>
-				<LI><A href="#SKEW">SKEW</A></LI>
-				<LI><A href="#LINES">LINES</A></LI>
-				<LI><A href="#HORIZONTALS">HORIZONTALS</A></LI>
-				<LI><A href="#BARS">BARS</A></LI>
-				<LI><A href="#SYMBOLS">SYMBOLS</A></LI>
-				<LI><A href="#SYMBOLS_COMPOUNDS">SYMBOLS_COMPOUNDS</A></LI>
-				<LI><A href="#VERTICALS">VERTICALS</A></LI>
-				<LI><A href="#LEAVES">LEAVES</A></LI>
-				<LI><A href="#LEAVES_COMPOUNDS">LEAVES_COMPOUNDS</A></LI>
-				<LI><A href="#CLEANUP">CLEANUP</A></LI>
-			    </OL>
+			    <P> Direct access to any step is available
+				from the navigation frame on the left
+				of the window</P>
 			</TD>
 		    </TR>
 		</TABLE>
 		
-		<H3>Score</H3>
+		<A NAME="SCORE">
+		    <H3>Score</H3>
+		</A>
 		
 		<P> All these commands deal with the score part of the
 		    sheet at hand</P>
@@ -199,7 +203,7 @@ $&gt; ant run
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
 			<TH WIDTH="120px">History</TH>
-			<TD>List the more recent sheet files you've written</TD>
+			<TD>List the more recent score files you've written</TD>
 		    </TR>
 		    <TR>
 			<TH>Open Score</TH>
@@ -232,7 +236,9 @@ $&gt; ant run
 		    </TR>
 		</TABLE>
 		
-		<H3>Tool</H3>
+		<A NAME="TOOL">
+		    <H3>Tool</H3>
+		</A>
 		
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
@@ -261,7 +267,9 @@ $&gt; ant run
 		    </TR>
 		</TABLE>
 		
-		<H3>Help</H3>
+		<A NAME="HELP">
+		    <H3>Help</H3>
+		</A>
 		
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
@@ -335,8 +343,6 @@ $&gt; ant run
 		width and height are the dimensions of the defined
 		rectangular area.</P>
 
-	    <P></P><BR/>
-	    <A HREF="#STEP_LIST">Back to Step List</A>
 	    <BR/>
 	    <A NAME="SCALE">
 		<H3>Scale Step</H3>
@@ -376,8 +382,6 @@ $&gt; ant run
 	    <IMG SRC="../images/scale-chart.png"
 		 TITLE="Histogram of run lengths" />
 
-	    <P></P><BR/>
-	    <A HREF="#STEP_LIST">Back to Step List</A>
 	    <BR/>
 	    <A NAME="SKEW">
 		<H3>Skew Step</H3>
@@ -436,8 +440,6 @@ $&gt; ant run
 	    <IMG SRC="../images/slope-chart.png"
 		 TITLE="Histogram of main slopes" />
 
-	    <P></P><BR/>
-	    <A HREF="#STEP_LIST">Back to Step List</A>
 	    <BR/>
 	    <A NAME="LINES">
 		<H3>Lines Step</H3>
@@ -507,8 +509,6 @@ $&gt; ant run
 		 TITLE="Focus on object extension" />
 
 	    
-	    <P></P><BR/>
-	    <A HREF="#STEP_LIST">Back to Step List</A>
 	    <BR/>
 	    <A NAME="HORIZONTALS">
 		<H3>Horizontal Step</H3>
@@ -525,8 +525,6 @@ $&gt; ant run
 		 TITLE="Focus on horizontal ledger" />
 	    
 
-	    <P></P><BR/>
-	    <A HREF="#STEP_LIST">Back to Step List</A>
 	    <BR/>
 	    <A NAME="BARS">
 		<H3>Bars Step</H3>
@@ -542,8 +540,6 @@ $&gt; ant run
 		 TITLE="Extraction of bar lines" />
 	    
 
-	    <P></P><BR/>
-	    <A HREF="#STEP_LIST">Back to Step List</A>
 	    <BR/>
 	    <A NAME="SYMBOLS">
 		<H3>Symbols Step</H3>
@@ -572,8 +568,6 @@ $&gt; ant run
 		 TITLE="Extraction of stand-alone symbols" />
 	    
 
-	    <P></P><BR/>
-	    <A HREF="#STEP_LIST">Back to Step List</A>
 	    <BR/>
 	    <A NAME="SYMBOLS_COMPOUNDS">
 		<H3>Symbols_Compounds Step</H3>
@@ -615,8 +609,6 @@ $&gt; ant run
 		compound).</P>
 	    
 
-	    <P></P><BR/>
-	    <A HREF="#STEP_LIST">Back to Step List</A>
 	    <BR/>
 	    <A NAME="VERTICALS">
 		<H3>Verticals Step</H3>
@@ -648,8 +640,6 @@ $&gt; ant run
 		 TITLE="Sticks on glyphs view" />
 
 
-	    <P></P><BR/>
-	    <A HREF="#STEP_LIST">Back to Step List</A>
 	    <BR/>
 	    <A NAME="LEAVES">
 		<H3>Leaves Step</H3>
@@ -666,8 +656,6 @@ $&gt; ant run
 		 TITLE="Recognized leaves" />
 
 
-	    <P></P><BR/>
-	    <A HREF="#STEP_LIST">Back to Step List</A>
 	    <BR/>
 	    <A NAME="LEAVES_COMPOUNDS">
 		<H3>Leaves_Compounds Step</H3>
@@ -688,8 +676,6 @@ $&gt; ant run
 		 TITLE="Void notehead properly recomposed" />
 
 
-	    <P></P><BR/>
-	    <A HREF="#STEP_LIST">Back to Step List</A>
 	    <BR/>
 	    <A NAME="CLEANUP">
 		<H3>Cleanup Step</H3>
