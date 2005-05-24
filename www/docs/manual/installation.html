@@ -11,12 +11,12 @@
 
 	<!-- The following links are meant to be solved on my local PC -->
 	<!-- The java.net site uses its own style sheets -->
- 	<LINK rel="stylesheet" type="text/css" href="../../branding/css/tigris.css"/>
- 	<LINK rel="stylesheet" type="text/css" href="../../branding/css/inst.css"/>
+ 	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/tigris.css"/>
+ 	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/inst.css"/>
 
     </HEAD>
 
-    <BODY>
+    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="COMPOSITE">
 	
 	<DIV CLASS="app" STYLE="text-align: justify;">
 	    
@@ -25,14 +25,18 @@
 	    <ADDRESS>Author : <A HREF="mailto:herve.bitteur@laposte.net">:Herv&eacute;
 		Bitteur</A></ADDRESS>
 	    <ADDRESS>Updated : 11 May 2005</ADDRESS>
-	    
-	    <H2>Getting Audiveris software</H2>
+
+	    <A NAME="DOWNLOAD">
+		<H2>Getting Audiveris software</H2>
+	    </A>
 	    
 	    <P>The latest version is always available on the <A
-            HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
+            HREF="https://audiveris.dev.java.net/nonav/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
 		Audiveris download area</A></P>
-	    
-	    <H2>System Requirements</H2>
+
+	    <A NAME="REQUIREMENTS">
+		<H2>System Requirements</H2>
+	    </A>
 	    
 	    <P> Audiveris is essentially a Java application, and as
 		such should be usable on a wide variety of platforms. Is
@@ -49,14 +53,18 @@
 		physical memory as a bare minimum, 512MB is much more
 		comfortable. As an example, Audiveris is developed and
 		run today on an old AMD Athlon (0.9 GHz, 768 MB)</P>
-	    
-	    <H2>Companion tools</H2>
+
+	    <A NAME="COMPANIONS">
+		<H2>Companion tools</H2>
+	    </A>
 	    
 	    <P>This section lists all components that are used by
 		Audiveris for various functions, and thus need to be
 		properly installed beforehand.</P>
-	    
-	    <H3>Music Font (Musette)</H3>
+
+	    <A NAME="MUSIC_FONT">
+		<H3>Music Font (Musette)</H3>
+	    </A>
 	    
 	    <P> This font is used only to provide icons in selection
 		menus. For the time being we use the "Musette" font, a
@@ -73,8 +81,10 @@
 	    
 	    <P>The font must then be installed on Windows just like any
 		other TTF font.</P>
-	    
-	    <H3>Java Advanced Imaging (JAI)</H3>
+
+	    <A NAME="JAI">
+		<H3>Java Advanced Imaging (JAI)</H3>
+	    </A>
 	    
 	    <P> JAI is a comprehensive framework for image processing,
 		of which Audiveris makes a rather limited use :</P>
@@ -97,8 +107,10 @@
 		HREF="http://java.sun.com/products/java-media/jai/">JAI
 		web-site</A>. Audiveris uses the latest JAI version
 		(1.1.2).</P>
-	    
-	    <H3>Other components</H3>
+
+	    <A NAME="OTHER_COMPONENTS">
+		<H3>Other components</H3>
+	    </A>
 	    
 	    <P> All the following components need no special
 		installation procedure, only their jar files have to be
@@ -176,14 +188,16 @@
 			</A></TD>
 		</TR>
 	    </TABLE>
-	    
-	    <H2>Installation</H2>
+
+	    <A NAME="INSTALLATION">
+		<H2>Installation</H2>
+	    </A>
 	    
 	    <DIV CLASS="filebrowse" >
 		<UL>    
 		    <LI CLASS="leafnode">
 			The <A
-			    HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
+			    HREF="https://audiveris.dev.java.net/nonav/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
 			    download area</A> contains a pair of
 			    archives similar to the following ones
 			    (the version numbers may be higher than in
@@ -207,7 +221,9 @@
 		expanded in the same directory) is needed only if you
 		want to be able to re-train the evaluators.</P>
 
-	    <H3>Audiveris Directory Structure</H3>
+	    <A NAME="STRUCTURE">
+		<H3>Audiveris Directory Structure</H3>
+	    </A>
 
 	    <P>Once expanded, the Audiveris archives create the
 		structure described in this section :</P>
@@ -333,7 +349,7 @@
 			<UL>
 			    <LI CLASS="leaf">
 				<A
-				HREF="../../index.html" title="view file"><CODE><B>index.html</B></CODE></A>
+				HREF="../../index.html" TARGET="_top" TITLE="view file"><CODE><B>index.html</B></CODE></A>
 				is the web-site home page</LI>
 			    <LI CLASS="leafnode">
 				<A href="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3258&expandFolder=3258&folderID=3259" title="view contents">
@@ -341,8 +357,8 @@
 				</A>
 				<UL>
 				    <LI CLASS="leafnode">
- 					<A href="https://audiveris.dev.java.net/nonav/docs/api/index.html" title="view contents">
-<!-- 					<A href="../api/index.html" title="view contents"> -->
+ 					<A href="https://audiveris.dev.java.net/nonav/docs/api/index.html" TARGET="_top" TITLE="view contents">
+<!-- 					<A href="../api/index.html" TARGET="_top" TITLE="view contents"> -->
 					    api/
 					</A>
 					<UL>
@@ -355,17 +371,45 @@
 					<A href="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3259&expandFolder=3259&folderID=3259" title="view contents">
 					    manual/
 					</A>
+					The directory contains several
+					html files, used to handle a
+					frame layout. But the main
+					content is stored in the
+					following files:
 					<UL>
 					    <LI CLASS="leaf">
-						<CODE><B>installation.html</B></CODE> is the installation manual you are currently looking at
+						<CODE><B>installation.html</B></CODE>
+						is the installation
+						manual you are
+						currently looking at
 					    </LI>
 					    <LI CLASS="leaf">
-						<A
-						    HREF="operation.html">
+						<A HREF="operation-pack.html" TARGET="_top">
 						    <CODE><B>operation.html</B></CODE></A>
-						    describes how to
-						    operate the
-						    application</LI>
+						describes how to
+						operate the
+						application
+					    </LI>
+					    <LI CLASS="leaf">
+						<A HREF="design-pack.html" TARGET="_top">
+						    <CODE><B>design.html</B></CODE></A>
+						presents the rationale
+						behind several
+						Audiveris
+						constructions (doc not
+						yet available)
+					    </LI>
+					    <LI CLASS="leaf">
+						<A HREF="implementation-pack.html" TARGET="_top">
+						    <CODE><B>implementation.html</B></CODE></A>
+						details a few
+						techniques used
+						throughout Audiveris,
+						such as Lags,
+						GlyphLags and Sticks
+						(doc not yet
+						available)
+					    </LI>
 					</UL>
 				    </LI>
 				</UL>
@@ -374,8 +418,10 @@
 		    </LI>
 		</UL>
 	    </DIV>
-	    
-	    <H3>Build Customization</H3>
+
+	    <A NAME="CUSTOMIZATION">
+		<H3>Build Customization</H3>
+	    </A>
 	    
 	    <P> Before launching any action, you'll have to customize
 		some environment definitions pre-defined in
