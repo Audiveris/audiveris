@@ -154,19 +154,27 @@ $&gt; ant run
 			<TD>Display histogram of run lengths for
 			    foreground (black) and background (white)
 			    pixels. This gives the general scale
-			    (interline value) of the sheet.</TD>
+			    (interline value) of the sheet.  Here
+			    is <A HREF="#SCALE_PLOT">a scale plot
+			    example</A>.
+			</TD>
 		    </TR>
 		    <TR>
 			<TH>Skew Plot</TH>
-			<TD>Display histogram of measured slopes of longest
-			    horizontal sticks. This gives the angle to de-skew
-			    the image.</TD>
+			<TD>Display histogram of measured slopes of
+			    longest horizontal sticks. This gives the
+			    angle to de-skew the image.  Here is <A
+			    HREF="#SKEW_PLOT">a skew plot example</A>.
+			</TD>
 		    </TR>
 		    <TR>
 			<TH>Line Plot</TH>
-			<TD>Display histogram of horizontal projections of
-			    black pixels. This indicates area for each staff
-			    line. </TD>
+			<TD>Display histogram of horizontal
+			    projections of black pixels. This
+			    indicates area for each staff line.  Here
+			    is <A HREF="#LINE_PLOT">a line plot
+			    example</A>.
+			</TD>
 		    </TR>
 		</TABLE>
 		
@@ -179,7 +187,7 @@ $&gt; ant run
 		
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
-			<TH WIDTH="120px">&lt;Any Step&gt;</TH>
+			<TH WIDTH="120px"><A HREF="#STEPS">&lt;Any Step&gt;</A></TH>
 			<TD>Select the target in this menu which lists in
 			    order the defined processing steps, as described
 			    in <A HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Sheet.html">Sheet</A>
@@ -242,17 +250,17 @@ $&gt; ant run
 		
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
-			<TH WIDTH="120px">Shape Colors</TH>
+			<TH WIDTH="120px"><A HREF="#SHAPE_COLORS">Shape Colors</A></TH>
 			<TD>Select the color display for each recognized
 			    shape</TD>
 		    </TR>
 		    <TR>
-			<TH>Training Material</TH>
+			<TH><A HREF="#TRAINING_MATERIAL">Training Material</A></TH>
 			<TD>Verify and potentially discard glyph material used
 			    to train the evaluators</TD>
 		    </TR>
 		    <TR>
-			<TH>Trainer</TH>
+			<TH><A HREF="#TRAINERS">Trainers</A></TH>
 			<TD>Launch and monitor the training phases of the
 			    evaluators</TD>
 		    </TR>
@@ -261,7 +269,7 @@ $&gt; ant run
 			<TD>Display the current memory occupancy</TD>
 		    </TR>
 		    <TR>
-			<TH>Options</TH>
+			<TH><A HREF="#OPTIONS">Options</A></TH>
 			<TD>Set the various parameters used by Audiveris
 			    software</TD>
 		    </TR>
@@ -279,8 +287,10 @@ $&gt; ant run
 		    </TR>
 		</TABLE>
 	    </DIV>
-	    
-	    <H2>Operations</H2>
+
+	    <A NAME="STEPS">
+		<H2>Steps</H2>
+	    </A>
 
 	    <P> To present the various operations, and the related
 		user interface, we'll use a tour based on the usual
@@ -378,10 +388,11 @@ $&gt; ant run
 		    drive the computation of nearly all parameters
 		    used in the recognition process.</P>
 	    </P>
-	    
-	    <IMG SRC="../images/scale-chart.png"
-		 TITLE="Histogram of run lengths" />
 
+	    <A NAME="SCALE_PLOT">
+		<IMG SRC="../images/scale-chart.png"
+		     TITLE="Histogram of run lengths" />
+	    </A>
 	    <BR/>
 	    <A NAME="SKEW">
 		<H3>Skew Step</H3>
@@ -436,10 +447,11 @@ $&gt; ant run
 
 	    <P> We can also get the following chart, by using the
 		menu <I>Sheet &gt; Skew Plot</I> :</P>
-	    
-	    <IMG SRC="../images/slope-chart.png"
-		 TITLE="Histogram of main slopes" />
 
+	    <A NAME="SKEW_PLOT">
+		<IMG SRC="../images/slope-chart.png"
+		     TITLE="Histogram of main slopes" />
+	    </A>
 	    <BR/>
 	    <A NAME="LINES">
 		<H3>Lines Step</H3>
@@ -457,9 +469,11 @@ $&gt; ant run
 		on the chart), and every regular series of 5 peaks
 		above this threshold defines the 5 stick areas
 		supposed to contain one staff line each.</P>
-	    
-	    <IMG SRC="../images/line-chart.png"
-		 TITLE="Histogram of horizontal projections" />
+
+	    <A NAME="LINE_PLOT">
+		<IMG SRC="../images/line-chart.png"
+		     TITLE="Histogram of horizontal projections" />
+	    </A>
 
 	    <P> The processing is then performed stick area per stick
 		area. In such area, we retrieve the long horizontal
@@ -696,11 +710,202 @@ $&gt; ant run
 		to recognized glyphs, then we keep these glyphs,
 		otherwise we resurrect the stems.</P>
 
-	    <IMG SRC="../images/xxx.png"
-		 TITLE="Example of undue stem" />
-
+<!-- 	    <IMG SRC="../images/xxx.png" -->
+<!-- 		 TITLE="Example of undue stem" /> -->
 
 	    
+	    <H2>Tools</H2>
+
+	    <A NAME="SHAPE_COLORS">
+		<H3>Shape Colors</H3>
+	    </A>
+	    <P>TBD</P>
+	    
+
+	    <BR/>
+	    <A NAME="TRAINING_MATERIAL">
+		<H3>Training Material</H3>
+	    </A>
+
+	    <P> The purpose of this item is to provide a user
+		interface to review visually some or all of the
+		various glyphs which are used for training the
+		evaluators.</P>
+	    <P> The main objective is thus to easily identify glyphs
+		which have been assigned a wrong shape. Using them as
+		part of the training base could bring serious damage
+		in the performance of the evaluator(s). So the
+		strategy, when such a wrong glyph has been identified,
+		is simply to delete the glyph from the base.</P>
+
+	    <P> Here is an example of the glyph verifier :</P>
+
+	    <IMG SRC="../images/training_material.png"
+		 TITLE="User Interface to verify the training material" />
+
+	    <P> The top panels are dedicated to selectors, in that
+		order :
+		<OL>
+		    <LI>The <B>Sheet</B> selector. It allows to select
+			one or several sheets from the base at hand
+			(which by default is the
+			global <I>/train/sheets</I> directory</LI>
+		    <LI>The <B>Shape</B> selector. Only the shapes
+			that are contained in the selected sheets in
+			the Sheet selector are displayed here. And you
+			can select some or all shapes form the
+			displayed list.</LI>
+		    <LI>The <B>Glyph</B> selector. Similarly, only
+			glyphs whose shape is selected in selected
+			sheets are displayed in the list. You can
+			manually select the glyph instances you want
+			to review.</LI>
+		</OL>
+		In the provided example, the user has selected all
+		glyphs whose shape is either "BRACE" or
+		"COMBINING_FLAG_1_UP" in the sheets named "hove" and
+		"plaisir-1".</P>
+
+	    <P> The large panel, on the lower right side, is dedicated
+		to the display of the selected glyphs, using their own
+		coordinates. Notice that glyphs that belong to
+		separate sheets, can thus happen to have similar
+		coordinates and thus be displayed as overlapping
+		glyphs.</P>
+
+	    <P> The lower left panel is composed of two main parts :
+		<OL>
+		    <LI>The <B>Navigator</B> to drive the loading and
+			display of glyphs from the selection as it
+			comes out of the selectors. Here you can find
+			the button to discard a wrong glyph : this is
+			implemented through the mere deletion of the
+			underlying glyph XML file.</LI>
+		    <LI>The <B>Glyph</B> panel, similar to the one
+			that appear on the main Audiveris windows, is
+			used to display information about the glyph at
+			hand, together with the evaluations performed
+			by the Neural Network evaluator and the
+			Regression evaluator.</LI>
+		</OL>
+	    </P>
+
+	    <P> By default, this user interface looks for glyphs files
+		under the <I>/train/sheets</I> directory. However,
+		from the <B>Trainers</B> interface, you can ask
+		to <B>Verify</B> glyphs (see that interface). In that
+		latter case, the <B>Training Material</B> interface is
+		automatically loaded with the corresponding glyphs,
+		which may be part of either the whole glyph base (the
+		default), or just the core glyph base.</P>
+	    
+	    
+	    <BR/>
+	    <A NAME="TRAINERS">
+		<H3>Trainers</H3>
+	    </A>
+
+	    <P> This interface is dedicated to the proper training of
+		the pair of evaluators. The display is as follows :</P>
+
+	    <IMG SRC="../images/trainers.png"
+		 TITLE="User Interface to train the evaluators" />
+
+	    <OL>
+		<LI>The upper part is for the <B>Repository</B>, in
+		    charge of selecting and loading the glyph XML
+		    files, as stored from the previous sheet
+		    recognitions. Actually, we use this panel, only
+		    when we want to identify a <B>Core</B> part within
+		    the whole glyph base.
+		    <P> To build the Core part out of the whole set of
+			recorded glyphs, it suffices to define the
+			maximum number of similar shapes (20 is a good
+			guess) and press the "Select Core"
+			button. The <I>/train/core</I> directory will
+			be emptied and repopulated by the core
+			selected glyph files.</P>
+		    <DIV CLASS="warningmessage">
+			<I>Nota</I>: this notion of Core may well be
+			dropped in a future version, since although it
+			saves computing time in training the neural
+			evaluator, it also leads to suboptimal
+			results.
+		    </DIV>
+		</LI>
+		
+		<LI>The lower part is used to train the Neural Network
+		    and the Regression evaluator. Except some specific
+		    features for the Neural evaluator, the two
+		    trainers exhibit a similar structure :
+		    <OL>
+			<LI>On the left, radio buttons allow to select
+			    either the whole base or the core
+			    base. Default is to select the whole
+			    base.</LI>
+			<LI>On the upper right part, we find the
+			    trainer parameters and commands. The
+			    Regression trainer is straightforward, the
+			    Neural one deserves more explanation
+			    below.</LI>
+			<LI>On the lower right part, both trainers
+			    include a Validation panel, to test the
+			    current evaluator tuning against the
+			    selected population (either the Whole
+			    base, or the Core base, according to the
+			    selection made via the radio buttons. Note
+			    that we can train and validate on
+			    different bases). We explicitly flag the
+			    glyphs which are either not recognized or
+			    (worse) mistaken for another shape. The
+			    corresponding Verify buttons, allow to
+			    visually check these questionable
+			    glyphs.</LI>
+		    </OL>
+		</LI>
+	    </OL>
+
+	    <P> The Neural Network evaluator is more performant but
+		also more complex than the simple Regression
+		evaluator. In the displayed example, on a set of 6219
+		glyphs, the former reaches a percentage of positive
+		answers of 99.96%, while the latter does not
+		exceed 96.88%. Here are its main specificities :</P>
+	    <UL>
+		<LI>Ability to choose between a <B>re-train</B>, which
+		    consists in retraining from scratch, and only an
+		    <B>inc-train</B>, which works incrementally on top
+		    of the previous training sessions. With say 6000
+		    glyphs in the whole training base, training the
+		    Neural evaluator along 2500 iterations takes a
+		    <FONT COLOR="red">whole night</FONT>, whereas
+		    training the Regression evaluator needs a couple
+		    of seconds... So be aware of this, and back-up the
+		    two evaluator binary files before playing with the
+		    trainers.</LI>
+		<LI>Several key parameters for training a Neural
+		    network : the <B>momentum</B> and <B>learning
+		    rate</B> allow to influence the convergence of the
+		    training, although they should be kept close to
+		    their default values. <B>Max error</B> (residual
+		    error) and <B>epochs</B> (number of iterations)
+		    are two different ways to stop the training, since
+		    the processing stops when either of these is
+		    reached.</LI>
+		<LI>The trainer makes memory <B>snapshots</B> of every
+		    best configuration. This slightly slows down the
+		    training, but guarantees to keep the really best
+		    configuration found so far. This is the default
+		    behavior, but we can force the trainer to select
+		    only the last configuration (via the "Use Last"
+		    button).</LI>
+	    </UL>
+
+	    <BR/>
+	    <A NAME="OPTIONS">
+		<H3>Options</H3>
+	    </A>
+	    TBD
 
 	    <BR/>
 	    <BR/>
