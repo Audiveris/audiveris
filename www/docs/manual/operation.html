@@ -24,7 +24,7 @@
 	    
 	    <ADDRESS>Author : <A HREF="mailto:herve.bitteur@laposte.net">:Herv&eacute;
 		Bitteur</A></ADDRESS>
-	    <ADDRESS>Updated : 24 May 2005</ADDRESS>
+	    <ADDRESS>Updated : 01 June 2005</ADDRESS>
 	    
 	    <A NAME="LAUNCHING">
 		<H2>Launching Audiveris</H2>
@@ -708,7 +708,7 @@ $&gt; ant run
 		has no connected recognized leave. Then, we build new
 		glyphs from these now unassigned sections. If we get
 		to recognized glyphs, then we keep these glyphs,
-		otherwise we resurrect the stems.</P>
+		otherwise we "resurrect" the stems.</P>
 
 <!-- 	    <IMG SRC="../images/xxx.png" -->
 <!-- 		 TITLE="Example of undue stem" /> -->
@@ -719,7 +719,18 @@ $&gt; ant run
 	    <A NAME="SHAPE_COLORS">
 		<H3>Shape Colors</H3>
 	    </A>
-	    <P>TBD</P>
+	    <P> This interface is used to ease the setting of shape
+		colors. It is a very basic interface, which gathers a
+		typical color chooser with a selection for shape
+		ranges and individual shapes.</P>
+	    <P> The policy is to assign a color to a shape range. A
+		shape range for example can be all note heads, or all
+		rests. And by default, all shapes within the range are
+		assigned the color of the range, unless of course we
+		assign them a specific color.</P>
+
+ 	    <IMG SRC="../images/shape-colors.png"
+ 		 TITLE="Setting shape colors" />
 	    
 
 	    <BR/>
@@ -905,14 +916,118 @@ $&gt; ant run
 	    <A NAME="OPTIONS">
 		<H3>Options</H3>
 	    </A>
-	    TBD
 
-	    <BR/>
-	    <BR/>
-	    <BR/>
-	    <BR/>
-	    <HR/>
-	    TO BE CONTINUED IN THE NEXT VERSION OF THIS DOCUMENT
+	    <P> This interface, accessible from <I>Tool | Options</I>,
+		allows to interactively display and modify data
+		related to Audiveris classes :
+		<UL>
+		    <LI>Logging level</LI>
+		    <LI>Logical constants</LI>
+		</UL>
+	    </P>
+	    <P> The display is a kind of JTreeTable, a combination of
+		a tree on the left side, where the hierarchy of
+		packages, subpackages and classes is displayed, and a
+		table on the right side, where details of the
+		containing classes are available for display and
+		modification.</P>
+
+	    <IMG SRC="../images/options.png" TITLE="User Interface to
+		 edit options" />
+	    <P> The picture above represents a typical Options view :
+		<OL>
+		    <LI>We are in the package named <I>"sheet"</I>,
+			(actually, its full name
+			is <I>"omr.sheet"</I>, but we drop the
+			ubiquitous <I>"omr."</I> prefix) and the class
+			named <I>"LinesBuilder"</I>, in charge of
+			retrieving and removing the staff lines.</LI>
+		    <LI>This class has a logging level, currently
+			assigned to <I>"INFO"</I>. This information
+			comes from the <U>config/log4j.properties</U>
+			file, but can be modified on the fly, thanks
+			to this interface, to any legal logging value
+			(such as DEBUG, INFO, etc...). <B>NOTA</B>:
+			these logging level modifications are meant to
+			be temporary, and thus not stored on disk. For
+			persistent modification, please edit the log4j
+			property file directly.</LI>
+		    <LI>The class also contains several logical
+			constants, which are application-level
+			parameters, whose precise value is kept
+			separate from the algorithmic code. For
+			example, the third constant,
+			named <I>histoThresholdFrac</I>, is a java
+			variable declared in the <I>LinesBuilder</I>
+			class. It is a Double, whose current value is
+			0.5. A tip text is displayed, which says "Peak
+			threshold stated as a ration of maximum
+			histogram value". In other words, this defines
+			the threshold that indicates a staff line on
+			the histogram built with horizontal
+			projections.</LI>
+		</OL>
+	    </P>
+
+	    <P>There is a predefined list of types available for such
+	    constants (for details, please refer to the JavaDoc of
+	    class <A
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/constant/Constant.html">Constant</A>) :
+		<UL>
+		    <LI><I>Constant.Boolean</I></LI>
+		    <LI><I>Constant.Color</I></LI>
+		    <LI><I>Constant.Double</I></LI>
+		    <LI><I>Constant.Integer</I></LI>
+		    <LI><I>Constant.String</I></LI>
+		</UL>
+		All these Constant subtypes encapsulate values of
+		their standard counterpart, in other words a
+		Constant.Boolean contains a Boolean value, etc...
+		<P> Another possible type is <I>Scale.Fraction</I>
+		    which is a double, whose unit is the interline
+		    value. For example, in a sheet with interline
+		    value of 20 pixels, a Fraction of 0.15 will
+		    represent 3 pixels. It's a way to express a length
+		    regardless of the actual sheet interline value. In
+		    the Options window, when such a Fraction value is
+		    displayed, its counterpart in pixels is also
+		    displayed provided that the current sheet has
+		    already had its scale computed. Otherwise, just a
+		    question mark is displayed. Please refer to details in   <A
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Scale.html">Scale</A> JavaDoc.
+		</P>
+	    </P>
+
+	    <P>How do we define the current value of such logical
+		constant ? The JavaDoc of class <A
+		HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/constant/ConstantManager.html">ConstantManager</A>
+		explains this mechanism in details. The sequence is defined as follows :
+		<OL>
+		    <LI>First the value as defined in the source code,</LI>
+		    <LI>Then, if the constant name is found in the
+			file
+			named <U>/config/run.default.properties</U>,
+			the related value is used.</LI>
+		    <LI>Finally, the user home directory may contain a
+			file named <U>audiveris.run.properties</U>. Is
+			such file exists and contains the constant
+			name, then its related value is taken for the
+			constant. This last file is not meant to be
+			manually edited by a user, it is automatically
+			updated each time the user uses
+			the <I>Options</I> interface to modify a
+			constant value, thus making the modification
+			persistent for the subsequent runs of the
+			application.</LI>
+		</OL>
+	    </P>
+
+
+
+
+		<BR/> <BR/>
+	    <BR/> <BR/> <HR/> TO BE CONTINUED IN THE NEXT VERSION OF
+	    THIS DOCUMENT
 	    
 	    <HR/>
 	    <I>End of Operation Manual</I>
