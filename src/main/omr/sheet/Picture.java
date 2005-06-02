@@ -21,6 +21,7 @@ import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.awt.image.ColorModel;
 
 /**
  * Class <code>Picture</code> encapsulates an image, allowing modifications
@@ -37,8 +38,6 @@ import java.io.IOException;
  * <li> To <b>render</b> the (original) image in a graphic context </li>
  *
  * <li> To report current image <b>dimension</b> parameters </li>
- *
- * <li> To <b>blur</b> the image </li>
  *
  * <li> To <b>rotate</b> the image </li>
  *
@@ -103,7 +102,8 @@ public class Picture
      */
     public Picture (File imgFile)
             throws FileNotFoundException,
-                   IOException
+                   IOException,
+                   ImageFormatException
     {
         // Try to read the image file
         try {
@@ -122,6 +122,9 @@ public class Picture
             throw new IOException("Could not load image file "
                                   + imgFile.getPath());
         } else {
+            // Check image format. This may throw ImageFormatException
+            checkImageFormat();
+
             // Cache dimensions
             updateParams();
 
@@ -264,36 +267,6 @@ public class Picture
         return dimension.height;
     }
 
-//     //--------------//
-//     // getHistogram //
-//     //--------------//
-//     /**
-//      * Report the histogram of pixel gray level
-//      *
-//      * @return the computed histogram
-//      */
-//     public Histogram getHistogram ()
-//     {
-//         RenderedOp img = JAI.create("extrema", image, null);
-//         double[] maximum = (double[]) img.getProperty("maximum");
-//         double maxValue = ((int) (maximum[0] + 255) / 256) * 256.0;
-
-//         ParameterBlock pb = (new ParameterBlock()).addSource(image);
-//         pb.add(null).add(1).add(1).add(new int[]{
-//             256
-//         });
-//         pb.add(new double[]{
-//             0.0
-//         }).add(new double[]{
-//             maxValue
-//         });
-
-//         RenderedOp dst = JAI.create("histogram", pb);
-//         Histogram h = (Histogram) dst.getProperty("histogram");
-
-//         return h;
-//     }
-
     //---------------//
     // getOrigHeight //
     //---------------//
@@ -320,6 +293,30 @@ public class Picture
     public int getOrigWidth ()
     {
         return originalDimension.width;
+    }
+
+    //------------------//
+    // checkImageFormat //
+    //------------------//
+    /**
+     * Check is the image format (and especially its color model) is
+     * properly handled by Audiveris.
+     *
+     * @throws ImageFormatException is the format is not supported
+     */
+    private void checkImageFormat()
+        throws ImageFormatException
+    {
+        ColorModel colorModel = image.getColorModel();
+        int pixelSize = colorModel.getPixelSize();
+        int numComponents = colorModel.getNumComponents();
+
+        if ((pixelSize != 8) || (numComponents != 1)) {
+            throw new ImageFormatException
+                ("Unsupported color model" +
+                 " pixelSize=" + pixelSize +
+                 " numComponents=" + numComponents);
+        }
     }
 
     //----------//
@@ -381,45 +378,6 @@ public class Picture
     {
         return dimensionWidth;
     }
-
-//     //------//
-//     // blur //
-//     //------//
-//     /**
-//      * Blur the image, using a gaussian filter
-//      */
-//     public void blur ()
-//     {
-//         // Invert
-//         RenderedOp img = invert(originalImage); // Always restart from
-//                                                 // original image ?
-
-//         // Make sure we have the needed convolution kernel (Gaussian 5x5)
-//         if (kernel == null) {
-//             kernel = makeGaussianKernel(2);
-//         }
-
-//         // Blur
-//         ParameterBlock pb = new ParameterBlock();
-//         pb.addSource(img); // The source image
-//         pb.add(kernel); // The convolution kernel
-
-//         // Hints
-//         BorderExtender extender = BorderExtender.createInstance(BorderExtender.BORDER_REFLECT);
-//         RenderingHints hints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
-//                                                   extender);
-
-//         img = JAI.create("convolve", pb, hints);
-
-//         // de-Invert
-//         image = invert(img);
-
-//         // Update relevant parameters
-//         updateParams(true);
-
-//         //         dumpRectangle("BlurDump ", 0, image.getWidth() - 1, 0,
-//         //                       image.getWidth() - 1);
-//     }
 
     //-------//
     // close //
@@ -590,38 +548,6 @@ public class Picture
                           .add(null),
                           null);
     }
-
-//     //--------------------//
-//     // makeGaussianKernel //
-//     //--------------------//
-//     private KernelJAI makeGaussianKernel (int radius)
-//     {
-//         int diameter = (2 * radius) + 1;
-//         float invrsq = 1.0F / (radius * radius);
-
-//         float[] gaussianData = new float[diameter];
-
-//         float sum = 0.0F;
-
-//         for (int i = 0; i < diameter; i++) {
-//             float d = i - radius;
-//             float val = (float) Math.exp(-d * d * invrsq);
-//             gaussianData[i] = val;
-//             sum += val;
-//         }
-
-//         // Normalize
-//         float invsum = 1.0F / sum;
-
-//         for (int i = 0; i < diameter; i++) {
-//             gaussianData[i] *= invsum;
-//         }
-
-//         KernelJAI kernel = new KernelJAI(diameter, diameter, radius, radius,
-//                                          gaussianData, gaussianData);
-
-//         return kernel;
-//     }
 
     //--------------//
     // updateParams //

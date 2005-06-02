@@ -173,6 +173,16 @@ public class Sheet
             } catch (IOException ex) {
                 logger.warning("Input error on file " + imgFile);
                 throw new ProcessingException();
+            } catch (ImageFormatException ex) {
+                logger.warning("Unsupported image format in file " + imgFile);
+                logger.warning(ex.getMessage());
+                if (Main.getJui() != null) {
+                    Main.getJui().displayWarning
+                        ("<B>" + ex.getMessage() + "</B><BR>" +
+                         "Please use grey scale with 256 values");
+                }
+
+                throw new ProcessingException();
             }
         }
 
