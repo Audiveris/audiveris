@@ -245,6 +245,42 @@ public class Jui
 
     //~ Methods -----------------------------------------------------------
 
+    //----------------//
+    // displayWarning //
+    //----------------//
+    /**
+     * Allow to display a modal dialog with an html content
+     *
+     * @param htmlStr the HTML string
+     */
+    public void displayWarning (String htmlStr)
+    {
+        JEditorPane htmlPane = new JEditorPane("text/html",
+                                               htmlStr);
+        htmlPane.setEditable(false);
+
+        JOptionPane.showMessageDialog
+            (Jui.this, htmlPane, "Warning", JOptionPane.WARNING_MESSAGE);
+    }
+
+    //----------------//
+    // displayMessage //
+    //----------------//
+    /**
+     * Allow to display a modal dialog with an html content
+     *
+     * @param htmlStr the HTML string
+     */
+    public void displayMessage (String htmlStr)
+    {
+        JEditorPane htmlPane = new JEditorPane("text/html",
+                                               htmlStr);
+        htmlPane.setEditable(false);
+
+        JOptionPane.showMessageDialog
+            (Jui.this, htmlPane);
+    }
+
     //---------------//
     // setBoardsPane //
     //---------------//
@@ -519,7 +555,7 @@ public class Jui
 
         public TrainerAction (JMenu menu)
         {
-            super("Trainer", IconUtil.buttonIconOf("media/Movie"));
+            super("Trainers", IconUtil.buttonIconOf("media/Movie"));
 
             final String tiptext = "Launch trainer interface";
             menu.add(this).setToolTipText(tiptext);
@@ -675,12 +711,7 @@ public class Jui
                 .append("Refer to <B>https://audiveris.dev.java.net</B>")
                 .append("</HTML>");
 
-            JEditorPane htmlPane = new JEditorPane("text/html",
-                                                   sb.toString());
-            htmlPane.setEditable(false);
-
-            JOptionPane.showMessageDialog
-                (Jui.this, htmlPane);
+            displayMessage(sb.toString());
         }
     }
 
