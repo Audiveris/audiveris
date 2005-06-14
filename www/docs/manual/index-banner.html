@@ -1,43 +1,40 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
     <HEAD>
-	<!-- 	$Id$	 -->
-	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252"/>
-	<TITLE>Audiveris Documentation Banner</TITLE>
-	<META NAME="AUTHOR" CONTENT="Herv&eacute; Bitteur"/>
-	<META NAME="CLASSIFICATION" CONTENT="Banner for Audiveris documentation"/>
-	<META NAME="DESCRIPTION" CONTENT="High-level links to documentation components"/>
+    <!--    $Id$  -->
+    <META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252"/>
+    <TITLE>Audiveris Documentation Banner</TITLE>
+    <META NAME="AUTHOR" CONTENT="Herv&eacute; Bitteur"/>
+    <META NAME="CLASSIFICATION" CONTENT="Banner for Audiveris documentation"/>
+    <META NAME="DESCRIPTION" CONTENT="High-level links to documentation components"/>
 
-	<!-- The following links are meant to be solved on my local PC -->
-	<!-- The java.net site uses its own style sheets -->
- 	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/tigris.css"/>
- 	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/inst.css"/>
+    <!-- The following links are meant to be solved on my local PC -->
+    <!-- The java.net site uses its own style sheets -->
+    <LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/tigris.css"/>
+    <LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/inst.css"/>
+
+    <!-- Javascript functions -->
+    <SCRIPT SRC="banner.js" >
+    </SCRIPT>
 
     </HEAD>
 
-    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="COMPOSITE">
-	
-	<DIV CLASS="tabs" ID="toptabs">
-	    <TABLE CELLPADDING="4" CELLSPACING="0" BORDER="0">
-		<TR>
-		    <TD>
-			<A TARGET="_top" HREF="releases-pack.html">Releases</A>
-		    </TD>
-		    <TD>
-			<A TARGET="_top" HREF="installation-pack.html">Installation</A>
-		    </TD>
-		    <TD>
-			<A TARGET="_top" HREF="operation-pack.html">Operation</A>
-		    </TD>
-		    <TD>
-			<A TARGET="_top" HREF="design-pack.html">Design</A>
-		    </TD>
-		    <TD>
-			<A TARGET="_top" HREF="implementation-pack.html">Implementation</A>
-		    </TD>
-		</TR>
-	    </TABLE>
-	</DIV>
-	
+    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="COMPOSITE" >
+		
+		<DIV CLASS="tabs">
+			<TABLE ID="bannerTabs" CELLPADDING="4" CELLSPACING="0" BORDER="0">
+				<TR>
+					<SCRIPT TYPE="text/javascript" >
+						document.write(buildRow(-1));
+					</SCRIPT>
+				</TR>
+			</TABLE>
+		</DIV>
+		
+		<!-- Check for preselected manual if any -->
+		<SCRIPT TYPE="text/javascript">
+			checkSelection();
+		</SCRIPT>
+    
     </BODY>
 </HTML>
