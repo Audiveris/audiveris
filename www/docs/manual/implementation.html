@@ -22,7 +22,7 @@
         <ADDRESS>Author
             : <A HREF="mailto:herve.bitteur@laposte.net">Herv&eacute;
             Bitteur</A></ADDRESS>
-        <ADDRESS>Updated : 07 June 2005</ADDRESS>
+        <ADDRESS>Updated : 14 June 2005</ADDRESS>
         
         <A NAME="PACKAGES">
             <H2>Packages</H2>
@@ -187,33 +187,44 @@
         </DIV>
         
         <A NAME="SHEET_SCORE">
-            <H2>Sheet and Score</H2>
+            <H2>Sheet / Score</H2>
+        </A>
+        
+        <A NAME="SHEET_VS_SCORE">
+            <H3>Sheet vs. Score</H3>
         </A>
         
         <P> A <B>Sheet</B> handles the physical entities as extracted
             from the printed music sheet, while the <B>Score</B>
             handles a structuring of the inferred logical
-            entities. This distinction has lead to the development of
+            entities. This distinction has led to the development of
             two separate packages, namely <I>omr.sheet</I>
             and <I>omr.score</I>.</P>
+	
         <P> Many entities of one package have their counterpart in the
             other package, with link from one instance to the
-            other. The following table lists the corresponding
+            other.</P>
+
+	<P> The following table lists the corresponding
             entities in <I>omr.sheet</I> and in <I>omr.score</I>
             packages, together with the Builder class that is in
-            charge of extracting these entities.</P>
-        <P> For example, an instance of <B>Score</B> class is the
-            counterpart of an instance of <B>Sheet</B> class. (We
-            assume that several printed pages can be combined as a
-            mosaic beforehand, so that we have to process just one
-            long <B>Sheet</B>).</P>
-        <P> The next line states that a <B>System</B> in the
-	    <I>omr.score</I> package is the counterpart of
-	    a <B>SystemInfo</B> in the <I>omr.sheet</I> package, and
-	    that the class <B>BarsBuilder</B> is in charge of
-	    processing them.</P>
-        
-        
+            charge of extracting these entities :</P>
+
+	<UL>
+	    <LI>For example, an instance of <B>Score</B> class is the
+		counterpart of an instance of <B>Sheet</B> class. (We
+		assume that several printed pages can be combined as a
+		mosaic beforehand (a feature not yet fully
+		implemented), so that we have to process just one
+		long <B>Sheet</B>).</LI>
+	
+	    <LI>The next line states that a <B>System</B> in the
+		<I>omr.score</I> package is the counterpart of
+		a <B>SystemInfo</B> in the <I>omr.sheet</I> package,
+		and that the class <B>BarsBuilder</B> is in charge of
+		processing them.</LI>
+        </UL>
+	
         <TABLE>
             <TR>
                 <TH>from omr.score package</TH>
@@ -329,8 +340,151 @@
 	    </TR>
 	</TABLE>
 	
+        
+        <A NAME="SHEET">
+            <H3>Sheet</H3>
+        </A>
+
+	<P> All the music entities are organized in Systems, read from
+	    left to right. Since <B>System</B> is actually an entity
+	    within the <I>omr.score</I> package, here in
+	    the <I>omr.sheet</I> package we use the class <A
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/SystemInfo.html">
+	    SystemInfo</A>.</P>
+
+	<P> A <B>SystemInfo</B> is the repository for all physical
+	    entities found within the System, such as <A
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/glyph/Glyph.html">
+	    Glyph</A>'s, <A
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/BarInfo.html">
+	    BarInfo</A>'s, <A
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Ledger.html">
+	    Ledger</A>'s, <A
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/StaveInfo.html">
+	    StaveInfo</A>'s, and the like.</P>
+
+	<P> So, the general schema to browse through all sheet
+	    entities is usually similar to the following piece of code
+	    :</P>
+
+	<PRE>
+        for (SystemInfo system : sheet.getSystems()) {
+            for (Glyph glyph : system.getGlyphs()) {
+	        // Do the glyph-based processing here
+	    }
+        }
+	</PRE>
+
+	<P> All the entities that result from the phase
+	    called <B>Music Extraction</B> are made accessible through
+	    the collection of <B>SystemInfo</B> instances. The phase
+	    called <B>Music Recognition</B> should thus browse this
+	    collection and store its results in the <B>Score</B>
+	    entity.</P>
+        
+        <A NAME="SCORE">
+            <H3>Score</H3>
+        </A>
+
+	<P> The <B>Score</B> is organized as a hierarchy of instances
+	    of subclasses of <A
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/score/MusicNode.html">
+	    MusicNode</A>, rooted at the Score. </P>
+
+	<P> Each <B>MusicNode</B> is a tree node, with a container and
+	    a list of children. To ease the traversal of the tree,
+	    every list of children, wherever found in the tree, is a
+	    list of homogeneous entities. So the Score hierarchy can
+	    be listed as follows :</P>
+
+	<PRE>
+                               Score                                      
+                                 O                                        
+                                 |                                        
+                                 |                                        
+                              System                                      
+                                 O                                        
+                                 |                                        
+                        ___________________                               
+                       {StaveList, SlurList}                    Dummy     
+                             O         O                                  
+                             |         |                                  
+                             |         |                                  
+                           Stave     Slur                                 
+                             O                                            
+                             |                                            
+        _____________________________________________                     
+       {LyricList, TextList, DynamicList, MeasureList}          Dummy     
+             O         O            O            O                        
+             |         |            |            |                        
+             |         |            |            |                        
+           Lyric     Text        Dynamic      Measure                     
+             O                                   O                        
+             |                                   |                        
+             |                _______________________________             
+          Syllable           {ClefList, KeysigList, ChordList}  Dummy     
+                                  O           O          O                
+                                  |           |          |                
+                                  |           |          |                
+                                Clef       Keysig      Chord              
+                                                         O                
+                                                         |                
+                                                         |                
+                                                       Note               
+	</PRE>
+
+	<P> The beginning of figure above can be read as follows
+	: </P>
+	<UL>
+	    <LI>A <B>Score</B> has no container, and contains
+		instances of class <B>System</B> as children.</LI>
+	    <UL>
+		<LI>A <B>System</B> has <B>Score</B> as container and
+		    exactly two children : one <B>StaveList</B> and
+		    one <B>SlurList</B>.</LI>
+		<OL>
+		    <LI>A <B>StaveList</B> has <B>System</B> as
+			container and instances of <B>Stave</B>s as
+			children.</LI>
+		    <UL>
+			<LI>A <B>Stave</B> has <B>StaveList</B> as
+			container, and exactly four children :
+			one <B>LyricList</B>, one <B>TextList</B>,
+			one <B>DynamicList</B> and
+			one <B>MeasureList</B>.</LI>
+			<LI>Etc...</LI>
+		    </UL>
+		    <LI>A <B>SlurList</B> has <B>System</B> as
+			container and instances of <B>Slur</B>s as
+			children.</LI>
+		</OL>
+	    </UL>
+	</UL>
+
+	<P> The hierarchical nature of this structure can be
+	    conveniently used by various traversals. It is used for
+	    example when the physical counterpart of each music node
+	    has to be rendered in the Sheet display (see method <A
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/score/MusicNode.html#renderNode(java.awt.Graphics, omr.ui.Zoom)">
+	    renderNode()</A>).</P>
+
+	<P> Though it's currently disabled, but the source code is
+	    still available, a <B>ScoreView</B> window was dedicated
+	    to the painting of Score entities, using method <A
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/score/MusicNode.html#paintNode(java.awt.Graphics)">
+	    paintNode()</A>.</P>
+	    
+	<P> A similar construction could be used, probably coupled
+	    with Castor, to store the content of a Score using the
+	    MusicXML format.</P>
+
+
+
 	
-	<BR/> <BR/> <HR/>
+	<BR/> <BR/>
+	<HR/>
+	TO BE AUGMENTED IN NEXT VERSION
+	<HR/>
 	<I>End of Implementation Manual</I>
 	
     </BODY>
