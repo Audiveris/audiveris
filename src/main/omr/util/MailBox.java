@@ -7,16 +7,19 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 /**
  * Class <code>MailBox</code> is a basic implementation of a mail box, with
  * blocking read and write and non-blocking read (polling)
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class MailBox
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     private final int max; // Max number of items in the mailbox
     private final Object[] data; // The contained items
@@ -24,7 +27,7 @@ public class MailBox
     private int nextOut = 0; // Current number of items in the mbx
     private int count = 0; // Current number of items in the mbx
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //---------//
     // MailBox //
@@ -41,7 +44,7 @@ public class MailBox
         data = new Object[max];
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------//
     // getCount //
@@ -119,8 +122,8 @@ public class MailBox
     //-----//
 
     /**
-     * Store a new object into the mail box. The method blocks until there is
-     * enough room in the mail box.
+     * Store a new object into the mail box. The method blocks until there
+     * is enough room in the mail box.
      *
      * @param item the object to store
      *

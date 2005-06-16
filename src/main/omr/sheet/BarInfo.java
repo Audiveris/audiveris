@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.lag.Lag;
@@ -18,17 +18,20 @@ import java.awt.*;
 
 /**
  * Class <code>BarInfo</code> handles information about a bar line.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class BarInfo
         implements java.io.Serializable
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     private Stick stick;
     private int topIdx;
     private int botIdx;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //---------//
     // BarInfo //
@@ -63,7 +66,7 @@ public class BarInfo
         this.botIdx = botIdx;
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //-----------//
     // getBotIdx //

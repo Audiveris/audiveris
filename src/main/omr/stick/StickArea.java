@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.stick;
 
 import omr.check.FailureResult;
@@ -35,6 +35,9 @@ import static omr.stick.SectionRole.*;
  * <ul> <li> <b>Horizontal sticks</b> can be (chunks of) staff lines,
  * alternate ending, or ledgers. </li> <li> <b>Vertical sticks</b> can be
  * bar lines, or stems. </li> </ul> </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class StickArea
 {

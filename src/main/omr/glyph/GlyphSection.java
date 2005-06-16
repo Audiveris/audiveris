@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.lag.Run;
@@ -20,6 +20,9 @@ import omr.lag.Section;
 /**
  * Class <code>GlyphSection</code> implements a specific class of section,
  * meant for easy glyph elaboration.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphSection
     extends Section<GlyphLag, GlyphSection>

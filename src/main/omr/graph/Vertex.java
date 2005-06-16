@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.graph;
 
 import omr.util.Logger;
@@ -30,6 +30,9 @@ import java.util.List;
  *
  * @param <D> type for enclosing digraph precise subtype
  * @param <V> type for Vertex precise subtype
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Vertex <D extends Digraph,
                      V extends Vertex  <D, V>>

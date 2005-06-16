@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 import omr.graph.Digraph;
@@ -28,6 +28,9 @@ import omr.graph.DigraphView;
  *
  * @param <L> precise lag (sub)type
  * @param <S> precise section (sub)type
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Lag <L extends Lag     <L, S>,
                   S extends Section>

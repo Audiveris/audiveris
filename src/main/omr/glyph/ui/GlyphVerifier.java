@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph.ui;
 
 import omr.Main;
@@ -59,6 +59,9 @@ import javax.swing.border.*;
  * translated GlyphLag view, and its characteristics in a dedicated
  * panel. If the user wants to discard the glyph, it can be removed from
  * the repository of training material.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphVerifier
     extends JFrame

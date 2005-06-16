@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.constant;
 
 import java.util.Comparator;
@@ -19,11 +19,14 @@ import java.util.TreeSet;
  * nodes. It can have children, which can be sub-packages and units. For
  * example, the unit/class <b>omr.score.Page</b> will need PackageNode
  * <b>omr</b> and PackageNode <b>omr.score</b>.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class PackageNode
         extends Node
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // The children, composed of either other <code>PackageNode</code> or
     // <code>ConstantSet</code>.
@@ -37,7 +40,7 @@ public class PackageNode
                 }
             });
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //-------------//
     // PackageNode //
@@ -46,8 +49,8 @@ public class PackageNode
      * Create a new PackageNode.
      *
      * @param name  the fully qualified package name
-     * @param child the first child of the package (either a sub-package, or a
-     *              ConstantSet).
+     * @param child the first child of the package (either a sub-package,
+     *              or a ConstantSet).
      */
     public PackageNode (String name,
                         Node child)
@@ -59,7 +62,7 @@ public class PackageNode
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------//
     // addChild //

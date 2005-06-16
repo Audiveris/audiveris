@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.score;
 
 import omr.lag.Lag;
@@ -24,39 +24,39 @@ import java.awt.*;
  * <p/>
  * The use of TreeNode for the Score hierarchy is the following :
  * <pre>
- *                               Score                                      |
- *                                 O                                        |
- *                                 |                                        |
- *                                 |                                        |
- *                              System                                      |
- *                                 O                                        |
- *                                 |                                        |
- *                        ___________________                               |
- *                       {StaveList, SlurList}                    Dummy     |
- *                             O         O                                  |
- *                             |         |                                  |
- *                             |         |                                  |
- *                           Stave     Slur                                 |
- *                             O                                            |
- *                             |                                            |
- *        _____________________________________________                     |
- *       {LyricList, TextList, DynamicList, MeasureList}          Dummy     |
- *             O         O            O            O                        |
- *             |         |            |            |                        |
- *             |         |            |            |                        |
- *           Lyric     Text        Dynamic      Measure                     |
- *             O                                   O                        |
- *             |                                   |                        |
- *             |                _______________________________             |
- *          Syllable           {ClefList, KeysigList, ChordList}  Dummy     |
- *                                  O           O          O                |
- *                                  |           |          |                |
- *                                  |           |          |                |
- *                                Clef       Keysig      Chord              |
- *                                                         O                |
- *                                                         |                |
- *                                                         |                |
- *                                                       Note               |
+ *                               Score                                    |
+ *                                 O                                      |
+ *                                 |                                      |
+ *                                 |                                      |
+ *                              System                                    |
+ *                                 O                                      |
+ *                                 |                                      |
+ *                        ___________________                             |
+ *                       {StaveList, SlurList}                    Dummy   |
+ *                             O         O                                |
+ *                             |         |                                |
+ *                             |         |                                |
+ *                           Stave     Slur                               |
+ *                             O                                          |
+ *                             |                                          |
+ *        _____________________________________________                   |
+ *       {LyricList, TextList, DynamicList, MeasureList}          Dummy   |
+ *             O         O            O            O                      |
+ *             |         |            |            |                      |
+ *             |         |            |            |                      |
+ *           Lyric     Text        Dynamic      Measure                   |
+ *             O                                   O                      |
+ *             |                                   |                      |
+ *             |                _______________________________           |
+ *          Syllable           {ClefList, KeysigList, ChordList}  Dummy   |
+ *                                  O           O          O              |
+ *                                  |           |          |              |
+ *                                  |           |          |              |
+ *                                Clef       Keysig      Chord            |
+ *                                                         O              |
+ *                                                         |              |
+ *                                                         |              |
+ *                                                       Note             |
  *  </pre>
  * </p>
  * <p/>
@@ -64,31 +64,40 @@ import java.awt.*;
  * Since the various score entities are organized in a tree of MusicNode
  * instances, we use a lot the ability to browse the complete hierarchy,
  * starting generally from the top (the score instance). </p>
- * <p/>
- * <p> This is launched by calling an <b>xxxChildren()</b> method on the score
- * instance. To benefit from this, one only has to provide a overriding
- * version of the <b>xxxNode()</b> method for the sub-classes where some
- * processing is needed, since the hierarchy traversal is done automatically.
- * </p>
- * <p/>
- * <p/>
- * Currently, traversals are implemented for:
- * <p/>
- * <ul> <li> Computation of cached parameters, by use of <b>computeNode()</b>
- * </li> <li> Painting of music entities in the dedicated score panel, by use
- * of <b>paintNode()</b> </li> <li> Colorization (setting colors) of related
- * sections, by use of <b>colorizeNode()</b> </li> <li> Rendering of related
- * sections (with preset colors), by use of <b>renderNode()</b> </li> </ul>
- * </p>
+ *
+ * <p> This is launched by calling an <b>xxxChildren()</b> method on the
+ * score instance. To benefit from this, one only has to provide a
+ * overriding version of the <b>xxxNode()</b> method for the sub-classes
+ * where some processing is needed, since the hierarchy traversal is done
+ * automatically.
+ *
+ * <p/> Currently, traversals are implemented for: <ul>
+ *
+ * <li> Computation of cached parameters, by use of <b>computeNode()</b>
+ * </li>
+ *
+ * <li> Painting of music entities in the dedicated score panel, by use of
+ * <b>paintNode()</b> </li>
+ *
+ * <li> Colorization (setting colors) of related sections, by use of
+ * <b>colorizeNode()</b> </li>
+ *
+ * <li> Rendering of related sections (with preset colors), by use of
+ * <b>renderNode()</b> </li>
+ *
+ * </ul> </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class MusicNode
     extends TreeNode
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(MusicNode.class);
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //-----------//
     // MusicNode //
@@ -108,7 +117,7 @@ public class MusicNode
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //------------------//
     // colorizeChildren //
@@ -140,7 +149,8 @@ public class MusicNode
     //-----------------//
 
     /**
-     * Pattern to launch computation recursively on all children of this node
+     * Pattern to launch computation recursively on all children of this
+     * node
      */
     public void computeChildren ()
     {
@@ -161,7 +171,8 @@ public class MusicNode
     //---------------//
 
     /**
-     * Just forwards the paint instruction to the direct depending children.
+     * Just forwards the paint instruction to the direct depending
+     * children.
      *
      * @param g the graphics context
      */
@@ -204,8 +215,8 @@ public class MusicNode
     //--------------//
 
     /**
-     * Placeholder for colorizing the sections that compose the physical info
-     * that corresponds to this MusicNode.
+     * Placeholder for colorizing the sections that compose the physical
+     * info that corresponds to this MusicNode.
      *
      * @param lag       the lag to be colorized
      * @param viewIndex the provided lag view index
@@ -243,8 +254,9 @@ public class MusicNode
 
     /**
      * Placeholder for painting the node at hand, and returning true is the
-     * rendering has been made, so that (contained) children will be painted
-     * only if their container has been painted, at least partially.
+     * rendering has been made, so that (contained) children will be
+     * painted only if their container has been painted, at least
+     * partially.
      *
      * @param g the graphics context
      *
@@ -260,9 +272,10 @@ public class MusicNode
     //------------//
 
     /**
-     * Placeholder for rendering the node at hand, and returning true is the
-     * rendering has been made, so that (contained) children will be rendered
-     * only if their container has been rendered, at least partially.
+     * Placeholder for rendering the node at hand, and returning true is
+     * the rendering has been made, so that (contained) children will be
+     * rendered only if their container has been rendered, at least
+     * partially.
      *
      * @param g the graphics context
      * @param z the display zoom

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.Main;
@@ -37,6 +37,9 @@ import javax.swing.event.ChangeListener;
  *
  * <p>Multiple sheets are handled by means of a tabbed pane. For each tab,
  * and thus for each sheet, we have a separate {@link SheetAssembly}.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class SheetPane
     extends JTabbedPane

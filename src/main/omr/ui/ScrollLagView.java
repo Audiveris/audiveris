@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.lag.LagView;
@@ -16,17 +16,20 @@ import omr.util.Logger;
 
 /**
  * Class <code>ScrollLagView</code> is a customized {@link ScrollView}
- * dedicated to the display of a {@link omr.lag.LagView}, with monitoring of
- * run and section informations
+ * dedicated to the display of a {@link omr.lag.LagView}, with monitoring
+ * of run and section informations
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ScrollLagView
     extends ScrollView
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static Logger logger = Logger.getLogger(ScrollLagView.class);
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //---------------//
     // ScrollLagView //
@@ -42,7 +45,7 @@ public class ScrollLagView
         setView(view);
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //---------//
     // getView //

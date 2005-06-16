@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.Main;
@@ -34,6 +34,9 @@ import java.util.List;
  * Class <code>ScorePane</code> encapsulates the horizontal display of all
  * the score systems in a horizontal and scrollable display. This is
  * organized as a JTabbedPane, with one tab for each score handled.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ScorePane
         extends JTabbedPane

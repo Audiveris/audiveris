@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.constant.Constant;
@@ -37,6 +37,9 @@ import omr.util.Logger;
  * </dd> </dl> </p>
  *
  * @see omr.score.ScoreView#BASE
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Scale
     implements java.io.Serializable

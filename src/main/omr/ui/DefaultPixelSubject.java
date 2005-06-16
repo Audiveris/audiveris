@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.util.DefaultSubject;
@@ -19,6 +19,9 @@ import java.awt.Rectangle;
 /**
  * Class <code>DefaultPixelSubject</code> is an implementation of the
  * specific {@link Subject} meant for {@link PixelObserver} observers
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class DefaultPixelSubject
     extends DefaultSubject<PixelSubject, PixelObserver, Point>

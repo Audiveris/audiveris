@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 import java.io.PrintWriter;
@@ -17,19 +17,19 @@ import java.util.logging.LogRecord;
 
 /**
  * Class <code>LogBasicFormatter</code> formats a log record.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class LogBasicFormatter
         extends Formatter
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // Line separator string.  This is the value of the line.separator
-    // property at the moment that the BasicFormatter was created.
-//     private String lineSeparator = (String) java.security.AccessController
-//                                        .doPrivileged(new sun.security.action.GetPropertyAction("line.separator"));
     private String lineSeparator = "\n";
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     /**
      * Format the given LogRecord.

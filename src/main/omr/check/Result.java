@@ -7,24 +7,27 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.check;
 
 /**
  * Class <code>Result</code> is the root of all result information stored
  * while processing processing checks.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public abstract class Result
         implements java.io.Serializable
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     /**
      * A readable comment about the result.
      */
     public final String comment;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //--------//
     // Result //
@@ -40,7 +43,7 @@ public abstract class Result
         this.comment = comment;
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------//
     // toString //

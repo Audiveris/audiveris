@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.math.Line;
@@ -19,6 +19,9 @@ import java.util.List;
 
 /**
  * Class <code>LineInfo</code> handles one stave line.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class LineInfo
     implements java.io.Serializable

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.constant;
 
 import omr.util.Logger;
@@ -27,6 +27,9 @@ import omr.util.Logger;
  * <ul> <li> {@link Constant.Boolean} </li> <li> {@link Constant.Color}
  * </li> <li> {@link Constant.Double} </li> <li> {@link Constant.Integer}
  * </li> <li> {@link Constant.String} </li> </ul> </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public abstract class Constant
 {
@@ -52,8 +55,8 @@ public abstract class Constant
     //----------//
 
     /**
-     * Creates a constant instance, while providing a default value, in case
-     * the external property is not yet defined.
+     * Creates a constant instance, while providing a default value, in
+     * case the external property is not yet defined.
      *
      * @param unit          Name of the enclosing class/unit
      * @param name          Name of the variable

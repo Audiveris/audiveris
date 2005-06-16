@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.util.Observer;
@@ -15,6 +15,9 @@ import omr.util.Observer;
 /**
  * Interface <code>GlyphObserver</code> defines an {@link Observer} for
  * {@link Glyph} information.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface GlyphObserver
     extends Observer<Glyph>

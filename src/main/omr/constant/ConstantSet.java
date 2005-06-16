@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.constant;
 
 import omr.util.Logger;
@@ -24,6 +24,9 @@ import java.util.TreeMap;
  *
  * <p>We recommend to define only one such static ConstantSet per
  * class/unit as a subclass of this (abstract) ConstantSet. </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public abstract class ConstantSet
 {

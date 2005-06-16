@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.util.Logger;
@@ -22,6 +22,9 @@ import javax.swing.border.*;
 /**
  * Class <code>Board</code> defines the common properties of any user board
  * such as PixelBoard, SectionBoard, and the like
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Board
     extends Panel

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 
 package omr.glyph.ui;
 
@@ -46,6 +46,9 @@ import omr.glyph.ui.GlyphRepository.Monitor;
  * <p> It handles two bases : the "whole base" (all glyphs) and the "core
  * base" (just the glyphs of the core) which are accessible by {@link
  * #getWholeBase} and {@link #getCoreBase} methods.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphRepository
 {

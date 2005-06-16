@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.score;
 
 import omr.sheet.SystemInfo;
@@ -25,6 +25,9 @@ import java.util.List;
  * <p/>
  * A system contains two direct children : staves and slurs, each in its
  * dedicated list </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class System
         extends MusicNode

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.math;
 
 import omr.util.Logger;
@@ -18,6 +18,9 @@ import java.io.*;
  * Class <code>NeuralNetwork</code> implements a back-propagation neural
  * network, with one input layer, one hidden layer and one output
  * layer. The transfer function is the sigmoid.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class NeuralNetwork
     implements java.io.Serializable

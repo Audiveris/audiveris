@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.graph;
 
 import java.awt.*;
@@ -15,11 +15,12 @@ import java.awt.*;
 /**
  * Interface <code>VertexView</code> defines the interface needed to handle
  * the rendering of a vertex.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface VertexView
 {
-    //~ Methods --------------------------------------------------------------
-
     //--------------//
     // getRectangle //
     //--------------//

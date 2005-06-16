@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.Main;
@@ -24,6 +24,9 @@ import java.util.List;
  * Class <code>GlyphRegression</code> is a glyph evaluator based on a
  * {@link omr.math.NeuralNetwork}.
  *
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphRegression
     extends Evaluator

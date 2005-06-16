@@ -7,17 +7,20 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.check;
 
 /**
  * Class <code>SuccessResult</code> is the root of all results that store a
  * success.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class SuccessResult
         extends Result
 {
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //---------------//
     // SuccessResult //
@@ -33,7 +36,7 @@ public class SuccessResult
         super(comment);
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------//
     // toString //

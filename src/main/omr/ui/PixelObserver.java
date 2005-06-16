@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.util.Observer;
@@ -18,6 +18,9 @@ import java.awt.Rectangle;
 /**
  * Interface <code>PixelObserver</code> defines an {@link Observer} for
  * pixel information (Point or Rectangle).
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface PixelObserver
     extends Observer<Point>

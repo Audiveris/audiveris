@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.ProcessingException;
@@ -19,7 +19,7 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.StaveInfo;
 import omr.sheet.SystemInfo;
-import omr.sheet.Verticals;
+import omr.sheet.VerticalsBuilder;
 import omr.stick.Stick;
 import omr.util.Dumper;
 import omr.util.Logger;
@@ -37,6 +37,9 @@ import java.util.Iterator;
  * Class <code>GlyphInspector</code> is dedicated to processing of
  * retrieved glyphs, their recognition based on features as used by a
  * neural network evaluator and a regression-based evaluator.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphInspector
 {
@@ -212,7 +215,7 @@ public class GlyphInspector
 
         // Retrieve stem/endings vertical candidates
         try {
-            new Verticals(sheet);
+            new VerticalsBuilder(sheet);
         } catch (ProcessingException ex) {
             // User already warned
             return;                     // Safer

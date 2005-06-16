@@ -7,21 +7,24 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.constant;
 
 /**
  * Abstract class <code>Node</code> represents a node in the hierarchy of
  * packages and units (aka classes).
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public abstract class Node
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // (Fully qualified) name of the node
     private final String name;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //------//
     // Node //
@@ -36,7 +39,7 @@ public abstract class Node
         this.name = name;
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //---------//
     // getName //
@@ -55,9 +58,9 @@ public abstract class Node
     // toString //
     //----------//
     /**
-     * Since <code>toString()</code> is used by JTreeTable to display the node
-     * name, this method return the last path component of the node, in other
-     * words the non-qualified name.
+     * Since <code>toString()</code> is used by JTreeTable to display the
+     * node name, this method return the last path component of the node,
+     * in other words the non-qualified name.
      *
      * @return the non-qualified node name
      */

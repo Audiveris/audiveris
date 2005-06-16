@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
@@ -28,6 +28,9 @@ import java.util.List;
  * instances of {@link GlyphPane}, {@link SymbolGlyphBoard}, etc... So its
  * implementation consists mainly in overridden methods to allow updating
  * of these other relevant entities.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class SymbolGlyphView
     extends GlyphLagView

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.math;
 
 import omr.util.Logger;
@@ -15,22 +15,25 @@ import omr.util.Logger;
 /**
  * Class <code>Cumul</code> is used to cumulate measurements, and compute
  * standard deviation and variance on them.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Cumul
     implements java.io.Serializable
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(Cumul.class);
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // Instance stuff
     private int n = 0; // Number of measurements
     private double s = 0d; // Sum of measured values
     private double s2 = 0d; // Sum of squared measured values
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //-------//
     // Cumul //
@@ -43,7 +46,7 @@ public class Cumul
     {
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //---------//
     // getMean //

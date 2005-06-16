@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.graph;
 
 import omr.util.Logger;
@@ -36,6 +36,9 @@ import java.util.TreeMap;
  *
  * @param <D> precise (sub)type for the graph
  * @param <V> precise type for handled vertices
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Digraph <D extends Digraph <D, V>,
                       V extends Vertex>

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.util.Subject;
@@ -18,6 +18,9 @@ import java.awt.Rectangle;
 /**
  * Interface <code>PixelSubject</code> is a specific {@link Subject} meant
  * for {@link PixelObserver} observers
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface PixelSubject
     extends Subject<PixelSubject, PixelObserver, Point>

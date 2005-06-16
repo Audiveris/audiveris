@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
@@ -34,6 +34,9 @@ import javax.swing.event.*;
  * Class <code>ShapeFocus</code> handles the shape that receives current
  * focus, and all glyphs whose shape or guess correspond to the focus
  * (for example all treble clefs glyphs if such is the focus)
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ShapeFocus
     extends Panel

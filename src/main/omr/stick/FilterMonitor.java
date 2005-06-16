@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.stick;
 
 /**
@@ -15,6 +15,9 @@ package omr.stick;
  * information can be told to a dedicated monitor. This interface is used
  * to pass check results to the board where such info is displayed.
  *
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface FilterMonitor
 {

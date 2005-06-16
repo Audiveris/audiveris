@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.Main;
@@ -55,6 +55,9 @@ import javax.swing.WindowConstants;
  * picture.
  *
  * @see Skew
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class SkewBuilder
 {

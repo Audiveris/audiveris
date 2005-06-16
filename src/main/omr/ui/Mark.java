@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.util.Logger;
@@ -17,14 +17,17 @@ import java.awt.*;
 
 /**
  * Class <code>Mark</code> handles a visible mark, related to a location.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Mark
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(Mark.class);
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     private final Color color;
     private final Stroke stroke;
@@ -32,7 +35,7 @@ public class Mark
     private final Point center = new Point();
     private boolean active = false;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //------//
     // Mark //
@@ -77,7 +80,7 @@ public class Mark
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------//
     // isActive //

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 import java.util.ArrayList;
@@ -16,22 +16,27 @@ import java.util.List;
 /**
  * Class <code>TreeNode</code> handles a node in a tree hierarchy, which is
  * typically the tree organization of a score entity.
- * <p/>
- * <p/>
- * A TreeNode has :
- * <p/>
- * <ul> <li> A container (which may be null) to which the TreeNode belongs
- * </li> <li> A list (which may be empty) of contained chidren, for which the
- * TreeNode is the container. </li> </ul> </p>
+ *
+ * <p/> A TreeNode has : <ul>
+ *
+ * <li> A container (which may be null) to which the TreeNode belongs
+ *
+ * <li> A list (which may be empty) of contained chidren, for which the
+ * TreeNode is the container.
+ *
+ * </ul>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class TreeNode
     implements java.io.Serializable
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(TreeNode.class);
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     /**
      * Container : the node just above in the tree
@@ -43,7 +48,7 @@ public class TreeNode
      */
     protected final List<TreeNode> children = new ArrayList<TreeNode>();
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //----------//
     // TreeNode //
@@ -65,7 +70,7 @@ public class TreeNode
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //-------------//
     // setChildren //
@@ -74,8 +79,8 @@ public class TreeNode
     /**
      * Set a (new) list of children
      *
-     * @param children the list of nodes to register as children of the node
-     *                 at hand
+     * @param children the list of nodes to register as children of the
+     *                 node at hand
      */
     public void setChildren (List<? extends TreeNode> children)
     {

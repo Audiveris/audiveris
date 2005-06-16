@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.math;
 
 import omr.util.Logger;
@@ -15,6 +15,9 @@ import omr.util.Logger;
 /**
  * Class <code>Moments</code> encapsulates the set of all moments that
  * characterize a figure made of points.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Moments
     implements java.io.Serializable

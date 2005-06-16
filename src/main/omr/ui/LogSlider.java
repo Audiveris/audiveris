@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import javax.swing.*;
@@ -15,6 +15,9 @@ import java.util.Hashtable;
 
 /**
  * Class <code>LogSlider</code> builds a slider with a logarithmic scale
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class LogSlider
         extends JSlider

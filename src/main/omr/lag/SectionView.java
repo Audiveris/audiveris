@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 import omr.constant.Constant;
@@ -27,6 +27,9 @@ import java.awt.Graphics;
  * features needed by a vertical or horizontal section view.
  *
  * <p>The sections are displayed using 3 different colors.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class SectionView <L extends Lag     <L, S>,
                           S extends Section <L, S>>

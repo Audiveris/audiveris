@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.score;
 
 import omr.util.Dumper;
@@ -30,6 +30,9 @@ import java.util.List;
 /**
  * Class <code>ScoreTree</code> provides a user interface (a frame) where
  * the whole score hierarchy can be browsed as a tree.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ScoreTree
         extends JPanel

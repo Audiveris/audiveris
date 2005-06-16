@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.stick;
 
 import omr.glyph.Glyph;
@@ -24,8 +24,11 @@ import java.util.Collection;
  * Class <code>StickView</code> is a specific {@link omr.lag.LagView}
  * dedicated to the display and processing of selected stick.
  *
- * A {@link FilterMonitor} interface can be connected to this view, to display
- * information about the filtered stick.
+ * A {@link FilterMonitor} interface can be connected to this view, to
+ * display information about the filtered stick.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class StickView
     extends GlyphLagView
@@ -39,8 +42,8 @@ public class StickView
     // StickView //
     //-----------//
     /**
-     * Create a StickView as a LagView, with lag and potential specific collection
-     * of sections
+     * Create a StickView as a LagView, with lag and potential specific
+     * collection of sections
      *
      * @param lag the related lag
      * @param specific the specific sections if any, otherwise null
@@ -59,8 +62,8 @@ public class StickView
     // setFilterMonitor //
     //------------------//
     /**
-     * Connect a FilterMonitor to this view, in order to display related stick
-     * information
+     * Connect a FilterMonitor to this view, in order to display related
+     * stick information
      *
      * @param filterMonitor the monitor to connect
      */

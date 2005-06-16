@@ -7,11 +7,13 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
 
 /**
- * Class <code>Audiveris</code> is simply the entry point to OMR.
- */
+* Class <code>Audiveris</code> is simply the entry point to OMR.
+*
+* @author Herv&eacute; Bitteur
+* @version $Id$
+*/
 public class Audiveris
 {
     //~ Constructors ------------------------------------------------------

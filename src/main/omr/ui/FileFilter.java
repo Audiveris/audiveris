@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.util.FileUtil;
@@ -17,16 +17,19 @@ import java.io.File;
 /**
  * Class <code>FileFilter</code> is a dialog to let the user choose
  * interactively among a hierarchy of files.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class FileFilter
     extends javax.swing.filechooser.FileFilter
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     private final String description;
     private final String[] extensions;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //------------//
     // FileFilter //
@@ -47,8 +50,8 @@ public class FileFilter
     //------------//
 
     /**
-     * Create a file filter, with only one file extension to consider, and a
-     * related description.
+     * Create a file filter, with only one file extension to consider, and
+     * a related description.
      *
      * @param description the description to be displayed
      * @param extension   the only file name extension to consider
@@ -90,7 +93,7 @@ public class FileFilter
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------------//
     // getDescription //

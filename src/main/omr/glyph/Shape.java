@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.Main;
@@ -38,6 +38,9 @@ import java.awt.Color;
  * <p>Since this font does not contain all desired symbols, we also use
  * icons that are manually built, to fill the missing
  * ones. (<b>Nota</b>These icons are currently disabled)
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public enum Shape
     implements java.io.Serializable

@@ -7,24 +7,28 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 /**
- * Class <code>JunctionPolicy</code> encapsulates the policy that decides if a
- * run can extend a given section. If not, the run is part of a new section,
- * linked to the previous one by a junction.
+ * Class <code>JunctionPolicy</code> encapsulates the policy that decides
+ * if a run can extend a given section. If not, the run is part of a new
+ * section, linked to the previous one by a junction.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public abstract class JunctionPolicy
 {
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //---------------//
     // consistentRun //
     //---------------//
 
     /**
-     * Check if provided run is consistent with the section as defined so far
+     * Check if provided run is consistent with the section as defined so
+     * far
      *
      * @param run     the candidate run for section extension
      * @param section the to-be extended section

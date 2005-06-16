@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.Main;
@@ -63,6 +63,9 @@ import javax.swing.event.*;
  * and their lines are carefully cleaned up when an object crosses
  * them. Note that staves are not yet gathered into Systems, this will be
  * done in the BarsBuilder processing.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class LinesBuilder
     implements GlyphDirectory

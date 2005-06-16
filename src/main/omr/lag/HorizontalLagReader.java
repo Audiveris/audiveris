@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 import omr.sheet.Picture;
@@ -17,6 +17,9 @@ import java.util.List;
 /**
  * Class <code>HorizontalLagReader</code> is a {@link LagReader} optimized
  * for a lag made of horizontal sections.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class HorizontalLagReader
     extends LagReader

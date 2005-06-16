@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.util.Logger;
@@ -22,20 +22,23 @@ import java.awt.Rectangle;
  * <i>paintComponent</i> method is declared final to ensure that the
  * rendering is done in proper sequence, with the rubber rectangle rendered
  * at the end on top of any other stuff.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class RubberZoomedPanel
     extends ZoomedPanel
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(RubberZoomedPanel.class);
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     /** Rubber band mouse handling */
     protected Rubber rubber;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //-------------------//
     // RubberZoomedPanel //
@@ -55,8 +58,8 @@ public class RubberZoomedPanel
     // RubberZoomedPanel //
     //-------------------//
     /**
-     * Create a RubberZoomedPanel, with the specified Rubber to interact via
-     * the mouse.
+     * Create a RubberZoomedPanel, with the specified Rubber to interact
+     * via the mouse.
      *
      * @param rubber the rubber instance to be linked to this panel
      */
@@ -73,7 +76,7 @@ public class RubberZoomedPanel
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //-----------//
     // reDisplay //
@@ -126,8 +129,9 @@ public class RubberZoomedPanel
     // setRubber //
     //-----------//
     /**
-     * Allows to provide the rubber instance, only after this RubberZoomedPanel has
-     * been built. This can be use to solve circular elaboration problems.
+     * Allows to provide the rubber instance, only after this
+     * RubberZoomedPanel has been built. This can be use to solve circular
+     * elaboration problems.
      *
      * @param rubber the rubber instance to be used
      */

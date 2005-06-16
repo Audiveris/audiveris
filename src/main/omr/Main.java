@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr;
 
 import omr.constant.Constant;
@@ -63,6 +63,9 @@ import java.util.StringTokenizer;
  * irrelevant) as defined in the {@link omr.sheet.Sheet} class.
  *
  * </dd> </dl>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Main
 {

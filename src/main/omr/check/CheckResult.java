@@ -7,13 +7,16 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.check;
 
 /**
  * Class <code>CheckResult</code> encapsulates the <b>result</b> of a
  * check, composed of a value (double) and a flag which can be RED, YELLOW
  * or GREEN.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class CheckResult
 {

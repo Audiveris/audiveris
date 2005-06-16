@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph.ui;
 
 import omr.glyph.Evaluation;
@@ -32,6 +32,9 @@ import javax.swing.border.*;
 /**
  * Class <code>EvaluatorsPanel</code> is dedicated to the display of
  * evaluation results performed by a pool of evaluators
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class EvaluatorsPanel
     extends Panel

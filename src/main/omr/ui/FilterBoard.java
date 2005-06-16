@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.stick.FilterMonitor;
@@ -19,8 +19,11 @@ import com.jgoodies.forms.layout.*;
 import javax.swing.JEditorPane;
 
 /**
- * Class <code>FilterBoard</code> defines a board dedicated to the display of
- * HTML-coded filter information.
+ * Class <code>FilterBoard</code> defines a board dedicated to the display
+ * of HTML-coded filter information.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class FilterBoard
     extends Board

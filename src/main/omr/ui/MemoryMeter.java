@@ -3,12 +3,7 @@
 //                         M e m o r y M e t e r                         //
 //                                                                       //
 //-----------------------------------------------------------------------//
-//      $Id$
 
-/*
- * Company:     Auditop SA.
- *                      http://www.auditop.com
- */
 package omr.ui;
 
 import javax.swing.*;
@@ -20,6 +15,9 @@ import java.net.URL;
  * A memory meter panel that displays used/total memory allocated to the
  * JVM and allows for running the garbage collector (this file was
  * initially written by Auditop, it is to be re-written someday)
+ *
+ * @author Auditop SA. http://www.auditop.com
+ * @version $Id$
  */
 public class MemoryMeter
     extends JPanel

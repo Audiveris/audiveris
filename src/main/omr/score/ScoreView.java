@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.score;
 
 import omr.Main;
@@ -33,6 +33,9 @@ import java.util.Iterator;
  * from the Audiveris application. The file is still here, because of
  * dependencies on logical constants. This should be cleaned up someday of
  * course.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ScoreView
         extends JPanel

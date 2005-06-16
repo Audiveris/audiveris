@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 import java.io.File;
@@ -19,6 +19,9 @@ import java.nio.channels.FileChannel;
 
 /**
  * Class <code>FileUtil</code> gathers convenient utility methods for files
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class FileUtil
 {
@@ -31,10 +34,16 @@ public class FileUtil
     // getExtension //
     //--------------//
     /**
-     * From a file "path/name.ext", return the ".ext" part. <b>Nota</b>, the
-     * dot character is part of the extension, since we could have the
-     * following cases: <ul> <li> "path/name.ext" -> ".ext" <li> "path/name."
-     * -> "." (just the dot) <li> "path/name" -> "" (the empty string) </ul>
+     * From a file "path/name.ext", return the ".ext" part.
+     *
+     * <P><b>Nota</b>, the dot character is part of the extension, since we
+     * could have the following cases: <ul>
+     *
+     * <li> "path/name.ext" -> ".ext"
+     *
+     * <li> "path/name."  -> "." (just the dot)
+     *
+     * <li> "path/name" -> "" (the empty string) </ul>
      *
      * @param file the File to process
      *

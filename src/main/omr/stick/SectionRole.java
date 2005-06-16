@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.stick;
 
 import java.awt.*;
@@ -17,6 +17,9 @@ import static java.awt.Color.*;
 /**
  * Class <code>SectionRole</code> handles the role of a section in the
  * building of a stick.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public enum SectionRole
 {

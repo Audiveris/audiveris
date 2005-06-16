@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.score;
 
 import omr.sheet.Sheet;
@@ -22,19 +22,22 @@ import java.util.List;
 /**
  * Class <code>Score</code> handles a score hierarchy, composed of one or
  * several systems of staves.
- * <p/>
- * <p>There is no more notion of pages, since all sheet parts are supposed to
- * have been deskewed and concatenated beforehand in one single picture and
- * thus one single score.
+ *
+ * <p>There is no more notion of pages, since all sheet parts are supposed
+ * to have been deskewed and concatenated beforehand in one single picture
+ * and thus one single score.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Score
     extends MusicNode
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(Score.class);
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // The related file radix (path + name w/o extension)
     private String radix;
@@ -61,15 +64,15 @@ public class Score
     // The view on this score if any
     private transient ScoreView view;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //-------//
     // Score //
     //-------//
 
     /**
-     * Creates a blank score, to be fed with informations from sheet analysis
-     * or from Castor.
+     * Creates a blank score, to be fed with informations from sheet
+     * analysis or from Castor.
      */
     public Score ()
     {
@@ -111,7 +114,7 @@ public class Score
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------//
     // addChild //
@@ -230,8 +233,8 @@ public class Score
     //----------//
 
     /**
-     * Report the radix of the file that corresponds to the score. It is based
-     * on the name of the sheet of this score, with no extension.
+     * Report the radix of the file that corresponds to the score. It is
+     * based on the name of the sheet of this score, with no extension.
      *
      * @return the score file radix
      */
@@ -619,7 +622,8 @@ public class Score
     /**
      * Retrieve the system 'x' is pointing to.
      *
-     * @param x the point abscissa, unzoomed, in the SCORE horizontal display
+     * @param x the point abscissa, unzoomed, in the SCORE horizontal
+     * display
      *
      * @return the nearest system
      */
@@ -764,19 +768,4 @@ public class Score
         // Return the last system in the score
         return recentSystem = system;
     }
-
-//     private void writeObject(java.io.ObjectOutputStream os)
-//         throws java.io.IOException
-//     {
-//         java.lang.System.err.println("wo " + getClass().getName() + " " + this);
-//         os.defaultWriteObject();
-//     }
-
-//     private void readObject(java.io.ObjectInputStream is)
-//         throws java.io.IOException,
-//                ClassNotFoundException
-//     {
-//         is.defaultReadObject();
-//         java.lang.System.err.println("ro " + getClass().getName() + " " + this);
-//     }
 }

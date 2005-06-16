@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.stick.Stick;
@@ -15,6 +15,9 @@ import omr.stick.Stick;
 /**
  * Class <code>Ledger</code> is a physical {@link Dash} which is logically
  * a Ledger (to represents portions of virtual staff lines)
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Ledger
     extends Dash

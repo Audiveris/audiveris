@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 import java.text.DateFormat;
@@ -17,13 +17,16 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Class <code>Clock</code> provides various features related to the current
- * date and time, as well as the elapsed time since the beginning of the
- * application.
+ * Class <code>Clock</code> provides various features related to the
+ * current date and time, as well as the elapsed time since the beginning
+ * of the application.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Clock
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     // To have a reference time
     private static long startTime = System.currentTimeMillis();
@@ -58,7 +61,7 @@ public class Clock
     {
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //---------//
     // getDate //
@@ -81,9 +84,9 @@ public class Clock
 
     /**
      * Retrieves the number of milliseconds since the reference start time,
-     * and formats a standardized string using seconds and milliseconds. NB:
-     * The start time is usually the time when this class was elaborated. It
-     * can also be later reset, via the 'reset' method.
+     * and formats a standardized string using seconds and
+     * milliseconds. NB: The start time is usually the time when this class
+     * was elaborated. It can also be later reset, via the 'reset' method.
      *
      * @return A standardized duration string
      */

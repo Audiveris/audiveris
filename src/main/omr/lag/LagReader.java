@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 import omr.sheet.Picture;
@@ -23,6 +23,9 @@ import java.util.List;
  * proper orientation horizontal / vertical.
  *
  * <p>These runs can then be used to build a lag, using {@link LagBuilder}.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class LagReader
         implements Run.Reader

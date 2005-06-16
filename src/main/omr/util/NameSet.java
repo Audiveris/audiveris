@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 import omr.constant.Constant;
@@ -30,6 +30,9 @@ import java.util.StringTokenizer;
  *
  * <p> The NameSet can additionally be used to dynamically generate and
  * handle a menu. </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class NameSet
 {

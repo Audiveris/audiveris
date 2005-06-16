@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.Main;
@@ -35,19 +35,22 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>SheetAssembly</code> is a UI assembly dedicated to the display
- * of one sheet, gathering a {@link Zoom}, a related {@link LogSlider}, a
- * mouse {@link Rubber}, and a tabbed collection of {@link ScrollView}'s for
- * all views of this sheet.
+ * Class <code>SheetAssembly</code> is a UI assembly dedicated to the
+ * display of one sheet, gathering a {@link Zoom}, a related {@link
+ * LogSlider}, a mouse {@link Rubber}, and a tabbed collection of {@link
+ * ScrollView}'s for all views of this sheet.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class SheetAssembly
     extends JPanel
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(SheetAssembly.class);
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // Link with sheet
     private final Sheet sheet;
@@ -60,7 +63,7 @@ public class SheetAssembly
     // Map to retrieve the boardspane related to a tab
     private final Map<Integer, BoardsPane> boardsPaneMap;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //---------------//
     // SheetAssembly //
@@ -101,16 +104,16 @@ public class SheetAssembly
         boardsPaneMap = new HashMap<Integer, BoardsPane>();
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //------------------//
     // assemblySelected //
     //------------------//
     /**
-     * Method called when this sheet assembly is selected (since we can have
-     * several sheets displayed, each one with its own sheet assembly). This
-     * is called from {@link SheetPane} when the tab of another sheet is
-     * selected.
+     * Method called when this sheet assembly is selected (since we can
+     * have several sheets displayed, each one with its own sheet
+     * assembly). This is called from {@link SheetPane} when the tab of
+     * another sheet is selected.
      */
     public void assemblySelected()
     {
@@ -239,7 +242,7 @@ public class SheetAssembly
         }
     }
 
-    //~ Classes --------------------------------------------------------------
+    //~ Classes -----------------------------------------------------------
 
     //--------------//
     // MyTabbedPane //
@@ -248,18 +251,18 @@ public class SheetAssembly
         extends JTabbedPane
         implements ChangeListener
     {
-        //~ Instance variables -----------------------------------------------
+        //~ Instance variables --------------------------------------------
 
         protected ScrollView previousScrollView;
 
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         public MyTabbedPane ()
         {
             addChangeListener(this);
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         //--------------//
         // stateChanged //
@@ -291,8 +294,9 @@ public class SheetAssembly
             // Restore proper boardspane
             updateBoards();
 
-//             // Chance for the selected and the de-selected views to add their
-//             // own processing.
+//             // Chance for the selected and the de-selected views to add
+//             their own processing.
+
 //             scrollView.viewSelected();
 //             previousScrollView.viewDeselected();
 

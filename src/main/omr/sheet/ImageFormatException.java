@@ -7,12 +7,15 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 /**
  * Class <code>ImageFormatException</code> describes an exception raised
  * when a non-handled format is detected in an image file.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ImageFormatException
         extends Exception

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.glyph.Glyph;
@@ -24,6 +24,9 @@ import java.util.Comparator;
  * picture about a retrieved system.
  *
  * <p>Nota: All measurements are assumed in pixels.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class SystemInfo
         implements java.io.Serializable
@@ -286,8 +289,13 @@ public class SystemInfo
     }
 
     //-----------//
-    // setGlyphs // For Castor
+    // setGlyphs //
     //-----------//
+    /**
+     * For Castor, to set the list of glyphs
+     *
+     * @param glyphs the list of system glyphs
+     */
     public void setGlyphs (List<Glyph> glyphs)
     {
         this.glyphs = glyphs;
@@ -296,6 +304,11 @@ public class SystemInfo
     //-----------//
     // getGlyphs //
     //-----------//
+    /**
+     * Report the list of glyphs within the system area
+     *
+     * @return the list of glyphs
+     */
     public List<Glyph> getGlyphs ()
     {
         return glyphs;
@@ -345,6 +358,11 @@ public class SystemInfo
     //-------------------//
     // getMaxLedgerWidth //
     //-------------------//
+    /**
+     * Report the maximum width of ledgers within the system
+     *
+     * @return the maximum width in pixels
+     */
     public int getMaxLedgerWidth()
     {
         if (maxLedgerWidth == -1) {
@@ -412,6 +430,11 @@ public class SystemInfo
     //-----------------//
     // getMaxStemWidth //
     //-----------------//
+    /**
+     * Report the maximum width of stems found within the system
+     *
+     * @return the maximum width in pixels
+     */
     public int getMaxStemWidth()
     {
         if (maxStemWidth == -1) {
@@ -529,6 +552,11 @@ public class SystemInfo
     //-------------//
     // setStartIdx //
     //-------------//
+    /**
+     * Set the index of the starting stave of this system
+     *
+     * @param startIdx the staff index, counted from 0
+     */
     public void setStartIdx (int startIdx)
     {
         this.startIdx = startIdx;
@@ -537,6 +565,12 @@ public class SystemInfo
     //-------------//
     // getStaveAtY //
     //-------------//
+    /**
+     * Given an ordinate value, retrieve the closest stave within the system
+     *
+     * @param y the ordinate value
+     * @return the "containing" stave
+     */
     public StaveInfo getStaveAtY (int y)
     {
         for (StaveInfo stave : staves) {
@@ -568,6 +602,11 @@ public class SystemInfo
     //------------//
     // setStopIdx //
     //------------//
+    /**
+     * Set the index of the terminating staff of this system
+     *
+     * @param stopIdx the stopping staff index, counted from 0
+     */
     public void setStopIdx (int stopIdx)
     {
         this.stopIdx = stopIdx;

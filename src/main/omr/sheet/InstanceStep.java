@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.ProcessingException;
@@ -19,6 +19,9 @@ import java.io.Serializable;
  *
  * @param <R> the type produced by the step as result
  * @see omr.Step The various steps defined
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public abstract class InstanceStep <R>
     implements java.io.Serializable

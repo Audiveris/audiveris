@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import javax.swing.JLabel;
@@ -17,6 +17,9 @@ import javax.swing.SwingConstants;
  * Class <code>LField</code> is a logical combination of a JLabel and an
  * {@link SField}, a "Labelled Field", where the label describes the
  * dynamic content of the field.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class LField
 {

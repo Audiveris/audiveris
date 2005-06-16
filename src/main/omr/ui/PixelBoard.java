@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import com.jgoodies.forms.builder.*;
@@ -21,6 +21,9 @@ import javax.swing.*;
  * Class <code>PixelBoard</code> is a board that displays pixel information
  * as provided by other entities (output side), and which can also be used
  * by a user to directly specify pixel coordinate values (input side).
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class PixelBoard
     extends Board

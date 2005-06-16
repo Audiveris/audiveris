@@ -7,20 +7,23 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.constant;
 
 import omr.util.Logger;
 
 /**
- * Class <code>UnitNode</code> represents a unit (class) in the hierarchy of
- * nodes. It represents a class and can have either a Logger, a ConstantSet,
- * or both.
+ * Class <code>UnitNode</code> represents a unit (class) in the hierarchy
+ * of nodes. It represents a class and can have either a Logger, a
+ * ConstantSet, or both.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class UnitNode
         extends Node
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // The contained Constant set if any
     private ConstantSet set;
@@ -28,7 +31,7 @@ public class UnitNode
     // The logger if any
     private Logger logger;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //----------//
     // UnitNode //
@@ -43,7 +46,7 @@ public class UnitNode
         super(name);
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //-----------//
     // setLogger //

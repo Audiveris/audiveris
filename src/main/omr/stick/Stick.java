@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.stick;
 
 import omr.glyph.Glyph;
@@ -33,8 +33,12 @@ import java.util.Set;
  * stick.
  *
  * <ul> <li> Staff lines, ledgers, alternate ends are examples of
- * horizontal sticks </li> <li> Bar lines, stems are examples of vertical
- * sticks </li> </ul>
+ * horizontal sticks </li>
+ *
+ * <li> Bar lines, stems are examples of vertical sticks </li> </ul>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Stick
         extends Glyph

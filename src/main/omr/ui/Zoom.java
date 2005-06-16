@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.constant.Constant;
@@ -31,6 +31,9 @@ import javax.swing.event.*;
  *
  * <p>Stolen from Swing implementation, it also handles a list of change
  * listeners.  </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Zoom
 {

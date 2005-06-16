@@ -7,19 +7,22 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 import org.apache.log4j.spi.LoggerFactory;
 
 /**
- * Class <code>OmrLoggerFactory</code> is used to force creation of OMR-custom
- * Logger entities (from omr.util.Logger) by the log4j utility.
+ * Class <code>OmrLoggerFactory</code> is used to force creation of
+ * OMR-custom Logger entities (from omr.util.Logger) by the log4j utility.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class OmrLoggerFactory
         implements LoggerFactory
 {
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //-----------------------//
     // makeNewLoggerInstance //

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 /**
@@ -17,6 +17,9 @@ package omr.util;
  *
  * @param <K> type for the key
  * @param <E> type for the entity
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface Directory <K, E>
 {

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import javax.swing.JLabel;
@@ -16,6 +16,9 @@ import javax.swing.JTextField;
 /**
  * Class <code>LIntegerField</code> is an {@link LField}, whose field is
  * meant to handle an integer value.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class LIntegerField
     extends LField

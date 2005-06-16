@@ -7,18 +7,21 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 /**
- * Class <code>JunctionRatioPolicy</code> defined a junction policy based on
- * the ratio between the length of the candidate run and the mean length of
- * the section runs so far.
+ * Class <code>JunctionRatioPolicy</code> defined a junction policy based
+ * on the ratio between the length of the candidate run and the mean length
+ * of the section runs so far.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class JunctionRatioPolicy
         extends JunctionPolicy
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     /**
      * Maximum value acceptable for height ratio, for a ratio criteria
@@ -30,7 +33,7 @@ public class JunctionRatioPolicy
      */
     private final double minHeightRatio;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //---------------------//
     // JunctionRatioPolicy //
@@ -40,8 +43,8 @@ public class JunctionRatioPolicy
      * Creates a policy based on ratio of run length versus mean length of
      * section runs
      *
-     * @param maxHeightRatio maximum difference ratio to continue the current
-     *                       section
+     * @param maxHeightRatio maximum difference ratio to continue the
+     *                       current section
      */
     public JunctionRatioPolicy (double maxHeightRatio)
     {
@@ -49,7 +52,7 @@ public class JunctionRatioPolicy
         this.minHeightRatio = 1f / maxHeightRatio;
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //---------------//
     // consistentRun //

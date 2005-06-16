@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.Main;
@@ -34,6 +34,9 @@ import javax.swing.border.Border;
  * Class <code>Jui</code> is the Java User Interface, the main class for
  * displaying a score, the related sheet, the message log and the various
  * tools.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Jui
     extends JFrame

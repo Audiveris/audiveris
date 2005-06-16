@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.constant.Constant;
@@ -39,6 +39,9 @@ import java.awt.event.MouseEvent;
  * investigated, TBD.
  *
  * @see RubberZoomedPanel
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public abstract class ZoomedPanel
     extends JPanel

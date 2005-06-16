@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.constant.Constant;
@@ -34,6 +34,9 @@ import java.util.List;
  * Class <code>GlyphBuilder</code> is in charge of building glyphs, it
  * handles the gathering of remaining glyphs out of a sheet, as well as the
  * building of compound glyphs.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphBuilder
 {

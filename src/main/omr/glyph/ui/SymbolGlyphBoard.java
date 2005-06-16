@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
@@ -37,6 +37,9 @@ import javax.swing.event.*;
  * too small glyphs, are not included in this spinner.
  *
  * </ul>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class SymbolGlyphBoard
     extends GlyphBoard

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.Main;
@@ -50,13 +50,16 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 /**
- * Class <code>HorizontalsBuilder</code> is in charge of retrieving horizontal
- * dashes in the given sheet.
+ * Class <code>HorizontalsBuilder</code> is in charge of retrieving
+ * horizontal dashes in the given sheet.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class HorizontalsBuilder
     implements GlyphDirectory
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Constants constants = new Constants();
     private static final Logger logger = Logger.getLogger(HorizontalsBuilder.class);
@@ -104,7 +107,7 @@ public class HorizontalsBuilder
     // Specific model on section id
     private SpinnerModel idModel;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //--------------------//
     // HorizontalsBuilder //
@@ -119,7 +122,7 @@ public class HorizontalsBuilder
         info = new Horizontals();
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //-----------//
     // getEntity //
@@ -133,8 +136,8 @@ public class HorizontalsBuilder
     // buildInfo //
     //-----------//
     /**
-     * Run the Horizontals step, searching all horizontal sticks for typical
-     * things like ledgers, endings and legato signs.
+     * Run the Horizontals step, searching all horizontal sticks for
+     * typical things like ledgers, endings and legato signs.
      *
      * @return the built Horizontals info
      * @throws ProcessingException raised is process gets stopped
@@ -307,7 +310,7 @@ public class HorizontalsBuilder
         return sheet.getScale().pixelsToFrac(dist);
     }
 
-    //~ Classes --------------------------------------------------------------
+    //~ Classes -----------------------------------------------------------
 
     //--------//
     // MyView //
@@ -315,7 +318,7 @@ public class HorizontalsBuilder
     private class MyView
         extends StickView
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         public MyView (GlyphLag lag,
                        List<GlyphSection> members)
@@ -323,7 +326,7 @@ public class HorizontalsBuilder
             super(lag, members, HorizontalsBuilder.this);
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         //----------//
         // colorize //
@@ -335,9 +338,9 @@ public class HorizontalsBuilder
 
             final int viewIndex = lag.getViews().indexOf(this);
 
-            // All checked sticks. Perhaps, recognized sticks should no longer
-            // be part of the list, since they'll be colorized a few lines
-            // below... TBD
+            // All checked sticks. Perhaps, recognized sticks should no
+            // longer be part of the list, since they'll be colorized a few
+            // lines below... TBD
             for (Stick stick : horizontalsArea.getSticks()) {
                 if (stick.getResult() != LEDGER &&
                     stick.getResult() != ENDING) {
@@ -390,7 +393,7 @@ public class HorizontalsBuilder
     private class MinThicknessCheck
             extends Check<Stick>
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         protected MinThicknessCheck ()
         {
@@ -398,7 +401,7 @@ public class HorizontalsBuilder
                   constants.minThicknessHigh.getValue(), true, TOO_THIN);
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         // Retrieve the thickness data
         protected double getValue (Stick stick)
@@ -413,7 +416,7 @@ public class HorizontalsBuilder
     private class MaxThicknessCheck
             extends Check<Stick>
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         protected MaxThicknessCheck ()
         {
@@ -421,7 +424,7 @@ public class HorizontalsBuilder
                   constants.maxThicknessHigh.getValue(), false, TOO_THICK);
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         // Retrieve the thickness data
         protected double getValue (Stick stick)
@@ -436,7 +439,7 @@ public class HorizontalsBuilder
     private class MinLengthCheck
             extends Check<Stick>
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         protected MinLengthCheck (double low,
                                   double high)
@@ -444,7 +447,7 @@ public class HorizontalsBuilder
             super("MinLength", low, high, true, TOO_SHORT);
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         // Retrieve the length data
         protected double getValue (Stick stick)
@@ -459,7 +462,7 @@ public class HorizontalsBuilder
     private class MaxLengthCheck
             extends Check<Stick>
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         protected MaxLengthCheck ()
         {
@@ -467,7 +470,7 @@ public class HorizontalsBuilder
                   constants.maxLengthHigh.getValue(), false, TOO_LONG);
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         // Retrieve the length data
         protected double getValue (Stick stick)
@@ -482,7 +485,7 @@ public class HorizontalsBuilder
     private class MinDensityCheck
             extends Check<Stick>
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         protected MinDensityCheck ()
         {
@@ -490,7 +493,7 @@ public class HorizontalsBuilder
                   constants.minDensityHigh.getValue(), true, TOO_HOLLOW);
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         // Retrieve the density
         protected double getValue (Stick stick)
@@ -508,7 +511,7 @@ public class HorizontalsBuilder
     private class MinDistCheck
             extends Check<Stick>
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         protected MinDistCheck ()
         {
@@ -517,7 +520,7 @@ public class HorizontalsBuilder
                        constants.minStaveDistanceHigh.getValue());
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         // Retrieve the position with respect to the various staves of the
         // system being checked.
@@ -533,7 +536,7 @@ public class HorizontalsBuilder
     private class MaxDistCheck
             extends Check<Stick>
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         protected MaxDistCheck ()
         {
@@ -542,7 +545,7 @@ public class HorizontalsBuilder
                        constants.maxStaveDistanceHigh.getValue());
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         // Retrieve the position with respect to the various staves of the
         // system being checked.
@@ -557,26 +560,27 @@ public class HorizontalsBuilder
     //------------//
 
     /**
-     * Class <code>ChunkCheck</code> checks for absence of a chunk either at
-     * start or stop
+     * Class <code>ChunkCheck</code> checks for absence of a chunk either
+     * at start or stop
      */
     private class ChunkCheck
             extends Check<Stick>
     {
-        //~ Instance variables -----------------------------------------------
+        //~ Instance variables --------------------------------------------
 
-        // Half-dimensions for window at top and bottom, checking for chunks
+        // Half-dimensions for window at top and bottom, checking for
+        // chunks
         private final int nWidth;
         private final int nHeight;
 
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors -------------------------------------------------
 
         protected ChunkCheck ()
         {
             super("Chunk", 0, 0, false, BI_CHUNK);
 
-            // Adjust chunk window according to system scale (problem, we have
-            // sheet scale and stave scale, not system scale...)
+            // Adjust chunk window according to system scale (problem, we
+            // have sheet scale and stave scale, not system scale...)
             Scale scale = sheet.getScale();
             nWidth = scale.fracToPixels(constants.chunkWidth);
             nHeight = scale.fracToPixels(constants.chunkHeight);
@@ -591,7 +595,7 @@ public class HorizontalsBuilder
             }
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         protected double getValue (Stick stick)
         {
@@ -613,7 +617,7 @@ public class HorizontalsBuilder
     private static class FirstAdjacencyCheck
             extends Check<Stick>
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         protected FirstAdjacencyCheck ()
         {
@@ -622,7 +626,7 @@ public class HorizontalsBuilder
                   TOO_ADJA);
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         // Retrieve the adjacency value
         protected double getValue (Stick stick)
@@ -648,7 +652,7 @@ public class HorizontalsBuilder
                   TOO_ADJA);
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         // Retrieve the adjacency value
         protected double getValue (Stick stick)
@@ -665,7 +669,7 @@ public class HorizontalsBuilder
     private class HorizontalSuite
             extends CheckSuite<Stick>
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         public HorizontalSuite ()
         {
@@ -682,7 +686,7 @@ public class HorizontalsBuilder
     private class LedgerSuite
             extends CheckSuite<Stick>
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         public LedgerSuite ()
         {
@@ -703,7 +707,7 @@ public class HorizontalsBuilder
     private class EndingSuite
             extends CheckSuite<Stick>
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         public EndingSuite ()
         {
@@ -723,8 +727,6 @@ public class HorizontalsBuilder
     private static class Constants
             extends ConstantSet
     {
-        //~ Instance variables -----------------------------------------------
-
         Constant.Boolean displayFrame = new Constant.Boolean
                 (false,
                  "Should we display a frame on the horizontal sticks");

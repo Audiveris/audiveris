@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.Main;
@@ -89,6 +89,9 @@ import java.util.ListIterator;
  * <li> {@link #CLEANUP} is a final cleanup step. </li>
  *
  * </ol>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Sheet
     implements java.io.Serializable

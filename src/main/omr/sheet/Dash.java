@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.math.Line;
@@ -28,6 +28,9 @@ import java.util.List;
  * to handle the horizontal segment (its Line and contour box), even if the
  * underlying stick has been discarded. Doing so saves us the need to
  * serialize the whole horizontal GlyphLag.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Dash
     implements java.io.Serializable

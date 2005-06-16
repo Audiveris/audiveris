@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.Main;
@@ -26,6 +26,9 @@ import java.awt.event.ActionListener;
  * deal with application steps.  Steps are represented by menu items, each
  * one being a check box, to indicate the current status regarding the
  * execution of the step (done or not done).
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class StepMenu
     extends JMenu

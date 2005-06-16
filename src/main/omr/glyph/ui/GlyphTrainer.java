@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph.ui;
 
 import omr.constant.Constant;
@@ -54,6 +54,9 @@ import javax.swing.border.*;
  * <li>The neural network evaluator ({@link GlyphNetwork})
  * <li>The regression evaluator ({@link GlyphRegression})
  * </ol>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphTrainer
     extends JFrame

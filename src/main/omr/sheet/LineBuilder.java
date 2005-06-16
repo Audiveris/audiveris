@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.constant.Constant;
@@ -46,6 +46,9 @@ import java.util.List;
  * sections. </li>
  *
  * </ol>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class LineBuilder
         extends StickArea

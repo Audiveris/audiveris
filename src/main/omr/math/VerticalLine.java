@@ -7,18 +7,21 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.math;
 
 /**
  * Class <code>VerticalLine</code> is a special kind of Line, meant for
- * vertical or near-vertical lines. This is done by computing and storing the
- * equation in the form of : x = ay + b (instead of y = ax +b)
+ * vertical or near-vertical lines. This is done by computing and storing
+ * the equation in the form of : x = ay + b (instead of y = ax +b)
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class VerticalLine
         extends Line
 {
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //--------------//
     // VerticalLine //
@@ -64,7 +67,7 @@ public class VerticalLine
         super(yVals, xVals);
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //------------//
     // distanceOf //

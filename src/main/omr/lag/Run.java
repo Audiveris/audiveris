@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 import java.awt.*;
@@ -15,18 +15,21 @@ import java.awt.*;
 /**
  * Class <code>Run</code> implements a contiguous run of pixels of the same
  * color. Note that the direction (vertical or horizontal) is not relevant.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Run
         implements java.io.Serializable
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // Run characteristics
     private final int start;
     private final int length;
     private final int level;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //-----//
     // Run //
@@ -56,14 +59,15 @@ public class Run
     //----------//
 
     /**
-     * The <code>readRuns</code> method can be used to build the runs on the
-     * fly, by providing a given rectangle. Note that the w and h parameters
-     * can be swapped, which allows both vertical and horizontal uses, if the
-     * Reader.getPixel() method is defined accordingly.
+     * The <code>readRuns</code> method can be used to build the runs on
+     * the fly, by providing a given rectangle. Note that the w and h
+     * parameters can be swapped, which allows both vertical and horizontal
+     * uses, if the Reader.getPixel() method is defined accordingly.
      *
-     * @param reader a <code>Reader</code> instance, used to link to specific
-     *               call-back actions on behalf of the caller, when a run
-     *               (either foreground or background) has just been read.
+     * @param reader a <code>Reader</code> instance, used to link to
+     *               specific call-back actions on behalf of the caller,
+     *               when a run (either foreground or background) has just
+     *               been read.
      * @param rect   the rectangular area coord x pos to explore
      */
     public static void readRuns (Reader reader,
@@ -100,7 +104,8 @@ public class Run
                             reader.backRun(c, p, length);
                         }
 
-                        // Initialize values for the starting foreground run
+                        // Initialize values for the starting foreground
+                        // run
                         isFore = true;
                         length = 1;
                         cumul = level;
@@ -111,7 +116,8 @@ public class Run
                         // End the previous foreground run
                         reader.foreRun(c, p, length, cumul);
 
-                        // Initialize values for the starting background run
+                        // Initialize values for the starting background
+                        // run
                         isFore = false;
                         length = 1;
                     } else {
@@ -197,8 +203,8 @@ public class Run
     //----------//
 
     /**
-     * The <code>toString</code> method is used to get a readable image of the
-     * run.
+     * The <code>toString</code> method is used to get a readable image of
+     * the run.
      *
      * @return a <code>String</code> value
      */
@@ -213,7 +219,7 @@ public class Run
         return sb.toString();
     }
 
-    //~ Interfaces -----------------------------------------------------------
+    //~ Interfaces --------------------------------------------------------
 
     /**
      * Interface <code<Run.Reader</code> is used to plug call-backs to a
@@ -221,7 +227,7 @@ public class Run
      */
     public static interface Reader
     {
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         //--------//
         // isFore //
@@ -242,8 +248,8 @@ public class Run
         //----------//
 
         /**
-         * This method is used to report the grey level of the pixel read at
-         * location (coord, pos).
+         * This method is used to report the grey level of the pixel read
+         * at location (coord, pos).
          *
          * @param coord x for horizontal runs, y for vertical runs
          * @param pos   y for horizontal runs, x for vertical runs
@@ -274,8 +280,8 @@ public class Run
         //---------//
 
         /**
-         * Same as background, but for a foreground run. We also provide the
-         * measure of accumulated grey level in that case.
+         * Same as background, but for a foreground run. We also provide
+         * the measure of accumulated grey level in that case.
          *
          * @param coord  location of the point past the end of the run
          * @param pos    constant position of the run

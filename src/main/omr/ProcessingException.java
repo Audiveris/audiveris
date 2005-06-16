@@ -7,21 +7,25 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr;
 
 /**
  * Class <code>ProcessingException</code> describes an exception occurring
- * while doing OMR processing, and which should immediately stop the current
- * Step, as well as potential subsequent steps.
+ * while doing OMR processing, and which should immediately stop the
+ * current Step, as well as potential subsequent steps.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ProcessingException
         extends Exception
 {
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     /**
-     * Construct an <code>ProcessingException</code> with no detail message.
+     * Construct an <code>ProcessingException</code> with no detail
+     * message.
      */
     public ProcessingException ()
     {

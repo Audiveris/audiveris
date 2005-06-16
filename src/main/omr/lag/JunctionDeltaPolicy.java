@@ -7,25 +7,28 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 /**
- * Class <code>JunctionDeltaPolicy</code> defined a junction policy based on
- * the delta between the length of the candidate run and the length of the
- * last run of the section.
+ * Class <code>JunctionDeltaPolicy</code> defined a junction policy based
+ * on the delta between the length of the candidate run and the length of
+ * the last run of the section.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class JunctionDeltaPolicy
         extends JunctionPolicy
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     /**
      * Maximum value acceptable for delta length, for a delta criteria
      */
     private final int maxDeltaLength;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //---------------------//
     // JunctionDeltaPolicy //
@@ -42,7 +45,7 @@ public class JunctionDeltaPolicy
         this.maxDeltaLength = maxDeltaLength;
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //---------------//
     // consistentRun //

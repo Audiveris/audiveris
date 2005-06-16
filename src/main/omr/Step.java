@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr;
 
 import omr.sheet.Sheet;
@@ -22,6 +22,9 @@ import java.lang.reflect.Field;
  * Class <code>Step</code> describes the ordered sequence of processing
  * steps that are defined on a sheet. The comprehensive ordered list of
  * step names is defined in {@link omr.sheet.Sheet} class.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Step
 {

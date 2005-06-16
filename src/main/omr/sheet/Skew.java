@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 /**
@@ -15,11 +15,14 @@ package omr.sheet;
  * and provides rotation methods for easy conversion of point coordinates.
  *
  * @see SkewBuilder
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Skew
         implements java.io.Serializable
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // Skew angle as computed
     private double angle;
@@ -32,15 +35,15 @@ public class Skew
 //     private int shiftDx;
 //     private int shiftDy;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //------//
     // Skew //
     //------//
 
     /**
-     * This is meant to generate a skew entity, when its key informations (the
-     * skew angle) is already known.
+     * This is meant to generate a skew entity, when its key informations
+     * (the skew angle) is already known.
      *
      * @param angle the skew angle
      */
@@ -53,7 +56,7 @@ public class Skew
 //                      sheet.getPicture().getOrigHeight());
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //-------//
     // angle //

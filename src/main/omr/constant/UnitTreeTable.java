@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.constant;
 
 import omr.ui.treetable.JTreeTable;
@@ -21,10 +21,13 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 
 /**
- * Class <code>UnitTreeTable</code> is a user interface that combines a tree
- * to display the hierarchy of Units, that containt ConstantSets and/or
- * Loggers, and a table to display and edit the various Constants in each
- * ConstantSet as well as the logger level of units.
+ * Class <code>UnitTreeTable</code> is a user interface that combines a
+ * tree to display the hierarchy of Units, that containt ConstantSets
+ * and/or Loggers, and a table to display and edit the various Constants in
+ * each ConstantSet as well as the logger level of units.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class UnitTreeTable
         extends JTreeTable
@@ -32,7 +35,7 @@ public class UnitTreeTable
     private TableCellRenderer loggerRenderer = new LoggerRenderer();
     private TableCellRenderer valueRenderer = new ValueRenderer();
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //---------------//
     // UnitTreeTable //
@@ -58,7 +61,7 @@ public class UnitTreeTable
         preExpandPackages();
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //---------------//
     // adjustColumns //
@@ -132,7 +135,7 @@ public class UnitTreeTable
         }
     }
 
-    //~ Classes --------------------------------------------------------------
+    //~ Classes -----------------------------------------------------------
 
     //---------------//
     // ValueRenderer //
@@ -140,8 +143,6 @@ public class UnitTreeTable
     private class ValueRenderer
             extends DefaultTableCellRenderer
     {
-        //~ Methods ----------------------------------------------------------
-
         //-------------------------------//
         // getTableCellRendererComponent //
         //-------------------------------//
@@ -183,7 +184,7 @@ public class UnitTreeTable
     private class LoggerRenderer
             extends DefaultTableCellRenderer
     {
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         //-------------------------------//
         // getTableCellRendererComponent //
@@ -221,9 +222,10 @@ public class UnitTreeTable
     //-----------------//
     /**
      * Used by the UI to get the proper renderer for each given cell in the
-     * table. For the 'MODIF' column for example, we are able to differentiate
-     * rows for Constant (where this Modif flag makes sense) from any other
-     * row where Modif is irrelevant and thus left totally blank.
+     * table. For the 'MODIF' column for example, we are able to
+     * differentiate rows for Constant (where this Modif flag makes sense)
+     * from any other row where Modif is irrelevant and thus left totally
+     * blank.
      *
      * @param row row in the table
      * @param col column in the table

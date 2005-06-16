@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.constant;
 
 import omr.Main;
@@ -20,22 +20,29 @@ import omr.util.Logger;
 import javax.swing.*;
 
 /**
- * Class <code>UnitModel</code> implements a data model for units suitable for
- * use in a JTreeTable.
- * <p/>
- * <p>A row in the UnitModel can any instance of the 3 following types: <ul>
+ * Class <code>UnitModel</code> implements a data model for units suitable
+ * for use in a JTreeTable.
+ *
+ * <p>A row in the UnitModel can any instance of the 3 following types:
+ * <ul>
+ *
  * <li><b>PackageNode</b> to represent a package. Its children rows can be
- * either (sub) PackageNodes or UnitNodes. <li><b>UnitNode</b> to represent a
- * class that contains a ConstantSet or a Logger or both. Its parent node is a
- * PackageNode. Its children rows (if any) are the Constants of its
- * ConstantSet. <li><b>Constant</b> to represent a constant within a
- * ConstantSet. In that case, its parent node is a UnitNode. It has no
- * children rows. </ul>
+ * either (sub) PackageNodes or UnitNodes.
+ *
+ * <li><b>UnitNode</b> to represent a class that contains a ConstantSet or
+ * a Logger or both. Its parent node is a PackageNode. Its children rows
+ * (if any) are the Constants of its ConstantSet.
+ *
+ * <li><b>Constant</b> to represent a constant within a ConstantSet. In
+ * that case, its parent node is a UnitNode. It has no children rows. </ul>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class UnitModel
         extends AbstractTreeTableModel
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(UnitModel.class);
 
@@ -45,41 +52,42 @@ public class UnitModel
     enum Column
     {
         /**
-         * The left column, assigned to tree structure, allows expansion and
-         * collapsing of sub-tree portions
+         * The left column, assigned to tree structure, allows expansion
+         * and collapsing of sub-tree portions
          */
         TREE   ("Unit", 250, TreeTableModel.class),
 
         /**
-         * Editable column dedicated to {@link omr.util.Logger} entity if any
+         * Editable column dedicated to {@link omr.util.Logger} entity if
+         * any
          */
         LOGGER ("Logger", 30, String.class),
 
         /**
-         * Editable column for constant current value, with related tool tip
-         * retrieved from the constant declaration
+         * Editable column for constant current value, with related tool
+         * tip retrieved from the constant declaration
          */
         VALUE  ("Value", 100, String.class),
 
         /**
-         * Column that recalls the constant type, and thus the possible range
-         * of valued
+         * Column that recalls the constant type, and thus the possible
+         * range of valued
          */
         TYPE   ("Type", 40, String.class),
 
         /**
          * Column relevant only for constants which are fractions of
          * interline, as defined by {@link omr.sheet.Scale.Fraction} : the
-         * equivalent number of pixels is displayed, according to the scale of
-         * the currently selected Sheet. If there is no current Sheet, then
-         * just a question mark (?)  is displayed
+         * equivalent number of pixels is displayed, according to the scale
+         * of the currently selected Sheet. If there is no current Sheet,
+         * then just a question mark (?)  is displayed
          */
         PIXEL  ("Pixels", 20, String.class),
 
         /**
-         * Column containing a flag to indicate whether the constant value has
-         * been modified or not. If modified, a click in this column resets
-         * the constant to its original value
+         * Column containing a flag to indicate whether the constant value
+         * has been modified or not. If modified, a click in this column
+         * resets the constant to its original value
          */
         MODIF  ("Modif", 20, Boolean.class);
 
@@ -111,7 +119,7 @@ public class UnitModel
         }
     }
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //-----------//
     // UnitModel //
@@ -125,7 +133,7 @@ public class UnitModel
         super(UnitManager.getInstance().getRoot());
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------------//
     // isCellEditable //
@@ -143,8 +151,8 @@ public class UnitModel
     //----------//
 
     /**
-     * Returns the child of <code>parent</code> at index <code>index</code> in
-     * the parent's child array.
+     * Returns the child of <code>parent</code> at index <code>index</code>
+     * in the parent's child array.
      *
      * @param parent a node in the tree, obtained from this data source
      *
@@ -285,15 +293,16 @@ public class UnitModel
                     try {
                         constant.setValue(value.toString());
 
-                        // Forward modif to the modif status column and to the
-                        // pixel column (brute force!)
+                        // Forward modif to the modif status column and to
+                        // the pixel column (brute force!)
                         fireTreeNodesChanged
                                 (this,
                                  new Object[]{getRoot()},
                                  null, null);
                     } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(null,
-                                                      "Illegal number format");
+                        JOptionPane.showMessageDialog
+                            (null,
+                             "Illegal number format");
                     }
 
                     break;
@@ -368,9 +377,9 @@ public class UnitModel
                 if (node instanceof Constant) {
                     Constant constant = (Constant) node;
                     if (constant instanceof Scale.Fraction) {
-                        // Compute the equivalent in pixels of this interline
-                        // fraction, provided that we have a current sheet and its
-                        // scale is available.
+                        // Compute the equivalent in pixels of this
+                        // interline fraction, provided that we have a
+                        // current sheet and its scale is available.
                         Sheet sheet = Main.getJui().sheetPane.getCurrentSheet();
 
                         if ((sheet != null) && sheet.SCALE.isDone()) {

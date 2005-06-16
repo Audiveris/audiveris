@@ -7,14 +7,17 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 import omr.util.Subject;
 
 /**
- * Interface <code>SectionSubject</code> is a specific {@link Subject} meant
- * for {@link SectionObserver} observers
+ * Interface <code>SectionSubject</code> is a specific {@link Subject}
+ * meant for {@link SectionObserver} observers
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface SectionSubject
     extends Subject<SectionSubject, SectionObserver, Section>

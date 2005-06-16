@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import javax.swing.JTextField;
@@ -15,6 +15,9 @@ import javax.swing.JTextField;
 /**
  * Class <code>SField</code> is a simple JTextField with predefined
  * attributes
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class SField
     extends JTextField

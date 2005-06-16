@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.score;
 
 import java.awt.*;
@@ -16,18 +16,21 @@ import java.awt.*;
  * Class <code>StaveNode</code> is an abstract class that is subclassed for
  * any MusicNode, whose location is known with respect to its containing
  * stave. So this class encapsulated a direct link to the enclosing stave.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public abstract class StaveNode
         extends MusicNode
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     /**
      * Containing stave
      */
     Stave stave;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //-----------//
     // StaveNode //
@@ -47,15 +50,15 @@ public abstract class StaveNode
         this.stave = stave;
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //-----------//
     // getOrigin //
     //-----------//
 
     /**
-     * The display origin which is relevant for this node (this is the stave
-     * origin)
+     * The display origin which is relevant for this node (this is the
+     * stave origin)
      *
      * @return the display origin
      */

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.glyph.Glyph;
@@ -26,11 +26,14 @@ import javax.swing.*;
  * Class <code>BoardsPane</code> defines a comprehensive user board, where
  * data related to current point, run, section and glyph is displayed in
  * dedicated boards, as well as a general-purpose Filter board.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class BoardsPane
     extends JPanel
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     /** The board for pixel information */
     public  final PixelBoard   pixelBoard;
@@ -50,7 +53,7 @@ public class BoardsPane
     // Map to the various boards
     private final EnumMap<Board.Tag, Board> map;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     /**
      * Create a BoardsPane, with selected boards
@@ -135,7 +138,7 @@ public class BoardsPane
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------//
     // getBoard //

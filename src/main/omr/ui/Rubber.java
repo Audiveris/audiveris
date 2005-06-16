@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.util.Logger;
@@ -66,6 +66,9 @@ import java.awt.event.MouseEvent;
  * <p> The Rubber can be linked to a {@link Zoom} to cope with display
  * factor of the related component, but this is not mandatory: If no zoom
  * is connected, a display factor of 1.0 is assumed.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Rubber
     extends MouseInputAdapter

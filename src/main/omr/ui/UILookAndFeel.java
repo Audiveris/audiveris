@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.constant.Constant;
@@ -21,23 +21,26 @@ import omr.util.Logger;
 import javax.swing.UIManager;
 
 /**
- * Class <code>UILookAndFeel</code> enables to select the UI Look & Feel to be
- * used in this application.
+ * Class <code>UILookAndFeel</code> enables to select the UI Look & Feel to
+ * be used in this application.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class UILookAndFeel
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(UILookAndFeel.class);
     private static final Constants constants = new Constants();
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     private UILookAndFeel()
     {
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
         // Available Themes:
         //
         // AbstractSkyTheme

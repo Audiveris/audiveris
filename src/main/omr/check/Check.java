@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.check;
 
 import omr.util.Logger;
@@ -24,6 +24,9 @@ import omr.util.Logger;
  * Checks can be gathered in check suites. </p>
  *
  * @param <T> precise type of the objects to be checked
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public abstract class Check <T extends Checkable>
 {

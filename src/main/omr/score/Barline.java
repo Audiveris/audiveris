@@ -7,18 +7,21 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.score;
 
 import java.awt.*;
 
 /**
- * Enum <code>Barline</code> handles the enumeration of various kinds of bar
- * lines.
+ * Enum <code>Barline</code> handles the enumeration of various kinds of
+ * bar lines.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public enum Barline
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     /**
      * Single bar line
@@ -55,7 +58,7 @@ public enum Barline
     // Displayed icon
     private final Image image;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //---------//
     // Barline //
@@ -70,15 +73,15 @@ public enum Barline
 //         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------//
     // getImage //
     //----------//
 
     /**
-     * Report the image to be used to display a specific bar line in the score
-     * representations
+     * Report the image to be used to display a specific bar line in the
+     * score representations
      *
      * @return the image ready for display
      */

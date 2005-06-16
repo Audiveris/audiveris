@@ -7,44 +7,44 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 /**
- * Class <code>Dumper</code> is a debugging utility that reports, in a brute
- * force manner, any internal data of a class instance.
- * <p/>
- * <p/>
- * When used on a class instance, all class internal fields which are
- * considered as "relevant" are printed using their toString() method, then we
- * walk up the inheritance tree and repeat the same actions, until there is no
- * more superclass or until the superclass we have reached is considered as
- * non-relevant. </p>
- * <p/>
- * <p/>
- * A (super)class is considered "relevant" if the static method
+ * Class <code>Dumper</code> is a debugging utility that reports, in a
+ * brute force manner, any internal data of a class instance.
+ *
+ * <p> When used on a class instance, all class internal fields which are
+ * considered as "relevant" are printed using their toString() method, then
+ * we walk up the inheritance tree and repeat the same actions, until there
+ * is no more superclass or until the superclass we have reached is
+ * considered as non-relevant. </p>
+ *
+ * <p> A (super)class is considered "relevant" if the static method
  * <code>isClassRelevant(class)</code> returns true. This method can be
  * overridden in a subclass of Dumper to adapt to local needs. </p>
- * <p/>
- * <p/>
- * A field is considered "relevant" if the following condition if the method
- * <code>isFieldRelevant(field)</code> returns true. Similarly, the behavior
- * of this predicate can be customized by subclassing the Dumper class. </p>
- * <p/>
- * <p/>
- * There are several kinds of print outs available through subclassing. Each
- * of them export two public methods: <code>dump()</code> which prints the
- * result on default output stream, and <code>dumpOf()</code> which simply
- * returns the generated dump string.
- * <p/>
- * <ul> <li> <b>Column</b> a dump with one line per field </li> <li>
- * <b>Row</b> a dump with all information on one row </li> <li> <b>Html</b> an
- * Html stream with fields arranged in tables </li> </ul> </p>
- * <p/>
- * <p/>
+ *
+ * <p> A field is considered "relevant" if the following condition if the
+ * method <code>isFieldRelevant(field)</code> returns true. Similarly, the
+ * behavior of this predicate can be customized by subclassing the Dumper
+ * class. </p>
+ *
+ * <p> There are several kinds of print outs available through
+ * subclassing. Each of them export two public methods: <code>dump()</code>
+ * which prints the result on default output stream, and
+ * <code>dumpOf()</code> which simply returns the generated dump string.
+ *
+ * <ul> <li> <b>Column</b> a dump with one line per field </li>
+ *
+ * <li> <b>Row</b> a dump with all information on one row </li>
+ *
+ * <li> <b>Html</b> an Html stream with fields arranged in tables </li>
+ *
+ * </ul>
+ *
  * Here are some examples of use:
  * <pre>
  * // Using the predefined static helper methods
@@ -53,16 +53,19 @@ import java.lang.reflect.Modifier;
  * Dumper.dump(myinstance, "My Title", 2);
  * System.out.println(Dumper.dumpOf(myinstance));
  * System.out.println(Dumper.htmlDumpOf(myinstance));
+ *
  *  // Using directly the Dumper subclasses
  * new Dumper.Column(myinstance).print();
  * System.out.println(new Dumper.Row(myinstance).toString());
  * display(new Dumper.Html(myinstance).toString());
  * </pre>
- * </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public abstract class Dumper
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     /**
      * The string buffer used as output
@@ -75,12 +78,12 @@ public abstract class Dumper
     protected final Object obj;
 
     /**
-     * Class (beware, this variable is updated as we walk up the inheritance
-     * tree)
+     * Class (beware, this variable is updated as we walk up the
+     * inheritance tree)
      */
     protected Class cl;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     /**
      * Creates a new Dumper.
@@ -97,7 +100,7 @@ public abstract class Dumper
         cl = obj.getClass();
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //------//
     // dump //
@@ -189,8 +192,8 @@ public abstract class Dumper
     //------------//
 
     /**
-     * Helper function that prints a special kind of information string, using
-     * HTML tags so that an html editor can easily render this.
+     * Helper function that prints a special kind of information string,
+     * using HTML tags so that an html editor can easily render this.
      *
      * @param obj the object to dump
      *
@@ -237,9 +240,9 @@ public abstract class Dumper
 
     /**
      * Predicate to determine if a given class is worth being printed. This
-     * method could be overridden to reflect customozed policy. Note that when
-     * walking up the inheritance tree, the browsing is stopped as soon as a
-     * non-relevant class is encountered.
+     * method could be overridden to reflect customozed policy. Note that
+     * when walking up the inheritance tree, the browsing is stopped as
+     * soon as a non-relevant class is encountered.
      *
      * @param cl the class at stake
      *
@@ -264,7 +267,8 @@ public abstract class Dumper
      */
     protected boolean isFieldRelevant (Field field)
     {
-        // We don't print static field since the Dumper is meant for instances
+        // We don't print static field since the Dumper is meant for
+        // instances
         if (Modifier.isStatic(field.getModifiers())) {
             return false;
         }
@@ -376,7 +380,7 @@ public abstract class Dumper
         } while (isClassRelevant(cl));
     }
 
-    //~ Classes --------------------------------------------------------------
+    //~ Classes -----------------------------------------------------------
 
     //--------//
     // Column //
@@ -384,23 +388,23 @@ public abstract class Dumper
 
     /**
      * Class <code>Column</code> implements a Dumper where all fields are
-     * presented in one column, each field on a separate line. The column can
-     * be left indented, according to the specified indentation level.
+     * presented in one column, each field on a separate line. The column
+     * can be left indented, according to the specified indentation level.
      */
     public static class Column
             extends Dumper
     {
-        //~ Static variables/initializers ------------------------------------
+        //~ Static variables/initializers ---------------------------------
 
         private static final String MEMBER_GAP = "   ";
         private static final String INDENT_GAP = ".  ";
 
-        //~ Instance variables -----------------------------------------------
+        //~ Instance variables --------------------------------------------
 
         private final StringBuffer prefix;
         private final String title;
 
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         public Column (Object obj,
                        String title,
@@ -423,12 +427,12 @@ public abstract class Dumper
             }
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         protected void printClassProlog ()
         {
-            // We print the class name only for the lowest class in heritance
-            // hierarchy
+            // We print the class name only for the lowest class in
+            // heritance hierarchy
             if (obj.getClass() == cl) {
                 sb.append("\n");
                 sb.append(prefix).append(cl.getName());
@@ -457,14 +461,14 @@ public abstract class Dumper
     public static class Row
             extends Dumper
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         protected Row (Object obj)
         {
             super(obj);
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         protected void printClassEpilog ()
         {
@@ -498,20 +502,20 @@ public abstract class Dumper
     //------//
 
     /**
-     * Class <code>Html</code> implements a Dumper using HTML tags to present
-     * fields in a table.
+     * Class <code>Html</code> implements a Dumper using HTML tags to
+     * present fields in a table.
      */
     public static class Html
             extends Dumper
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         protected Html (Object obj)
         {
             super(obj);
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         protected void printClassEpilog ()
         {

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 import java.awt.*;
@@ -15,6 +15,9 @@ import java.awt.*;
 /**
  * Interface <code>Oriented</code> defines the various methods linked to
  * orientation (vertical and horizontal).
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface Oriented
 {

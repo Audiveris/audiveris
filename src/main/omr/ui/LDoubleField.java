@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import java.util.Scanner;
@@ -17,6 +17,9 @@ import javax.swing.JTextField;
 /**
  * Class <code>LDoubleField</code> is an {@link LField}, whose field is
  * meant to handle a double value.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class LDoubleField
     extends LField

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.stick.Stick;
@@ -15,6 +15,9 @@ import omr.stick.Stick;
 /**
  * Class <code>Ending</code> is a physical {@link Dash} that is the
  * horizontal part of an alternate ending.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Ending
     extends Dash

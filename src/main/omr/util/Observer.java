@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 /**
@@ -16,6 +16,9 @@ package omr.util;
  * value, using a Push model.
  *
  * @param <E> precise type for the entity to be handed out
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface Observer<E>
 {

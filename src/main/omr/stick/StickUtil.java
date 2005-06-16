@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.stick;
 
 import omr.check.FailureResult;
@@ -32,25 +32,28 @@ import omr.lag.Section;
 
 /**
  * Class <code>StickUtil</code> gathers static utilities for sticks.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class StickUtil
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Constants constants = new Constants();
     private static final Logger logger = Logger.getLogger(StickUtil.class);
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //---------------//
     // areExtensions //
     //---------------//
 
     /**
-     * Checks whether two sticks can be considered as extensions of the other
-     * one.  Due to some missing points, a long stick can be broken into
-     * several smaller ones, that we must check for this.  This is checked
-     * before actually merging them.
+     * Checks whether two sticks can be considered as extensions of the
+     * other one.  Due to some missing points, a long stick can be broken
+     * into several smaller ones, that we must check for this.  This is
+     * checked before actually merging them.
      *
      * @param foo           one stick
      * @param bar           one other stick
@@ -173,10 +176,10 @@ public class StickUtil
     //----------------//
 
     /**
-     * Cleanup one line section, by extending potential crossing objects in a
-     * certain direction. During this operation, we may consider that tangent
-     * vertices are in fact borders that we should include in the line, rather
-     * than consider them as real crossing objects.
+     * Cleanup one line section, by extending potential crossing objects in
+     * a certain direction. During this operation, we may consider that
+     * tangent vertices are in fact borders that we should include in the
+     * line, rather than consider them as real crossing objects.
      *
      * @param picture       the picture whose pixels must be modified
      * @param lineSection   the section to clean up
@@ -205,7 +208,8 @@ public class StickUtil
                          + ", borderEnabled=" + borderEnabled);
         }
 
-        // We are interested in non-stick vertices, and also in failed sticks
+        // We are interested in non-stick vertices, and also in failed
+        // sticks
         if (sct.isMember()) {
             if (!(sct.getGlyph().getResult() instanceof FailureResult)) {
                 return;
@@ -273,8 +277,8 @@ public class StickUtil
     //--------------//
 
     /**
-     * Build a patching section, which extends the crossing sct in the given
-     * direction.
+     * Build a patching section, which extends the crossing sct in the
+     * given direction.
      *
      * @param section   the line section, through which the sct is extended
      * @param sct       the section of the crossing object
@@ -443,12 +447,12 @@ public class StickUtil
         }
     }
 
-    //~ Classes --------------------------------------------------------------
+    //~ Classes -----------------------------------------------------------
 
     private static class Constants
             extends ConstantSet
     {
-        //~ Instance variables -----------------------------------------------
+        //~ Instance variables --------------------------------------------
 
         Constant.Double maxDeltaSlope = new Constant.Double
                 (0.5d,

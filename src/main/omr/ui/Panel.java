@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.constant.Constant;
@@ -32,6 +32,9 @@ import com.jgoodies.forms.layout.FormLayout;
  * uncomment in both methods : the constructor and the paintComponent
  * method.
  *
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Panel
 //extends FormDebugPanel

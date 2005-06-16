@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.stick;
 
 import omr.glyph.GlyphLag;
@@ -23,15 +23,18 @@ import static omr.stick.SectionRole.*;
 /**
  * Class <code>StickSection</code> implements a specific class of
  * {@link GlyphSection}, meant for easy stick elaboration.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class StickSection
         extends GlyphSection
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     /**
-     * The role of the section in the enclosing stick. Not final, since it may
-     * be modified afterhand
+     * The role of the section in the enclosing stick. Not final, since it
+     * may be modified afterhand
      */
     public SectionRole role;
 
@@ -75,7 +78,7 @@ public class StickSection
         super(lag, firstPos, firstRun);
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //-----------//
     // setParams //
@@ -101,8 +104,8 @@ public class StickSection
     // getColor //
     //----------//
     /**
-     * Define a color, according to the data at hand, that is according to the
-     * role of this section in the enclosing stick.
+     * Define a color, according to the data at hand, that is according to
+     * the role of this section in the enclosing stick.
      *
      * @return the related color
      */

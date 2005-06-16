@@ -7,15 +7,18 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Interface <code>PixelFocus</code> define the features related to setting a
- * focus determined by pixels coordinates, it is thus an input entity.
+ * Interface <code>PixelFocus</code> define the features related to setting
+ * a focus determined by pixels coordinates, it is thus an input entity.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface PixelFocus
 {

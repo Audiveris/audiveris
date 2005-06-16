@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.stick.Stick;
@@ -19,6 +19,9 @@ import java.util.List;
  * Class <code>Horizontals</code> gathers horizontal dashes in the given
  * sheet. We use it for all horizontal glyphs (ledgers of course, but also
  * legato signs or alternate endings)
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Horizontals
     implements java.io.Serializable

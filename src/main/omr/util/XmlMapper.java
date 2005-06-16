@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 import org.exolab.castor.mapping.Mapping;
@@ -23,24 +23,27 @@ import java.io.IOException;
 import java.net.URL;
 
 /**
- * Class <code>XmlMapper</code> handles the marshalling and unmarshalling of
- * any entity with an external XML support. This is implemented on top of
- * Castor utility.
+ * Class <code>XmlMapper</code> handles the marshalling and unmarshalling
+ * of any entity with an external XML support. This is implemented on top
+ * of Castor utility.
  *
  * @param <E> the precise class for entity to be handled
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class XmlMapper <E>
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(XmlMapper.class);
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // The Castor mapping for loading and storing from/to an XML file
     private final Mapping mapping;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //-----------//
     // XmlMapper //
@@ -48,11 +51,11 @@ public class XmlMapper <E>
     /**
      * Create an XML Mapper, based on its Castor descriptors
      *
-     * @param mappingFileName the name of the file which contains the Castor
-     *                        mapping descriptors. <b>NOTA</b>The file is
-     *                        searched in the config directory of the
-     *                        application jar file, so a good example could be
-     *                        "/config/castor-glyph-mapping.xml"
+     * @param mappingFileName the name of the file which contains the
+     *                        Castor mapping descriptors. <b>NOTA</b>The
+     *                        file is searched in the config directory of
+     *                        the application jar file, so a good example
+     *                        could be "/config/castor-glyph-mapping.xml"
      */
     public XmlMapper (String mappingFileName)
             throws Exception
@@ -76,7 +79,7 @@ public class XmlMapper <E>
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //------//
     // load //

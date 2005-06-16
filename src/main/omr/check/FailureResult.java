@@ -7,17 +7,20 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.check;
 
 /**
  * Class <code>FailureResult</code> is the root of all results that store a
  * failure.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class FailureResult
         extends Result
 {
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //---------------//
     // FailureResult //
@@ -33,7 +36,7 @@ public class FailureResult
         super(comment);
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------//
     // toString //

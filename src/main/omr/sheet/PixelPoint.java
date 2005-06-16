@@ -7,19 +7,21 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import java.awt.*;
 
 /**
- * Class <code>PixelPoint</code> is a simple Point that is meant to represent
- * a point in a deskewed page, with its coordinates specified in pixels, so
- * the name.
- * <p/>
- * <p/>
- * This specialization is used to take benefit of compiler checks, to prevent
- * the use of points with incorrect meaning or units. </p>
+ * Class <code>PixelPoint</code> is a simple Point that is meant to
+ * represent a point in a deskewed page, with its coordinates specified in
+ * pixels, so the name.
+ *
+ * <p> This specialization is used to take benefit of compiler checks, to
+ * prevent the use of points with incorrect meaning or units. </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class PixelPoint
         extends Point

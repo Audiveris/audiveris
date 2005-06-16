@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.score;
 
 import omr.lag.Lag;
@@ -22,15 +22,18 @@ import java.util.List;
 
 /**
  * Class <code>Measure</code> handles a measure of a staff.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Measure
         extends StaveNode
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(Measure.class);
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // Related infos from sheet analysis
     private List<BarInfo> infos = new ArrayList<BarInfo>(2);
@@ -43,7 +46,7 @@ public class Measure
     private int id = 0; // Measure Id
     private int leftX; // X of start of this measure (wrt stave)
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //---------//
     // Measure //
@@ -91,7 +94,7 @@ public class Measure
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------//
     // getInfos //
@@ -141,8 +144,8 @@ public class Measure
     //-----------------//
 
     /**
-     * Set the flag on artificial existence of the ending bar line (needed for
-     * Castor unmarshalling)
+     * Set the flag on artificial existence of the ending bar line (needed
+     * for Castor unmarshalling)
      *
      * @param lineinvented true if artificial
      */
@@ -213,8 +216,8 @@ public class Measure
     //---------------//
 
     /**
-     * Set the abscissa of the right part of the ending bar line (needed for
-     * Castor unmarshalling)
+     * Set the abscissa of the right part of the ending bar line (needed
+     * for Castor unmarshalling)
      *
      * @param rightlinex the abscissa (in units)
      */
@@ -281,8 +284,8 @@ public class Measure
     //-------------//
 
     /**
-     * Overriding definition, so that computations specific to a measure are
-     * performed
+     * Overriding definition, so that computations specific to a measure
+     * are performed
      *
      * @return true, so that processing continues
      */

@@ -7,12 +7,15 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 /**
  * Class <code>Evaluation</code> gathers a pair composed of a glyph
  * shape and its grade.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Evaluation
 {

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.lag.Lag;
@@ -33,6 +33,9 @@ import java.util.Collection;
  *
  * <p> This class implements the {@link GlyphFocus} interface, so this view
  * can programmatically focus on a specified glyph.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphLagView
     extends LagView<GlyphLag, GlyphSection>

@@ -7,14 +7,17 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 /**
- * Class <code>Peak</code> encapsulates a peak in the histogram of horizontal
- * projections. When reading sequentially the projection histogram, a peak is
- * created when the threshold is passed, and the peak ordinate is extended
- * until we get under the threshold again.
+ * Class <code>Peak</code> encapsulates a peak in the histogram of
+ * horizontal projections. When reading sequentially the projection
+ * histogram, a peak is created when the threshold is passed, and the peak
+ * ordinate is extended until we get under the threshold again.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Peak
 {

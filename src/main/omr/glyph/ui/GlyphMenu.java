@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
@@ -22,6 +22,9 @@ import java.util.ArrayList;
 /**
  * Class <code>GlyphMenu</code> defines the popup menu which is linked to
  * the current selection of either one or several glyphs
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphMenu
     extends JPopupMenu

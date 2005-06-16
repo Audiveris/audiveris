@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.math;
 
 import omr.util.Logger;
@@ -18,6 +18,9 @@ import omr.util.Logger;
  *
  * <p> Note that this is not suitable for near vertical lines, which would
  * be better described by the VerticalLine class. </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Line
         implements java.io.Serializable

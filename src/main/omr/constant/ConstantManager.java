@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.constant;
 
 import omr.util.Logger;
@@ -78,6 +78,9 @@ import java.util.Properties;
  * final value is the same as found in the default stage, the value is
  * simply discarded from the user property file. Doing so, the user
  * property file really contains only the additions of the user. </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ConstantManager
 {

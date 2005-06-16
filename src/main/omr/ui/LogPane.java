@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.constant.Constant;
@@ -22,15 +22,18 @@ import javax.swing.*;
  *
  * @see omr.util.Logger
  * @see omr.util.LogGuiAppender
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class LogPane
         extends JScrollPane
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // Status/log area
     private final JTextArea logArea;
@@ -38,7 +41,7 @@ public class LogPane
     // Mail box for incoming messages
     private final MailBox logMbx;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //---------//
     // LogPane //
@@ -65,7 +68,7 @@ public class LogPane
         setViewportView(logArea);
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //-----//
     // log //
@@ -107,7 +110,7 @@ public class LogPane
         });
     }
 
-    //~ Classes --------------------------------------------------------------
+    //~ Classes -----------------------------------------------------------
 
     //-----------//
     // Constants //
@@ -115,7 +118,7 @@ public class LogPane
     private static class Constants
             extends ConstantSet
     {
-        //~ Instance variables -----------------------------------------------
+        //~ Instance variables --------------------------------------------
 
         Constant.Integer msgQueueSize = new Constant.Integer
                 (1000,

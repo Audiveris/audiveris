@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 import omr.sheet.Picture;
@@ -24,6 +24,9 @@ import java.util.List;
  * lag sections and junctions.
  *
  * @param <S> the precise subtype of Section to be created
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class LagBuilder <L extends Lag     <L, S>,
                          S extends Section <L, S>>

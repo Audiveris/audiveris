@@ -7,12 +7,15 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 /**
  * Class <code>Memory</code> is a collection of static methods to ease the
  * interaction with the memory characteristics.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Memory
 {

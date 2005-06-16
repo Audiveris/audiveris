@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import java.awt.Point;
@@ -15,8 +15,11 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 
 /**
- * Interface <code>MouseMonitor</code> defines the entries of an entity to be
- * notified of mouse actions.
+ * Interface <code>MouseMonitor</code> defines the entries of an entity to
+ * be notified of mouse actions.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface MouseMonitor
 {
@@ -37,8 +40,8 @@ public interface MouseMonitor
                        Point pt);
 
     /**
-     * Selection (by shift + right button drag) of a rectangle when mouse is
-     * released
+     * Selection (by shift + right button drag) of a rectangle when mouse
+     * is released
      * @param e the mouse event
      * @param rect the selected rectangle in model pixel coordinates
      */
@@ -56,8 +59,8 @@ public interface MouseMonitor
     /**
      * Rectangle zoom (by shift + ctrl + left button drag)
      * @param e    the mouse event
-     * @param rect the rectangle in model pixel coordinates, which defines the
-     *             focus and the zoom ratio
+     * @param rect the rectangle in model pixel coordinates, which defines
+     *             the focus and the zoom ratio
      */
     void rectangleZoomed (MouseEvent e,
                           Rectangle rect);

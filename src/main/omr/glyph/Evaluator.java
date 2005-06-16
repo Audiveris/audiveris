@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.Main;
@@ -33,6 +33,9 @@ import java.util.Locale;
  * Class <code>Evaluator</code> is an abstract class that gathers data and
  * processing common to any evaluator working on glyph characteristics to
  * infer glyph shape.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public abstract class Evaluator
 {

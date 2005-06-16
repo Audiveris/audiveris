@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.lag.Run;
@@ -29,6 +29,9 @@ import javax.swing.event.*;
  * Class <code>SectionBoard</code> defines a board dedicated to the display
  * of {@link omr.lag.Section} and {@link omr.lag.Run} information, it can
  * also be used as an input means by directly entering the section id.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class SectionBoard
     extends Board

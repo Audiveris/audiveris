@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph.ui;
 
 import omr.ProcessingException;
@@ -48,6 +48,9 @@ import javax.swing.border.*;
 /**
  * Class <code>GlyphPane</code> defines a UI pane from which all glyph
  * processing actions can be launched and checked.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphPane
     implements GlyphDirectory

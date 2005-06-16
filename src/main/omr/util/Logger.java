@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 import omr.constant.UnitManager;
@@ -16,6 +16,9 @@ import org.apache.log4j.spi.LoggerFactory;
 /**
  * Class <code>Logger</code> is a specific subclass of log4j Logger,
  * augmented to fit the needs of Audiveris project
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Logger
         extends org.apache.log4j.Logger

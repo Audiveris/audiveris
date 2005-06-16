@@ -7,12 +7,15 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 /**
  * Interface <code>GlyphFocus</code> define the features related to setting
  * a focus determined by a glyph, it is thus an input entity.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface GlyphFocus
 {

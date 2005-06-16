@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.Step;
@@ -22,6 +22,9 @@ import java.util.List;
 /**
  * Class <code>SheetManager</code> handles the list of sheet instances in
  * memory as well as the related history.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class SheetManager
 {

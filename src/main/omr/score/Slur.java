@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.score;
 
 import omr.util.Dumper;
@@ -18,15 +18,18 @@ import java.awt.*;
 
 /**
  * Class <code>Slur</code> encapsulates a slur (a circle arc) in a system
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Slur
         extends MusicNode
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(Slur.class);
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // Cached attributes
     private int leftrow;
@@ -46,7 +49,7 @@ public class Slur
     // Additional drawing data
     private Arc arc;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //------//
     // Slur //
@@ -77,8 +80,8 @@ public class Slur
      * @param leftcolumn  x (in units) of the left point
      * @param rightrow    y (in units) of the right point
      * @param rightcolumn x (in units) of the right point
-     * @param radius      the radius of the circle, in units, &lt;0 if center
-     *                    if above, &gt;0 if center is below
+     * @param radius the radius of the circle, in units, &lt;0 if center if
+     *                    above, &gt;0 if center is below
      */
     public Slur (System system,
                  int leftrow,
@@ -100,7 +103,7 @@ public class Slur
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //---------------//
     // setLeftcolumn //
@@ -268,9 +271,12 @@ public class Slur
      */
     public String toString ()
     {
-        return "{Slur:" + " leftrow=" + leftrow + " leftcolumn=" + leftcolumn
-               + " rightrow=" + rightrow + " rightcolumn=" + rightcolumn
-               + " radius=" + radius + "}";
+        return "{Slur:" +
+            " leftrow=" + leftrow +
+            " leftcolumn=" + leftcolumn +
+            " rightrow=" + rightrow +
+            " rightcolumn=" + rightcolumn +
+            " radius=" + radius + "}";
     }
 
     //-----------//
@@ -296,21 +302,21 @@ public class Slur
         return true;
     }
 
-    //~ Classes --------------------------------------------------------------
+    //~ Classes -----------------------------------------------------------
 
     //-----//
     // Arc //
     //-----//
     private static class Arc
     {
-        //~ Instance variables -----------------------------------------------
+        //~ Instance variables --------------------------------------------
 
         private Point upperleft;
         private int squareside;
         private int startangle;
         private int arcangle;
 
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         //-----//
         // Arc //
@@ -342,7 +348,7 @@ public class Slur
             arcangle = sign * (int) Math.toDegrees(2 * Math.acos(h / rad));
         }
 
-        //~ Methods ----------------------------------------------------------
+        //~ Methods -------------------------------------------------------
 
         //------//
         // draw //

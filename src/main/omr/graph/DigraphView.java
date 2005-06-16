@@ -7,18 +7,20 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.graph;
 
 import java.awt.*;
 
 /**
- * Interface <code>DigraphView</code> defines what is needed to view a graph.
+ * Interface <code>DigraphView</code> defines what is needed to view a
+ * graph.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface DigraphView
 {
-    //~ Methods --------------------------------------------------------------
-
     //--------//
     // render //
     //--------//

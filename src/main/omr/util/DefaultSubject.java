@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.util;
 
 import omr.util.Logger;
@@ -22,6 +22,9 @@ import java.util.Set;
  * @param <S> The type of this subject
  * @param <O> The type of observer
  * @param <E> The type of entity to be passed around to observers
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class DefaultSubject<S extends Subject  <S, O, E>,
                             O extends Observer <E>,

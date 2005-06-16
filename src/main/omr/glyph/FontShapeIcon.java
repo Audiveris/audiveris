@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.constant.Constant;
@@ -27,6 +27,9 @@ import javax.swing.Icon;
  * for which code and height ratio are provided.
  *
  * <p><b>Nota</b><i>we have to find a more usable music font.</i>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class FontShapeIcon
     implements Icon

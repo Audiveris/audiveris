@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.check.Checkable;
@@ -33,6 +33,9 @@ import java.util.List;
  * aligned, and which would thus be too dependent on the precise x value,
  * the y value could be used instead. But this would lead to non transitive
  * comparisons...
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Glyph
         implements Comparable<Glyph>,
@@ -93,8 +96,11 @@ public class Glyph
     //~ Constructors ------------------------------------------------------
 
     //-------//
-    // Glyph // Needed for Class.newInstance method
+    // Glyph //
     //-------//
+    /**
+     * Constructor needed for Class.newInstance method
+     */
     public Glyph()
     {
     }
@@ -102,6 +108,11 @@ public class Glyph
     //-------//
     // Glyph // Needed for Castor
     //-------//
+    /**
+     * Constructor needed for Castor
+     *
+     * @param id the glyph id
+     */
     public Glyph (int id)
     {
         setId(id);
@@ -173,6 +184,13 @@ public class Glyph
     //-----------//
     // compareTo //
     //-----------//
+    /**
+     * Needed to implement Comparable, sorting glyphs first by abscissa,
+     * then by ordinate.
+     *
+     * @param other the other glyph to compare to
+     * @return th result of ordering
+     */
     public int compareTo (Glyph other)
     {
         // Are x values different?
@@ -189,6 +207,9 @@ public class Glyph
     //----------------//
     // computeMoments //
     //----------------//
+    /**
+     * Compute all the moments for this glyph
+     */
     public void computeMoments ()
     {
         // First cumulate point from member sections
@@ -209,6 +230,12 @@ public class Glyph
     //---------//
     // destroy //
     //---------//
+    /**
+     * Delete the glyph from its containing lag
+     *
+     * @param cutSections if true, the glyph links in the member sections
+     * are also nullified
+     */
     public void destroy (boolean cutSections)
     {
         // Cut the link between this glyph and its member sections
@@ -229,7 +256,7 @@ public class Glyph
     // drawAscii //
     //-----------//
     /**
-     * Draws a basic representation of the glyph, using ascii characters
+     * Draw a basic representation of the glyph, using ascii characters
      */
     public void drawAscii ()
     {
@@ -253,6 +280,9 @@ public class Glyph
     //------//
     // dump //
     //------//
+    /**
+     * Print out glyph internal data
+     */
     public void dump()
     {
         // Temporary
@@ -262,6 +292,12 @@ public class Glyph
     //-------------//
     // erasePixels //
     //-------------//
+    /**
+     * In the provided Picture, remove the pixels that correspond to the
+     * member sections
+     *
+     * @param picture the provided picture
+     */
     public void erasePixels (Picture picture)
     {
         for (GlyphSection section : members) {
@@ -295,11 +331,16 @@ public class Glyph
     //-------------//
     // getCentroid //
     //-------------//
+    /**
+     * Report the glyph centroid (mass center). The point is lasily evaluated.
+     *
+     * @return the mass center point
+     */
     public Point getCentroid()
     {
         if (centroid == null) {
             getMoments();
-             // Very dangerous
+             // Very dangerous, because indices are HARD-CODED !!!
             centroid = new Point((int) Math.rint(moments.k[17]),
                                  (int) Math.rint(moments.k[18]));
         }
@@ -353,6 +394,11 @@ public class Glyph
     //----------//
     // getGuess //
     //----------//
+    /**
+     * Report the stored guessed shape, if any, for the glyph
+     *
+     * @return the guessed shape, or null
+     */
     public Shape getGuess ()
     {
         return guess;
@@ -361,6 +407,11 @@ public class Glyph
     //-------//
     // getId //
     //-------//
+    /**
+     * Report the unique glyph id
+     *
+     * @return the glyph id
+     */
     public int getId ()
     {
         return id;
@@ -369,6 +420,12 @@ public class Glyph
     //--------------//
     // getInterline //
     //--------------//
+    /**
+     * Report the interline value for the glyph containing stave, which is
+     * used for some of the moments
+     *
+     * @return the interline value
+     */
     public int getInterline ()
     {
         return interline;
@@ -377,14 +434,24 @@ public class Glyph
     //--------//
     // getLag //
     //--------//
+    /**
+     * Report the containing lag
+     *
+     * @return the containing lag
+     */
     public GlyphLag getLag ()
     {
         return lag;
     }
 
     //------------//
-    // getMembers // for Castor
+    // getMembers //
     //------------//
+    /**
+     * Report the collection of member sections (needed for Castor)
+     *
+     * @return memner sections
+     */
     public List<GlyphSection> getMembers ()
     {
         return members;
@@ -393,6 +460,11 @@ public class Glyph
     //------------//
     // getMoments //
     //------------//
+    /**
+     * Report the glyph moments, which are lazily computed
+     *
+     * @return the glyph moments
+     */
     public Moments getMoments ()
     {
         if (moments == null) {
@@ -418,6 +490,11 @@ public class Glyph
     //----------//
     // getShape //
     //----------//
+    /**
+     * Report the registered glyph shape
+     *
+     * @return the glyph shape, which may be null
+     */
     public Shape getShape ()
     {
         return shape;
@@ -426,6 +503,11 @@ public class Glyph
     //-------------//
     // getStepLine //
     //-------------//
+    /**
+     * Report the stepLine feature (position relative to the stave)
+     *
+     * @return the stepLine value
+     */
     public double getStepLine ()
     {
         return stepLine;
@@ -434,6 +516,11 @@ public class Glyph
     //----------------//
     // getStringShape //
     //----------------//
+    /**
+     * Report the name of the registered shape
+     *
+     * @return the shape name, or null
+     */
     public String getStringShape ()
     {
         if (shape != null) {
@@ -465,6 +552,11 @@ public class Glyph
     //-----------//
     // hasLedger //
     //-----------//
+    /**
+     * Report whether the glyph touches a ledger
+     *
+     * @return true if there is a close ledger
+     */
     public boolean hasLedger ()
     {
         return hasLedger;
@@ -473,6 +565,11 @@ public class Glyph
     //---------------//
     // getStemNumber //
     //---------------//
+    /**
+     * Report the number of stems the glyph is close to
+     *
+     * @return the number of stems near by, typically 0, 1 or 2.
+     */
     public int getStemNumber ()
     {
         return stemNumber;
@@ -481,6 +578,12 @@ public class Glyph
     //---------//
     // isKnown //
     //---------//
+    /**
+     * A glyph is considered as knwn if it has a registered shape other
+     * than noise or clutter
+     *
+     * @return true if so
+     */
     public boolean isKnown ()
     {
         Shape shape = getShape();
@@ -493,6 +596,12 @@ public class Glyph
     //----------------//
     // isWithinSystem //
     //----------------//
+    /**
+     * Checks whether the glyph if within the horizontal limits of the
+     * containing stave (this is usually wrong fro braces)
+     *
+     * @return the test result
+     */
     public boolean isWithinSystem ()
     {
         return isWithinSystem;
@@ -586,6 +695,11 @@ public class Glyph
     //----------//
     // setGuess //
     //----------//
+    /**
+     * Register a shape as glyph guess
+     *
+     * @param guess the guessed shape to register
+     */
     public void setGuess (Shape guess)
     {
         this.guess = guess;
@@ -594,6 +708,11 @@ public class Glyph
     //--------------//
     // setHasLedger //
     //--------------//
+    /**
+     * Remember info about ledger near by
+     *
+     * @param hasLedger true is there is such ledger
+     */
     public void setHasLedger (boolean hasLedger)
     {
         this.hasLedger = hasLedger;
@@ -602,6 +721,11 @@ public class Glyph
     //-------------//
     // setLeftStem //
     //-------------//
+    /**
+     * Remember the number of stems near by
+     *
+     * @param stemNumber the number of stems
+     */
     public void setStemNumber (int stemNumber)
     {
         this.stemNumber = stemNumber;
@@ -610,6 +734,11 @@ public class Glyph
     //-------//
     // setId //
     //-------//
+    /**
+     * Assign a unique ID to the glyph
+     *
+     * @param id the unique id
+     */
     public void setId (int id)
     {
         this.id = id;
@@ -618,6 +747,11 @@ public class Glyph
     //--------------//
     // setInterline //
     //--------------//
+    /**
+     * Setter for the interline value
+     *
+     * @param interline the mean interline value of containing stave
+     */
     public void setInterline (int interline)
     {
         this.interline = interline;
@@ -626,14 +760,24 @@ public class Glyph
     //-------------------//
     // setIsWithinSystem //
     //-------------------//
+    /**
+     * Setter for withinSystem flag
+     *
+     * @param isWithinSystem treu if within the horizontal system limits
+     */
     public void setIsWithinSystem (boolean isWithinSystem)
     {
         this.isWithinSystem = isWithinSystem;
     }
 
     //------------//
-    // setMembers // for Castor
+    // setMembers //
     //------------//
+    /**
+     * For Castor, setter for the whole collection of member sections
+     *
+     * @param members the member sections
+     */
     public void setMembers (List<GlyphSection> members)
     {
         this.members = members;
@@ -643,6 +787,11 @@ public class Glyph
     //------------//
     // setMoments // for Castor
     //------------//
+    /**
+     * For Castor, Setter for the glyph moments,
+     *
+     * @param moments the glyph moments
+     */
     public void setMoments (Moments moments)
     {
         this.moments = moments;
@@ -664,6 +813,11 @@ public class Glyph
     //----------//
     // setShape //
     //----------//
+    /**
+     * Setter for the glyph shape
+     *
+     * @param shape the assigned shape, which may be null
+     */
     public void setShape (Shape shape)
     {
         this.shape = shape;
@@ -672,6 +826,12 @@ public class Glyph
     //-------------//
     // setStepLine //
     //-------------//
+    /**
+     * Setter for the step line position, with respect to the containing
+     * stave
+     *
+     * @param stepLine the relative step line
+     */
     public void setStepLine (double stepLine)
     {
         this.stepLine = stepLine;
@@ -680,6 +840,11 @@ public class Glyph
     //----------------//
     // setStringShape //
     //----------------//
+    /**
+     * Setter for the shape, knowing the name of the shape
+     *
+     * @param shape the NAME of the shape
+     */
     public void setStringShape (String shape)
     {
         this.shape = Shape.valueOf(shape);
@@ -688,7 +853,13 @@ public class Glyph
     //----------//
     // toString //
     //----------//
-    public String toString ()
+    /**
+     * Report a descriptive string
+     *
+     * @return the glyph description
+     */
+    @Override
+        public String toString ()
     {
         StringBuffer sb = new StringBuffer(256);
         sb.append("{").append(getPrefix());
@@ -738,6 +909,12 @@ public class Glyph
     //--------//
     // setLag // // For access from GlyphLag only !!!
     //--------//
+    /**
+     * The setter for glyph lag. Used with care, by {@link GlyphLag} and
+     * {@link omr.glyph.ui.GlyphVerifier}
+     *
+     * @param lag the containing lag
+     */
     public void setLag (GlyphLag lag)
     {
         this.lag = lag;

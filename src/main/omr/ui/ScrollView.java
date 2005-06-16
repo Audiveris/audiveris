@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.constant.Constant;
@@ -21,23 +21,27 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>ScrollView</code>, is a subclass of JScrollPane, which provides
- * a comprehensive combination of the following entities: <dl>
+ * Class <code>ScrollView</code>, is a subclass of JScrollPane, which
+ * provides a comprehensive combination of the following entities: <dl>
  *
- * <dt> <b>view:</b> </dt> <dd>the display of a {@link RubberZoomedPanel}, a
- * component potentially linked to a {@link Zoom} and a {@link Rubber}</dd>
+ * <dt> <b>view:</b> </dt> <dd>the display of a {@link RubberZoomedPanel},
+ * a component potentially linked to a {@link Zoom} and a {@link
+ * Rubber}</dd>
  *
- * <dt> <b>zoom:</b> </dt> <dd>the {@link Zoom} whose ratio is to be used when
- * the component is rendered </dd>
+ * <dt> <b>zoom:</b> </dt> <dd>the {@link Zoom} whose ratio is to be used
+ * when the component is rendered </dd>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ScrollView
     extends JScrollPane
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(ScrollView.class);
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     /** Current view inside the scrolled pane */
     protected RubberZoomedPanel view;
@@ -45,7 +49,7 @@ public class ScrollView
     /** Related zoom */
     protected Zoom zoom;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //------------//
     // ScrollView //
@@ -88,7 +92,7 @@ public class ScrollView
         setZoom(zoom);
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //---------//
     // setView //
@@ -253,8 +257,8 @@ public class ScrollView
     // fitWhole //
     //----------//
     /**
-     * Define the zoom ratio so that the full model can be visible.  We force
-     * the zoom ratio to stand within the range of the slider.
+     * Define the zoom ratio so that the full model can be visible.  We
+     * force the zoom ratio to stand within the range of the slider.
      */
     public void fitWhole ()
     {

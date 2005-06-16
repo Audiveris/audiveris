@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.Main;
@@ -66,6 +66,9 @@ import java.util.List;
  * preceding step.
  *
  * <p> Output is the collection of detected Bar lines.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class BarsBuilder
     implements GlyphDirectory

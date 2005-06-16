@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
@@ -46,6 +46,9 @@ import java.util.ArrayList;
  *
  * <p> Any spinner can also be used to select a glyph by directly entering
  * the glyph id value into the spinner field
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphBoard
     extends Board

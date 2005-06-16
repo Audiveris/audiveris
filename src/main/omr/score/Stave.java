@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.score;
 
 import omr.lag.Lag;
@@ -23,20 +23,23 @@ import java.util.List;
 
 /**
  * Class <code>Stave</code> handles a staff in a system.
- * <p/>
- * <p/>
- * It comprises measures, lyric info, text and dynamic indications. Each kind
- * of these elements is kept in a dedicated collection, so the direct children
- * of a stave are in fact these 4 collections. </p>
+ *
+ * <p/> It comprises measures, lyric info, text and dynamic
+ * indications. Each kind of these elements is kept in a dedicated
+ * collection, so the direct children of a stave are in fact these 4
+ * collections. </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Stave
         extends MusicNode
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(Stave.class);
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // Related info from sheet analysis
     private StaveInfo info;
@@ -74,7 +77,7 @@ public class Stave
     // First, and last measure ids
     private int lastMeasureId;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //-------//
     // Stave //
@@ -134,7 +137,7 @@ public class Stave
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //-------------//
     // setDynamics //
@@ -300,9 +303,9 @@ public class Stave
     /**
      * Return measure with leftlinex = x (within dx error). This is used in
      * Bars retrieval, to check that the bar candidate is actually a bar,
-     * since there is a measure starting at this abscissa in each stave of the
-     * system (this test is relevant only for systems with more than one
-     * stave).
+     * since there is a measure starting at this abscissa in each stave of
+     * the system (this test is relevant only for systems with more than
+     * one stave).
      *
      * @param x  starting abscissa of the desired measure
      * @param dx tolerance in abscissa
@@ -485,7 +488,8 @@ public class Stave
      * Set the ordinate of the starting point (upper left) of the stave
      * (needed by Castor)
      *
-     * @param top y in units of the upper left point in the containing score
+     * @param top y in units of the upper left point in the containing
+     * score
      */
     public void setTop (int top)
     {
@@ -540,9 +544,9 @@ public class Stave
     //----------//
 
     /**
-     * Override normal behavior, so that a given child is store in its proper
-     * type collection (measure to measure list, lyrics to lyrics list,
-     * etc...)
+     * Override normal behavior, so that a given child is store in its
+     * proper type collection (measure to measure list, lyrics to lyrics
+     * list, etc...)
      *
      * @param node the child to insert in the stave
      */
@@ -595,8 +599,12 @@ public class Stave
      */
     public String toString ()
     {
-        return "{Stave" + " top=" + top + " left=" + left + " width=" + width
-               + " size=" + size + " origin=" + origin + "}";
+        return "{Stave" +
+            " top=" + top +
+            " left=" + left +
+            " width=" + width +
+            " size=" + size +
+            " origin=" + origin + "}";
     }
 
     //--------------//
@@ -723,7 +731,7 @@ public class Stave
         dynamics = new DynamicList(this);
     }
 
-    //~ Classes --------------------------------------------------------------
+    //~ Classes -----------------------------------------------------------
 
     //-------------//
     // MeasureList //
@@ -731,7 +739,7 @@ public class Stave
     private static class MeasureList
             extends MusicNode
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         MeasureList (MusicNode container)
         {
@@ -759,7 +767,7 @@ public class Stave
     private static class TextList
             extends MusicNode
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         TextList (MusicNode container)
         {
@@ -773,7 +781,7 @@ public class Stave
     private static class DynamicList
             extends MusicNode
     {
-        //~ Constructors -----------------------------------------------------
+        //~ Constructors --------------------------------------------------
 
         DynamicList (MusicNode container)
         {

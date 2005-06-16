@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.constant.Constant;
@@ -33,6 +33,9 @@ import javax.swing.WindowConstants;
  * to save the loading of this when computation is not required.
  *
  * @see omr.sheet.Scale
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ScaleBuilder
 {

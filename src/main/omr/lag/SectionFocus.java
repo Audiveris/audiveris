@@ -7,12 +7,15 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 /**
  * Interface <code>SectionFocus</code> define the features related to
  * setting a focus determined by a section, it is thus an input entity.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface SectionFocus <S extends Section>
 {

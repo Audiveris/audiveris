@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.lag.LagView;
@@ -28,6 +28,9 @@ import java.awt.event.ActionListener;
  * AncestorListener interface), pressing the toggle button triggers the
  * {@link omr.lag.LagView#toggle} method of the selected {@link
  * omr.lag.LagView}.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ToggleHandler
     implements ActionListener,

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.Main;
@@ -31,6 +31,9 @@ import java.io.InputStream;
 /**
  * Class <code>GlyphNetwork</code> encapsulates a neural network dedicated
  * to glyph recognition
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphNetwork
     extends Evaluator

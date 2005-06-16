@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.score;
 
 import omr.Main;
@@ -27,6 +27,9 @@ import omr.sheet.Sheet;
 
 /**
  * Class <code>ScoreManager</code> handles a collection of score instances.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ScoreManager
 {

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.check;
 
 import omr.util.Logger;
@@ -23,6 +23,9 @@ import java.util.List;
  *
  * @param <T> the subtype of Checkable-compatible objects used in the
  * homogeneous collection of checks in this suite
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class CheckSuite <T extends Checkable>
 {

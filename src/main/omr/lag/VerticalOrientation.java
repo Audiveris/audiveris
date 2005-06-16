@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 import java.awt.Point;
@@ -16,6 +16,9 @@ import java.awt.Rectangle;
 /**
  * Class <code>VerticalOrientation</code> defines an orientation where
  * sections are vertical (coord is y, pos is x)
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class VerticalOrientation
     implements Oriented,

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 import omr.graph.DigraphView;
@@ -49,6 +49,9 @@ import java.util.Collection;
  *
  * @param <L> the type of lag this view displays
  * @param <S> the type of section the related lag handles
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class LagView <L extends Lag     <L, S>,
                       S extends Section <L, S>>

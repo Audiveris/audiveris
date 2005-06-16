@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.util.Directory;
@@ -15,6 +15,9 @@ import omr.util.Directory;
 /**
  * Interface <code>GlyphDirectory</code> declares the ability to retrieve a
  * glyph via its Id.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public interface GlyphDirectory
     extends Directory <Integer, Glyph>

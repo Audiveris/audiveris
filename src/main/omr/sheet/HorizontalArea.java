@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.constant.Constant;
@@ -24,23 +24,25 @@ import java.util.Comparator;
  * Class <code>HorizontalArea</code> processes a horizontal lag to extract
  * horizontal stick as potential candidates for ledgers, alternate endings,
  * etc...
- * <p/>
- * <p/>
- * Input is a horizontal lag. </p>
- * <p/>
- * <p/>
- * Output is a list of horizontal sticks that represent good candidates. </p>
+ *
+ * <p> Input is a horizontal lag.
+ *
+ * <p/>Output is a list of horizontal sticks that represent good
+ * candidates.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class HorizontalArea
         extends StickArea
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     // Class usual stuff
     private static final Constants constants = new Constants();
     private static final Logger logger = Logger.getLogger(HorizontalArea.class);
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //----------------//
     // HorizontalArea //
@@ -53,8 +55,8 @@ public class HorizontalArea
      * @param sheet the sheet to process
      * @param hLag  the horizontal lag from which sticks are built
      *
-     * @throws omr.ProcessingException raised when step processing must stop,
-     *                                 due to encountered error
+     * @throws omr.ProcessingException raised when step processing must
+     *                                 stop, due to encountered error
      */
     public HorizontalArea (Sheet sheet,
                            GlyphLag hLag,
@@ -98,12 +100,12 @@ public class HorizontalArea
         }
     }
 
-    //~ Classes --------------------------------------------------------------
+    //~ Classes -----------------------------------------------------------
 
     private static class Constants
             extends ConstantSet
     {
-        //~ Instance variables -----------------------------------------------
+        //~ Instance variables --------------------------------------------
 
         Scale.Fraction coreSectionLength = new Scale.Fraction
                 (2.0,

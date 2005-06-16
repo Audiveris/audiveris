@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.lag;
 
 import omr.util.DefaultSubject;
@@ -16,11 +16,13 @@ import omr.util.Subject;
 /**
  * Class <code>DefaultSectionSubject</code> is an implementation of the
  * specific {@link Subject} meant for {@link SectionObserver} observers
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class DefaultSectionSubject
     extends DefaultSubject<SectionSubject, SectionObserver, Section>
 {
-
     //----------------//
     // notifyObservers //
     //----------------//

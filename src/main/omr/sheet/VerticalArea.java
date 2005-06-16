@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.constant.Constant;
@@ -29,6 +29,9 @@ import java.util.Comparator;
  * <p/>
  * <p/>
  * Output is a list of vertical sticks that represent good candidates. </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class VerticalArea
     extends StickArea

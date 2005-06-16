@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.util.Logger;
@@ -45,6 +45,9 @@ import java.awt.image.ColorModel;
  * the current image </li>
  *
  * </ul> </p>
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class Picture
 {

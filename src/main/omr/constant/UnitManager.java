@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.constant;
 
 import omr.util.Logger;
@@ -18,19 +18,23 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 /**
- * Class <code>UnitManager</code> implements the management of all units (aka
- * classes), for which we have either a ConstantSet, or a Logger, or both.
- * <p/>
+ * Class <code>UnitManager</code> implements the management of all units
+ * (aka classes), for which we have either a ConstantSet, or a Logger, or
+ * both.
+ *
  * <p>It is a collection of static methods since only one manager is
  * intended.
- * <p/>
+ *
  * <p>To help {@link UnitTreeTable} display the whole tree of UnitNodes,
- * UnitManager pre-loads all the classes known to contain a ConstantSet or a
- * Logger. This list is kept up-to-date and stored as a property
+ * UnitManager pre-loads all the classes known to contain a ConstantSet or
+ * a Logger. This list is kept up-to-date and stored as a property
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class UnitManager
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final String UNIT = UnitManager.class.getName();
 
@@ -40,7 +44,7 @@ public class UnitManager
     // Separator used in property that concatenates all unit names
     private static final String SEPARATOR = ";";
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // Map of PackageNodes and UnitNodes
     private final SortedMap<String, Node> mapOfNodes = new TreeMap<String, Node>();
@@ -55,7 +59,7 @@ public class UnitManager
 
     private static final Logger logger = Logger.getLogger(UnitManager.class);
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //-------------//
     // UnitManager //
@@ -73,7 +77,7 @@ public class UnitManager
         }
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //-------------//
     // getInstance //
@@ -153,9 +157,9 @@ public class UnitManager
     // addSet //
     //--------//
     /**
-     * Add a ConstantSet, which means perhaps adding a UnitNode if not already
-     * allocated and setting its ConstantSet reference to the provided
-     * ConstantSet.
+     * Add a ConstantSet, which means perhaps adding a UnitNode if not
+     * already allocated and setting its ConstantSet reference to the
+     * provided ConstantSet.
      *
      * @param set the ConstantSet to add to the hierarchy
      */
@@ -169,9 +173,9 @@ public class UnitManager
     // addLogger //
     //-----------//
     /**
-     * Add a Logger, which like addSet means perhaps adding a UnitNode if not
-     * already allocated and setting its Logger reference to the provided
-     * Logger
+     * Add a Logger, which like addSet means perhaps adding a UnitNode if
+     * not already allocated and setting its Logger reference to the
+     * provided Logger
      *
      * @param logger the Logger ro add to the hierarchy
      */
@@ -185,8 +189,8 @@ public class UnitManager
     // retrieveUnit //
     //--------------//
     /**
-     * Looks for the unit with given name. If the unit does not exist, it is
-     * created and inserted in the hierarchy
+     * Looks for the unit with given name. If the unit does not exist, it
+     * is created and inserted in the hierarchy
      *
      * @param name the name of the desired unit
      *
@@ -242,8 +246,8 @@ public class UnitManager
     // dumpAllUnits //
     //--------------//
     /**
-     * Dumps on the standard output the current value of all Constants of all
-     * ConstantSets.
+     * Dumps on the standard output the current value of all Constants of
+     * all ConstantSets.
      */
     public void dumpAllUnits ()
     {
@@ -317,8 +321,8 @@ public class UnitManager
     // preLoadUnits //
     //--------------//
     /**
-     * Allows to preload the names of the various nodes in the hierarchy, by
-     * simply extracting names stored at previous runs.
+     * Allows to preload the names of the various nodes in the hierarchy,
+     * by simply extracting names stored at previous runs.
      */
     private void preLoadUnits (String main)
     {
@@ -363,8 +367,8 @@ public class UnitManager
     // storeUnits //
     //------------//
     /**
-     * Build a string by concatenating all node names and store it to disk for
-     * subsequent runs.
+     * Build a string by concatenating all node names and store it to disk
+     * for subsequent runs.
      */
     private void storeUnits ()
     {

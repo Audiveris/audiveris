@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph.ui;
 
 import omr.glyph.Shape;
@@ -33,6 +33,9 @@ import java.util.EnumSet;
  * defined. Then, each individual shpae within these shape ranges has its
  * color assigned by default to the color of the containing range, unless
  * a color is specifically assigned to this individual shape.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class ShapeColorChooser
     extends JPanel

@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.glyph.GlyphSection;
@@ -26,6 +26,9 @@ import java.util.List;
  * Class <code>SystemSplit</code> is a set of methods dedicated to split
  * entities (sections, sticks, ...) according to the system areas
  * previously found in a sheet
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class SystemSplit
 {
@@ -261,7 +264,7 @@ public class SystemSplit
 
     /**
      * Split the collection of provided vertical sticks (Used by
-     * Verticals).
+     * VerticalsBuilder).
      *
      * @param sheet the containing sheet
      * @param sticks the entities to be dispatched

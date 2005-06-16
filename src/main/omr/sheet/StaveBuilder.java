@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.sheet;
 
 import omr.glyph.GlyphLag;
@@ -23,14 +23,17 @@ import omr.glyph.GlyphSection;
 /**
  * Class <code>StaveBuilder</code> processes the (five) line areas, according
  * to the peaks found previously.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class StaveBuilder
 {
-    //~ Static variables/initializers ----------------------------------------
+    //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(StaveBuilder.class);
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // To allow unique identifiers to staves (for debug only)
     private int id;
@@ -45,7 +48,7 @@ public class StaveBuilder
     // Bottom of stave related area
     private int areaBottom = -1;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors ------------------------------------------------------
 
     //--------------//
     // StaveBuilder //
@@ -67,11 +70,11 @@ public class StaveBuilder
         this.vi = vi;
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     /**
-     * Create a stave info, using a list of related peaks that correspond to
-     * the stave lines.
+     * Create a stave info, using a list of related peaks that correspond
+     * to the stave lines.
      *
      * @param peaks    the histogram peaks that belong to this stave area
      * @param interval the mean interval between peaks of this staff area
@@ -101,8 +104,8 @@ public class StaveBuilder
         }
 
         // Retrieve left and right abscissa for the staff lines of the set
-        // We use a kind of vote here, since one or two lines can be read as
-        // longer than real, so we use the abscissa of the median.
+        // We use a kind of vote here, since one or two lines can be read
+        // as longer than real, so we use the abscissa of the median.
         List<Integer> lefts = new ArrayList<Integer>();
         List<Integer> rights = new ArrayList<Integer>();
 

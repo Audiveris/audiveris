@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.glyph;
 
 import omr.lag.Lag;
@@ -24,6 +24,9 @@ import java.util.Collection;
  * Class <code>GlyphLag</code> is a lag of {@link GlyphSection}'s which can
  * be aggregated into {@link Glyph}'s. A GlyphLag keeps an internal
  * collection of all defined glyphs.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class GlyphLag
     extends Lag<GlyphLag, GlyphSection>

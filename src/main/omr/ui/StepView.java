@@ -7,7 +7,7 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-//      $Id$
+
 package omr.ui;
 
 import omr.Main;
@@ -24,6 +24,9 @@ import javax.swing.*;
  * Class <code>StepView</code> is the user interface entity that allows to
  * monitor step progression, and require manually a step series to be
  * performed.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public class StepView
 {
