@@ -12,16 +12,18 @@ package omr.sheet;
 
 import omr.util.Logger;
 
-import javax.media.jai.*;
-import javax.media.jai.operator.MosaicDescriptor;
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.awt.image.ColorModel;
+import javax.media.jai.*;
+import javax.media.jai.operator.MosaicDescriptor;
 
 /**
  * Class <code>Picture</code> encapsulates an image, allowing modifications
@@ -109,23 +111,20 @@ public class Picture
                    ImageFormatException
     {
         // Try to read the image file
-        try {
-            logger.info("Loading image from " + imgFile + " ...");
-            if (image != null) {
-                image.dispose();
-            }
-
-            image = JAI.create("fileload", imgFile.getPath());
-        } catch (IllegalArgumentException ex) {
-            throw new FileNotFoundException(imgFile.getPath());
+        logger.info("Loading image from " + imgFile + " ...");
+        if (image != null) {
+            image.dispose();
         }
+
+        image = JAI.create("fileload", imgFile.getPath());
 
         // Check that the whole image has been loaded
         if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
             throw new IOException("Could not load image file "
                                   + imgFile.getPath());
         } else {
-            // Check image format. This may throw ImageFormatException
+            // Check image format, and convert to gray if needed. This may
+            // throw ImageFormatException
             checkImageFormat();
 
             // Cache dimensions
@@ -302,7 +301,7 @@ public class Picture
     // checkImageFormat //
     //------------------//
     /**
-     * Check is the image format (and especially its color model) is
+     * Check if the image format (and especially its color model) is
      * properly handled by Audiveris.
      *
      * @throws ImageFormatException is the format is not supported
@@ -310,15 +309,16 @@ public class Picture
     private void checkImageFormat()
         throws ImageFormatException
     {
-        ColorModel colorModel = image.getColorModel();
-        int pixelSize = colorModel.getPixelSize();
-        int numComponents = colorModel.getNumComponents();
+        int numBands = image.getSampleModel().getNumBands();
 
-        if ((pixelSize != 8) || (numComponents != 1)) {
-            throw new ImageFormatException
-                ("Unsupported color model" +
-                 " pixelSize=" + pixelSize +
-                 " numComponents=" + numComponents);
+        if (numBands != 1) {
+            if (numBands == 3) {
+                image = colorToGray(image);
+            } else {
+                throw new ImageFormatException
+                    ("Unsupported sample model" +
+                     " numBands=" + numBands);
+            }
         }
     }
 
@@ -539,7 +539,7 @@ public class Picture
     //--------//
     // invert //
     //--------//
-    private RenderedOp invert (RenderedOp image)
+    private static RenderedOp invert (RenderedOp image)
     {
         return JAI.create("Invert",
                           new ParameterBlock()
@@ -549,6 +549,21 @@ public class Picture
                           .add(null)
                           .add(null)
                           .add(null),
+                          null);
+    }
+
+    //-------------//
+    // colorToGray //
+    //-------------//
+    private static RenderedOp colorToGray (RenderedOp image)
+    {
+        logger.info("Converting color image to gray ...");
+        double[][] matrix = { {0.114d, 0.587d, 0.299d, 0.0d} };
+
+        return JAI.create("bandcombine",
+                          new ParameterBlock()
+                          .addSource(image)
+                          .add(matrix),
                           null);
     }
 
