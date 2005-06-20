@@ -8,1028 +8,999 @@
 	<META NAME="CREATED" CONTENT="20050429;15271809"/>
 	<META NAME="CLASSIFICATION" CONTENT="Documentation for Audiveris operation"/>
 	<META NAME="DESCRIPTION" CONTENT="How to operate the Audiveris software"/>
-
-	<!-- The following links are meant to be solved on my local PC -->
-	<!-- The java.net site uses its own style sheets -->
- 	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/tigris.css"/>
- 	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/inst.css"/>
-	
+                
+        <!-- The following links are meant to be solved on my local PC -->
+        <!-- The java.net site uses its own style sheets -->
+        <LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/tigris.css"/>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/inst.css"/>
     </HEAD>
-    
-    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="COMPOSITE">
-	
-	<DIV CLASS="app" STYLE="text-align: justify;">
-	    
-	    <H1 ALIGN=CENTER>Audiveris Operation Manual</H1>
-	    
-	    <ADDRESS>Author : <A HREF="mailto:herve.bitteur@laposte.net">Herv&eacute;
-		Bitteur</A></ADDRESS>
-	    <ADDRESS>Updated : 01 June 2005</ADDRESS>
-	    
-	    <A NAME="LAUNCHING">
-		<H2>Launching Audiveris</H2>
-	    </A>
-	    
-	    <P>Audiveris can be launched by two different means :</P>
-	    <OL>
-		<LI>Using the launch script
-		    called <CODE><B>audiveris.bat</B></CODE> and
-		    located in the <CODE><U>bin</U>/</CODE> directory
-		    of Audiveris.
-		    <PRE CLASS="info">
-$&gt; <I>&lt;your-audiveris-install-directory&gt;</I>\bin\audiveris.bat <I>[&lt;arguments&gt;]</I>
-		    </PRE>
-		</LI>
-		
-		<LI>Using ant with the <CODE><B>run</B></CODE> target
-		    on the provided <CODE><B>build.xml</B></CODE> file
-		    located in the root directory of Audiveris.
-		    <PRE CLASS="info">
-$&gt; cd <I>&lt;your-audiveris-install-directory&gt;</I>
-$&gt; ant run
-		    </PRE>
-		</LI>
-	    </OL>
 
-	    <A NAME="RUN_CUSTOM">
-		<H3>Run Customization</H3>
-	    </A>
+    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="app" STYLE="text-align: justify;">
+	
+	<H1 ALIGN=CENTER>Audiveris Operation Manual</H1>
+	
+	<ADDRESS>Author : <A HREF="mailto:herve.bitteur@laposte.net">Herv&eacute;
+	    Bitteur</A></ADDRESS>
+	<ADDRESS>Updated : 01 June 2005</ADDRESS>
+	
+	<A NAME="LAUNCHING">
+	    <H2>Launching Audiveris</H2>
+	</A>
+	
+	<P>Audiveris can be launched by two different means :</P>
+	<OL>
+	    <LI>Using the launch script
+		called <CODE><B>audiveris.bat</B></CODE> and located
+		in the <CODE><U>bin</U>/</CODE> directory of
+		Audiveris.
+		<PRE CLASS="info">
+		    $&gt; <I>&lt;your-audiveris-install-directory&gt;</I>\bin\audiveris.bat <I>[&lt;arguments&gt;]</I>
+		</PRE>
+	    </LI>
 	    
-	    <DIV CLASS="warningmessage">
-		<P CLASS="alert">Each of these means needs a properly
+	    <LI>Using ant with the <CODE><B>run</B></CODE> target on
+		the provided <CODE><B>build.xml</B></CODE> file
+		located in the root directory of Audiveris.
+		<PRE CLASS="info">
+		    $&gt; cd <I>&lt;your-audiveris-install-directory&gt;</I>
+		    $&gt; ant run
+		</PRE>
+	    </LI>
+	</OL>
+	
+	<A NAME="RUN_CUSTOM">
+	    <H3>Run Customization</H3>
+	</A>
+	
+	<DIV CLASS="warningmessage">
+	    <P CLASS="alert">Each of these means needs a properly
 		defined classpath, that you must customize beforehand
 		to fit your own characteristics.</P>
-	    </DIV>
+	</DIV>
+	
+	<P> Since <CODE><B>build.xml</B></CODE> provides a target
+	    named <B>launcher</B> which generates the audiveris
+	    launcher based on the defined properties, it is
+	    recommanded to first update these environment properties
+	    (by editing the file
+	    named <CODE><B>build.properties</B></CODE> in
+	    the <CODE><U>config</U>/</CODE> directory) and generate
+	    that launcher. Then, selecting either launching means will
+	    use the same environment definitions.</P>
+	
+	<P> Please refer to the <A
+	    HREF="javascript:top.selectManual('installation');">
+	    Audiveris Installation Manual</A> for further details on
+	    the customization and use of
+	    the <CODE><B>build.xml</B></CODE> file.</P>
+	
+	<A NAME="CLI">
+	    <H3>Command-line arguments</H3>
+	</A>
+	
+	<P> Most of the time, there is no need for command-line
+	    arguments. They are useful when a batch mode (i.e. with no
+	    user interface) is required, or to set some parameters
+	    beforehand.</P>
+	
+	<P> A comprehensive list of command-line arguments is
+	    available in the javadoc API of the <A
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/Main.html">Main</A>
+	    class.</P>
+	
+	
+	<A NAME="MENUS">
+	    <H2>Menu description</H2>
+	</A>
+	
+	<P> Here is a quick catalog of the various menu items, as
+	    found on Audiveris main user interface.</P>
+	
+	<DIV CLASS="axial">
 	    
-	    <P> Since <CODE><B>build.xml</B></CODE> provides a target
-		named <B>launcher</B> which generates the audiveris
-		launcher based on the defined properties, it is
-		recommanded to first update these environment
-		properties (by editing the file
-		named <CODE><B>build.properties</B></CODE> in
-		the <CODE><U>config</U>/</CODE> directory) and
-		generate that launcher. Then, selecting either
-		launching means will use the same environment
-		definitions.</P>
-	    
-	    <P> Please refer to the <A
-		HREF="javascript:top.Banner.selectManual('installation');">
-		Audiveris Installation Manual</A> for further details
-		on the customization and use of
-		the <CODE><B>build.xml</B></CODE> file.</P>
-
-	    <A NAME="CLI">
-		<H3>Command-line arguments</H3>
+	    <A NAME="FILE">
+		<H3>File</H3>
 	    </A>
 	    
-	    <P> Most of the time, there is no need for command-line
-		arguments. They are useful when a batch mode
-		(i.e. with no user interface) is required, or to set
-		some parameters beforehand.</P>
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH WIDTH="120px">Exit</TH>
+		    <TD>Exit Audiveris application</TD>
+		</TR>
+	    </TABLE>
 	    
-	    <P> A comprehensive list of command-line arguments is available
-		in the javadoc API of
-		the <A HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/Main.html">Main</A> class.</P>
-	    
-
-	    <A NAME="MENUS">
-		<H2>Menu description</H2>
+	    <A NAME="SHEET">
+		<H3>Sheet</H3>
 	    </A>
 	    
-	    <P> Here is a quick catalog of the various menu items, as
-		found on Audiveris main user interface.</P>
+	    <P>All these commands deal with the sheet at hand</P>
 	    
-	    <DIV CLASS="axial">
-		
-		<A NAME="FILE">
-		    <H3>File</H3>
-		</A>
-		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TH WIDTH="120px">Exit</TH>
-			<TD>Exit Audiveris application</TD>
-		    </TR>
-		</TABLE>
-		
-		<A NAME="SHEET">
-		    <H3>Sheet</H3>
-		</A>
-		
-		<P>All these commands deal with the sheet at hand</P>
-		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TH WIDTH="120px">History</TH>
-			<TD>List the more recent sheet files you've loaded</TD>
-		    </TR>
-		    <TR>
-			<TH>Open Sheet</TH>
-			<TD>Select a file that contains a printed sheet of
-			    music. Most graphic file formats should be usable,
-			    <EM>provided the pixel info uses a grey scale of 256
-				values</EM>. </TD>
-		    </TR>
-		    <TR>
-			<TH>Close Sheet</TH>
-			<TD>Close the current sheet</TD>
-		    </TR>
-		    <TR>
-			<TH>Width Fit</TH>
-			<TD>Adjust the zoom ratio so that the sheet WIDTH is
-			    fully displayed in the window</TD>
-		    </TR>
-		    <TR>
-			<TH>Height Fit</TH>
-			<TD>Adjust the zoom ratio so that the sheet HEIGHT is
-			    fully displayed in the window</TD>
-		    </TR>
-		    <TR>
-			<TH>Dump all Sheets</TH>
-			<TD>Print on the output console the internal
-			    information kept about every currently loaded
-			    sheet</TD>
-		    </TR>
-		    <TR>
-			<TH>Scale Plot</TH>
-			<TD>Display histogram of run lengths for
-			    foreground (black) and background (white)
-			    pixels. This gives the general scale
-			    (interline value) of the sheet.  Here
-			    is <A HREF="#SCALE_PLOT">a scale plot
-			    example</A>.
-			</TD>
-		    </TR>
-		    <TR>
-			<TH>Skew Plot</TH>
-			<TD>Display histogram of measured slopes of
-			    longest horizontal sticks. This gives the
-			    angle to de-skew the image.  Here is <A
-			    HREF="#SKEW_PLOT">a skew plot example</A>.
-			</TD>
-		    </TR>
-		    <TR>
-			<TH>Line Plot</TH>
-			<TD>Display histogram of horizontal
-			    projections of black pixels. This
-			    indicates area for each staff line.  Here
-			    is <A HREF="#LINE_PLOT">a line plot
-			    example</A>.
-			</TD>
-		    </TR>
-		</TABLE>
-		
-		<A NAME="STEP">
-		    <H3>Step</H3>
-		</A>
-		
-		<P> Launch the processing of a step on the sheet at
-		    hand </P>
-		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TH WIDTH="120px"><A HREF="#STEPS">&lt;Any Step&gt;</A></TH>
-			<TD>Select the target in this menu which lists in
-			    order the defined processing steps, as described
-			    in <A HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Sheet.html">Sheet</A>
-			    class documentation. Note that you can only move
-			    forward.
-			    
-			    <P> Direct access to any step is available
-				from the navigation frame on the left
-				of the window</P>
-			</TD>
-		    </TR>
-		</TABLE>
-		
-		<A NAME="SCORE">
-		    <H3>Score</H3>
-		</A>
-		
-		<P> All these commands deal with the score part of the
-		    sheet at hand</P>
-		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TH WIDTH="120px">History</TH>
-			<TD>List the more recent score files you've written</TD>
-		    </TR>
-		    <TR>
-			<TH>Open Score</TH>
-			<TD>Select a score file for reading. A score file
-			    contains in a binary proprietary format the
-			    information built while processing the original
-			    sheet. Re-loading such a score file saves you the
-			    initial processing, when getting back to the final
-			    steps</TD>
-		    </TR>
-		    <TR>
-			<TH>Save Score</TH>
-			<TD>Save the current information about the current
-			    score, for potential later reload</TD>
-		    </TR>
-		    <TR>
-			<TH>View Score</TH>
-			<TD>Display and browse the hierarchical information
-			    about the current score</TD>
-		    </TR>
-		    <TR>
-			<TH>Dump Score</TH>
-			<TD>Print main score information on the output
-			    console</TD>
-		    </TR>
-		    <TR>
-			<TH>Dump all Scores</TH>
-			<TD>Dump information about every score currently
-			    loaded</TD>
-		    </TR>
-		</TABLE>
-		
-		<A NAME="TOOL">
-		    <H3>Tool</H3>
-		</A>
-		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TH WIDTH="120px"><A HREF="#SHAPE_COLORS">Shape Colors</A></TH>
-			<TD>Select the color display for each recognized
-			    shape</TD>
-		    </TR>
-		    <TR>
-			<TH><A HREF="#TRAINING_MATERIAL">Training Material</A></TH>
-			<TD>Verify and potentially discard glyph material used
-			    to train the evaluators</TD>
-		    </TR>
-		    <TR>
-			<TH><A HREF="#TRAINERS">Trainers</A></TH>
-			<TD>Launch and monitor the training phases of the
-			    evaluators</TD>
-		    </TR>
-		    <TR>
-			<TH>Memory</TH>
-			<TD>Display the current memory occupancy</TD>
-		    </TR>
-		    <TR>
-			<TH><A HREF="#OPTIONS">Options</A></TH>
-			<TD>Set the various parameters used by Audiveris
-			    software</TD>
-		    </TR>
-		</TABLE>
-		
-		<A NAME="HELP">
-		    <H3>Help</H3>
-		</A>
-		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TH WIDTH="120px">About</TH>
-			<TD>Display information about Audiveris version and
-			    related web-site</TD>
-		    </TR>
-		</TABLE>
-	    </DIV>
-
-	    <A NAME="STEPS">
-		<H2>Steps</H2>
-	    </A>
-
-	    <P> To present the various operations, and the related
-		user interface, we'll use a tour based on the usual
-		sequence of processing steps, since nearly every step
-		has a related view</P>
-
-	    <A NAME="LOAD">
-		<H3>Load Step</H3>
-	    </A>
-
-	    <P> The following image represents the main window of user
-		interface, just after a picture has been loaded </P>
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH WIDTH="120px">History</TH>
+		    <TD>List the more recent sheet files you've
+		    loaded</TD>
+		</TR>
+		<TR>
+		    <TH>Open Sheet</TH>
+		    <TD>Select a file that contains a printed sheet of
+			music. Most graphic file formats should be
+			usable, <EM>provided the pixel info uses a
+			grey scale of 256 values</EM>. </TD>
+		</TR>
+		<TR>
+		    <TH>Close Sheet</TH>
+		    <TD>Close the current sheet</TD>
+		</TR>
+		<TR>
+		    <TH>Width Fit</TH>
+		    <TD>Adjust the zoom ratio so that the sheet WIDTH
+			is fully displayed in the window</TD>
+		</TR>
+		<TR>
+		    <TH>Height Fit</TH>
+		    <TD>Adjust the zoom ratio so that the sheet HEIGHT
+			is fully displayed in the window</TD>
+		</TR>
+		<TR>
+		    <TH>Dump all Sheets</TH>
+		    <TD>Print on the output console the internal
+			information kept about every currently loaded
+			sheet</TD>
+		</TR>
+		<TR>
+		    <TH>Scale Plot</TH>
+		    <TD>Display histogram of run lengths for
+			foreground (black) and background (white)
+			pixels. This gives the general scale
+			(interline value) of the sheet.  Here is <A
+			HREF="#SCALE_PLOT">a scale plot example</A>.
+		    </TD>
+		</TR>
+		<TR>
+		    <TH>Skew Plot</TH>
+		    <TD>Display histogram of measured slopes of
+			longest horizontal sticks. This gives the
+			angle to de-skew the image.  Here is <A
+			HREF="#SKEW_PLOT">a skew plot example</A>.
+		    </TD>
+		</TR>
+		<TR>
+		    <TH>Line Plot</TH>
+		    <TD>Display histogram of horizontal projections of
+			black pixels. This indicates area for each
+			staff line.  Here is <A HREF="#LINE_PLOT">a
+			line plot example</A>.
+		    </TD>
+		</TR>
+	    </TABLE>
 	    
-	    <IMG SRC="../images/load-annotated.png"
-		 TITLE="General Window Structure" />
-
-	    <P> The window is organized as follows : </P>
+	    <A NAME="STEP">
+		<H3>Step</H3>
+	    </A>
+	    
+	    <P> Launch the processing of a step on the sheet at
+		hand </P>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH WIDTH="120px"><A HREF="#STEPS">&lt;Any
+		    Step&gt;</A></TH>
+		    <TD>Select the target in this menu which lists in
+			order the defined processing steps, as
+			described in <A
+			HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Sheet.html">Sheet</A>
+			class documentation. Note that you can only
+			move forward.
+			
+			<P> Direct access to any step is available
+			    from the navigation frame on the left of
+			    the window</P>
+		    </TD>
+		</TR>
+	    </TABLE>
+	    
+	    <A NAME="SCORE">
+		<H3>Score</H3>
+	    </A>
+	    
+	    <P> All these commands deal with the score part of the
+		sheet at hand</P>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH WIDTH="120px">History</TH>
+		    <TD>List the more recent score files you've
+		    written</TD>
+		</TR>
+		<TR>
+		    <TH>Open Score</TH>
+		    <TD>Select a score file for reading. A score file
+			contains in a binary proprietary format the
+			information built while processing the
+			original sheet. Re-loading such a score file
+			saves you the initial processing, when getting
+			back to the final steps</TD>
+		</TR>
+		<TR>
+		    <TH>Save Score</TH>
+		    <TD>Save the current information about the current
+			score, for potential later reload</TD>
+		</TR>
+		<TR>
+		    <TH>View Score</TH>
+		    <TD>Display and browse the hierarchical
+			information about the current score</TD>
+		</TR>
+		<TR>
+		    <TH>Dump Score</TH>
+		    <TD>Print main score information on the output
+			console</TD>
+		</TR>
+		<TR>
+		    <TH>Dump all Scores</TH>
+		    <TD>Dump information about every score currently
+			loaded</TD>
+		</TR>
+	    </TABLE>
+	    
+	    <A NAME="TOOL">
+		<H3>Tool</H3>
+	    </A>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH WIDTH="120px"><A HREF="#SHAPE_COLORS">Shape
+		    Colors</A></TH>
+		    <TD>Select the color display for each recognized
+			shape</TD>
+		</TR>
+		<TR>
+		    <TH><A HREF="#TRAINING_MATERIAL">Training
+		    Material</A></TH>
+		    <TD>Verify and potentially discard glyph material
+			used to train the evaluators</TD>
+		</TR>
+		<TR>
+		    <TH><A HREF="#TRAINERS">Trainers</A></TH>
+		    <TD>Launch and monitor the training phases of the
+			evaluators</TD>
+		</TR>
+		<TR>
+		    <TH>Memory</TH>
+		    <TD>Display the current memory occupancy</TD>
+		</TR>
+		<TR>
+		    <TH><A HREF="#OPTIONS">Options</A></TH>
+		    <TD>Set the various parameters used by Audiveris
+			software</TD>
+		</TR>
+	    </TABLE>
+	    
+	    <A NAME="HELP">
+		<H3>Help</H3>
+	    </A>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH WIDTH="120px">About</TH>
+		    <TD>Display information about Audiveris version and
+			related web-site</TD>
+		</TR>
+	    </TABLE>
+	</DIV>
+	
+	<A NAME="STEPS">
+	    <H2>Steps</H2>
+	</A>
+	
+	<P> To present the various operations, and the related user
+	    interface, we'll use a tour based on the usual sequence of
+	    processing steps, since nearly every step has a related
+	    view</P>
+	
+	<A NAME="LOAD">
+	    <H3>Load Step</H3>
+	</A>
+	
+	<P> The following image represents the main window of user
+	    interface, just after a picture has been loaded </P>
+	
+	<IMG SRC="../images/load-annotated.png"
+	     TITLE="General Window Structure" />
+	
+	<P> The window is organized as follows : </P>
+	<UL>
+	    <LI>The left hand part is dedicated to the sheet display.
+		<OL>
+		    <LI>The <B>Sheet Panel</B> takes the largest
+			area. It displays one view of the sheet, here
+			this view is the original picture.</LI>
+		    <LI>The <B>View Tabbed Pane</B> gathers all views
+			on one sheet, and the tabs allow navigation
+			between views.</LI>
+		    <LI>The <B>Sheet Tabbed Pane</B> gathers all
+			sheets currently in memory, with one tab per
+			sheet.</LI>
+		    <LI>All the different views of the same sheet
+			share the same vertical <B>Logarithmic
+			Slider</B>, which allows to set the display
+			scale using a logarithmic scale (factors
+			ranging from 1/8 to 16).</LI>
+		</OL>
+	    </LI>
+	    <LI>The right hand part is the <B>Data Panel</B>, which
+		provides various data boards related to the current
+		sheet. Its content depends of the current view. For
+		the view of the original picture in this example, only
+		informations of the <I>"Pixel"</I> board are displayed
+		: the x & y coordinate of the mouse position, as
+		highlighted by the crossing of vertical and horizontal
+		orange lines.</LI>
+	    <LI>At the bottom of the window, the <B>Log Panel</B>
+		displays the sequential log of messages.</LI>
+	</UL>
+	
+	<P> In this example, we have a black and white image, so the
+	    grey level of the current pixel is either 0 (black
+	    foreground) or 255 (white background). The mouse is
+	    currently on a pixel of the C Clef, so the "Pixel" board
+	    of the data panel reports a 0 value for abscissa 236 and
+	    ordinate 430.</P>
+	
+	<P> By dragging the mouse, while keeping the shift key
+	    pressed, we can define a rectangle. The x and y values are
+	    the coordinates of the upper left corner, and the width
+	    and height are the dimensions of the defined rectangular
+	    area.</P>
+	
+	<BR/>
+	<A NAME="SCALE">
+	    <H3>Scale Step</H3>
+	</A>
+	
+	<P> This step aims at computing the general "scale" of the
+	    music sheet, which is basically the average vertical
+	    distance between two staff lines.</P>
+	
+	<P> To do so, we use a very simple algorithm, based on
+	    vertical runs of foreground (black) pixels and vertical
+	    runs of background (white) pixels.</P>
+	
+	<P> The black histogram gives the average line thickness, and
+	    the white histogram the white interval between two staff
+	    lines. The interline value is thus defined as the sum of
+	    these two values.</P>
+	
+	<P> This step has no related sheet view. But, using the
+	    menu <I>Sheet &gt; Scale Plot</I>, we get a separate chart
+	    as displayed below :
 	    <UL>
-		<LI>The left hand part is dedicated to the sheet display.
-		    <OL>
-			<LI>The <B>Sheet Panel</B> takes the largest
-			    area. It displays one view of the sheet,
-			    here this view is the original
-			    picture.</LI>
-			<LI>The <B>View Tabbed Pane</B> gathers all
-			    views on one sheet, and the tabs allow
-			    navigation between views.</LI>
-			<LI>The <B>Sheet Tabbed Pane</B> gathers all
-			    sheets currently in memory, with one tab
-			    per sheet.</LI>
-			<LI>All the different views of the same sheet
-			    share the same vertical <B>Logarithmic
-			    Slider</B>, which allows to set the
-			    display scale using a logarithmic scale
-			    (factors ranging from 1/8 to 16).</LI>
-		    </OL>
-		</LI>
-		<LI>The right hand part is the <B>Data Panel</B>,
-		    which provides various data boards related to the
-		    current sheet. Its content depends of the current
-		    view. For the view of the original picture in this
-		    example, only informations of the <I>"Pixel"</I>
-		    board are displayed : the x & y coordinate of the
-		    mouse position, as highlighted by the crossing of
-		    vertical and horizontal orange lines.</LI>
-		<LI>At the bottom of the window, the <B>Log Panel</B>
-		    displays the sequential log of messages.</LI>
-	    </UL>
-
-	    <P> In this example, we have a black and white image, so
-		the grey level of the current pixel is either 0 (black
-		foreground) or 255 (white background). The mouse is
-		currently on a pixel of the C Clef, so the "Pixel"
-		board of the data panel reports a 0 value for abscissa
-		236 and ordinate 430.</P>
-
-	    <P> By dragging the mouse, while keeping the shift key
-		pressed, we can define a rectangle. The x and y values
-		are the coordinates of the upper left corner, and the
-		width and height are the dimensions of the defined
-		rectangular area.</P>
-
-	    <BR/>
-	    <A NAME="SCALE">
-		<H3>Scale Step</H3>
-	    </A>
-
-	    <P> This step aims at computing the general "scale" of the
-		music sheet, which is basically the average vertical
-		distance between two staff lines.</P>
-
-	    <P> To do so, we use a very simple algorithm, based on
-		vertical runs of foreground (black) pixels and
-		vertical runs of background (white) pixels.</P>
-
-	    <P> The black histogram gives the average line thickness,
-		and the white histogram the white interval between two
-		staff lines. The interline value is thus defined as
-		the sum of these two values.</P>
-
-	    <P> This step has no related sheet view. But, using the
-		menu <I>Sheet &gt; Scale Plot</I>, we get a separate
-		chart as displayed below :
-		<UL>
-		    <LI>The red histogram describes the lengths of the
+		<LI>The red histogram describes the lengths of the
 		    black runs, with a sharp peak on value 3 for this
 		    example.</LI>
-		    <LI>The blue histogram displays the white runs,
-		    with also a peak on value 18 for this sheet
+		<LI>The blue histogram displays the white runs, with
+		    also a peak on value 18 for this sheet
 		    example.</LI>
-		</UL>
-
-		<P> For this sheet example, the main interline value
-		    is thus 3 + 18 = 21 pixels. And this value will
-		    drive the computation of nearly all parameters
-		    used in the recognition process.</P>
-	    </P>
-
-	    <A NAME="SCALE_PLOT">
-		<IMG SRC="../images/scale-chart.png"
-		     TITLE="Histogram of run lengths" />
-	    </A>
-	    <BR/>
-	    <A NAME="SKEW">
-		<H3>Skew Step</H3>
-	    </A>
-
-	    <P> The purpose of this step is to compute the average
-		skew angle of the staff lines for the whole
-		sheet. This of course is just an average value, since
-		all staff lines may not be strictly parallel.</P>
-
-	    <P> If the absolute value of the computed slope exceeds a
-		given threshold, then the image is rotated
-		(<I>de-skewed</I>) is the opposite direction, so as to
-		ease the later detection of vertical and horizontal
-		sticks.</P>
-
-	    <P> We can display the sheet view related to the skew
-		computation, as in the following
-		picture. The <I>"common"</I> sections are colorized in
-		colors close to green or blue, while the sections that
-		compose the <I>"significant"</I> horizontal sections
-		are colorized in red. We can notice that the staff
-		lines are the main contributors to the long horizontal
-		section.</P>
-
-	    <P> Notice that the Data Panel exhibits two additional
-		boards :
-		<OL>
-		    <LI>The <I>"Run"</I> board displays information
-			about the run designated by the mouse
-			location. The run starts at abscissa 223 (we
-			have horizontal runs in this view) and is 506
-			pixel long. The average grey level along the
-			run is 0, since here it is made of only
-			forground pixels with 0 as grey level.</LI>
-		    <LI>The <I>"Section"</I> board displays data that
-			pertains to the current section (a section is
-			a set of contiguous runs). A section is given
-			an <I>"Id"</I> to ease its future
-			handling. The fields
-			labelled <I>"X"</I>, <I>"Y"</I>, <I>"Width"</I>
-			and <I>"Height"</I> represent the bounding
-			rectangle of this (here horizontal)
-			section. The fields labelled <I>"Layer"</I>
-			and <I>"Dir"</I> are actually not used for
-			this step.</LI>
-		</OL>
-	    </P>
-	    
-	    <IMG SRC="../images/skew.png"
-		 TITLE="Sections for skew computation" />
-
-	    <P> We can also get the following chart, by using the
-		menu <I>Sheet &gt; Skew Plot</I> :</P>
-
-	    <A NAME="SKEW_PLOT">
-		<IMG SRC="../images/slope-chart.png"
-		     TITLE="Histogram of main slopes" />
-	    </A>
-	    <BR/>
-	    <A NAME="LINES">
-		<H3>Lines Step</H3>
-	    </A>
-
-	    <P> This step is about staff lines, to properly detect all
-		staff lines and "remove" them from the sheet.</P>
-
-	    <P> The detection is driven by the horizontal projection
-		of foreground (black) pixels. A dedicated chart,
-		displayed from menu <I>Sheet &gt; Line Plot</I>, makes
-		this more obvious as can be seen on the following
-		chart. We use a threshold (at roughly half the maximum
-		histogram value, and indicated by a vertical red line
-		on the chart), and every regular series of 5 peaks
-		above this threshold defines the 5 stick areas
-		supposed to contain one staff line each.</P>
-
-	    <A NAME="LINE_PLOT">
-		<IMG SRC="../images/line-chart.png"
-		     TITLE="Histogram of horizontal projections" />
-	    </A>
-
-	    <P> The processing is then performed stick area per stick
-		area. In such area, we retrieve the long horizontal
-		sticks that compose the staff line.</P>
-
-	    <P> The detected lines are then cleaned up : The
-		underlying pixels are erased from the original
-		picture, and a specific algorithm is used to extend
-		crossing objects (objects that were overlaid upon the
-		staff lines).</P>
-
-	    <P> The cleaned data is visible on the following view,
-		where former staff lines have been replaced by
-		synthetic lines :</P>
-	    
-	    <IMG SRC="../images/lines.png"
-		 TITLE="Staff lines detected and cleaned up" />
-
-	    <P> Note that we can use a toggle button to switch between :
-		<UL>
-		    <LI>The display of the former line pixels
-			(colorized in yellow),</LI>
-		    <LI>The display of synthetic lines and of extended
-			crossing objects.</LI>
-		</UL>
-	    </P>
-
-	    <P> Here is the toggle button :</P>
-	    <IMG SRC="../images/toggle.png"
-		 TITLE="Toggle button" />
-
-	    <P> Here is the display of retrieved staff lines :</P>
-	    <IMG SRC="../images/lines-toggled.png"
-		 TITLE="Display of staff line pixels" />
-
-	    <P> Here are two zoomed view of details from the sheet,
-		first the original staff line pixels, then the
-		resulting data, where line pixels have been removed,
-		and crossing objects have been carefully extended
-		(note the extension goes until the synthetic staff
-		line) : </P>
-
-	    <IMG SRC="../images/lines-toggled-large.png"
-		 TITLE="Focus on staff line pixels" />
-
-	    <IMG SRC="../images/lines-large.png"
-		 TITLE="Focus on object extension" />
-
-	    
-	    <BR/>
-	    <A NAME="HORIZONTALS">
-		<H3>Horizontal Step</H3>
-	    </A>
-
-	    <P> This step retrieves and remove the horizontal sticks
-		that are recognized as ledgers of alternate
-		endings. The following figure shows that the ledger
-		for a 'A' note has been removed and the two parts of
-		the note head have been properly joined into one glyph
-		(a black note head.</P>
-
-	    <IMG SRC="../images/horizontals.png"
-		 TITLE="Focus on horizontal ledger" />
-	    
-
-	    <BR/>
-	    <A NAME="BARS">
-		<H3>Bars Step</H3>
-	    </A>
-
-	    <P> This step retrieves and does not remove the vertical
-		sticks that are recognized as bar lines (either thick
-		or thin bar lines). Notice in the following figure
-		that the glyph of the bar line is properly assigned
-		the shape name "THIN_BAR_LINE".</P>
-
-	    <IMG SRC="../images/bars.png"
-		 TITLE="Extraction of bar lines" />
-	    
-
-	    <BR/>
-	    <A NAME="SYMBOLS">
-		<H3>Symbols Step</H3>
-	    </A>
-
-	    <P> In this step, browsing through the yet unassigned
-		sections, we aggregate connected sections into symbol
-		glyphs, and try to recognize these symbols. This of
-		course works only for symbols with a rather fixed
-		appearance, such as clefs or time signatures on the
-		following picture, it does not work for constructions
-		like notes with stem, chords, etc...</P>
-	    <P> For example, we have correctly recognized "BRACE",
-		"G_CLEF", "G_CLEF_OTTAVA_BASSA", "TIME_TWO_FOUR" and
-		"DOT". Note that we also have mistaken some capital
-		letters (F and P) with PIANO signs. To improve this,
-		we'll need to better train the evaluators and/or
-		properly isolate lines of text (lyrics or others).</P>
-
-	    <P> The mouse is currently on the second clef, and notice
-		that the two evaluators (called Neural and Regression)
-		agree on acceptable interpretation (notified with
-		green color) as a "G_CLEF_OTTAVA_BASSA".</P>
-
-	    <IMG SRC="../images/symbols.png"
-		 TITLE="Extraction of stand-alone symbols" />
-	    
-
-	    <BR/>
-	    <A NAME="SYMBOLS_COMPOUNDS">
-		<H3>Symbols_Compounds Step</H3>
-	    </A>
-
-	    <P> This step focuses on non-recognized glyphs that may be
-	    the result of undesired segmentation. This frequently
-	    occurs because of staff line removal for symbols such as
-	    F clef or common time signature.</P>
-
-	    <P> The algorithm used is to browse through all unknown
-		glyphs, ordered by decreasing weight, and to try to
-		aggregate neighbours that are other unknown glyphs of
-		the same system. If the result of this combination
-		leads to some recognized symbol, then we keep it as a
-		(compound) glyph. Otherwise, we don't keep the
-		compound.</P>
-
-	    <IMG SRC="../images/common.png" width="200px"
-		 TITLE="Common time symbol segmented" />
-
-	    <P> The image above exhibits a segmented common time
-		symbol : because of the staff line removal, the
-		initial symbol had been segmented into 3 parts, and
-		nothing has been recognized (everything is displayed
-		in red color). The "symbols_compounds" step has
-		aggregated 2 parts and the result has been recognized
-		as a common sign, as displayed on the following image
-		(notice the non-red color, that signals a recognized
-		glyph).</P>
-
-	    <IMG SRC="../images/common-compound.png" width="200px"
-		 TITLE="Common time symbol as a compound" />
-
-	    <P> There is an obvious limitation in the current
-		algorithm, which deals only with 2-part compounds : we
-		should be able to try more complex compounds (here, we
-		typically need the ability to make a 3-part
-		compound).</P>
-	    
-
-	    <BR/>
-	    <A NAME="VERTICALS">
-		<H3>Verticals Step</H3>
-	    </A>
-
-	    <P> This step aims at retrieving all the vertical sticks
-		which are either stems, or vertical parts of alternate
-		endings. (Nota : just the stems are extracted for the
-		time being).</P>
-
-	    <P> The following image shows the various stems detected,
-		displayed in yellow color, each stem with its bounding
-		box, and main line.</P>
-
-	    <P> Notice also that right pointing on a retrieved stem
-		(or on just a candidate stem, still displayed in red)
-		displays a "Filter" board with the detailed result of
-		stem tests.</P>
-
-	    <IMG SRC="../images/verticals.png"
-		 TITLE="Retrieval of vertical sticks" />
-
-	    <P> If you select again the "Glyphs" view, you'll notice
-		that the former red glyphs now have stems in
-		yellow. Handling the "leaves" is the purpose of the
-		next step.</P>
-
-	    <IMG SRC="../images/verticals-glyphs.png"
-		 TITLE="Sticks on glyphs view" />
-
-
-	    <BR/>
-	    <A NAME="LEAVES">
-		<H3>Leaves Step</H3>
-	    </A>
-
-	    <P> The stem extraction has led to the creation of
-		numerous "leaves", which we now try to assign a shape
-		to. The "Leaves" step thus recognized all the
-		individual leaves of the following image (most of the
-		time, these leaves are note heads, or flags, or
-		beams).</P>
-
-	    <IMG SRC="../images/leaves.png"
-		 TITLE="Recognized leaves" />
-
-
-	    <BR/>
-	    <A NAME="LEAVES_COMPOUNDS">
-		<H3>Leaves_Compounds Step</H3>
-	    </A>
-
-	    <P> Just like symbols, leaves may have been unduely
-		segmented. So the apply another compound step, to
-		recompose these leaves.</P>
-
-	    <IMG SRC="../images/void_notehead-segmented.png"
-		 TITLE="Void notehead unduely segmented" />
-
-	    <P> The difference between the images above and below is
-		the building of a compound, properly recognized as a
-		void notehead.</P>
-
-	    <IMG SRC="../images/void_notehead-compound.png"
-		 TITLE="Void notehead properly recomposed" />
-
-
-	    <BR/>
-	    <A NAME="CLEANUP">
-		<H3>Cleanup Step</H3>
-	    </A>
-
-	    <P> This is a final cleaning up step, focused on wrong
-		stems. For example, accidentals such as sharps,
-		naturals or flats are symbols which actually contain
-		one or two (small) stems. If these symbols are not
-		recognized during the SYMBOLS step, then their stems
-		are extracted and new leave glyphs are then tried,
-		generally to no avail.</P>
-
-	    <P> For the time being, we simply call these stems into
-		questions. To do so, we try to cancel any stem which
-		has no connected recognized leave. Then, we build new
-		glyphs from these now unassigned sections. If we get
-		to recognized glyphs, then we keep these glyphs,
-		otherwise we "resurrect" the stems.</P>
-
-<!-- 	    <IMG SRC="../images/xxx.png" -->
-<!-- 		 TITLE="Example of undue stem" /> -->
-
-	    
-	    <H2>Tools</H2>
-
-	    <A NAME="SHAPE_COLORS">
-		<H3>Shape Colors</H3>
-	    </A>
-	    <P> This interface is used to ease the setting of shape
-		colors. It is a very basic interface, which gathers a
-		typical color chooser with a selection for shape
-		ranges and individual shapes.</P>
-	    <P> The policy is to assign a color to a shape range. A
-		shape range for example can be all note heads, or all
-		rests. And by default, all shapes within the range are
-		assigned the color of the range, unless of course we
-		assign them a specific color.</P>
-
- 	    <IMG SRC="../images/shape-colors.png"
- 		 TITLE="Setting shape colors" />
-	    
-
-	    <BR/>
-	    <A NAME="TRAINING_MATERIAL">
-		<H3>Training Material</H3>
-	    </A>
-
-	    <P> The purpose of this item is to provide a user
-		interface to review visually some or all of the
-		various glyphs which are used for training the
-		evaluators.</P>
-	    <P> The main objective is thus to easily identify glyphs
-		which have been assigned a wrong shape. Using them as
-		part of the training base could bring serious damage
-		in the performance of the evaluator(s). So the
-		strategy, when such a wrong glyph has been identified,
-		is simply to delete the glyph from the base.</P>
-
-	    <P> Here is an example of the glyph verifier :</P>
-
-	    <IMG SRC="../images/training_material.png"
-		 TITLE="User Interface to verify the training material" />
-
-	    <P> The top panels are dedicated to selectors, in that
-		order :
-		<OL>
-		    <LI>The <B>Sheet</B> selector. It allows to select
-			one or several sheets from the base at hand
-			(which by default is the
-			global <I>/train/sheets</I> directory</LI>
-		    <LI>The <B>Shape</B> selector. Only the shapes
-			that are contained in the selected sheets in
-			the Sheet selector are displayed here. And you
-			can select some or all shapes form the
-			displayed list.</LI>
-		    <LI>The <B>Glyph</B> selector. Similarly, only
-			glyphs whose shape is selected in selected
-			sheets are displayed in the list. You can
-			manually select the glyph instances you want
-			to review.</LI>
-		</OL>
-		In the provided example, the user has selected all
-		glyphs whose shape is either "BRACE" or
-		"COMBINING_FLAG_1_UP" in the sheets named "hove" and
-		"plaisir-1".</P>
-
-	    <P> The large panel, on the lower right side, is dedicated
-		to the display of the selected glyphs, using their own
-		coordinates. Notice that glyphs that belong to
-		separate sheets, can thus happen to have similar
-		coordinates and thus be displayed as overlapping
-		glyphs.</P>
-
-	    <P> The lower left panel is composed of two main parts :
-		<OL>
-		    <LI>The <B>Navigator</B> to drive the loading and
-			display of glyphs from the selection as it
-			comes out of the selectors. Here you can find
-			the button to discard a wrong glyph : this is
-			implemented through the mere deletion of the
-			underlying glyph XML file.</LI>
-		    <LI>The <B>Glyph</B> panel, similar to the one
-			that appear on the main Audiveris windows, is
-			used to display information about the glyph at
-			hand, together with the evaluations performed
-			by the Neural Network evaluator and the
-			Regression evaluator.</LI>
-		</OL>
-	    </P>
-
-	    <P> By default, this user interface looks for glyphs files
-		under the <I>/train/sheets</I> directory. However,
-		from the <B>Trainers</B> interface, you can ask
-		to <B>Verify</B> glyphs (see that interface). In that
-		latter case, the <B>Training Material</B> interface is
-		automatically loaded with the corresponding glyphs,
-		which may be part of either the whole glyph base (the
-		default), or just the core glyph base.</P>
-	    
-	    
-	    <BR/>
-	    <A NAME="TRAINERS">
-		<H3>Trainers</H3>
-	    </A>
-
-	    <P> This interface is dedicated to the proper training of
-		the pair of evaluators. The display is as follows :</P>
-
-	    <IMG SRC="../images/trainers.png"
-		 TITLE="User Interface to train the evaluators" />
-
-	    <OL>
-		<LI>The upper part is for the <B>Repository</B>, in
-		    charge of selecting and loading the glyph XML
-		    files, as stored from the previous sheet
-		    recognitions. Actually, we use this panel, only
-		    when we want to identify a <B>Core</B> part within
-		    the whole glyph base.
-		    <P> To build the Core part out of the whole set of
-			recorded glyphs, it suffices to define the
-			maximum number of similar shapes (20 is a good
-			guess) and press the "Select Core"
-			button. The <I>/train/core</I> directory will
-			be emptied and repopulated by the core
-			selected glyph files.</P>
-		    <DIV CLASS="warningmessage">
-			<I>Nota</I>: this notion of Core may well be
-			dropped in a future version, since although it
-			saves computing time in training the neural
-			evaluator, it also leads to suboptimal
-			results.
-		    </DIV>
-		</LI>
-		
-		<LI>The lower part is used to train the Neural Network
-		    and the Regression evaluator. Except some specific
-		    features for the Neural evaluator, the two
-		    trainers exhibit a similar structure :
-		    <OL>
-			<LI>On the left, radio buttons allow to select
-			    either the whole base or the core
-			    base. Default is to select the whole
-			    base.</LI>
-			<LI>On the upper right part, we find the
-			    trainer parameters and commands. The
-			    Regression trainer is straightforward, the
-			    Neural one deserves more explanation
-			    below.</LI>
-			<LI>On the lower right part, both trainers
-			    include a Validation panel, to test the
-			    current evaluator tuning against the
-			    selected population (either the Whole
-			    base, or the Core base, according to the
-			    selection made via the radio buttons. Note
-			    that we can train and validate on
-			    different bases). We explicitly flag the
-			    glyphs which are either not recognized or
-			    (worse) mistaken for another shape. The
-			    corresponding Verify buttons, allow to
-			    visually check these questionable
-			    glyphs.</LI>
-		    </OL>
-		</LI>
-	    </OL>
-
-	    <P> The Neural Network evaluator is more performant but
-		also more complex than the simple Regression
-		evaluator. In the displayed example, on a set of 6219
-		glyphs, the former reaches a percentage of positive
-		answers of 99.96%, while the latter does not
-		exceed 96.88%. Here are its main specificities :</P>
-	    <UL>
-		<LI>Ability to choose between a <B>re-train</B>, which
-		    consists in retraining from scratch, and only an
-		    <B>inc-train</B>, which works incrementally on top
-		    of the previous training sessions. With say 6000
-		    glyphs in the whole training base, training the
-		    Neural evaluator along 2500 iterations takes a
-		    <FONT COLOR="red">whole night</FONT>, whereas
-		    training the Regression evaluator needs a couple
-		    of seconds... So be aware of this, and back-up the
-		    two evaluator binary files before playing with the
-		    trainers.</LI>
-		<LI>Several key parameters for training a Neural
-		    network : the <B>momentum</B> and <B>learning
-		    rate</B> allow to influence the convergence of the
-		    training, although they should be kept close to
-		    their default values. <B>Max error</B> (residual
-		    error) and <B>epochs</B> (number of iterations)
-		    are two different ways to stop the training, since
-		    the processing stops when either of these is
-		    reached.</LI>
-		<LI>The trainer makes memory <B>snapshots</B> of every
-		    best configuration. This slightly slows down the
-		    training, but guarantees to keep the really best
-		    configuration found so far. This is the default
-		    behavior, but we can force the trainer to select
-		    only the last configuration (via the "Use Last"
-		    button).</LI>
 	    </UL>
-
-	    <BR/>
-	    <A NAME="OPTIONS">
-		<H3>Options</H3>
-	    </A>
-
-	    <P> This interface, accessible from <I>Tool | Options</I>,
-		allows to interactively display and modify data
-		related to Audiveris classes :
-		<UL>
-		    <LI>Logging level</LI>
-		    <LI>Logical constants</LI>
-		</UL>
-	    </P>
-	    <P> The display is a kind of JTreeTable, a combination of
-		a tree on the left side, where the hierarchy of
-		packages, subpackages and classes is displayed, and a
-		table on the right side, where details of the
-		containing classes are available for display and
-		modification.</P>
-
-	    <IMG SRC="../images/options.png" TITLE="User Interface to
-		 edit options" />
-	    <P> The picture above represents a typical Options view :
+	    
+	    <P> For this sheet example, the main interline value is
+		thus 3 + 18 = 21 pixels. And this value will drive the
+		computation of nearly all parameters used in the
+		recognition process.</P>
+	</P>
+	
+	<A NAME="SCALE_PLOT">
+	    <IMG SRC="../images/scale-chart.png"
+		 TITLE="Histogram of run lengths" />
+	</A>
+	<BR/>
+	<A NAME="SKEW">
+	    <H3>Skew Step</H3>
+	</A>
+	
+	<P> The purpose of this step is to compute the average skew
+	    angle of the staff lines for the whole sheet. This of
+	    course is just an average value, since all staff lines may
+	    not be strictly parallel.</P>
+	
+	<P> If the absolute value of the computed slope exceeds a
+	    given threshold, then the image is rotated
+	    (<I>de-skewed</I>) is the opposite direction, so as to
+	    ease the later detection of vertical and horizontal
+	    sticks.</P>
+	
+	<P> We can display the sheet view related to the skew
+	    computation, as in the following
+	    picture. The <I>"common"</I> sections are colorized in
+	    colors close to green or blue, while the sections that
+	    compose the <I>"significant"</I> horizontal sections are
+	    colorized in red. We can notice that the staff lines are
+	    the main contributors to the long horizontal section.</P>
+	
+	<P> Notice that the Data Panel exhibits two additional boards
+	    :
+	    <OL>
+		<LI>The <I>"Run"</I> board displays information about
+		    the run designated by the mouse location. The run
+		    starts at abscissa 223 (we have horizontal runs in
+		    this view) and is 506 pixel long. The average grey
+		    level along the run is 0, since here it is made of
+		    only forground pixels with 0 as grey level.</LI>
+		<LI>The <I>"Section"</I> board displays data that
+		    pertains to the current section (a section is a
+		    set of contiguous runs). A section is given
+		    an <I>"Id"</I> to ease its future handling. The
+		    fields
+		    labelled <I>"X"</I>, <I>"Y"</I>, <I>"Width"</I>
+		    and <I>"Height"</I> represent the bounding
+		    rectangle of this (here horizontal) section. The
+		    fields labelled <I>"Layer"</I> and <I>"Dir"</I>
+		    are actually not used for this step.</LI>
+	    </OL>
+	</P>
+	
+	<IMG SRC="../images/skew.png"
+	     TITLE="Sections for skew computation" />
+	
+	<P> We can also get the following chart, by using the
+	    menu <I>Sheet &gt; Skew Plot</I> :</P>
+	
+	<A NAME="SKEW_PLOT">
+	    <IMG SRC="../images/slope-chart.png"
+		 TITLE="Histogram of main slopes" />
+	</A>
+	<BR/>
+	<A NAME="LINES">
+	    <H3>Lines Step</H3>
+	</A>
+	
+	<P> This step is about staff lines, to properly detect all
+	    staff lines and "remove" them from the sheet.</P>
+	
+	<P> The detection is driven by the horizontal projection of
+	    foreground (black) pixels. A dedicated chart, displayed
+	    from menu <I>Sheet &gt; Line Plot</I>, makes this more
+	    obvious as can be seen on the following chart. We use a
+	    threshold (at roughly half the maximum histogram value,
+	    and indicated by a vertical red line on the chart), and
+	    every regular series of 5 peaks above this threshold
+	    defines the 5 stick areas supposed to contain one staff
+	    line each.</P>
+	
+	<A NAME="LINE_PLOT">
+	    <IMG SRC="../images/line-chart.png"
+		 TITLE="Histogram of horizontal projections" />
+	</A>
+	
+	<P> The processing is then performed stick area per stick
+	    area. In such area, we retrieve the long horizontal sticks
+	    that compose the staff line.</P>
+	
+	<P> The detected lines are then cleaned up : The underlying
+	    pixels are erased from the original picture, and a
+	    specific algorithm is used to extend crossing objects
+	    (objects that were overlaid upon the staff lines).</P>
+	
+	<P> The cleaned data is visible on the following view, where
+	    former staff lines have been replaced by synthetic lines
+	    :</P>
+	
+	<IMG SRC="../images/lines.png"
+	     TITLE="Staff lines detected and cleaned up" />
+	
+	<P> Note that we can use a toggle button to switch between :
+	    <UL>
+		<LI>The display of the former line pixels (colorized
+		    in yellow),</LI>
+		<LI>The display of synthetic lines and of extended
+		    crossing objects.</LI>
+	    </UL>
+	</P>
+	
+	<P> Here is the toggle button :</P>
+	<IMG SRC="../images/toggle.png"
+	     TITLE="Toggle button" />
+	
+	<P> Here is the display of retrieved staff lines :</P>
+	<IMG SRC="../images/lines-toggled.png"
+	     TITLE="Display of staff line pixels" />
+	
+	<P> Here are two zoomed view of details from the sheet, first
+	    the original staff line pixels, then the resulting data,
+	    where line pixels have been removed, and crossing objects
+	    have been carefully extended (note the extension goes
+	    until the synthetic staff line) : </P>
+	
+	<IMG SRC="../images/lines-toggled-large.png"
+	     TITLE="Focus on staff line pixels" />
+	
+	<IMG SRC="../images/lines-large.png"
+	     TITLE="Focus on object extension" />
+	
+	
+	<BR/>
+	<A NAME="HORIZONTALS">
+	    <H3>Horizontal Step</H3>
+	</A>
+	
+	<P> This step retrieves and remove the horizontal sticks that
+	    are recognized as ledgers of alternate endings. The
+	    following figure shows that the ledger for a 'A' note has
+	    been removed and the two parts of the note head have been
+	    properly joined into one glyph (a black note head.</P>
+	
+	<IMG SRC="../images/horizontals.png"
+	     TITLE="Focus on horizontal ledger" />
+	
+	
+	<BR/>
+	<A NAME="BARS">
+	    <H3>Bars Step</H3>
+	</A>
+	
+	<P> This step retrieves and does not remove the vertical
+	    sticks that are recognized as bar lines (either thick or
+	    thin bar lines). Notice in the following figure that the
+	    glyph of the bar line is properly assigned the shape name
+	    "THIN_BAR_LINE".</P>
+	
+	<IMG SRC="../images/bars.png"
+	     TITLE="Extraction of bar lines" />
+	
+	
+	<BR/>
+	<A NAME="SYMBOLS">
+	    <H3>Symbols Step</H3>
+	</A>
+	
+	<P> In this step, browsing through the yet unassigned
+	    sections, we aggregate connected sections into symbol
+	    glyphs, and try to recognize these symbols. This of course
+	    works only for symbols with a rather fixed appearance,
+	    such as clefs or time signatures on the following picture,
+	    it does not work for constructions like notes with stem,
+	    chords, etc...</P>
+	<P> For example, we have correctly recognized "BRACE",
+	    "G_CLEF", "G_CLEF_OTTAVA_BASSA", "TIME_TWO_FOUR" and
+	    "DOT". Note that we also have mistaken some capital
+	    letters (F and P) with PIANO signs. To improve this, we'll
+	    need to better train the evaluators and/or properly
+	    isolate lines of text (lyrics or others).</P>
+	
+	<P> The mouse is currently on the second clef, and notice that
+	    the two evaluators (called Neural and Regression) agree on
+	    acceptable interpretation (notified with green color) as a
+	    "G_CLEF_OTTAVA_BASSA".</P>
+	
+	<IMG SRC="../images/symbols.png"
+	     TITLE="Extraction of stand-alone symbols" />
+	
+	
+	<BR/>
+	<A NAME="SYMBOLS_COMPOUNDS">
+	    <H3>Symbols_Compounds Step</H3>
+	</A>
+	
+	<P> This step focuses on non-recognized glyphs that may be the
+	    result of undesired segmentation. This frequently occurs
+	    because of staff line removal for symbols such as F clef
+	    or common time signature.</P>
+	
+	<P> The algorithm used is to browse through all unknown
+	    glyphs, ordered by decreasing weight, and to try to
+	    aggregate neighbours that are other unknown glyphs of the
+	    same system. If the result of this combination leads to
+	    some recognized symbol, then we keep it as a (compound)
+	    glyph. Otherwise, we don't keep the compound.</P>
+	
+	<IMG SRC="../images/common.png" width="200px"
+	     TITLE="Common time symbol segmented" />
+	
+	<P> The image above exhibits a segmented common time
+	    symbol : because of the staff line removal, the
+	    initial symbol had been segmented into 3 parts, and
+	    nothing has been recognized (everything is displayed
+	    in red color). The "symbols_compounds" step has
+	    aggregated 2 parts and the result has been recognized
+	    as a common sign, as displayed on the following image
+	    (notice the non-red color, that signals a recognized
+	    glyph).</P>
+	
+	<IMG SRC="../images/common-compound.png" width="200px"
+	     TITLE="Common time symbol as a compound" />
+	
+	<P> There is an obvious limitation in the current algorithm,
+	    which deals only with 2-part compounds : we should be able
+	    to try more complex compounds (here, we typically need the
+	    ability to make a 3-part compound).</P>
+	
+	
+	<BR/>
+	<A NAME="VERTICALS">
+	    <H3>Verticals Step</H3>
+	</A>
+	
+	<P> This step aims at retrieving all the vertical sticks which
+	    are either stems, or vertical parts of alternate
+	    endings. (Nota : just the stems are extracted for the time
+	    being).</P>
+	
+	<P> The following image shows the various stems detected,
+	    displayed in yellow color, each stem with its bounding
+	    box, and main line.</P>
+	
+	<P> Notice also that right pointing on a retrieved stem (or on
+	    just a candidate stem, still displayed in red) displays a
+	    "Filter" board with the detailed result of stem tests.</P>
+	
+	<IMG SRC="../images/verticals.png"
+	     TITLE="Retrieval of vertical sticks" />
+	
+	<P> If you select again the "Glyphs" view, you'll notice that
+	    the former red glyphs now have stems in yellow. Handling
+	    the "leaves" is the purpose of the next step.</P>
+	
+	<IMG SRC="../images/verticals-glyphs.png"
+	     TITLE="Sticks on glyphs view" />
+	
+	
+	<BR/>
+	<A NAME="LEAVES">
+	    <H3>Leaves Step</H3>
+	</A>
+	
+	<P> The stem extraction has led to the creation of numerous
+	    "leaves", which we now try to assign a shape to. The
+	    "Leaves" step thus recognized all the individual leaves of
+	    the following image (most of the time, these leaves are
+	    note heads, or flags, or beams).</P>
+	
+	<IMG SRC="../images/leaves.png"
+	     TITLE="Recognized leaves" />
+	
+	
+	<BR/>
+	<A NAME="LEAVES_COMPOUNDS">
+	    <H3>Leaves_Compounds Step</H3>
+	</A>
+	
+	<P> Just like symbols, leaves may have been unduely
+	    segmented. So the apply another compound step, to
+	    recompose these leaves.</P>
+	
+	<IMG SRC="../images/void_notehead-segmented.png"
+	     TITLE="Void notehead unduely segmented" />
+	
+	<P> The difference between the images above and below is the
+	    building of a compound, properly recognized as a void
+	    notehead.</P>
+	
+	<IMG SRC="../images/void_notehead-compound.png"
+	     TITLE="Void notehead properly recomposed" />
+	
+	
+	<BR/>
+	<A NAME="CLEANUP">
+	    <H3>Cleanup Step</H3>
+	</A>
+	
+	<P> This is a final cleaning up step, focused on wrong
+	    stems. For example, accidentals such as sharps, naturals
+	    or flats are symbols which actually contain one or two
+	    (small) stems. If these symbols are not recognized during
+	    the SYMBOLS step, then their stems are extracted and new
+	    leave glyphs are then tried, generally to no avail.</P>
+	
+	<P> For the time being, we simply call these stems into
+	    questions. To do so, we try to cancel any stem which has
+	    no connected recognized leave. Then, we build new glyphs
+	    from these now unassigned sections. If we get to
+	    recognized glyphs, then we keep these glyphs, otherwise we
+	    "resurrect" the stems.</P>
+	
+	<!-- 	    <IMG SRC="../images/xxx.png" -->
+			<!-- 		 TITLE="Example of undue stem" /> -->
+	
+	
+	<H2>Tools</H2>
+	
+	<A NAME="SHAPE_COLORS">
+	    <H3>Shape Colors</H3>
+	</A>
+	<P> This interface is used to ease the setting of shape
+	    colors. It is a very basic interface, which gathers a
+	    typical color chooser with a selection for shape ranges
+	    and individual shapes.</P>
+	<P> The policy is to assign a color to a shape range. A shape
+	    range for example can be all note heads, or all rests. And
+	    by default, all shapes within the range are assigned the
+	    color of the range, unless of course we assign them a
+	    specific color.</P>
+	
+	<IMG SRC="../images/shape-colors.png"
+	     TITLE="Setting shape colors" />
+	
+	
+	<BR/>
+	<A NAME="TRAINING_MATERIAL">
+	    <H3>Training Material</H3>
+	</A>
+	
+	<P> The purpose of this item is to provide a user interface to
+	    review visually some or all of the various glyphs which
+	    are used for training the evaluators.</P>
+	<P> The main objective is thus to easily identify glyphs which
+	    have been assigned a wrong shape. Using them as part of
+	    the training base could bring serious damage in the
+	    performance of the evaluator(s). So the strategy, when
+	    such a wrong glyph has been identified, is simply to
+	    delete the glyph from the base.</P>
+	
+	<P> Here is an example of the glyph verifier :</P>
+	
+	<IMG SRC="../images/training_material.png"
+	     TITLE="User Interface to verify the training material" />
+	
+	<P> The top panels are dedicated to selectors, in that
+	    order :
+	    <OL>
+		<LI>The <B>Sheet</B> selector. It allows to select one
+		    or several sheets from the base at hand (which by
+		    default is the global <I>/train/sheets</I>
+		    directory</LI>
+		<LI>The <B>Shape</B> selector. Only the shapes that
+		    are contained in the selected sheets in the Sheet
+		    selector are displayed here. And you can select
+		    some or all shapes form the displayed list.</LI>
+		<LI>The <B>Glyph</B> selector. Similarly, only glyphs
+		    whose shape is selected in selected sheets are
+		    displayed in the list. You can manually select the
+		    glyph instances you want to review.</LI>
+	    </OL>
+	    In the provided example, the user has selected all glyphs
+	    whose shape is either "BRACE" or "COMBINING_FLAG_1_UP" in
+	    the sheets named "hove" and "plaisir-1".</P>
+	
+	<P> The large panel, on the lower right side, is dedicated to
+	    the display of the selected glyphs, using their own
+	    coordinates. Notice that glyphs that belong to separate
+	    sheets, can thus happen to have similar coordinates and
+	    thus be displayed as overlapping glyphs.</P>
+	
+	<P> The lower left panel is composed of two main parts :
+	    <OL>
+		<LI>The <B>Navigator</B> to drive the loading and
+		    display of glyphs from the selection as it comes
+		    out of the selectors. Here you can find the button
+		    to discard a wrong glyph : this is implemented
+		    through the mere deletion of the underlying glyph
+		    XML file.</LI>
+		<LI>The <B>Glyph</B> panel, similar to the one that
+		    appear on the main Audiveris windows, is used to
+		    display information about the glyph at hand,
+		    together with the evaluations performed by the
+		    Neural Network evaluator and the Regression
+		    evaluator.</LI>
+	    </OL>
+	</P>
+	
+	<P> By default, this user interface looks for glyphs files
+	    under the <I>/train/sheets</I> directory. However, from
+	    the <B>Trainers</B> interface, you can ask
+	    to <B>Verify</B> glyphs (see that interface). In that
+	    latter case, the <B>Training Material</B> interface is
+	    automatically loaded with the corresponding glyphs, which
+	    may be part of either the whole glyph base (the default),
+	    or just the core glyph base.</P>
+	
+	
+	<BR/>
+	<A NAME="TRAINERS">
+	    <H3>Trainers</H3>
+	</A>
+	
+	<P> This interface is dedicated to the proper training of the
+	    pair of evaluators. The display is as follows :</P>
+	
+	<IMG SRC="../images/trainers.png"
+	     TITLE="User Interface to train the evaluators" />
+	
+	<OL>
+	    <LI>The upper part is for the <B>Repository</B>, in charge
+		of selecting and loading the glyph XML files, as
+		stored from the previous sheet recognitions. Actually,
+		we use this panel, only when we want to identify
+		a <B>Core</B> part within the whole glyph base.
+		<P> To build the Core part out of the whole set of
+		    recorded glyphs, it suffices to define the maximum
+		    number of similar shapes (20 is a good guess) and
+		    press the "Select Core"
+		    button. The <I>/train/core</I> directory will be
+		    emptied and repopulated by the core selected glyph
+		    files.</P>
+		<DIV CLASS="warningmessage">
+		    <I>Nota</I>: this notion of Core may well be
+		    dropped in a future version, since although it
+		    saves computing time in training the neural
+		    evaluator, it also leads to suboptimal results.
+		</DIV>
+	    </LI>
+	    
+	    <LI>The lower part is used to train the Neural Network and
+		the Regression evaluator. Except some specific
+		features for the Neural evaluator, the two trainers
+		exhibit a similar structure :
 		<OL>
-		    <LI>We are in the package named <I>"sheet"</I>,
-			(actually, its full name
-			is <I>"omr.sheet"</I>, but we drop the
-			ubiquitous <I>"omr."</I> prefix) and the class
-			named <I>"LinesBuilder"</I>, in charge of
-			retrieving and removing the staff lines.</LI>
-		    <LI>This class has a logging level, currently
-			assigned to <I>"INFO"</I>. This information
-			comes from the <U>config/log4j.properties</U>
-			file, but can be modified on the fly, thanks
-			to this interface, to any legal logging value
-			(such as DEBUG, INFO, etc...). <B>NOTA</B>:
-			these logging level modifications are meant to
-			be temporary, and thus not stored on disk. For
-			persistent modification, please edit the log4j
-			property file directly.</LI>
-		    <LI>The class also contains several logical
-			constants, which are application-level
-			parameters, whose precise value is kept
-			separate from the algorithmic code. For
-			example, the third constant,
-			named <I>histoThresholdFrac</I>, is a java
-			variable declared in the <I>LinesBuilder</I>
-			class. It is a Double, whose current value is
-			0.5. A tip text is displayed, which says "Peak
-			threshold stated as a ration of maximum
-			histogram value". In other words, this defines
-			the threshold that indicates a staff line on
-			the histogram built with horizontal
-			projections.</LI>
+		    <LI>On the left, radio buttons allow to select
+			either the whole base or the core
+			base. Default is to select the whole
+			base.</LI>
+		    <LI>On the upper right part, we find the trainer
+			parameters and commands. The Regression
+			trainer is straightforward, the Neural one
+			deserves more explanation below.</LI>
+		    <LI>On the lower right part, both trainers include
+			a Validation panel, to test the current
+			evaluator tuning against the selected
+			population (either the Whole base, or the Core
+			base, according to the selection made via the
+			radio buttons. Note that we can train and
+			validate on different bases). We explicitly
+			flag the glyphs which are either not
+			recognized or (worse) mistaken for another
+			shape. The corresponding Verify buttons, allow
+			to visually check these questionable
+			glyphs.</LI>
 		</OL>
-	    </P>
-
-	    <P>There is a predefined list of types available for such
+	    </LI>
+	</OL>
+	
+	<P> The Neural Network evaluator is more performant but also
+	    more complex than the simple Regression evaluator. In the
+	    displayed example, on a set of 6219 glyphs, the former
+	    reaches a percentage of positive answers of 99.96%, while
+	    the latter does not exceed 96.88%. Here are its main
+	    specificities :</P>
+	<UL>
+	    <LI>Ability to choose between a <B>re-train</B>, which
+		consists in retraining from scratch, and only an
+		<B>inc-train</B>, which works incrementally on top of
+		the previous training sessions. With say 6000 glyphs
+		in the whole training base, training the Neural
+		evaluator along 2500 iterations takes a
+		<FONT COLOR="red">whole night</FONT>, whereas
+		training the Regression evaluator needs a couple
+		of seconds... So be aware of this, and back-up the
+		two evaluator binary files before playing with the
+		trainers.</LI>
+	    <LI>Several key parameters for training a Neural network :
+		the <B>momentum</B> and <B>learning rate</B> allow to
+		influence the convergence of the training, although
+		they should be kept close to their default
+		values. <B>Max error</B> (residual error)
+		and <B>epochs</B> (number of iterations) are two
+		different ways to stop the training, since the
+		processing stops when either of these is reached.</LI>
+	    <LI>The trainer makes memory <B>snapshots</B> of every
+		best configuration. This slightly slows down the
+		training, but guarantees to keep the really best
+		configuration found so far. This is the default
+		behavior, but we can force the trainer to select only
+		the last configuration (via the "Use Last"
+		button).</LI>
+	</UL>
+	
+	<BR/>
+	<A NAME="OPTIONS">
+	    <H3>Options</H3>
+	</A>
+	
+	<P> This interface, accessible from <I>Tool | Options</I>,
+	    allows to interactively display and modify data related to
+	    Audiveris classes :
+	    <UL>
+		<LI>Logging level</LI>
+		<LI>Logical constants</LI>
+	    </UL>
+	</P>
+	<P> The display is a kind of JTreeTable, a combination of a
+	    tree on the left side, where the hierarchy of packages,
+	    subpackages and classes is displayed, and a table on the
+	    right side, where details of the containing classes are
+	    available for display and modification.</P>
+	
+	<IMG SRC="../images/options.png" TITLE="User Interface to
+						edit options" />
+	<P> The picture above represents a typical Options view :
+	    <OL>
+		<LI>We are in the package named <I>"sheet"</I>,
+		    (actually, its full name is <I>"omr.sheet"</I>,
+		    but we drop the ubiquitous <I>"omr."</I> prefix)
+		    and the class named <I>"LinesBuilder"</I>, in
+		    charge of retrieving and removing the staff
+		    lines.</LI>
+		<LI>This class has a logging level, currently assigned
+		    to <I>"INFO"</I>. This information comes from
+		    the <U>config/log4j.properties</U> file, but can
+		    be modified on the fly, thanks to this interface,
+		    to any legal logging value (such as DEBUG, INFO,
+		    etc...). <B>NOTA</B>: these logging level
+		    modifications are meant to be temporary, and thus
+		    not stored on disk. For persistent modification,
+		    please edit the log4j property file directly.</LI>
+		<LI>The class also contains several logical constants,
+		    which are application-level parameters, whose
+		    precise value is kept separate from the
+		    algorithmic code. For example, the third constant,
+		    named <I>histoThresholdFrac</I>, is a java
+		    variable declared in the <I>LinesBuilder</I>
+		    class. It is a Double, whose current value is
+		    0.5. A tip text is displayed, which says "Peak
+		    threshold stated as a ration of maximum histogram
+		    value". In other words, this defines the threshold
+		    that indicates a staff line on the histogram built
+		    with horizontal projections.</LI>
+	    </OL>
+	</P>
+	
+	<P>There is a predefined list of types available for such
 	    constants (for details, please refer to the JavaDoc of
 	    class <A
-	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/constant/Constant.html">Constant</A>) :
-		<UL>
-		    <LI><I>Constant.Boolean</I></LI>
-		    <LI><I>Constant.Color</I></LI>
-		    <LI><I>Constant.Double</I></LI>
-		    <LI><I>Constant.Integer</I></LI>
-		    <LI><I>Constant.String</I></LI>
-		</UL>
-		All these Constant subtypes encapsulate values of
-		their standard counterpart, in other words a
-		Constant.Boolean contains a Boolean value, etc...
-		<P> Another possible type is <I>Scale.Fraction</I>
-		    which is a double, whose unit is the interline
-		    value. For example, in a sheet with interline
-		    value of 20 pixels, a Fraction of 0.15 will
-		    represent 3 pixels. It's a way to express a length
-		    regardless of the actual sheet interline value. In
-		    the Options window, when such a Fraction value is
-		    displayed, its counterpart in pixels is also
-		    displayed provided that the current sheet has
-		    already had its scale computed. Otherwise, just a
-		    question mark is displayed. Please refer to details in   <A
-	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Scale.html">Scale</A> JavaDoc.
-		</P>
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/constant/Constant.html">Constant</A>)
+	    :
+	    <UL>
+		<LI><I>Constant.Boolean</I></LI>
+		<LI><I>Constant.Color</I></LI>
+		<LI><I>Constant.Double</I></LI>
+		<LI><I>Constant.Integer</I></LI>
+		<LI><I>Constant.String</I></LI>
+	    </UL>
+	    All these Constant subtypes encapsulate values of their
+	    standard counterpart, in other words a Constant.Boolean
+	    contains a Boolean value, etc...
+	    <P> Another possible type is <I>Scale.Fraction</I> which
+		is a double, whose unit is the interline value. For
+		example, in a sheet with interline value of 20 pixels,
+		a Fraction of 0.15 will represent 3 pixels. It's a way
+		to express a length regardless of the actual sheet
+		interline value. In the Options window, when such a
+		Fraction value is displayed, its counterpart in pixels
+		is also displayed provided that the current sheet has
+		already had its scale computed. Otherwise, just a
+		question mark is displayed. Please refer to details
+		in <A
+		HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Scale.html">Scale</A>
+		JavaDoc.
 	    </P>
-
-	    <P>How do we define the current value of such logical
-		constant ? The JavaDoc of class <A
-		HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/constant/ConstantManager.html">ConstantManager</A>
-		explains this mechanism in details. The sequence is defined as follows :
-		<OL>
-		    <LI>First the value as defined in the source code,</LI>
-		    <LI>Then, if the constant name is found in the
-			file
-			named <U>/config/run.default.properties</U>,
-			the related value is used.</LI>
-		    <LI>Finally, the user home directory may contain a
-			file named <U>audiveris.run.properties</U>. Is
-			such file exists and contains the constant
-			name, then its related value is taken for the
-			constant. This last file is not meant to be
-			manually edited by a user, it is automatically
-			updated each time the user uses
-			the <I>Options</I> interface to modify a
-			constant value, thus making the modification
-			persistent for the subsequent runs of the
-			application.</LI>
-		</OL>
-	    </P>
-
-
-
+	</P>
+	
+	<P>How do we define the current value of such logical constant
+	    ? The JavaDoc of class <A
+	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/constant/ConstantManager.html">ConstantManager</A>
+	    explains this mechanism in details. The sequence is
+	    defined as follows :
+	    <OL>
+		<LI>First the value as defined in the source code,</LI>
+		<LI>Then, if the constant name is found in the file
+		    named <U>/config/run.default.properties</U>, the
+		    related value is used.</LI>
+		<LI>Finally, the user home directory may contain a
+		    file named <U>audiveris.run.properties</U>. Is
+		    such file exists and contains the constant name,
+		    then its related value is taken for the
+		    constant. This last file is not meant to be
+		    manually edited by a user, it is automatically
+		    updated each time the user uses the <I>Options</I>
+		    interface to modify a constant value, thus making
+		    the modification persistent for the subsequent
+		    runs of the application.</LI>
+	    </OL>
+	</P>
+	
+	<BR/> <BR/>
+	<HR/>
+	<I>End of Operation Manual</I>
 	    
-	    <BR/> <BR/>
-	    <HR/>
-	    <I>End of Operation Manual</I>
-	    
-	</DIV>
     </BODY>
 </HTML>

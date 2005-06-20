@@ -7,146 +7,217 @@
 	<META NAME="AUTHOR" CONTENT="Herv&eacute; Bitteur"/>
 	<META NAME="CLASSIFICATION" CONTENT="Documentation on Audiveris releases"/>
 	<META NAME="DESCRIPTION" CONTENT="Details on each Audiveris release"/>
+                
+        <!-- The following links are meant to be solved on my local PC -->
+        <!-- The java.net site uses its own style sheets -->
+        <LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/tigris.css"/>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/inst.css"/>
 
-	<!-- The following links are meant to be solved on my local PC -->
-	<!-- The java.net site uses its own style sheets -->
- 	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/tigris.css"/>
- 	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/inst.css"/>
 	<STYLE>
 	    th {
 		vertical-align: middle !important;
 		background-color: #eee !important;
 	    }
 	</STYLE>
-
     </HEAD>
 
-    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="COMPOSITE">
+    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="app" STYLE="text-align: justify;">
 	
-	<DIV CLASS="app" STYLE="text-align: justify;">
-	    
-	    <H1 ALIGN=CENTER>Audiveris Releases</H1>
-	    
-	    <ADDRESS>Author : <A HREF="mailto:herve.bitteur@laposte.net">Herv&eacute;
-		Bitteur</A></ADDRESS>
-	    <ADDRESS>Updated : 03 June 2005</ADDRESS>
+	<H1 ALIGN=CENTER>Audiveris Releases</H1>
+	
+	<ADDRESS>Author : <A HREF="mailto:herve.bitteur@laposte.net">Herv&eacute;
+	    Bitteur</A></ADDRESS>
+	<ADDRESS>Updated : 20 June 2005</ADDRESS>
+	
+	
+	<DIV CLASS="axial">
 
+	    <!-- ====================================================== -->
 	    
-	    <DIV CLASS="axial">
+	    <A NAME="2.2">
+		<H3>2.2 Release</H3>
+	    </A>
 	    
-		<A NAME="2.1">
-		    <H3>2.1 Release</H3>
-		</A>
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH>Introduction</TH>
+		    <TD>
+			<UL>
+			</UL>
+		    </TD>
+		</TR>
 		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TH>Introduction</TH>
-			<TD>
-			    <UL>
-				<LI>This release is a small
-				    improvement on the initial 2.0
-				    release, with major focus on user
-				    documentation, especially the
-				    Operation manual.</LI>
-			    </UL>
-			</TD>
-		    </TR>
-		    
-		    <TR>
-			<TH>Distribution Changes</TH>
-		    </TR>
-		    
-		    <TR>
-			<TH>New Features</TH>
-			<TD>
-			    <UL>
-				<LI>Added documentation environment (installation, operation,
-				    design, implementation).</LI>
-				<LI>Added a nearly complete Operation
-				    manual.</LI>
-				<LI>Added the handling of a Core base,
-				    besides the Whole glyph base, to
-				    speed-up the training of the
-				    neural network.</LI>
-				<LI>Added the use of manifest
-				    parameters to automate the
-				    handling of tool name, version and
-				    build reference.</LI>
-				<LI>Added in the Regression evaluator
-				    the ability to measure distance to
-				    a given shape, as a way to select
-				    members for the Core base.</LI>
-			    </UL>
-			</TD>
-		    </TR>
-		    
-		    <TR>
-			<TH>Bug Fixes</TH>
-			<TD>
-			    <UL>
-				<LI>Fixed a bug in resource names due
-				    to improper use of
-				    backslashes.</LI>
-				<LI>Fixed the loading of unsupported
-				    image formats, by simply detecting
-				    the event and notifying it to the
-				    user.</LI>
-			    </UL>
-			</TD>
-		    </TR>
-		    
-		    <TR>
-			<TH>Known Issues</TH>
-			<TD>
-			    <UL>
-				<LI>Audiveris should be able to
-				    convert an unsupported image
-				    format to the desired one (grey
-				    scale of 256 values).</LI>
-			    </UL>
-			</TD>
-		    </TR>
+		<TR>
+		    <TH>Distribution Changes</TH>
+		    <TD>
+			<UL>
+			    <LI>Tools : All the companion tools have
+				been upgraded to their latest version,
+				and the Installation manual updated
+				accordingly. </LI>
+			    <LI>Documentation : The whole set of
+				documentations, including the JavaDoc
+				API, has been organized under the same
+				umbrella to allow convenient access to
+				any piece from the documentation
+				banner.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>New Features</TH>
+		    <TD>
+			<UL>
+			    <LI>Image : Added the conversion from
+				color image to gray-scale image. This
+				operation is launched automatically
+				when a color image is detected at load
+				time.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Bug Fixes</TH>
+		    <TD>
+			<UL>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Known Issues</TH>
+		    <TD>
+			<UL>
+			    <LI>Documentation : Because of JavaScript
+				building of doc frames, the "Back" and
+				"Forward" commands trigger duplicate
+				frame loads. Function is OK, but this
+				flickering should be avoided.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Other Changes</TH>
+		    <TD>
+			<UL>
+			</UL>
+		    </TD>
+		</TR>
+	    </TABLE>
 
-		    <TR>
-			<TH>Other Changes</TH>
-		    </TR>
-		</TABLE>
-		    
-		<A NAME="2.0">
-		    <H3>2.0 Release</H3>
-		</A>
+	    <!-- ====================================================== -->
 
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TH VALIGN="MIDDLE" WIDTH="120px">Introduction</TH>
-			<TD>
-			    <UL>
-				<LI>This release is the result of the
-				    strong need to formally publish
-				    the Audiveris software, even
-				    though there are still many areas
-				    with lots of room for
-				    improvement. Publishing the
-				    software, with source code and a
-				    minimal documentation, was
-				    necessary to let other potential
-				    developers contribute to this
-				    project.</LI>
+	    <A NAME="2.1">
+		<H3>2.1 Release</H3>
+	    </A>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH>Introduction</TH>
+		    <TD>
+			<UL>
+			    <LI>This release is a small improvement on
+				the initial 2.0 release, with major
+				focus on user documentation,
+				especially the Operation manual.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Distribution Changes</TH>
+		</TR>
+		
+		<TR>
+		    <TH>New Features</TH>
+		    <TD>
+			<UL>
+			    <LI>Added documentation environment
+				(installation, operation, design,
+				implementation).</LI>
+			    <LI>Added a nearly complete Operation
+				manual.</LI>
+			    <LI>Added the handling of a Core base,
+				besides the Whole glyph base, to
+				speed-up the training of the neural
+				network.</LI>
+			    <LI>Added the use of manifest parameters
+				to automate the handling of tool name,
+				version and build reference.</LI>
+			    <LI>Added in the Regression evaluator the
+				ability to measure distance to a given
+				shape, as a way to select members for
+				the Core base.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Bug Fixes</TH>
+		    <TD>
+			<UL>
+			    <LI>Fixed a bug in resource names due to
+				improper use of backslashes.</LI>
+			    <LI>Fixed the loading of unsupported image
+				formats, by simply detecting the event
+				and notifying it to the user.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Known Issues</TH>
+		    <TD>
+			<UL>
+			    <LI>Audiveris should be able to convert an
+				unsupported image format to the
+				desired one (grey scale of 256
+				values).</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Other Changes</TH>
+		</TR>
+	    </TABLE>
+
+	    <!-- ====================================================== -->
+	    
+	    <A NAME="2.0">
+		<H3>2.0 Release</H3>
+	    </A>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH VALIGN="MIDDLE" WIDTH="120px">Introduction</TH>
+		    <TD>
+			<UL>
+			    <LI>This release is the result of the
+				strong need to formally publish the
+				Audiveris software, even though there
+				are still many areas with lots of room
+				for improvement. Publishing the
+				software, with source code and a
+				minimal documentation, was necessary
+				to let other potential developers
+				contribute to this project.</LI>
 				<BR/>
-
-				<LI> The 2.0 number for what appears
-				    as a first version stems from the
-				    fact that, prior to Audiveris, the
-				    author had built an OMR Ada
-				    prototype called OptiMusic. So,
-				    Audiveris is kind of version
-				    2.</LI>
-			    </UL>
-			</TD>
-		    </TR>
-		</TABLE>
-
-	    </DIV>
+			    
+			    <LI> The 2.0 number for what appears as a
+				first version stems from the fact
+				that, prior to Audiveris, the author
+				had built an OMR Ada prototype called
+				OptiMusic. So, Audiveris is kind of
+				version 2.</LI>
+			</UL>
+		    </TD>
+		</TR>
+	    </TABLE>
+	    
 	</DIV>
     </BODY>
 </HTML>
