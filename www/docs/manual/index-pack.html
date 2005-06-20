@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+    <HEAD>
+	<!-- 	$Id$	 -->
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252"/>
+	<TITLE>Audiveris Documentation</TITLE>
+	<META NAME="AUTHOR" CONTENT="Herv&eacute; Bitteur"/>
+	<META NAME="CLASSIFICATION" CONTENT="Documentation for Audiveris"/>
+	<META NAME="DESCRIPTION" CONTENT="Global hosting environment for Audiveris documentation"/>
+
+	<SCRIPT TYPE="text/javascript" >
+            function loadManual(manual)
+	    {
+	        if (manual != "" && manual != "api") {
+                    Nav.location.href  = manual + "-nav.html";
+                    Main.location.href = manual +     ".html";
+	        }
+	    }
+	</SCRIPT>
+    </HEAD>
+    
+    <FRAMESET COLS="20%, *" ONLOAD="loadManual(top.selectedManual)">
+	<FRAME NAME="Nav"  FRAMEBORDER="0" />
+	<FRAME NAME="Main" FRAMEBORDER="0" />
+    </FRAMESET>
+</HTML>
