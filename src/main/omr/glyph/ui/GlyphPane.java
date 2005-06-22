@@ -536,7 +536,7 @@ public class GlyphPane
 
         public void actionPerformed(ActionEvent e)
         {
-            inspector.evaluateGlyphs();
+            inspector.evaluateGlyphs(/* common => */ false);
             refresh();
         }
     }
@@ -623,7 +623,7 @@ public class GlyphPane
         public void actionPerformed(ActionEvent e)
         {
             inspector.processLeaves();
-            inspector.evaluateGlyphs();
+            inspector.evaluateGlyphs(/* common => */ false);
             refresh();
         }
     }
