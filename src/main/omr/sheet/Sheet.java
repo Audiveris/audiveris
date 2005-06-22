@@ -325,7 +325,7 @@ public class Sheet
 
                     result = new Boolean(true);
                     // Accept consistent votes
-                    getGlyphInspector().evaluateGlyphs();
+                    getGlyphInspector().evaluateGlyphs(/*common=>*/ true);
                 }
 
                 public void displayUI ()
@@ -348,7 +348,7 @@ public class Sheet
 
                     getGlyphInspector().processCompounds();
                     result = new Boolean(true);
-                    getGlyphInspector().evaluateGlyphs();
+                    getGlyphInspector().evaluateGlyphs(/*common=>*/ true);
                 }
 
                 public void displayUI ()
@@ -363,7 +363,7 @@ public class Sheet
      * are properly assigned.
      */
     public final InstanceStep<Boolean> VERTICALS
-            = new InstanceStep<Boolean>("Extract verticals and leaves")
+            = new InstanceStep<Boolean>("Extract verticals")
             {
                 public void doit ()
                         throws ProcessingException
@@ -372,7 +372,7 @@ public class Sheet
 
                     getGlyphInspector().processVerticals();
                     result = new Boolean(true);
-                    getGlyphInspector().evaluateGlyphs();
+                    //getGlyphInspector().evaluateGlyphs(/*common=>*/ false);
                 }
 
                 public void displayUI ()
@@ -395,7 +395,7 @@ public class Sheet
 
                     getGlyphInspector().processLeaves();
                     result = new Boolean(true);
-                    getGlyphInspector().evaluateGlyphs();
+                    getGlyphInspector().evaluateGlyphs(/*common=>*/ false);
                 }
 
                 public void displayUI ()
@@ -418,7 +418,7 @@ public class Sheet
 
                     getGlyphInspector().processCompounds();
                     result = new Boolean(true);
-                    getGlyphInspector().evaluateGlyphs();
+                    getGlyphInspector().evaluateGlyphs(/*common=>*/ false);
                 }
 
                 public void displayUI ()
@@ -440,7 +440,7 @@ public class Sheet
 
                     getGlyphInspector().processUndueStems();
                     result = new Boolean(true);
-                    getGlyphInspector().evaluateGlyphs();
+                    getGlyphInspector().evaluateGlyphs(/*common=>*/ false);
                 }
 
                 public void displayUI ()
