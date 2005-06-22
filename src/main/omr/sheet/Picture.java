@@ -309,8 +309,8 @@ public class Picture
     private void checkImageFormat()
         throws ImageFormatException
     {
+        // Check nb of bands
         int numBands = image.getSampleModel().getNumBands();
-
         if (numBands != 1) {
             if (numBands == 3) {
                 image = colorToGray(image);
@@ -319,6 +319,13 @@ public class Picture
                     ("Unsupported sample model" +
                      " numBands=" + numBands);
             }
+        }
+
+        // Check pixel size
+        ColorModel colorModel = image.getColorModel();
+        int pixelSize = colorModel.getPixelSize();
+        if (pixelSize != 8) {
+            image = grayToGray256(image);
         }
     }
 
@@ -558,6 +565,7 @@ public class Picture
     private static RenderedOp colorToGray (RenderedOp image)
     {
         logger.info("Converting color image to gray ...");
+
         double[][] matrix = { {0.114d, 0.587d, 0.299d, 0.0d} };
 
         return JAI.create("bandcombine",
@@ -565,6 +573,25 @@ public class Picture
                           .addSource(image)
                           .add(matrix),
                           null);
+    }
+
+    //---------------//
+    // grayToGray256 //
+    //---------------//
+    private static RenderedOp grayToGray256 (RenderedOp image)
+    {
+        logger.info("Converting gray image to gray-256 ...");
+
+        ColorSpace colorSpace = ColorSpace.getInstance
+            (java.awt.color.ColorSpace.CS_GRAY);
+
+        int[] bits = new int[]{8};
+        int opaque = Transparency.OPAQUE;
+        int dataType = DataBuffer.TYPE_BYTE;
+        ColorModel colorModel = new ComponentColorModel
+            (colorSpace, bits, false, false, opaque, dataType);
+
+        return JAI.create("colorConvert", image, colorSpace, null);
     }
 
     //--------------//
