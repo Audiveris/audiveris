@@ -82,8 +82,11 @@ public class GlyphInspector
     /**
      * All symbol glyphs of the sheet, for which we can get a common vote
      * of the evaluators, are assigned the voted shape.
+     *
+     * @param common if true, common vote (network + regression) is
+     * required, otherwise only the network vote is used
      */
-    public void evaluateGlyphs ()
+    public void evaluateGlyphs (boolean common)
     {
         int acceptNb = 0;
         int knownNb = 0;
@@ -94,7 +97,14 @@ public class GlyphInspector
             Glyph glyph = vLag.getGlyph(id);
             if (glyph != null) {
                 if (glyph.getShape() == null) {
-                    Shape vote = commonVote(glyph);
+                    // Get vote
+                    Shape vote;
+                    if (common) {
+                        vote = commonVote(glyph);
+                    } else {
+                        vote = GlyphNetwork.getInstance().vote(glyph);
+                    }
+
                     if (vote != null) {
                         glyph.setShape(vote);
                         acceptNb++;
@@ -192,6 +202,27 @@ public class GlyphInspector
                          new Comparator<Glyph>() {
                              public int compare(Glyph o1,
                                                 Glyph o2) {
+                                 return o1.getContourBox().x
+                                     -  o2.getContourBox().x;
+                             }
+                         });
+    }
+
+    //-----------------//
+    // sortSystemStems //
+    //-----------------//
+    /**
+     * Sort all stems in the system, according to the left abscissa of
+     * their contour box
+     *
+     * @param system the system whose stems are to be sorted
+     */
+    public static void sortSystemStems (SystemInfo system)
+    {
+        Collections.sort(system.getStems(),
+                         new Comparator<Stick>() {
+                             public int compare(Stick o1,
+                                                Stick o2) {
                                  return o1.getContourBox().x
                                      -  o2.getContourBox().x;
                              }
@@ -386,7 +417,6 @@ public class GlyphInspector
         }
 
         logger.info(symbolNb + " symbol(s) from stem cancellation");
-        evaluateGlyphs();
 
         return symbolNb;
     }
@@ -409,20 +439,26 @@ public class GlyphInspector
 
         // Collect all undue stems
         List<Stick> SuspectedStems = new ArrayList<Stick>();
-        for (Stick stem : system.getStems()) {
+        for (Iterator<Stick> it = system.getStems().iterator(); it.hasNext();) {
+            Stick stem = it.next();
             if (!stem.hasSymbols()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Suspected Stem " + stem);
+                }
                 SuspectedStems.add(stem);
+
+                // (Temporarily) cut the link from sections to their
+                // containing stems
+                for (GlyphSection section : stem.getMembers()) {
+                    section.setGlyph(null);
+                }
+
+                // Remove these stems since nearby stems are used for
+                // recognition
+                it.remove();
+                removeGlyph(stem, system, /*cutSections=>*/ true);
             }
         }
-
-        // (Temporarily) cut the link from sections to their containing
-        // stems
-         for (Stick stem : SuspectedStems) {
-             logger.debug("Suspected Stem " + stem);
-             for (GlyphSection section : stem.getMembers()) {
-                 section.setGlyph(null);
-             }
-         }
 
         // Extract brand new glyphs
         extractNewSystemGlyphs(system);
@@ -431,7 +467,8 @@ public class GlyphInspector
         List<Glyph> symbols = new ArrayList<Glyph>();
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
-                Shape vote = commonVote(glyph);
+                //Shape vote = commonVote(glyph);
+                Shape vote = GlyphNetwork.getInstance().vote(glyph);
                 if (vote != null) {
                     glyph.setShape(vote);
                     if (glyph.isKnown()) {
@@ -455,15 +492,19 @@ public class GlyphInspector
                 glyph = section.getGlyph();
                 if (glyph != null && glyph.isKnown()) {
                     known = true;
-                    removeStem(stem, system, /* cutSections => */ false);
+                    //removeStem(stem, system, /* cutSections => */ false);
                     break;
                 }
             }
             if (!known) {
-                // Remove glyph
+                // Remove the newly created glyph
                 if (glyph != null) {
                     removeGlyph(glyph, system, /* cutSections => */ true);
                 }
+
+                // Restore the stem
+                system.getStems().add(stem);
+                system.getGlyphs().add(stem);
 
                 // Restore the stem <- section link
                 for (GlyphSection section : stem.getMembers()) {
@@ -471,6 +512,9 @@ public class GlyphInspector
                 }
             }
         }
+
+        // Re-sort stems
+        sortSystemStems(system);
 
         // Extract brand new glyphs
         extractNewSystemGlyphs(system);
