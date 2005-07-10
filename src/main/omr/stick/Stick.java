@@ -21,9 +21,7 @@ import omr.util.Logger;
 import omr.ui.Zoom;
 
 import java.awt.*;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Class <code>Stick</code> describes a stick, a special kind of glyph,
@@ -351,31 +349,6 @@ public class Stick
         return stuck;
     }
 
-    //------------------//
-    // getSymbolsBefore //
-    //------------------//
-    /**
-     * Return the known glyphs stuck on first side of the stick
-     *
-     * @return the set of known glyphs (perhaps empty)
-     */
-    public Set<Glyph> getSymbolsBefore ()
-    {
-        Set<Glyph> symbols = new HashSet<Glyph>();
-        for (GlyphSection section : members) {
-            for (GlyphSection sct : section.getSources()) {
-                if (sct.isMember()) {
-                    Glyph glyph = sct.getGlyph();
-                    if (glyph != this && glyph.isKnown()) {
-                        symbols.add(glyph);
-                    }
-                }
-            }
-        }
-
-        return symbols;
-    }
-
     //------------//
     // getLastPos //
     //------------//
@@ -412,48 +385,6 @@ public class Stick
         }
 
         return stuck;
-    }
-
-    //-----------------//
-    // getSymbolsAfter //
-    //-----------------//
-    /**
-     * Return the known glyphs stuck on last side of the stick
-     *
-     * @return the set of known glyphs (perhaps empty)
-     */
-    public Set<Glyph> getSymbolsAfter ()
-    {
-        Set<Glyph> symbols = new HashSet<Glyph>();
-        for (GlyphSection section : members) {
-            for (GlyphSection sct : section.getTargets()) {
-                if (sct.isMember()) {
-                    Glyph glyph = sct.getGlyph();
-                    if (glyph != this && glyph.isKnown()) {
-                        symbols.add(glyph);
-                    }
-                }
-            }
-        }
-
-        return symbols;
-    }
-
-    //------------//
-    // hasSymbols //
-    //------------//
-    /**
-     * Checks whether a stick is connected to known symbols
-     *
-     * @return true is there is at least one known symbol connected
-     */
-    public boolean hasSymbols()
-    {
-        if (getSymbolsBefore().size() > 0) {
-            return true;
-        }
-
-        return getSymbolsAfter().size() > 0;
     }
 
     //-----------//
