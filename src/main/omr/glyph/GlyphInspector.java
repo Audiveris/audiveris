@@ -188,48 +188,6 @@ public class GlyphInspector
     }
 
     //------------------//
-    // sortSystemGlyphs //
-    //------------------//
-    /**
-     * Sort all glyphs in the system, according to the left abscissa of
-     * their contour box
-     *
-     * @param system the system whose glyphs are to be sorted
-     */
-    public static void sortSystemGlyphs (SystemInfo system)
-    {
-        Collections.sort(system.getGlyphs(),
-                         new Comparator<Glyph>() {
-                             public int compare(Glyph o1,
-                                                Glyph o2) {
-                                 return o1.getContourBox().x
-                                     -  o2.getContourBox().x;
-                             }
-                         });
-    }
-
-    //-----------------//
-    // sortSystemStems //
-    //-----------------//
-    /**
-     * Sort all stems in the system, according to the left abscissa of
-     * their contour box
-     *
-     * @param system the system whose stems are to be sorted
-     */
-    public static void sortSystemStems (SystemInfo system)
-    {
-        Collections.sort(system.getStems(),
-                         new Comparator<Stick>() {
-                             public int compare(Stick o1,
-                                                Stick o2) {
-                                 return o1.getContourBox().x
-                                     -  o2.getContourBox().x;
-                             }
-                         });
-    }
-
-    //------------------//
     // processVerticals //
     //------------------//
     /**
@@ -249,20 +207,6 @@ public class GlyphInspector
             new VerticalsBuilder(sheet);
         } catch (ProcessingException ex) {
             // User already warned
-            return;                     // Safer
-        }
-
-        // Add the stems as glyphs
-        for (SystemInfo system : sheet.getSystems()) {
-            for (Stick stem : system.getStems()) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Adding stem " + stem);
-                }
-                system.getGlyphs().add(stem);
-
-                // Compute glyph features
-                //GlyphBuilder.computeGlyphFeatures(system, stem);
-            }
         }
     }
 
@@ -281,7 +225,7 @@ public class GlyphInspector
 
         // Sort glyphs on their abscissa
         for (SystemInfo system : sheet.getSystems()) {
-            sortSystemGlyphs(system);
+            system.sortGlyphs();
         }
     }
 
@@ -438,26 +382,21 @@ public class GlyphInspector
         int nb = 0;
 
         // Collect all undue stems
-        List<Stick> SuspectedStems = new ArrayList<Stick>();
-        for (Iterator<Stick> it = system.getStems().iterator(); it.hasNext();) {
-            Stick stem = it.next();
-            if (!stem.hasSymbols()) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Suspected Stem " + stem);
+        List<Glyph> SuspectedStems = new ArrayList<Glyph>();
+        for (Glyph glyph : system.getGlyphs()) {
+            if (glyph.isStem()) {
+                if (!glyph.hasSymbols()) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Suspected Stem " + glyph);
+                    }
+                    SuspectedStems.add(glyph);
                 }
-                SuspectedStems.add(stem);
-
-                // (Temporarily) cut the link from sections to their
-                // containing stems
-                for (GlyphSection section : stem.getMembers()) {
-                    section.setGlyph(null);
-                }
-
-                // Remove these stems since nearby stems are used for
-                // recognition
-                it.remove();
-                removeGlyph(stem, system, /*cutSections=>*/ true);
             }
+        }
+
+        // Remove these stems since nearby stems are used for recognition
+        for (Glyph glyph : SuspectedStems) {
+            removeGlyph(glyph, system, /*cutSections=>*/ true);
         }
 
         // Extract brand new glyphs
@@ -484,7 +423,7 @@ public class GlyphInspector
 
         // Keep stems that have not been replaced by symbols, definitively
         // remove the others
-        for (Stick stem : SuspectedStems) {
+        for (Glyph stem : SuspectedStems) {
             // Check if one of its section is now part of a symbol
             boolean known = false;
             Glyph glyph = null;
@@ -492,7 +431,6 @@ public class GlyphInspector
                 glyph = section.getGlyph();
                 if (glyph != null && glyph.isKnown()) {
                     known = true;
-                    //removeStem(stem, system, /* cutSections => */ false);
                     break;
                 }
             }
@@ -503,7 +441,6 @@ public class GlyphInspector
                 }
 
                 // Restore the stem
-                system.getStems().add(stem);
                 system.getGlyphs().add(stem);
 
                 // Restore the stem <- section link
@@ -512,9 +449,6 @@ public class GlyphInspector
                 }
             }
         }
-
-        // Re-sort stems
-        sortSystemStems(system);
 
         // Extract brand new glyphs
         extractNewSystemGlyphs(system);
@@ -535,7 +469,7 @@ public class GlyphInspector
     {
         removeSystemUnknowns(system);
         sheet.getGlyphBuilder().retrieveSystemGlyphs(system);
-        sortSystemGlyphs(system);
+        system.sortGlyphs();
     }
 
     //-------------//
@@ -564,29 +498,6 @@ public class GlyphInspector
 
         // Remove from lag
         glyph.destroy(cutSections);
-    }
-
-    //------------//
-    // removeStem //
-    //------------//
-    /**
-     * Remove a stem stick
-     *
-     * @param stem the specified stem
-     * @param system the system it belongs to
-     * @param cutSections should stem <- section link be cut
-     */
-    public void removeStem (Glyph      stem,
-                            SystemInfo system,
-                            boolean    cutSections)
-    {
-        removeGlyph(stem, system, cutSections);
-
-        // Remove from system stem list
-        if (!system.getStems().remove(stem)) {
-            logger.warning ("Could not remove stem from system stems "
-                            + system.getId());
-        }
     }
 
     //-----------//
