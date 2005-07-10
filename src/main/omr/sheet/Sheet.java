@@ -1510,8 +1510,11 @@ public class Sheet
                     g.setColor(Color.black);
 
                     // Stems
-                    for (Stick stick : system.getStems()) {
-                        stick.renderLine(g, z);
+                    for (Glyph glyph : system.getGlyphs()) {
+                        if (glyph.isStem()) {
+                            Stick stick = (Stick) glyph;
+                            stick.renderLine(g, z);
+                        }
                     }
 
                     // Ledgers

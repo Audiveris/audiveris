@@ -22,7 +22,9 @@ import omr.ui.Zoom;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>Glyph</code> represents any glyph found, such as stem,
@@ -530,6 +532,56 @@ public class Glyph
         }
     }
 
+    //-----------------//
+    // getSymbolsAfter //
+    //-----------------//
+    /**
+     * Return the known glyphs stuck on last side of the stick
+     *
+     * @return the set of known glyphs (perhaps empty)
+     */
+    public Set<Glyph> getSymbolsAfter ()
+    {
+        Set<Glyph> symbols = new HashSet<Glyph>();
+        for (GlyphSection section : members) {
+            for (GlyphSection sct : section.getTargets()) {
+                if (sct.isMember()) {
+                    Glyph glyph = sct.getGlyph();
+                    if (glyph != this && glyph.isKnown()) {
+                        symbols.add(glyph);
+                    }
+                }
+            }
+        }
+
+        return symbols;
+    }
+
+    //------------------//
+    // getSymbolsBefore //
+    //------------------//
+    /**
+     * Return the known glyphs stuck on first side of the stick
+     *
+     * @return the set of known glyphs (perhaps empty)
+     */
+    public Set<Glyph> getSymbolsBefore ()
+    {
+        Set<Glyph> symbols = new HashSet<Glyph>();
+        for (GlyphSection section : members) {
+            for (GlyphSection sct : section.getSources()) {
+                if (sct.isMember()) {
+                    Glyph glyph = sct.getGlyph();
+                    if (glyph != this && glyph.isKnown()) {
+                        symbols.add(glyph);
+                    }
+                }
+            }
+        }
+
+        return symbols;
+    }
+
     //-----------//
     // getWeight //
     //-----------//
@@ -575,6 +627,23 @@ public class Glyph
         return stemNumber;
     }
 
+    //------------//
+    // hasSymbols //
+    //------------//
+    /**
+     * Checks whether a stick is connected to known symbols
+     *
+     * @return true is there is at least one known symbol connected
+     */
+    public boolean hasSymbols()
+    {
+        if (getSymbolsBefore().size() > 0) {
+            return true;
+        }
+
+        return getSymbolsAfter().size() > 0;
+    }
+
     //---------//
     // isKnown //
     //---------//
@@ -591,6 +660,19 @@ public class Glyph
             shape != null &&
             shape != Shape.NOISE &&
             shape != Shape.CLUTTER;
+    }
+
+    //--------//
+    // isStem //
+    //--------//
+    /**
+     * Convenient method which tests if the glyph is a Stem
+     *
+     * @return true if glyph shape is a Stem
+     */
+    public boolean isStem ()
+    {
+        return shape == Shape.COMBINING_STEM;
     }
 
     //----------------//

@@ -11,13 +11,14 @@
 package omr.sheet;
 
 import omr.glyph.Glyph;
+import omr.glyph.GlyphSection;
 import omr.stick.Stick;
 import omr.stick.StickSection;
 
 import java.util.ArrayList;
-import java.util.List;
-import omr.glyph.GlyphSection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Class <code>SystemInfo</code> gathers information from the original
@@ -80,9 +81,8 @@ public class SystemInfo
     // Retrieved bar lines in this system
     private List<BarInfo> bars = new ArrayList<BarInfo>();
 
-    // Retrieved stems in this system
-    private List<Stick> stems = new ArrayList<Stick>();
-    private int maxStemWidth = -1;
+    // Width of widest glyph in this system
+    private int maxGlyphWidth = -1;
 
     // Retrieved ledgers in this system
     private List<Ledger> ledgers = new ArrayList<Ledger>();
@@ -414,37 +414,24 @@ public class SystemInfo
         this.staves = staves;
     }
 
-    //----------//
-    // getStems //
-    //----------//
+    //------------------//
+    // getMaxGlyphWidth //
+    //------------------//
     /**
-     * Report the collection of stems found
-     *
-     * @return the stem collection
-     */
-    public List<Stick> getStems ()
-    {
-        return stems;
-    }
-
-    //-----------------//
-    // getMaxStemWidth //
-    //-----------------//
-    /**
-     * Report the maximum width of stems found within the system
+     * Report the maximum width of glyphs found within the system
      *
      * @return the maximum width in pixels
      */
-    public int getMaxStemWidth()
+    public int getMaxGlyphWidth()
     {
-        if (maxStemWidth == -1) {
-            for (Stick stem : stems) {
-                maxStemWidth = Math.max(maxStemWidth,
-                                          stem.getContourBox().width);
+        if (maxGlyphWidth == -1) {
+            for (Glyph glyph : glyphs) {
+                maxGlyphWidth = Math.max(maxGlyphWidth,
+                                         glyph.getContourBox().width);
             }
         }
 
-        return maxStemWidth;
+        return maxGlyphWidth;
     }
 
     //--------//
@@ -610,5 +597,24 @@ public class SystemInfo
     public void setStopIdx (int stopIdx)
     {
         this.stopIdx = stopIdx;
+    }
+
+    //------------//
+    // sortGlyphs //
+    //------------//
+    /**
+     * Sort all glyphs in the system, according to the left abscissa of
+     * their contour box
+     */
+    public void sortGlyphs()
+    {
+        Collections.sort(glyphs,
+                         new Comparator<Glyph>() {
+                             public int compare(Glyph o1,
+                                                Glyph o2) {
+                                 return o1.getContourBox().x
+                                     -  o2.getContourBox().x;
+                             }
+                         });
     }
 }

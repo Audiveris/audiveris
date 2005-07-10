@@ -221,7 +221,7 @@ public class GlyphPane
         Set<SystemInfo> systems = new HashSet<SystemInfo>();
         for (Glyph stem : stems) {
             SystemInfo system = sheet.getSystemAtY(stem.getContourBox().y);
-            inspector.removeStem(stem, system, /* cutSections => */ true);
+            inspector.removeGlyph(stem, system, /* cutSections => */ true);
             systems.add(system);
         }
 

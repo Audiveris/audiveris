@@ -25,6 +25,7 @@ import omr.util.Logger;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -146,14 +147,24 @@ public class GlyphBuilder
         // Differentiate new glyphs from existing ones
         int newGlyphId = vLag.getLastGlyphId() +1;
 
+        List<Glyph> newGlyphs = new ArrayList<Glyph>();
+
         // Browse the various unrecognized sections
         for (GlyphSection section : system.getVerticalSections()) {
             // Not already visited ?
             if ((!section.isKnown()) &&
                 (section.getGlyph() == null ||
                  section.getGlyph().getId() < newGlyphId)) {
-                buildGlyph(system, section);
+                newGlyphs.add(buildGlyph(system, section));
             }
+        }
+
+        // Sort the system glyphs according to their abscissa
+        system.sortGlyphs();
+
+        // Compute features for new glyphs
+        for (Glyph glyph : newGlyphs) {
+            computeGlyphFeatures(system, glyph);
         }
 
         return system.getGlyphs().size();
@@ -168,9 +179,6 @@ public class GlyphBuilder
         // Create a glyph with all connected sections
         Glyph glyph = vLag.createGlyph(Stick.class);
         consider(glyph, section);
-
-        // Compute glyph features
-        computeGlyphFeatures(system, glyph);
 
         // Add this glyph to list of system glyphs
         system.getGlyphs().add(glyph);
@@ -205,7 +213,7 @@ public class GlyphBuilder
 
         // Compute glyph parameters
         SystemInfo system = sheet.getSystemAtY(compound.getContourBox().y);
-        GlyphBuilder.computeGlyphFeatures(system, compound);
+        computeGlyphFeatures(system, compound);
 
         return compound;
     }
@@ -319,8 +327,8 @@ public class GlyphBuilder
      * @param system the system area which contains the glyph
      * @param glyph the glyph at hand
      */
-    public static void computeGlyphFeatures (SystemInfo system,
-                                             Glyph      glyph)
+    private static void computeGlyphFeatures (SystemInfo system,
+                                              Glyph      glyph)
     {
         // Ordinate (approximate value)
         Rectangle box = glyph.getContourBox();
@@ -342,14 +350,14 @@ public class GlyphBuilder
 
         // Number of connected stems
         int stemNb = 0;
-        if (checkGlyphIntersect(system.getStems(),
-                                system.getMaxStemWidth(),
-                                leftStemBox(box, scale))) {
+        if (checkStemIntersect(system.getGlyphs(),
+                               system.getMaxGlyphWidth(),
+                               leftStemBox(box, scale))) {
             stemNb++;
         }
-        if (checkGlyphIntersect(system.getStems(),
-                                system.getMaxStemWidth(),
-                                rightStemBox(box, scale))) {
+        if (checkStemIntersect(system.getGlyphs(),
+                               system.getMaxGlyphWidth(),
+                               rightStemBox(box, scale))) {
             stemNb++;
         }
         glyph.setStemNumber(stemNb);
@@ -405,21 +413,23 @@ public class GlyphBuilder
                               rect.height + 2*dy);
     }
 
-    //---------------------//
-    // checkGlyphIntersect //
-    //---------------------//
-    private static boolean checkGlyphIntersect (List<?extends Glyph> items,
-                                                int           maxItemWidth,
-                                                Rectangle     box)
+    //--------------------//
+    // checkStemIntersect //
+    //--------------------//
+    private static boolean checkStemIntersect (List<Glyph> glyphs,
+                                               int         maxItemWidth,
+                                               Rectangle   box)
     {
         int startIdx = Glyph.getGlyphIndexAtX
-            (items, box.x - maxItemWidth);
+            (glyphs, box.x - maxItemWidth);
 
-        if (startIdx < items.size()) {
+        if (startIdx < glyphs.size()) {
             int stopIdx = Glyph.getGlyphIndexAtX
-                (items, box.x + box.width +1); // Not sure we need "+1"
-            for (Glyph item : items.subList(startIdx, stopIdx)) {
-                if (item.getContourBox().intersects(box)) {
+                (glyphs, box.x + box.width +1); // Not sure we need "+1"
+
+            for (Glyph glyph : glyphs.subList(startIdx, stopIdx)) {
+                if (glyph.isStem() &&
+                    glyph.getContourBox().intersects(box)) {
                     return true;
                 }
             }
