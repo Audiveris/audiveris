@@ -421,10 +421,13 @@ public class SheetPane
         // Let the user select a sheet file
         final JFileChooser fc
                 = new JFileChooser(constants.initImgDir.getValue());
-        fc.addChoosableFileFilter(new FileFilter("image files",
+        fc.addChoosableFileFilter(new FileFilter("Major image files",
                                                  new String[]{
+                                                     ".bmp",
+                                                     ".gif",
+                                                     ".jpg",
                                                      ".png",
-                                                     ".gif"
+                                                     ".tif"
                                                  }));
 
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
