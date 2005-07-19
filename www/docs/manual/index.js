@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------//
 //                                                                       //
-//                           b a n n e r . j s                           //
+//                            i n d e x . j s                            //
 //                                                                       //
 //  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
@@ -73,4 +73,16 @@ function checkSelection()
     }
 }
 
+// Return a readable date from a CVS file tag like the following line
+// $Id$
+function getCVSDate(s)
+{
+    var as = s.split(" ");
+    var d = new Date(as[3]);
+    var months = new Array("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+    
+    return d.getDate() + "-" + months[d.getMonth()] + "-" + d.getFullYear()
+}
+
+// Dummy implementation when displaying javadoc files
 function loadFrames(){}
