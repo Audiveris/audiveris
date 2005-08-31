@@ -20,14 +20,15 @@ import omr.util.Logger;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Class <code>SymbolGlyphView</code> is a GlyphLagView specifically meant
- * to be used in conjunction with the other UI glyph entities such as the
- * instances of {@link GlyphPane}, {@link SymbolGlyphBoard}, etc... So its
- * implementation consists mainly in overridden methods to allow updating
- * of these other relevant entities.
+ * Class <code>SymbolGlyphView</code> is a {@link GlyphLagView}
+ * specifically meant to be used in conjunction with the other UI glyph
+ * entities such as the instances of {@link GlyphPane}, {@link
+ * SymbolGlyphBoard}, etc... So its implementation consists mainly in
+ * overridden methods to allow updating of these other relevant entities.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -150,6 +151,35 @@ public class SymbolGlyphView
                 pane.getPopup().updateForGlyphs(glyphs);
                 pane.getPopup().show(this, e.getX(), e.getY());
             }
+        }
+    }
+
+    //---------------//
+    // deassignGlyph //
+    //---------------//
+    @Override
+        public void deassignGlyph (Glyph glyph)
+    {
+        Shape shape = glyph.getShape();
+        logger.info("Deassign a " + shape + " symbol");
+
+        // Processing depends on shape at hand
+        switch (shape) {
+        case THICK_BAR_LINE :
+        case THIN_BAR_LINE :
+            sheet.getBarsBuilder().deassignBarGlyph(glyph);
+            pane.setShape(glyph, null, /* UpdateUI => */ true);
+            pane.refresh();
+            break;
+
+        case COMBINING_STEM :
+            pane.cancelStems(Collections.singletonList(glyph));
+            break;
+
+        default :
+            pane.setShape(glyph, null, /* UpdateUI => */ true);
+            pane.refresh();
+            break;
         }
     }
 }
