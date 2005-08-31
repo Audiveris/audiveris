@@ -558,7 +558,7 @@ public class GlyphVerifier
             LoadAction loadAction = new LoadAction();
             JButton load = new JButton(loadAction);
             JButton all  = new JButton("All");
-            JButton del  = new JButton("Del");
+            ////JButton del  = new JButton("Del");
             JButton prev = new JButton("Prev");
             JButton next = new JButton("Next");
 
@@ -578,7 +578,7 @@ public class GlyphVerifier
                 r += 2;                 // --------------------------------
                 builder.add(load,       cst.xy (1,  r));
                 builder.add(all,        cst.xy (3,  r));
-                builder.add(del,        cst.xy (5,  r));
+                ////builder.add(del,        cst.xy (5,  r));
                 builder.add(prev,       cst.xy (7,  r));
                 builder.add(next,       cst.xy (9,  r));
 
@@ -602,13 +602,13 @@ public class GlyphVerifier
                         }
                     });
 
-                del.addActionListener(new ActionListener()
-                    {
-                        public void actionPerformed(ActionEvent e)
-                        {
-                            deleteGlyph();
-                        }
-                    });
+//                 del.addActionListener(new ActionListener()
+//                     {
+//                         public void actionPerformed(ActionEvent e)
+//                         {
+//                             deleteGlyph();
+//                         }
+//                     });
 
                 prev.addActionListener(new ActionListener()
                     {
@@ -628,12 +628,12 @@ public class GlyphVerifier
 
                 load.setToolTipText("Load the selected glyphs");
                 all.setToolTipText("Display all glyphs");
-                del.setToolTipText("Remove that glyph from training material");
+                ////del.setToolTipText("Remove that glyph from training material");
                 prev.setToolTipText("Go to previous glyph");
                 next.setToolTipText("Go to next glyph");
 
                 all.setEnabled(false);
-                del.setEnabled(false);
+                ////del.setEnabled(false);
                 prev.setEnabled(false);
                 next.setEnabled(false);
             }
@@ -681,7 +681,7 @@ public class GlyphVerifier
                 }
 
                 if (updateUI) {
-                    del.setEnabled(glyphIndex >= 0);
+                    ////del.setEnabled(glyphIndex >= 0);
                     all.setEnabled(names.length > 0);
                     prev.setEnabled(glyphIndex > 0);
                     next.setEnabled(glyphIndex < names.length -1);
@@ -798,6 +798,7 @@ public class GlyphVerifier
                 rubber = new Rubber(view, zoom);
                 rubber.setMouseMonitor(view);
                 view.addObserver(board);
+                board.setGlyphFocus(view);
                 view.setRubber(rubber);
                 view.setZoom(zoom);
                 slv = new ScrollLagView(view);
@@ -817,6 +818,15 @@ public class GlyphVerifier
             public MyView()
             {
                 super(vLag, null, null);
+            }
+
+            //---------------//
+            // deassignGlyph //
+            //---------------//
+            @Override
+                public void deassignGlyph (Glyph glyph)
+            {
+                deleteGlyph();          // Current glyph
             }
 
             //--------------//
