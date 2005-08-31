@@ -40,4 +40,11 @@ public interface GlyphFocus
      * @return the glyph found, or null otherwise
      */
     Glyph getGlyphById (int id);
+
+    /**
+     * Cancel the definition of the given glyph
+     *
+     * @param glyph the glyph to de-assign
+     */
+    void deassignGlyph (Glyph glyph);
 }
