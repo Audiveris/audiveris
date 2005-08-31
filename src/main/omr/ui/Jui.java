@@ -145,6 +145,9 @@ public class Jui
         // Help
         new AboutAction(helpMenu);
 
+        // Progress Bar
+        progressBar.setToolTipText("On going Step activity");
+
         // Menus in the frame
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -159,9 +162,9 @@ public class Jui
         /*
            +==============================================================+
            | toolKeyPanel                                                 |
-           | +=============================+============================+ |
-           | | toolBar                     | progressBar                | |
-           | +=============================+============================+ |
+           | +================+============================+============+ |
+           | | toolBar        | progressBar                |   Memory   | |
+           | +================+============================+============+ |
            +=================================================+============+
            | bigSplitPane                                    |            |
            | +=============================================+ |            |
@@ -201,7 +204,8 @@ public class Jui
         toolKeyPanel.setLayout(new BorderLayout());
         toolKeyPanel.add(toolBar, BorderLayout.WEST);
         toolKeyPanel.add(progressBar, BorderLayout.CENTER);
-        toolKeyPanel.add(new MemoryMeter(), BorderLayout.EAST);
+        toolKeyPanel.add(new MemoryMeter(IconUtil.buttonIconOf("general/Delete")),
+                         BorderLayout.EAST);
 
         // Boards
         boardsHolder = new JPanel();
