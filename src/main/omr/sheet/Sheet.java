@@ -137,6 +137,9 @@ public class Sheet
     private transient LinesBuilder linesBuilder;
     private transient SkewBuilder skewBuilder;
 
+    // A bar line extractor for this sheet
+    private transient BarsBuilder barsBuilder;
+
     // A glyph extractor for this sheet
     private transient GlyphBuilder glyphBuilder;
 
@@ -185,6 +188,9 @@ public class Sheet
                          "Please use grey scale with 256 values");
                 }
 
+                throw new ProcessingException();
+            } catch (Exception ex) {
+                logger.warning(ex.getMessage());
                 throw new ProcessingException();
             }
         }
@@ -295,8 +301,8 @@ public class Sheet
                 public void doit ()
                         throws ProcessingException
                 {
-                    BarsBuilder builder = new BarsBuilder(Sheet.this);
-                    result = builder.buildInfo();
+                    barsBuilder = new BarsBuilder(Sheet.this);
+                    result = barsBuilder.buildInfo();
 
                     // Display the resulting score, if sheet is currently
                     // displayed
@@ -647,6 +653,19 @@ public class Sheet
     public SkewBuilder getSkewBuilder()
     {
         return skewBuilder;
+    }
+
+    //----------------//
+    // getBarsBuilder //
+    //----------------//
+    /**
+     * Give access to the builder in charge of bars computation
+     *
+     * @return the builder instance
+     */
+    public BarsBuilder getBarsBuilder()
+    {
+        return barsBuilder;
     }
 
     //------------------//
