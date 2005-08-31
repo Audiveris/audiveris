@@ -38,6 +38,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 
@@ -300,6 +301,25 @@ public class VerticalsBuilder
                     filterMonitor.tellHtml(suite.passHtml(null, stick));
                 }
             } catch (ProcessingException ex) {
+            }
+        }
+
+        //---------------//
+        // deassignGlyph //
+        //---------------//
+        @Override
+            public void deassignGlyph (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+
+            switch (shape) {
+            case COMBINING_STEM :
+                logger.info("Deassign a " + shape);
+                sheet.getGlyphPane()
+                    .cancelStems(Collections.singletonList(glyph));
+                break;
+
+            default :
             }
         }
     }
