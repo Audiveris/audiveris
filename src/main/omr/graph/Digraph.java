@@ -234,7 +234,7 @@ public class Digraph <D extends Digraph <D, V>,
 
         sb.append(" ").append(getVertexCount()).append(" vertices");
 
-        if (this.getClass().getName() == DigraphView.class.getName()) {
+        if (this.getClass().getName() == Digraph.class.getName()) {
             sb.append("}");
         }
 
