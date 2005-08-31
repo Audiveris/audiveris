@@ -197,13 +197,13 @@ public class GlyphPane
     // cancelStems //
     //-------------//
     /**
-     * Cancel one or several stems, turning them back to just a set of sections, and
-     * rebuilding glyphs from their member sections together with the neighbouring
-     * non-assigned sections
+     * Cancel one or several stems, turning them back to just a set of
+     * sections, and rebuilding glyphs from their member sections together
+     * with the neighbouring non-assigned sections
      *
      * @param stems a list of stems
      */
-    void cancelStems (List<Glyph> stems)
+    public void cancelStems (List<Glyph> stems)
     {
         /**
          * To remove a stem, several infos need to be modified : shape from
