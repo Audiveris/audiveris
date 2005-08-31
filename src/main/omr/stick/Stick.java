@@ -801,9 +801,8 @@ public class Stick
      */
     public String toString ()
     {
-        StringBuffer sb = new StringBuffer(128);
-        sb.append("{Stick#");
-        sb.append(id);
+        StringBuffer sb = new StringBuffer(256);
+        sb.append(super.toString());
 
         if (result != null) {
             sb.append(" ").append(result);
@@ -816,10 +815,13 @@ public class Stick
                 .append("%");
         sb.append(" la=").append((100 * getLastStuck()) / getLength())
                 .append("%");
-        sb.append("}");
 
         if (line != null) {
             sb.append(" ").append(line);
+        }
+
+        if (this.getClass().getName() == Stick.class.getName()) {
+            sb.append("}");
         }
 
         return sb.toString();
