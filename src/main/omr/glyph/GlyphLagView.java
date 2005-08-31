@@ -193,6 +193,15 @@ public class GlyphLagView
     }
 
     //---------------//
+    // deassignGlyph //
+    //---------------//
+    public void deassignGlyph (Glyph glyph)
+    {
+        logger.warning("Deassign action is not yet implemented for a " +
+                       glyph.getShape() + " glyph.");
+    }
+
+    //---------------//
     // pointSelected //
     //---------------//
     @Override
