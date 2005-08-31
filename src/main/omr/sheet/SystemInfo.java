@@ -12,6 +12,7 @@ package omr.sheet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
+import omr.score.System;
 import omr.stick.Stick;
 import omr.stick.StickSection;
 
@@ -44,13 +45,14 @@ public class SystemInfo
     // =========
     //
 
-    // Index of first stave (from 0).
+    // Index of first stave of the system, counted from 0 within all staves
+    // of the score
     private int startIdx;
 
-    // Index of last stave.
+    // Index of last stave of the system, also counted from 0.
     private int stopIdx;
 
-    // Ordinate of top of first stave.
+    // Ordinate of top of first stave of the system.
     private int top;
 
     // Abscissa of beginning of system.
@@ -59,7 +61,7 @@ public class SystemInfo
     // Width of the system.
     private int width = -1;
 
-    // Ordinate of bottom of last stave.
+    // Ordinate of bottom of last stave of the system.
     private int bottom;
 
     // Delta ordinate between first line of first stave & first line of
@@ -68,6 +70,9 @@ public class SystemInfo
 
     // Staves of this system
     private List<StaveInfo> staves;
+
+    // Related System in Score hierarchy
+    private System scoreSystem;
 
     // SYSTEMS step
     // ============
@@ -108,6 +113,7 @@ public class SystemInfo
     /**
      * Create a SystemInfo entity, to register the provided parameters
      *
+     * @param id       the unique identity
      * @param sheet    the containing sheet
      * @param startIdx the index of the starting stave
      * @param stopIdx  the index of the terminating stave
@@ -565,10 +571,11 @@ public class SystemInfo
                 return stave;
             }
         }
-        System.out.println("getStaveAtY. y=" + y);
+        java.lang.System.out.println("getStaveAtY. y=" + y);
         for (StaveInfo stave : staves) {
-            System.out.println("areaTop=" + stave.getAreaTop() +
-                               " areaBottom=" + stave.getAreaBottom());
+            java.lang.System.out.println
+                ("areaTop=" + stave.getAreaTop() +
+                 " areaBottom=" + stave.getAreaBottom());
         }
         return null;
     }
@@ -597,6 +604,32 @@ public class SystemInfo
     public void setStopIdx (int stopIdx)
     {
         this.stopIdx = stopIdx;
+    }
+
+    //----------------//
+    // setScoreSystem //
+    //----------------//
+    /**
+     * Set the link : physical sheet.SystemInfo -> logical score.System
+     *
+     * @param scoreSystem the logical score System counterpart
+     */
+    public void setScoreSystem (System scoreSystem)
+    {
+        this.scoreSystem = scoreSystem;
+    }
+
+    //----------------//
+    // getScoreSystem //
+    //----------------//
+    /**
+     * Report the related logical score system
+     *
+     * @return the logical score System counterpart
+     */
+    public System getScoreSystem ()
+    {
+        return scoreSystem;
     }
 
     //------------//
