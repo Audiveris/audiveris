@@ -131,23 +131,14 @@ public class SymbolGlyphBoard
     //~ Methods -----------------------------------------------------------
 
     /**
-     * Void method, to avoid initial layout definition of the super class
-     */
-    protected void defineLayout()
-    {
-    }
-
-    /**
      * Define a specific layout for this Symbol GlyphBoard
      */
     protected void defineSpecificLayout()
     {
         int r = 1;                      // --------------------------------
-        builder.addSeparator("Glyph",   cst.xyw(1,  r, 9));
-        builder.add(dump,               cst.xy (11, r));
 
+        r += 2;                         // --------------------------------
         if (pane != null) {
-            r += 2;                     // --------------------------------
             builder.addLabel("Id",      cst.xy (1,  r));
             builder.add(gid,            cst.xy (3,  r));
 
@@ -159,7 +150,6 @@ public class SymbolGlyphBoard
         }
 
         r += 2;                         // --------------------------------
-        builder.add(shape,              cst.xyw(5, r, 7));
 
         // For glyph characteristics
         r += 2;                         // --------------------------------
