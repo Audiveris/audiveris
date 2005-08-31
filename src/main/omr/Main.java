@@ -501,7 +501,7 @@ public class Main
             .append(" (non case-sensitive) :");
 
         for (Step step : Sheet.getSteps()) {
-            buf.append(String.format("%n        %-15s : %s",
+            buf.append(String.format("%n        %-16s : %s",
                                      step.toString().toUpperCase(),
                                      step.getDescription()));
         }
