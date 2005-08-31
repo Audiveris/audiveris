@@ -73,6 +73,10 @@ public class GlyphBoard
     /** Input / Output : spinner of known glyphs */
     protected JSpinner known;
 
+    /** Input : Deassign button */
+    protected DeassignAction deassignAction = new DeassignAction();
+    protected JButton deassignButton = new JButton(deassignAction);
+
     /** Output : shape of the glyph */
     protected final JTextField shape = new SField
         (false, "Assigned shape for this glyph");
@@ -201,6 +205,8 @@ public class GlyphBoard
 
         r += 2;                         // --------------------------------
         r += 2;                         // --------------------------------
+
+        builder.add(deassignButton,     cst.xyw(1, r, 3));
         builder.add(shape,              cst.xyw(5, r, 7));
     }
 
@@ -243,6 +249,7 @@ public class GlyphBoard
     {
         this.glyph = glyph;
         dump.setEnabled(glyph != null);
+        deassignAction.setEnabled(glyph != null && glyph.isKnown());
 
         focusWanted = false;
         if (glyph != null) {
@@ -302,6 +309,30 @@ public class GlyphBoard
 
             if (glyphId != NO_VALUE) {
                 glyphFocus.setFocusGlyph(glyphId);
+            }
+        }
+    }
+
+    //----------------//
+    // DeassignAction //
+    //----------------//
+    private class DeassignAction
+        extends AbstractAction
+    {
+        //~ Constructors --------------------------------------------------
+
+        public DeassignAction()
+        {
+            super("Deassign");
+        }
+
+        //~ Methods -------------------------------------------------------
+
+        public void actionPerformed(ActionEvent e)
+        {
+            /////logger.info("DBG Deassign " + glyph);
+            if (glyphFocus != null && glyph != null && glyph.isKnown()) {
+                glyphFocus.deassignGlyph(glyph);
             }
         }
     }
