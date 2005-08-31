@@ -172,7 +172,8 @@ public class Step
             current = this;
             doStep(sheet, param);
         } catch (ProcessingException ex) {
-            logger.warning("Processing aborted", ex);
+            // User has already been informed, so just stop
+            //logger.warning("Processing aborted", ex);
             //logger.warning("Processing aborted");
         } catch (Exception ex) {
             logger.error("Exception in performing step " + current, ex);
