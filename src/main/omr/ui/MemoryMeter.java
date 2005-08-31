@@ -1,22 +1,31 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                         M e m o r y M e t e r                         //
-//                                                                       //
-//-----------------------------------------------------------------------//
+//--------------------------------------------------------------------------//
+//                                                                          //
+//                          M e m o r y M e t e r                           //
+//                                                                          //
+//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.             //
+//  This software is released under the terms of the GNU General Public     //
+//  License. Please contact the author at herve.bitteur@laposte.net         //
+//  to report bugs & suggestions.                                           //
+//--------------------------------------------------------------------------//
 
 package omr.ui;
 
-import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.net.URL;
+import java.awt.event.ActionListener;
+import javax.swing.*;
+import omr.util.Memory;
 
 /**
- * A memory meter panel that displays used/total memory allocated to the
- * JVM and allows for running the garbage collector (this file was
- * initially written by Auditop, it is to be re-written someday)
+ * Class <code>MemoryMeter</code> encapsulates the display of a linear memory
+ * meter in KB (both used and total), together with a garbage-collection
+ * button.
  *
- * @author Auditop SA. http://www.auditop.com
+ * <P>There is a alarm threshold that triggers a color switch to red whenever
+ * the used memory exceeds the threshold.
+ *
+ * @author Herv&eacute Bitteur
  * @version $Id$
  */
 public class MemoryMeter
@@ -24,60 +33,35 @@ public class MemoryMeter
 {
     //~ Static variables/initializers -------------------------------------
 
-    /**
-     * Default display interval in millis
-     */
-    public static int DEFAULT_DISPLAY_INTERVAL = 2000;
+    /** Default display period, in milli-seconds : {@value} */
+    public static final int DEFAULT_DISPLAY_PERIOD = 2000;
 
-    /**
-     * Default alarm threshold
-     */
-    public static int MAX_MEMORY_ALARM_THRESHOLD = 49152;
+    /** Default alarm threshold, in KB : {@value} */
+    public static final int DEFAULT_ALARM_THRESHOLD = 40960;
 
     //~ Instance variables ------------------------------------------------
 
-    /**
-     * Description of the Field
-     */
-    private JProgressBar pbMemory = new JProgressBar();
+    // Progress bar
+    private JProgressBar progressBar = new JProgressBar();
 
-    /**
-     * Description of the Field
-     */
-    private JButton btnGC = new JButton();
+    // Current display period
+    private int displayPeriod = DEFAULT_DISPLAY_PERIOD;
 
-    /**
-     * display interval in millis
-     */
-    private int m_displayInterval = DEFAULT_DISPLAY_INTERVAL;
-    private int m_alarmThreshold = MAX_MEMORY_ALARM_THRESHOLD;
+    // Current alarm threshold
+    private int alarmThreshold = DEFAULT_ALARM_THRESHOLD;
 
-    /**
-     * Last total memory detected, used to optimize the display
-     */
-    private int m_lastTotalKb = 0;
+    // Last values for used and total memory, in order to save on display
+    private int lastUsed;
+    private int lastTotal;
 
-    /**
-     * Last used memory detected, used to optimize the display
-     */
-    private int m_lastUsedKb = 0;
+    // Default foreground color, when under alarm threshold
+    private Color defaultForeground;
 
-    /**
-     * Thread for displaying the memory usage
-     */
-    private Thread m_memoryDisplayThread;
+    // Flag on monitoring activity
+    private volatile boolean monitoring;
 
-    /**
-     * Runnable that displays the memory usage
-     */
-    private Runnable m_memoryDisplayer;
-
-    /**
-     * True if currently displaying memory usage
-     */
-    private volatile boolean m_displayingMemory;
-    private boolean m_displayActive = false;
-    private Color m_defaultForeColor;
+    // Runnable that displays the memory usage
+    private Runnable displayer;
 
     //~ Constructors ------------------------------------------------------
 
@@ -85,12 +69,48 @@ public class MemoryMeter
     // MemoryMeter //
     //-------------//
     /**
-     * Constructor for the MemoryMeter object
+     * Basic Memory Meter, with default alarm threshold and display period.
      */
     public MemoryMeter ()
     {
+        this(null);
+    }
+
+    //-------------//
+    // MemoryMeter //
+    //-------------//
+    /**
+     * Basic Memory Meter, with default alarm threshold and display period,
+     * and specific Icon for garbage collectore button
+     *
+     * @param buttonIcon Specific icon for garbage collector
+     */
+    public MemoryMeter (Icon buttonIcon)
+    {
+        this(buttonIcon,
+             DEFAULT_DISPLAY_PERIOD,
+             DEFAULT_ALARM_THRESHOLD);
+    }
+
+    //-------------//
+    // MemoryMeter //
+    //-------------//
+    /**
+     * Memory Meter, with all parameters.
+     *
+     * @param buttonIcon     Specific icon for garbage collector
+     * @param displayPeriod  Time period, in milliseconds, between displays
+     * @param alarmThreshold Memory threshold to trigger alarm
+     */
+    public MemoryMeter (Icon buttonIcon,
+                        int  displayPeriod,
+                        int  alarmThreshold)
+    {
+        setDisplayPeriod(displayPeriod);
+        setAlarmThreshold(alarmThreshold);
+
         try {
-            jbInit();
+            defineUI(buttonIcon);
             initialize();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -102,197 +122,168 @@ public class MemoryMeter
     //-------------------//
     // setAlarmThreshold //
     //-------------------//
-    public void setAlarmThreshold (int newAlarmThreshold)
+    /**
+     * Modify the alarm threshold
+     *
+     * @param alarmThreshold the new alarm threshold, expressed in KB
+     */
+    public void setAlarmThreshold (int alarmThreshold)
     {
-        m_alarmThreshold = newAlarmThreshold;
+        this.alarmThreshold = alarmThreshold;
     }
 
     //-------------------//
     // getAlarmThreshold //
     //-------------------//
+    /**
+     * Report the current alarm threshold
+     *
+     * @return the current alarm threshold
+     */
     public int getAlarmThreshold ()
     {
-        return m_alarmThreshold;
+        return alarmThreshold;
     }
 
-    //--------------------//
-    // setDisplayInterval //
-    //--------------------//
-    public void setDisplayInterval (int newDisplayInterval)
-    {
-        m_displayInterval = newDisplayInterval;
-    }
-
-    //--------------------//
-    // getDisplayInterval //
-    //--------------------//
-    public int getDisplayInterval ()
-    {
-        return m_displayInterval;
-    }
-
-    //--------------------//
-    // displayMemoryUsage //
-    //--------------------//
+    //------------------//
+    // setDisplayPeriod //
+    //------------------//
     /**
-     * Invokes the memory display through the Swing thread
+     * Modify the current display period
+     *
+     * @param displayPeriod the new display period, expressed in
+     * milliseconds
      */
-    public void displayMemoryUsage ()
+    public void setDisplayPeriod (int displayPeriod)
     {
-        SwingUtilities.invokeLater(m_memoryDisplayer);
+        this.displayPeriod = displayPeriod;
     }
 
-    //----------------//
-    // stopDisplaying //
-    //----------------//
-    public void stopDisplaying ()
+    //------------------//
+    // getDisplayPeriod //
+    //------------------//
+    /**
+     * Report the current display period
+     *
+     * @return the current display period
+     */
+    public int getDisplayPeriod ()
     {
-        m_displayingMemory = false;
+        return displayPeriod;
     }
 
-    //-----------------------//
-    // btnGC_actionPerformed //
-    //-----------------------//
-    void btnGC_actionPerformed (ActionEvent e)
+    //---------------//
+    // displayMemory //
+    //---------------//
+    /**
+     * Trigger an immediate memory display
+     */
+    public void displayMemory ()
     {
-        System.gc();
-        System.runFinalization();
-        System.gc();
-        displayMemoryUsage();
+        SwingUtilities.invokeLater(displayer);
+    }
+
+    //------//
+    // stop //
+    //------//
+    /**
+     * Stop the memory monitoring
+     */
+    public void stop ()
+    {
+        monitoring = false;
     }
 
     //------------//
     // initialize //
     //------------//
-    /**
-     * Initializes the memory display
-     */
-    void initialize ()
+    private void initialize ()
     {
-        m_memoryDisplayer = new Runnable()
+        // Displayer
+        displayer = new Runnable()
         {
             public void run ()
             {
-                int totalKb = (int) Runtime.getRuntime().totalMemory() / 1024;
-                int usedKb = (int) (Runtime.getRuntime().totalMemory()
-                                    - Runtime.getRuntime().freeMemory()) / 1024;
+                int total = (int) Memory.total()      / 1024;
+                int used  = (int) (Memory.occupied()) / 1024;
 
-                if ((totalKb != m_lastTotalKb)
-                    || (usedKb != m_lastUsedKb)) {
-                    pbMemory.setMaximum(totalKb);
-                    pbMemory.setValue(usedKb);
-                    pbMemory.setString("" + usedKb + "Kb / " + totalKb
-                                       + "Kb");
-                    m_lastTotalKb = totalKb;
-                    m_lastUsedKb = usedKb;
+                if ((total != lastTotal) || (used != lastUsed)) {
+                    progressBar.setMaximum(total);
+                    progressBar.setValue(used);
+                    progressBar.setString(String.format("%,d KB / %,d KB",
+                                                        used, total));
+                    lastTotal = total;
+                    lastUsed = used;
 
-                    if (usedKb >= getAlarmThreshold()) {
-                        pbMemory.setForeground(Color.red);
+                    if (used > getAlarmThreshold()) {
+                        progressBar.setForeground(Color.red);
                     } else {
-                        pbMemory.setForeground(m_defaultForeColor);
+                        progressBar.setForeground(defaultForeground);
                     }
                 }
-
-                m_displayActive = false;
             }
         };
 
-        m_memoryDisplayThread = new Thread()
-        {
-            public void run ()
+        // Monitoring thread
+        Thread monitorThread = new Thread()
             {
-                m_displayingMemory = true;
+                public void run ()
+                {
+                    monitoring = true;
 
-                while (m_displayingMemory) {
-                    if (!m_displayActive) {
-                        m_displayActive = true;
-                        displayMemoryUsage();
-                    }
+                    while (monitoring) {
+                        displayMemory();
 
-                    try {
-                        sleep(m_displayInterval);
-                    } catch (InterruptedException ex1) {
-                        m_displayingMemory = false;
+                        try {
+                            sleep(displayPeriod);
+                        } catch (InterruptedException ex1) {
+                            monitoring = false;
+                        }
                     }
                 }
-            }
-        };
-
-        m_memoryDisplayThread.setDaemon(true);
-        m_memoryDisplayThread.setPriority(Thread.MIN_PRIORITY);
-        m_memoryDisplayThread.start();
+            };
+        monitorThread.setPriority(Thread.MIN_PRIORITY);
+        monitorThread.start();
     }
 
-    //--------//
-    // jbInit //
-    //--------//
-    /**
-     * Initializes the UI
-     */
-    void jbInit ()
+    //----------//
+    // defineUI //
+    //----------//
+    private void defineUI (Icon buttonIcon)
     {
-        this.setLayout(new GridBagLayout());
+        setLayout(new BorderLayout());
 
-        pbMemory.setToolTipText("Used memory of total memory");
-        pbMemory.setString("0Kb / 0Kb");
-        pbMemory.setStringPainted(true);
-        this.add(pbMemory,
-                 new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
-                                        GridBagConstraints.CENTER,
-                                        GridBagConstraints.HORIZONTAL,
-                                        new Insets(0, 0, 0, 0), 0, 0));
+        // Progress bar
+        progressBar.setToolTipText("Used memory of total memory");
+        progressBar.setString("0KB / 0KB");
+        progressBar.setStringPainted(true);
+        add(progressBar, BorderLayout.CENTER);
 
-        btnGC.setBorder(BorderFactory.createRaisedBevelBorder());
-        btnGC.setToolTipText("Run Garbage Collector");
+        // Garbage button
+        JButton button = new JButton();
+        button.setBorder(BorderFactory.createRaisedBevelBorder());
+        button.setToolTipText("Run Garbage Collector");
 
-        //         try {
-        //             URL iconUrl = new URL("file:///u:/soft/omr/lib/ico/Delete16.gif");
-//         final URL iconUrl = MemoryMeter.class.getResource("/icons/Delete16.gif");
-//         btnGC.setIcon(new ImageIcon(iconUrl));
-        final URL iconUrl = MemoryMeter.class.getResource("/icons/Delete16.gif");
-        btnGC.setIcon(IconUtil.buttonIconOf("general/Delete"));
-
-        //         } catch (MalformedURLException ex) {
-        //         }
-        btnGC.setMargin(new Insets(0, 0, 0, 0));
-        btnGC.addActionListener(new MemoryMeter_btnGC_actionAdapter(this));
-        this.add(btnGC,
-                 new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.WEST,
-                                        GridBagConstraints.NONE,
-                                        new Insets(0, 0, 0, 0), 0, 0));
-
-        m_defaultForeColor = pbMemory.getForeground();
-    }
-
-    //---------------------------------//
-    // MemoryMeter_btnGC_actionAdapter //
-    //---------------------------------//
-    private class MemoryMeter_btnGC_actionAdapter
-            implements java.awt.event.ActionListener
-    {
-        //~ Instance variables --------------------------------------------
-
-        MemoryMeter adaptee;
-
-        //~ Constructors --------------------------------------------------
-
-        //---------------------------------//
-        // MemoryMeter_btnGC_actionAdapter //
-        //---------------------------------//
-        MemoryMeter_btnGC_actionAdapter (MemoryMeter adaptee)
-        {
-            this.adaptee = adaptee;
+        if (buttonIcon != null) {
+            button.setIcon(buttonIcon);
+        } else {
+            button.setText("GC");
         }
 
-        //~ Methods -------------------------------------------------------
+        button.addActionListener
+            (new ActionListener() {
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        System.gc();
+                        System.runFinalization();
+                        System.gc();
+                        displayMemory();
+                    }
+                }
+             );
+        add(button, BorderLayout.EAST);
 
-        //-----------------//
-        // actionPerformed //
-        //-----------------//
-        public void actionPerformed (ActionEvent e)
-        {
-            adaptee.btnGC_actionPerformed(e);
-        }
+        // Remember the default foreground color
+        defaultForeground = progressBar.getForeground();
     }
 }
