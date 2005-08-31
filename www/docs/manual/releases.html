@@ -46,6 +46,14 @@
 		    <TH>Introduction</TH>
 		    <TD>
 			<UL>
+			    <LI>This is a release still focused on
+				improvement of existing features
+				rather than functional extension.</LI>
+			    <LI>In particular, the attempt to handle
+				clutter as a recognized glyph shape in
+				the neural network (to avoid false
+				positives) has been postponed to next
+				release.</LI>
 			</UL>
 		    </TD>
 		</TR>
@@ -77,6 +85,12 @@
 				operation is launched automatically
 				when a color image is detected at load
 				time.</LI>
+			    <LI>Glyphs : Added a Deassign button in
+				the Glyph board, with action depending
+				upon the glyph at hand (for example
+				deassigning a stem has important
+				consequences, more than for a
+				standalone symbol).</LI>
 			</UL>
 		    </TD>
 		</TR>
@@ -85,6 +99,9 @@
 		    <TH>Bug Fixes</TH>
 		    <TD>
 			<UL>
+			    <LI>GUI : No more toggle button is active
+				for the Bars step, since there were no
+				specific Sections to handle.</LI>
 			    <LI>Documentation : Fixed the use of CVS
 				tags in java files (for version
 				information) which were mistaken with
@@ -98,11 +115,24 @@
 		    <TH>Known Issues</TH>
 		    <TD>
 			<UL>
+			    <LI>Memory : This is still a memory leak,
+				since even after current Sheet has
+				been closed, there is still a Sheet
+				instance referenced with Score,
+				related views, etc... Workaround if
+				several Sheets have to be processed
+				interactively is to exit the
+				application after each
+				processing.</LI>
 			    <LI>Documentation : Because of JavaScript
 				building of doc frames, the "Back" and
 				"Forward" commands trigger duplicate
 				frame loads. Function is OK, but this
 				flickering should be avoided.</LI>
+			    <LI>Java : There is still half a dozen of
+				compiler warnings related to unchecked
+				generics assignments, to be cleaned in
+				a next release.</LI>
 			</UL>
 		    </TD>
 		</TR>
@@ -112,9 +142,9 @@
 		    <TD>
 			<UL>
 			    <LI>Verticals : Managing of stems is done
-			    as much as possible like other glyphs,
-			    since managing separate lists in synch was
-			    error-prone.</LI>
+				as much as possible like other glyphs,
+				since managing separate lists in synch
+				was too much error-prone.</LI>
 			</UL>
 		    </TD>
 		</TR>
