@@ -108,12 +108,12 @@ public class GlyphInspector
                     if (vote != null) {
                         glyph.setShape(vote);
                         acceptNb++;
-                        if (glyph.isKnown()) {
-                            knownNb++;
-                        } else if (vote == Shape.NOISE) {
+                        if (vote == Shape.NOISE) {
                             noiseNb++;
                         } else if (vote == Shape.CLUTTER) {
                             clutterNb++;
+                        } else {
+                            knownNb++;
                         }
                     }
                 }
@@ -266,7 +266,7 @@ public class GlyphInspector
         // Sort unknown glyphs by decreasing weight
         List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs().size());
         for (Glyph glyph : system.getGlyphs()) {
-            if (!glyph.isKnown()) {
+            if (!glyph.isWellKnown()) {
                 glyphs.add(glyph);
             }
         }
@@ -284,7 +284,7 @@ public class GlyphInspector
         for (Glyph glyph : glyphs) {
             index++;
             // Since the glyphs are modified on the fly ...
-            if (glyph.isKnown()) {
+            if (glyph.isWellKnown()) {
                 continue;
             }
 
@@ -296,7 +296,7 @@ public class GlyphInspector
             // Consider neighboring glyphs, which are glyphs whose contour
             // intersect the contour of glyph at hand
             for (Glyph g : glyphs.subList(index +1, glyphs.size())) {
-                if (g.isKnown()) {
+                if (g.isWellKnown()) {
                     continue;
                 }
 
@@ -410,7 +410,7 @@ public class GlyphInspector
                 Shape vote = GlyphNetwork.getInstance().vote(glyph);
                 if (vote != null) {
                     glyph.setShape(vote);
-                    if (glyph.isKnown()) {
+                    if (glyph.isWellKnown()) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("New symbol " + glyph);
                         }
@@ -429,7 +429,7 @@ public class GlyphInspector
             Glyph glyph = null;
             for (GlyphSection section : stem.getMembers()) {
                 glyph = section.getGlyph();
-                if (glyph != null && glyph.isKnown()) {
+                if (glyph != null && glyph.isWellKnown()) {
                     known = true;
                     break;
                 }
@@ -500,12 +500,31 @@ public class GlyphInspector
         glyph.destroy(cutSections);
     }
 
+    //---------------------------//
+    // useBothEvaluatorsOnLeaves //
+    //---------------------------//
+    /**
+     * Tell whether both evaluators should be used in common, starting from
+     * leaves. This is recommanded once the evaluators are sufficiently
+     * trained, but should be set to false in initial training actions.
+     *
+     * @return true if both must be used
+     */
+    public static boolean useBothEvaluatorsOnLeaves()
+    {
+        return constants.useBothOnLeaves.getValue();
+    }
+
     //-----------//
     // Constants // -------------------------------------------------------
     //-----------//
     private static class Constants
         extends ConstantSet
     {
+        Constant.Boolean useBothOnLeaves = new Constant.Boolean
+                (true,
+                 "Should we use both evaluators for Leaves and on ?");
+
         Constant.Boolean useNetwork = new Constant.Boolean
                 (true,
                  "Should we use the Neural Network evaluator ?");
