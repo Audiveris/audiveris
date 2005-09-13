@@ -72,30 +72,20 @@ public class StickView
         this.filterMonitor = filterMonitor;
     }
 
-    //--------------//
-    // pointUpdated //
-    //--------------//
+    //---------------//
+    // pointSelected //
+    //---------------//
     @Override
-    public void pointUpdated (MouseEvent e,
-                              Point pt)
+        public void pointSelected (MouseEvent e,
+                                   Point pt)
     {
         // Erase the previous stick info
         if (filterMonitor != null) {
             filterMonitor.tellHtml(null);
         }
 
-        super.pointUpdated(e, pt);
-    }
-
-    //---------------//
-    // pointSelected //
-    //---------------//
-    @Override
-    public void pointSelected (MouseEvent e,
-                               Point pt)
-    {
-        // First, provide info related to designated point
-        pointUpdated(e, pt);
+        // Provide info related to designated point
+        super.pointSelected(e, pt);
 
         // Then, look for a stick selection
         final StickSection section = (StickSection) lookupSection(pt);

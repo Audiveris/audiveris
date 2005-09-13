@@ -287,15 +287,15 @@ public class LagView <L extends Lag     <L, S>,
         return lookupSection(lag.getVertices(), rect);
     }
 
-    //--------------//
-    // pointUpdated //
-    //--------------//
+    //---------------//
+    // pointSelected //
+    //---------------//
     @Override
-    public void pointUpdated (MouseEvent e,
-                              Point      pt)
+        public void pointSelected (MouseEvent e,
+                                   Point      pt)
     {
         // Update pixel board if any
-        super.pointUpdated(e, pt);
+        super.pointSelected(e, pt);
 
         if (countObservers() > 0) {
 
