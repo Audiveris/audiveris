@@ -378,7 +378,6 @@ public class Sheet
 
                     getGlyphInspector().processVerticals();
                     result = new Boolean(true);
-                    //getGlyphInspector().evaluateGlyphs(/*common=>*/ false);
                 }
 
                 public void displayUI ()
@@ -401,7 +400,8 @@ public class Sheet
 
                     getGlyphInspector().processLeaves();
                     result = new Boolean(true);
-                    getGlyphInspector().evaluateGlyphs(/*common=>*/ false);
+                    getGlyphInspector().evaluateGlyphs
+                    (GlyphInspector.useBothEvaluatorsOnLeaves());
                 }
 
                 public void displayUI ()
@@ -424,7 +424,8 @@ public class Sheet
 
                     getGlyphInspector().processCompounds();
                     result = new Boolean(true);
-                    getGlyphInspector().evaluateGlyphs(/*common=>*/ false);
+                    getGlyphInspector().evaluateGlyphs
+                    (GlyphInspector.useBothEvaluatorsOnLeaves());
                 }
 
                 public void displayUI ()
@@ -446,7 +447,8 @@ public class Sheet
 
                     getGlyphInspector().processUndueStems();
                     result = new Boolean(true);
-                    getGlyphInspector().evaluateGlyphs(/*common=>*/ false);
+                    getGlyphInspector().evaluateGlyphs
+                    (GlyphInspector.useBothEvaluatorsOnLeaves());
                 }
 
                 public void displayUI ()
