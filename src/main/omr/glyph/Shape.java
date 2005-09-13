@@ -54,6 +54,7 @@ public enum Shape
 
     // Pure physical stuff
     //
+        /*-----*/ CLUTTER("Pure garbage"),
         /*-----*/ DOT("General dot shape"),
         /*-----*/ DASH("General dash shape"),
         /*-----*/ BEAM("Beam between two stems"),
@@ -319,7 +320,8 @@ public enum Shape
         /*1D1AF*/ PEDAL_UP_MARK,        // *
         /*1D1B0*/ // HALF_PEDAL_MARK,
 
-         // ===============================================================
+
+        // ===============================================================
          // Pure Logical shapes, that cannot be inferred only from their
          // physical characteristics.
          // ===============================================================
@@ -350,7 +352,6 @@ public enum Shape
         //
         /*-----*/ NOISE("Too small stuff"),
         /*-----*/ LEDGER("Ledger"),
-        /*-----*/ CLUTTER("Pure garbage"),
         /*-----*/ STAFF_LINE("Staff Line"),
         /*-----*/ THICK_BAR_LINE("Thick bar line"),
         /*-----*/ THIN_BAR_LINE("Thin bar line"),
@@ -813,7 +814,7 @@ public enum Shape
 
     // Predefined shape ranges
     //
-    public static final Range Physicals     = new Range(EnumSet.range(DOT, FERMATA_BELOW_BEND));
+    public static final Range Physicals     = new Range(EnumSet.range(CLUTTER, FERMATA_BELOW_BEND));
     //
     public static final Range Bars          = new Range(EnumSet.range(DAL_SEGNO, BRACKET));
     public static final Range Clefs         = new Range(EnumSet.range(G_CLEF, F_CLEF_OTTAVA_BASSA));
