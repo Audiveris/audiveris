@@ -626,9 +626,9 @@ public class LinesBuilder
                 return;
             }
             if ((rect.width != 0) || (rect.height != 0)) {
-                rectangleUpdated(null, rect);
+                rectangleSelected(null, rect);
             } else {
-                pointUpdated(null, rubber.getCenter());
+                pointSelected(null, rubber.getCenter());
             }
         }
     }

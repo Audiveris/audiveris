@@ -184,18 +184,18 @@ public class PictureView
         // render //
         //--------//
         @Override
-        public void render (Graphics g)
+            public void render (Graphics g)
         {
             // Render the picture image
             sheet.getPicture().render(g, getZoom().getRatio());
         }
 
-        //--------------//
-        // pointUpdated //
-        //--------------//
+        //---------------//
+        // pointSelected //
+        //---------------//
         @Override
-        public void pointUpdated (MouseEvent e,
-                                  Point pt)
+            public void pointSelected (MouseEvent e,
+                                       Point pt)
         {
             // We use a specific version which displays the pixel level
             notifyObservers(pt, getPixel(pt));
