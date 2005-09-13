@@ -107,10 +107,6 @@ public class ScrollView
         // Display the view in the scrollpane
         setViewportView(view);
 
-        // Hack to force scroll bar computation
-        //getViewport().setViewSize(new Dimension(0, 0));
-        ////////HB HB getViewport().setViewSize(view.getModelSize());
-
         // At the end, to avoid too early setting of the zoom ratio
         this.view = view;
     }
@@ -300,25 +296,5 @@ public class ScrollView
         } else {
             return false;
         }
-    }
-
-    //--------------//
-    // viewSelected //
-    //--------------//
-    /**
-     * Method (to be overridden) called when the view gets selected
-     */
-    public void viewSelected()
-    {
-    }
-
-    //----------------//
-    // viewDeselected //
-    //----------------//
-    /**
-     * Method (to be overridden) called when the view gets de-selected
-     */
-    public void viewDeselected()
-    {
     }
 }
