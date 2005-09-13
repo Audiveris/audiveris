@@ -205,11 +205,38 @@ public class GlyphLagView
     // pointSelected //
     //---------------//
     @Override
-    public void pointSelected (MouseEvent e,
-                               Point pt)
+        public void pointSelected (MouseEvent e,
+                                   Point pt)
     {
         // First, provide info related to designated point
         super.pointSelected(e, pt);
+
+        // Then, look for a glyph selection
+        Glyph glyph = null;
+        GlyphSection section = lookupSection(pt);
+
+        if (section != null) {
+            glyph = section.getGlyph();
+
+            if (glyph != null) {
+                glyphSelected(glyph, pt);
+            }
+        }
+
+        notifyObservers(glyph);
+    }
+
+    //------------//
+    // pointAdded //
+    //------------//
+    @Override
+        public void pointAdded (MouseEvent e,
+                                   Point pt)
+    {
+        logger.info("GlyphLagView pointAdded");
+
+        // First, provide info related to designated point
+        super.pointAdded(e, pt);
 
         // Then, look for a glyph selection
         final GlyphSection section = lookupSection(pt);
@@ -218,28 +245,9 @@ public class GlyphLagView
             Glyph glyph = section.getGlyph();
 
             if (glyph != null) {
-                glyphSelected(glyph, pt);
+                glyphAdded(glyph, pt);
             }
         }
-    }
-
-    //--------------//
-    // pointUpdated //
-    //--------------//
-    @Override
-    public void pointUpdated (MouseEvent e,
-                              Point pt)
-    {
-        super.pointUpdated(e, pt);
-
-        // Glyph info
-        Glyph glyph = null;
-        GlyphSection section = lookupSection(pt);
-        if (section != null) {
-            glyph = section.getGlyph();
-        }
-
-        notifyObservers(glyph);
     }
 
     //---------------//
@@ -254,6 +262,22 @@ public class GlyphLagView
      */
     protected void glyphSelected (Glyph glyph,
                                   Point pt)
+    {
+        // Empty by default
+    }
+
+    //------------//
+    // glyphAdded //
+    //------------//
+    /**
+     * Meant to be overridden by subclasses when a real processing is
+     * desired for the added glyph
+     *
+     * @param glyph the added glyph
+     * @param pt the designated point
+     */
+    protected void glyphAdded (Glyph glyph,
+                               Point pt)
     {
         // Empty by default
     }
