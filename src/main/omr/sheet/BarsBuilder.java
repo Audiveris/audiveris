@@ -121,6 +121,9 @@ public class BarsBuilder
     // Lag view on bars, if so desired
     private MyLagView lagView;
 
+    // Related glyph board
+    private GlyphBoard glyphBoard;
+
     // Suite of checks
     private BarCheckSuite suite;
 
@@ -664,11 +667,12 @@ public class BarsBuilder
             knownIds.add(new Integer(bar.getStick().getId()));
         }
 
+        glyphBoard = new GlyphBoard(vLag.getLastGlyphId(), knownIds);
         BoardsPane boardsPane = new BoardsPane
             (lagView,
              new PixelBoard(),
              new SectionBoard(vLag.getLastVertexId()),
-             new GlyphBoard(vLag.getLastGlyphId(), knownIds),
+             glyphBoard,
              new FilterBoard());
 
         // Create a hosting frame for the view
@@ -865,6 +869,11 @@ public class BarsBuilder
                     }
                 }
             }
+        }
+
+        // Update the glyph board
+        if (glyphBoard != null) {
+            glyphBoard.update(bar.getStick());
         }
 
         // Update the view accordingly
