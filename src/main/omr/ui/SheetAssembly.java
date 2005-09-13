@@ -85,7 +85,7 @@ public class SheetAssembly
         sheet.setAssembly(this);
 
         // Allocate all surrounding entities
-        slider = new LogSlider(2, LogSlider.VERTICAL, -3, 4, 0);
+        slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 4, 0);
         slider.setToolTipText("Adjust Zoom Ratio");
 
         zoom = new Zoom(slider, 1);     // Default ratio set to 1
@@ -293,12 +293,6 @@ public class SheetAssembly
 
             // Restore proper boardspane
             updateBoards();
-
-//             // Chance for the selected and the de-selected views to add
-//             their own processing.
-
-//             scrollView.viewSelected();
-//             previousScrollView.viewDeselected();
 
             previousScrollView = scrollView;
         }
