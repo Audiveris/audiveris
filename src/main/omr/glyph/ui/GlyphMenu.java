@@ -47,6 +47,7 @@ public class GlyphMenu
     private final JMenuItem     similarItem;
 
     private final JMenu assignMenu;
+    private final JMenu compoundMenu;
 
     //~ Constructors ------------------------------------------------------
 
@@ -75,6 +76,44 @@ public class GlyphMenu
         deassignItem = add(deassignAction);
         deassignItem.setToolTipText("Deassign selected glyph(s)");
 
+        // Manually assign a shape
+        assignMenu = new JMenu("Force to");
+        Shape.addShapeItems
+            (assignMenu,
+             new ActionListener()
+             {
+                 public void actionPerformed (ActionEvent e)
+                 {
+                     JMenuItem source = (JMenuItem) e.getSource();
+                     Shape shape = Shape.valueOf(source.getText());
+                     pane.assignShape(shape,
+                                      /* asGuessed => */ false,
+                                      /* compound => */ false);
+                 }
+             });
+        assignMenu.setToolTipText("Manually force an assignment");
+        add(assignMenu);
+
+        addSeparator();
+
+        // Build a compound
+        compoundMenu = new JMenu("Build compound");
+        Shape.addShapeItems
+            (compoundMenu,
+             new ActionListener()
+             {
+                 public void actionPerformed (ActionEvent e)
+                 {
+                     JMenuItem source = (JMenuItem) e.getSource();
+                     Shape shape = Shape.valueOf(source.getText());
+                     pane.assignShape(shape,
+                                      /* asGuessed => */ false,
+                                      /* compound => */ true);
+                 }
+             });
+        compoundMenu.setToolTipText("Manually build a compound");
+        add(compoundMenu);
+
         addSeparator();
 
         // Dump current glyph
@@ -86,24 +125,6 @@ public class GlyphMenu
         // Display all glyphs of the same shape
         similarItem = add(similarAction);
         similarItem.setToolTipText("Display all similar glyphs");
-
-        addSeparator();
-
-        // Manually assign a shape
-        assignMenu = new JMenu("Force to");
-        Shape.addShapeItems
-            (assignMenu,
-             new ActionListener()
-             {
-                 public void actionPerformed (ActionEvent e)
-                 {
-                     JMenuItem source = (JMenuItem) e.getSource();
-                     Shape shape = Shape.valueOf(source.getText());
-                     pane.assignShape(shape, false);
-                 }
-             });
-        assignMenu.setToolTipText("Manually force an assignment");
-        add(assignMenu);
     }
 
     //~ Methods -----------------------------------------------------------
@@ -118,6 +139,9 @@ public class GlyphMenu
      */
     public void updateForGlyph (Glyph glyph)
     {
+        // No compound for a single glyph
+        compoundMenu.setEnabled(false);
+
         // Confirm or Assign
         if (glyph.getShape() == null) {
             if (glyph.getGuess() == null) {
@@ -159,7 +183,7 @@ public class GlyphMenu
                 }
             }
         }
-        assignMenu.setText("Force to");
+        assignMenu.setText("Force assignment to");
 
         // Dump
         dumpItem.setText("Dump glyph");
@@ -228,7 +252,16 @@ public class GlyphMenu
         }
 
         // Assign
-        assignMenu.setText("Build " + glyphs.size() + "-glyph Compound as");
+        assignMenu.setText("Assign each of these " + glyphs.size() + " glyphs as");
+
+        // Compound
+        if (glyphs.size() > 1) {
+            compoundMenu.setEnabled(true);
+            compoundMenu.setText("Build one " + glyphs.size() + "-glyph Compound as");
+        } else {
+            compoundMenu.setEnabled(false);
+            compoundMenu.setText("No compound");
+        }
 
         // Dump
         dumpItem.setText("Dump " + glyphs.size() + " glyphs");
@@ -286,7 +319,9 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            pane.assignShape(targetShape, true);
+            pane.assignShape(targetShape,
+                             /* asGuessed => */ true,
+                             /* compound => */ false);
         }
     }
 
