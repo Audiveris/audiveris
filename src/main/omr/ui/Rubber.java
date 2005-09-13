@@ -12,10 +12,12 @@ package omr.ui;
 
 import omr.util.Logger;
 
-import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.event.*;
+
+import static java.awt.event.InputEvent.*;
 
 /**
  * Class <code>Rubber</code> keeps track of nothing more than a rectangle,
@@ -103,9 +105,6 @@ public class Rubber
     // The normalized unzoomed rubber rectangle, inside the component, with
     // x & y at the top left and positive width & height
     private Rectangle rect;
-
-    // Previous value of the rubber rectangle
-    private Rectangle oldRect;
 
     //~ Constructors ------------------------------------------------------
 
@@ -272,12 +271,8 @@ public class Rubber
             logger.debug("mouseDragged");
         }
 
-        if (isRubberWanted(e)) {
-            updateSize(e);
-            if (mouseMonitor != null) {
-                mouseMonitor.rectangleUpdated(e, rect);
-            }
-        } else if (isDragWanted(e)) {
+        if (isDragWanted(e)) {
+            //logger.info("Dragging");
             final Rectangle vr = component.getVisibleRect();
             vr.setBounds(vr.x + rawRect.x - e.getX(),
                          vr.y + rawRect.y - e.getY(),
@@ -290,10 +285,11 @@ public class Rubber
                         component.scrollRectToVisible(vr);
                     }
                 });
-        } else {
-            reset(e);
+        } else if (isRubberWanted(e)) {
+            //logger.info("Modifying rectangle");
+            updateSize(e);
             if (mouseMonitor != null) {
-                mouseMonitor.pointUpdated(e, getCenter());
+                mouseMonitor.rectangleSelected(e, rect);
             }
         }
     }
@@ -309,16 +305,24 @@ public class Rubber
     public void mousePressed (MouseEvent e)
     {
         if (logger.isDebugEnabled()) {
-            logger.debug("mousePressed");
+            logger.debug("\nmousePressed : " + InputEvent.getModifiersExText(e.getModifiersEx()));
         }
 
         reset(e);
 
         if (mouseMonitor != null) {
-            if (isSelectionWanted(e)) {
-                mouseMonitor.pointSelected(e, getCenter());
+            if (isDragWanted(e)) {
+                //logger.info("Rubber drag starting");
+                // Nothing
+            } else if (isAdditionWanted(e)) {
+                //logger.info("Rubber addition");
+                mouseMonitor.pointAdded(e, getCenter());
+            } else if (isContextWanted(e)) {
+                //logger.info("Rubber context");
+                mouseMonitor.contextSelected(e, getCenter());
             } else {
-                mouseMonitor.pointUpdated(e, getCenter());
+                //logger.info("Rubber selection");
+                mouseMonitor.pointSelected(e, getCenter());
             }
         }
     }
@@ -337,19 +341,15 @@ public class Rubber
             logger.debug("mouseReleased");
         }
 
-        if (isRezoomWanted(e)) {
-            updateSize(e);
-            //zoomToRectangle();
-            if (mouseMonitor != null) {
+        if (mouseMonitor != null) {
+            if (isRezoomWanted(e)) {
+                updateSize(e);
+                //zoomToRectangle();
                 mouseMonitor.rectangleZoomed(e, rect);
-            }
-        } else if (isRubberWanted(e)) {
-            updateSize(e);
-            if (mouseMonitor != null) {
+            } else if (rect != null && rect.width != 0 && rect.height != 0) {
+                updateSize(e);
                 mouseMonitor.rectangleSelected(e, rect);
-            }
-        } else {
-            if (isDragWanted(e)) {
+            } else if (isDragWanted(e)) {
                 Rectangle vr = component.getVisibleRect();
                 rawRect.setBounds(vr.x + (vr.width / 2),
                                   vr.y + (vr.height / 2), 0, 0);
@@ -378,30 +378,19 @@ public class Rubber
         if (rect != null) {
             g.setXORMode(Color.white);
 
-            // First, draw horizontal & vertical rules
-            g.setColor(ruleColor);
-            Rectangle vr = component.getVisibleRect();
-            int x = scaled(rect.x + rect.width/2);
-            int y = scaled(rect.y + rect.height/2);
-            g.drawLine(x, vr.y, x, vr.y + vr.height);
-            g.drawLine(vr.x, y, vr.x + vr.width, y);
-
-            // Second, draw the rubber rectangle itself
-            g.setColor(Color.black);
             if (rect.width != 0 || rect.height != 0) {
                 // This is a true rectangle
-                //g.setXORMode(Color.white);
+                g.setColor(Color.black);
                 g.drawRect(scaled(rect.x), scaled(rect.y),
                            scaled(rect.width), scaled(rect.height));
             } else {
-                // This is just a point
-                //g.setXORMode(Color.white);
-                int zx = scaled(rect.x);
-                int zy = scaled(rect.y);
-                // Horizontal
-                g.drawLine(zx - leg, zy, zx + leg, zy);
-                // Vertical
-                g.drawLine(zx, zy - leg, zx, zy + leg);
+                // This is just a point, draw horizontal & vertical rules
+                g.setColor(ruleColor);
+                Rectangle vr = component.getVisibleRect();
+                int x = scaled(rect.x + rect.width/2);
+                int y = scaled(rect.y + rect.height/2);
+                g.drawLine(x, vr.y, x, vr.y + vr.height);
+                g.drawLine(vr.x, y, vr.x + vr.width, y);
             }
         }
     }
@@ -422,12 +411,6 @@ public class Rubber
             rect = new Rectangle(x, y, 0, 0);
         } else {
             rect.setBounds(x, y, 0, 0);
-        }
-
-        if (oldRect == null) {
-            oldRect = new Rectangle(rect);
-        } else {
-            oldRect.setBounds(rect);
         }
 
         if (component != null) {
@@ -455,15 +438,8 @@ public class Rubber
             } else {
                 rect.setBounds(newRect);
             }
-
-            if (oldRect == null) {
-                oldRect = new Rectangle(rect);
-            } else {
-                oldRect.setBounds(rect);
-            }
         } else {
             rect = null;
-            oldRect = null;
         }
 
         if (component != null) {
@@ -475,7 +451,7 @@ public class Rubber
         }
     }
 
-    //-- protected access -----------------------------------------------//
+    //-- protected access -------------------------------------------------
 
     //--------------//
     // isDragWanted //
@@ -491,8 +467,10 @@ public class Rubber
      */
     protected boolean isDragWanted (MouseEvent e)
     {
-        return SwingUtilities.isLeftMouseButton(e)
-               && SwingUtilities.isRightMouseButton(e);
+        int onmask = BUTTON1_DOWN_MASK | BUTTON3_DOWN_MASK;
+        int offmask = 0;
+
+        return (e.getModifiersEx() & (onmask | offmask)) == onmask;
     }
 
     //----------------//
@@ -509,7 +487,9 @@ public class Rubber
      */
     protected boolean isRezoomWanted (MouseEvent e)
     {
-        return e.isControlDown();
+        return
+            e.isControlDown() &&
+            e.isShiftDown();
     }
 
     //----------------//
@@ -526,25 +506,52 @@ public class Rubber
      */
     protected boolean isRubberWanted (MouseEvent e)
     {
-        return e.isShiftDown();
+        //return e.isShiftDown();
+        int onmask = BUTTON1_DOWN_MASK;
+        int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
+
+        return (e.getModifiersEx() & (onmask | offmask)) == onmask;
+
     }
 
-    //-------------------//
-    // isSelectionWanted //
-    //-------------------//
+    //-----------------//
+    // isContextWanted //
+    //-----------------//
     /**
-     * Predicate to check if a selection is wanted. Default is the typical
-     * pressing with Right button only.
+     * Predicate to check if a context selection is wanted. Default is the
+     * typical pressing with Right button only.
      *
      * @param e the mouse context
      *
      * @return the predicate result
      */
-    protected boolean isSelectionWanted (MouseEvent e)
+    protected boolean isContextWanted (MouseEvent e)
     {
-        return SwingUtilities.isRightMouseButton(e)
-            && !SwingUtilities.isLeftMouseButton(e);
+        return
+            SwingUtilities.isRightMouseButton(e) &&
+            !SwingUtilities.isLeftMouseButton(e);
     }
+
+    //------------------//
+    // isAdditionWanted //
+    //------------------//
+    /**
+     * Predicate to check if an additional selection is wanted. Default is
+     * the typical selection (left button), while control key is pressed.
+     *
+     * @param e the mouse context
+     *
+     * @return the predicate result
+     */
+    protected boolean isAdditionWanted (MouseEvent e)
+    {
+        return
+            !SwingUtilities.isRightMouseButton(e) &&
+            SwingUtilities.isLeftMouseButton(e) &&
+            e.isControlDown();
+    }
+
+    //-- private access ---------------------------------------------------
 
     //-----------//
     // normalize //
@@ -663,20 +670,7 @@ public class Rubber
         rawRect.setSize(e.getX() - rawRect.x, e.getY() - rawRect.y);
         normalize();
 
-        // Optimize the repaint
-//         Rectangle totalRepaint = rect.union(oldRect);
-//         component.repaint(scaled(totalRepaint.x) -leg,
-//                           scaled(totalRepaint.y) -leg,
-//                           scaled(totalRepaint.width +1) + 2*leg,
-//                           scaled(totalRepaint.height +1) + 2*leg);
-
-//         if (logger.isDebugEnabled()) {
-//             logger.debug("updateSize totalRepaint=" + totalRepaint);
-//         }
-
-        // Much simpler, and no side effect !!!
+        // Repaint the component (with the resized rectangle)
         component.repaint();
-
-        oldRect.setBounds(rect);
     }
 }
