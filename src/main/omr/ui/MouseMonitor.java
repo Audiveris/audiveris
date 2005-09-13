@@ -24,7 +24,7 @@ import java.awt.event.MouseEvent;
 public interface MouseMonitor
 {
     /**
-     * Selection (by right button clic)
+     * Selection (by left button clic)
      * @param e the mouse event
      * @param pt the selected point in model pixel coordinates
      */
@@ -32,16 +32,24 @@ public interface MouseMonitor
                         Point pt);
 
     /**
-     * Point designation (by left button clic)
+     * Selection (by left button clic + control) of an additional point
+     * @param e the mouse event
+     * @param pt the added point in model pixel coordinates
+     */
+    void pointAdded (MouseEvent e,
+                     Point pt);
+
+    /**
+     * Contextual action (by right button clic)
      * @param e the mouse event
      * @param pt the current point in model pixel coordinates
      */
-    void pointUpdated (MouseEvent e,
-                       Point pt);
+    void contextSelected (MouseEvent e,
+                          Point pt);
 
     /**
-     * Selection (by shift + right button drag) of a rectangle when mouse
-     * is released
+     * Selection (by left button drag) of a rectangle when mouse is
+     * released
      * @param e the mouse event
      * @param rect the selected rectangle in model pixel coordinates
      */
@@ -49,15 +57,7 @@ public interface MouseMonitor
                             Rectangle  rect);
 
     /**
-     * Rectangle designation (by shift + left button drag)
-     * @param e the mouse event
-     * @param rect the current rectangle in model pixel coordinates
-     */
-    void rectangleUpdated (MouseEvent e,
-                           Rectangle rect);
-
-    /**
-     * Rectangle zoom (by shift + ctrl + left button drag)
+     * Rectangle zoom (by shift + ctrl) at end of rectangle selection
      * @param e    the mouse event
      * @param rect the rectangle in model pixel coordinates, which defines
      *             the focus and the zoom ratio
