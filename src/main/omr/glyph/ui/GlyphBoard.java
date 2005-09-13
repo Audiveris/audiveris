@@ -313,6 +313,19 @@ public class GlyphBoard
         }
     }
 
+    //-------------------//
+    // getDeassignButton //
+    //-------------------//
+    /**
+     * Give access to the Deassign Button, to modify its properties
+     *
+     * @return the deassign button
+     */
+    public JButton getDeassignButton()
+    {
+        return deassignButton;
+    }
+
     //----------------//
     // DeassignAction //
     //----------------//
@@ -330,7 +343,6 @@ public class GlyphBoard
 
         public void actionPerformed(ActionEvent e)
         {
-            /////logger.info("DBG Deassign " + glyph);
             if (glyphFocus != null && glyph != null && glyph.isKnown()) {
                 glyphFocus.deassignGlyph(glyph);
             }
