@@ -377,7 +377,8 @@ public class EvaluatorsPanel
                 // Assign current glyph with selected shape
                 if (pane != null) {
                     pane.assignShape(Shape.valueOf(button.getText()),
-                                     /* asGuessed => */ false);
+                                     /* asGuessed => */ false,
+                                     /* compound => */ false);
                 }
             }
         }
