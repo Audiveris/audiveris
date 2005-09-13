@@ -14,7 +14,9 @@ import javax.swing.*;
 import java.util.Hashtable;
 
 /**
- * Class <code>LogSlider</code> builds a slider with a logarithmic scale
+ * Class <code>LogSlider</code> is a specific {@link JSlider} which handles
+ * double values with a logarithmic scale (while normal JSlider handles only
+ * integer values).
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -24,8 +26,10 @@ public class LogSlider
 {
     //~ Static variables/initializers -------------------------------------
 
-    // Internal precision
-    private static final int unit = 100;
+    // Internal resolution (number of values between two major ticks)
+    // There is no real need to export this value to the user.
+    private static final int unit = 480;
+    private static final double doubleUnit = unit; // To speed computing up
 
     //~ Instance variables ------------------------------------------------
 
@@ -43,87 +47,124 @@ public class LogSlider
      *
      * @param base to specify the base of logarithm, generally either 2 or
      *                    10.
-     * @param orientation to specify the slider orientation, either
-     *                    VERTICAL or HORIZONTAL.
+     * @param minors number of minor intervals within one major interval (if
+     *                    specified as 1 minor per major, this means that
+     *                    there is no minor ticks)
+     * @param orientation to specify the slider orientation, either VERTICAL
+     *                    or HORIZONTAL.
      * @param min to set lower bound of the slider, specified in power of
      *                    base, for example -3 to mean 1/8 (2**-3 if base =
      *                    2).
-     * @param max to set upper bound, for example 5 to mean 32 (2**5, if
-     *                    base = 2).
-     * @param initial to set the slider initial value, specified in power
-     *                    of base, for example 0 to mean 1 (2**0, if base =
-     *                    2)
+     * @param max to set upper bound, for example 5 to mean 32 (2**5, if base
+     *                    = 2).
+     * @param initial to set the slider initial value, specified in power of
+     *                    base, for example 0 to mean 1 (2**0, if base = 2)
      */
     public LogSlider (int base,
+                      int minors,
                       int orientation,
                       int min,
                       int max,
                       int initial)
     {
-        // JSlider
+        // JSlider construction
         super(orientation, min * unit, max * unit, initial * unit);
 
         // Cache data
         this.base = (double) base;
 
         // Ticks
-//         setMajorTickSpacing (unit);
-//         if (unit >= 10)
-//             setMinorTickSpacing (unit /10);
-//         setPaintTicks  (true);
+        super.setMajorTickSpacing (unit);
+        if (minors > 1) {
+            super.setMinorTickSpacing (unit / minors);
+        }
+        setPaintTicks(true);
 
-        // Labels
-        setPaintLabels(true);
+        // More room given to labels
+//         switch (orientation) {
+//         case HORIZONTAL : setBorder (BorderFactory.createEmptyBorder(0,0,5,0));
+//             break;
+//         case VERTICAL   : setBorder (BorderFactory.createEmptyBorder(0,0,0,5));
+//         }
 
-        // More room
-        //      switch (orientation) {
-        //      case HORIZONTAL : setBorder (BorderFactory.createEmptyBorder(0,0,5,0));
-        //          break;
-        //      case VERTICAL   : setBorder (BorderFactory.createEmptyBorder(0,0,0,5));
-        //      }
-        // Create the label table
+        // Create and populate the label table
         Hashtable<Integer, JLabel> labelTable
             = new Hashtable<Integer, JLabel>();
-
         for (int i = min; i <= max; i++) {
             labelTable.put(new Integer(i * unit),
                            new JLabel((i < 0)
                                       ? ("1/" + (int) expOf(-i * unit))
                                       : ("" + (int) expOf(i * unit))));
         }
-
         setLabelTable(labelTable);
+        setPaintLabels(true);
+
+        // Force the knob to align on predefined ticks
+        setSnapToTicks(true);
     }
 
     //~ Methods -----------------------------------------------------------
 
-    //-----------//
-    // readValue //
-    //-----------//
-
+    //----------------//
+    // getDoubleValue //
+    //----------------//
     /**
-     * Retrieves the slider current position, and returns the corresponding
+     * Retrieve the slider current position, and return the corresponding
      * value
      *
      * @return The current value, such as 32 or 0.125.
      */
-    public double readValue ()
+    public double getDoubleValue ()
     {
-        return expOf((int) getValue());
+        return expOf((int) super.getValue());
     }
 
-    //------------//
-    // writeValue //
-    //------------//
-
+    //----------------//
+    // setDoubleValue //
+    //----------------//
     /**
-     * Uses the provided value, to set the slider internal position.
+     * Use the provided value, to set the slider internal position.
      *
      * @param d a <code>double</code> value, such as 32 or 0.125.
      */
-    public void writeValue (double d)
+    public void setDoubleValue (double d)
     {
-        setValue(logOf(d));
+        super.setValue(logOf(d));
+    }
+
+    //---------------------//
+    // setMajorTickSpacing //
+    //---------------------//
+    /**
+     * This is a non supported operation, though part of the JSlider
+     * interface, since there is exactly one major tick per each increment
+     * of base power.
+     *
+     * @param n not used
+     */
+    @Override
+        public void setMajorTickSpacing (int n)
+    {
+        throw new UnsupportedOperationException
+            ("Method setMajorTickSpacing not supported by LogSlider");
+    }
+
+    //---------------------//
+    // setMinorTickSpacing //
+    //---------------------//
+    /**
+     * This is a non supported operation, though part of the JSlider
+     * interface, since the correct way to define minor ticks is in the
+     * constructor to specify the number of minors (minor intervals) within
+     * any major interval.
+     *
+     * @param n not used
+     */
+    @Override
+        public void setMinorTickSpacing (int n)
+    {
+        throw new UnsupportedOperationException
+            ("Method setMinorTickSpacing not supported by LogSlider");
     }
 
     //-------//
@@ -131,7 +172,7 @@ public class LogSlider
     //-------//
     private double expOf (int i)
     {
-        return Math.pow(base, (double) i / (double) unit);
+        return Math.pow(base, (double) i / doubleUnit);
     }
 
     //-------//
@@ -140,6 +181,6 @@ public class LogSlider
     private int logOf (double d)
     {
         return (int) Math.rint
-            (((double) unit * Math.log(d)) / Math.log(base));
+            ((doubleUnit * Math.log(d)) / Math.log(base));
     }
 }
