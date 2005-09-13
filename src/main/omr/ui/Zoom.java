@@ -137,7 +137,7 @@ public class Zoom
         // Propagate to slider (useful to keep slider in sync when ratio is
         // set programmatically)
         if (slider != null) {
-            slider.writeValue(ratio);
+            slider.setDoubleValue(ratio);
         } else {
             forceRatio(ratio);
         }
@@ -194,7 +194,7 @@ public class Zoom
         }
 
         if (slider != null) {
-            slider.writeValue(ratio);
+            slider.setDoubleValue(ratio);
 
             slider.addChangeListener(new ChangeListener() {
                     public void stateChanged (ChangeEvent e)
@@ -202,7 +202,7 @@ public class Zoom
                         // Forward the new zoom ratio
                         if (constants.continuousSliderReading.getValue()
                             || ! slider.getValueIsAdjusting()) {
-                            double newRatio = slider.readValue();
+                            double newRatio = slider.getDoubleValue();
 
                             if (logger.isDebugEnabled()) {
                                 logger.debug("Slider firing zoom newRatio=" + newRatio);
