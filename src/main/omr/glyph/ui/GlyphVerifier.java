@@ -783,7 +783,7 @@ public class GlyphVerifier
                 view = new MyView();
                 modelRectangle = new Rectangle();
                 modelSize = new Dimension(0,0);
-                slider = new LogSlider(2, LogSlider.VERTICAL, -3, 4, 0);
+                slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 4, 0);
                 zoom = new Zoom(slider, 1);     // Default ratio set to 1
                 rubber = new Rubber(view, zoom);
                 rubber.setMouseMonitor(view);
@@ -819,14 +819,14 @@ public class GlyphVerifier
                 deleteGlyph();          // Current glyph
             }
 
-            //--------------//
-            // pointUpdated //
-            //--------------//
+            //---------------//
+            // pointSelected //
+            //---------------//
             @Override
-                public void pointUpdated (MouseEvent e,
+                public void pointSelected (MouseEvent e,
                                           Point pt)
             {
-                super.pointUpdated(e, pt);
+                super.pointSelected(e, pt);
 
                 // Brute force
                 if (names != null) {

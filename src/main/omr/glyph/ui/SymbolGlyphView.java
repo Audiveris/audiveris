@@ -88,6 +88,74 @@ public class SymbolGlyphView
         }
     }
 
+    //-----------------//
+    // contextSelected //
+    //-----------------//
+    private boolean contextSelected = false;
+    @Override
+        public void contextSelected (MouseEvent e,
+                                     Point pt)
+    {
+        if (logger.isDebugEnabled()) {
+            logger.debug ("SymbolGlyphView contextSelected");
+        }
+
+        contextSelected = true;
+        List<Glyph> glyphs = pane.getCurrentGlyphs();
+
+        // To display point information
+        if (glyphs.size() == 0) {
+            pointSelected(e, pt);
+        }
+
+        if (e == null) {
+            // Not an interactive selection, so let's get out now
+            return;
+        }
+
+        if (glyphs.size() > 0) {
+            if (glyphs.size() == 1) {
+                pane.getPopup().updateForGlyph(glyphs.get(0));
+                pane.getPopup().show(this, e.getX(), e.getY());
+            } else if (glyphs.size() > 1) {
+                pane.getPopup().updateForGlyphs(glyphs);
+            }
+            // Show the popup menu
+            pane.getPopup().show(this, e.getX(), e.getY());
+        } else {
+            // Popup with no glyph selected ?
+        }
+        contextSelected = false;
+    }
+
+    //------------//
+    // pointAdded //
+    //------------//
+    @Override
+        public void pointAdded (MouseEvent e,
+                                Point pt)
+    {
+        if (logger.isDebugEnabled()) {
+            logger.debug ("SymbolGlyphView pointAdded");
+        }
+
+        // To display point information
+        super.pointSelected(e, pt);
+
+        final Glyph glyph = sheet.lookupGlyph(pt);
+        if (glyph != null) {
+            // Add to or remove from the collection of selected glyphs
+            List<Glyph> glyphs = pane.getCurrentGlyphs();
+            if (glyphs.contains(glyph)) {
+                glyphs.remove(glyph);
+            } else {
+                glyphs.add(glyph);
+            }
+
+            pane.getEvaluatorsPanel().evaluate(glyph);
+        }
+    }
+
     //---------------//
     // pointSelected //
     //---------------//
@@ -95,39 +163,30 @@ public class SymbolGlyphView
         public void pointSelected (MouseEvent e,
                                    Point pt)
     {
-        // To display point information
-        pointUpdated(e, pt);
-
-        if (e == null) {
-            // Not an interactive selection, so let's get out now
-            return;
+        if (logger.isDebugEnabled()) {
+            logger.debug ("SymbolGlyphView pointSelected");
         }
 
-        List<Glyph> glyphs = pane.getCurrentGlyphs();
-        if (glyphs.size() == 1) {
-            // Show the popup menu
-            pane.getPopup().updateForGlyph(glyphs.get(0));
-            pane.getPopup().show(this, e.getX(), e.getY());
-        }
-    }
-
-    //--------------//
-    // pointUpdated //
-    //--------------//
-    @Override
-        public void pointUpdated (MouseEvent e,
-                                  Point pt)
-    {
-        super.pointUpdated(e, pt);
+        super.pointSelected(e, pt);
 
         final Glyph glyph = sheet.lookupGlyph(pt);
-
-        pane.getCurrentGlyphs().clear();
-        if (glyph != null) {
-            pane.getCurrentGlyphs().add(glyph);
+        List<Glyph> glyphs = pane.getCurrentGlyphs();
+        if (!contextSelected) {
+            if (glyphs.size() > 0) {
+                glyphs.clear();
+            }
+            if (glyph != null) {
+                glyphs.add(glyph);
+                pane.getEvaluatorsPanel().evaluate(glyph);
+            }
+        } else {
+            if (glyphs.size() == 0) {
+                if (glyph != null) {
+                    glyphs.add(glyph);
+                    pane.getEvaluatorsPanel().evaluate(glyph);
+                }
+            }
         }
-
-        pane.getEvaluatorsPanel().evaluate(glyph);
     }
 
     //-------------------//
@@ -140,18 +199,7 @@ public class SymbolGlyphView
         super.rectangleSelected(e, rect);
 
         // Retrieve glyphs for this rectangle
-        List<Glyph> glyphs = sheet.lookupGlyphs(rect);
-
-        if (glyphs.size() > 0) {
-            //logger.info(glyphs.size() + " glyph(s) selected");
-
-            // Customize popup menu to process the list
-            pane.setCurrentGlyphs(glyphs);
-            if (e != null) {
-                pane.getPopup().updateForGlyphs(glyphs);
-                pane.getPopup().show(this, e.getX(), e.getY());
-            }
-        }
+        pane.setCurrentGlyphs(sheet.lookupGlyphs(rect));
     }
 
     //---------------//
