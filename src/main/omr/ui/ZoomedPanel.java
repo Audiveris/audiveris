@@ -14,11 +14,11 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.util.Logger;
 
-import javax.swing.*;
 import java.awt.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 import java.awt.event.MouseEvent;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>ZoomedPanel</code> is an abstract class meant to handle
@@ -126,22 +126,31 @@ public abstract class ZoomedPanel
         return zoom;
     }
 
+    //-----------------//
+    // contextSelected //
+    //-----------------//
+    public void contextSelected (MouseEvent e,
+                                 Point pt)
+    {
+        // Nothing by default
+    }
+
     //---------------//
     // pointSelected //
     //---------------//
     public void pointSelected (MouseEvent e,
                                Point pt)
     {
-        pointUpdated(e, pt);
+        notifyObservers(pt);
     }
 
-    //--------------//
-    // pointUpdated //
-    //--------------//
-    public void pointUpdated (MouseEvent e,
-                              Point pt)
+    //------------//
+    // pointAdded //
+    //------------//
+    public void pointAdded (MouseEvent e,
+                            Point pt)
     {
-        notifyObservers(pt);
+        pointSelected(e, pt);
     }
 
     //-----------//
@@ -166,19 +175,10 @@ public abstract class ZoomedPanel
     public void rectangleSelected (MouseEvent e,
                                    Rectangle  rect)
     {
-        rectangleUpdated(e, rect);
-    }
-
-    //------------------//
-    // rectangleUpdated //
-    //------------------//
-    public void rectangleUpdated (MouseEvent e,
-                                  Rectangle rect)
-    {
         if ((rect.width != 0) || (rect.height != 0)) {
             notifyObservers(rect);
         } else {
-            pointUpdated(e, rect.getLocation());
+            pointSelected(e, rect.getLocation());
         }
     }
 
