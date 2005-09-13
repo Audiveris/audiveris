@@ -298,7 +298,9 @@ public class GlyphRepository
     //-------------------//
     /**
      * Store all known glyphs of the provided sheet as separate XML files,
-     * so that they can be later re-loaded to train an evaluator
+     * so that they can be later re-loaded to train an evaluator. We store
+     * glyph for which Shape is not null, and different from Noise and Stem
+     * (Clutter is thus stored as well).
      *
      * @param sheet the sheet whose glyphs are to be stored
      */
@@ -324,8 +326,11 @@ public class GlyphRepository
             int glyphNb = 0;
             for (SystemInfo system : sheet.getSystems()) {
                 for (Glyph glyph : system.getGlyphs()) {
-                    if (glyph.isKnown() &&
-                        glyph.getShape() != Shape.COMBINING_STEM) {
+                    Shape shape = glyph.getShape();
+                    if (shape != null &&
+                        shape != Shape.NOISE &&
+                        shape != Shape.COMBINING_STEM) {
+
                         if (logger.isDebugEnabled()) {
                             logger.debug("Storing " + glyph);
                         }
@@ -336,7 +341,7 @@ public class GlyphRepository
 
                         // Build the proper glyph file
                         StringBuffer sb = new StringBuffer();
-                        sb.append(glyph.getShape());
+                        sb.append(shape);
                         sb.append(".");
                         sb.append(String.format("%04d", glyph.getId()));
                         sb.append(FILE_EXTENSION);
