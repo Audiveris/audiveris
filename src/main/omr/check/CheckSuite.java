@@ -298,14 +298,14 @@ public class CheckSuite <T extends Checkable>
             sb.append("<head>");
             sb.append("<style type=\"text/css\">");
             sb.append("BODY {margin: 0; padding: 0;font-family: sans-serif}");
-            sb.append("TH {background-color: #DDDDDD; font-size: 10pt}");
-            sb.append("TD {font-size: 10pt}");
+            sb.append("TH {background-color: #DDDDDD; font-size: 11pt}");
+            sb.append("TD {font-size: 11pt}");
             sb.append("</style>");
             sb.append("</head>");
         }
 
         //sb.append("<body>");
-        sb.append("<table border=0 cellspacing=1 cellpadding=0 width=180>");
+        sb.append("<table border=0 cellspacing=1 cellpadding=0 width=280>");
 
         // First line: Titles
         sb.append("<tr>");
