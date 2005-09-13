@@ -371,9 +371,9 @@ public class HorizontalsBuilder
             }
         }
 
-        //--------------//
+        //---------------//
         // glyphSelected //
-        //--------------//
+        //---------------//
         @Override
             protected void glyphSelected (Glyph glyph,
                                           Point pt)
