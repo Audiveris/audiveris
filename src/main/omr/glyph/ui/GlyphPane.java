@@ -161,11 +161,17 @@ public class GlyphPane
      * is true, this assignment is performed only if the guess of the glyph
      * at hand corresponds to the shape to be assigned.
      *
+     * <p>The concerned glyphs are contained in the global currentGlyphs
+     * collection.
+     *
      * @param shape the shape to be assigned
      * @param asGuessed flag to restrain assignment
+     * @param compound flag to build one compound, rather than assign each
+     * individual
      */
     public void assignShape(Shape shape,
-                            boolean asGuessed)
+                            boolean asGuessed,
+                            boolean compound)
     {
         if (currentGlyphs.size() > 0) {
             if (asGuessed) {            // Confirmation
@@ -176,19 +182,28 @@ public class GlyphPane
                 }
                 focus.setCurrent(shape);
             } else {                    // Forcing
-                Glyph glyph;
-                if (currentGlyphs.size() > 1) {
+                if (compound) {
                     // Build & insert a compound
-                    glyph = builder.buildCompound(currentGlyphs);
+                    Glyph glyph = builder.buildCompound(currentGlyphs);
                     builder.insertCompound(glyph, currentGlyphs);
-
+                    setShape(glyph, shape, /* updateUI => */ false);
                     // Update (new) glyph contours
                     currentGlyphs.clear();
                     currentGlyphs.add(glyph);
                 } else {
-                    glyph = currentGlyphs.get(0);
+                    int noiseNb = 0;
+                    for (Glyph glyph : currentGlyphs) {
+                        if (glyph.getShape() != Shape.NOISE) {
+                            setShape(glyph, shape, /* updateUI => */ false);
+                        } else {
+                            noiseNb ++;
+                        }
+                    }
+                    if (noiseNb > 0) {
+                        logger.info(noiseNb + " noise glyphs skipped");
+                    }
                 }
-                setShape(glyph, shape, /* updateUI => */ true);
+                refresh();
             }
         }
     }
@@ -536,7 +551,7 @@ public class GlyphPane
 
         public void actionPerformed(ActionEvent e)
         {
-            inspector.evaluateGlyphs(/* common => */ false);
+            inspector.evaluateGlyphs(inspector.useBothEvaluatorsOnLeaves());
             refresh();
         }
     }
@@ -623,7 +638,7 @@ public class GlyphPane
         public void actionPerformed(ActionEvent e)
         {
             inspector.processLeaves();
-            inspector.evaluateGlyphs(/* common => */ false);
+            inspector.evaluateGlyphs(inspector.useBothEvaluatorsOnLeaves());
             refresh();
         }
     }
