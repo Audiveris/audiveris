@@ -547,7 +547,7 @@ public class Glyph
             for (GlyphSection sct : section.getTargets()) {
                 if (sct.isMember()) {
                     Glyph glyph = sct.getGlyph();
-                    if (glyph != this && glyph.isKnown()) {
+                    if (glyph != this && glyph.isWellKnown()) {
                         symbols.add(glyph);
                     }
                 }
@@ -572,7 +572,7 @@ public class Glyph
             for (GlyphSection sct : section.getSources()) {
                 if (sct.isMember()) {
                     Glyph glyph = sct.getGlyph();
-                    if (glyph != this && glyph.isKnown()) {
+                    if (glyph != this && glyph.isWellKnown()) {
                         symbols.add(glyph);
                     }
                 }
@@ -648,12 +648,29 @@ public class Glyph
     // isKnown //
     //---------//
     /**
-     * A glyph is considered as knwn if it has a registered shape other
-     * than noise or clutter
+     * A glyph is considered as known if it has a registered shape other
+     * than noise (clutter is considered as known)
      *
      * @return true if so
      */
     public boolean isKnown ()
+    {
+        Shape shape = getShape();
+        return
+            shape != null &&
+            shape != Shape.NOISE;
+    }
+
+    //-------------//
+    // isWellKnown //
+    //-------------//
+    /**
+     * A glyph is considered as well known if it has a registered shape other
+     * than noise and clutter
+     *
+     * @return true if so
+     */
+    public boolean isWellKnown ()
     {
         Shape shape = getShape();
         return
