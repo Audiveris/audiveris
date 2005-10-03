@@ -681,6 +681,19 @@ public enum Shape
 
         //~ Methods -------------------------------------------------------
 
+        //-----------//
+        // getShapes //
+        //-----------//
+        /**
+         * Exports the set of shapes in the range
+         *
+         * @return the proper enum set
+         */
+        public EnumSet<Shape> getShapes()
+        {
+            return shapes;
+        }
+
         //----------//
         // getColor //
         //----------//
@@ -854,4 +867,18 @@ public enum Shape
         }
 
     }
+
+    /**
+     * symbols that can be attached to a stem
+     */
+    public static EnumSet<Shape> stemSymbols = EnumSet.noneOf(Shape.class);
+    static
+    {
+        stemSymbols.add(Shape.BEAM);
+        stemSymbols.add(Shape.BEAM_CHUNK);
+
+        stemSymbols.addAll(NoteHeads.getShapes());
+        stemSymbols.addAll(Flags.getShapes());
+    }
+
 }
