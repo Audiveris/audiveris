@@ -656,7 +656,7 @@ public class GlyphPane
 
         public void actionPerformed(ActionEvent e)
         {
-            inspector.processCompounds();
+            inspector.processCompounds(inspector.useBothEvaluatorsOnLeaves());
             refresh();
         }
     }
