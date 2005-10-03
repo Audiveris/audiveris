@@ -99,7 +99,7 @@ public class RubberZoomedPanel
     // setFocusPoint //
     //---------------//
     @Override
-    public void setFocusPoint (Point pt)
+        public void setFocusPoint (Point pt)
     {
         // Modify the rubber accordingly
         if (rubber != null) {
@@ -115,7 +115,7 @@ public class RubberZoomedPanel
     // setFocusRectangle //
     //-------------------//
     @Override
-    public void setFocusRectangle (Rectangle rect)
+        public void setFocusRectangle (Rectangle rect)
     {
         // Modify the rubber accordingly
         if (rubber != null) {
