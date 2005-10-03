@@ -18,6 +18,7 @@ import omr.lag.SectionView;
 import omr.math.Moments;
 import omr.sheet.Picture;
 import omr.util.Logger;
+import omr.util.Predicate;
 import omr.ui.Zoom;
 
 import java.awt.*;
@@ -538,23 +539,28 @@ public class Glyph
     /**
      * Return the known glyphs stuck on last side of the stick
      *
-     * @return the set of known glyphs (perhaps empty)
+     * @param predicate the predicate to apply on each glyph
+     * @param goods the set of correct glyphs (perhaps empty)
+     * @param bads the set of non-correct glyphs (perhaps empty)
      */
-    public Set<Glyph> getSymbolsAfter ()
+    public void getSymbolsAfter (Predicate<Glyph> predicate,
+                                 Set<Glyph>       goods,
+                                 Set<Glyph>       bads)
     {
-        Set<Glyph> symbols = new HashSet<Glyph>();
         for (GlyphSection section : members) {
             for (GlyphSection sct : section.getTargets()) {
                 if (sct.isMember()) {
                     Glyph glyph = sct.getGlyph();
-                    if (glyph != this && glyph.isWellKnown()) {
-                        symbols.add(glyph);
+                    if (glyph != this) {
+                        if (predicate.check(glyph)) {
+                            goods.add(glyph);
+                        } else {
+                            bads.add(glyph);
+                        }
                     }
                 }
             }
         }
-
-        return symbols;
     }
 
     //------------------//
@@ -563,23 +569,28 @@ public class Glyph
     /**
      * Return the known glyphs stuck on first side of the stick
      *
-     * @return the set of known glyphs (perhaps empty)
+     * @param predicate the predicate to apply on each glyph
+     * @param goods the set of correct glyphs (perhaps empty)
+     * @param bads the set of non-correct glyphs (perhaps empty)
      */
-    public Set<Glyph> getSymbolsBefore ()
+    public void getSymbolsBefore (Predicate<Glyph> predicate,
+                                  Set<Glyph>       goods,
+                                  Set<Glyph>       bads)
     {
-        Set<Glyph> symbols = new HashSet<Glyph>();
         for (GlyphSection section : members) {
             for (GlyphSection sct : section.getSources()) {
                 if (sct.isMember()) {
                     Glyph glyph = sct.getGlyph();
-                    if (glyph != this && glyph.isWellKnown()) {
-                        symbols.add(glyph);
+                    if (glyph != this) {
+                        if (predicate.check(glyph)) {
+                            goods.add(glyph);
+                        } else {
+                            bads.add(glyph);
+                        }
                     }
                 }
             }
         }
-
-        return symbols;
     }
 
     //-----------//
@@ -627,22 +638,23 @@ public class Glyph
         return stemNumber;
     }
 
-    //------------//
-    // hasSymbols //
-    //------------//
-    /**
-     * Checks whether a stick is connected to known symbols
-     *
-     * @return true is there is at least one known symbol connected
-     */
-    public boolean hasSymbols()
-    {
-        if (getSymbolsBefore().size() > 0) {
-            return true;
-        }
+//     //------------//
+//     // hasSymbols //
+//     //------------//
+//     /**
+//      * Checks whether a stick is connected to known symbols
+//      *
+//      * @param predicate the predicate to apply on each glyph
+//      * @return true is there is at least one known symbol connected
+//      */
+//     public boolean hasSymbols(Predicate<Glyph> predicate)
+//     {
+//         if (getSymbolsBefore(predicate).size() > 0) {
+//             return true;
+//         }
 
-        return getSymbolsAfter().size() > 0;
-    }
+//         return getSymbolsAfter(predicate).size() > 0;
+//     }
 
     //---------//
     // isKnown //
