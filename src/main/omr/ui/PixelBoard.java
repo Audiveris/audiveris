@@ -20,7 +20,8 @@ import javax.swing.*;
 /**
  * Class <code>PixelBoard</code> is a board that displays pixel information
  * as provided by other entities (output side), and which can also be used
- * by a user to directly specify pixel coordinate values (input side).
+ * by a user to directly specify pixel coordinate values by entering
+ * numerical values in the fields (input side).
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -199,21 +200,16 @@ public class PixelBoard
     private class ParamAction
         extends AbstractAction
     {
+        // Method run whenever user presses Return/Enter in one of the
+        // parameter fields
         public void actionPerformed (ActionEvent e)
         {
             if (pixelFocus != null) {
-                if (width.getText().equals("") ||
-                    height.getText().equals("")) {
-                    // Just a point
-                    pixelFocus.setFocusPoint(new Point(x.getValue(),
-                                                       y.getValue()));
-                } else {
-                    // A rectangle
-                    pixelFocus.setFocusRectangle
-                        (new Rectangle
-                         (x.getValue(), y.getValue(),
-                          width.getValue(), height.getValue()));
-                }
+                // A rectangle (which can be degenerated to a point)
+                pixelFocus.setFocusRectangle
+                    (new Rectangle
+                     (x.getValue(), y.getValue(),
+                      width.getValue(), height.getValue()));
             }
         }
     }
