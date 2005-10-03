@@ -271,13 +271,15 @@ public class GlyphBuilder
                              boolean cutSections)
     {
         // Remove from system
-        SystemInfo system = sheet.getSystemAtY(glyph.getContourBox().y);
+        int y = glyph.getContourBox().y;
+        SystemInfo system = sheet.getSystemAtY(y);
         if (!system.getGlyphs().remove(glyph)) {
-            logger.warning("removeGlyph. System " + system.getId() +
-                           " did not contain " + glyph);
-            for (SystemInfo syst : sheet.getSystems()) {
-                if (syst.getGlyphs().remove(glyph)) {
-                    break;
+            SystemInfo closest = sheet.getClosestSystem(system, y);
+            if (closest != null) {
+                if (!closest.getGlyphs().remove(glyph)) {
+                    logger.error("Cannot find " + glyph +
+                                 " close to " + system +
+                                 " closest was " + closest);
                 }
             }
         }
@@ -352,12 +354,16 @@ public class GlyphBuilder
         int stemNb = 0;
         if (checkStemIntersect(system.getGlyphs(),
                                system.getMaxGlyphWidth(),
-                               leftStemBox(box, scale))) {
+                               glyph,
+                               scale,
+                               /* onLeft => */ true)) {
             stemNb++;
         }
         if (checkStemIntersect(system.getGlyphs(),
                                system.getMaxGlyphWidth(),
-                               rightStemBox(box, scale))) {
+                               glyph,
+                               scale,
+                               /* onLeft => */ false)) {
             stemNb++;
         }
         glyph.setStemNumber(stemNb);
@@ -418,8 +424,18 @@ public class GlyphBuilder
     //--------------------//
     private static boolean checkStemIntersect (List<Glyph> glyphs,
                                                int         maxItemWidth,
-                                               Rectangle   box)
+                                               Glyph       glyph,
+                                               Scale       scale,
+                                               boolean     onLeft)
     {
+        // Box for searching for a stem
+        Rectangle   box;
+        if (onLeft) {
+            box = leftStemBox(glyph.getContourBox(), scale);
+        } else {
+            box = rightStemBox(glyph.getContourBox(), scale);
+        }
+
         int startIdx = Glyph.getGlyphIndexAtX
             (glyphs, box.x - maxItemWidth);
 
@@ -427,10 +443,27 @@ public class GlyphBuilder
             int stopIdx = Glyph.getGlyphIndexAtX
                 (glyphs, box.x + box.width +1); // Not sure we need "+1"
 
-            for (Glyph glyph : glyphs.subList(startIdx, stopIdx)) {
-                if (glyph.isStem() &&
-                    glyph.getContourBox().intersects(box)) {
-                    return true;
+            for (Glyph s : glyphs.subList(startIdx, stopIdx)) {
+                // Check box intersection
+                if (s.isStem() &&
+                    s.getContourBox().intersects(box)) {
+                    // Check real adjacency
+                    for (GlyphSection section : glyph.getMembers()) {
+                        if (onLeft) {
+                            for (GlyphSection source : section.getSources()) {
+                                if (source.getGlyph() == s) {
+                                    return true;
+                                }
+
+                            }
+                        } else {
+                            for (GlyphSection target : section.getTargets()) {
+                                if (target.getGlyph() == s) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
