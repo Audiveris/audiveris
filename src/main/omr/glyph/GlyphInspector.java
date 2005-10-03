@@ -23,6 +23,7 @@ import omr.sheet.VerticalsBuilder;
 import omr.stick.Stick;
 import omr.util.Dumper;
 import omr.util.Logger;
+import omr.util.Predicate;
 
 import java.awt.Rectangle;
 import java.io.File;
@@ -30,8 +31,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>GlyphInspector</code> is dedicated to processing of
@@ -54,6 +58,23 @@ public class GlyphInspector
     private final GlyphLag     vLag;
     private final GlyphBuilder builder;
 
+    // Predicate to filter only reliable symbols attached to a stem
+    private final Predicate<Glyph> reliableStemSymbols
+        = new Predicate<Glyph>()
+    {
+        public boolean check (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+
+            boolean res =
+            glyph.isWellKnown() &&
+            Shape.stemSymbols.contains(shape) &&
+            shape != Shape.BEAM_CHUNK;
+
+            return res;
+        }
+    }
+        ;
     //~ Constructors ------------------------------------------------------
 
     //----------------//
@@ -236,13 +257,14 @@ public class GlyphInspector
      * Look for glyphs portions that should be considered as parts of
      * compound glyphs
      *
+     * @param common require common vote if set to true
      * @return the number of successful compounds
      */
-    public int processCompounds ()
+    public int processCompounds (boolean common)
     {
         int compoundNb = 0;
         for (SystemInfo system : sheet.getSystems()) {
-            compoundNb += processSystemCompounds(system);
+            compoundNb += processSystemCompounds(system, common);
         }
 
         logger.info(compoundNb + " compound(s) recognized");
@@ -253,13 +275,15 @@ public class GlyphInspector
     // processSystemCompounds //
     //------------------------//
     /**
-     *In the specified system, look for glyphs portions that should be
+     * In the specified system, look for glyphs portions that should be
      * considered as parts of compound glyphs
      *
      * @param system the system where splitted glyphs are looked for
+     * @param common require common vote if set to true
      * @return the number of successful compounds
      */
-    public int processSystemCompounds (SystemInfo system)
+    public int processSystemCompounds (SystemInfo system,
+                                       boolean    common)
     {
         int nb = 0;
 
@@ -295,6 +319,7 @@ public class GlyphInspector
 
             // Consider neighboring glyphs, which are glyphs whose contour
             // intersect the contour of glyph at hand
+            SUB_GLYPHS:
             for (Glyph g : glyphs.subList(index +1, glyphs.size())) {
                 if (g.isWellKnown()) {
                     continue;
@@ -308,7 +333,12 @@ public class GlyphInspector
                         logger.debug(glyph + " & " + g + " -> " + compound);
                     }
 
-                    Shape vote = commonVote(compound);
+                    Shape vote;
+                    if (common) {
+                        vote = commonVote(compound);
+                    } else {
+                        vote = GlyphNetwork.getInstance().vote(compound);
+                    }
                     if (vote != null
                         && vote != Shape.NOISE
                         && vote != Shape.CLUTTER) {
@@ -318,6 +348,7 @@ public class GlyphInspector
                         if (logger.isDebugEnabled()) {
                             logger.debug("Compound " + compound);
                         }
+                        break SUB_GLYPHS;
                     }
                 }
             }
@@ -381,15 +412,25 @@ public class GlyphInspector
         logger.debug("processSystemUndueStems " + system);
         int nb = 0;
 
+
         // Collect all undue stems
         List<Glyph> SuspectedStems = new ArrayList<Glyph>();
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isStem()) {
-                if (!glyph.hasSymbols()) {
+                Set<Glyph> goods = new HashSet<Glyph>();
+                Set<Glyph> bads  = new HashSet<Glyph>();
+                glyph.getSymbolsBefore(reliableStemSymbols, goods, bads);
+                glyph.getSymbolsAfter(reliableStemSymbols, goods, bads);
+                if (goods.size() == 0) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Suspected Stem " + glyph);
                     }
                     SuspectedStems.add(glyph);
+                    // Discard "bad" ones
+                    for (Glyph g : bads) {
+                        g.setShape(null);
+                    }
+
                 }
             }
         }
