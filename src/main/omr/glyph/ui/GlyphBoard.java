@@ -16,6 +16,7 @@ import omr.glyph.GlyphObserver;
 import omr.glyph.Shape;
 import omr.ui.Board;
 import omr.ui.SField;
+import omr.ui.SpinnerUtilities;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
@@ -122,6 +123,8 @@ public class GlyphBoard
         }
 
         known.setModel(new SpinnerListModel(knownIds));
+        SpinnerUtilities.setRightAlignment(known);
+        SpinnerUtilities.fixIntegerList(known); // Waiting for swing bug fix
     }
 
     //------------//
@@ -222,19 +225,6 @@ public class GlyphBoard
     public void setGlyphFocus (GlyphFocus glyphFocus)
     {
         this.glyphFocus = glyphFocus;
-    }
-
-    //------------//
-    // setIdModel //
-    //------------//
-    /**
-     * Change the model for the id spinner
-     *
-     * @param model the new model
-     */
-    public void setIdModel (SpinnerModel model)
-    {
-        gid.setModel(model);
     }
 
     //--------//
