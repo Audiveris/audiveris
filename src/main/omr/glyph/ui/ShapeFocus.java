@@ -15,6 +15,7 @@ import omr.glyph.Shape;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.ui.Panel;
+import omr.ui.SpinnerUtilities;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
@@ -320,6 +321,7 @@ public class ShapeFocus
         public Counter()
         {
             spinner.addChangeListener(this);
+            spinner.setModel(new SpinnerListModel());
         }
 
         //~ Methods -------------------------------------------------------
@@ -376,7 +378,7 @@ public class ShapeFocus
         public void refresh()
         {
             val.setText(Integer.toString(ids.size() -1));
-            spinner.setModel(new SpinnerListModel(ids));
+            SpinnerUtilities.setList(spinner, ids);
         }
     }
 
