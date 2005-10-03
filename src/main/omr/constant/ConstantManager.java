@@ -54,16 +54,17 @@ import java.util.Properties;
  * <br/>
  *
  * <li> Finally, <b>USER</b> values, may be contained in another property
- * file named <em><b>"audiveris.run.properties"</b></em>. This file is
- * modified every time the user updates the value of a constant by means of
- * the provided Constant user interface at run-time. The file is not
- * mandatory, the user's home directory (which corresponds to java property
- * <b>user.home</b>) is searched for such file. Its values override the
- * Source (and Default if any) corresponding constants. Typically, these
- * USER values represent some modification made by the end user at run-time
- * and thus saved from one run to the other. The format of the user file is
- * the same as the default file, and it is not meant to be edited manually,
- * but rather through the provided GUI tool. </li> </ol>
+ * file named <em><b>"run.properties"</b></em>. This file is modified every
+ * time the user updates the value of a constant by means of the provided
+ * Constant user interface at run-time. The file is not mandatory, the
+ * user's home directory (which corresponds to java property
+ * <b>user.home</b>) is searched for a <b>.audiveris</b> folder to contain
+ * such file. Its values override the Source (and Default if any)
+ * corresponding constants. Typically, these USER values represent some
+ * modification made by the end user at run-time and thus saved from one
+ * run to the other. The format of the user file is the same as the default
+ * file, and it is not meant to be edited manually, but rather through the
+ * provided GUI tool. </li> </ol>
  *
  * <p> The whole set of constant values is stored on disk, every time the
  * user modifies a constant via {@link UnitTreeTable}). Doing so, the disk
@@ -96,7 +97,7 @@ public class ConstantManager
     // User properties
     private static Properties userProperties = null;
     private static String USER_FILE_NAME = System.getProperty("user.home")
-                                           + "/audiveris.run.properties";
+                                           + "/.audiveris/run.properties";
 
     //~ Constructors ------------------------------------------------------
 
