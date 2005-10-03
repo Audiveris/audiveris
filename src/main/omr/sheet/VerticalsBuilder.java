@@ -273,6 +273,7 @@ public class VerticalsBuilder
 
             // Render the contour of the verticals
             for (SystemInfo system : sheet.getSystems()) {
+
                 for (Glyph glyph : system.getGlyphs()) {
                     if (glyph.isStem()) {
                         Stick stick = (Stick) glyph;
