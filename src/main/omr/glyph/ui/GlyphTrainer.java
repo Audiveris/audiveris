@@ -919,6 +919,8 @@ public class GlyphTrainer
         {
             super(evaluator, 9, 13);
 
+            eta.getField().setEditable(false); // ETA is just an output
+
             getInputMap
                 (JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
                 .put(KeyStroke.getKeyStroke("ENTER"), "readParams");
