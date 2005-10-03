@@ -112,6 +112,7 @@ public class SectionBoard
     {
         super(Board.Tag.SECTION);
 
+        // Dump button
         dump.setToolTipText("Dump this section");
         dump.addActionListener
             (new ActionListener()
@@ -125,6 +126,7 @@ public class SectionBoard
                 });
         dump.setEnabled(section != null);
 
+        // ID Spinner
         id.setToolTipText("General spinner for any glyph id");
         id.addChangeListener
             (new ChangeListener()
@@ -144,9 +146,9 @@ public class SectionBoard
                         }
                     }
                 });
-        setIdModel(model);
+        id.setModel(model);
 
-        // Specific features of role field
+        // Role
         role.setEditable(false);
         role.setHorizontalAlignment(JTextField.CENTER);
         role.setToolTipText
@@ -273,32 +275,6 @@ public class SectionBoard
     public void setSectionFocus (SectionFocus sectionFocus)
     {
         this.sectionFocus = sectionFocus;
-    }
-
-    //------------//
-    // setIdModel //
-    //------------//
-    /**
-     * Set the new data model for the section id spinner
-     *
-     * @param model the new data model
-     */
-    public void setIdModel (SpinnerModel model)
-    {
-        id.setModel(model);
-    }
-
-    //------------//
-    // getIdModel //
-    //------------//
-    /**
-     * Give access to the underlying id spinner model
-     *
-     * @return the id model
-     */
-    public SpinnerModel getIdModel ()
-    {
-        return id.getModel();
     }
 
     //--------//
