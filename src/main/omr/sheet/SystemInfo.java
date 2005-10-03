@@ -571,13 +571,9 @@ public class SystemInfo
                 return stave;
             }
         }
-        java.lang.System.out.println("getStaveAtY. y=" + y);
-        for (StaveInfo stave : staves) {
-            java.lang.System.out.println
-                ("areaTop=" + stave.getAreaTop() +
-                 " areaBottom=" + stave.getAreaBottom());
-        }
-        return null;
+
+        // Return the last stave
+        return staves.get(staves.size() -1);
     }
 
     //------------//

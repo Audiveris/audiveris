@@ -352,7 +352,7 @@ public class Sheet
                 {
                     SYMBOLS.getResult();
 
-                    getGlyphInspector().processCompounds();
+                    getGlyphInspector().processCompounds(/*common=>*/ true);
                     result = new Boolean(true);
                     getGlyphInspector().evaluateGlyphs(/*common=>*/ true);
                 }
@@ -422,7 +422,8 @@ public class Sheet
                 {
                     LEAVES.getResult();
 
-                    getGlyphInspector().processCompounds();
+                    getGlyphInspector().processCompounds
+                    (GlyphInspector.useBothEvaluatorsOnLeaves());
                     result = new Boolean(true);
                     getGlyphInspector().evaluateGlyphs
                     (GlyphInspector.useBothEvaluatorsOnLeaves());
@@ -1408,6 +1409,35 @@ public class Sheet
         return null; // As a last resort, should never be reached
     }
 
+    //-------------------//
+    // lookupSystemGlyph //
+    //-------------------//
+    private Glyph lookupSystemGlyph (SystemInfo system,
+                                     Point      source)
+    {
+        for (BarInfo bar : system.getBars()) {
+            for (GlyphSection section : bar.getStick().getMembers()) {
+                // Swap of x & y, since this is a vertical lag
+                if (section.contains(source.y, source.x)) {
+                    return bar.getStick();
+                }
+            }
+        }
+
+        for (Glyph glyph : system.getGlyphs()) {
+            for (GlyphSection section : glyph.getMembers()) {
+                // Swap of x & y, since this is a vertical lag
+                if (section.contains(source.y, source.x)) {
+                    return glyph;
+                }
+            }
+        }
+
+        // Not found
+        return null;
+    }
+
+
     //-------------//
     // lookupGlyph //
     //-------------//
@@ -1420,24 +1450,49 @@ public class Sheet
      */
     public Glyph lookupGlyph (Point source)
     {
-        SystemInfo info = getSystemAtY(source.y);
-        if (info != null) {
-            for (BarInfo bar : info.getBars()) {
-                for (GlyphSection section : bar.getStick().getMembers()) {
-                    // Swap of x & y, since this is a vertical lag
-                    if (section.contains(source.y, source.x)) {
-                        return bar.getStick();
-                    }
-                }
+        Glyph glyph = null;
+        SystemInfo system = getSystemAtY(source.y);
+        if (system != null) {
+            glyph = lookupSystemGlyph(system, source);
+            if (glyph != null) {
+                return glyph;
             }
 
-            for (Glyph glyph : info.getGlyphs()) {
-                for (GlyphSection section : glyph.getMembers()) {
-                    // Swap of x & y, since this is a vertical lag
-                    if (section.contains(source.y, source.x)) {
-                        return glyph;
-                    }
-                }
+            // Not found?, let's have a look at next (or previous) closest
+            // system, according to source ordinate
+            SystemInfo closest = getClosestSystem(system, source.y);
+            if (closest != null) {
+                glyph = lookupSystemGlyph(closest, source);
+            }
+            return glyph;
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // getClosestSystem //
+    //------------------//
+    /**
+     * Report the closest system (apart from the provided one) in the
+     * direction of provided ordinate
+     *
+     * @param system the current system
+     * @param y the ordinate (of a point, a glyph, ...)
+     * @return the next (or previous) system if any
+     */
+    public SystemInfo getClosestSystem (SystemInfo system,
+                                        int        y)
+    {
+        int index = systems.indexOf(system);
+        int middle = (system.getAreaTop() + system.getAreaBottom()) /2;
+        if (y > middle) {
+            if (index < systems.size() -1) {
+                return systems.get(index +1);
+            }
+        } else {
+            if (index > 0) {
+                return systems.get(index -1);
             }
         }
 
