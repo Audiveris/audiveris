@@ -82,6 +82,7 @@ public class Rubber
     // Length in pixels of mark half legs
     private static final int leg = 20;
 
+    // Color used for drawing horizontal & vertical rules
     private static final Color ruleColor = new Color(255, 200, 0);
 
     //~ Instance variables ------------------------------------------------
@@ -378,20 +379,20 @@ public class Rubber
         if (rect != null) {
             g.setXORMode(Color.white);
 
+            // Is this is a true rectangle ?
             if (rect.width != 0 || rect.height != 0) {
-                // This is a true rectangle
                 g.setColor(Color.black);
                 g.drawRect(scaled(rect.x), scaled(rect.y),
                            scaled(rect.width), scaled(rect.height));
-            } else {
-                // This is just a point, draw horizontal & vertical rules
-                g.setColor(ruleColor);
-                Rectangle vr = component.getVisibleRect();
-                int x = scaled(rect.x + rect.width/2);
-                int y = scaled(rect.y + rect.height/2);
-                g.drawLine(x, vr.y, x, vr.y + vr.height);
-                g.drawLine(vr.x, y, vr.x + vr.width, y);
             }
+
+            // Draw horizontal & vertical rules (point or rectangle)
+            g.setColor(ruleColor);
+            Rectangle vr = component.getVisibleRect();
+            int x = scaled(rect.x + rect.width/2);
+            int y = scaled(rect.y + rect.height/2);
+            g.drawLine(x, vr.y, x, vr.y + vr.height);
+            g.drawLine(vr.x, y, vr.x + vr.width, y);
         }
     }
 
