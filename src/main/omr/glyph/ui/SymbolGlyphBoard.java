@@ -15,6 +15,7 @@ import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
 import omr.ui.LField;
 import omr.ui.LIntegerField;
+import omr.ui.SpinnerUtilities;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
@@ -102,10 +103,14 @@ public class SymbolGlyphBoard
         // Change spinner model for glyph id
         glyphIds.add(NO_VALUE);
         gid.setModel(new SpinnerListModel(glyphIds));
+        SpinnerUtilities.setRightAlignment(gid);
+        SpinnerUtilities.fixIntegerList(gid); // Waiting for swing bug fix
 
         // Change spinner model for known id
         knownIds.add(NO_VALUE);
         known.setModel(new SpinnerListModel(knownIds));
+        SpinnerUtilities.setRightAlignment(known);
+        SpinnerUtilities.fixIntegerList(known); // Waiting for swing bug fix
 
         // For symbols
         symbol = makeSpinner(symbolIds);
@@ -361,6 +366,8 @@ public class SymbolGlyphBoard
         ids.add(NO_VALUE);
         spinner.setModel(new SpinnerListModel(ids));
         spinner.addChangeListener(this);
+        SpinnerUtilities.setRightAlignment(spinner);
+        SpinnerUtilities.fixIntegerList(spinner); // Waiting for swing bug fix
 
         return spinner;
     }
