@@ -331,15 +331,6 @@ public class GlyphNetwork
         return true;                    // TBD ////
     }
 
-    //--------------------//
-    // getAcceptanceGrade //
-    //--------------------//
-    @Override
-        public double getAcceptanceGrade ()
-    {
-        return constants.acceptanceGrade.getValue();
-    }
-
     //---------------//
     // createNetwork //
     //---------------//
@@ -448,10 +439,6 @@ public class GlyphNetwork
         Constant.Double maxError = new Constant.Double
                 (1E-4,
                  "Threshold to stop training");
-
-        Constant.Double acceptanceGrade = new Constant.Double
-                (3.0,
-                 "Maximum grade for being accepted");
 
         Constants ()
         {
