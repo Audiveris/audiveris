@@ -75,6 +75,13 @@ public class StickView
     //---------------//
     // pointSelected //
     //---------------//
+    /**
+     * Selection of a stick by point designation. If the glyph look up
+     * succeeds, then the method {@link #glyphSelected} is called.
+     *
+     * @param e the mouse event
+     * @param pt the selected point in model pixel coordinates
+     */
     @Override
         public void pointSelected (MouseEvent e,
                                    Point pt)
