@@ -586,15 +586,24 @@ public class GlyphTrainer
                         " evaluator on " +
                         (useWhole ? "whole" : "core") + " base");
 
+            // Empty the display
+            positiveValue.setText("");
+            pcValue.setText("");
+            negativeValue.setText("");
+            falsePositiveValue.setText("");
+            negativeAction.setEnabled(false);
+            falsePositiveAction.setEnabled(false);
+
             negatives.clear();
             falsePositives.clear();
 
             int positives = 0;
+            final double maxGrade = constants.maxGrade.getValue();
             Collection<String> gNames = repositoryPanel.getBase(useWhole);
             for (String gName : gNames) {
                 Glyph glyph = repository.getGlyph(gName);
                 if (glyph != null) {
-                    Shape vote = evaluator.vote(glyph);
+                    Shape vote = evaluator.vote(glyph, maxGrade);
                     if (vote == glyph.getShape()) {
                         positives++;
                     } else if (vote == null) {
@@ -1239,6 +1248,10 @@ public class GlyphTrainer
     private static class Constants
             extends ConstantSet
     {
+        Constant.Double maxGrade = new Constant.Double
+                (1.2,
+                 "Maximum acceptance grade");
+
         Constant.Integer maxSimilar = new Constant.Integer
                 (20,
                  "Absolute maximum number of instances for the same shape used in training");
