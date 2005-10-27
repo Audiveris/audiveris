@@ -18,10 +18,11 @@ import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.lag.Lag;
 import omr.util.Logger;
-
-import java.util.*;
+import omr.util.Predicate;
 
 import static omr.stick.SectionRole.*;
+
+import java.util.*;
 
 /**
  * Class <code>StickArea</code> introduces the scanning of rectangular
@@ -33,8 +34,9 @@ import static omr.stick.SectionRole.*;
  * straight lines as opposed to bar lines, stems or ledgers.
  *
  * <ul> <li> <b>Horizontal sticks</b> can be (chunks of) staff lines,
- * alternate ending, or ledgers. </li> <li> <b>Vertical sticks</b> can be
- * bar lines, or stems. </li> </ul> </p>
+ * alternate ending, or ledgers. </li>
+ *
+ * <li> <b>Vertical sticks</b> can be bar lines, or stems. </li> </ul> </p>
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -76,7 +78,7 @@ public class StickArea
     private int maxThickness;
 
     // The source adapter to retrieve sections from
-    private StickArea.Source source;
+    private Source source;
 
     //  A flag used to trigger processing specific to very long (and not
     //  totally straight) alignments.
@@ -143,14 +145,14 @@ public class StickArea
      * @param longAlignment specific flag to indicate long filament
      *                      retrieval
      */
-    public void initialize (GlyphLag lag,
+    public void initialize (GlyphLag           lag,
                             List<GlyphSection> preCandidates,
-                            Source source,
-                            int minCoreLength,
-                            double maxAdjacency,
-                            int maxThickness,
-                            double maxSlope,
-                            boolean longAlignment)
+                            Source             source,
+                            int                minCoreLength,
+                            double             maxAdjacency,
+                            int                maxThickness,
+                            double             maxSlope,
+                            boolean            longAlignment)
     {
         // Cache computing parameters
         this.maxAdjacency = maxAdjacency;
@@ -756,6 +758,9 @@ public class StickArea
     {
         //~ Instance variables --------------------------------------------
 
+        /** the predicate to check whether section is to be processed */
+        protected final SectionPredicate predicate;
+
         /** the section iterator for the source */
         protected ListIterator<GlyphSection> vi;
 
@@ -768,11 +773,11 @@ public class StickArea
         // Source //
         //--------//
         /**
-         * Default constructor beeded for LineArea
-         *
+         * Default constructor needed for LineBuilder
          */
         public Source ()
         {
+            predicate = null;           // Not used in fact
         }
 
         //--------//
@@ -780,12 +785,29 @@ public class StickArea
         //--------//
         /**
          * Create a StickArea source on a given collection of glyph
-         * sections
+         * sections, with default predicate
          *
          * @param collection the provided sections
          */
         public Source (Collection<GlyphSection> collection)
         {
+            this(collection, new SectionPredicate());
+        }
+
+        //--------//
+        // Source //
+        //--------//
+        /**
+         * Create a StickArea source on a given collection of glyph
+         * sections, with a specific predicate for section
+         *
+         * @param collection the provided sections
+         * @param predicate the predicate to check for candidate sections
+         */
+        public Source (Collection<GlyphSection> collection,
+                       SectionPredicate         predicate)
+        {
+            this.predicate = predicate;
             ArrayList<GlyphSection> list
                 = new ArrayList<GlyphSection>(collection);
             vi = list.listIterator();
@@ -807,25 +829,9 @@ public class StickArea
                 // Update cached data
                 section = (StickSection) vi.next();
 
-                // Check this section is not already assigned to a
-                // recognized stick
-                if (section.getGlyph() == null) {
-                    section.role = null;
-                    return true;
-                }
-
-                if (section.getGlyph().isKnown()) {
-                    continue;
-                }
-
-                if (section.role == null) {
-                    return true;
-                }
-
-                if (!(section.getGlyph().getResult() instanceof SuccessResult)) {
-                    //System.out.println ("FailureResult for " + section);
-                    section.role = null;
-                    section.setGlyph(null);
+                if (predicate.check(section)) {
+                    section.role = null;        // Safer ?
+                    section.setGlyph(null);     // Safer ?
                     return true;
                 }
             }
@@ -860,6 +866,27 @@ public class StickArea
         public GlyphSection next ()
         {
             return section;
+        }
+    }
+
+    //------------------//
+    // SectionPredicate //
+    //------------------//
+    public static class SectionPredicate
+        implements Predicate<StickSection>
+    {
+        public boolean check (StickSection section)
+        {
+            // Check whether this section is not already assigned to a
+            // recognized stick
+            boolean result =
+                section.getGlyph() == null ||
+                section.role == null ||
+                !(section.getGlyph().getResult() instanceof SuccessResult);
+
+            //System.out.println(result + " " + section);
+
+            return result;
         }
     }
 
