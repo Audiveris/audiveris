@@ -204,26 +204,41 @@ public class GlyphLagView
     //---------------//
     // pointSelected //
     //---------------//
+    /**
+     * Selection of a glyph by point designation. Registered observers are
+     * notified of the glyph information. The method {@link #glyphSelected}
+     * is called with the glyph information, whether the glyph lookup has
+     * succeeded or not.
+     *
+     * @param e the mouse event
+     * @param pt the selected point in model pixel coordinates
+     */
     @Override
         public void pointSelected (MouseEvent e,
                                    Point pt)
     {
+        if (logger.isDebugEnabled()) {
+            logger.debug ("GlyphLagView pointSelected");
+        }
+
         // First, provide info related to designated point
         super.pointSelected(e, pt);
 
         // Then, look for a glyph selection
         Glyph glyph = null;
-        GlyphSection section = lookupSection(pt);
 
+        final GlyphSection section = lookupSection(pt);
         if (section != null) {
             glyph = section.getGlyph();
-
-            if (glyph != null) {
-                glyphSelected(glyph, pt);
-            }
         }
 
+        glyphSelected(glyph, pt);
+
         notifyObservers(glyph);
+
+//         if (logger.isDebugEnabled()) {
+//             logger.debug ("End of GlyphLagView pointSelected");
+//         }
     }
 
     //------------//
@@ -231,23 +246,28 @@ public class GlyphLagView
     //------------//
     @Override
         public void pointAdded (MouseEvent e,
-                                   Point pt)
+                                Point pt)
     {
-        logger.info("GlyphLagView pointAdded");
+        if (logger.isDebugEnabled()) {
+            logger.debug("GlyphLagView pointAdded");
+        }
 
         // First, provide info related to designated point
-        super.pointAdded(e, pt);
+        super.pointSelected(e, pt);
 
         // Then, look for a glyph selection
+        Glyph glyph = null;
+
         final GlyphSection section = lookupSection(pt);
-
         if (section != null) {
-            Glyph glyph = section.getGlyph();
-
-            if (glyph != null) {
-                glyphAdded(glyph, pt);
-            }
+            glyph = section.getGlyph();
         }
+
+        glyphAdded(glyph, pt);
+
+//         if (logger.isDebugEnabled()) {
+//             logger.debug("End of GlyphLagView pointAdded");
+//         }
     }
 
     //---------------//
@@ -255,15 +275,18 @@ public class GlyphLagView
     //---------------//
     /**
      * Meant to be overridden by subclasses when a real processing is
-     * desired for the selected glyph
+     * desired for the selected glyph.
      *
-     * @param glyph the selected glyph
+     * @param glyph the selected glyph, which may be null
      * @param pt the designated point
      */
     protected void glyphSelected (Glyph glyph,
                                   Point pt)
     {
         // Empty by default
+        if (logger.isDebugEnabled()) {
+            logger.debug ("Empty GlyphLagView glyphSelected " + glyph);
+        }
     }
 
     //------------//
@@ -273,12 +296,15 @@ public class GlyphLagView
      * Meant to be overridden by subclasses when a real processing is
      * desired for the added glyph
      *
-     * @param glyph the added glyph
+     * @param glyph the added glyph, which may be null
      * @param pt the designated point
      */
     protected void glyphAdded (Glyph glyph,
                                Point pt)
     {
         // Empty by default
+        if (logger.isDebugEnabled()) {
+            logger.debug ("Empty GlyphLagView glyphAdded " + glyph);
+        }
     }
 }
