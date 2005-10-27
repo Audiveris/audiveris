@@ -331,7 +331,8 @@ public class Sheet
 
                     result = new Boolean(true);
                     // Accept consistent votes
-                    getGlyphInspector().evaluateGlyphs(/*common=>*/ true);
+                    GlyphInspector inspector = getGlyphInspector();
+                    inspector.evaluateGlyphs(inspector.getSymbolMaxGrade());
                 }
 
                 public void displayUI ()
@@ -351,10 +352,10 @@ public class Sheet
                         throws ProcessingException
                 {
                     SYMBOLS.getResult();
-
-                    getGlyphInspector().processCompounds(/*common=>*/ true);
+                    GlyphInspector inspector = getGlyphInspector();
+                    inspector.processCompounds(inspector.getSymbolMaxGrade());
                     result = new Boolean(true);
-                    getGlyphInspector().evaluateGlyphs(/*common=>*/ true);
+                    inspector.evaluateGlyphs(inspector.getSymbolMaxGrade());
                 }
 
                 public void displayUI ()
@@ -401,7 +402,7 @@ public class Sheet
                     getGlyphInspector().processLeaves();
                     result = new Boolean(true);
                     getGlyphInspector().evaluateGlyphs
-                    (GlyphInspector.useBothEvaluatorsOnLeaves());
+                    (GlyphInspector.getLeafMaxGrade());
                 }
 
                 public void displayUI ()
@@ -423,10 +424,10 @@ public class Sheet
                     LEAVES.getResult();
 
                     getGlyphInspector().processCompounds
-                    (GlyphInspector.useBothEvaluatorsOnLeaves());
+                    (GlyphInspector.getLeafMaxGrade());
                     result = new Boolean(true);
                     getGlyphInspector().evaluateGlyphs
-                    (GlyphInspector.useBothEvaluatorsOnLeaves());
+                    (GlyphInspector.getLeafMaxGrade());
                 }
 
                 public void displayUI ()
@@ -449,7 +450,7 @@ public class Sheet
                     getGlyphInspector().processUndueStems();
                     result = new Boolean(true);
                     getGlyphInspector().evaluateGlyphs
-                    (GlyphInspector.useBothEvaluatorsOnLeaves());
+                    (GlyphInspector.getCleanupMaxGrade());
                 }
 
                 public void displayUI ()
@@ -1381,6 +1382,17 @@ public class Sheet
         }
 
         return null;
+    }
+
+    //-------------//
+    // isOnSymbols //
+    //-------------//
+    public boolean isOnSymbols()
+    {
+        InstanceStep iStep = getInstanceStep(currentStep());
+        return
+            iStep == SYMBOLS ||
+            iStep == SYMBOLS_COMPOUNDS;
     }
 
     //----------//
