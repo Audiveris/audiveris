@@ -44,8 +44,8 @@ import omr.glyph.ui.GlyphRepository.Monitor;
  * far, since the deserialization is a rather expensive operation.
  *
  * <p> It handles two bases : the "whole base" (all glyphs) and the "core
- * base" (just the glyphs of the core) which are accessible by {@link
- * #getWholeBase} and {@link #getCoreBase} methods.
+ * base" (just the glyphs of the core) which are accessible respectively by
+ * {@link #getWholeBase} and {@link #getCoreBase} methods.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -61,6 +61,9 @@ public class GlyphRepository
 
     // Extension for training files
     private static final String FILE_EXTENSION = ".xml";
+
+    // Name of Structures sub-directory
+    private static final String STRUCTURES_NAME = ".structures";
 
     // Specific subdirectories for training files
     private static final File sheetsPath = new File(Main.getTrainPath(),
@@ -299,12 +302,18 @@ public class GlyphRepository
     /**
      * Store all known glyphs of the provided sheet as separate XML files,
      * so that they can be later re-loaded to train an evaluator. We store
-     * glyph for which Shape is not null, and different from Noise and Stem
-     * (Clutter is thus stored as well).
+     * glyph for which Shape is not null, and different from NOISE and STEM
+     * (CLUTTER is thus stored as well).
+     *
+     * <p>STRUCTURE shapes are stored in a parallel sub-directory so that
+     * they don't get erased by shpes of their leaves.
      *
      * @param sheet the sheet whose glyphs are to be stored
+     * @param emptyStructures flag to specify if the Structure directory
+     * must be emptied beforehand
      */
-    void recordSheetGlyphs (Sheet sheet)
+    void recordSheetGlyphs (Sheet sheet,
+                            boolean emptyStructures)
     {
         try {
             // Prepare target directory
@@ -314,16 +323,23 @@ public class GlyphRepository
                 logger.info("Creating directory " + sheetDir);
                 sheetDir.mkdirs();
             } else {
-                // Empty the directory from previous xml data
-                File[] files = sheetDir.listFiles();
-                for (File file : files) {
-                    if (FileUtil.getExtension(file).equals(FILE_EXTENSION)) {
-                        file.delete();
-                    }
-                }
+                deleteXmlFiles(sheetDir);
             }
 
+            // Prepare structures directory
+            File structuresDir = new File(getSheetsPath(),
+                                          sheet.getName() + STRUCTURES_NAME);
+            if (!structuresDir.exists()) {
+                // Make sure related structure subdirectory exists
+                logger.info("Creating subdirectory " + structuresDir);
+                structuresDir.mkdirs();
+            } else if (emptyStructures) {
+                deleteXmlFiles(structuresDir);
+            }
+
+            // Now record each relevant glyph
             int glyphNb = 0;
+            int structuresNb = 0;
             for (SystemInfo system : sheet.getSystems()) {
                 for (Glyph glyph : system.getGlyphs()) {
                     Shape shape = glyph.getShape();
@@ -345,7 +361,13 @@ public class GlyphRepository
                         sb.append(".");
                         sb.append(String.format("%04d", glyph.getId()));
                         sb.append(FILE_EXTENSION);
-                        File glyphFile = new File(sheetDir, sb.toString());
+                        File glyphFile;
+                        if (shape != Shape.STRUCTURE) {
+                            glyphFile = new File(sheetDir, sb.toString());
+                        } else {
+                            structuresNb++;
+                            glyphFile = new File(structuresDir, sb.toString());
+                        }
 
                         // Store the glyph
                         getGlyphMapper().store(glyph, glyphFile);
@@ -353,7 +375,9 @@ public class GlyphRepository
                     }
                 }
             }
-            logger.info(glyphNb + " glyphs stored from " + sheet.getName());
+            logger.info(glyphNb + " glyphs stored from " + sheet.getName()
+                        + (structuresNb == 0 ? "" :
+                           " (including " + structuresNb + " structures)"));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -448,6 +472,19 @@ public class GlyphRepository
                     " glyphs copied as core training material");
     }
     //~ Methods Private ---------------------------------------------------
+
+    //----------------//
+    // deleteXmlFiles //
+    //----------------//
+    private void deleteXmlFiles (File dir)
+    {
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            if (FileUtil.getExtension(file).equals(FILE_EXTENSION)) {
+                file.delete();
+            }
+        }
+    }
 
     //----------------//
     // getGlyphMapper //
