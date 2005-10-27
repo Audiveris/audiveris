@@ -224,15 +224,6 @@ public class GlyphRegression
         serialize(getCustomBackup());
     }
 
-    //--------------------//
-    // getAcceptanceGrade //
-    //--------------------//
-    @Override
-        public double getAcceptanceGrade ()
-    {
-        return constants.acceptanceGrade.getValue();
-    }
-
     //-----------------//
     // measureDistance //
     //-----------------//
@@ -492,10 +483,6 @@ public class GlyphRegression
     private static class Constants
             extends ConstantSet
     {
-        Constant.Double acceptanceGrade = new Constant.Double
-                (3.0,
-                 "Maximum grade for being accepted");
-
         Constant.Double weightMax = new Constant.Double
                 (5e3,
                  "Maximum weight");
