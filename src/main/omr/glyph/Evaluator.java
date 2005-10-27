@@ -203,16 +203,6 @@ public abstract class Evaluator
         return labels;
     }
 
-    //--------------------//
-    // getAcceptanceGrade //
-    //--------------------//
-    /**
-     * Report the maximum grade value for an evaluation to be accepted
-     *
-     * @return the maximum acceptable grade value
-     */
-    public abstract double getAcceptanceGrade ();
-
     //-------------------//
     // getBestEvaluation //
     //-------------------//
@@ -260,13 +250,15 @@ public abstract class Evaluator
      * sheet. Too small glyphs are flagged as noisy.
      *
      * @param sheet the sheet at hand
+     * @param maxGrade the maximum acceptable grade value
      */
-    public void guessSheet (Sheet sheet)
+    public void guessSheet (Sheet sheet,
+                            double maxGrade)
     {
         for (SystemInfo system : sheet.getSystems()) {
             for (Glyph glyph : system.getGlyphs()) {
                 if (!glyph.isKnown()) {
-                    glyph.setGuess(vote(glyph));
+                    glyph.setGuess(vote(glyph, maxGrade));
                 }
             }
         }
@@ -329,14 +321,16 @@ public abstract class Evaluator
      * Run the evaluator with the specified glyph, and infer a shape.
      *
      * @param glyph the glyph to be examined
+     * @param maxGrade the maximum grade to be accepted
      *
      * @return the best suitable interpretation, or null
      */
-    public Shape vote (Glyph glyph)
+    public Shape vote (Glyph glyph,
+                       double maxGrade)
     {
         if (isBigEnough(glyph)) {
             Evaluation eval = getBestEvaluation(glyph);
-            if (eval.grade <= getAcceptanceGrade()) {
+            if (eval.grade <= maxGrade) {
                 return eval.shape;
             } else {
                 return null;
@@ -345,53 +339,6 @@ public abstract class Evaluator
             return Shape.NOISE;
         }
     }
-
-    //-----------//
-    // writeData //
-    //-----------//
-//     /**
-//      * Write an ASCII file, with one row per input pattern and desired
-//      * output.
-//      *
-//      * @param sheet
-//      */
-//     public void writeData (Sheet sheet)
-//     {
-//         try {
-//             Locale.setDefault(Locale.US);
-//             PrintStream ps = new PrintStream
-//                     (new BufferedOutputStream
-//                             (new FileOutputStream
-//                                     (Main.getOutputPath()
-//                                      + "glyph-input.txt")));
-
-//             double[] ins = new double[inSize];
-//             double[] des = new double[outSize];
-
-//             for (SystemInfo system : sheet.getSystems()) {
-//                 for (Glyph glyph : system.getGlyphs()) {
-//                     if (glyph.getShape() != null) {
-//                         feedInput(glyph, ins);
-//                         Arrays.fill(des, 0);
-//                         des[glyph.getShape().ordinal()] = 1;
-//                         // Write one row for input and desired output
-//                         for (double d : ins) {
-//                             ps.printf("%e;", d);
-//                         }
-//                         for (double d : des) {
-//                             ps.printf("%3.1g;", d);
-//                         }
-//                         ps.printf("%02d-%-15s", glyph.getShape().ordinal(),
-//                                   glyph.getShape());
-//                         ps.println();
-//                     }
-//                 }
-//             }
-//             ps.close();
-//         } catch (FileNotFoundException ex) {
-//             ex.printStackTrace();
-//         }
-//     }
 
     //--------------//
     // boolAsDouble //
