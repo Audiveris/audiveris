@@ -51,7 +51,7 @@ import java.util.List;
  * @version $Id$
  */
 public class LineBuilder
-        extends StickArea
+    extends StickArea
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -68,8 +68,7 @@ public class LineBuilder
     private LineSource source;
 
     // Hole areas
-    private List<StickArea> holeAreas
-            = new ArrayList<StickArea>();
+    private List<StickArea> holeAreas = new ArrayList<StickArea>();
 
     // Best line equation
     private Line line = null;
@@ -141,13 +140,15 @@ public class LineBuilder
         maxThickness = staveScale.fracToPixels(constants.maxThickness);
 
         // Initialize the line area
-        initialize(hLag,
-                   null, // No pre-candidates
-                   source, // Source for sections
-                   sheet.getScale().fracToPixels(constants.coreSectionLength), // minCoreLength
-                   constants.maxAdjacency.getValue(), // maxAdjacency
-                   maxThickness, constants.maxSlope.getValue(), // max stick slope
-                   true); // closeTest
+        initialize
+            (hLag,
+             null, // No pre-candidates
+             source, // Source for sections
+             sheet.getScale().fracToPixels(constants.coreSectionLength), // minCoreLength
+             constants.maxAdjacency.getValue(), // maxAdjacency
+             maxThickness,
+             constants.maxSlope.getValue(), // max stick slope
+             true); // closeTest
 
         if (logger.isDebugEnabled()) {
             logger.debug("End of scanning LineBuilder #" + id + ", found "
@@ -544,7 +545,7 @@ public class LineBuilder
     // LineSource //
     //------------//
     private static class LineSource
-            extends StickArea.Source
+        extends StickArea.Source
     {
         //~ Instance variables --------------------------------------------
 

@@ -34,7 +34,7 @@ import java.util.Comparator;
  * @version $Id$
  */
 public class HorizontalArea
-        extends StickArea
+    extends StickArea
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -71,7 +71,7 @@ public class HorizontalArea
         Scale scale = sheet.getScale();
         initialize(hLag,
                    null,
-                   new StickArea.Source(hLag.getVertices()), // source for adequate sections
+                   new Source(hLag.getVertices()), // source for adequate sections
                    scale.fracToPixels(constants.coreSectionLength), // minCoreLength
                    constants.maxAdjacency.getValue(), // maxAdjacency
                    maxThickness, // maxThickness
