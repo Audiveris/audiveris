@@ -125,7 +125,7 @@ public class GlyphSection
             isMember()
             && ((glyph.getResult() != null
                  && glyph.getResult() instanceof SuccessResult)
-                || glyph.isKnown())
+                || glyph.isWellKnown())
             ;
     }
 
