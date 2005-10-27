@@ -101,31 +101,27 @@ public class GlyphInspector
     // evaluateGlyphs //
     //----------------//
     /**
-     * All symbol glyphs of the sheet, for which we can get a common vote
-     * of the evaluators, are assigned the voted shape.
+     * All symbol glyphs of the sheet, for which we can get a positive vote
+     * of the evaluator, are assigned the voted shape.
      *
-     * @param common if true, common vote (network + regression) is
-     * required, otherwise only the network vote is used
+     * @param maxGrade maximum value for acceptable grade
      */
-    public void evaluateGlyphs (boolean common)
+    public void evaluateGlyphs (double maxGrade)
     {
         int acceptNb = 0;
         int knownNb = 0;
         int noiseNb = 0;
         int clutterNb = 0;
+        int structureNb = 0;
+        Evaluator evaluator = GlyphNetwork.getInstance();
+
         for (int id = sheet.getFirstSymbolId();
              id <= vLag.getLastGlyphId(); id++) {
             Glyph glyph = vLag.getGlyph(id);
             if (glyph != null) {
                 if (glyph.getShape() == null) {
                     // Get vote
-                    Shape vote;
-                    if (common) {
-                        vote = commonVote(glyph);
-                    } else {
-                        vote = GlyphNetwork.getInstance().vote(glyph);
-                    }
-
+                    Shape vote = evaluator.vote(glyph, maxGrade);
                     if (vote != null) {
                         glyph.setShape(vote);
                         acceptNb++;
@@ -133,6 +129,8 @@ public class GlyphInspector
                             noiseNb++;
                         } else if (vote == Shape.CLUTTER) {
                             clutterNb++;
+                        } else if (vote == Shape.STRUCTURE) {
+                            structureNb++;
                         } else {
                             knownNb++;
                         }
@@ -141,53 +139,20 @@ public class GlyphInspector
             }
         }
         logger.info(acceptNb + " glyph(s) accepted (" +
-                    knownNb + " as known, " +
                     noiseNb + " as noise, " +
-                    clutterNb + " as clutter)");
-    }
-    //------------//
-    // commonVote //
-    //------------//
-    /**
-     * Look for a common vote, that is the vote must be the same for both
-     * evaluators, otherwise a null value is returned
-     *
-     * @param glyph the glyph to evaluate
-     * @return the common vote, or null
-     */
-    public static Shape commonVote (Glyph glyph)
-    {
-        final boolean useNetwork    = constants.useNetwork.getValue();
-        final boolean useRegression = constants.useRegression.getValue();
-
-        if (useNetwork) {
-            Shape nVote = GlyphNetwork.getInstance().vote(glyph);
-            if (useRegression) {
-                Shape mVote = GlyphRegression.getInstance().vote(glyph);
-                if (nVote != null && nVote == mVote) {
-                    return nVote;
-                }
-            } else {
-                return nVote;
-            }
-        } else {
-            if (useRegression) {
-                return GlyphRegression.getInstance().vote(glyph);
-            } else {
-                logger.warning("No evaluator activated");
-            }
-        }
-
-        return null;
+                    structureNb + " as structure, " +
+                    clutterNb + " as clutter, " +
+                    knownNb + " as known)");
     }
 
     //----------------------//
     // removeSystemUnknowns //
     //----------------------//
     /**
-     * On a specified system, look for all unknown glyphs, and remove them
-     * from its glyphs collection as well as from the containing lag.
-     * Purpose is to prepare room for a new glyph extraction
+     * On a specified system, look for all unknown glyphs (including glyphs
+     * classified as STRUCTURE shape), and remove them from its glyphs
+     * collection as well as from the containing lag.  Purpose is to
+     * prepare room for a new glyph extraction
      *
      * @param system the specified system
      */
@@ -195,7 +160,8 @@ public class GlyphInspector
     {
         List<Glyph> toremove = new ArrayList<Glyph>();
         for (Glyph glyph : system.getGlyphs()) {
-            if (!glyph.isKnown()) {
+            if (!glyph.isKnown() ||
+                glyph.getShape() == Shape.STRUCTURE) {
                 toremove.add(glyph);
             }
         }
@@ -227,7 +193,7 @@ public class GlyphInspector
         try {
             new VerticalsBuilder(sheet);
         } catch (ProcessingException ex) {
-            // User already warned
+            // User has already been warned
         }
     }
 
@@ -257,14 +223,14 @@ public class GlyphInspector
      * Look for glyphs portions that should be considered as parts of
      * compound glyphs
      *
-     * @param common require common vote if set to true
+     * @param maxGrade mamximum acceptance grade
      * @return the number of successful compounds
      */
-    public int processCompounds (boolean common)
+    public int processCompounds (double maxGrade)
     {
         int compoundNb = 0;
         for (SystemInfo system : sheet.getSystems()) {
-            compoundNb += processSystemCompounds(system, common);
+            compoundNb += processSystemCompounds(system, maxGrade);
         }
 
         logger.info(compoundNb + " compound(s) recognized");
@@ -279,18 +245,18 @@ public class GlyphInspector
      * considered as parts of compound glyphs
      *
      * @param system the system where splitted glyphs are looked for
-     * @param common require common vote if set to true
+     * @param maxGrade mamximum acceptance grade
      * @return the number of successful compounds
      */
     public int processSystemCompounds (SystemInfo system,
-                                       boolean    common)
+                                       double     maxGrade)
     {
         int nb = 0;
 
         // Sort unknown glyphs by decreasing weight
         List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs().size());
         for (Glyph glyph : system.getGlyphs()) {
-            if (!glyph.isWellKnown()) {
+            if (!glyph.isKnown()) {
                 glyphs.add(glyph);
             }
         }
@@ -305,10 +271,11 @@ public class GlyphInspector
 
         // Process each glyph in turn, by looking at smaller ones
         int index = -1;
+        Evaluator evaluator = GlyphNetwork.getInstance();
         for (Glyph glyph : glyphs) {
             index++;
             // Since the glyphs are modified on the fly ...
-            if (glyph.isWellKnown()) {
+            if (glyph.isKnown()) {
                 continue;
             }
 
@@ -321,7 +288,7 @@ public class GlyphInspector
             // intersect the contour of glyph at hand
             SUB_GLYPHS:
             for (Glyph g : glyphs.subList(index +1, glyphs.size())) {
-                if (g.isWellKnown()) {
+                if (g.isKnown()) {
                     continue;
                 }
 
@@ -333,14 +300,10 @@ public class GlyphInspector
                         logger.debug(glyph + " & " + g + " -> " + compound);
                     }
 
-                    Shape vote;
-                    if (common) {
-                        vote = commonVote(compound);
-                    } else {
-                        vote = GlyphNetwork.getInstance().vote(compound);
-                    }
+                    Shape vote = evaluator.vote(compound, maxGrade);
                     if (vote != null
                         && vote != Shape.NOISE
+                        && vote != Shape.STRUCTURE
                         && vote != Shape.CLUTTER) {
                         compound.setShape(vote);
                         builder.insertCompound(compound, parts);
@@ -445,10 +408,11 @@ public class GlyphInspector
 
         // Try to recognize each glyph in turn
         List<Glyph> symbols = new ArrayList<Glyph>();
+        final Evaluator evaluator = GlyphNetwork.getInstance();
+        final double maxGrade = getCleanupMaxGrade();
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
-                //Shape vote = commonVote(glyph);
-                Shape vote = GlyphNetwork.getInstance().vote(glyph);
+                Shape vote = evaluator.vote(glyph, maxGrade);
                 if (vote != null) {
                     glyph.setShape(vote);
                     if (glyph.isWellKnown()) {
@@ -541,19 +505,28 @@ public class GlyphInspector
         glyph.destroy(cutSections);
     }
 
-    //---------------------------//
-    // useBothEvaluatorsOnLeaves //
-    //---------------------------//
-    /**
-     * Tell whether both evaluators should be used in common, starting from
-     * leaves. This is recommanded once the evaluators are sufficiently
-     * trained, but should be set to false in initial training actions.
-     *
-     * @return true if both must be used
-     */
-    public static boolean useBothEvaluatorsOnLeaves()
+    //-------------------//
+    // getSymbolMaxGrade //
+    //-------------------//
+    public static double getSymbolMaxGrade()
     {
-        return constants.useBothOnLeaves.getValue();
+        return constants.symbolMaxGrade.getValue();
+    }
+
+    //-----------------//
+    // getLeafMaxGrade //
+    //-----------------//
+    public static double getLeafMaxGrade()
+    {
+        return constants.leafMaxGrade.getValue();
+    }
+
+    //--------------------//
+    // getCleanupMaxGrade //
+    //--------------------//
+    public static double getCleanupMaxGrade()
+    {
+        return constants.cleanupMaxGrade.getValue();
     }
 
     //-----------//
@@ -562,17 +535,17 @@ public class GlyphInspector
     private static class Constants
         extends ConstantSet
     {
-        Constant.Boolean useBothOnLeaves = new Constant.Boolean
-                (true,
-                 "Should we use both evaluators for Leaves and on ?");
+        Constant.Double symbolMaxGrade = new Constant.Double
+                (1.0001,
+                 "Maximum acceptance grade for a symbol");
 
-        Constant.Boolean useNetwork = new Constant.Boolean
-                (true,
-                 "Should we use the Neural Network evaluator ?");
+        Constant.Double leafMaxGrade = new Constant.Double
+                (1.01,
+                 "Maximum acceptance grade for a leaf");
 
-        Constant.Boolean useRegression = new Constant.Boolean
-                (true,
-                 "Should we use the Regression evaluator ?");
+        Constant.Double cleanupMaxGrade = new Constant.Double
+                (1.2,
+                 "Maximum grade for cleanup phase");
 
         Scale.Fraction boxWiden = new Scale.Fraction
                 (0.15,
