@@ -11,13 +11,14 @@
 package omr.lag;
 
 import omr.graph.Digraph;
+import omr.graph.DigraphView;
 import omr.util.Logger;
+import omr.util.Predicate;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collection;
-import omr.graph.DigraphView;
+import java.util.List;
 
 /**
  * Class <code>Lag</code> handles a graph of <b>sections</b> (sets of
@@ -230,7 +231,7 @@ public class Lag <L extends Lag     <L, S>,
      *
      * @return the list of sections purged in this call
      */
-    public List<S> purgeSections (Predicate predicate)
+    public List<S> purgeSections (Predicate<Section> predicate)
     {
         // List of sections to be purged (to avoid concurrent
         // modifications)
@@ -239,7 +240,7 @@ public class Lag <L extends Lag     <L, S>,
         // Iterate on all sections
         for (S section : getSections()) {
             // Check predicate on the current section
-            if (predicate.applies(section)) {
+            if (predicate.check(section)) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Purging " + section);
                 }
@@ -268,9 +269,9 @@ public class Lag <L extends Lag     <L, S>,
      */
     public List<S> purgeTinySections (final int minForeWeight)
     {
-        return purgeSections(new Predicate()
+        return purgeSections(new Predicate<Section>()
         {
-            public boolean applies (Section section)
+            public boolean check (Section section)
             {
                 return (section.getForeWeight() < minForeWeight)
                        && ((section.getInDegree() == 0)
@@ -314,30 +315,5 @@ public class Lag <L extends Lag     <L, S>,
         protected String getPrefix ()
     {
         return "Lag";
-    }
-
-    //~ Interfaces --------------------------------------------------------
-
-    //-----------//
-    // Predicate //
-    //-----------//
-    /**
-     * Interface <code>Predicate</code> allows to provide conditions that a
-     * section must meet, for example to be purged out of the lag as in
-     * {@link #purgeTinySections}
-     */
-    public static interface Predicate
-    {
-        //~ Methods -------------------------------------------------------
-
-        /**
-         * Purpose of the routine is to check if the predicates applies to
-         * the section provided as a parameter
-         *
-         * @param section section to check predicate on
-         *
-         * @return true if the predicate applies for the section at hand
-         */
-        boolean applies (Section section);
     }
 }
