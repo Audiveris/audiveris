@@ -638,24 +638,6 @@ public class Glyph
         return stemNumber;
     }
 
-//     //------------//
-//     // hasSymbols //
-//     //------------//
-//     /**
-//      * Checks whether a stick is connected to known symbols
-//      *
-//      * @param predicate the predicate to apply on each glyph
-//      * @return true is there is at least one known symbol connected
-//      */
-//     public boolean hasSymbols(Predicate<Glyph> predicate)
-//     {
-//         if (getSymbolsBefore(predicate).size() > 0) {
-//             return true;
-//         }
-
-//         return getSymbolsAfter(predicate).size() > 0;
-//     }
-
     //---------//
     // isKnown //
     //---------//
@@ -688,7 +670,8 @@ public class Glyph
         return
             shape != null &&
             shape != Shape.NOISE &&
-            shape != Shape.CLUTTER;
+            shape != Shape.CLUTTER &&
+            shape != Shape.STRUCTURE;
     }
 
     //--------//
