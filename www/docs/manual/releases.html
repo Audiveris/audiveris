@@ -3,7 +3,7 @@
     <HEAD>
 	<!-- 	$Id$	 -->
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252"/>
-	<TITLE>Audiveris Installation Manual</TITLE>
+	<TITLE>Audiveris Releases</TITLE>
 	<META NAME="AUTHOR" CONTENT="Herv&eacute; Bitteur"/>
 	<META NAME="CLASSIFICATION" CONTENT="Documentation on Audiveris releases"/>
 	<META NAME="DESCRIPTION" CONTENT="Details on each Audiveris release"/>
@@ -34,6 +34,169 @@
 	</ADDRESS>
 	
 	<DIV CLASS="axial">
+
+	    <!-- ====================================================== -->
+	    
+	    <A NAME="2.4">
+		<H3>2.4 Release</H3>
+	    </A>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH>Introduction</TH>
+		    <TD>
+			<UL>
+			    <LI>This release should focus on the
+				addition of recognition feature, with
+				a dedicated score window, and the
+				output stored in MusicXML
+				format..</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Distribution Changes</TH>
+		    <TD>
+			<UL>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>New Features</TH>
+		    <TD>
+			<UL>
+			    <LI>Recognition : Implementation of
+				recognition on the base of extracted
+				symbols.</LI>
+			    <LI>Recognition : Storing of the
+				recognition result in MusicXML
+				format.</LI>
+			    <LI>GUI : New window dedicated to score
+				view, to more easily check the
+				recognition results.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Bug Fixes</TH>
+		    <TD>
+			<UL>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Known Issues</TH>
+		    <TD>
+			<UL>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Other Changes</TH>
+		    <TD>
+			<UL>
+			</UL>
+		    </TD>
+		</TR>
+	    </TABLE>
+
+	    <!-- ====================================================== -->
+	    
+	    <A NAME="2.3">
+		<H3>2.3 Release</H3>
+	    </A>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH>Introduction</TH>
+		    <TD>
+			<UL>
+			    <LI>This release is rather consistent in
+				terms of extraction ratio, thanks to
+				the adoption of CLUTTER and STRUCTURE
+				shapes, and the focus on a single
+				evaluator.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Distribution Changes</TH>
+		    <TD>
+			<UL>
+			    <LI>Properties : the user property files,
+				used respectively for build and run
+				phases, are now located within a
+				".audiveris" folder in ${user.home}
+				directory.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>New Features</TH>
+		    <TD>
+			<UL>
+			    <LI>Extraction : Added two specific
+				Shapes, known as CLUTTER and
+				STRUCTURE, so that evaluator can
+				differentiate between a valid symbol
+				and symbols that either should be
+				discarded (Clutter) or kept for later
+				leaves retrievals (Structure).</LI>
+			    <LI>Extraction : Got rid of the Regression
+				evaluator, and organized all
+				recognition steps on the sole use of
+				Neural Network evaluator.
+			    <LI>GUI : Simplified and rationalized the
+				mouse events related to selection,
+				lasso, etc... It is now possible to
+				incrementally select several glyphs
+				and process them globally. This eases
+				the user actions when manual
+				assignment is needed.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Bug Fixes</TH>
+		    <TD>
+			<UL>
+			    <LI>GUI : Duplications of mouse events
+				were due to registering of already
+				registered mouse listeners.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Known Issues</TH>
+		    <TD>
+			<UL>
+			    <LI>Fonts : We should look for another
+				free musical font. The current
+				"Musette" font, used in menu items,
+				lacks too many symbols.</LI>
+			    <LI>Memory : The memory leak (see previous
+				version) is still to be fixed.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Other Changes</TH>
+		    <TD>
+			<UL>
+			</UL>
+		    </TD>
+		</TR>
+	    </TABLE>
 
 	    <!-- ====================================================== -->
 	    
@@ -115,7 +278,121 @@
 		    <TH>Known Issues</TH>
 		    <TD>
 			<UL>
-			    <LI>Memory : This is still a memory leak,
+			    <LI>Memory : There is still a memory leak,
+				since even after current Sheet has
+				been closed, there is still a Sheet
+				instance referenced with Score,
+				related views, etc... Workaround if
+				several Sheets have to be processed
+				interactively is to exit the
+				application after each
+				processing.</LI>
+			    <LI>Documentation : Because of JavaScript
+				building of doc frames, the "Back" and
+				"Forward" commands trigger duplicate
+				frame loads. Function is OK, but this
+				flickering should be avoided.</LI>
+			    <LI>Java : There is still half a dozen of
+				compiler warnings related to unchecked
+				generics assignments, to be cleaned in
+				a next release.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Other Changes</TH>
+		    <TD>
+			<UL>
+			    <LI>Verticals : Managing of stems is done
+				as much as possible like other glyphs,
+				since managing separate lists in synch
+				was too much error-prone.</LI>
+			</UL>
+		    </TD>
+		</TR>
+	    </TABLE>
+
+	    
+	    <A NAME="2.2">
+		<H3>2.2 Release</H3>
+	    </A>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH>Introduction</TH>
+		    <TD>
+			<UL>
+			    <LI>This is a release still focused on
+				improvement of existing features
+				rather than functional extension.</LI>
+			    <LI>In particular, the attempt to handle
+				clutter as a recognized glyph shape in
+				the neural network (to avoid false
+				positives) has been postponed to next
+				release.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Distribution Changes</TH>
+		    <TD>
+			<UL>
+			    <LI>Tools : All the companion tools have
+				been upgraded to their latest version,
+				and the Installation manual updated
+				accordingly. </LI>
+			    <LI>Documentation : The whole set of
+				documentations, including the JavaDoc
+				API, has been organized under the same
+				umbrella to allow convenient access to
+				any piece from the documentation
+				banner.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>New Features</TH>
+		    <TD>
+			<UL>
+			    <LI>Image : Added the conversion from
+				color image to gray-scale image. This
+				operation is launched automatically
+				when a color image is detected at load
+				time.</LI>
+			    <LI>Glyphs : Added a Deassign button in
+				the Glyph board, with action depending
+				upon the glyph at hand (for example
+				deassigning a stem has important
+				consequences, more than for a
+				standalone symbol).</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Bug Fixes</TH>
+		    <TD>
+			<UL>
+			    <LI>GUI : No more toggle button is active
+				for the Bars step, since there were no
+				specific Sections to handle.</LI>
+			    <LI>Documentation : Fixed the use of CVS
+				tags in java files (for version
+				information) which were mistaken with
+				real CVS tags in related javadoc HTML
+				files</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Known Issues</TH>
+		    <TD>
+			<UL>
+			    <LI>Memory : There is still a memory leak,
 				since even after current Sheet has
 				been closed, there is still a Sheet
 				instance referenced with Score,
