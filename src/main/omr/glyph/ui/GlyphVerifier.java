@@ -822,9 +822,15 @@ public class GlyphVerifier
             //---------------//
             // pointSelected //
             //---------------//
+            /**
+             * Selection of a glyph by point designation.
+             *
+             * @param e the mouse event
+             * @param pt the selected point in model pixel coordinates
+             */
             @Override
                 public void pointSelected (MouseEvent e,
-                                          Point pt)
+                                           Point pt)
             {
                 super.pointSelected(e, pt);
 
