@@ -33,6 +33,7 @@ import omr.ui.ScrollLagView;
 import omr.ui.SectionBoard;
 import omr.ui.Zoom;
 import omr.util.Logger;
+import omr.util.Predicate;
 
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -101,7 +102,9 @@ public class VerticalsBuilder
         // bars but not for stems. So, let's rebuild the stick area from
         // the initial lag.
         verticalsArea = new VerticalArea
-            (sheet, vLag,
+            (sheet,
+             vLag,
+             new MySectionPredicate(),
              scale.fracToPixels(constants.maxStemThickness));
 
         // Split these candidates per system
@@ -235,7 +238,7 @@ public class VerticalsBuilder
 
             final int viewIndex = lag.getViews().indexOf(this);
 
-            // All remaining vertical sticks clutter (HB TRYING)
+            // All remaining vertical sticks clutter
             for (Stick stick : verticalsArea.getSticks()) {
                 stick.colorize(lag, viewIndex, Color.red);
             }
@@ -584,6 +587,24 @@ public class VerticalsBuilder
             if (logger.isDebugEnabled()) {
                 dump();
             }
+        }
+    }
+
+    //--------------------//
+    // MySectionPredicate //
+    //--------------------//
+    private static class MySectionPredicate
+        extends VerticalArea.SectionPredicate
+    {
+        public boolean check (StickSection section)
+        {
+            // Check whether this section is not already assigned to a
+            // recognized glyph
+            boolean result =
+                section.getGlyph() == null ||
+                !section.getGlyph().isWellKnown();
+
+            return result;
         }
     }
 
