@@ -202,10 +202,6 @@ public class Rubber
                            rect.y + (rect.height / 2));
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("getCenter pt=" + pt);
-        }
-
         return pt;
     }
 
@@ -220,8 +216,15 @@ public class Rubber
      */
     public void setComponent (JComponent component)
     {
+        // Remember the related component (to get visible rect, etc ...)
         this.component = component;
+
+        // To be notified of mouse clicks
+        component.removeMouseListener(this); // No multiple notifications
         component.addMouseListener(this);
+
+        // To be notified of mouse mouvements
+        component.removeMouseMotionListener(this); // No multiple notifs
         component.addMouseMotionListener(this);
     }
 
@@ -236,10 +239,6 @@ public class Rubber
      */
     public Rectangle getRectangle ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getRectangle rect=" + rect);
-        }
-
         return rect;
     }
 
@@ -268,12 +267,7 @@ public class Rubber
      */
     public void mouseDragged (MouseEvent e)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("mouseDragged");
-        }
-
         if (isDragWanted(e)) {
-            //logger.info("Dragging");
             final Rectangle vr = component.getVisibleRect();
             vr.setBounds(vr.x + rawRect.x - e.getX(),
                          vr.y + rawRect.y - e.getY(),
@@ -287,7 +281,6 @@ public class Rubber
                     }
                 });
         } else if (isRubberWanted(e)) {
-            //logger.info("Modifying rectangle");
             updateSize(e);
             if (mouseMonitor != null) {
                 mouseMonitor.rectangleSelected(e, rect);
@@ -313,16 +306,12 @@ public class Rubber
 
         if (mouseMonitor != null) {
             if (isDragWanted(e)) {
-                //logger.info("Rubber drag starting");
                 // Nothing
             } else if (isAdditionWanted(e)) {
-                //logger.info("Rubber addition");
                 mouseMonitor.pointAdded(e, getCenter());
             } else if (isContextWanted(e)) {
-                //logger.info("Rubber context");
                 mouseMonitor.contextSelected(e, getCenter());
             } else {
-                //logger.info("Rubber selection");
                 mouseMonitor.pointSelected(e, getCenter());
             }
         }
@@ -338,14 +327,9 @@ public class Rubber
      */
     public void mouseReleased (MouseEvent e)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("mouseReleased");
-        }
-
         if (mouseMonitor != null) {
             if (isRezoomWanted(e)) {
                 updateSize(e);
-                //zoomToRectangle();
                 mouseMonitor.rectangleZoomed(e, rect);
             } else if (rect != null && rect.width != 0 && rect.height != 0) {
                 updateSize(e);
@@ -372,10 +356,6 @@ public class Rubber
      */
     public void render (Graphics g)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("render rect=" + rect);
-        }
-
         if (rect != null) {
             g.setXORMode(Color.white);
 
@@ -417,10 +397,6 @@ public class Rubber
         if (component != null) {
             component.repaint();
         }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("resetOrigin rawRect=" + rawRect);
-        }
     }
 
     //----------------//
@@ -445,10 +421,6 @@ public class Rubber
 
         if (component != null) {
             component.repaint();
-        }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("resetRectangle rawRect=" + rawRect);
         }
     }
 
@@ -507,7 +479,6 @@ public class Rubber
      */
     protected boolean isRubberWanted (MouseEvent e)
     {
-        //return e.isShiftDown();
         int onmask = BUTTON1_DOWN_MASK;
         int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
 
@@ -615,10 +586,6 @@ public class Rubber
         if ((rect.y + rect.height) > compHeight) {
             rect.height = compHeight - rect.y;
         }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("normalize rawRect=" + rawRect + " rect=" + rect);
-        }
     }
 
     //-------//
@@ -643,7 +610,6 @@ public class Rubber
     {
         if (zoom != null) {
             return zoom.truncScaled(val);
-            //return zoom.scaled(val);
         } else {
             return val;
         }
@@ -656,7 +622,6 @@ public class Rubber
     {
         if (zoom != null) {
             return zoom.truncUnscaled(val);
-            //return zoom.unscaled(val);
         } else {
             return val;
         }
