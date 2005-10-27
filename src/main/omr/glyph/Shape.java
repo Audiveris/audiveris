@@ -54,7 +54,9 @@ public enum Shape
 
     // Pure physical stuff
     //
+        /*-----*/ NOISE("Too small stuff"),
         /*-----*/ CLUTTER("Pure garbage"),
+        /*-----*/ STRUCTURE("Structure of items"),
         /*-----*/ DOT("General dot shape"),
         /*-----*/ DASH("General dash shape"),
         /*-----*/ BEAM("Beam between two stems"),
@@ -350,7 +352,6 @@ public enum Shape
 
         // Miscellaneous
         //
-        /*-----*/ NOISE("Too small stuff"),
         /*-----*/ LEDGER("Ledger"),
         /*-----*/ STAFF_LINE("Staff Line"),
         /*-----*/ THICK_BAR_LINE("Thick bar line"),
@@ -827,7 +828,8 @@ public enum Shape
 
     // Predefined shape ranges
     //
-    public static final Range Physicals     = new Range(EnumSet.range(CLUTTER, FERMATA_BELOW_BEND));
+    public static final Range Physicals     = new Range(EnumSet.range(NOISE, FERMATA_BELOW_BEND));
+    public static final Range Garbage       = new Range(EnumSet.range(NOISE, STRUCTURE));
     //
     public static final Range Bars          = new Range(EnumSet.range(DAL_SEGNO, BRACKET));
     public static final Range Clefs         = new Range(EnumSet.range(G_CLEF, F_CLEF_OTTAVA_BASSA));
