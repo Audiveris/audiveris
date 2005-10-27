@@ -13,8 +13,8 @@ package omr.glyph.ui;
 import omr.glyph.Evaluation;
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
+import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
-import omr.glyph.GlyphRegression;
 import omr.glyph.Shape;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -59,8 +59,6 @@ public class EvaluatorsPanel
     // Pool of evaluators
     private final GlyphNetwork    network = GlyphNetwork.getInstance();
     private final EvaluatorPanel  networkPanel;
-    private final GlyphRegression regression   = GlyphRegression.getInstance();
-    private final EvaluatorPanel  regressionPanel;
 
     //~ Constructors ------------------------------------------------------
 
@@ -68,8 +66,7 @@ public class EvaluatorsPanel
     // EvaluatorsPanel //
     //-----------------//
     /**
-     * Create a panel with two evaluators (one neural network and one based
-     * on regression)
+     * Create a panel with one neural network evaluator
      *
      * @param sheet the related sheet, or null
      * @param pane the glyph pane, or null if this panel is just an output
@@ -85,7 +82,6 @@ public class EvaluatorsPanel
         }
 
         networkPanel = new EvaluatorPanel(network);
-        regressionPanel = new EvaluatorPanel(regression);
 
         FormLayout layout = new FormLayout
             ("pref",
@@ -98,9 +94,6 @@ public class EvaluatorsPanel
 
         int r = 1;                  // --------------------------------
         builder.add(networkPanel,       cst.xy (1, r));
-
-        r += 2;                     // --------------------------------
-        builder.add(regressionPanel,    cst.xy (1, r));
     }
 
     //~ Methods -----------------------------------------------------------
@@ -132,23 +125,9 @@ public class EvaluatorsPanel
         if (glyph == null || glyph.getShape() == Shape.COMBINING_STEM) {
             // Blank the output
             networkPanel.selector.setEvals(null);
-            regressionPanel.selector.setEvals(null);
         } else {
             networkPanel.selector.setEvals(network.getEvaluations(glyph));
-            regressionPanel.selector.setEvals(regression.getEvaluations(glyph));
         }
-    }
-
-    //------------//
-    // guessSheet //
-    //------------//
-    /**
-     * Use the network evaluator to guess all non-assigned glyphs in the
-     * sheet
-     */
-    public void guessSheet ()
-    {
-        network.guessSheet(sheet);
     }
 
     //~ Classes -----------------------------------------------------------
@@ -357,7 +336,7 @@ public class EvaluatorsPanel
                     }
 
                     comp.setVisible(true);
-                    if (eval.grade <= evaluator.getAcceptanceGrade()) {
+                    if (eval.grade <= GlyphInspector.getSymbolMaxGrade()) {
                         comp.setForeground(EVAL_GOOD_COLOR);
                     } else {
                         comp.setForeground(EVAL_SOSO_COLOR);
@@ -407,19 +386,20 @@ public class EvaluatorsPanel
             {
                 int ok = 0;
                 int total = 0;
+                final double maxGrade = GlyphInspector.getSymbolMaxGrade();
                 for (SystemInfo system : sheet.getSystems()) {
                     for (Glyph glyph : system.getGlyphs()) {
                         if (glyph.isKnown() &&
                             glyph.getShape() != Shape.COMBINING_STEM) {
                             total++;
-                            Shape guess = evaluator.vote(glyph);
+                            Shape guess = evaluator.vote(glyph, maxGrade);
                             if (glyph.getShape() == guess) {
                                 ok++;
-                                view.colorizeGlyph
-                                    (glyph, Shape.okColor);
+                                view.colorizeGlyph(glyph,
+                                                   Shape.okColor);
                             } else {
-                                view.colorizeGlyph
-                                    (glyph, Shape.missedColor);
+                                view.colorizeGlyph(glyph,
+                                                   Shape.missedColor);
                             }
                         }
                     }

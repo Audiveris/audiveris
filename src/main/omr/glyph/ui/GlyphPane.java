@@ -15,8 +15,9 @@ import omr.Step;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphBuilder;
 import omr.glyph.GlyphDirectory;
-import omr.glyph.GlyphLag;
 import omr.glyph.GlyphInspector;
+import omr.glyph.GlyphLag;
+import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -82,7 +83,7 @@ public class GlyphPane
     // Popup menu related to glyph selection
     private final GlyphMenu popup;
 
-    // Panel of glyph evaluators
+    // Panel of glyph evaluator
     private final EvaluatorsPanel evaluatorsPanel;
 
     // Various actions (for menus, popup, toolbar, ...)
@@ -148,7 +149,8 @@ public class GlyphPane
         sheet.getAssembly().addViewTab("Glyphs", slv, boardsPane);
 
         // First evaluation -> NOISEs
-        evaluatorsPanel.guessSheet();
+        GlyphNetwork.getInstance().guessSheet
+            (sheet, GlyphInspector.getSymbolMaxGrade());
     }
 
     //~ Methods -----------------------------------------------------------
@@ -551,7 +553,7 @@ public class GlyphPane
 
         public void actionPerformed(ActionEvent e)
         {
-            inspector.evaluateGlyphs(inspector.useBothEvaluatorsOnLeaves());
+            inspector.evaluateGlyphs(inspector.getLeafMaxGrade());
             refresh();
         }
     }
@@ -598,7 +600,9 @@ public class GlyphPane
                 {
                     public Object construct()
                     {
-                        repository.recordSheetGlyphs(sheet);
+                        repository.recordSheetGlyphs
+                            (sheet,
+                             /* emptyStructures => */ sheet.isOnSymbols());
                         return null;
                     }
                 };
@@ -638,7 +642,7 @@ public class GlyphPane
         public void actionPerformed(ActionEvent e)
         {
             inspector.processLeaves();
-            inspector.evaluateGlyphs(inspector.useBothEvaluatorsOnLeaves());
+            inspector.evaluateGlyphs(inspector.getLeafMaxGrade());
             refresh();
         }
     }
@@ -656,7 +660,7 @@ public class GlyphPane
 
         public void actionPerformed(ActionEvent e)
         {
-            inspector.processCompounds(inspector.useBothEvaluatorsOnLeaves());
+            inspector.processCompounds(inspector.getLeafMaxGrade());
             refresh();
         }
     }
