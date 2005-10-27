@@ -138,6 +138,13 @@ public abstract class ZoomedPanel
     //---------------//
     // pointSelected //
     //---------------//
+    /**
+     * Point designation, which does nothing except notifying registered
+     * observers about the designated point.
+     *
+     * @param e the mouse event
+     * @param pt the selected point in model pixel coordinates
+     */
     public void pointSelected (MouseEvent e,
                                Point pt)
     {
