@@ -290,6 +290,13 @@ public class LagView <L extends Lag     <L, S>,
     //---------------//
     // pointSelected //
     //---------------//
+    /**
+     * Selection of a Section and a Run by point designation. Registered
+     * observers are notified of the Section and Run informations.
+     *
+     * @param e the mouse event
+     * @param pt the selected point in model pixel coordinates
+     */
     @Override
         public void pointSelected (MouseEvent e,
                                    Point      pt)
