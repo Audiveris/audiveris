@@ -128,21 +128,65 @@ public class SymbolGlyphView
         contextSelected = false;
     }
 
-    //------------//
-    // pointAdded //
-    //------------//
+    //---------------//
+    // glyphSelected //
+    //---------------//
+    /**
+     * Processing to be performed on the selected glyph.
+     *
+     * @param glyph the selected glyph, which may be null
+     * @param pt the designated point
+     */
     @Override
-        public void pointAdded (MouseEvent e,
-                                Point pt)
+        protected void glyphSelected (Glyph glyph,
+                                      Point pt)
     {
         if (logger.isDebugEnabled()) {
-            logger.debug ("SymbolGlyphView pointAdded");
+            logger.debug ("SymbolGlyphView glyphSelected " + glyph);
         }
 
-        // To display point information
-        super.pointSelected(e, pt);
+        // Process the selected glyph
+        List<Glyph> glyphs = pane.getCurrentGlyphs();
+        if (!contextSelected) {
+            if (glyphs.size() > 0) {
+                glyphs.clear();
+            }
+            if (glyph != null) {
+                glyphs.add(glyph);
+            }
+            pane.getEvaluatorsPanel().evaluate(glyph);
+        } else {
+            if (glyphs.size() == 0) {
+                if (glyph != null) {
+                    glyphs.add(glyph);
+                }
+                pane.getEvaluatorsPanel().evaluate(glyph);
+             }
+        }
 
-        final Glyph glyph = sheet.lookupGlyph(pt);
+//         if (logger.isDebugEnabled()) {
+//             logger.debug ("End of SymbolGlyphView glyphSelected " + glyph);
+//         }
+    }
+
+    //------------//
+    // glyphAdded //
+    //------------//
+    /**
+     * Addition of a glyph to a collection of selected glyphs. Il the
+     * collection already contains that glyph, the glyph is in fact removed
+     * of the collection
+     *
+     * @param glyph the to-be-added glyph, which may be null
+     * @param pt the designated point
+     */
+    protected void glyphAdded (Glyph glyph,
+                               Point pt)
+    {
+        if (logger.isDebugEnabled()) {
+            logger.debug ("SymbolGlyphView glyphAdded");
+        }
+
         if (glyph != null) {
             // Add to or remove from the collection of selected glyphs
             List<Glyph> glyphs = pane.getCurrentGlyphs();
@@ -151,42 +195,12 @@ public class SymbolGlyphView
             } else {
                 glyphs.add(glyph);
             }
-
-            pane.getEvaluatorsPanel().evaluate(glyph);
         }
-    }
+        pane.getEvaluatorsPanel().evaluate(glyph);
 
-    //---------------//
-    // pointSelected //
-    //---------------//
-    @Override
-        public void pointSelected (MouseEvent e,
-                                   Point pt)
-    {
-        if (logger.isDebugEnabled()) {
-            logger.debug ("SymbolGlyphView pointSelected");
-        }
-
-        super.pointSelected(e, pt);
-
-        final Glyph glyph = sheet.lookupGlyph(pt);
-        List<Glyph> glyphs = pane.getCurrentGlyphs();
-        if (!contextSelected) {
-            if (glyphs.size() > 0) {
-                glyphs.clear();
-            }
-            if (glyph != null) {
-                glyphs.add(glyph);
-                pane.getEvaluatorsPanel().evaluate(glyph);
-            }
-        } else {
-            if (glyphs.size() == 0) {
-                if (glyph != null) {
-                    glyphs.add(glyph);
-                    pane.getEvaluatorsPanel().evaluate(glyph);
-                }
-            }
-        }
+//         if (logger.isDebugEnabled()) {
+//             logger.debug ("End of SymbolGlyphView glyphAdded");
+//         }
     }
 
     //-------------------//
