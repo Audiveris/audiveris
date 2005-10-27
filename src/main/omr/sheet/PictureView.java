@@ -193,6 +193,13 @@ public class PictureView
         //---------------//
         // pointSelected //
         //---------------//
+        /**
+         * Point designation. Registered observers are notified of the
+         * Point and Pixel informations.
+         *
+         * @param e the mouse event
+         * @param pt the selected point in model pixel coordinates
+         */
         @Override
             public void pointSelected (MouseEvent e,
                                        Point pt)
