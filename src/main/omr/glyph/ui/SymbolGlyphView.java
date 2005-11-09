@@ -210,6 +210,7 @@ public class SymbolGlyphView
         public void rectangleSelected (MouseEvent e,
                                        Rectangle rect)
     {
+        // Notify observers about rectangle information
         super.rectangleSelected(e, rect);
 
         // Retrieve glyphs for this rectangle
