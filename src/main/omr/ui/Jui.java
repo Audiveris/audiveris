@@ -13,6 +13,7 @@ package omr.ui;
 import omr.Main;
 import omr.Step;
 import omr.constant.*;
+import omr.glyph.Shape;
 import omr.glyph.ui.GlyphTrainer;
 import omr.glyph.ui.ShapeColorChooser;
 import omr.glyph.ui.GlyphVerifier;
@@ -204,7 +205,7 @@ public class Jui
         toolKeyPanel.setLayout(new BorderLayout());
         toolKeyPanel.add(toolBar, BorderLayout.WEST);
         toolKeyPanel.add(progressBar, BorderLayout.CENTER);
-        toolKeyPanel.add(new MemoryMeter(IconUtil.buttonIconOf("general/Delete")),
+        toolKeyPanel.add(new MemoryMeter(IconManager.buttonIconOf("general/Delete")),
                          BorderLayout.EAST);
 
         // Boards
@@ -223,6 +224,11 @@ public class Jui
 
         // Differ realization
         EventQueue.invokeLater(new FrameShower(this));
+
+        // Build all shape icons
+        for (Shape shape : Shape.values()) {
+            shape.setIcon(IconManager.getInstance().loadIcon(shape.toString()));
+        }
     }
 
     //-------------//
@@ -509,7 +515,7 @@ public class Jui
 
         public ExitAction (JMenu menu)
         {
-            super("Exit", IconUtil.buttonIconOf("general/Stop"));
+            super("Exit", IconManager.buttonIconOf("general/Stop"));
 
             final String tiptext = "Exit the program";
             menu.add(this).setToolTipText(tiptext);
@@ -537,7 +543,7 @@ public class Jui
 
         public MemoryAction (JMenu menu)
         {
-            super("Memory", IconUtil.buttonIconOf("general/Find"));
+            super("Memory", IconManager.buttonIconOf("general/Find"));
 
             final String tiptext = "Show occupied memory";
 
@@ -562,7 +568,7 @@ public class Jui
 
         public TrainerAction (JMenu menu)
         {
-            super("Trainers", IconUtil.buttonIconOf("media/Movie"));
+            super("Trainers", IconManager.buttonIconOf("media/Movie"));
 
             final String tiptext = "Launch trainer interface";
             menu.add(this).setToolTipText(tiptext);
@@ -573,8 +579,8 @@ public class Jui
         public void actionPerformed (ActionEvent e)
         {
             GlyphTrainer glyphTrainer = GlyphTrainer.getInstance();
-            glyphTrainer.setVisible(true);
-            glyphTrainer.toFront();
+            glyphTrainer.getFrame().setVisible(true);
+            glyphTrainer.getFrame().toFront();
         }
     }
 
@@ -588,7 +594,7 @@ public class Jui
 
         public OptionAction (JMenu menu)
         {
-            super("Options", IconUtil.buttonIconOf("general/Properties"));
+            super("Options", IconManager.buttonIconOf("general/Properties"));
             menu.add(this).setToolTipText("Constants tree for all units");
         }
 
@@ -636,7 +642,7 @@ public class Jui
 
         public ShapeAction (JMenu menu)
         {
-            super("Shape Colors", IconUtil.buttonIconOf("general/Properties"));
+            super("Shape Colors", IconManager.buttonIconOf("general/Properties"));
             menu.add(this).setToolTipText("Manage colors of all shapes");
         }
 
@@ -672,7 +678,7 @@ public class Jui
         public MaterialAction (JMenu menu)
         {
             super("Training Material",
-                  IconUtil.buttonIconOf("general/Properties"));
+                  IconManager.buttonIconOf("general/Properties"));
             menu.add(this).setToolTipText("Verify training material");
         }
 
@@ -680,7 +686,7 @@ public class Jui
 
         public void actionPerformed (ActionEvent e)
         {
-            GlyphVerifier.getInstance().setVisible(true);
+            GlyphVerifier.getInstance().getFrame().setVisible(true);
         }
     }
 
@@ -694,7 +700,7 @@ public class Jui
 
         public AboutAction (JMenu menu)
         {
-            super("About", IconUtil.buttonIconOf("general/About"));
+            super("About", IconManager.buttonIconOf("general/About"));
 
             final String tiptext = "About " + Main.toolName;
             menu.add(this).setToolTipText(tiptext);
