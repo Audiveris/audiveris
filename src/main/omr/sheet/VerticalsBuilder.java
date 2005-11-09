@@ -598,8 +598,7 @@ public class VerticalsBuilder
     {
         public boolean check (StickSection section)
         {
-            // Check whether this section is not already assigned to a
-            // recognized glyph
+            // We process section for which glyph is null, NOISE, STRUCTURE
             boolean result =
                 section.getGlyph() == null ||
                 !section.getGlyph().isWellKnown();
