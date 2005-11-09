@@ -85,12 +85,10 @@ public class Main
 
     // Installation directory
     private static final String AUDIVERIS_HOME = "AUDIVERIS_HOME";
-    private static String homeDir = System.getProperty
-        ("audiveris.home",
-         System.getenv(AUDIVERIS_HOME));
-
-    // Train path
-    private static File trainPath;
+    private static String audiverisHome
+        = System.getProperty("audiveris.home",
+                             System.getenv(AUDIVERIS_HOME));
+    private static File homeFolder;
 
     // Batch mode if any
     private static boolean batchMode = false;
@@ -217,20 +215,65 @@ public class Main
     }
 
     //---------------//
-    // getOutputPath //
+    // getHomeFolder //
     //---------------//
+    private static File getHomeFolder()
+    {
+        if (audiverisHome == null) {
+            logger.error("Environment variable '" + AUDIVERIS_HOME
+                         + "' not set.");
+            logger.info("Exiting");
+            System.exit(-1);
+        }
+
+        if (homeFolder == null) {
+            homeFolder = new File(audiverisHome);
+        }
+
+        return homeFolder;
+    }
+
+    //----------------//
+    // getIconsFolder //
+    //----------------//
     /**
-     * Report the directory defined for output/saved files
+     * Report the folder where custom-defined icons are stored
+     *
+     * @return the directory for icon files
+     */
+    public static File getIconsFolder()
+    {
+        return new File(getHomeFolder(), "icons");
+    }
+
+    //------------------//
+    // getIconsResource //
+    //------------------//
+    /**
+     * Report the resource path where pre-defined icons are stored
+     *
+     * @return the name of the resource path for icon files
+     */
+    public static String getIconsResource()
+    {
+        return "/" + "icons";
+    }
+
+    //-----------------//
+    // getOutputFolder //
+    //-----------------//
+    /**
+     * Report the folder defined for output/saved files
      *
      * @return the directory for output
      */
-    public static String getOutputPath ()
+    public static String getOutputFolder ()
     {
         String saveDir = constants.savePath.getValue();
 
         if (saveDir.equals("")) {
             // Use default save directory
-            return homeDir + "/save";
+            return getHomeFolder() + "/save";
         } else {
             // Make sure that it ends with proper separator
             if (!(saveDir.endsWith("\\")
@@ -241,21 +284,17 @@ public class Main
         }
     }
 
-    //--------------//
-    // getTrainPath //
-    //--------------//
+    //----------------//
+    // getTrainFolder //
+    //----------------//
     /**
-     * Report the directory defined for training files
+     * Report the folder defined for training files
      *
      * @return the directory for training material
      */
-    public static File getTrainPath ()
+    public static File getTrainFolder ()
     {
-        if (trainPath == null) {
-            trainPath = new File(homeDir, "train");
-        }
-
-        return trainPath;
+        return new File(getHomeFolder(), "train");
     }
 
     //------//
@@ -276,10 +315,7 @@ public class Main
         Main.toolBuild   = thisPackage.getImplementationVersion();
 
         // Check installation home
-        if (homeDir == null) {
-            stopUsage("Environment variable '" + AUDIVERIS_HOME
-                      + "' not set.");
-        }
+        getHomeFolder();
 
         // Problem, from Emacs all args are passed in one string
         // sequence.  We recognize this by detecting a single
