@@ -12,7 +12,6 @@ package omr.glyph;
 
 import omr.Main;
 import omr.constant.Constant;
-import omr.ui.IconUtil;
 
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
@@ -52,11 +51,14 @@ public enum Shape
     // evaluator training.
     // ====================================================================
 
-    // Pure physical stuff
+    // Garbage
     //
         /*-----*/ NOISE("Too small stuff"),
-        /*-----*/ CLUTTER("Pure garbage"),
         /*-----*/ STRUCTURE("Structure of items"),
+
+    // Pure physical stuff
+    //
+        /*-----*/ CLUTTER("Pure clutter"),
         /*-----*/ DOT("General dot shape"),
         /*-----*/ DASH("General dash shape"),
         /*-----*/ BEAM("Beam between two stems"),
@@ -68,7 +70,7 @@ public enum Shape
         //
         /*1D109*/ DAL_SEGNO("Repeat from the sign"),
         /*1D10A*/ DA_CAPO("Repeat from the beginning"),
-        /*1D10B*/ SEGNO("Sign", iconOf("segno")),
+        /*1D10B*/ SEGNO("Sign"),
         /*1D10C*/ CODA("Closing section"),
         /*1D10D*/ // REPEATED_FIGURE_1,
         /*1D10E*/ // REPEATED_FIGURE_2,
@@ -95,11 +97,11 @@ public enum Shape
 
         // Clefs
         //
-        /*1D11E*/ G_CLEF("Treble Clef", new FontShapeIcon(65, 1.6)),
-        /*1D11F*/ G_CLEF_OTTAVA_ALTA,
-        /*1D120*/ G_CLEF_OTTAVA_BASSA,
-        /*1D121*/ C_CLEF("Ut Clef", new FontShapeIcon(67, 1.2)),
-        /*1D122*/ F_CLEF("Bass Clef", new FontShapeIcon(66, 1.1)),
+        /*1D11E*/ G_CLEF("Treble Clef"),
+        /*1D11F*/ G_CLEF_OTTAVA_ALTA("Ottava Alta"),
+        /*1D120*/ G_CLEF_OTTAVA_BASSA("Ottava Bassa"),
+        /*1D121*/ C_CLEF("Ut Clef"),
+        /*1D122*/ F_CLEF("Bass Clef"),
         /*1D123*/ F_CLEF_OTTAVA_ALTA,
         /*1D124*/ F_CLEF_OTTAVA_BASSA,
         /*1D125*/ // DRUM_CLEF_1,
@@ -107,11 +109,11 @@ public enum Shape
 
         // Accidentals
         //
-        /*1D127*/ FLAT("Minus one half step", new FontShapeIcon(72)),
-        /*1D128*/ NATURAL("Natural value", new FontShapeIcon(74)),
-        /*1D129*/ SHARP("Plus one half step", new FontShapeIcon(70)),
-        /*1D12A*/ DOUBLE_SHARP("Double Sharp", iconOf("double_sharp")),
-        /*1D12B*/ DOUBLE_FLAT("Double Flat", iconOf("double_flat")),
+        /*1D127*/ FLAT("Minus one half step"),
+        /*1D128*/ NATURAL("Natural value"),
+        /*1D129*/ SHARP("Plus one half step"),
+        /*1D12A*/ DOUBLE_SHARP("Double Sharp"),
+        /*1D12B*/ DOUBLE_FLAT("Double Flat"),
         /*1D12C*/ // FLAT_UP,
         /*1D12D*/ // FLAT_DOWN,
         /*1D12E*/ // NATURAL_UP,
@@ -123,25 +125,25 @@ public enum Shape
 
         // Time signatures
         //
-        /*-----*/ TIME_ZERO("Digit 0", new FontShapeIcon(48)),
-        /*-----*/ TIME_ONE("Digit 1", new FontShapeIcon(49)),
-        /*-----*/ TIME_TWO("Digit 2", new FontShapeIcon(50)),
-        /*-----*/ TIME_THREE("Digit 3", new FontShapeIcon(51)),
-        /*-----*/ TIME_FOUR("Digit 4", new FontShapeIcon(52)),
-        /*-----*/ TIME_FIVE("Digit 5", new FontShapeIcon(53)),
-        /*-----*/ TIME_SIX("Digit 6", new FontShapeIcon(54)),
-        /*-----*/ TIME_SEVEN("Digit 7", new FontShapeIcon(55)),
-        /*-----*/ TIME_EIGHT("Digit 8", new FontShapeIcon(56)),
-        /*-----*/ TIME_NINE("Digit 9", new FontShapeIcon(57)),
+        /*-----*/ TIME_ZERO("Digit 0"),
+        /*-----*/ TIME_ONE("Digit 1"),
+        /*-----*/ TIME_TWO("Digit 2"),
+        /*-----*/ TIME_THREE("Digit 3"),
+        /*-----*/ TIME_FOUR("Digit 4"),
+        /*-----*/ TIME_FIVE("Digit 5"),
+        /*-----*/ TIME_SIX("Digit 6"),
+        /*-----*/ TIME_SEVEN("Digit 7"),
+        /*-----*/ TIME_EIGHT("Digit 8"),
+        /*-----*/ TIME_NINE("Digit 9"),
         /*-----*/ TIME_TWELVE("Number 12"),
         /*-----*/ TIME_SIXTEEN("Number 16"),
-        /*-----*/ TIME_FOUR_FOUR("Rational 4/4", new FontShapeIcon(63)),
+        /*-----*/ TIME_FOUR_FOUR("Rational 4/4"),
         /*-----*/ TIME_TWO_TWO("Rational 2/2"),
-        /*-----*/ TIME_TWO_FOUR("Rational 2/4", new FontShapeIcon(59)),
-        /*-----*/ TIME_THREE_FOUR("Rational 3/4", new FontShapeIcon(61)),
+        /*-----*/ TIME_TWO_FOUR("Rational 2/4"),
+        /*-----*/ TIME_THREE_FOUR("Rational 3/4"),
         /*-----*/ TIME_SIX_EIGHT("Rational 6/8"),
-        /*1D134*/ COMMON_TIME("Alpha = 4/4", new FontShapeIcon(69)),
-        /*1D135*/ CUT_TIME("Semi-Alpha = 2/4", new FontShapeIcon(68)),
+        /*1D134*/ COMMON_TIME("Alpha = 4/4"),
+        /*1D135*/ CUT_TIME("Semi-Alpha = 2/4"),
 
         // Octaves
         //
@@ -155,11 +157,11 @@ public enum Shape
         /*1D13A*/ MULTI_REST,
         /*1D13B*/ WHOLE_REST,
         /*1D13C*/ HALF_REST,
-        /*1D13D*/ QUARTER_REST("Rest for a 1/4", new FontShapeIcon(111)),
-        /*1D13E*/ EIGHTH_REST("Rest for a 1/8", new FontShapeIcon(112)),
-        /*1D13F*/ SIXTEENTH_REST("Rest for a 1/16", new FontShapeIcon(113)),
-        /*1D140*/ THIRTY_SECOND_REST("Rest for a 1/32", new FontShapeIcon(114)),
-        /*1D141*/ SIXTY_FOURTH_REST("Rest for a 1/64", new FontShapeIcon(115)),
+        /*1D13D*/ QUARTER_REST("Rest for a 1/4"),
+        /*1D13E*/ EIGHTH_REST("Rest for a 1/8"),
+        /*1D13F*/ SIXTEENTH_REST("Rest for a 1/16"),
+        /*1D140*/ THIRTY_SECOND_REST("Rest for a 1/32"),
+        /*1D141*/ SIXTY_FOURTH_REST("Rest for a 1/64"),
         /*1D142*/ ONE_HUNDRED_TWENTY_EIGHTH_REST("Rest for a 1/128"),
 
         // Noteheads
@@ -184,10 +186,10 @@ public enum Shape
         /*1D154*/ // TRIANGLEROUND_NOTEHEAD_DOWN_WHITE,
         /*1D155*/ // TRIANGLEROUND_NOTEHEAD_DOWN_BLACK,
         /*1D156*/ // PARENTHESIS_NOTEHEAD,
-        /*1D157*/ VOID_NOTEHEAD("Hollow node head for halves", new FontShapeIcon(76)),
+        /*1D157*/ VOID_NOTEHEAD("Hollow node head for halves"),
         /*-----*/ VOID_NOTEHEAD_2("Pack of two hollow node heads for halves"),
         /*-----*/ VOID_NOTEHEAD_3("Pack of three hollow node heads for halves"),
-        /*1D158*/ NOTEHEAD_BLACK("Filled node head for quarters and less", new FontShapeIcon(75)),
+        /*1D158*/ NOTEHEAD_BLACK("Filled node head for quarters and less"),
         /*-----*/ NOTEHEAD_BLACK_2("Pack of two filled node heads for quarters and less"),
         /*-----*/ NOTEHEAD_BLACK_3("Pack of three filled node heads for quarters and less"),
         /*1D159*/ // NULL_NOTEHEAD,
@@ -197,7 +199,7 @@ public enum Shape
         // Notes
         //
         /*1D15C*/ BREVE,
-        /*1D15D*/ WHOLE_NOTE("Hollow node head for wholes", new FontShapeIcon(77)),
+        /*1D15D*/ WHOLE_NOTE("Hollow node head for wholes"),
         /*-----*/ WHOLE_NOTE_2("Pack of two hollow node heads for wholes"),
         /*-----*/ WHOLE_NOTE_3("Pack of three hollow node heads for wholes"),
         /*1D15E*/ // HALF_NOTE, //= 1D157 + 1D165
@@ -219,16 +221,16 @@ public enum Shape
 
         // Flags
         //
-        /*1D16E*/ COMBINING_FLAG_1("Single flag down", new FontShapeIcon(80)),
-        /*1D16F*/ COMBINING_FLAG_2("Double flag down", new FontShapeIcon(81)),
-        /*1D170*/ COMBINING_FLAG_3("Triple flag down", new FontShapeIcon(82)),
-        /*1D171*/ COMBINING_FLAG_4("Quadruple flag down", new FontShapeIcon(83, 1.2)),
+        /*1D16E*/ COMBINING_FLAG_1("Single flag down"),
+        /*1D16F*/ COMBINING_FLAG_2("Double flag down"),
+        /*1D170*/ COMBINING_FLAG_3("Triple flag down"),
+        /*1D171*/ COMBINING_FLAG_4("Quadruple flag down"),
         /*1D172*/ COMBINING_FLAG_5("Quintuple flag down"),
 
-        /*-----*/ COMBINING_FLAG_1_UP("Single flag up", new FontShapeIcon(85)),
-        /*-----*/ COMBINING_FLAG_2_UP("Double flag up", new FontShapeIcon(86)),
-        /*-----*/ COMBINING_FLAG_3_UP("Triple flag up", new FontShapeIcon(87, 1.35)),
-        /*-----*/ COMBINING_FLAG_4_UP("Quadruple flag up", new FontShapeIcon(88, 1.5)),
+        /*-----*/ COMBINING_FLAG_1_UP("Single flag up"),
+        /*-----*/ COMBINING_FLAG_2_UP("Double flag up"),
+        /*-----*/ COMBINING_FLAG_3_UP("Triple flag up"),
+        /*-----*/ COMBINING_FLAG_4_UP("Quadruple flag up"),
         /*-----*/ COMBINING_FLAG_5_UP("Quintuple flag up"),
 
         // Beams and slurs
@@ -268,16 +270,16 @@ public enum Shape
         // Dynamics
         //
         /*-----*/ PIANISSISSIMO,                        // PPP
-        /*-----*/ PIANISSIMO(new FontShapeIcon(117)),   // PP
-        /*1D18F*/ PIANO(new FontShapeIcon(118)),        // P
-        /*-----*/ MEZZO_PIANO(new FontShapeIcon(119)),  // MP
-        /*1D190*/ MEZZO,
-        /*-----*/ MEZZO_FORTE(new FontShapeIcon(120)),  // MF
-        /*1D191*/ FORTE(new FontShapeIcon(121)),        // F
-        /*-----*/ FORTISSIMO(new FontShapeIcon(122)),   // FF
+        /*-----*/ PIANISSIMO,                           // PP
+        /*1D18F*/ PIANO,                                // P
+        /*-----*/ MEZZO_PIANO,                          // MP
+        /*1D190*/ MEZZO,                                // M
+        /*-----*/ MEZZO_FORTE,                          // MF
+        /*1D191*/ FORTE,                                // F
+        /*-----*/ FORTISSIMO,                           // FF
         /*-----*/ FORTISSISSIMO,                        // FFF
-        /*1D192*/ CRESCENDO(iconOf("crescendo")),
-        /*1D193*/ DECRESCENDO(iconOf("decrescendo")),
+        /*1D192*/ CRESCENDO,
+        /*1D193*/ DECRESCENDO,
 
         // Ornaments
         //
@@ -285,7 +287,7 @@ public enum Shape
         /*1D195*/ GRACE_NOTE_NO_SLASH,
         /*1D196*/ TR,
         /*1D197*/ TURN,
-        /*1D198*/ INVERTED_TURN(iconOf("inverted_turn")),
+        /*1D198*/ INVERTED_TURN,
         /*1D199*/ TURN_SLASH,
         /*1D19A*/ TURN_UP,
         /*-----*/ MORDENT,              // Lower
@@ -359,7 +361,7 @@ public enum Shape
         /*-----*/ ENDING_HORIZONTAL("Horizontal part of ending"),
         /*-----*/ ENDING_VERTICAL("Vertical part of ending"),
 
-        /*1D110*/ FERMATA("Fermata", iconOf("fermata")),
+        /*1D110*/ FERMATA("Fermata"),
         /*1D111*/ FERMATA_BELOW,
 
         // Stems
@@ -397,7 +399,7 @@ public enum Shape
     private Constant.Color constantColor;
 
     // Potential related icon
-    private final Icon icon;
+    private Icon icon;
 
     //~ Constructors ------------------------------------------------------
 
@@ -436,6 +438,20 @@ public enum Shape
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //-------------//
+    // isWellKnown //
+    //-------------//
+    /**
+     * Report whether this shape is well knwon, that is a symbol not part
+     * of the Garbage range
+     *
+     * @return true if not part of garbage range, false otherwise
+     */
+    public boolean isWellKnown()
+    {
+        return !Garbage.getShapes().contains(this);
+    }
 
     //----------------//
     // getDescription //
@@ -557,6 +573,19 @@ public enum Shape
         return icon;
     }
 
+    //---------//
+    // setIcon //
+    //---------//
+    /**
+     * Assign a font to this shape
+     *
+     * @param icon the assigned icon, which may be null
+     */
+    public void setIcon (Icon icon)
+    {
+        this.icon = icon;
+    }
+
     //--------------------//
     // addRangeShapeItems //
     //--------------------//
@@ -602,28 +631,12 @@ public enum Shape
             if (field.getType() == Range.class) {
                 JMenu menu = new JMenu(field.getName());
                 Range range = Range.valueOf(field.getName());
-                addColoredItem(top, menu, range.getColor());
+                addColoredItem(top, menu, Color.black);
 
                 // Add menu items for this range
                 addRangeShapeItems(range, menu, listener);
             }
         }
-    }
-
-    //--------//
-    // iconOf //
-    //--------//
-    private static Icon iconOf (String fname)
-    {
-        // Feature disabled until a full set of music icons is made
-        // available
-        return null;
-
-//      if (Main.getJui() != null) {
-//             return IconUtil.musicIconOf(fname);
-//         } else {
-//             return null;
-//         }
     }
 
     //----------------//
@@ -828,8 +841,8 @@ public enum Shape
 
     // Predefined shape ranges
     //
-    public static final Range Physicals     = new Range(EnumSet.range(NOISE, FERMATA_BELOW_BEND));
     public static final Range Garbage       = new Range(EnumSet.range(NOISE, STRUCTURE));
+    public static final Range Physicals     = new Range(EnumSet.range(CLUTTER, FERMATA_BELOW_BEND));
     //
     public static final Range Bars          = new Range(EnumSet.range(DAL_SEGNO, BRACKET));
     public static final Range Clefs         = new Range(EnumSet.range(G_CLEF, F_CLEF_OTTAVA_BASSA));
@@ -882,5 +895,4 @@ public enum Shape
         stemSymbols.addAll(NoteHeads.getShapes());
         stemSymbols.addAll(Flags.getShapes());
     }
-
 }
