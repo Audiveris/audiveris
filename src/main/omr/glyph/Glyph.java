@@ -659,8 +659,8 @@ public class Glyph
     // isWellKnown //
     //-------------//
     /**
-     * A glyph is considered as well known if it has a registered shape other
-     * than noise and clutter
+     * A glyph is considered as well known if it has a registered shape
+     * other than noise and stucture
      *
      * @return true if so
      */
@@ -669,9 +669,7 @@ public class Glyph
         Shape shape = getShape();
         return
             shape != null &&
-            shape != Shape.NOISE &&
-            shape != Shape.CLUTTER &&
-            shape != Shape.STRUCTURE;
+            shape.isWellKnown();
     }
 
     //--------//

@@ -160,8 +160,8 @@ public class GlyphInspector
     {
         List<Glyph> toremove = new ArrayList<Glyph>();
         for (Glyph glyph : system.getGlyphs()) {
-            if (!glyph.isKnown() ||
-                glyph.getShape() == Shape.STRUCTURE) {
+            // We remove shapes : null, NOISE, STRUCTURE (not CLUTTER)
+            if (!glyph.isWellKnown()) {
                 toremove.add(glyph);
             }
         }
@@ -302,9 +302,7 @@ public class GlyphInspector
 
                     Shape vote = evaluator.vote(compound, maxGrade);
                     if (vote != null
-                        && vote != Shape.NOISE
-                        && vote != Shape.STRUCTURE
-                        && vote != Shape.CLUTTER) {
+                        && vote.isWellKnown()) {
                         compound.setShape(vote);
                         builder.insertCompound(compound, parts);
                         nb ++;
