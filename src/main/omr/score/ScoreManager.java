@@ -398,22 +398,20 @@ public class ScoreManager
     public void serialize (Score score)
     {
         // Make sure the destination directory exists
-        File dir = new File(Main.getOutputPath());
+        File dir = new File(Main.getOutputFolder());
         if (!dir.exists()) {
             logger.info("Creating directory " + dir);
             dir.mkdirs();
         }
 
-        String filePath = dir.getPath() + "/" + score.getName()
-            + SCORE_FILE_EXTENSION;
-
-        logger.info("Serializing score to " + filePath + " ...");
+        File file = new File(dir, score.getName() + SCORE_FILE_EXTENSION);
+        logger.info("Serializing score to " + file + " ...");
 
         try {
             long s0 = java.lang.System.currentTimeMillis();
             ObjectOutput s = new ObjectOutputStream
                 //(Zip.createOutputStream(new File(filePath)));
-                (new FileOutputStream(filePath));
+                (new FileOutputStream(file));
 
             s.writeObject(score);
             s.close();
@@ -421,9 +419,9 @@ public class ScoreManager
             logger.info("Score serialized in " + (s1 - s0) + " ms");
 
             // Add the score file in the score history
-            getHistory().add(new File(filePath).getCanonicalPath());
+            getHistory().add(file.getCanonicalPath());
         } catch (Exception ex) {
-            logger.error("Could not serialize score to " + filePath);
+            logger.error("Could not serialize score to " + file);
             logger.error(ex.toString());
         }
     }
@@ -460,7 +458,7 @@ public class ScoreManager
         }
 
         // Where do we write the score xml file?
-        File xmlFile = new File(Main.getOutputPath(),
+        File xmlFile = new File(Main.getOutputFolder(),
                                 score.getRadix() + ".xml");
 
         try {
