@@ -64,7 +64,6 @@ import javax.swing.border.*;
  * @version $Id$
  */
 public class GlyphVerifier
-    extends JFrame
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -78,6 +77,9 @@ public class GlyphVerifier
     private static GlyphVerifier INSTANCE;
 
     //~ Instance variables ------------------------------------------------
+
+    // The dedicated frame
+    private final JFrame frame;
 
     // Repository of known glyphs
     private final GlyphRepository repository = GlyphRepository.getInstance();
@@ -108,27 +110,41 @@ public class GlyphVerifier
      */
     private GlyphVerifier()
     {
-        setTitle("Glyph Verifier");
+        frame = new JFrame();
+        frame.setTitle("Glyph Verifier");
 
         glyphBrowser = new GlyphBrowser();
 
-        getContentPane().setLayout(new BorderLayout());
-        getContentPane().add(getSelectorsPanel(), BorderLayout.NORTH);
-        getContentPane().add(glyphBrowser,        BorderLayout.CENTER);
+        frame.getContentPane().setLayout(new BorderLayout());
+        frame.getContentPane().add(getSelectorsPanel(), BorderLayout.NORTH);
+        frame.getContentPane().add(glyphBrowser,        BorderLayout.CENTER);
 
-        pack();
-        setBounds(new Rectangle(20, 20, 1000, 600));
-        setVisible(true);
+        frame.pack();
+        frame.setBounds(new Rectangle(20, 20, 1000, 600));
+        frame.setVisible(true);
 
         // Launch loading of XML mapper
         repository.preloadGlyphMapper();
 
         if (standAlone) {
-            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         }
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //----------//
+    // getFrame //
+    //----------//
+    /**
+     * Report the UI frame of glyph verifier
+     *
+     * @return the related frame
+     */
+    public JFrame getFrame()
+    {
+        return frame;
+    }
 
     //--------------//
     // defineLayout //
@@ -406,7 +422,7 @@ public class GlyphVerifier
 
             // Populate with shape names found in selected sheets
             for (String sheetName : sheetSelector.list.getSelectedItems()) {
-                File dir = new File(repository.getSheetsPath(),
+                File dir = new File(repository.getSheetsFolder(),
                                     sheetName);
                 // Add all glyphs files from this directory
                 for (File file : repository.getSheetGlyphs(dir)) {
@@ -453,7 +469,7 @@ public class GlyphVerifier
             // Populate with all possible glyphs
             list.removeAll();
             for (String sheetName : sheets) {
-                File dir = new File(repository.getSheetsPath(),
+                File dir = new File(repository.getSheetsFolder(),
                                     sheetName);
                 // Add proper glyphs files from this directory
                 for (File file : repository.getSheetGlyphs(dir)) {
@@ -760,7 +776,7 @@ public class GlyphVerifier
             }
 
             // Perform file deletion
-            File file = new File(repository.getSheetsPath(), gName);
+            File file = new File(repository.getSheetsFolder(), gName);
             if (file.delete()) {
                 logger.info("Glyph " + gName + " deleted");
             } else {
