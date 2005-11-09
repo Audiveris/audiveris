@@ -119,8 +119,8 @@ public abstract class Evaluator
     protected File getCustomBackup()
     {
         // The custom file, if any, is located at the root of the train
-        // directory
-        return new File(Main.getTrainPath(), getName() + BACKUP_EXTENSION);
+        // folder
+        return new File(Main.getTrainFolder(), getName() + BACKUP_EXTENSION);
     }
 
     //-----------------//
