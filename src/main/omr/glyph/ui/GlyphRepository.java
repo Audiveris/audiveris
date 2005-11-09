@@ -66,10 +66,10 @@ public class GlyphRepository
     private static final String STRUCTURES_NAME = ".structures";
 
     // Specific subdirectories for training files
-    private static final File sheetsPath = new File(Main.getTrainPath(),
-                                                    "sheets");
-    private static final File corePath   = new File(Main.getTrainPath(),
-                                                    "core");
+    private static final File sheetsFolder = new File(Main.getTrainFolder(),
+                                                      "sheets");
+    private static final File coreFolder   = new File(Main.getTrainFolder(),
+                                                      "core");
 
     //~ Instance variables ------------------------------------------------
 
@@ -129,17 +129,17 @@ public class GlyphRepository
         return coreBase;
     }
 
-    //-------------//
-    // getCorePath //
-    //-------------//
+    //---------------//
+    // getCoreFolder //
+    //---------------//
     /**
-     * Report the directory where selected core glyphs are stored
+     * Report the folder where selected core glyphs are stored
      *
      * @return the directory of core material
      */
-    static File getCorePath()
+    static File getCoreFolder()
     {
-        return corePath;
+        return coreFolder;
     }
 
     //----------//
@@ -165,9 +165,9 @@ public class GlyphRepository
             // We try to load from the core repository first, then from the
             // sheets repository
             File file;
-            file = new File(getCorePath(), gName);
+            file = new File(getCoreFolder(), gName);
             if (!file.exists()) {
-                file = new File(getSheetsPath(), gName);
+                file = new File(getSheetsFolder(), gName);
                 if (!file.exists()) {
                     logger.error("Unable to find file for glyph " + gName);
                     return null;
@@ -202,7 +202,7 @@ public class GlyphRepository
         // One directory per sheet
         List<File> dirs = new ArrayList<File>();
 
-        File[] files = getSheetsPath().listFiles();
+        File[] files = getSheetsFolder().listFiles();
 
         for (File file : files) {
             if (file.isDirectory()) {
@@ -238,17 +238,17 @@ public class GlyphRepository
         return glyphFiles;
     }
 
-    //---------------//
-    // getSheetsPath //
-    //---------------//
+    //-----------------//
+    // getSheetsFolder //
+    //-----------------//
     /**
-     * Report the directory where all sheet glyphs are stored
+     * Report the folder where all sheet glyphs are stored
      *
      * @return the directory of all sheets material
      */
-    static File getSheetsPath()
+    static File getSheetsFolder()
     {
-        return sheetsPath;
+        return sheetsFolder;
     }
 
     //--------------//
@@ -317,7 +317,7 @@ public class GlyphRepository
     {
         try {
             // Prepare target directory
-            File sheetDir = new File(getSheetsPath(), sheet.getName());
+            File sheetDir = new File(getSheetsFolder(), sheet.getName());
             if (!sheetDir.exists()) {
                 // Make sure related directory chain exists
                 logger.info("Creating directory " + sheetDir);
@@ -327,7 +327,7 @@ public class GlyphRepository
             }
 
             // Prepare structures directory
-            File structuresDir = new File(getSheetsPath(),
+            File structuresDir = new File(getSheetsFolder(),
                                           sheet.getName() + STRUCTURES_NAME);
             if (!structuresDir.exists()) {
                 // Make sure related structure subdirectory exists
@@ -444,7 +444,7 @@ public class GlyphRepository
         }
 
         // Create the core directory if needed
-        File coreDir = getCorePath();
+        File coreDir = getCoreFolder();
         coreDir.mkdirs();
 
         // Empty the directory
@@ -452,7 +452,7 @@ public class GlyphRepository
 
         // Copy the glyph files into the core directory
         for (String gName : coreBase) {
-            File source = new File(getSheetsPath(), gName);
+            File source = new File(getSheetsFolder(), gName);
             File targetDir = new File(coreDir,
                                       source.getParentFile().getName());
             targetDir.mkdirs();
@@ -595,7 +595,7 @@ public class GlyphRepository
      */
     private Collection<String> loadCoreBase (Monitor monitor)
     {
-        return loadBase(getCorePath(), monitor);
+        return loadBase(getCoreFolder(), monitor);
     }
 
     //---------------//
@@ -608,7 +608,7 @@ public class GlyphRepository
      */
     private Collection<String> loadWholeBase (Monitor monitor)
     {
-        return loadBase(getSheetsPath(), monitor);
+        return loadBase(getSheetsFolder(), monitor);
     }
 
     //---------//
