@@ -378,12 +378,17 @@ public class HorizontalsBuilder
             protected void glyphSelected (Glyph glyph,
                                           Point pt)
         {
-            createSuites();           // Safer, to take modifs into account
+            if (glyph != null) {
 
-            // Present table of ledger checks then table of ending checks
-            Stick stick = (Stick) glyph;
-            String str1 = ledgerSuite.passHtml(null, stick);
-            filterMonitor.tellHtml(endingSuite.passHtml(str1, stick));
+                // Safer to recreate suites, to take modifs into account
+                createSuites();
+
+                // Present table of ledger checks then table of ending
+                // checks
+                Stick stick = (Stick) glyph;
+                String str1 = ledgerSuite.passHtml(null, stick);
+                filterMonitor.tellHtml(endingSuite.passHtml(str1, stick));
+            }
         }
     }
 
