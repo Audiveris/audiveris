@@ -37,8 +37,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.*;
@@ -59,7 +62,6 @@ import javax.swing.border.*;
  * @version $Id$
  */
 public class GlyphTrainer
-    extends JFrame
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -79,6 +81,9 @@ public class GlyphTrainer
     private static final String frameTitle = "Trainers";
 
     //~ Instance variables ------------------------------------------------
+
+    // Related frame
+    private final JFrame frame;
 
     // The evaluators
     private GlyphNetwork network = GlyphNetwork.getInstance();
@@ -108,18 +113,20 @@ public class GlyphTrainer
      */
     private GlyphTrainer()
     {
-        setTitle(frameTitle);
+        frame = new JFrame();
+
+        frame.setTitle(frameTitle);
 
         repositoryPanel = new RepositoryPanel();
         networkPanel = new NetworkPanel(network);
         regressionPanel = new RegressionPanel(regression);
 
-        add(createGlobalPanel());
-        pack();
-        setVisible(true);
+        frame.add(createGlobalPanel());
+        frame.pack();
+        frame.setVisible(true);
 
         if (standAlone) {
-            addWindowListener(new WindowAdapter()
+            frame.addWindowListener(new WindowAdapter()
                 {
                     public void windowClosing (WindowEvent e)
                     {
@@ -134,6 +141,19 @@ public class GlyphTrainer
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //----------//
+    // getFrame //
+    //----------//
+    /**
+     * Report the UI frame of glyph trainer
+     *
+     * @return the related frame
+     */
+    public JFrame getFrame()
+    {
+        return frame;
+    }
 
     //-------------//
     // getInstance //
@@ -157,7 +177,7 @@ public class GlyphTrainer
     //---------------//
     private void setFrameTitle (double error)
     {
-        setTitle(String.format("%.5f - %s", error, frameTitle));
+        frame.setTitle(String.format("%.5f - %s", error, frameTitle));
     }
 
     //------//
@@ -343,29 +363,48 @@ public class GlyphTrainer
                                  }
                              });
 
+            // Set of chosen shapes
+            Set<NotedGlyph> set = new HashSet<NotedGlyph>();
+
             // Allocate shape-based counters
             int[] counters = new int[Evaluator.outSize];
             Arrays.fill(counters, 0);
+            final int maxSimilar = (similar.getValue() +1) /2;
 
-            // Keep only MaxSimilar of each shape
-            int maxSimilar = similar.getValue();
-            for (Iterator<NotedGlyph> it = palmares.iterator();
-                 it.hasNext();) {
-                NotedGlyph ng = it.next();
+            // Keep only MaxSimilar/2 of each WORST shape
+            for (NotedGlyph ng : palmares) {
                 int index = ng.glyph.getShape().ordinal();
-                if (++counters[index] > maxSimilar) {
-                    it.remove();
+                if (++counters[index] <= maxSimilar) {
+                    set.add(ng);
                 } else {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(String.format("%.5f Core %s",
+                        logger.debug(String.format("%.5f worst Core %s",
+                                                   ng.grade, ng.gName));
+                    }
+                }
+            }
+
+            // Keep only MaxSimilar/2 of each BEST shape
+            // We just have to browse backward
+            Arrays.fill(counters, 0);
+            for (ListIterator<NotedGlyph> it
+                     = palmares.listIterator(palmares.size() -1);
+                 it.hasPrevious();) {
+                NotedGlyph ng = it.previous();
+                int index = ng.glyph.getShape().ordinal();
+                if (++counters[index] <= maxSimilar) {
+                    set.add(ng);
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(String.format("%.5f best Core %s",
                                                    ng.grade, ng.gName));
                     }
                 }
             }
 
             // Build the core base
-            List<String> base = new ArrayList<String>(palmares.size());
-            for (NotedGlyph ng : palmares) {
+            List<String> base = new ArrayList<String>(set.size());
+            for (NotedGlyph ng : set) {
                 base.add(ng.gName);
             }
 
@@ -804,7 +843,7 @@ public class GlyphTrainer
             public void actionPerformed (ActionEvent e)
             {
                 GlyphVerifier.getInstance().verify(negatives);
-                GlyphVerifier.getInstance().setVisible(true);
+                GlyphVerifier.getInstance().getFrame().setVisible(true);
             }
         }
 
@@ -819,7 +858,7 @@ public class GlyphTrainer
             public void actionPerformed (ActionEvent e)
             {
                 GlyphVerifier.getInstance().verify(falsePositives);
-                GlyphVerifier.getInstance().setVisible(true);
+                GlyphVerifier.getInstance().getFrame().setVisible(true);
             }
         }
     }
