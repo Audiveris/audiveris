@@ -58,12 +58,11 @@ import static java.awt.event.InputEvent.*;
  * {@link #setComponent} method. Rubber is then called on its
  * <i>mouseDragged, mousePressed, mouseReleased</i> methods.
  *
- * <li> <b>High-level events</b>, as computed by Rubber from low-level mouse
- * events, are forwarded to a connected {@link MouseMonitor} if any, which
- * is then called on its <i>pointUpdated, pointSelected, rectangleUpdated,
- * rectangleSelected, rectangleZoomed</i> methods. Generally, this
- * MouseMonitor is the originating JComponent, but this is not mandatory.
- * </ul>
+ * <li> <b>High-level events</b>, as computed by Rubber from low-level
+ * mouse events, are forwarded to a connected {@link MouseMonitor} if any,
+ * which is then called on its <i>pointSelected, rectangleSelected,
+ * rectangleZoomed</i> methods. Generally, this MouseMonitor is the
+ * originating JComponent, but this is not mandatory.  </ul>
  *
  * <p> The Rubber can be linked to a {@link Zoom} to cope with display
  * factor of the related component, but this is not mandatory: If no zoom

@@ -15,12 +15,12 @@ import omr.constant.ConstantSet;
 import omr.util.Logger;
 
 import com.jgoodies.forms.debug.FormDebugPanel;
+import com.jgoodies.forms.layout.FormLayout;
 
+import java.awt.Graphics;
 import java.awt.Insets;
 import javax.swing.JPanel;
-import java.awt.Graphics;
 import javax.swing.JTextField;
-import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * Class <code>Panel</code> is a JPanel with specific features to define
