@@ -102,6 +102,9 @@ public class GlyphPane
     // The list of glyphs currently selected (empty, if none)
     private transient List<Glyph> currentGlyphs = new ArrayList<Glyph>();
 
+    // Latest shape assigned if any
+    private transient Shape latestShapeAssigned;
+
     //~ Constructors ------------------------------------------------------
 
     //-----------//
@@ -352,6 +355,11 @@ public class GlyphPane
     {
         glyph.setShape(shape);
 
+        // Remember the latest shape assigned
+        if (shape != null) {
+            latestShapeAssigned = shape;
+        }
+
         // Update spinners models
         int id = glyph.getId();
         if (glyph.isKnown()) {
@@ -371,6 +379,19 @@ public class GlyphPane
                 glyph.setGuess(null);
             }
         }
+    }
+
+    //------------------------//
+    // getLatestShapeAssigned //
+    //------------------------//
+    /**
+     * Report the latest non null shape that was assigned, or null if none
+     *
+     * @return latest shape assigned, or null if none
+     */
+    Shape getLatestShapeAssigned()
+    {
+        return latestShapeAssigned;
     }
 
     //~ Methods private ---------------------------------------------------

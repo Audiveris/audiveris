@@ -48,6 +48,7 @@ public class GlyphMenu
 
     private final JMenu assignMenu;
     private final JMenu compoundMenu;
+    private final JMenuItem latestAssign;
 
     //~ Constructors ------------------------------------------------------
 
@@ -78,6 +79,24 @@ public class GlyphMenu
 
         // Manually assign a shape
         assignMenu = new JMenu("Force to");
+
+        // Direct link to latest shape assigned
+        latestAssign  = new JMenuItem("no shape", null);
+        latestAssign.setToolTipText("Assign latest shape");
+        latestAssign.addActionListener (new ActionListener()
+            {
+                public void actionPerformed (ActionEvent e)
+                {
+                    JMenuItem source = (JMenuItem) e.getSource();
+                    Shape shape = Shape.valueOf(source.getText());
+                    pane.assignShape(shape,
+                                     /* asGuessed => */ false,
+                                      /* compound => */ false);
+                }
+            });
+        assignMenu.add(latestAssign);
+        assignMenu.addSeparator();
+
         Shape.addShapeItems
             (assignMenu,
              new ActionListener()
@@ -184,6 +203,7 @@ public class GlyphMenu
             }
         }
         assignMenu.setText("Force assignment to");
+        updateLatestAssign();
 
         // Dump
         dumpItem.setText("Dump glyph");
@@ -253,6 +273,7 @@ public class GlyphMenu
 
         // Assign
         assignMenu.setText("Assign each of these " + glyphs.size() + " glyphs as");
+        updateLatestAssign();
 
         // Compound
         if (glyphs.size() > 1) {
@@ -288,8 +309,20 @@ public class GlyphMenu
             deassignItem.setText("Deassign");
             deassignItem.setToolTipText("No glyphs to deassign");
         }
+    }
 
-
+    //--------------------//
+    // updateLatestAssign //
+    //--------------------//
+    private void updateLatestAssign()
+    {
+        if (pane.getLatestShapeAssigned() != null) {
+            latestAssign.setEnabled(true);
+            latestAssign.setText(pane.getLatestShapeAssigned().toString());
+        } else {
+            latestAssign.setEnabled(false);
+            latestAssign.setText("no shape");
+        }
     }
 
     //~ Classes -----------------------------------------------------------
