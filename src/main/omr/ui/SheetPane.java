@@ -94,7 +94,7 @@ public class SheetPane
                 .menu("History",
                       new HistoryListener());
         historyMenu.setToolTipText("List of previous sheet files");
-        historyMenu.setIcon(IconUtil.buttonIconOf("general/History"));
+        historyMenu.setIcon(IconManager.buttonIconOf("general/History"));
         menu.add(historyMenu);
         menu.addSeparator();
 
@@ -105,7 +105,7 @@ public class SheetPane
         new ZoomHeightAction();
 
         // Toggle button
-        toggleButton = new JButton(IconUtil.buttonIconOf("general/Refresh"));
+        toggleButton = new JButton(IconManager.buttonIconOf("general/Refresh"));
         toolBar.add(toggleButton);
         toggleButton.setBorder(Jui.toolBorder);
         toggleButton.setEnabled(false);
@@ -447,7 +447,7 @@ public class SheetPane
                 // Remember (even across runs) the parent directory
                 constants.initImgDir.setValue(file.getParent());
             } else {
-                logger.warning("File not found " + file.getPath());
+                logger.warning("File not found " + file);
             }
         }
     }
@@ -593,7 +593,7 @@ public class SheetPane
         public CloseAction ()
         {
             super(false, "Close Sheet", "Close the current sheet",
-                  IconUtil.buttonIconOf("general/Remove"), true);
+                  IconManager.buttonIconOf("general/Remove"), true);
         }
 
         //~ Methods -------------------------------------------------------
@@ -626,7 +626,7 @@ public class SheetPane
         public SelectSheetAction ()
         {
             super(true, "Open Sheet", "Open a sheet file",
-                  IconUtil.buttonIconOf("general/Open"), true);
+                  IconManager.buttonIconOf("general/Open"), true);
         }
 
         //~ Methods -------------------------------------------------------
@@ -652,7 +652,7 @@ public class SheetPane
         public ZoomHeightAction ()
         {
             super(false, "Height Fit", "Fit image to window height",
-                  IconUtil.buttonIconOf("general/AlignJustifyVertical"), true);
+                  IconManager.buttonIconOf("general/AlignJustifyVertical"), true);
         }
 
         //~ Methods -------------------------------------------------------
@@ -679,7 +679,7 @@ public class SheetPane
         public ZoomWidthAction ()
         {
             super(false, "Width Fit", "Fit image to window width",
-                  IconUtil.buttonIconOf("general/AlignJustifyHorizontal"), true);
+                  IconManager.buttonIconOf("general/AlignJustifyHorizontal"), true);
         }
 
         //~ Methods -------------------------------------------------------
@@ -706,7 +706,7 @@ public class SheetPane
         public ScalePlotAction ()
         {
             super(false, "Scale Plot", "Display chart from Scale builder",
-                  IconUtil.buttonIconOf("general/PrintPreview"), false);
+                  IconManager.buttonIconOf("general/PrintPreview"), false);
         }
 
         //~ Methods -------------------------------------------------------
@@ -735,7 +735,7 @@ public class SheetPane
         public SkewPlotAction ()
         {
             super(false, "Skew Plot", "Display chart from Skew builder",
-                  IconUtil.buttonIconOf("general/PrintPreview"), false);
+                  IconManager.buttonIconOf("general/PrintPreview"), false);
         }
 
         //~ Methods -------------------------------------------------------
@@ -769,7 +769,7 @@ public class SheetPane
         public LinePlotAction ()
         {
             super(false, "Line Plot", "Display chart from Line builder",
-                  IconUtil.buttonIconOf("general/PrintPreview"), false);
+                  IconManager.buttonIconOf("general/PrintPreview"), false);
         }
 
         //~ Methods -------------------------------------------------------
@@ -798,7 +798,7 @@ public class SheetPane
 
         public DumpAllAction ()
         {
-            super("Dump all sheets", IconUtil.buttonIconOf("general/Find"));
+            super("Dump all sheets", IconManager.buttonIconOf("general/Find"));
 
             final String tiptext = "Dump all sheet instances";
 

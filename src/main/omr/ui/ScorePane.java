@@ -84,7 +84,7 @@ public class ScorePane
                 .menu("History",
                       new HistoryListener());
         historyMenu.setToolTipText("List of previous score files");
-        historyMenu.setIcon(IconUtil.buttonIconOf("general/History"));
+        historyMenu.setIcon(IconManager.buttonIconOf("general/History"));
         menu.add(historyMenu);
         menu.addSeparator();
 
@@ -509,7 +509,7 @@ public class ScorePane
 //         public CloseAction ()
 //         {
 //             super(false, "Close Score", "Close the current score",
-//                   IconUtil.buttonIconOf("general/Remove"));
+//                   IconManager.buttonIconOf("general/Remove"));
 //         }
 
 //         //~ Methods -------------------------------------------------------
@@ -536,7 +536,7 @@ public class ScorePane
         public SaveAction ()
         {
             super(false, "Save Score", "Save the current score",
-                  IconUtil.buttonIconOf("general/Export"));
+                  IconManager.buttonIconOf("general/Export"));
         }
 
         //~ Methods -------------------------------------------------------
@@ -571,7 +571,7 @@ public class ScorePane
         public SelectAction ()
         {
             super(true, "Open Score", "Open a score file",
-                  IconUtil.buttonIconOf("general/Import"));
+                  IconManager.buttonIconOf("general/Import"));
         }
 
         //~ Methods -------------------------------------------------------
@@ -610,7 +610,7 @@ public class ScorePane
         public ViewAction ()
         {
             super(false, "View Score", "View the score document",
-                  IconUtil.buttonIconOf("general/Information"));
+                  IconManager.buttonIconOf("general/Information"));
         }
 
         //~ Methods -------------------------------------------------------
@@ -652,7 +652,7 @@ public class ScorePane
 
         public DumpAllAction ()
         {
-            super("Dump all scores", IconUtil.buttonIconOf("general/Find"));
+            super("Dump all scores", IconManager.buttonIconOf("general/Find"));
 
             final String tiptext = "Dump all score instances";
 
