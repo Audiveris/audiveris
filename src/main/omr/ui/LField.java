@@ -36,7 +36,7 @@ public class LField
     /**
      * Create an editable labelled field with provided
      * characteristics. Note that the field can later be explicitly set as
-     * editable
+     * non editable
      *
      * @param label the string to be used as label text
      * @param tip the related tool tip text
