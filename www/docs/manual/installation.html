@@ -56,7 +56,7 @@
 	    important that CPU power. Make sure you have 256MB of
 	    physical memory as a bare minimum, 512MB is much more
 	    comfortable. As an example, Audiveris is developed and run
-	    today on an old AMD Athlon (0.9 GHz, 768 MB)</P>
+	    today on an old AMD Athlon (0.9 GHz, 768 MB).</P>
 	
 	<A NAME="COMPANIONS">
 	    <H2>Companion tools</H2>
@@ -65,26 +65,9 @@
 	<P>This section lists all components that are used by
 	    Audiveris for various functions, and thus need to be
 	    properly installed beforehand.</P>
-	
-	<A NAME="MUSIC_FONT">
-	    <H3>Music Font (Musette)</H3>
-	</A>
-	
-	<P> This font is used only to provide icons in selection
-	    menus. For the time being we use the "Musette" font, a
-	    free True-Type font. However, it lacks many items, so
-	    we'll have to find out a more complete one some day.</P>
-	
-	<P> The font can be downloaded for the following <A
-	    HREF="http://www.canzona.com/music/musette/index.shtml">
-	    Musette web-site</A> dedicated to the "Musette music
-	    editor". The font itself is made available a few
-	    paragraphs down the page, or directly from <A
-	    HREF="http://canzona.com/cgi-bin/musette/countdown.cgi?musttf.exe">
-	    here</A>.</P>
-	
-	<P>The font must then be installed on Windows just like any
-	    other TTF font.</P>
+
+	<P><B>Nota:</B> Starting with release 2.3, no dedicated music
+	    font is needed any more.</P>
 	
 	<A NAME="JAI">
 	    <H3>Java Advanced Imaging (JAI)</H3>
@@ -100,6 +83,14 @@
 		into one</LI>
 	    <LI><I>"rotate"</I> operator : Rotating an image</LI>
 	    <LI><I>"affine"</I> operator : Translating an image</LI>
+	    <LI><I>"crop"</I> operator : Extracting a subimage</LI>
+	    <LI><I>"filestore"</I> operator : Storing an image to a file</LI>
+	    <LI><I>"invert"</I> operator : Reversing the video (used
+		to workaround minor JAI bug)</LI>
+	    <LI><I>"bandcombine"</I> operator : Generating a
+		gray-level image from a color image</LI>
+	    <LI><I>"colorconvert"</I> operator : Converting to a
+		predefined number of pixel levels</LI>
 	</UL>
 	
 	<P> JAI has its high-level features coded in Java, and
@@ -227,11 +218,13 @@
 		    <UL>
 			<LI CLASS="leaf">
 			    <CODE><B>audiveris-2.1-20050510.zip</B></CODE>
-			    contains the various Audiveris components
-			    except the training material</LI>
+			    contains the various Audiveris components,
+			    source and binary, but without the
+			    training material.</LI>
 			<LI CLASS="leaf">
 			    <CODE><B>audiveris-2.1-train-20050510.zip</B></CODE>
-			    is dedicated to the training material</LI>
+			    is dedicated to the core and whole bases
+			    of training material.</LI>
 		    </UL>
 		</LI>
 	    </UL>
@@ -240,7 +233,7 @@
 	<P>You simply need to expand the first archive into a
 	    directory of your choice. The second archive (to be
 	    expanded in the same directory) is needed only if you want
-	    to be able to re-train the evaluators.</P>
+	    to be able to re-train the Neural evaluator.</P>
 	
 	<A NAME="STRUCTURE">
 	    <H3>Audiveris Directory Structure</H3>
@@ -273,10 +266,6 @@
 			<LI CLASS="leaf">
 			    <CODE><B>Neural.def</B></CODE> is a system
 			    backup of the glyph neural network
-			    evaluator</LI>
-			<LI CLASS="leaf">
-			    <CODE><B>Regression.def</B></CODE> is a
-			    system backup of the glyph regression
 			    evaluator</LI>
 			<LI CLASS="leaf">
 			    <CODE><B>build.default.properties</B></CODE>
@@ -324,8 +313,9 @@
 		    lib/
 		    <UL>
 			<LI CLASS="leaf">
-			    <CODE><B>audiveris.jar</B></CODE> is the
-			    application jar file </LI>
+			    <CODE><B>audiveris-M.m.jar</B></CODE> is
+			    the application jar file, with "M" and "m"
+			    for release numbers.</LI>
 		    </UL>
 		</LI>
 		
@@ -335,26 +325,35 @@
 			<LI CLASS="leaf">
 			    <CODE><B>Neural.def</B></CODE> is a
 			    potential customized version of the glyph
-			    neural network evaluator</LI>
-			<LI CLASS="leaf">
-			    <CODE><B>Regression.def</B></CODE> is a
-			    potential customized version of the glyph
-			    regression evaluator</LI>
+			    neural network evaluator. If this file
+			    exists, it supersedes the Neural.def file
+			    located in the "<U>/config</U>"
+			    folder.</LI>
 			<LI CLASS="leafnode">
 			    core/
 			    <UL>
 				<LI CLASS="leaf">
-				    A subset of the glyph material, to
-				    be used as training input</LI>
+				    A selected subset of the glyph
+				    material, representing the "core"
+				    of the training material, to be
+				    used as an efficient training
+				    input for a first re-training from
+				    scratch.</LI>
 			    </UL>
 			</LI>
 			<LI CLASS="leafnode">
 			    sheets/
 			    <UL>
 				<LI CLASS="leaf">
-				    The whole glyph material composed
-				    by all recognized glyphs stored so
-				    far</LI>
+				    The whole base of glyph material
+				    composed by all recognized glyphs
+				    stored so far. Using this whole
+				    base gives the best final results,
+				    but is fairly expensive in terms
+				    of computing time. It is meant to
+				    be used for incremental training,
+				    after the core material has been
+				    used.</LI>
 			    </UL>
 			</LI>
 		    </UL>
