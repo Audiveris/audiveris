@@ -78,7 +78,7 @@ public class GlyphTrainer
     private static boolean standAlone = false;
 
     private static final String standardWidth = "50dlu";
-    private static final String frameTitle = "Trainers";
+    private static final String frameTitle = "Trainer";
 
     //~ Instance variables ------------------------------------------------
 
@@ -203,7 +203,6 @@ public class GlyphTrainer
         FormLayout layout = new FormLayout
             ("pref",
              "pref," + panelInterline + "," +
-             "pref," + panelInterline + "," +
              "pref");
 
         Panel panel = new Panel();
@@ -219,9 +218,6 @@ public class GlyphTrainer
 
         r += 2;                         // --------------------------------
         builder.add(networkPanel,       cst.xy(1,  r));
-
-        r += 2;                         // --------------------------------
-        builder.add(regressionPanel,    cst.xy(1,  r));
 
         return builder.getPanel();
     }
@@ -623,7 +619,7 @@ public class GlyphTrainer
         {
             logger.info("Validating " + evaluator.getName() +
                         " evaluator on " +
-                        (useWhole ? "whole" : "core") + " base");
+                        (useWhole ? "whole" : "core") + " base ...");
 
             // Empty the display
             positiveValue.setText("");
