@@ -568,7 +568,7 @@ public class Jui
 
         public TrainerAction (JMenu menu)
         {
-            super("Trainers", IconManager.buttonIconOf("media/Movie"));
+            super("Trainer", IconManager.buttonIconOf("media/Movie"));
 
             final String tiptext = "Launch trainer interface";
             menu.add(this).setToolTipText(tiptext);
