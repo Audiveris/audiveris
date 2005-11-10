@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
     <HEAD>
 	<!-- 	$Id$	 -->
@@ -42,15 +42,23 @@
 		</PRE>
 	    </LI>
 	    
-	    <LI>Using ant with the <CODE><B>run</B></CODE> target on
-		the provided <CODE><B>build.xml</B></CODE> file
-		located in the root directory of Audiveris.
+	    <LI>Using ant utility with the <CODE><B>run</B></CODE>
+		target on the provided <CODE><B>build.xml</B></CODE>
+		file located in the root directory of Audiveris.
 		<PRE CLASS="info">
 		    $&gt; cd <I>&lt;your-audiveris-install-directory&gt;</I>
 		    $&gt; ant run
 		</PRE>
 	    </LI>
 	</OL>
+
+	<P>The application needs a reference to its home folder. This
+	    reference is provided either by the system property named
+	    "audiveris.home" or, if the system property is not set, by
+	    the environment variable "AUDIVERIS_HOME" in that
+	    order. Note that both the launch script and the ant target
+	    take care of these definitions, so the user should not
+	    have to set them manually.</P>
 	
 	<A NAME="RUN_CUSTOM">
 	    <H3>Run Customization</H3>
@@ -776,16 +784,16 @@
 	    <OL>
 		<LI>The <B>Navigator</B> to drive the loading and
 		    display of glyphs from the selection as it comes
-		    out of the selectors. Here you can find the button
-		    to discard a wrong glyph : this is implemented
-		    through the mere deletion of the underlying glyph
-		    XML file.</LI>
+		    out of the selectors. You can navigate through the
+		    loaded glyphs.</LI>
 		<LI>The <B>Glyph</B> panel, similar to the one that
 		    appear on the main Audiveris windows, is used to
 		    display information about the glyph at hand,
 		    together with the evaluations performed by the
-		    Neural Network evaluator and the Regression
-		    evaluator.</LI>
+		    Neural Network evaluator. The "Deassign" button
+		    can be used to discard a wrong glyph : this is
+		    implemented through the mere deletion of the
+		    underlying glyph XML file.</LI>
 	    </OL>
 	</P>
 	
@@ -800,15 +808,15 @@
 	
 	
 	<BR/>
-	<A NAME="TRAINERS">
-	    <H3>Trainers</H3>
+	<A NAME="TRAINER">
+	    <H3>Trainer</H3>
 	</A>
 	
 	<P> This interface is dedicated to the proper training of the
-	    pair of evaluators. The display is as follows :</P>
+	    Neural Network evaluator. The display is as follows :</P>
 	
-	<IMG SRC="../images/trainers.png"
-	     TITLE="User Interface to train the evaluators" />
+	<IMG SRC="../images/trainer.png"
+	     TITLE="User Interface to train the evaluator" />
 	
 	<OL>
 	    <LI>The upper part is for the <B>Repository</B>, in charge
@@ -831,69 +839,62 @@
 		</DIV>
 	    </LI>
 	    
-	    <LI>The lower part is used to train the Neural Network and
-		the Regression evaluator. Except some specific
-		features for the Neural evaluator, the two trainers
-		exhibit a similar structure :
+	    <LI>The lower part is used to train the Neural Network
+	    evaluator.
 		<OL>
 		    <LI>On the left, radio buttons allow to select
 			either the whole base or the core
 			base. Default is to select the whole
 			base.</LI>
 		    <LI>On the upper right part, we find the trainer
-			parameters and commands. The Regression
-			trainer is straightforward, the Neural one
-			deserves more explanation below.</LI>
-		    <LI>On the lower right part, both trainers include
-			a Validation panel, to test the current
-			evaluator tuning against the selected
-			population (either the Whole base, or the Core
-			base, according to the selection made via the
-			radio buttons. Note that we can train and
-			validate on different bases). We explicitly
-			flag the glyphs which are either not
-			recognized or (worse) mistaken for another
-			shape. The corresponding Verify buttons, allow
-			to visually check these questionable
-			glyphs.</LI>
+			parameters and commands :</LI>
+		    <UL>
+			<LI>Ability to choose between a <B>re-train</B>, which
+			    consists in retraining from scratch, and only an
+			    <B>inc-train</B>, which works
+			    incrementally on top of the previous
+			    training sessions. With say 6000 glyphs in
+			    the whole training base, training the
+			    Neural evaluator along 2500 iterations
+			    takes a
+			    <FONT COLOR="red">whole night</FONT>... So
+			    be aware of this, and back-up the
+			    evaluator binary file before playing with
+			    the trainer.</LI>
+			<LI>Several key parameters for training a
+			    Neural network : the <B>momentum</B>
+			    and <B>learning rate</B> allow to
+			    influence the convergence of the training,
+			    although they should be kept close to
+			    their default values. <B>Max error</B>
+			    (residual error) and <B>epochs</B> (number
+			    of iterations) are two different ways to
+			    stop the training, since the processing
+			    stops when either of these is
+			    reached.</LI>
+			<LI>The trainer makes memory <B>snapshots</B>
+			    of every best configuration. This slightly
+			    slows down the training, but guarantees to
+			    keep the really best configuration found
+			    so far. This is the default behavior, but
+			    we can force the trainer to select only
+			    the last configuration (via the "Use Last"
+			    button).</LI>
+		    </UL>
+		    <LI>On the lower right part, a Validation panel is
+			used to test the current evaluator tuning
+			against the selected population (either the
+			Whole base, or the Core base, according to the
+			selection made via the radio buttons. Note
+			that we can train and validate on different
+			bases). We explicitly flag the glyphs which
+			are either not recognized or (worse) mistaken
+			for another shape. The corresponding Verify
+			buttons, allow to visually check these
+			questionable glyphs.</LI>
 		</OL>
 	    </LI>
 	</OL>
-	
-	<P> The Neural Network evaluator is more performant but also
-	    more complex than the simple Regression evaluator. In the
-	    displayed example, on a set of 6219 glyphs, the former
-	    reaches a percentage of positive answers of 99.96%, while
-	    the latter does not exceed 96.88%. Here are its main
-	    specificities :</P>
-	<UL>
-	    <LI>Ability to choose between a <B>re-train</B>, which
-		consists in retraining from scratch, and only an
-		<B>inc-train</B>, which works incrementally on top of
-		the previous training sessions. With say 6000 glyphs
-		in the whole training base, training the Neural
-		evaluator along 2500 iterations takes a
-		<FONT COLOR="red">whole night</FONT>, whereas
-		training the Regression evaluator needs a couple
-		of seconds... So be aware of this, and back-up the
-		two evaluator binary files before playing with the
-		trainers.</LI>
-	    <LI>Several key parameters for training a Neural network :
-		the <B>momentum</B> and <B>learning rate</B> allow to
-		influence the convergence of the training, although
-		they should be kept close to their default
-		values. <B>Max error</B> (residual error)
-		and <B>epochs</B> (number of iterations) are two
-		different ways to stop the training, since the
-		processing stops when either of these is reached.</LI>
-	    <LI>The trainer makes memory <B>snapshots</B> of every
-		best configuration. This slightly slows down the
-		training, but guarantees to keep the really best
-		configuration found so far. This is the default
-		behavior, but we can force the trainer to select only
-		the last configuration (via the "Use Last"
-		button).</LI>
-	</UL>
 	
 	<BR/>
 	<A NAME="OPTIONS">
