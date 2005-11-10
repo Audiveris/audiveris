@@ -27,9 +27,8 @@ import javax.media.jai.operator.MosaicDescriptor;
 
 /**
  * Class <code>Picture</code> encapsulates an image, allowing modifications
- * on it, but still rendering (displaying) the original one. Its current
- * implementation is based on JAI (Java Advanced Imaging). And JAI is not
- * used outside of this class.
+ * and rendering. Its current implementation is based on JAI (Java Advanced
+ * Imaging). JAI is not used outside of this class.
  *
  * <p> Operations allow : <ul>
  *
