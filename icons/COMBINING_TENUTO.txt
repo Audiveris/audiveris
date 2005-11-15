@@ -1,0 +1,4 @@
+name COMBINING_TENUTO
+width 9
+height 1
+#########

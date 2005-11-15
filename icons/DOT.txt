@@ -1,0 +1,6 @@
+name DOT
+width 3
+height 3
+0#0
+###
+0#0

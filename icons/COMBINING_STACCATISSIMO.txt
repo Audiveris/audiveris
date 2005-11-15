@@ -1,0 +1,10 @@
+name COMBINING_STACCATISSIMO
+width 4
+height 7
+----
+--+-
+-o*-
+-$#-
+.##+
+o**o
+.---
