@@ -22,7 +22,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import omr.util.Zip;
 import omr.sheet.Sheet;
 
 /**
@@ -142,7 +141,6 @@ public class ScoreManager
         try {
             long s0 = java.lang.System.currentTimeMillis();
             ObjectInputStream s = new ObjectInputStream
-                //(Zip.createInputStream(file));
                 (new FileInputStream(file));
 
             Score score = (Score) s.readObject();
@@ -410,7 +408,6 @@ public class ScoreManager
         try {
             long s0 = java.lang.System.currentTimeMillis();
             ObjectOutput s = new ObjectOutputStream
-                //(Zip.createOutputStream(new File(filePath)));
                 (new FileOutputStream(file));
 
             s.writeObject(score);
