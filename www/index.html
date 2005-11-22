@@ -26,6 +26,8 @@ function getCVSDate(s)
 // Special nonav prefix for java.net hosted files			
 function nonav(url)
 {
+	return "<A TARGET='_top' HREF='nonav/" + url + "'>";
+	// Disabled for the time being
 	if (window.top != window.self)
 		return "<A TARGET='_top' HREF='nonav/" + url + "'>";
 	else
