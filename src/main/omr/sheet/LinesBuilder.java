@@ -23,7 +23,7 @@ import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.LagBuilder;
 import omr.lag.Run;
-import omr.math.Cumul;
+import omr.math.Population;
 import omr.stick.Stick;
 import omr.stick.StickSection;
 import omr.stick.StickView;
@@ -290,7 +290,7 @@ public class LinesBuilder
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
         sheet.getAssembly().addViewTab("Lines",  slv, boardsPane);
-        slv.addAncestorListener
+        slv.getComponent().addAncestorListener
             (new ToggleHandler("Lines", lagView,
                                "Toggle before & after staff removal"));
     }
@@ -325,7 +325,7 @@ public class LinesBuilder
 
         int firstPeak = 0;
         int lastPeak = 0;
-        Cumul intervals = new Cumul();
+        Population intervals = new Population();
         LineBuilder.reset();
 
         // Use a new stave retriever
@@ -356,12 +356,12 @@ public class LinesBuilder
                 logger.debug("interval=" + interval);
             }
 
-            intervals.include(interval);
+            intervals.includeValue(interval);
             prevPeak = peak;
 
             // Check for regularity of current series
-            if (intervals.getNumber() > 1) {
-                double stdDev = intervals.getStdDeviation();
+            if (intervals.getCardinality() > 1) {
+                double stdDev = intervals.getStandardDeviation();
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("stdDev=" + (float) stdDev);
@@ -373,7 +373,7 @@ public class LinesBuilder
                     }
 
                     intervals.reset(interval);
-                } else if (intervals.getNumber() == interlineNb) {
+                } else if (intervals.getCardinality() == interlineNb) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("End of staff");
                     }
@@ -388,7 +388,7 @@ public class LinesBuilder
                         Peak nextPeak = li.next();
                         interval = computeInterval(peak, nextPeak);
 
-                        if ((Math.abs(interval - intervals.getMean()) <= maxDiff) // Good candidate, compare with first one
+                        if ((Math.abs(interval - intervals.getMeanValue()) <= maxDiff) // Good candidate, compare with first one
 
                             && (nextPeak.getMax() > peaks.get(firstPeak).getMax())) {
                             if (logger.isDebugEnabled()) {
@@ -396,10 +396,10 @@ public class LinesBuilder
                             }
 
                             // Fix computation of interval value
-                            intervals.exclude
+                            intervals.excludeValue
                                 (computeInterval(peaks.get(firstPeak),
                                                  peaks.get(firstPeak + 1)));
-                            intervals.include(interval);
+                            intervals.includeValue(interval);
 
                             // Update indices
                             firstPeak++;
@@ -418,7 +418,7 @@ public class LinesBuilder
                     staves.add
                         (staveBuilder.buildInfo(peaks.subList(firstPeak,
                                                               lastPeak + 1),
-                                                intervals.getMean()));
+                                                intervals.getMeanValue()));
 
                     if (logger.isDebugEnabled()) {
                         System.out.println();
@@ -579,7 +579,7 @@ public class LinesBuilder
     // MyLagView //
     //-----------//
     private class MyLagView
-            extends StickView
+        extends StickView<Stick>
     {
         //~ Constructors --------------------------------------------------
 
@@ -597,7 +597,8 @@ public class LinesBuilder
         //-------------//
         // renderItems //
         //-------------//
-        protected void renderItems (Graphics g)
+        @Override
+            protected void renderItems (Graphics g)
         {
             // Draw the line info, lineset by lineset
             g.setColor(Color.black);
