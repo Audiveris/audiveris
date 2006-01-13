@@ -21,12 +21,12 @@ import omr.graph.DigraphView;
 
 /**
  * Class <code>Section</code> is an class to handle a section of contiguous
- * and compatible runs.
+ * and compatible instances of class {@link Run}.
  *
- * <p> A section has its runs either horizontal [HorizontalSection] or
- * vertical [VerticalSection], and all runs of a given lag (and
- * consequently all sections made of these runs) have the same orientation.
- * </p>
+ * <p> A section does not carry orientation information, only the
+ * containing {@link Lag} has this information.  Thus all runs of a given
+ * lag (and consequently all sections made of these runs) have the same
+ * orientation.
  *
  * <ol> <li> Positions increase in parallel with run numbers, so the
  * thickness of a section is defined as the delta between last and first
@@ -83,26 +83,8 @@ public class Section <L extends Lag,
     /**
      * Creates a new Section.
      */
-    public Section ()
+    protected Section ()
     {
-    }
-
-    //---------//
-    // Section //
-    //---------//
-    /**
-     * Creates a new Section with its assigned id.
-     */
-    public Section (L lag,
-                    int firstPos,
-                    Run firstRun)
-    {
-        super(lag);
-        setFirstPos(firstPos);
-        append(firstRun);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Created " + this);
-        }
     }
 
     //~ Methods -----------------------------------------------------------
@@ -111,7 +93,7 @@ public class Section <L extends Lag,
     // complete //
     //----------//
     /**
-     * Called when we ave finished adding runs to the section, thus it is
+     * Called when we have finished adding runs to the section, thus it is
      * now time (and safe) to compute section parameters such as contour,
      * view, etc...
      */
@@ -120,7 +102,7 @@ public class Section <L extends Lag,
         // Create views in parallel with containing Lag
         for (Object obj : graph.getViews()) {
             LagView view = (LagView) obj; // !!!!!
-            view.addSectionView(this); // Normal compiler warning here
+            view.addSectionView(this);    // Compiler warning here
         }
     }
 
@@ -159,7 +141,6 @@ public class Section <L extends Lag,
     //-----------//
     // getBounds //
     //-----------//
-
     /**
      * Return the section bounding rectangle, so please clone it if you
      * want to modify it afterwards
@@ -178,7 +159,6 @@ public class Section <L extends Lag,
     //-----------//
     // getPrefix //
     //-----------//
-
     /**
      * Return a distinctive string, to be used as a prefix in toString()
      * for example.
@@ -194,12 +174,11 @@ public class Section <L extends Lag,
     //----------//
     // setPixel //
     //----------//
-
     /**
      * This abstract method allows to write a specific pixel at given
-     * coordinates in the given picture.  <p/> <p/> Any concrete subclass
+     * coordinates in the given picture. Any concrete subclass
      * must of course implement this method, in a manner consistent with
-     * the <B>orientation</B> of the section. </p>
+     * the <B>orientation</B> of the containing lag.
      *
      * @param picture the picture to be updated
      * @param cp      the (coord,pos) coordinates of the specified point
@@ -215,7 +194,6 @@ public class Section <L extends Lag,
     //-------------//
     // getCentroid //
     //-------------//
-
     /**
      * Return the point which is at the mass center of the section, with
      * all pixels considered of equal weight.
@@ -250,7 +228,6 @@ public class Section <L extends Lag,
     //------------//
     // getContour //
     //------------//
-
     /**
      * Return the polygon that defines the display contour. Beware, this
      * entity depends on the lag orientation.
@@ -272,7 +249,6 @@ public class Section <L extends Lag,
     //---------------//
     // getContourBox //
     //---------------//
-
     /**
      * Return the bounding box of the display polygon. Useful to quickly
      * check if the section needs to be repainted.
@@ -291,7 +267,6 @@ public class Section <L extends Lag,
     //-------------------//
     // getFirstAdjacency //
     //-------------------//
-
     /**
      * Return the adjacency ratio on the incoming junctions of the section.
      * This is computed as the ratio to the length of the first run, of the
@@ -332,7 +307,6 @@ public class Section <L extends Lag,
     //-------------//
     // getFirstPos //
     //-------------//
-
     /**
      * Return the position (x for vertical runs, y for horizontal runs) of
      * the first run in the section
@@ -347,7 +321,6 @@ public class Section <L extends Lag,
     //-------------//
     // setFirstPos //
     //-------------//
-
     /**
      * Set the position of the first run in the section.
      *
@@ -362,7 +335,6 @@ public class Section <L extends Lag,
     //-------------//
     // getFirstRun //
     //-------------//
-
     /**
      * Return the first run within the section
      *
@@ -389,7 +361,6 @@ public class Section <L extends Lag,
     //---------------//
     // getForeWeight //
     //---------------//
-
     /**
      * Return the contribution of the section to the foreground
      *
@@ -403,7 +374,6 @@ public class Section <L extends Lag,
     //---------//
     // getInfo //
     //---------//
-
     /**
      * Report a rather detailed description of the provided vertex
      *
@@ -434,7 +404,6 @@ public class Section <L extends Lag,
     //------------------//
     // getLastAdjacency //
     //------------------//
-
     /**
      * Return the adjacency ratio at the end of the section/vertex at hand.
      * See getFirstAdjacency for explanation of the role of adjacency.
@@ -479,7 +448,6 @@ public class Section <L extends Lag,
     //------------//
     // getLastRun //
     //------------//
-
     /**
      * Return the last run of the section
      *
@@ -493,7 +461,6 @@ public class Section <L extends Lag,
     //-----------//
     // getLength //
     //-----------//
-
     /**
      * Return the length of the section, along the runs direction
      *
@@ -507,7 +474,6 @@ public class Section <L extends Lag,
     //-----------------//
     // getMaxRunLength //
     //-----------------//
-
     /**
      * Return the size of the longest run in the section
      *
@@ -521,7 +487,6 @@ public class Section <L extends Lag,
     //------------------//
     // getMeanRunLength //
     //------------------//
-
     /**
      * Return the average value for all run lengths in the section.
      *
@@ -535,7 +500,6 @@ public class Section <L extends Lag,
     //----------//
     // getRunAt //
     //----------//
-
     /**
      * Retrieves the run at the given position
      *
@@ -552,7 +516,6 @@ public class Section <L extends Lag,
     //----------//
     // getRunNb //
     //----------//
-
     /**
      * Report the number of runs this sections contains
      *
@@ -566,7 +529,6 @@ public class Section <L extends Lag,
     //----------//
     // getStart //
     //----------//
-
     /**
      * Return the smallest run starting coordinate, which means the
      * smallest y value (ordinate) for a section of vertical runs.
@@ -581,7 +543,6 @@ public class Section <L extends Lag,
     //---------//
     // getStop //
     //---------//
-
     /**
      * Return the largest run stopping coordinate, which is the largest y
      * value (ordinate) for a section of vertical runs.
@@ -596,7 +557,6 @@ public class Section <L extends Lag,
     //--------------//
     // getThickness //
     //--------------//
-
     /**
      * Return the thickness of the section, which is just the number of
      * runs.
@@ -630,7 +590,6 @@ public class Section <L extends Lag,
     //--------//
     // append //
     //--------//
-
     /**
      * Extend a section with the given run. This new run is assumed to be
      * contiguous to the current last run of the section, no check is
@@ -651,7 +610,6 @@ public class Section <L extends Lag,
     //-------------------//
     // computeParameters //
     //-------------------//
-
     /**
      * Compute the various cached parameters from scratch
      */
@@ -681,7 +639,6 @@ public class Section <L extends Lag,
     //----------//
     // contains //
     //----------//
-
     /**
      * Predicate to check whether the given point falls within one of the
      * section runs.
@@ -708,7 +665,6 @@ public class Section <L extends Lag,
     //----------------//
     // cumulatePoints //
     //----------------//
-
     /**
      * Cumulate all points that compose the runs of the section, into the
      * provided arrays.
@@ -743,7 +699,6 @@ public class Section <L extends Lag,
     //-------//
     // merge //
     //-------//
-
     /**
      * Merge this section with the other provided section, which is not
      * affected, and must generally be destroyed.
@@ -770,7 +725,6 @@ public class Section <L extends Lag,
     //---------//
     // prepend //
     //---------//
-
     /**
      * Add a run at the beginning rather than at the end of the section
      *
@@ -862,7 +816,6 @@ public class Section <L extends Lag,
         }
     }
 
-
     //-----------//
     // fillTable //
     //-----------//
@@ -943,7 +896,6 @@ public class Section <L extends Lag,
     //-------//
     // write //
     //-------//
-
     /**
      * Write the pixels of the section in the given picture
      *
@@ -968,7 +920,6 @@ public class Section <L extends Lag,
     //----------------//
     // computeContour //
     //----------------//
-
     /**
      * Compute the arrays of points needed to draw the section runs
      *
@@ -1006,7 +957,6 @@ public class Section <L extends Lag,
     //--------//
     // addRun //
     //--------//
-
     /**
      * Compute incrementally the cached parameters
      */
@@ -1044,7 +994,6 @@ public class Section <L extends Lag,
     //---------------//
     // inNextSibling //
     //---------------//
-
     /**
      * Return the next sibling section, both linked by source of last
      * incoming edge
@@ -1082,7 +1031,6 @@ public class Section <L extends Lag,
     //-------------------//
     // inPreviousSibling //
     //-------------------//
-
     /**
      * Return the previous sibling section, both linked by source of first
      * incoming edge
@@ -1120,7 +1068,6 @@ public class Section <L extends Lag,
     //----------------//
     // outNextSibling //
     //----------------//
-
     /**
      * Return the next sibling section, both linked by target of the last
      * outgoing edge
@@ -1157,7 +1104,6 @@ public class Section <L extends Lag,
     //--------------------//
     // outPreviousSibling //
     //--------------------//
-
     /**
      * Return the previous sibling section, both linked by target of the
      * first outgoing edge
