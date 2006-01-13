@@ -15,6 +15,8 @@ import omr.glyph.GlyphDirectory;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphLagView;
 import omr.glyph.GlyphSection;
+import omr.check.Checkable;
+import omr.check.CheckMonitor;
 
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -24,17 +26,19 @@ import java.util.Collection;
  * Class <code>StickView</code> is a specific {@link omr.lag.LagView}
  * dedicated to the display and processing of selected stick.
  *
- * A {@link FilterMonitor} interface can be connected to this view, to
- * display information about the filtered stick.
+ * A {@link CheckMonitor} interface can be connected to this view, to
+ * display information about the checked stick.
+ *
+ * @param <C> the {@link Checkable} type used for CheckMonitor
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class StickView
+public class StickView <C extends Checkable>
     extends GlyphLagView
 {
     // Connected stick monitor if any
-    protected FilterMonitor filterMonitor;
+    protected CheckMonitor<C> checkMonitor;
 
     //~ Constructors -----------------------------------------------------
 
@@ -59,17 +63,17 @@ public class StickView
     //~ Methods ----------------------------------------------------------
 
     //------------------//
-    // setFilterMonitor //
+    // setCheckMonitor //
     //------------------//
     /**
-     * Connect a FilterMonitor to this view, in order to display related
+     * Connect a CheckMonitor to this view, in order to display related
      * stick information
      *
-     * @param filterMonitor the monitor to connect
+     * @param checkMonitor the monitor to connect
      */
-    public void setFilterMonitor (FilterMonitor filterMonitor)
+    public void setCheckMonitor (CheckMonitor<C> checkMonitor)
     {
-        this.filterMonitor = filterMonitor;
+        this.checkMonitor = checkMonitor;
     }
 
     //---------------//
@@ -86,22 +90,16 @@ public class StickView
         public void pointSelected (MouseEvent e,
                                    Point pt)
     {
-        // Erase the previous stick info
-        if (filterMonitor != null) {
-            filterMonitor.tellHtml(null);
-        }
-
         // Provide info related to designated point
         super.pointSelected(e, pt);
 
         // Then, look for a stick selection
+        Glyph glyph = null;
         final StickSection section = (StickSection) lookupSection(pt);
-
         if (section != null) {
-            Glyph glyph =  section.getGlyph();
-            if (glyph != null) {
-                glyphSelected(glyph, pt);
-            }
+            glyph =  section.getGlyph();
         }
+
+        glyphSelected(glyph, pt);       // Glypg may be null
     }
 }
