@@ -37,6 +37,9 @@ public class ScoreManager
     private static final Constants constants = new Constants();
     private static final Logger logger = Logger.getLogger(ScoreManager.class);
 
+    // Specific glyph XML mapper
+    private static final XmlMapper xmlMapper = null; //TEMP FIX  = new XmlMapper(ScoreManager.class);
+
     /** File extension for serialized scores */
     public static final String SCORE_FILE_EXTENSION = ".score";
 
@@ -50,9 +53,6 @@ public class ScoreManager
 
     // Instances of score
     private List<Score> instances = new ArrayList<Score>();
-
-    // XML Mapper
-    private XmlMapper<Score> mapper;
 
     //~ Constructors ------------------------------------------------------
 
@@ -214,19 +214,6 @@ public class ScoreManager
     }
 
     //-----------//
-    // getMapper //
-    //-----------//
-    private XmlMapper<Score> getMapper ()
-            throws Exception
-    {
-        if (mapper == null) {
-            mapper = new XmlMapper<Score>
-                ("/config/castor-score-mapping.xml");
-        }
-        return mapper;
-    }
-
-    //-----------//
     // getScores //
     //-----------//
 
@@ -301,8 +288,8 @@ public class ScoreManager
      *
      * @param file the file from which score has to be retrieved. Depending
      *             on the precise extension of the file, the score will be
-     *             unmarshalled (by Castor) or de-serialized (by plain
-     *             Java).
+     *             unmarshalled (by an XML binder) or de-serialized (by
+     *             plain Java).
      *
      * @return the score, or null if load has failed
      */
@@ -328,7 +315,7 @@ public class ScoreManager
         if (ext.equals(".xml")) {
             try {
                 // This may take a while, and even fail ...
-                score = getMapper().load(file);
+                score = (Score) xmlMapper.load(file);
             } catch (Exception ex) {
             }
         } else {
@@ -460,7 +447,7 @@ public class ScoreManager
 
         try {
             // Store to disk
-            getMapper().store(score, xmlFile);
+            xmlMapper.store(score, xmlFile);
 
             // Add the score file in the score history
             getHistory().add(xmlFile.getCanonicalPath());
