@@ -28,7 +28,7 @@ import omr.stick.StickSection;
 import omr.stick.StickUtil;
 import omr.stick.StickView;
 import omr.ui.BoardsPane;
-import omr.ui.FilterBoard;
+import omr.check.CheckBoard;
 import omr.glyph.ui.GlyphBoard;
 import omr.ui.PixelBoard;
 import omr.ui.ScrollLagView;
@@ -80,7 +80,7 @@ public class HorizontalsBuilder
     private static final FailureResult TOO_ADJA = new FailureResult("Hori-TooHighAdjacency");
     private static final FailureResult BI_CHUNK = new FailureResult("Hori-BiChunk");
 
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance variables ------------------------------------------------
 
     // The containing sheet
     private Sheet sheet;
@@ -94,10 +94,6 @@ public class HorizontalsBuilder
     // The related view if any
     private MyView lagView;
 
-    // The various check suites
-    private CheckSuite<Stick> ledgerSuite;
-    private CheckSuite<Stick> endingSuite;
-
     // The whole list of horizontals (ledgers, legato signs, endings) found
     private final Horizontals info;
 
@@ -107,12 +103,25 @@ public class HorizontalsBuilder
     // Specific model on section id
     private SpinnerModel idModel;
 
+    // The various check suites
+    private CheckSuite<Stick> commonSuite;
+    private CheckSuite<Stick> ledgerSuite;
+    private CheckSuite<Stick> endingSuite;
+
+    // And the suite collections
+    private ArrayList<CheckSuite<Stick>> ledgerList;
+    private ArrayList<CheckSuite<Stick>> endingList;
+
+    // Display of check results
+    private CheckBoard<Stick> checkCommonBoard;
+    private CheckBoard<Stick> checkLedgerBoard;
+    private CheckBoard<Stick> checkEndingBoard;
+
     //~ Constructors ------------------------------------------------------
 
     //--------------------//
     // HorizontalsBuilder //
     //--------------------//
-
     /**
      * @param sheet the related sheet
      */
@@ -209,17 +218,23 @@ public class HorizontalsBuilder
             knownIds.add(new Integer(dash.getStick().getId()));
         }
 
+        checkCommonBoard = new CheckBoard<Stick>(commonSuite);
+        checkLedgerBoard = new CheckBoard<Stick>(ledgerSuite);
+        checkEndingBoard = new CheckBoard<Stick>(endingSuite);
         BoardsPane boardsPane = new BoardsPane
-            (lagView,
-             new PixelBoard(),
-             new SectionBoard(lag.getLastVertexId()),
-             new GlyphBoard(lag.getLastGlyphId(), knownIds),
-             new FilterBoard());
+            (lagView
+             ,new PixelBoard()
+             ,new SectionBoard(lag.getLastVertexId())
+             ,new GlyphBoard(lag.getLastGlyphId(), knownIds)
+             ,checkCommonBoard
+             ,checkLedgerBoard
+             ,checkEndingBoard
+             );
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
         sheet.getAssembly().addViewTab("Horizontals",  slv, boardsPane);
-        slv.addAncestorListener
+        slv.getComponent().addAncestorListener
             (new ToggleHandler
              ("Horizontals", lagView,
               "Toggle between before & after horizontal cleanup"));
@@ -233,6 +248,7 @@ public class HorizontalsBuilder
         // Define the suites of Checks
         double minResult = constants.minCheckResult.getValue();
 
+        // Create suites and collections
         createSuites();
 
         for (Stick stick : horizontalsArea.getSticks()) {
@@ -241,13 +257,13 @@ public class HorizontalsBuilder
             }
 
             // Run the Ledger Checks
-            if (ledgerSuite.pass(stick) >= minResult) {
+            if (CheckSuite.passCollection(stick, ledgerList) >= minResult) {
                 stick.setResult(LEDGER);
                 stick.setShape(Shape.LEDGER);
                 info.getLedgers().add(new Ledger(stick));
             } else {
                 // Then, if failed, the Ending Checks
-                if (endingSuite.pass(stick) >= minResult) {
+                if (CheckSuite.passCollection(stick, endingList) >= minResult) {
                     stick.setResult(ENDING);
                     stick.setShape(Shape.ENDING_HORIZONTAL);
                     info.getEndings().add(new Ending(stick));
@@ -272,19 +288,41 @@ public class HorizontalsBuilder
     private void createSuites ()
     {
         // Common horizontal suite
-        HorizontalSuite horizontalSuite = new HorizontalSuite();
+        commonSuite = new CheckSuite<Stick>("Common", constants.minCheckResult.getValue());
+        commonSuite.add(1, new MinThicknessCheck()); // Minimum thickness
+        commonSuite.add(1, new MaxThicknessCheck());
+        commonSuite.add(1, new MinDistCheck()); // Not within staves
+        commonSuite.add(1, new MaxDistCheck()); // Not too far from staves
 
         // ledgerSuite
-        ledgerSuite = new CheckSuite<Stick>("Ledgers", constants.minCheckResult.getValue());
-        ledgerSuite.addAll(horizontalSuite);
-        ledgerSuite.addAll(new LedgerSuite());
+        ledgerSuite = new CheckSuite<Stick>("Ledger", constants.minCheckResult.getValue());
+        ledgerSuite.add(1, new MinLengthCheck
+                        (constants.minLedgerLengthLow.getValue(),
+                         constants.minLedgerLengthHigh.getValue())); // Minimum length
+        ledgerSuite.add(1, new MaxLengthCheck()); // Maximum length
+        ledgerSuite.add(1, new MinDensityCheck());
+        ledgerSuite.add(1, new ChunkCheck()); // At least one edge WITHOUT a chunk
+
+        // Ledger collection
+        ledgerList = new ArrayList<CheckSuite<Stick>>();
+        ledgerList.add(commonSuite);
+        ledgerList.add(ledgerSuite);
 
         // endingSuite
-        endingSuite = new CheckSuite<Stick>("Endings", constants.minCheckResult.getValue());
-        endingSuite.addAll(horizontalSuite);
-        endingSuite.addAll(new EndingSuite());
+        endingSuite = new CheckSuite<Stick>("Ending", constants.minCheckResult.getValue());
+        endingSuite.add(1,
+                new MinLengthCheck(constants.minEndingLengthLow.getValue(),
+                                   constants.minEndingLengthHigh.getValue())); // Minimum length
+        endingSuite.add(1, new FirstAdjacencyCheck());
+        endingSuite.add(1, new LastAdjacencyCheck());
+
+        // Ending collection
+        endingList =  new ArrayList<CheckSuite<Stick>>();
+        endingList.add(commonSuite);
+        endingList.add(endingSuite);
 
         if (logger.isDebugEnabled()) {
+            commonSuite.dump();
             ledgerSuite.dump();
             endingSuite.dump();
         }
@@ -316,7 +354,7 @@ public class HorizontalsBuilder
     // MyView //
     //--------//
     private class MyView
-        extends StickView
+        extends StickView<Stick>
     {
         //~ Constructors --------------------------------------------------
 
@@ -378,17 +416,23 @@ public class HorizontalsBuilder
             protected void glyphSelected (Glyph glyph,
                                           Point pt)
         {
+            Stick stick = null;
             if (glyph != null) {
-
                 // Safer to recreate suites, to take modifs into account
                 createSuites();
 
-                // Present table of ledger checks then table of ending
-                // checks
-                Stick stick = (Stick) glyph;
-                String str1 = ledgerSuite.passHtml(null, stick);
-                filterMonitor.tellHtml(endingSuite.passHtml(str1, stick));
+                // Take new suites into account
+                checkCommonBoard.setSuite(commonSuite);
+                checkLedgerBoard.setSuite(ledgerSuite);
+                checkEndingBoard.setSuite(endingSuite);
+
+                stick = (Stick) glyph;
             }
+
+            // Present common then ledger checks and ending checks
+            checkCommonBoard.tellObject(stick);
+            checkLedgerBoard.tellObject(stick);
+            checkEndingBoard.tellObject(stick);
         }
     }
 
@@ -402,8 +446,11 @@ public class HorizontalsBuilder
 
         protected MinThicknessCheck ()
         {
-            super("MinThickness", constants.minThicknessLow.getValue(),
-                  constants.minThicknessHigh.getValue(), true, TOO_THIN);
+            super("MinThickness",
+                  "Check that stick is thick enough (unit is interline)",
+                  constants.minThicknessLow.getValue(),
+                  constants.minThicknessHigh.getValue(),
+                  true, TOO_THIN);
         }
 
         //~ Methods -------------------------------------------------------
@@ -425,8 +472,11 @@ public class HorizontalsBuilder
 
         protected MaxThicknessCheck ()
         {
-            super("MaxThickness", constants.maxThicknessLow.getValue(),
-                  constants.maxThicknessHigh.getValue(), false, TOO_THICK);
+            super("MaxThickness",
+                  "Check that stick is not too thick (unit is interline)",
+                  constants.maxThicknessLow.getValue(),
+                  constants.maxThicknessHigh.getValue(),
+                  false, TOO_THICK);
         }
 
         //~ Methods -------------------------------------------------------
@@ -449,7 +499,10 @@ public class HorizontalsBuilder
         protected MinLengthCheck (double low,
                                   double high)
         {
-            super("MinLength", low, high, true, TOO_SHORT);
+            super("MinLength",
+                  "Check that stick is long enough (unit is interline)",
+                  low, high,
+                  true, TOO_SHORT);
         }
 
         //~ Methods -------------------------------------------------------
@@ -471,8 +524,11 @@ public class HorizontalsBuilder
 
         protected MaxLengthCheck ()
         {
-            super("MaxLength", constants.maxLengthLow.getValue(),
-                  constants.maxLengthHigh.getValue(), false, TOO_LONG);
+            super("MaxLength",
+                  "Check that stick is not too long (unit is interline)",
+                  constants.maxLengthLow.getValue(),
+                  constants.maxLengthHigh.getValue(),
+                  false, TOO_LONG);
         }
 
         //~ Methods -------------------------------------------------------
@@ -494,8 +550,12 @@ public class HorizontalsBuilder
 
         protected MinDensityCheck ()
         {
-            super("MinDensity", constants.minDensityLow.getValue(),
-                  constants.minDensityHigh.getValue(), true, TOO_HOLLOW);
+            super("MinDensity",
+                  "Check that stick fills its bounding rectangle"+
+                  " (dimension-less)",
+                  constants.minDensityLow.getValue(),
+                  constants.minDensityHigh.getValue(),
+                  true, TOO_HOLLOW);
         }
 
         //~ Methods -------------------------------------------------------
@@ -520,7 +580,11 @@ public class HorizontalsBuilder
 
         protected MinDistCheck ()
         {
-            super("MinDist", 0, 0, true, IN_STAVE);
+            super("MinDist",
+                  "Check that stick is not within staff height"+
+                  " (unit is interline)",
+                  0, 0,
+                  true, IN_STAVE);
             setLowHigh(constants.minStaveDistanceLow.getValue(),
                        constants.minStaveDistanceHigh.getValue());
         }
@@ -545,7 +609,11 @@ public class HorizontalsBuilder
 
         protected MaxDistCheck ()
         {
-            super("MaxDist", 0, 0, false, TOO_FAR);
+            super("MaxDist",
+                  "Check that stick is not too far from staff"+
+                  " (unit is interline)",
+                  0, 0,
+                  false, TOO_FAR);
             setLowHigh(constants.maxStaveDistanceLow.getValue(),
                        constants.maxStaveDistanceHigh.getValue());
         }
@@ -582,7 +650,11 @@ public class HorizontalsBuilder
 
         protected ChunkCheck ()
         {
-            super("Chunk", 0, 0, false, BI_CHUNK);
+            super("Chunk",
+                  "Check not chunk is stuck on either side of the stick"+
+                  " (unit is interline squared)",
+                  0, 0, false,
+                  BI_CHUNK);
 
             // Adjust chunk window according to system scale (problem, we
             // have sheet scale and stave scale, not system scale...)
@@ -626,9 +698,11 @@ public class HorizontalsBuilder
 
         protected FirstAdjacencyCheck ()
         {
-            super("TopAdj", constants.maxAdjacencyLow.getValue(),
-                  constants.maxAdjacencyHigh.getValue(), false,
-                  TOO_ADJA);
+            super("TopAdj",
+                  "Check that stick is open on top side (dimension-less)",
+                  constants.maxAdjacencyLow.getValue(),
+                  constants.maxAdjacencyHigh.getValue(),
+                  false, TOO_ADJA);
         }
 
         //~ Methods -------------------------------------------------------
@@ -646,15 +720,18 @@ public class HorizontalsBuilder
     // LastAdjacencyCheck //
     //--------------------//
     private static class LastAdjacencyCheck
-            extends Check<Stick>
+        extends Check<Stick>
     {
         //~ Constructors -----------------------------------------------------
 
         protected LastAdjacencyCheck ()
         {
-            super("BottomAdj", constants.maxAdjacencyLow.getValue(),
-                  constants.maxAdjacencyHigh.getValue(), false,
-                  TOO_ADJA);
+            super("BottomAdj",
+                  "Check that stick is open on bottom side"+
+                  " (dimension-less)",
+                  constants.maxAdjacencyLow.getValue(),
+                  constants.maxAdjacencyHigh.getValue(),
+                  false, TOO_ADJA);
         }
 
         //~ Methods -------------------------------------------------------
@@ -668,69 +745,11 @@ public class HorizontalsBuilder
         }
     }
 
-    //-----------------//
-    // HorizontalSuite //
-    //-----------------//
-    private class HorizontalSuite
-            extends CheckSuite<Stick>
-    {
-        //~ Constructors --------------------------------------------------
-
-        public HorizontalSuite ()
-        {
-            super("Horizontals", constants.minCheckResult.getValue());
-            add(1, new MinThicknessCheck()); // Minimum thickness
-            add(1, new MinDistCheck()); // Not within staves
-            add(1, new MaxDistCheck()); // Not too far from staves
-        }
-    }
-
-    //-------------//
-    // LedgerSuite //
-    //-------------//
-    private class LedgerSuite
-            extends CheckSuite<Stick>
-    {
-        //~ Constructors --------------------------------------------------
-
-        public LedgerSuite ()
-        {
-            super("Ledgers", constants.minCheckResult.getValue());
-            add(1,
-                new MinLengthCheck(constants.minLedgerLengthLow.getValue(),
-                                   constants.minLedgerLengthHigh.getValue())); // Minimum length
-            add(1, new MaxThicknessCheck());
-            add(1, new MaxLengthCheck()); // Maximum length
-            add(1, new MinDensityCheck());
-            add(1, new ChunkCheck()); // At least one edge WITHOUT a chunk
-        }
-    }
-
-    //-------------//
-    // EndingSuite //
-    //-------------//
-    private class EndingSuite
-            extends CheckSuite<Stick>
-    {
-        //~ Constructors --------------------------------------------------
-
-        public EndingSuite ()
-        {
-            super("Endings", constants.minCheckResult.getValue());
-            add(1,
-                new MinLengthCheck(constants.minEndingLengthLow.getValue(),
-                                   constants.minEndingLengthHigh.getValue())); // Minimum length
-            add(1, new MaxThicknessCheck());
-            add(1, new FirstAdjacencyCheck());
-            add(1, new LastAdjacencyCheck());
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Constant.Boolean displayFrame = new Constant.Boolean
                 (false,
@@ -738,7 +757,8 @@ public class HorizontalsBuilder
 
         Constant.Integer maxDeltaLength = new Constant.Integer
                 (4,
-                 "Maximum difference in run length to be part of the same section");
+                 "Maximum difference in run length to be part of the same"+
+                 " section");
 
         Scale.Fraction minForeWeight = new Scale.Fraction
                 (1.25,
@@ -838,7 +858,8 @@ public class HorizontalsBuilder
 
         Constant.Integer extensionMinPointNb = new Constant.Integer
                 (4,
-                 "Minimum number of points to compute extension of crossing objects during cleanup");
+                 "Minimum number of points to compute extension of"+
+                 " crossing objects during cleanup");
 
         Constants ()
         {

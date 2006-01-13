@@ -15,6 +15,7 @@ import omr.ProcessingException;
 import omr.check.Check;
 import omr.check.CheckSuite;
 import omr.check.Checkable;
+import omr.check.CheckBoard;
 import omr.check.FailureResult;
 import omr.check.Result;
 import omr.check.SuccessResult;
@@ -39,7 +40,6 @@ import omr.stick.Stick;
 import omr.stick.StickSection;
 import omr.stick.StickView;
 import omr.ui.BoardsPane;
-import omr.ui.FilterBoard;
 import omr.ui.PixelBoard;
 import omr.ui.ScrollLagView;
 import omr.ui.SectionBoard;
@@ -127,6 +127,8 @@ public class BarsBuilder
     // Suite of checks
     private BarCheckSuite suite;
 
+    // Display of check results
+    private CheckBoard<Context> checkBoard;
     //~ Constructors ------------------------------------------------------
 
     //-------------//
@@ -668,12 +670,14 @@ public class BarsBuilder
         }
 
         glyphBoard = new GlyphBoard(vLag.getLastGlyphId(), knownIds);
+        checkBoard = new CheckBoard<Context>(suite);
+        lagView.setCheckMonitor(checkBoard);
         BoardsPane boardsPane = new BoardsPane
             (lagView,
              new PixelBoard(),
              new SectionBoard(vLag.getLastVertexId()),
              glyphBoard,
-             new FilterBoard());
+             checkBoard);
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
@@ -1005,7 +1009,7 @@ public class BarsBuilder
     // MyLagView //
     //-----------//
     private class MyLagView
-        extends StickView
+        extends StickView<Context>
     {
         //~ Constructors --------------------------------------------------
 
@@ -1061,11 +1065,15 @@ public class BarsBuilder
             protected void glyphSelected (Glyph glyph,
                                           Point pt)
         {
-            if (glyph instanceof Stick) {
-                suite = new BarCheckSuite(); // To get a fresh suite
+            if (glyph == null) {
+                checkMonitor.tellObject(null);
+            } else if (glyph instanceof Stick) {
+                // To get a fresh suite
+                suite = new BarCheckSuite();
+                checkBoard.setSuite(suite);
+
                 Stick stick = (Stick) glyph;
-                filterMonitor.tellHtml(suite.passHtml(null,
-                                                      new Context(stick)));
+                checkMonitor.tellObject(new Context(stick));
             }
         }
 
@@ -1080,7 +1088,8 @@ public class BarsBuilder
 
                 deassignBarGlyph(glyph);
             } else {
-                logger.warning("No deassign meant for " + glyph.getShape() + " glyph");
+                logger.warning("No deassign meant for "
+                               + glyph.getShape() + " glyph");
             }
         }
     }
@@ -1089,14 +1098,18 @@ public class BarsBuilder
     // TopCheck //
     //----------//
     private class TopCheck
-            extends Check<Context>
+        extends Check<Context>
     {
         //~ Constructors --------------------------------------------------
 
         protected TopCheck ()
         {
-            super("Top", constants.maxStaveShiftDyLow.getValue(),
-                  constants.maxStaveShiftDyHigh.getValue(), false, null);
+            super("Top",
+                  "Check that top of stick is close to top of staff"+
+                  " (unit is interline)",
+                  constants.maxStaveShiftDyLow.getValue(),
+                  constants.maxStaveShiftDyHigh.getValue(),
+                  false, null);
         }
 
         //~ Methods -------------------------------------------------------
@@ -1131,14 +1144,18 @@ public class BarsBuilder
     // BottomCheck //
     //-------------//
     private class BottomCheck
-            extends Check<Context>
+        extends Check<Context>
     {
         //~ Constructors --------------------------------------------------
 
         protected BottomCheck ()
         {
-            super("Bottom", constants.maxStaveShiftDyLow.getValue(),
-                  constants.maxStaveShiftDyHigh.getValue(), false, null);
+            super("Bottom",
+                  "Check that bottom of stick is close to bottom of staff"+
+                  " (unit is interline)",
+                  constants.maxStaveShiftDyLow.getValue(),
+                  constants.maxStaveShiftDyHigh.getValue(),
+                  false, null);
         }
 
         //~ Methods -------------------------------------------------------
@@ -1174,13 +1191,16 @@ public class BarsBuilder
     // AnchorCheck //
     //-------------//
     private class AnchorCheck
-            extends Check<Context>
+        extends Check<Context>
     {
         //~ Constructors --------------------------------------------------
 
         protected AnchorCheck ()
         {
-            super("Anchor", 0.5, 0.5, true, NOT_STAVE_ANCHORED);
+            super("Anchor",
+                  "Check that thick bars are top and bottom aligned with staff",
+                  0.5, 0.5,
+                  true, NOT_STAVE_ANCHORED);
         }
 
         //~ Methods -------------------------------------------------------
@@ -1210,13 +1230,16 @@ public class BarsBuilder
     // MinLengthCheck //
     //----------------//
     private class MinLengthCheck
-            extends Check<Context>
+        extends Check<Context>
     {
         //~ Constructors --------------------------------------------------
 
         protected MinLengthCheck ()
         {
-            super("MinLength", -constants.maxStaveShiftDyLow.getValue(), 0,
+            super("MinLength",
+                  "Check that stick is as long as staff height"+
+                  " (diff is in interline unit)",
+                  -constants.maxStaveShiftDyLow.getValue(), 0,
                   true, TOO_SHORT_BAR);
         }
 
@@ -1243,13 +1266,17 @@ public class BarsBuilder
     // LeftCheck //
     //-----------//
     private class LeftCheck
-            extends Check<Context>
+        extends Check<Context>
     {
         //~ Constructors --------------------------------------------------
 
         protected LeftCheck ()
         {
-            super("Left", 0, 0, true, OUTSIDE_STAVE_WIDTH);
+            super("Left",
+                  "Check that stick is on the right of staff beginning bar"+
+                  " (diff is in interline unit)",
+                  0, 0,
+                  true, OUTSIDE_STAVE_WIDTH);
         }
 
         //~ Methods -------------------------------------------------------
@@ -1275,13 +1302,17 @@ public class BarsBuilder
     // RightCheck //
     //------------//
     private class RightCheck
-            extends Check<Context>
+        extends Check<Context>
     {
         //~ Constructors --------------------------------------------------
 
         protected RightCheck ()
         {
-            super("Right", 0, 0, true, OUTSIDE_STAVE_WIDTH);
+            super("Right",
+                  "Check that stick is on the left of staff ending bar"+
+                  " (diff is in interline unit)",
+                  0, 0,
+                  true, OUTSIDE_STAVE_WIDTH);
         }
 
         //~ Methods -------------------------------------------------------
@@ -1311,7 +1342,7 @@ public class BarsBuilder
      * Class <code>TopChunkCheck</code> checks for lack of chunk at top
      */
     private class TopChunkCheck
-            extends Check<Context>
+        extends Check<Context>
     {
         //~ Instance variables --------------------------------------------
 
@@ -1323,7 +1354,11 @@ public class BarsBuilder
 
         protected TopChunkCheck ()
         {
-            super("TopChunk", 0, 0, false, CHUNK_AT_TOP);
+            super("TopChunk",
+                  "Check there is no big chunck stuck on top of stick"+
+                  " (unit is interline squared)",
+                  0, 0,
+                  false, CHUNK_AT_TOP);
 
             // Adjust chunk window according to system scale (problem, we
             // have sheet scale and stave scale, not system scale...)
@@ -1356,7 +1391,7 @@ public class BarsBuilder
      * bottom
      */
     private class BottomChunkCheck
-            extends Check<Context>
+        extends Check<Context>
     {
         //~ Instance variables --------------------------------------------
 
@@ -1368,7 +1403,10 @@ public class BarsBuilder
 
         protected BottomChunkCheck ()
         {
-            super("BotChunk", 0, 0, false, CHUNK_AT_BOTTOM);
+            super("BotChunk",
+                  "Check there is no big chunck stuck on bottom of stick"+
+                  " (unit is interline squared)",
+                  0, 0, false, CHUNK_AT_BOTTOM);
 
             // Adjust chunk window according to system scale (problem, we
             // have sheet scale and stave scale, not system scale...)
@@ -1396,15 +1434,18 @@ public class BarsBuilder
     // LeftAdjacencyCheck //
     //--------------------//
     private static class LeftAdjacencyCheck
-            extends Check<Context>
+        extends Check<Context>
     {
         //~ Constructors --------------------------------------------------
 
         protected LeftAdjacencyCheck ()
         {
-            super("LeftAdj", constants.maxAdjacencyLow.getValue(),
-                  constants.maxAdjacencyHigh.getValue(), false,
-                  TOO_HIGH_ADJACENCY);
+            super("LeftAdj",
+                  "Check that left side of the stick is open enough"+
+                  " (dimension-less)",
+                  constants.maxAdjacencyLow.getValue(),
+                  constants.maxAdjacencyHigh.getValue(),
+                  false, TOO_HIGH_ADJACENCY);
         }
 
         //~ Methods -------------------------------------------------------
@@ -1423,15 +1464,18 @@ public class BarsBuilder
     // RightAdjacencyCheck //
     //---------------------//
     private static class RightAdjacencyCheck
-            extends Check<Context>
+        extends Check<Context>
     {
         //~ Constructors --------------------------------------------------
 
         protected RightAdjacencyCheck ()
         {
-            super("RightAdj", constants.maxAdjacencyLow.getValue(),
-                  constants.maxAdjacencyHigh.getValue(), false,
-                  TOO_HIGH_ADJACENCY);
+            super("RightAdj",
+                  "Check that right side of the stick is open enough"+
+                  " (dimension-less)",
+                  constants.maxAdjacencyLow.getValue(),
+                  constants.maxAdjacencyHigh.getValue(),
+                  false, TOO_HIGH_ADJACENCY);
         }
 
         //~ Methods -------------------------------------------------------
@@ -1450,15 +1494,15 @@ public class BarsBuilder
     // Context //
     //---------//
     private class Context
-            implements Checkable
+        implements Checkable
     {
         //~ Instance variables --------------------------------------------
 
-        Stick stick;
-        int topArea = -1;
-        int bottomArea = -1;
-        int topIdx = -1;
-        int botIdx = -1;
+        Stick   stick;
+        int     topArea    = -1;
+        int     bottomArea = -1;
+        int     topIdx     = -1;
+        int     botIdx     = -1;
         boolean isThick;
 
         //~ Constructors --------------------------------------------------
@@ -1480,13 +1524,13 @@ public class BarsBuilder
     // BarCheckSuite //
     //---------------//
     private class BarCheckSuite
-            extends CheckSuite<Context>
+        extends CheckSuite<Context>
     {
         //~ Constructors --------------------------------------------------
 
         public BarCheckSuite ()
         {
-            super("Bars", constants.minCheckResult.getValue());
+            super("Bar", constants.minCheckResult.getValue());
 
             // Be very careful with check order, because of side-effects
             add(1, new TopCheck());
@@ -1507,7 +1551,7 @@ public class BarsBuilder
     }
 
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         //~ Instance variables --------------------------------------------
 
