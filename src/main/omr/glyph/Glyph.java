@@ -108,19 +108,6 @@ public class Glyph
     {
     }
 
-    //-------//
-    // Glyph // Needed for Castor
-    //-------//
-    /**
-     * Constructor needed for Castor
-     *
-     * @param id the glyph id
-     */
-    public Glyph (int id)
-    {
-        setId(id);
-    }
-
     //~ Methods -----------------------------------------------------------
 
     //------------------//
@@ -342,10 +329,7 @@ public class Glyph
     public Point getCentroid()
     {
         if (centroid == null) {
-            getMoments();
-             // Very dangerous, because indices are HARD-CODED !!!
-            centroid = new Point((int) Math.rint(moments.k[17]),
-                                 (int) Math.rint(moments.k[18]));
+            centroid = getMoments().getCentroid();
         }
 
         return centroid;
@@ -451,9 +435,9 @@ public class Glyph
     // getMembers //
     //------------//
     /**
-     * Report the collection of member sections (needed for Castor)
+     * Report the collection of member sections.
      *
-     * @return memner sections
+     * @return member sections
      */
     public List<GlyphSection> getMembers ()
     {
@@ -514,23 +498,6 @@ public class Glyph
     public double getStepLine ()
     {
         return stepLine;
-    }
-
-    //----------------//
-    // getStringShape //
-    //----------------//
-    /**
-     * Report the name of the registered shape
-     *
-     * @return the shape name, or null
-     */
-    public String getStringShape ()
-    {
-        if (shape != null) {
-            return shape.toString();
-        } else {
-            return null;
-        }
     }
 
     //-----------------//
@@ -760,30 +727,6 @@ public class Glyph
         }
     }
 
-    //-----------//
-    // setBounds //
-    //-----------//
-    /**
-     * For Castor, to define the bounds of the glyph
-     *
-     * @param bounds the bounds of the glyph
-     */
-    public void setBounds (Rectangle bounds)
-    {
-        this.bounds = bounds;
-    }
-
-    //---------------//
-    // setContourBox //
-    //---------------//
-    /**
-     * For Castor, TBD
-     */
-    public void setContourBox (Rectangle contourBox)
-    {
-        this.contourBox = contourBox;
-    }
-
     //----------//
     // setGuess //
     //----------//
@@ -860,33 +803,6 @@ public class Glyph
     public void setIsWithinSystem (boolean isWithinSystem)
     {
         this.isWithinSystem = isWithinSystem;
-    }
-
-    //------------//
-    // setMembers //
-    //------------//
-    /**
-     * For Castor, setter for the whole collection of member sections
-     *
-     * @param members the member sections
-     */
-    public void setMembers (List<GlyphSection> members)
-    {
-        this.members = members;
-        invalidateCache();              // Useful?
-    }
-
-    //------------//
-    // setMoments // for Castor
-    //------------//
-    /**
-     * For Castor, Setter for the glyph moments,
-     *
-     * @param moments the glyph moments
-     */
-    public void setMoments (Moments moments)
-    {
-        this.moments = moments;
     }
 
     //-----------//
