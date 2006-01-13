@@ -47,6 +47,7 @@ public class FailureResult
      *
      * @return a descriptive string
      */
+    @Override
     public String toString ()
     {
         return "Failure:" + super.toString();

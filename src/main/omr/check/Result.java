@@ -54,6 +54,7 @@ public abstract class Result
      *
      * @return A descriptive string
      */
+    @Override
     public String toString ()
     {
         return comment;

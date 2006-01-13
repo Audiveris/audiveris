@@ -64,6 +64,7 @@ public abstract class Node
      *
      * @return the non-qualified node name
      */
+    @Override
     public String toString ()
     {
         StringBuffer sb = new StringBuffer();

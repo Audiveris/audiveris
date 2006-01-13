@@ -47,6 +47,7 @@ public class SuccessResult
      *
      * @return A descriptive string
      */
+    @Override
     public String toString ()
     {
         return "Success:" + super.toString();

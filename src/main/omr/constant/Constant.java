@@ -219,6 +219,7 @@ public abstract class Constant
      *
      * @return the (unqualified) constant name
      */
+    @Override
     public java.lang.String toString ()
     {
         return name;

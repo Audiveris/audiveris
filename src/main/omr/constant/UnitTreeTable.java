@@ -146,6 +146,7 @@ public class UnitTreeTable
         //-------------------------------//
         // getTableCellRendererComponent //
         //-------------------------------//
+        @Override
         public Component getTableCellRendererComponent (JTable table,
                                                         Object value,
                                                         boolean isSelected,
@@ -189,6 +190,7 @@ public class UnitTreeTable
         //-------------------------------//
         // getTableCellRendererComponent //
         //-------------------------------//
+        @Override
         public Component getTableCellRendererComponent (JTable table,
                                                         Object value,
                                                         boolean isSelected,
@@ -232,6 +234,7 @@ public class UnitTreeTable
      *
      * @return the best renderer for the cell.
      */
+    @Override
     public TableCellRenderer getCellRenderer (int row,
                                               int col)
     {

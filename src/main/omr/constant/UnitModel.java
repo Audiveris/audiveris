@@ -138,6 +138,7 @@ public class UnitModel
     //----------------//
     // isCellEditable //
     //----------------//
+    @Override
     public boolean isCellEditable (Object node,
                                    int column)
     {
@@ -221,6 +222,7 @@ public class UnitModel
     //----------------//
     // getColumnClass //
     //----------------//
+    @Override
     public Class getColumnClass (int column)
     {
         return Column.values()[column].type;
@@ -253,6 +255,7 @@ public class UnitModel
      *
      * @return true if <code>node</code> is a leaf
      */
+    @Override
     public boolean isLeaf (Object node)
     {
         if (node instanceof Constant) {
@@ -270,6 +273,7 @@ public class UnitModel
     //------------//
     // setValueAt //
     //------------//
+    @Override
     public void setValueAt (Object value,
                             Object node,
                             int col)
