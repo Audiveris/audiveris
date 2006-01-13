@@ -130,7 +130,7 @@ public class GlyphPane
 
         // The UI combo
         customBoard = new CustomBoard();
-        customBoard.setVisible(true);
+        customBoard.getComponent().setVisible(true);
 
         glyphBoard = new SymbolGlyphBoard(this,
                                         sheet.getFirstSymbolId(),
@@ -529,7 +529,7 @@ public class GlyphPane
                  "pref," + Panel.getPanelInterline() + "," +
                  "pref");
 
-            PanelBuilder builder = new PanelBuilder(layout, this);
+            PanelBuilder builder = new PanelBuilder(layout, getComponent());
             builder.setDefaultDialogBorder();
 
             CellConstraints cst = new CellConstraints();
@@ -539,7 +539,7 @@ public class GlyphPane
             r += 2;                     // --------------------------------
             builder.add(createGlobalPanel(), cst.xy (1, r));
             r += 2;                     // --------------------------------
-            builder.add(evaluatorsPanel, cst.xy (1, r));
+            builder.add(evaluatorsPanel.getComponent(), cst.xy (1, r));
         }
 
     }
