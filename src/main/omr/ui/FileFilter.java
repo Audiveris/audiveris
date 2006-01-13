@@ -86,7 +86,7 @@ public class FileFilter
         }
 
         // Convert array to lower case, once for all
-        this.extensions = (String[]) extensions.clone();
+        this.extensions = extensions.clone();
 
         for (int i = 0; i < this.extensions.length; i++) {
             this.extensions[i] = this.extensions[i].toLowerCase();
