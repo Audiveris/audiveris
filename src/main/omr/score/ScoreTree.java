@@ -13,15 +13,9 @@ package omr.score;
 import omr.util.Dumper;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.TreeModelListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
+import javax.swing.border.*;
+import javax.swing.event.*;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
@@ -35,16 +29,21 @@ import java.util.List;
  * @version $Id$
  */
 public class ScoreTree
-        extends JPanel
 {
     //~ Static variables/initializers -------------------------------------
 
-    // Global value so it can be ref'd by the tree-adapter
-    private static Score score;
     private static final int WINDOW_HEIGHT = 550;
     private static final int LEFT_WIDTH = 300;
     private static final int RIGHT_WIDTH = 340;
     private static final int WINDOW_WIDTH = LEFT_WIDTH + RIGHT_WIDTH;
+
+    //~ Instance variables ------------------------------------------------
+
+    // Concrete UI component
+    private JPanel component;
+
+    // Global value so it can be ref'd by the tree-adapter
+    private Score score;
 
     //~ Constructors ------------------------------------------------------
 
@@ -53,11 +52,13 @@ public class ScoreTree
     //-----------//
     private ScoreTree (Score score)
     {
+        component = new JPanel();
+
         // Make a nice border
         EmptyBorder eb = new EmptyBorder(5, 5, 5, 5);
         BevelBorder bb = new BevelBorder(BevelBorder.LOWERED);
         CompoundBorder cb = new CompoundBorder(eb, bb);
-        setBorder(new CompoundBorder(cb, eb));
+        component.setBorder(new CompoundBorder(cb, eb));
 
         // Set up the tree
         JTree tree = new JTree(new Adapter(score));
@@ -104,33 +105,33 @@ public class ScoreTree
                                                  WINDOW_HEIGHT + 10));
 
         // Add GUI components
-        this.setLayout(new BorderLayout());
-        this.add("Center", splitPane);
+        component.setLayout(new BorderLayout());
+        component.add("Center", splitPane);
     }
 
     //~ Methods -----------------------------------------------------------
 
-    //------//
-    // main //
-    //------//
+//     //------//
+//     // main //
+//     //------//
 
-    /**
-     * This class can be used in stand-alone, to browse a score specified
-     * in the command line
-     *
-     * @param argv only one argument : the name of the score XML file
-     */
-    public static void main (String[] argv)
-    {
-        // Global OMR properties
-        //Constant.loadResource ("/User.properties");
-        // Load score from an XML file
-        Score score = ScoreManager.getInstance().load(new File(argv[0]));
+//     /**
+//      * This class can be used in stand-alone, to browse a score specified
+//      * in the command line
+//      *
+//      * @param argv only one argument : the name of the score XML file
+//      */
+//     public static void main (String[] argv)
+//     {
+//         // Global OMR properties
+//         //Constant.loadResource ("/User.properties");
+//         // Load score from an XML file
+//         Score score = ScoreManager.getInstance().load(new File(argv[0]));
 
-        // Build the display frame
-        JFrame frame = makeFrame(argv[0], score);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    }
+//         // Build the display frame
+//         JFrame frame = makeFrame(argv[0], score);
+//         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//     }
 
     //-----------//
     // makeFrame //
@@ -152,7 +153,7 @@ public class ScoreTree
 
         // Set up the tree, the views, and display it all
         final ScoreTree scoreTree = new ScoreTree(score);
-        frame.getContentPane().add("Center", scoreTree);
+        frame.getContentPane().add("Center", scoreTree.component);
         frame.pack();
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -170,7 +171,7 @@ public class ScoreTree
 
     // This adapter converts the current Score into a JTree model.
     private class Adapter
-            implements TreeModel
+        implements TreeModel
     {
         //~ Instance variables --------------------------------------------
 

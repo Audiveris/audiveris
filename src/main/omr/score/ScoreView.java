@@ -38,7 +38,6 @@ import java.util.Iterator;
  * @version $Id$
  */
 public class ScoreView
-        extends JPanel
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -102,6 +101,9 @@ public class ScoreView
 
     //~ Instance variables ------------------------------------------------
 
+    // The concrete component
+    private JPanel component;
+
     // The displayed panel
     private final Panel panel = new Panel();
 
@@ -130,7 +132,6 @@ public class ScoreView
     //-----------//
     // ScoreView //
     //-----------//
-
     /**
      * Create the view dedicated to the display of the provided score.
      *
@@ -141,6 +142,7 @@ public class ScoreView
         if (logger.isDebugEnabled()) {
             logger.debug("new ScoreView on " + score);
         }
+        component = new JPanel();
 
         // Cross referencing between score and its view
         this.score = score;
@@ -149,14 +151,14 @@ public class ScoreView
         // Default mark location
         //////////////mark.setLocation (new Point (SCORE_INIT_X, SCORE_INIT_Y));
         // Global organization
-        setLayout(new BorderLayout());
+        component.setLayout(new BorderLayout());
 
         // Scroll pane to contain the component
         scrollPane = new JScrollPane(panel);
-        add(scrollPane, BorderLayout.CENTER);
+        component.add(scrollPane, BorderLayout.CENTER);
 
         // Information display
-        add(info, BorderLayout.SOUTH);
+        component.add(info, BorderLayout.SOUTH);
 
         // The panel in the scroll pane
         ////setViewportView (panel);
@@ -168,6 +170,19 @@ public class ScoreView
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent()
+    {
+        return component;
+    }
 
     //----------//
     // setFocus //
@@ -263,7 +278,7 @@ public class ScoreView
      */
     public void close ()
     {
-        Main.getJui().scorePane.close(this);
+        Main.getJui().scorePane.close(component);
     }
 
     //------------------//
@@ -331,6 +346,7 @@ public class ScoreView
      *
      * @return a string based on the score XML file name
      */
+    @Override
     public String toString ()
     {
         return "{ScoreView " + score.getRadix() + "}";
@@ -389,7 +405,7 @@ public class ScoreView
     // Panel //
     //-------//
     private class Panel
-            extends JPanel
+        extends JPanel
     {
         //~ Constructors --------------------------------------------------
 
@@ -428,6 +444,7 @@ public class ScoreView
         //----------------//
         // paintComponent //
         //----------------//
+        @Override
         public void paintComponent (Graphics g)
         {
             if (logger.isDebugEnabled()) {
