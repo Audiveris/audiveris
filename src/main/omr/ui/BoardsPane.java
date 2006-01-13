@@ -10,6 +10,7 @@
 
 package omr.ui;
 
+import omr.check.CheckBoard;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLagView;
 import omr.glyph.ui.GlyphBoard;
@@ -17,6 +18,13 @@ import omr.lag.LagView;
 import omr.lag.Run;
 import omr.lag.Section;
 import omr.stick.StickView;
+import omr.ui.Panel;
+import omr.util.Logger;
+
+import static omr.ui.Board.Tag.*;
+
+import com.jgoodies.forms.builder.*;
+import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
 import java.util.EnumMap;
@@ -24,34 +32,28 @@ import javax.swing.*;
 
 /**
  * Class <code>BoardsPane</code> defines a comprehensive user board, where
- * data related to current point, run, section and glyph is displayed in
- * dedicated boards, as well as a general-purpose Filter board.
+ * data related to current point, run, section and glyph can be displayed
+ * in dedicated boards, as well as a general-purpose Filter board and a
+ * custom board.
+ *
+ * <p>One BoardsPane is dedicated to one view of one sheet.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
 public class BoardsPane
-    extends JPanel
 {
+    //~ Static variables/initializers -------------------------------------
+
+    private static final Logger logger = Logger.getLogger(BoardsPane.class);
+
     //~ Instance variables ------------------------------------------------
 
-    /** The board for pixel information */
-    public  final PixelBoard   pixelBoard;
+    // The concrete UI component
+    private JPanel component;
 
-    /** The board for section and run information */
-    public  final SectionBoard sectionBoard;
-
-    /** The board for glyph information */
-    public  final GlyphBoard   glyphBoard;
-
-    /** The board for stick processing information */
-    public  final FilterBoard  filterBoard;
-
-    /** The board for custom processing */
-    public  final Board        customBoard;
-
-    // Map to the various boards
-    private final EnumMap<Board.Tag, Board> map;
+    // Unique (application-wide) name for this pane.
+    private String name;
 
     //~ Constructors ------------------------------------------------------
 
@@ -64,93 +66,131 @@ public class BoardsPane
     public BoardsPane (RubberZoomedPanel view,
                        Board...          boards)
     {
-        // Populate the map of boards
-        map = new EnumMap<Board.Tag,Board>(Board.Tag.class);
+        // View
+        if (view == null) {
+            logger.severe("BoardsPane needs a non-null view");
+        }
+
+        component = new JPanel();
+
+        // Prepare layout elements
+        final String panelInterline = Panel.getPanelInterline();
+        StringBuffer sbr = new StringBuffer();
+        for (int n = 0; n <= boards.length; n++) {
+            if (n != 0) {
+                sbr.append(", ").append(panelInterline).append(", ");
+            }
+            sbr.append("pref");
+        }
+
+        FormLayout layout = new FormLayout
+            ("pref",
+             sbr.toString());
+
+        Panel panel = new Panel();
+        panel.setNoInsets();
+
+        PanelBuilder builder = new PanelBuilder(layout, panel);
+        builder.setDefaultDialogBorder();
+
+        CellConstraints cst = new CellConstraints();
+
+        // Now add the desired components, using provided order
+        int r = 1;
         for (Board board : boards) {
-            map.put(board.getTag(), board);
-        }
+            builder.add(board.getComponent(), cst.xy(1, r));
+            switch(board.getTag()) {
+            case PIXEL :
+                PixelBoard pixelBoard = (PixelBoard) board;
+                pixelBoard.setPixelFocus(view);
+                view.addObserver(pixelBoard);
+                pixelBoard.update((Point) null);
+                break;
 
-        // Now add the desired components, using always the same order and
-        // layout
-        setLayout(new GridBagLayout());
-
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.BOTH;
-
-        //c.weightx = 1.0; //0.5;
-        c.gridx   = 0;
-        c.gridy   = 0;
-
-        // Pixel
-        pixelBoard = (PixelBoard) map.get(Board.Tag.PIXEL);
-        if (pixelBoard != null) {
-            add(pixelBoard, c);
-            pixelBoard.setPixelFocus(view);
-            view.addObserver(pixelBoard);
-            pixelBoard.update((Point) null);
-        }
-
-        c.gridy = GridBagConstraints.RELATIVE;
-
-        // Section
-        sectionBoard = (SectionBoard) map.get(Board.Tag.SECTION);
-        if (sectionBoard != null) {
-            add(sectionBoard, c);
-            if (view instanceof LagView) {
+            case SECTION :
+                SectionBoard sectionBoard = (SectionBoard) board;
                 LagView lagView = (LagView) view;
                 sectionBoard.setSectionFocus(lagView);
                 lagView.addObserver(sectionBoard);
+                sectionBoard.update((Section) null);
+                sectionBoard.update((Run) null);
+                break;
+
+            case GLYPH :
+                GlyphBoard glyphBoard = (GlyphBoard) board;
+                if (view instanceof GlyphLagView) {
+                    GlyphLagView glyphView = (GlyphLagView) view;
+                    glyphBoard.setGlyphFocus(glyphView);
+                    glyphView.addObserver(glyphBoard);
+                }
+                glyphBoard.update((Glyph) null);
+                break;
+
+            case CHECK :
+                // CheckBoard checkBoard = (CheckBoard) board;
+                // if (view instanceof StickView) {
+                //     StickView stickView = (StickView) view;
+                //     stickView.setCheckMonitor(checkBoard);
+                // }
+                break;
+
+            case CUSTOM :
+                // CustomBoard customBoard = board;
+                break;
             }
-
-            sectionBoard.update((Section) null);
-            sectionBoard.update((Run) null);
+            r += 2;
         }
 
-        // Glyph
-        glyphBoard = (GlyphBoard) map.get(Board.Tag.GLYPH);
-        if (glyphBoard != null) {
-            add(glyphBoard, c);
-            if (view instanceof GlyphLagView) {
-                GlyphLagView glyphView = (GlyphLagView) view;
-                glyphBoard.setGlyphFocus(glyphView);
-                glyphView.addObserver(glyphBoard);
-            }
-
-            glyphBoard.update((Glyph) null);
-        }
-
-        // Check board
-        filterBoard = (FilterBoard) map.get(Board.Tag.FILTER);
-        if (filterBoard != null) {
-            add(filterBoard, c);
-            if (view instanceof StickView) {
-                StickView stickView = (StickView) view;
-                stickView.setFilterMonitor(filterBoard);
-            }
-
-            filterBoard.tellHtml(null);
-        }
-
-        // Custom board
-        customBoard = map.get(Board.Tag.CUSTOM);
-        if (customBoard != null) {
-            add(customBoard, c);
-        }
+        component.add(builder.getPanel());
     }
 
     //~ Methods -----------------------------------------------------------
 
-    //----------//
-    // getBoard //
-    //----------//
+    //--------------//
+    // getComponent //
+    //--------------//
     /**
-     * Allows to return a specific board, knowing its tag
+     * Report the UI component
      *
-     * @param tag the tag of the desired board
-     * @return the desired board, or null if not found
+     * @return the concrete component
      */
-    public Board getBoard (Board.Tag tag)
+    public JComponent getComponent()
     {
-        return map.get(tag);
+        return component;
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign the unique name for this boards pane
+     *
+     * @param name the assigned name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the unique name for this boards pane
+     *
+     * @return the declared name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+        public String toString()
+    {
+        return "{BoardsPane " + name + "}";
     }
 }
