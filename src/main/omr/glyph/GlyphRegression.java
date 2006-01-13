@@ -13,7 +13,7 @@ package omr.glyph;
 import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import omr.math.Cumul;
+import omr.math.Population;
 import omr.util.Logger;
 
 import java.io.*;
@@ -24,6 +24,9 @@ import java.util.List;
  * Class <code>GlyphRegression</code> is a glyph evaluator based on a
  * {@link omr.math.NeuralNetwork}.
  *
+ * <p>Note that this evaluator has been deprecated. It is used internally and
+ * temporarily in the selection of core sheets among the training material. It
+ * is no longer visible by the end user.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -54,50 +57,11 @@ public class GlyphRegression
      */
     private GlyphRegression ()
     {
-        // Retrieve last custom version if any
-        try {
-            // First, look for a custom version
-            File custom = getCustomBackup();
-            if (custom.exists()){
-                logger.info ("Deserializing GlyphRegression from custom"
-                             + " file " + custom);
-                shapeDescs = deserialize(new FileInputStream(custom));
-            }
-        } catch (FileNotFoundException ex) {
-            logger.warning ("Cannot find custom backup " +
-                            getCustomBackup());
-        }
-
-        // Second, use the system default
-        if (shapeDescs == null){
-            String resource = getSystemBackup();
-            InputStream is = GlyphRegression.class.getResourceAsStream
-                (resource);
-            if (is != null) {
-                logger.info ("Deserializing GlyphRegression from " +
-                             "system resource " + resource);
-                shapeDescs = deserialize(is);
-            } else {
-                logger.warning ("Cannot find system resource " + resource);
-            }
-        }
-
-        // Basic check
-        if (shapeDescs != null) {
-            if (shapeDescs.length != outSize) {
-                logger.warning("Obsolete Regression data,"
-                               + " reconstructing from scratch");
-                shapeDescs = null;
-            }
-        }
-
-        if (shapeDescs == null) {
-            // Allocate shape descriptors, as a brand new one
-            logger.info ("Creating a brand new GlyphRegression");
-            shapeDescs = new ShapeDesc[outSize];
-            for (int s = outSize - 1; s >= 0; s--) {
-                shapeDescs[s] = new ShapeDesc(Shape.values()[s]);
-            }
+        // Allocate shape descriptors, as a brand new one
+        logger.debug ("Creating a brand new GlyphRegression");
+        shapeDescs = new ShapeDesc[outSize];
+        for (int s = outSize - 1; s >= 0; s--) {
+            shapeDescs[s] = new ShapeDesc(Shape.values()[s]);
         }
     }
 
@@ -175,7 +139,7 @@ public class GlyphRegression
         public boolean isTrained ()
     {
         for (ShapeDesc desc : shapeDescs) {
-            if (desc.cumuls[0].getNumber() >= 2) {
+            if (desc.populations[0].getCardinality() >= 2) {
                 return true;
             }
         }
@@ -199,8 +163,8 @@ public class GlyphRegression
         // Reset counters ?
         if (mode == StartingMode.SCRATCH) {
             for (ShapeDesc desc : shapeDescs) {
-                for (Cumul cumul : desc.cumuls) {
-                    cumul.reset();
+                for (Population population : desc.populations) {
+                    population.reset();
                 }
             }
         }
@@ -220,8 +184,6 @@ public class GlyphRegression
         for (ShapeDesc desc : shapeDescs) {
             desc.compute();
         }
-
-        serialize(getCustomBackup());
     }
 
     //-----------------//
@@ -257,61 +219,6 @@ public class GlyphRegression
         shapeDescs[shape.ordinal()].dumpDistance(glyph);
     }
 
-    //-------------//
-    // deserialize //
-    //-------------//
-    /**
-     * Deserialize the provided binary file to allocate the corresponding
-     * regression evaluator
-     *
-     * @param in the input stream that contains the regression evaluator
-     * definition in binary format
-     *
-     * @return the allocated shape descriptors.
-     */
-    public static ShapeDesc[] deserialize (InputStream in)
-    {
-        try {
-            ObjectInputStream s = new ObjectInputStream(in);
-
-            ShapeDesc[] sd = (ShapeDesc[]) s.readObject();
-            s.close();
-            if (logger.isDebugEnabled()) {
-                logger.debug("Regression evaluator deserialized");
-            }
-
-            return sd;
-        } catch (Exception ex) {
-            logger.error("Could not deserialize Regression evaluator");
-            logger.error(ex.toString());
-            return null;
-        }
-    }
-
-    //-----------//
-    // serialize //
-    //-----------//
-    /**
-     * Serialize the regression to its binary file
-     */
-    public void serialize (File file)
-    {
-        if (logger.isDebugEnabled()) {
-            logger.debug("serialize to " + file.getPath());
-        }
-
-        try {
-            FileOutputStream f = new FileOutputStream(file);
-            ObjectOutput s = new ObjectOutputStream(f);
-            s.writeObject(shapeDescs);
-            s.close();
-            logger.info("Regression evaluator serialized to " + file.getPath());
-        } catch (Exception ex) {
-            logger.error("Could not serialize Regression evaluator to " + file.getPath());
-            logger.error(ex.toString());
-        }
-    }
-
     //~ Classes -----------------------------------------------------------
 
     //-----------//
@@ -324,28 +231,13 @@ public class GlyphRegression
     private static class ShapeDesc
         implements java.io.Serializable
     {
-        //~ Static variables/initializers ---------------------------------
-
-        public static final double[] factors = new double[inSize];
-
-        static
-        {
-            Arrays.fill(factors, 1d);
-//             factors[0]  = 2.0d;            // Weight
-//             factors[11] = 0.2d;
-//             factors[12] = 0.2d;
-//             factors[13] = 0.2d;
-//             factors[14] = 0.1d;
-        }
-
-
         //~ Instance variables --------------------------------------------
 
         // The related shape
         final Shape shape;
 
         // Counters to compute mean value & std deviation
-        final Cumul[] cumuls = new Cumul[inSize];
+        final Population[] populations = new Population[inSize];
 
         // Mean for each criteria
         final double[] means = new double[inSize];
@@ -360,9 +252,9 @@ public class GlyphRegression
         {
             this.shape = shape;
 
-            // Allocate cumul counters
+            // Allocate population counters
             for (int c = inSize - 1; c >= 0; c--) {
-                cumuls[c] = new Cumul();
+                populations[c] = new Population();
             }
 
             Arrays.fill(means, 0);
@@ -375,7 +267,7 @@ public class GlyphRegression
         public void include (double[] ins)
         {
             for (int c = inSize - 1; c >= 0; c--) {
-                cumuls[c].include(ins[c]);
+                populations[c].includeValue(ins[c]);
             }
         }
 
@@ -385,13 +277,13 @@ public class GlyphRegression
         public void compute ()
         {
             double weightMax = constants.weightMax.getValue();
-            if (cumuls[0].getNumber() >= 2) {
+            if (populations[0].getCardinality() >= 2) {
                 for (int c = 0; c < inSize; c++) {
-                    Cumul cumul = cumuls[c];
-                    means[c] = cumul.getMean();
+                    Population population = populations[c];
+                    means[c] = population.getMeanValue();
                     weights[c] = Math.min
                         (weightMax,
-                         1d / (inSize * cumul.getStdDeviation()));
+                         1d / (inSize * population.getStandardDeviation()));
                 }
             }
         }
@@ -417,11 +309,10 @@ public class GlyphRegression
         //----------//
         public double distance (double[] ins)
         {
-            if (cumuls[0].getNumber() >= 2) {
+            if (populations[0].getCardinality() >= 2) {
                 double dist = 0;
                 for (int c = 0; c < inSize; c++) {
-                    //dist += Math.abs(means[c] - ins[c]) * weights[c] * factors[c];
-                    double d = (means[c] - ins[c]) * weights[c] * factors[c];
+                    double d = (means[c] - ins[c]) * weights[c];
                     dist += d * d;
                 }
                 return dist;
@@ -435,17 +326,15 @@ public class GlyphRegression
         //--------------//
         public double dumpDistance (double[] ins)
         {
-            if (cumuls[0].getNumber() >= 2) {
+            if (populations[0].getCardinality() >= 2) {
                 double dist = 0;
                 for (int c = 0; c < inSize; c++) {
                     double dm = Math.abs(means[c] - ins[c]);
                     double wdm = weights[c] * dm;
-                    double fwdm = factors[c] * wdm;
-                    //dist += fwdm;
-                    dist += fwdm * fwdm;
+                    dist += wdm * wdm;
                     System.out.printf
-                        ("%2d-> dm:%e wgt:%e wdm:%e fwdm:%e\n",
-                         c, dm, weights[c], wdm, fwdm);
+                        ("%2d-> dm:%e wgt:%e wdm:%e\n",
+                         c, dm, weights[c], wdm);
                 }
                 System.out.printf("Dist to %s=%e\n", shape, dist);
                 return dist;
@@ -461,16 +350,16 @@ public class GlyphRegression
         {
             System.out.printf("\n%30s %3d\n",
                               shape.toString(),
-                              cumuls[0].getNumber());
+                              populations[0].getCardinality());
 
-            if (cumuls[0].getNumber() >= 2) {
+            if (populations[0].getCardinality() >= 2) {
                 for (int c = 0; c < inSize; c++) {
                     System.out.printf
                             ("%2d %7s -> mean=% e std=% e wgt=% e\n",
                              c,
                              getLabels()[c],
                              means[c],
-                             cumuls[c].getStdDeviation(),
+                             populations[c].getStandardDeviation(),
                              weights[c]);
                 }
             }
