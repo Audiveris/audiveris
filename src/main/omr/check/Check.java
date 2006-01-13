@@ -60,8 +60,11 @@ public abstract class Check <T extends Checkable>
     // true) or GREEN,ORANGE,RED (lower is better, covariant = false)
     private final boolean covariant;
 
-    // Descriptive name for this test
+    // Short name for this test
     private final String name;
+
+    // Longer description, meant for tips
+    private final String description;
 
     // Specifies the FailureResult to be assigned to the Checkable object,
     // if the result of the check end in the RED range.
@@ -75,24 +78,39 @@ public abstract class Check <T extends Checkable>
     /**
      * Creates a new Check object.
      *
-     * @param name      descriptive name for this check
+     * @param name        short name for this check
+     * @param description longer description
      * @param low       lower bound of orange zone
      * @param high      upper bound of orange zone
      * @param covariant true if higher is better, false otherwise
      * @param redResult result code to be assigned when result is RED
      */
     protected Check (String name,
+                     String description,
                      double low,
                      double high,
                      boolean covariant,
                      FailureResult redResult)
     {
         this.name = name;
+        this.description = description;
         this.low = low;
         this.high = high;
         this.covariant = covariant;
         this.redResult = redResult;
+
         verifyRange();
+    }
+
+    /** For temporary compatibility */
+    @Deprecated
+        protected Check (String name,
+                         double low,
+                         double high,
+                         boolean covariant,
+                         FailureResult redResult)
+    {
+        this(name, null, low, high, covariant, redResult);
     }
 
     //~ Methods -----------------------------------------------------------
@@ -139,10 +157,10 @@ public abstract class Check <T extends Checkable>
         this.high = high;
         verifyRange();
     }
+
     //---------//
     // getName //
     //---------//
-
     /**
      * Report the related name
      *
@@ -153,9 +171,22 @@ public abstract class Check <T extends Checkable>
         return name;
     }
 
-    //----------//
+    //----------------//
+    // getDescription //
+    //----------------//
+    /**
+     * Report the related description
+     *
+     * @return the description assigned to this check
+     */
+    public String getDescription ()
+    {
+        return description;
+    }
+
+    //-------------//
     // isCovariant //
-    //----------//
+    //-------------//
 
     /**
      * Report the covariant flag
@@ -198,28 +229,22 @@ public abstract class Check <T extends Checkable>
                 if (update) {
                     obj.setResult(redResult);
                 }
-
                 result.flag = RED;
+            } else if (result.value >= high) {
+                result.flag = GREEN;
             } else {
-                if (result.value >= high) {
-                    result.flag = GREEN;
-                } else {
-                    result.flag = ORANGE;
-                }
+                result.flag = ORANGE;
             }
         } else {
             if (result.value <= low) {
                 result.flag = GREEN;
-            } else {
-                if (result.value > high) {
-                    if (update) {
-                        obj.setResult(redResult);
-                    }
-
-                    result.flag = RED;
-                } else {
-                    result.flag = ORANGE;
+            } else if (result.value > high) {
+                if (update) {
+                    obj.setResult(redResult);
                 }
+                result.flag = RED;
+            } else {
+                result.flag = ORANGE;
             }
         }
 
@@ -232,6 +257,7 @@ public abstract class Check <T extends Checkable>
     /**
      * report a readable description of this check
      */
+    @Override
     public String toString ()
     {
         StringBuffer sb = new StringBuffer(128);
