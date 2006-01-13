@@ -16,9 +16,10 @@ import omr.glyph.GlyphSection;
 import omr.lag.Lag;
 import omr.lag.Run;
 import omr.lag.SectionView;
+import omr.math.BasicLine;
 import omr.math.Line;
-import omr.util.Logger;
 import omr.ui.Zoom;
+import omr.util.Logger;
 
 import java.awt.*;
 import java.util.List;
@@ -52,17 +53,6 @@ public class Stick
 
     //~ Constructors ------------------------------------------------------
 
-
-    /**
-     * (For Castor?) Create a stick with a provided id
-     *
-     * @param id the given stick id
-     */
-    public Stick (int id)
-    {
-        super(id);
-    }
-
     /**
      * Default constructor
      */
@@ -75,7 +65,6 @@ public class Stick
     //------------------//
     // getAlienPixelsIn //
     //------------------//
-
     /**
      * Report the number of pixels found in the specified rectangle that do
      * not belong to the stick.
@@ -131,7 +120,6 @@ public class Stick
     //------------------//
     // getAliensAtStart //
     //------------------//
-
     /**
      * Count alien pixels in the following rectangle...
      * <pre>
@@ -158,7 +146,6 @@ public class Stick
     //-----------------------//
     // getAliensAtStartFirst //
     //-----------------------//
-
     /**
      * Count alien pixels in the following rectangle...
      * <pre>
@@ -183,7 +170,6 @@ public class Stick
     //----------------------//
     // getAliensAtStartLast //
     //----------------------//
-
     /**
      * Count alien pixels in the following rectangle...
      * <pre>
@@ -207,7 +193,6 @@ public class Stick
     //-----------------//
     // getAliensAtStop //
     //-----------------//
-
     /**
      * Count alien pixels in the following rectangle...
      * <pre>
@@ -234,7 +219,6 @@ public class Stick
     //----------------------//
     // getAliensAtStopFirst //
     //----------------------//
-
     /**
      * Count alien pixels in the following rectangle...
      * <pre>
@@ -259,7 +243,6 @@ public class Stick
     //---------------------//
     // getAliensAtStopLast //
     //---------------------//
-
     /**
      * Count alien pixels in the following rectangle...
      * <pre>
@@ -296,7 +279,6 @@ public class Stick
     //------------//
     // getDensity //
     //------------//
-
     /**
      * Report the density of the stick, that is its weight divided by the
      * area of its bounding rectangle
@@ -314,7 +296,6 @@ public class Stick
     //-------------//
     // getFirstPos //
     //-------------//
-
     /**
      * Return the first position (ordinate for stick of horizontal
      * sections, abscissa for stick of vertical sections and runs)
@@ -366,7 +347,6 @@ public class Stick
     //--------------//
     // getLastStuck //
     //--------------//
-
     /**
      * Compute the nb of pixels stuck on last side of the stick
      *
@@ -403,7 +383,6 @@ public class Stick
     //---------//
     // getLine //
     //---------//
-
     /**
      * Return the approximating line computed on the stick.
      *
@@ -418,24 +397,9 @@ public class Stick
         return line;
     }
 
-    //---------//
-    // setLine //
-    //---------//
-
-    /**
-     * For Castor
-     *
-     * @param line The line of the stick
-     */
-    public void setLine (Line line)
-    {
-        this.line = line;
-    }
-
     //-----------//
     // getMidPos //
     //-----------//
-
     /**
      * Return the position (ordinate for horizontal stick, abscissa for
      * vertical stick) at the middle of the stick
@@ -451,7 +415,6 @@ public class Stick
     //----------//
     // getStart //
     //----------//
-
     /**
      * Return the beginning of the stick (xmin for horizontal, ymin for
      * vertical)
@@ -466,7 +429,6 @@ public class Stick
     //----------------//
     // getStartingPos //
     //----------------//
-
     /**
      * Return the best pos value at starting of the stick
      *
@@ -484,7 +446,6 @@ public class Stick
     //---------//
     // getStop //
     //---------//
-
     /**
      * Return the end of the stick (xmax for horizontal, ymax for vertical)
      *
@@ -498,7 +459,6 @@ public class Stick
     //----------------//
     // getStoppingPos //
     //----------------//
-
     /**
      * Return the best pos value at the stopping end of the stick
      *
@@ -540,13 +500,12 @@ public class Stick
         super.addSection(section, /* link => */ true);
 
         // Include the section points
-        getLine().include(section.getLine());
+        getLine().includeLine(section.getLine());
     }
 
     //----------//
     // colorize //
     //----------//
-
     /**
      * Set the display color of all sections that compose this stick.
      *
@@ -565,7 +524,6 @@ public class Stick
     //----------//
     // colorize //
     //----------//
-
     /**
      * Set the display color of all sections gathered by the provided list
      *
@@ -586,7 +544,6 @@ public class Stick
     //------------------//
     // computeDensities //
     //------------------//
-
     /**
      * Computes the densities around the stick mean line
      */
@@ -674,22 +631,21 @@ public class Stick
     //-------------//
     // computeLine //
     //-------------//
-
     /**
      * Computes the least-square fitted line among all the section points
      * of the stick.
      */
     public void computeLine ()
     {
-        line = new Line();
+        line = new BasicLine();
 
         for (GlyphSection section : members) {
             StickSection ss = (StickSection) section;
-            line.include(ss.getLine());
+            line.includeLine(ss.getLine());
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug(line + " pointNb=" + line.getPointNb()
+            logger.debug(line + " pointNb=" + line.getNumberOfPoints()
                          + " meanDistance=" + (float) line.getMeanDistance());
         }
     }
@@ -697,7 +653,6 @@ public class Stick
     //------//
     // dump //
     //------//
-
     /**
      * Dump the stick as well as its contained sections is so desired
      *
@@ -709,7 +664,7 @@ public class Stick
             System.out.println();
         }
 
-        System.out.println(toString() + " pointNb=" + line.getPointNb()
+        System.out.println(toString() + " pointNb=" + line.getNumberOfPoints()
                            + " start=" + getStart() + " stop=" + getStop()
                            + " midPos=" + getMidPos());
 
@@ -725,7 +680,6 @@ public class Stick
     //-------------//
     // renderChunk //
     //-------------//
-
     /**
      * Render the chunk area at each end of the stick
      *
@@ -763,7 +717,6 @@ public class Stick
     //------------//
     // renderLine //
     //------------//
-
     /**
      * Render the main guiding line of the stick, using the current
      * foreground color.
@@ -793,13 +746,13 @@ public class Stick
     //----------//
     // toString //
     //----------//
-
     /**
      * A readable image of the Stick
      *
      * @return The image string
      */
-    public String toString ()
+    @Override
+        public String toString ()
     {
         StringBuffer sb = new StringBuffer(256);
         sb.append(super.toString());
@@ -836,6 +789,7 @@ public class Stick
      *
      * @return the prefix string
      */
+    @Override
     protected String getPrefix ()
     {
         return "Stick";
