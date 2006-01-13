@@ -194,19 +194,6 @@ public class StaveInfo
     }
 
     //----------//
-    // setLines //
-    //----------//
-    /**
-     * For Castor
-     *
-     * @param lines the list of lines in this stave
-     */
-    public void setLines (List<LineInfo> lines)
-    {
-        this.lines = lines;
-    }
-
-    //----------//
     // getRight //
     //----------//
     /**
@@ -231,19 +218,6 @@ public class StaveInfo
     public Scale getScale ()
     {
         return scale;
-    }
-
-    //----------//
-    // setScale //
-    //----------//
-    /**
-     * For Castor
-     *
-     * @param scale the stave scale
-     */
-    public void setScale (Scale scale)
-    {
-        this.scale = scale;
     }
 
     //---------//
@@ -338,6 +312,7 @@ public class StaveInfo
      *
      * @return a string based on main parameters
      */
+    @Override
     public String toString ()
     {
         return "{Stave id=" + id + " left=" + left + " right=" + right

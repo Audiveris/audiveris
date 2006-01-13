@@ -241,17 +241,6 @@ public class SystemInfo
         return bars;
     }
 
-    //---------//
-    // setBars //
-    //---------//
-    /**
-     * For Castor
-     */
-    public void setBars (List<BarInfo> bars)
-    {
-        this.bars = bars;
-    }
-
     //-----------//
     // getBottom //
     //-----------//
@@ -292,19 +281,6 @@ public class SystemInfo
     public List<Ending> getEndings ()
     {
         return endings;
-    }
-
-    //-----------//
-    // setGlyphs //
-    //-----------//
-    /**
-     * For Castor, to set the list of glyphs
-     *
-     * @param glyphs the list of system glyphs
-     */
-    public void setGlyphs (List<Glyph> glyphs)
-    {
-        this.glyphs = glyphs;
     }
 
     //-----------//
