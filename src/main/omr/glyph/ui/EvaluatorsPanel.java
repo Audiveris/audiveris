@@ -37,7 +37,6 @@ import javax.swing.border.*;
  * @version $Id$
  */
 public class EvaluatorsPanel
-    extends Panel
 {
     private static Logger logger = Logger.getLogger(EvaluatorsPanel.class);
 
@@ -48,6 +47,9 @@ public class EvaluatorsPanel
     private static final Color EVAL_SOSO_COLOR = new Color(255, 100, 150);
 
     //~ Instance variables ------------------------------------------------
+
+    // Concrete panel
+    private Panel component;
 
     // Related sheet & GlyphPane (if any)
     private final Sheet     sheet;
@@ -77,8 +79,9 @@ public class EvaluatorsPanel
         this.sheet = sheet;
         this.pane  = pane;
 
+        component = new Panel();
         if (pane != null) {
-            setNoInsets();
+            component.setNoInsets();
         }
 
         networkPanel = new EvaluatorPanel(network);
@@ -87,7 +90,7 @@ public class EvaluatorsPanel
             ("pref",
              "pref," + Panel.getPanelInterline() + "," +
              "pref");
-        PanelBuilder builder = new PanelBuilder(layout, this);
+        PanelBuilder builder = new PanelBuilder(layout, component);
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
@@ -97,6 +100,19 @@ public class EvaluatorsPanel
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the concrete component
+     *
+     * @return the created component
+     */
+    public JComponent getComponent()
+    {
+        return component;
+    }
 
     //---------//
     // setView //

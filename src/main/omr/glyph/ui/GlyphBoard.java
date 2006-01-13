@@ -15,6 +15,7 @@ import omr.glyph.GlyphFocus;
 import omr.glyph.GlyphObserver;
 import omr.glyph.Shape;
 import omr.ui.Board;
+import omr.ui.Panel;
 import omr.ui.SField;
 import omr.ui.SpinnerUtilities;
 import omr.util.Logger;
@@ -94,7 +95,7 @@ public class GlyphBoard
 
 
     /** The JGoodies/Form layout to be used by all subclasses  */
-    protected FormLayout layout = makeFormLayout(5, 3);
+    protected FormLayout layout = Panel.makeFormLayout(5, 3);
 
     /** The JGoodies/Form builder to be used by all subclasses  */
     protected PanelBuilder builder;
@@ -186,7 +187,7 @@ public class GlyphBoard
         // Precise layout
         layout.setColumnGroups(new int[][]{{1, 5, 9}, {3, 7, 11}});
 
-        builder = new PanelBuilder(layout, this);
+        builder = new PanelBuilder(layout, getComponent());
         builder.setDefaultDialogBorder();
 
         defineLayout();

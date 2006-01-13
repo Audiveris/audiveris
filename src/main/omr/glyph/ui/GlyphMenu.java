@@ -27,9 +27,11 @@ import java.util.ArrayList;
  * @version $Id$
  */
 public class GlyphMenu
-    extends JPopupMenu
 {
     //~ Instance variables ------------------------------------------------
+
+    // Concrete popup menu
+    private final JPopupMenu popup;
 
     private final GlyphPane  pane;
     private final ShapeFocus focus;
@@ -64,17 +66,19 @@ public class GlyphMenu
     public GlyphMenu (final GlyphPane  pane,
                       ShapeFocus focus)
     {
+        popup = new JPopupMenu();
+
         this.pane  = pane;
         this.focus = focus;
 
         // Confirm current guess
-        confirmItem = add(confirmAction);
+        confirmItem = popup.add(confirmAction);
         confirmItem.setToolTipText("Confirm current guess");
 
-        addSeparator();
+        popup.addSeparator();
 
         // Deassign selected glyph(s)
-        deassignItem = add(deassignAction);
+        deassignItem = popup.add(deassignAction);
         deassignItem.setToolTipText("Deassign selected glyph(s)");
 
         // Manually assign a shape
@@ -111,9 +115,9 @@ public class GlyphMenu
                  }
              });
         assignMenu.setToolTipText("Manually force an assignment");
-        add(assignMenu);
+        popup.add(assignMenu);
 
-        addSeparator();
+        popup.addSeparator();
 
         // Build a compound
         compoundMenu = new JMenu("Build compound");
@@ -131,22 +135,35 @@ public class GlyphMenu
                  }
              });
         compoundMenu.setToolTipText("Manually build a compound");
-        add(compoundMenu);
+        popup.add(compoundMenu);
 
-        addSeparator();
+        popup.addSeparator();
 
         // Dump current glyph
-        dumpItem = add(dumpAction);
+        dumpItem = popup.add(dumpAction);
         dumpItem.setToolTipText("Dump this glyph");
 
-        addSeparator();
+        popup.addSeparator();
 
         // Display all glyphs of the same shape
-        similarItem = add(similarAction);
+        similarItem = popup.add(similarAction);
         similarItem.setToolTipText("Display all similar glyphs");
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //----------//
+    // getPopup //
+    //----------//
+    /**
+     * Report the concrete popup menu
+     *
+     * @return the popup menu
+     */
+    public JPopupMenu getPopup()
+    {
+        return popup;
+    }
 
     //----------------//
     // updateForGlyph //
