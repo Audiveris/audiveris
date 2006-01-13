@@ -161,7 +161,7 @@ public class Sheet
      * through the <b>getPicture</b> method.
      */
     class LoadStep
-            extends InstanceStep<Picture>
+        extends InstanceStep<Picture>
     {
         LoadStep ()
         {
@@ -173,6 +173,16 @@ public class Sheet
         {
             try {
                 result = new Picture(imgFile);
+
+                // Display sheet picture if not batch mode
+                if (Main.getJui() != null) {
+                    PictureView pictureView = new PictureView(Sheet.this);
+                    displayAssembly();
+                    assembly.addViewTab
+                        ("Picture", pictureView,
+                         new BoardsPane(pictureView.getView(),
+                                        new PixelBoard()));
+                }
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find file " + imgFile);
                 throw new ProcessingException();
@@ -190,17 +200,10 @@ public class Sheet
 
                 throw new ProcessingException();
             } catch (Exception ex) {
+                ex.printStackTrace();
                 logger.warning(ex.getMessage());
                 throw new ProcessingException();
             }
-        }
-
-        public void displayUI ()
-        {
-            PictureView pictureView = new PictureView(Sheet.this);
-            assembly.addViewTab("Picture", pictureView,
-                                new BoardsPane(pictureView.getView(),
-                                               new PixelBoard()));
         }
     }
 
@@ -253,7 +256,7 @@ public class Sheet
 
                     // Update displayed image if any
                     if (getPicture().isRotated() && Main.getJui() != null) {
-                        assembly.repaint();
+                        assembly.getComponent().repaint();
                     }
 
                     // Remember final sheet dimensions in pixels
@@ -506,9 +509,9 @@ public class Sheet
     // Sheet //
     //-------//
     /**
-     * Meant for local and Castor use only
+     * Meant for local and XML binder use only
      */
-    public Sheet ()
+    private Sheet ()
     {
         // Keep the compiler happy
         imgFile = null;
@@ -1076,17 +1079,6 @@ public class Sheet
         }
     }
 
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * For Castor
-     */
-    public void setStaves (List<StaveInfo> staves)
-    {
-        LINES.result = staves;
-    }
-
     //------------------//
     // getStaveIndexAtY //
     //------------------//
@@ -1640,6 +1632,7 @@ public class Sheet
      *
      * @return a string based on the related image file name
      */
+    @Override
     public String toString ()
     {
         return "{Sheet " + getPath() + "}";
