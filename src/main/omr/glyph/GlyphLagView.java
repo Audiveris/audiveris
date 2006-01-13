@@ -232,7 +232,7 @@ public class GlyphLagView
             glyph = section.getGlyph();
         }
 
-        glyphSelected(glyph, pt);
+        glyphSelected(glyph, pt);       // glyph may be null
 
         notifyObservers(glyph);
 
