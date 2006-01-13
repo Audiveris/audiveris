@@ -42,6 +42,9 @@ public class Vertex <D extends Digraph,
 
     private static final Logger logger = Logger.getLogger(Vertex.class);
 
+    /** Compilation flag to forbid duplication of edges : {@value} */
+    public static final boolean NO_EDGE_DUPLICATES = true;
+
     //~ Instance variables ------------------------------------------------
 
     /**
@@ -89,14 +92,15 @@ public class Vertex <D extends Digraph,
     //--------//
     /**
      * Create a Vertex in a graph.
+     * @param graph The containing graph where this vertex is to be hosted
      */
     protected Vertex (D graph)
     {
         if (logger.isDebugEnabled()) {
             logger.debug("new vertex in graph " + graph);
         }
-        this.graph = graph;
-        id = graph.addVertex(this);
+        //this.graph = graph;
+        graph.addVertex(this);          // Compiler warning here
     }
 
     //~ Methods -----------------------------------------------------------
@@ -118,8 +122,9 @@ public class Vertex <D extends Digraph,
     // setGraph //
     //----------//
     /**
-     * (package access fom graph) Assign the containing graph of this
+     * (package access from graph) Assign the containing graph of this
      * vertex
+     * @param graph The hosting graph
      */
     public void setGraph (D graph)
     {
@@ -305,7 +310,7 @@ public class Vertex <D extends Digraph,
         }
 
         // Remove from graph
-        graph.removeVertex(this);
+        graph.removeVertex(this);       // Compiler warning here
     }
 
     //----------//
@@ -349,9 +354,22 @@ public class Vertex <D extends Digraph,
         if (logger.isDebugEnabled()) {
             logger.debug("adding edge from " + source + " to " + target);
         }
+
+        // Assert we have real vertices
+        if (source == null || target == null) {
+            throw new IllegalArgumentException
+                ("At least one of the edge vertices is null");
+        }
+
         // Assert they belong to the same graph
         if (source.getGraph() != target.getGraph()) {
-            logger.severe("Edges can link vertices of the same graph only");
+            throw new RuntimeException
+                ("An edge can link vertices of the same graph only");
+        }
+
+        if (NO_EDGE_DUPLICATES) {
+            source.targets.remove(target);
+            target.sources.remove(source);
         }
 
         source.targets.add(target);
@@ -373,7 +391,17 @@ public class Vertex <D extends Digraph,
         if (logger.isDebugEnabled()) {
             logger.debug("removing edge from " + source + " to " + target);
         }
-        source.targets.remove(target);
-        target.sources.remove(source);
+
+        if (!source.targets.remove(target)) {
+            throw new RuntimeException
+                ("Attempting to remove non-existing edge between " +
+                 source + " and " + target);
+        }
+
+        if (!target.sources.remove(source)) {
+            throw new RuntimeException
+                ("Attempting to remove non-existing edge between " +
+                 source + " and " + target);
+        }
     }
 }
