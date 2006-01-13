@@ -21,11 +21,11 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class <code>Lag</code> handles a graph of <b>sections</b> (sets of
- * contiguous runs with compatible lengths), linked by <b>junctions</b>
- * when there is no more contiguous run or when the compatibility is no
- * longer met.  Sections are thus vertices of the graph, while junctions
- * are directed edges between sections.  <p/>
+ * Class <code>Lag</code> handles a graph of class {@link Section} (sets of
+ * contiguous runs with compatible lengths), linked by Junctions when there
+ * is no more contiguous run or when the compatibility is no longer met.
+ * Sections are thus vertices of the graph, while junctions are directed
+ * edges between sections.
  *
  * @param <L> precise lag (sub)type
  * @param <S> precise section (sub)type
@@ -33,7 +33,7 @@ import java.util.List;
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class Lag <L extends Lag     <L, S>,
+public class Lag <L extends Lag <L, S>,
                   S extends Section>
     extends Digraph<L, S>
     implements Oriented
@@ -108,6 +108,10 @@ public class Lag <L extends Lag     <L, S>,
     public S createSection (int firstPos,
                             Run firstRun)
     {
+        if (firstRun == null) {
+            throw new IllegalArgumentException("null first run");
+        }
+
         S section = createVertex();
         section.setFirstPos(firstPos);
         section.append(firstRun);
@@ -208,9 +212,11 @@ public class Lag <L extends Lag     <L, S>,
         // Iterate on (all?) sections
         for (S section : getSections()) {
             // Detect a true ending situation (not too bad)
-            if (section.getFirstPos() > maxPos) {
-                break;
-            }
+            // OOPS: ensure the collection of sections is still ordered
+            // according to their position value !
+//             if (section.getFirstPos() > maxPos) {
+//                 break;
+//             }
 
             if (rect.intersects(section.getBounds())) {
                 found.add(section);
