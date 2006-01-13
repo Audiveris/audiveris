@@ -46,19 +46,6 @@ public class GlyphSection
     {
     }
 
-    //--------------//
-    // GlyphSection //
-    //--------------//
-    /**
-     * Creates a new GlyphSection.
-     */
-    public GlyphSection (GlyphLag lag,
-                         int firstPos,
-                         Run firstRun)
-    {
-        super(lag, firstPos, firstRun);
-    }
-
     //~ Methods --------------------------------------------------------------
 
     //----------//
@@ -90,6 +77,7 @@ public class GlyphSection
     //-----------//
     // getPrefix //
     //-----------//
+    @Override
     protected String getPrefix ()
     {
         return "GS";
@@ -138,6 +126,7 @@ public class GlyphSection
      *
      * @return the string
      */
+    @Override
     public String toString ()
     {
         StringBuffer sb = new StringBuffer(256);
