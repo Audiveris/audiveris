@@ -331,6 +331,7 @@ public class LagView <L extends Lag     <L, S>,
      *
      * @param g the graphic context
      */
+    @Override
     public void render (Graphics g)
     {
         // Determine my view index in the lag views

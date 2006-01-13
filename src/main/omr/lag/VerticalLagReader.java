@@ -52,6 +52,7 @@ public class VerticalLagReader
     //----------//
     // getLevel //
     //----------//
+    @Override
     public final int getLevel (int coord,
                                int pos)
     {
