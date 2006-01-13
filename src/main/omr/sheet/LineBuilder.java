@@ -17,6 +17,7 @@ import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.lag.Lag;
 import omr.lag.Run;
+import omr.math.BasicLine;
 import omr.math.Line;
 import omr.stick.*;
 import omr.util.Logger;
@@ -229,10 +230,10 @@ public class LineBuilder
      */
     public void computeLine ()
     {
-        line = new Line();
+        line = new BasicLine();
 
         for (Stick stick : sticks) {
-            line.include(stick.getLine());
+            line.includeLine(stick.getLine());
         }
     }
 
@@ -622,6 +623,7 @@ public class LineBuilder
         //---------//
         // hasNext //
         //---------//
+        @Override
         public boolean hasNext ()
         {
             return vi.hasNext();
@@ -630,6 +632,7 @@ public class LineBuilder
         //------//
         // next //
         //------//
+        @Override
         public GlyphSection next ()
         {
             return vi.next();
