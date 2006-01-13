@@ -74,6 +74,30 @@ public class CheckSuite <T extends Checkable>
     //~ Methods -----------------------------------------------------------
 
     //---------//
+    // getName //
+    //---------//
+    public String getName()
+    {
+        return name;
+    }
+
+    //-----------//
+    // getChecks //
+    //-----------//
+    public List<Check<T>> getChecks()
+    {
+        return checks;
+    }
+
+    //-----------//
+    // getWeights //
+    //-----------//
+    public List<Double> getWeights()
+    {
+        return weights;
+    }
+
+    //---------//
     // setName //
     //---------//
     /**
@@ -97,6 +121,19 @@ public class CheckSuite <T extends Checkable>
     public void setThreshold (double threshold)
     {
         this.threshold = threshold;
+    }
+
+    //--------------//
+    // getThreshold //
+    //--------------//
+    /**
+     * Report the assigned threshold
+     *
+     * @return the assigned minimum result
+     */
+    public double getThreshold ()
+    {
+        return threshold;
     }
 
     //----------------//
@@ -184,8 +221,8 @@ public class CheckSuite <T extends Checkable>
     // pass //
     //------//
     /**
-     * Pass sequentially the checks in the suite, stopping at the first test
-     * with red result.
+     * Pass sequentially the checks in the suite, stopping at the first
+     * test with red result.
      *
      * @return the computed grade.
      */
@@ -271,122 +308,122 @@ public class CheckSuite <T extends Checkable>
         return grade / totalWeight;
     }
 
-    //----------//
-    // passHtml //
-    //----------//
-    /**
-     * Pass all the test in the suite, even over totally failed ones, and
-     * return detailed result in html
-     *
-     * @param prolog a potential html prolog (such as head), null otherwise
-     * @param object the object to check
-     *
-     * @return the resulting html stream
-     */
-    public String passHtml (String prolog,
-                            T      object)
-    {
-        CheckResult result = new CheckResult();
-        double grade = 0.0d;
-        boolean failed = false;
+//     //----------//
+//     // passHtml //
+//     //----------//
+//     /**
+//      * Pass all the test in the suite, even over totally failed ones, and
+//      * return detailed result in html
+//      *
+//      * @param prolog a potential html prolog (such as head), null otherwise
+//      * @param object the object to check
+//      *
+//      * @return the resulting html stream
+//      */
+//     public String passHtml (String prolog,
+//                             T      object)
+//     {
+//         CheckResult result = new CheckResult();
+//         double grade = 0.0d;
+//         boolean failed = false;
 
-        StringBuffer sb = new StringBuffer(4096);
-        if (prolog != null) {
-            sb.append(prolog);
-        } else {
-            // Head Style
-            sb.append("<head>");
-            sb.append("<style type=\"text/css\">");
-            sb.append("BODY {margin: 0; padding: 0;font-family: sans-serif}");
-            sb.append("TH {background-color: #DDDDDD; font-size: 11pt}");
-            sb.append("TD {font-size: 11pt}");
-            sb.append("</style>");
-            sb.append("</head>");
-        }
+//         StringBuffer sb = new StringBuffer(4096);
+//         if (prolog != null) {
+//             sb.append(prolog);
+//         } else {
+//             // Head Style
+//             sb.append("<head>");
+//             sb.append("<style type=\"text/css\">");
+//             sb.append("BODY {margin: 0; padding: 0;font-family: sans-serif}");
+//             sb.append("TH {background-color: #DDDDDD; font-size: 11pt}");
+//             sb.append("TD {font-size: 11pt}");
+//             sb.append("</style>");
+//             sb.append("</head>");
+//         }
 
-        //sb.append("<body>");
-        sb.append("<table border=0 cellspacing=1 cellpadding=0 width=280>");
+//         //sb.append("<body>");
+//         sb.append("<table border=0 cellspacing=1 cellpadding=0 width=280>");
 
-        // First line: Titles
-        sb.append("<tr>");
-        sb.append("<th>W</th><th>Name</th><th>X</th><th>L</th><th>L</th><th>X</th><th>Result</th>");
-        sb.append("</tr>");
+//         // First line: Titles
+//         sb.append("<tr>");
+//         sb.append("<th>W</th><th>Name</th><th>X</th><th>L</th><th>L</th><th>X</th><th>Result</th>");
+//         sb.append("</tr>");
 
-        // One line per check
-        int index = 0;
-        for (Check<T> check : checks) {
-            Double weight = weights.get(index++);
-            sb.append("<tr>");
-            // Weight
-            sb.append("<td>").append(weight.intValue()).append("</td>");
-            // Name
-            sb.append("<td>").append(check.getName()).append("</td>");
-            // Lower range ?
-            sb.append("<td>");
-            if (!check.isCovariant()) {
-                sb.append("X");
-            }
-            sb.append("</td>");
-            // Low limit
-            sb.append("<td>");
-            sb.append(String.format("%.2f", check.getLow()));
-            sb.append("</td>");
-            // High Limit
-            sb.append("<td>");
-            sb.append(String.format("%.2f", check.getHigh()));
-            sb.append("</td>");
-            // Higher range ?
-            sb.append("<td>");
-            if (check.isCovariant()) {
-                sb.append("X");
-            }
-            sb.append("</td>");
-            // Result
-            check.pass(object, result, false);
-            sb.append("<td align=right>").append("<font color=\"");
-            if (result.flag == Check.RED) {
-                failed = true;
-                sb.append(RED_COLOR);
-            } else {
-                // Aggregate results
-                grade += result.flag * weight;
-                if (result.flag == Check.ORANGE) {
-                    sb.append(ORANGE_COLOR);
-                } else {
-                    sb.append(GREEN_COLOR);
-                }
-            }
-            sb.append("\">");
-            sb.append(String.format("%5.2f", result.value));
-            sb.append("</font></td></tr>");
-        }
+//         // One line per check
+//         int index = 0;
+//         for (Check<T> check : checks) {
+//             Double weight = weights.get(index++);
+//             sb.append("<tr>");
+//             // Weight
+//             sb.append("<td>").append(weight.intValue()).append("</td>");
+//             // Name
+//             sb.append("<td>").append(check.getName()).append("</td>");
+//             // Lower range ?
+//             sb.append("<td>");
+//             if (!check.isCovariant()) {
+//                 sb.append("X");
+//             }
+//             sb.append("</td>");
+//             // Low limit
+//             sb.append("<td>");
+//             sb.append(String.format("%.2f", check.getLow()));
+//             sb.append("</td>");
+//             // High Limit
+//             sb.append("<td>");
+//             sb.append(String.format("%.2f", check.getHigh()));
+//             sb.append("</td>");
+//             // Higher range ?
+//             sb.append("<td>");
+//             if (check.isCovariant()) {
+//                 sb.append("X");
+//             }
+//             sb.append("</td>");
+//             // Result
+//             check.pass(object, result, false);
+//             sb.append("<td align=right>").append("<font color=\"");
+//             if (result.flag == Check.RED) {
+//                 failed = true;
+//                 sb.append(RED_COLOR);
+//             } else {
+//                 // Aggregate results
+//                 grade += result.flag * weight;
+//                 if (result.flag == Check.ORANGE) {
+//                     sb.append(ORANGE_COLOR);
+//                 } else {
+//                     sb.append(GREEN_COLOR);
+//                 }
+//             }
+//             sb.append("\">");
+//             sb.append(String.format("%5.2f", result.value));
+//             sb.append("</font></td></tr>");
+//         }
 
-        // Global result
-        sb.append("<tr>");
-        sb.append("<td></td><td></td><td></td><td></td><td></td><td></td><td ");
-        sb.append(" align=right");
-        sb.append(" bgcolor=\"");
-        if (failed) {
-            sb.append(RED_COLOR).append("\">");
-            sb.append(Check.RED);
-        } else {
-            grade /= totalWeight;
-            if (grade >= threshold) {
-                sb.append(GREEN_COLOR);
-            } else {
-                sb.append(ORANGE_COLOR);
-            }
-            sb.append("\">");
-            sb.append(String.format("%3.1f", grade));
-        }
-        sb.append("</td>");
-        sb.append("</tr>");
-        sb.append("</table>");
+//         // Global result
+//         sb.append("<tr>");
+//         sb.append("<td></td><td></td><td></td><td></td><td></td><td></td><td ");
+//         sb.append(" align=right");
+//         sb.append(" bgcolor=\"");
+//         if (failed) {
+//             sb.append(RED_COLOR).append("\">");
+//             sb.append(Check.RED);
+//         } else {
+//             grade /= totalWeight;
+//             if (grade >= threshold) {
+//                 sb.append(GREEN_COLOR);
+//             } else {
+//                 sb.append(ORANGE_COLOR);
+//             }
+//             sb.append("\">");
+//             sb.append(String.format("%3.1f", grade));
+//         }
+//         sb.append("</td>");
+//         sb.append("</tr>");
+//         sb.append("</table>");
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(sb.toString());
-        }
+//         if (logger.isDebugEnabled()) {
+//             logger.debug(sb.toString());
+//         }
 
-        return sb.toString();
-    }
+//         return sb.toString();
+//     }
 }
