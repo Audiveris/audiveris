@@ -246,8 +246,10 @@ public class StickArea
         // This may result in discarded sticks.
         for (Iterator<Stick> it = sticks.iterator(); it.hasNext();) {
             Stick stick = it.next();
+
             // Stick slope must be very close to zero
-            if (Math.abs(stick.getLine().getSlope()) > maxSlope) {
+            if (stick.getWeight() < constants.minStickWeight.getValue() ||
+                Math.abs(stick.getLine().getSlope()) > maxSlope) {
                 // This is not a stick
                 stick.setResult(NOT_STRAIGHT);
 
@@ -896,6 +898,10 @@ public class StickArea
     private static class Constants
             extends ConstantSet
     {
+        Constant.Integer minStickWeight = new Constant.Integer
+                (3,
+                 "Minimum value for stick number of pixels");
+
         Constant.Double maxSectionFatness = new Constant.Double
                 (0.2d,
                  "Maximum value for section fatness (thickness / length)");
