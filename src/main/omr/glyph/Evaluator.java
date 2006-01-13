@@ -167,10 +167,11 @@ public abstract class Evaluator
             ins = new double[inSize];
         }
 
-        Moments m = glyph.getMoments();
-
         // We take all the first moments
-        System.arraycopy(m.k, 0, ins, 0, inMoments);
+        Double[] k = glyph.getMoments().getValues();
+        for (int i = 0; i < inMoments; i++) {
+            ins[i] = k[i];
+        }
 
         // We append flags and step position
         int i = inMoments;
@@ -276,7 +277,9 @@ public abstract class Evaluator
      */
     public static boolean isBigEnough (Glyph glyph)
     {
-        return glyph.getMoments().k[0] >= constants.minWeight.getValue();
+        return
+            glyph.getMoments().getWeight()
+            >= constants.minWeight.getValue();
     }
 
     //-----------//
