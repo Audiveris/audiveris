@@ -40,7 +40,6 @@ import javax.swing.border.Border;
  * @version $Id$
  */
 public class Jui
-    extends JFrame
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -54,12 +53,15 @@ public class Jui
 
     //~ Instance variables ------------------------------------------------
 
+    // The related concrete frame
+    private JFrame frame;
+
     // Used to remember the current user desired target
     private Object target;
 
     // Menus & tools in the frame
     private final JMenu    fileMenu = new JMenu("File");
-    private final JMenu    stepMenu = new StepMenu("Step");
+    private final JMenu    stepMenu = new StepMenu("Step").getMenu();
     private final JMenu    toolMenu = new JMenu("Tool");
     private final JMenu    helpMenu = new JMenu("Help");
     private final JToolBar toolBar;
@@ -101,14 +103,15 @@ public class Jui
     //-----//
     // Jui //
     //-----//
-
     /**
      * Creates a new <code>Jui</code> instance, to handle any user display
      * and interaction.
      */
     public Jui ()
     {
-        addWindowListener(new WindowAdapter()
+        frame = new JFrame();
+
+        frame.addWindowListener(new WindowAdapter()
         {
             public void windowClosing (WindowEvent e)
             {
@@ -151,7 +154,7 @@ public class Jui
 
         // Menus in the frame
         JMenuBar menuBar = new JMenuBar();
-        setJMenuBar(menuBar);
+        frame.setJMenuBar(menuBar);
         menuBar.add(fileMenu);
         menuBar.add(sheetPane.getMenu());
         menuBar.add(stepMenu);
@@ -189,11 +192,12 @@ public class Jui
            +=================================================+============+
          */
         // Use a layout with toolbar on top and a double split pane below
-        getContentPane().setLayout(new BorderLayout());
+        frame.getContentPane().setLayout(new BorderLayout());
 
         logPane = new LogPane();
         splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                                   sheetPane, logPane);
+                                   sheetPane.getComponent(),
+                                   logPane.getComponent());
         splitPane.setBorder(null);
         splitPane.setDividerSize(2);
         splitPane.setDividerLocation(constants.logDivider.getValue());
@@ -205,8 +209,10 @@ public class Jui
         toolKeyPanel.setLayout(new BorderLayout());
         toolKeyPanel.add(toolBar, BorderLayout.WEST);
         toolKeyPanel.add(progressBar, BorderLayout.CENTER);
-        toolKeyPanel.add(new MemoryMeter(IconManager.buttonIconOf("general/Delete")),
-                         BorderLayout.EAST);
+        toolKeyPanel.add
+            (new MemoryMeter
+             (IconManager.buttonIconOf("general/Delete")).getComponent(),
+             BorderLayout.EAST);
 
         // Boards
         boardsHolder = new JPanel();
@@ -219,16 +225,16 @@ public class Jui
         bigSplitPane.setResizeWeight(1d); // Give extra space to left part
 
         // Global layout
-        getContentPane().add(toolKeyPanel, BorderLayout.NORTH);
-        getContentPane().add(bigSplitPane, BorderLayout.CENTER);
-
-        // Differ realization
-        EventQueue.invokeLater(new FrameShower(this));
+        frame.getContentPane().add(toolKeyPanel, BorderLayout.NORTH);
+        frame.getContentPane().add(bigSplitPane, BorderLayout.CENTER);
 
         // Build all shape icons
         for (Shape shape : Shape.values()) {
             shape.setIcon(IconManager.getInstance().loadIcon(shape.toString()));
         }
+
+        // Differ realization
+        EventQueue.invokeLater(new FrameShower(frame));
     }
 
     //-------------//
@@ -258,6 +264,19 @@ public class Jui
 
     //~ Methods -----------------------------------------------------------
 
+    //----------//
+    // getFrame //
+    //----------//
+    /**
+     * Report the concrete frame
+     *
+     * @return the ui frame
+     */
+    public JFrame getFrame()
+    {
+        return frame;
+    }
+
     //----------------//
     // displayWarning //
     //----------------//
@@ -273,7 +292,7 @@ public class Jui
         htmlPane.setEditable(false);
 
         JOptionPane.showMessageDialog
-            (Jui.this, htmlPane, "Warning", JOptionPane.WARNING_MESSAGE);
+            (frame, htmlPane, "Warning", JOptionPane.WARNING_MESSAGE);
     }
 
     //----------------//
@@ -291,29 +310,58 @@ public class Jui
         htmlPane.setEditable(false);
 
         JOptionPane.showMessageDialog
-            (Jui.this, htmlPane);
+            (frame, htmlPane);
     }
 
     //---------------//
-    // setBoardsPane //
+    // addBoardsPane //
     //---------------//
     /**
-     * Dynamically modify the content of the boardspane (according to the
-     * sheet view at hand)
+     * Add a new boardspane to the boards holder
+     *
+     * @param boards the boards pane to be added
+     */
+    public void addBoardsPane (BoardsPane boards)
+    {
+        boards.getComponent().setVisible(false);
+        boardsHolder.add(boards.getComponent());
+    }
+
+    //----------------//
+    // showBoardsPane //
+    //----------------//
+    /**
+     * Display the selected boardspane
      *
      * @param boards the boards pane to be displayed
      */
-    public void setBoardsPane (BoardsPane boards)
+    public void showBoardsPane (BoardsPane boards)
     {
-        boardsHolder.removeAll();
+        logger.debug("showing " + boards);
 
-        if (boards != null) {
-            boardsHolder.add(boards);
+        for (Component component : boardsHolder.getComponents()) {
+            if (component != boards.getComponent()) {
+                component.setVisible(false);
+            }
         }
+        boards.getComponent().setVisible(true);
+    }
 
-        // Trigger display update
-        boardsHolder.invalidate();
-        boardsHolder.revalidate();
+    //------------------//
+    // removeBoardsPane //
+    //------------------//
+    /**
+     * Remove the selected boardspane
+     *
+     * @param boards the boards pane to be removed
+     */
+    public void removeBoardsPane (BoardsPane boards)
+    {
+        boardsHolder.remove(boards.getComponent());
+        logger.debug("removed " + boards + " holderCount=" +
+                     boardsHolder.getComponentCount());
+
+        // Refresh the display
         boardsHolder.repaint();
     }
 
@@ -322,7 +370,7 @@ public class Jui
     //-----------//
     /**
      * Specify what the current interest of the user is, by means of the
-     * current score. Thus, when for example a shhet image is loaded
+     * current score. Thus, when for example a sheet image is loaded
      * sometime later, this information will be used to trigger or not the
      * actual display of the sheet view.
      *
@@ -391,10 +439,6 @@ public class Jui
      */
     public void updateTitle ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("updateTitle");
-        }
-
         final String toolInfo = Main.toolName + " " + Main.toolVersion;
 
         // Look for sheet first
@@ -411,15 +455,15 @@ public class Jui
 
             sb.append(" - ").append(toolInfo);
 
-            setTitle(sb.toString());
+            frame.setTitle(sb.toString());
         } else {
             // Look for score second
             omr.score.Score score = scorePane.getCurrentScore();
 
             if (score != null) {
-                setTitle(score.getRadix() + " - " + toolInfo);
+                frame.setTitle(score.getRadix() + " - " + toolInfo);
             } else {
-                setTitle(toolInfo);
+                frame.setTitle(toolInfo);
             }
         }
     }
@@ -470,12 +514,12 @@ public class Jui
     private void exit ()
     {
         // Remember latest jui frame parameters
-        final int state = getExtendedState();
+        final int state = frame.getExtendedState();
         constants.frameState.setValue(state);
 
 
         if (state == Frame.NORMAL) {
-            Rectangle bounds = getBounds();
+            Rectangle bounds = frame.getBounds();
             constants.frameX.setValue(bounds.x);
             constants.frameY.setValue(bounds.y);
             constants.frameWidth.setValue(bounds.width);
@@ -654,7 +698,8 @@ public class Jui
                 shapeColorFrame = new JFrame("ShapeColorChooser");
 
                 // Create and set up the content pane.
-                JComponent newContentPane = new ShapeColorChooser();
+                JComponent newContentPane
+                    = new ShapeColorChooser().getComponent();
                 newContentPane.setOpaque(true); //content panes must be opaque
                 shapeColorFrame.setContentPane(newContentPane);
 
