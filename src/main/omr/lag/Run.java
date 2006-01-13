@@ -25,11 +25,16 @@ public class Run
     //~ Instance variables ------------------------------------------------
 
     // Run characteristics
-    private final int start;
-    private final int length;
-    private final int level;
+    private int start;
+    private int length;
+    private int level;
 
     //~ Constructors ------------------------------------------------------
+
+    // For JiBX
+    private Run()
+    {
+    }
 
     //-----//
     // Run //
@@ -47,12 +52,12 @@ public class Run
                 int length,
                 int level)
     {
-        this.start = start;
+        this.start  = start;
         this.length = length;
-        this.level = level;
+        this.level  = level;
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods -----------------------------------------------------------
 
     //----------//
     // readRuns //
@@ -68,7 +73,7 @@ public class Run
      *               specific call-back actions on behalf of the caller,
      *               when a run (either foreground or background) has just
      *               been read.
-     * @param rect   the rectangular area coord x pos to explore
+     * @param rect   the rectangular area (coord x pos) to explore
      */
     public static void readRuns (Reader reader,
                                  Rectangle rect)
@@ -208,6 +213,7 @@ public class Run
      *
      * @return a <code>String</code> value
      */
+    @Override
     public String toString ()
     {
         StringBuffer sb = new StringBuffer(80);
