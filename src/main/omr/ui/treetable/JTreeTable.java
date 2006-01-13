@@ -35,7 +35,7 @@ import java.util.EventObject;
  * @version 1.2 10/27/98
  */
 public class JTreeTable
-        extends JTable
+    extends JTable
 {
     //~ Instance variables ---------------------------------------------------
 
@@ -94,6 +94,7 @@ public class JTreeTable
     //---------------//
     // getEditingRow //
     //---------------//
+    @Override
     public int getEditingRow ()
     {
         return (getColumnClass(editingColumn) == TreeTableModel.class)
@@ -107,6 +108,7 @@ public class JTreeTable
     //--------------//
     // setRowHeight //
     //--------------//
+    @Override
     public void setRowHeight (int rowHeight)
     {
         super.setRowHeight(rowHeight);
@@ -135,6 +137,7 @@ public class JTreeTable
     //----------//
     // updateUI //
     //----------//
+    @Override
     public void updateUI ()
     {
         super.updateUI();
@@ -158,8 +161,8 @@ public class JTreeTable
      * A TreeCellRenderer that displays a JTree.
      */
     public class TreeTableCellRenderer
-            extends JTree
-            implements TableCellRenderer
+        extends JTree
+        implements TableCellRenderer
     {
         //~ Instance variables -----------------------------------------------
 
@@ -180,6 +183,7 @@ public class JTreeTable
         /**
          * This is overridden to set the height to match that of the JTable.
          */
+        @Override
         public void setBounds (int x,
                                int y,
                                int w,
@@ -192,6 +196,7 @@ public class JTreeTable
          * Sets the row height of the tree, and forwards the row height to the
          * table.
          */
+        @Override
         public void setRowHeight (int rowHeight)
         {
             if (rowHeight > 0) {
@@ -229,6 +234,7 @@ public class JTreeTable
          * Sublcassed to translate the graphics such that the last visible row
          * will be drawn at 0,0.
          */
+        @Override
         public void paint (Graphics g)
         {
             g.translate(0, -visibleRow * getRowHeight());
@@ -239,6 +245,7 @@ public class JTreeTable
          * updateUI is overridden to set the colors of the Tree's renderer to
          * match that of the table.
          */
+        @Override
         public void updateUI ()
         {
             super.updateUI();
@@ -293,6 +300,7 @@ public class JTreeTable
          * By returning false we are also enforcing the policy that the tree
          * will never be editable (at least by a key sequence). </p>
          */
+        @Override
         public boolean isCellEditable (EventObject e)
         {
             if (e instanceof MouseEvent) {
@@ -364,6 +372,7 @@ public class JTreeTable
          * and message super. This is the only place DefaultTreeSelectionModel
          * alters the ListSelectionModel.
          */
+        @Override
         public void resetRowSelection ()
         {
             if (!updatingListSelectionModel) {

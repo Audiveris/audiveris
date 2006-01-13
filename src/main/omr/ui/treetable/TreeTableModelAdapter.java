@@ -96,12 +96,14 @@ public class TreeTableModelAdapter
 
     //~ Methods --------------------------------------------------------------
 
+    @Override
     public boolean isCellEditable (int row,
                                    int column)
     {
         return treeTableModel.isCellEditable(nodeForRow(row), column);
     }
 
+    @Override
     public Class getColumnClass (int column)
     {
         return treeTableModel.getColumnClass(column);
@@ -113,6 +115,7 @@ public class TreeTableModelAdapter
         return treeTableModel.getColumnCount();
     }
 
+    @Override
     public String getColumnName (int column)
     {
         return treeTableModel.getColumnName(column);
@@ -123,6 +126,7 @@ public class TreeTableModelAdapter
         return tree.getRowCount();
     }
 
+    @Override
     public void setValueAt (Object value,
                             int row,
                             int column)
