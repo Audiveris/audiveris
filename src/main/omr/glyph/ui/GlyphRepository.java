@@ -12,19 +12,16 @@
 package omr.glyph.ui;
 
 import omr.Main;
-import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.stick.StickSection;
 import omr.util.FileUtil;
 import omr.util.Logger;
 import omr.util.XmlMapper;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -56,6 +53,9 @@ public class GlyphRepository
 
     private static final Logger logger = Logger.getLogger(GlyphRepository.class);
 
+    // Specific glyph XML mapper
+    private static XmlMapper xmlMapper;
+
     // The single instance of this class
     private static GlyphRepository INSTANCE;
 
@@ -72,9 +72,6 @@ public class GlyphRepository
                                                       "core");
 
     //~ Instance variables ------------------------------------------------
-
-    // Specific glyph Castor mapper
-    private XmlMapper<Glyph> glyphMapper;
 
     // Map of all glyphs deserialized so far, using full glyph name as key
     // Full glyph name format is :  sheetName/Shape.id.xml
@@ -112,6 +109,17 @@ public class GlyphRepository
         return INSTANCE;
     }
 
+    //--------------//
+    // getXmlMapper //
+    //--------------//
+    private XmlMapper getXmlMapper() 
+    {
+        if (xmlMapper == null) {
+            xmlMapper = new XmlMapper(Glyph.class);
+        }
+        return xmlMapper;
+    }
+    
     //-------------//
     // getCoreBase //
     //-------------//
@@ -160,7 +168,7 @@ public class GlyphRepository
         // First, try the map of glyphs
         Glyph glyph = glyphsMap.get(gName);
 
-        // If failed, actually load the glyph from XML Castor file
+        // If failed, actually load the glyph from XML backup file
         if (glyph == null) {
             // We try to load from the core repository first, then from the
             // sheets repository
@@ -178,7 +186,7 @@ public class GlyphRepository
                 logger.debug("Reading " + file);
             }
             try {
-                glyph = getGlyphMapper().load(file);
+                glyph = (Glyph) getXmlMapper().load(file);
                 glyphsMap.put(gName, glyph);
             } catch (Exception ex) {
                 // User already informed
@@ -268,34 +276,6 @@ public class GlyphRepository
         return wholeBase;
     }
 
-    //--------------------//
-    // preloadGlyphMapper //
-    //--------------------//
-    /**
-     * Allows to pre-load (in the background) the Castor mapper, so that it
-     * will be immediately available when an actual glyph load is requested
-     */
-    void preloadGlyphMapper ()
-    {
-        class Worker
-            extends Thread
-        {
-            public void run()
-            {
-                try {
-                    glyphMapper = getGlyphMapper();
-                    logger.info("Glyph XmlMapper preloaded.");
-                } catch (Exception ex) {
-                    logger.error("Could not preload Glyph XmlMapper");
-                }
-            }
-        }
-
-        Worker worker = new Worker();
-        worker.setPriority(Thread.MIN_PRIORITY);
-        worker.start();
-    }
-
     //-------------------//
     // recordSheetGlyphs //
     //-------------------//
@@ -370,7 +350,7 @@ public class GlyphRepository
                         }
 
                         // Store the glyph
-                        getGlyphMapper().store(glyph, glyphFile);
+                        getXmlMapper().store(glyph, glyphFile);
                         glyphNb++;
                     }
                 }
@@ -484,28 +464,6 @@ public class GlyphRepository
                 file.delete();
             }
         }
-    }
-
-    //----------------//
-    // getGlyphMapper //
-    //----------------//
-    private synchronized XmlMapper<Glyph> getGlyphMapper ()
-        throws Exception
-    {
-        if (glyphMapper == null) {
-            try {
-                glyphMapper = new XmlMapper<Glyph>
-                        ("/config/castor-glyph-mapping.xml");
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Glyph XmlMapper loaded.");
-                }
-            } catch (Exception ex) {
-                // User has already been notified
-                throw ex;
-            }
-        }
-
-        return glyphMapper;
     }
 
     //-------------//
