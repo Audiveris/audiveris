@@ -54,9 +54,8 @@ public class Slur
     //------//
     // Slur //
     //------//
-
     /**
-     * Default constructure (needed by Castor)
+     * NoArg constructor (needed by XML binder)
      */
     public Slur ()
     {
@@ -70,7 +69,6 @@ public class Slur
     //------//
     // Slur //
     //------//
-
     /**
      * Create a slur with all the specified parameters
      *
@@ -106,25 +104,10 @@ public class Slur
     //~ Methods -----------------------------------------------------------
 
     //---------------//
-    // setLeftcolumn //
-    //---------------//
-
-    /**
-     * Set the abscissa of the left point (needed by Castor)
-     *
-     * @param leftcolumn x for left point, in units
-     */
-    public void setLeftcolumn (int leftcolumn)
-    {
-        this.leftcolumn = leftcolumn;
-    }
-
-    //---------------//
     // getLeftcolumn //
     //---------------//
-
     /**
-     * Report the abscissa of the left point (needed by Castor)
+     * Report the abscissa of the left point
      *
      * @return x in units for left point
      */
@@ -134,25 +117,10 @@ public class Slur
     }
 
     //------------//
-    // setLeftrow //
-    //------------//
-
-    /**
-     * Set the ordinate of the left point (needed by Castor)
-     *
-     * @param leftrow y for left point, in units, wrt to the system origin
-     */
-    public void setLeftrow (int leftrow)
-    {
-        this.leftrow = leftrow;
-    }
-
-    //------------//
     // getLeftrow //
     //------------//
-
     /**
-     * Report the ordinate of the left point (needed by Castor)
+     * Report the ordinate of the left point
      *
      * @return y in units for left point
      */
@@ -164,7 +132,6 @@ public class Slur
     //-----------//
     // getOrigin //
     //-----------//
-
     /**
      * Report the display origin (which is the origin of the containing
      * system) used for slur x and y relative coordinates
@@ -177,25 +144,10 @@ public class Slur
     }
 
     //-----------//
-    // setRadius //
-    //-----------//
-
-    /**
-     * Set the slur radius (needed by Castor)
-     *
-     * @param radius radius in unit, &lt;0 upward, &gt;0 downward
-     */
-    public void setRadius (int radius)
-    {
-        this.radius = radius;
-    }
-
-    //-----------//
     // getRadius //
     //-----------//
-
     /**
-     * Report the radius of the slur (needed by Castor)
+     * Report the radius of the slur
      *
      * @return radius in units, &lt;0 upwards, &gt;0 downwards
      */
@@ -205,25 +157,10 @@ public class Slur
     }
 
     //----------------//
-    // setRightcolumn //
-    //----------------//
-
-    /**
-     * Set the abscissa of the right point (needed by Castor)
-     *
-     * @param rightcolumn x of the right point
-     */
-    public void setRightcolumn (int rightcolumn)
-    {
-        this.rightcolumn = rightcolumn;
-    }
-
-    //----------------//
     // getRightcolumn //
     //----------------//
-
     /**
-     * Report the abscissa of the right point (needed by Castor)
+     * Report the abscissa of the right point
      *
      * @return x in units for the right point
      */
@@ -233,25 +170,10 @@ public class Slur
     }
 
     //-------------//
-    // setRightrow //
-    //-------------//
-
-    /**
-     * Set the ordinate of the right point (needed by Castor)
-     *
-     * @param rightrow y for right point
-     */
-    public void setRightrow (int rightrow)
-    {
-        this.rightrow = rightrow;
-    }
-
-    //-------------//
     // getRightrow //
     //-------------//
-
     /**
-     * Report the ordinate of the right point (neede by Castor)
+     * Report the ordinate of the right point
      *
      * @return y in units for the right point
      */
@@ -263,13 +185,13 @@ public class Slur
     //----------//
     // toString //
     //----------//
-
     /**
      * Report a readable description for this slur
      *
      * @return a string with all slur parameters
      */
-    public String toString ()
+    @Override
+        public String toString ()
     {
         return "{Slur:" +
             " leftrow=" + leftrow +
@@ -282,7 +204,6 @@ public class Slur
     //-----------//
     // paintNode //
     //-----------//
-
     /**
      * Overrides the method, so that this slur node be rendered
      *
@@ -290,7 +211,8 @@ public class Slur
      *
      * @return true
      */
-    protected boolean paintNode (Graphics g)
+    @Override
+        protected boolean paintNode (Graphics g)
     {
         // Compute data needed for drawing
         if (arc == null) {

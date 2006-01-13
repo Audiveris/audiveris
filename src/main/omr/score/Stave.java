@@ -82,9 +82,8 @@ public class Stave
     //-------//
     // Stave //
     //-------//
-
     /**
-     * Default constructor (needed by Castor)
+     * Default constructor (needed by XML binder)
      */
     public Stave ()
     {
@@ -99,7 +98,6 @@ public class Stave
     //-------//
     // Stave // Building this Stave
     //-------//
-
     /**
      * Build a stave, given all its parameters
      *
@@ -142,7 +140,6 @@ public class Stave
     //-------------//
     // setDynamics //
     //-------------//
-
     /**
      * Set the dynamics collection
      *
@@ -157,7 +154,6 @@ public class Stave
     //-------------//
     // getDynamics //
     //-------------//
-
     /**
      * Report the dynamics collection
      *
@@ -185,7 +181,6 @@ public class Stave
     //-------------------//
     // getFirstMeasureId //
     //-------------------//
-
     /**
      * Report the id (0 is the very first measure id in the score) of the
      * first measure of the stave
@@ -200,7 +195,6 @@ public class Stave
     //---------//
     // getInfo //
     //---------//
-
     /**
      * Report the physical information retrieved from the sheet
      *
@@ -214,7 +208,6 @@ public class Stave
     //----------------//
     // getLastMeasure //
     //----------------//
-
     /**
      * Report the last measure in the stave
      *
@@ -228,7 +221,6 @@ public class Stave
     //------------------//
     // getLastMeasureId //
     //------------------//
-
     /**
      * Report the id of the last measure in the stave
      *
@@ -242,7 +234,6 @@ public class Stave
     //---------//
     // setLeft //
     //---------//
-
     /**
      * Set the abscissa of the starting point in the score
      *
@@ -256,7 +247,6 @@ public class Stave
     //---------//
     // getLeft //
     //---------//
-
     /**
      * Report the abscissa of the left side of the stave, wrt to the score
      *
@@ -270,7 +260,6 @@ public class Stave
     //---------------//
     // setLyriclines //
     //---------------//
-
     /**
      * Set the collection of lyrics
      *
@@ -285,7 +274,6 @@ public class Stave
     //---------------//
     // getLyriclines //
     //---------------//
-
     /**
      * Report the collection of lyrics
      *
@@ -299,7 +287,6 @@ public class Stave
     //--------------//
     // getMeasureAt //
     //--------------//
-
     /**
      * Return measure with leftlinex = x (within dx error). This is used in
      * Bars retrieval, to check that the bar candidate is actually a bar,
@@ -329,7 +316,6 @@ public class Stave
     //-------------//
     // setMeasures //
     //-------------//
-
     /**
      * Set the collection of measures
      *
@@ -344,7 +330,6 @@ public class Stave
     //-------------//
     // getMeasures //
     //-------------//
-
     /**
      * Report the collection of measures
      *
@@ -358,7 +343,6 @@ public class Stave
     //-----------//
     // getOrigin //
     //-----------//
-
     /**
      * Report the display origin in the score display of this stave
      *
@@ -372,7 +356,6 @@ public class Stave
     //---------//
     // setSize //
     //---------//
-
     /**
      * Set the height of the stave
      *
@@ -386,7 +369,6 @@ public class Stave
     //---------//
     // getSize //
     //---------//
-
     /**
      * Report the height of the stave
      *
@@ -400,7 +382,6 @@ public class Stave
     //----------------//
     // setStartingBar //
     //----------------//
-
     /**
      * Set the bar line that starts the stave
      *
@@ -414,7 +395,6 @@ public class Stave
     //--------------//
     // setStavelink //
     //--------------//
-
     /**
      * Set the stave index in the containing system
      *
@@ -428,7 +408,6 @@ public class Stave
     //--------------//
     // getStavelink //
     //--------------//
-
     /**
      * Report the stave index within the containing system
      *
@@ -442,7 +421,6 @@ public class Stave
     //-----------//
     // getSystem //
     //-----------//
-
     /**
      * Report the containing system
      *
@@ -455,51 +433,9 @@ public class Stave
         return (System) container.getContainer();
     }
 
-    //----------//
-    // setTexts //
-    //----------//
-
-    /**
-     * Set the collection of texts
-     *
-     * @param texts the collection of texts
-     */
-    public void setTexts (List<TreeNode> texts)
-    {
-        this.texts = new TextList(this);
-        getTexts().addAll(texts);
-    }
-
-    /**
-     * Report the collection of text entities in this stave
-     *
-     * @return the text list
-     */
-    public List<TreeNode> getTexts ()
-    {
-        return texts.getChildren();
-    }
-
-    //--------//
-    // setTop //
-    //--------//
-
-    /**
-     * Set the ordinate of the starting point (upper left) of the stave
-     * (needed by Castor)
-     *
-     * @param top y in units of the upper left point in the containing
-     * score
-     */
-    public void setTop (int top)
-    {
-        this.top = top;
-    }
-
     //--------//
     // getTop //
     //--------//
-
     /**
      * Report the ordinate of the starting point of this stave, wrt to the
      * score
@@ -528,7 +464,6 @@ public class Stave
     //----------//
     // getWidth //
     //----------//
-
     /**
      * Report the width of the stave
      *
@@ -542,7 +477,6 @@ public class Stave
     //----------//
     // addChild // Overrides normal behavior
     //----------//
-
     /**
      * Override normal behavior, so that a given child is store in its
      * proper type collection (measure to measure list, lyrics to lyrics
@@ -550,7 +484,8 @@ public class Stave
      *
      * @param node the child to insert in the stave
      */
-    public void addChild (TreeNode node)
+    @Override
+        public void addChild (TreeNode node)
     {
         if (node instanceof Measure) {
             measures.addChild(node);
@@ -579,7 +514,6 @@ public class Stave
     //------------------------//
     // incrementLastMeasureId //
     //------------------------//
-
     /**
      * Methd called to signal a new measure built in this stave
      */
@@ -591,7 +525,6 @@ public class Stave
     //----------//
     // toString //
     //----------//
-
     /**
      * Report a readable description
      *
@@ -610,7 +543,6 @@ public class Stave
     //--------------//
     // colorizeNode //
     //--------------//
-
     /**
      * Colorize the physical information of this stave, which is just the
      * starting bar line if any
@@ -636,7 +568,6 @@ public class Stave
     //-------------//
     // computeNode //
     //-------------//
-
     /**
      * Override the method, so that internal computation can take place
      *
@@ -664,7 +595,6 @@ public class Stave
     //-----------//
     // paintNode //
     //-----------//
-
     /**
      * Painting on the provided graphics environment, overriden method
      *
@@ -672,7 +602,8 @@ public class Stave
      *
      * @return true
      */
-    protected boolean paintNode (Graphics g)
+    @Override
+        protected boolean paintNode (Graphics g)
     {
         //System.out.println ("StaveItf. origin=" + origin + " size=" + size);
         g.setColor(Color.black);
@@ -693,7 +624,6 @@ public class Stave
     //------------//
     // renderNode //
     //------------//
-
     /**
      * Render the physical information of this stave
      *

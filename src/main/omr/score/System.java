@@ -69,9 +69,8 @@ public class System
     //--------//
     // System //
     //--------//
-
     /**
-     * Default constructor (needed by Castor)
+     * Default constructor (needed by XML binder)
      */
     public System ()
     {
@@ -193,19 +192,6 @@ public class System
     public SystemInfo getInfo ()
     {
         return info;
-    }
-
-    //---------//
-    // setInfo //
-    //---------//
-    /**
-     * (for Castor only) set the link to the SystemInfo counterpart
-     *
-     * @param info the physical SystemInfo counterpart
-     */
-    public void setInfo (SystemInfo info)
-    {
-        this.info = info;
     }
 
     //------------------//
@@ -440,6 +426,7 @@ public class System
      *
      * @param node the node to insert (either a slur or a stave)
      */
+    @Override
     public void addChild (TreeNode node)
     {
         if (node instanceof Stave) {
@@ -508,6 +495,7 @@ public class System
      *
      * @return a string based on upper left corner
      */
+    @Override
     public String toString ()
     {
         return "{System" + " top=" + top + " left=" + left + " height="
@@ -574,6 +562,7 @@ public class System
      *
      * @return true
      */
+    @Override
     protected boolean computeNode ()
     {
         // Containing score
@@ -616,6 +605,7 @@ public class System
      *         entities (stave, slurs) are also rendered, false otherwise
      *         to stop the painting
      */
+    @Override
     protected boolean paintNode (Graphics g)
     {
         Zoom zoom = ScoreView.getZoom();

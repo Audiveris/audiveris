@@ -53,19 +53,6 @@ public class BarInfo
         this.botIdx = botIdx;
     }
 
-    /**
-     * For Castor
-     *
-     * @param topIdx
-     * @param botIdx
-     */
-    public BarInfo (int topIdx,
-                    int botIdx)
-    {
-        this.topIdx = topIdx;
-        this.botIdx = botIdx;
-    }
-
     //~ Methods -----------------------------------------------------------
 
     //-----------//
@@ -97,22 +84,9 @@ public class BarInfo
         return stick;
     }
 
-    //----------//
-    // setStick //
-    //----------//
-
-    /**
-     * For Castor
-     */
-    public void setStick (Stick stick)
-    {
-        this.stick = stick;
-    }
-
     //-----------//
     // getTopIdx //
     //-----------//
-
     /**
      * Report the index of the stave at top of bar line
      *
@@ -162,6 +136,7 @@ public class BarInfo
      *
      * @return a string based on main parameters
      */
+    @Override
     public String toString ()
     {
         return "{BarInfo topIdx=" + topIdx + " botIdx=" + botIdx + "}";
