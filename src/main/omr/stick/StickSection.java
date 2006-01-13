@@ -14,6 +14,7 @@ import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.lag.Lag;
 import omr.lag.Run;
+import omr.math.BasicLine;
 import omr.math.Line;
 
 import java.awt.*;
@@ -63,19 +64,6 @@ public class StickSection
      */
     public StickSection ()
     {
-    }
-
-    //--------------//
-    // StickSection //
-    //--------------//
-    /**
-     * Creates a new StickSection.
-     */
-    public StickSection (GlyphLag lag,
-                         int      firstPos,
-                         Run      firstRun)
-    {
-        super(lag, firstPos, firstRun);
     }
 
     //~ Methods -----------------------------------------------------------
@@ -130,7 +118,7 @@ public class StickSection
     {
         if (line == null) {
             // Compute the section line
-            line = new Line();
+            line = new BasicLine();
 
             int y = getFirstPos();
 
@@ -138,7 +126,7 @@ public class StickSection
                 int stop = run.getStop();
 
                 for (int x = run.getStart(); x <= stop; x++) {
-                    line.include((double) x, (double) y);
+                    line.includePoint((double) x, (double) y);
                 }
 
                 y++;
@@ -151,6 +139,7 @@ public class StickSection
     //-----------//
     // getPrefix //
     //-----------//
+    @Override
     protected String getPrefix ()
     {
         return "SS";
@@ -199,6 +188,7 @@ public class StickSection
      *
      * @return the string
      */
+    @Override
     public String toString ()
     {
         StringBuffer sb = new StringBuffer(256);
