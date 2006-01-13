@@ -20,8 +20,8 @@ import omr.graph.DigraphView;
 import omr.lag.Lag;
 import omr.lag.LagView;
 import omr.lag.Run;
+import omr.math.BasicLine;
 import omr.math.Line;
-import omr.math.VerticalLine;
 import omr.sheet.Picture;
 import omr.util.Logger;
 import omr.ui.Zoom;
@@ -48,7 +48,6 @@ public class StickUtil
     //---------------//
     // areExtensions //
     //---------------//
-
     /**
      * Checks whether two sticks can be considered as extensions of the
      * other one.  Due to some missing points, a long stick can be broken
@@ -99,7 +98,6 @@ public class StickUtil
     //---------//
     // cleanup //
     //---------//
-
     /**
      * When a stick is logically removed, the crossing objects must be
      * extended through the former stick.
@@ -115,6 +113,11 @@ public class StickUtil
                                 int minPointNb,
                                 Picture picture)
     {
+        if (logger.isDebugEnabled()) {
+            logger.debug("cleanup stick=" + stick
+                         + ", lag=" + lag
+                         + ", minPointNb=" + minPointNb);
+        }
         List<GlyphSection> members = stick.getMembers();
         List<GlyphSection> borders = new ArrayList<GlyphSection>();
         List<GlyphSection> patches = new ArrayList<GlyphSection>();
@@ -122,12 +125,19 @@ public class StickUtil
         // Extend crossing objects
         for (GlyphSection s : members) {
             StickSection section = (StickSection) s;
+
             // Extend crossing vertices before and after
+//             if (logger.isDebugEnabled()) {
+//                 logger.debug("before lineSection=" + section);
+//             }
             for (GlyphSection source : section.getSources()) {
                 cleanupSection(stick, borders, patches, lag, picture,
                                minPointNb, section, (StickSection) source,
                                +1, true);
             }
+//             if (logger.isDebugEnabled()) {
+//                 logger.debug("after lineSection=" + section);
+//             }
             for (GlyphSection target : section.getTargets()) {
                 cleanupSection(stick, borders, patches, lag, picture,
                                minPointNb, section, (StickSection) target,
@@ -146,10 +156,16 @@ public class StickUtil
         for (GlyphSection s : borders) {
             StickSection section = (StickSection) s;
             // Extend crossing vertices before and after
+            if (logger.isDebugEnabled()) {
+                logger.debug("border. before lineSection=" + section);
+            }
             for (GlyphSection source : section.getSources()) {
                 cleanupSection(stick, borders, patches, lag, picture,
                                minPointNb, section, (StickSection) source,
                                +1, false);
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("border. after lineSection=" + section);
             }
             for (GlyphSection target : section.getTargets()) {
                 cleanupSection(stick, borders, patches, lag, picture,
@@ -174,7 +190,6 @@ public class StickUtil
     //----------------//
     // cleanupSection //
     //----------------//
-
     /**
      * Cleanup one line section, by extending potential crossing objects in
      * a certain direction. During this operation, we may consider that
@@ -199,11 +214,7 @@ public class StickUtil
                                         boolean borderEnabled)
     {
         if (logger.isDebugEnabled()) {
-            logger.debug("cleanup stick=" + stick
-                         + ", lag=" + lag
-                         + ", minPointNb=" + minPointNb
-                         + ", lineSection=" + lineSection
-                         + ", sct=" + sct
+            logger.debug("sct=" + sct
                          + ", direction=" + direction
                          + ", borderEnabled=" + borderEnabled);
         }
@@ -212,6 +223,9 @@ public class StickUtil
         // sticks
         if (sct.isMember()) {
             if (!(sct.getGlyph().getResult() instanceof FailureResult)) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Member of successful stick");
+                }
                 return;
             }
         }
@@ -229,7 +243,9 @@ public class StickUtil
                     // section to the line border.
                     sct.setParams(SectionRole.BORDER, 0, 0);
                     borders.add(sct);
-
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Is a border");
+                    }
                     return;
                 }
             }
@@ -242,7 +258,6 @@ public class StickUtil
     //--------//
     // middle //
     //--------//
-
     /**
      * Return the position (y) of the middle of the line between c1 & c2
      * abscissa
@@ -261,9 +276,8 @@ public class StickUtil
 
         for (Section section : stick.getMembers()) {
             // Check overlap with coordinates at hand
-            if (Math.max(c1, section.getStart()) <= Math.min(c2,
-                                                             section
-                                                             .getStop())) {
+            if (Math.max(c1, section.getStart()) <=
+                Math.min(c2, section.getStop())) {
                 firstPos = Math.min(firstPos, section.getFirstPos());
                 lastPos = Math.max(lastPos, section.getLastPos());
             }
@@ -275,7 +289,6 @@ public class StickUtil
     //--------------//
     // patchSection //
     //--------------//
-
     /**
      * Build a patching section, which extends the crossing sct in the
      * given direction.
@@ -292,15 +305,15 @@ public class StickUtil
                                       StickSection sct,
                                       int direction)
     {
-        Run lineRun; // Run of staff line in contact
-        Run run; // Run to be extended
-        int yBegin; // y value at beginning of the extension
-        Line startTg = new VerticalLine(); // Tangent at runs starts
-        Line stopTg = new VerticalLine(); // Tangent at runs stops
-        Line axis = null; // Middle axis
-        int x1; // left and right abscissas
-        int x2; // left and right abscissas
-        double x; // Middle abscissa
+        Run lineRun;               // Run of staff line in contact
+        Run run;                   // Run to be extended
+        int yBegin;                // y value at beginning of the extension
+        Line startTg = new BasicLine(); // Vertical tangent at runs starts
+        Line stopTg = new BasicLine();  // Vertical tangent at runs stops
+        Line axis = new BasicLine();    // Middle axis
+        int x1;                    // Left abscissa
+        int x2;                    // Right abscissa
+        double x;                  // Middle abscissa
 
         if (direction > 0) { // Going downwards
             run = sct.getLastRun();
@@ -319,50 +332,64 @@ public class StickUtil
             if (logger.isDebugEnabled()) {
                 logger.debug("line shorter than external contact");
             }
-
-            startTg.include(lineRun.getStart(), yBegin);
-            stopTg.include(lineRun.getStop(), yBegin);
             x1 = lineRun.getStart();
             x2 = lineRun.getStop();
             length = lineRun.getLength();
+            startTg.includePoint(x1, yBegin);
+            stopTg.includePoint(x2, yBegin);
         } else {
             x1 = run.getStart();
             x2 = run.getStop();
         }
 
         x = (double) (x1 + x2) / 2;
+        if( logger.isDebugEnabled()) {
+            logger.debug("x1=" + x1 + " x=" + x + " x2=" + x2);
+        }
+        ////axis.includePoint(x, yBegin);
 
         // Compute the y position where our patch should stop
-        final int mid = middle(stick, x1, x2);
-
-        if (mid == 0) {
+        final int yMid = middle(stick, x1, x2);
+        if (yMid == 0) {
             logger.warning("Cannot find line");
-
             return;
         }
+        final int yPast = yMid + direction; // y value, past the last one
 
-        final int yPast = mid + direction; // y value, past the last one
+        // Try to compute tangents on a total of minPointNb points
+        if ((startTg.getNumberOfPoints() + sct.getRunNb()) >= minPointNb +1) {
+            int y = yBegin - direction; // Skip the run stuck to the line
 
-        // Try to compute on a total of minPointNb points
-        if ((startTg.getPointNb() + sct.getRunNb()) >= minPointNb) {
-            int y = yBegin;
-
-            while (startTg.getPointNb() < minPointNb) {
+            while (startTg.getNumberOfPoints() < minPointNb) {
                 y -= direction;
-
                 Run r = sct.getRunAt(y);
-                startTg.include(r.getStart(), y);
-                stopTg.include(r.getStop(), y);
+                if( logger.isDebugEnabled()) {
+                    logger.debug("y=" + y +
+                                 " xl=" + r.getStart() +
+                                 " x=" + (double) (r.getStart() + r.getStop())/2 +
+                                 " xr=" + r.getStop());
+                }
+                startTg.includePoint(r.getStart(), y);
+                stopTg.includePoint(r.getStop(), y);
+                axis.includePoint((double) (r.getStart() + r.getStop())/2, y);
             }
         }
 
         // Check whether we have enough runs to compute extension axis
-        if (startTg.getPointNb() >= minPointNb) {
+        if (startTg.getNumberOfPoints() >= minPointNb) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("startTg=" + startTg + " invertedSlope=" + startTg.getInvertedSlope());
+                logger.debug("axis=" + axis + " invertedSlope=" + axis.getInvertedSlope());
+                logger.debug("stopTg=" + stopTg + " invertedSlope=" + stopTg.getInvertedSlope());
+            }
             // Check that we don't diverge (convergence to the line is OK)
-            if (((stopTg.getSlope() - startTg.getSlope()) * direction) > constants.maxDeltaSlope
-                    .getValue()) {
-                axis = startTg.include(stopTg); // Merge the two sides
+            if (((stopTg.getInvertedSlope() - startTg.getInvertedSlope())
+                 * direction) > constants.maxDeltaSlope.getValue()) {
+                /////axis = startTg.includeLine(stopTg); // Merge the two sides
                 startTg = stopTg = null;
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Merged. Axis=" + axis);
+                }
             }
         } else {
             // No way to compute an axis, just use straight direction
@@ -383,22 +410,23 @@ public class StickUtil
             logger.debug("patchSection contact=" + sct);
         } else {
             for (int y = yBegin; y != yPast; y += direction) {
-                int start;
+                int start = -1;
 
                 if (startTg != null) {
                     start = startTg.xAt(y);
                     length = stopTg.xAt(y) - start + 1;
 
                     if (length <= 0) { // We have decreased to nothing
-
                         break;
                     }
                 } else {
                     if (axis != null) {
-                        x = axis.xAt((double) y);
+                        x = axis.xAt(y);
                     }
-
-                    start = (int) Math.rint(x - ((double) length / 2) + 0.5);
+                    start = (int) Math.rint(x - ((double) length / 2));
+                }
+                if (logger.isDebugEnabled()) {
+                    logger.debug("y=" + y + ", start=" + start + ", length=" + length);
                 }
 
                 //Run newRun = new Run(start, length, Picture.FOREGROUND); // TBD
@@ -416,12 +444,16 @@ public class StickUtil
 
                     patches.add(newSct);
                 } else {
-                    // extend newSct in proper direction
+                    // Extend newSct in proper direction
                     if (direction > 0) {
                         newSct.append(newRun);
                     } else {
                         newSct.prepend(newRun);
                     }
+                }
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("newSct=" + newSct);
                 }
             }
 
