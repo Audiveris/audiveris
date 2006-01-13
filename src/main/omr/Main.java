@@ -2,7 +2,7 @@
 //                                                                       //
 //                                M a i n                                //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -363,6 +363,7 @@ public class Main
                 // This is a command
                 // Check that we were not expecting param(s)
                 if (paramNeeded) {
+                    printCommandLine(args);
                     stopUsage("Found no parameter after command '"
                               + currentCommand + "'");
                 }
@@ -388,6 +389,7 @@ public class Main
                     status = SAVE;
                     paramNeeded = true;
                 } else {
+                    printCommandLine(args);
                     stopUsage("Unknown command '" + token + "'");
                 }
 
@@ -410,6 +412,7 @@ public class Main
                         }
 
                         if (targetStep == null) {
+                            printCommandLine(args);
                             stopUsage("Step name expected, found '" + token
                                       + "' instead");
                         }
@@ -451,6 +454,7 @@ public class Main
 
         // Additional error checking
         if (paramNeeded) {
+            printCommandLine(args);
             stopUsage("Expecting a parameter after command '"
                       + currentCommand + "'");
         }
@@ -507,6 +511,18 @@ public class Main
             }
     }
 
+    //------------------//
+    // printCommandLine //
+    //------------------//
+    private static void printCommandLine(String[] args)
+    {
+        System.out.println("\nCommandParameters:");
+        for (String arg : args) {
+            System.out.print(" " + arg);
+        }
+        System.out.println();
+    }
+
     //-----------//
     // stopUsage //
     //-----------//
@@ -537,7 +553,7 @@ public class Main
             .append(" (non case-sensitive) :");
 
         for (Step step : Sheet.getSteps()) {
-            buf.append(String.format("%n        %-16s : %s",
+            buf.append(String.format("%n%-17s : %s",
                                      step.toString().toUpperCase(),
                                      step.getDescription()));
         }
@@ -560,6 +576,7 @@ public class Main
         //-----//
         // run //
         //-----//
+        @Override
         public void run()
         {
             browse();
