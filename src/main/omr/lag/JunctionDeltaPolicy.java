@@ -68,6 +68,7 @@ public class JunctionDeltaPolicy
      *
      * @return a descriptive string
      */
+    @Override
     public String toString ()
     {
         return "{JunctionDeltaPolicy" + " maxDeltaLength=" + maxDeltaLength

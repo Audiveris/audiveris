@@ -76,6 +76,7 @@ public class JunctionRatioPolicy
      *
      * @return a descriptive string
      */
+    @Override
     public String toString ()
     {
         return "{JunctionRatioPolicy" + " maxHeightRatio=" + maxHeightRatio
