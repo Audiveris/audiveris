@@ -132,6 +132,19 @@ public class NeuralNetwork
      */
     public void restore (Backup backup)
     {
+        // Check parameter
+        if (backup == null) {
+            throw new IllegalArgumentException("Backup is null");
+        }
+
+        // Make sure backup is compatible with this neural network
+        if (backup.hiddenWeights.length    != hiddenSize ||
+            backup.hiddenWeights[0].length != inputSize + 1 ||
+            backup.outputWeights.length    != outputSize ||
+            backup.outputWeights[0].length != hiddenSize + 1) {
+            throw new IllegalArgumentException("Incompatible backup");
+        }
+
         logger.debug("Network memory restore");
         this.hiddenWeights = cloneMatrix(backup.hiddenWeights);
         this.outputWeights = cloneMatrix(backup.outputWeights);
@@ -518,6 +531,7 @@ public class NeuralNetwork
             }
             if (mse <= maxError) {
                 logger.info("Exiting Network training, remaining error limit reached");
+                logger.info("Remaining error was : " + mse);
                 break;
             }
         } // for (int ie = 0; ie < epochs; ie++)
@@ -653,8 +667,8 @@ public class NeuralNetwork
          * @param epochIndex the sequential index (0)
          * @param mse the starting mean square error
          * */
-        public void trainingStarted (final int    epochIndex,
-                                     final double mse);
+        void trainingStarted (final int    epochIndex,
+                              final double mse);
 
         /**
          * Entry called at end of each epoch during the training phase
