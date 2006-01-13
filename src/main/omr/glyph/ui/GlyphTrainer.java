@@ -900,6 +900,7 @@ public class GlyphTrainer
             builder.add(trainIndex.getField(),  cst.xy(15, r));
         }
 
+        @Override
         public void glyphProcessed (final Glyph glyph)
         {
             SwingUtilities.invokeLater(new Runnable()
@@ -1051,6 +1052,7 @@ public class GlyphTrainer
             builder.add(trainIndex.getField(),  cst.xy(15, r));
         }
 
+        @Override
         public void enableTraining(boolean bool)
         {
             super.enableTraining(bool);
@@ -1079,6 +1081,7 @@ public class GlyphTrainer
             maxError.setValue(network.getMaxError());
         }
 
+        @Override
         public void trainingStarted (final int    epochIndex,
                                      final double mse)
         {
@@ -1104,6 +1107,7 @@ public class GlyphTrainer
                 });
         }
 
+        @Override
         public void epochEnded (final int    epochIndex,
                                 final double mse)
         {
@@ -1176,6 +1180,7 @@ public class GlyphTrainer
                 confirmationRequired = false;
             }
 
+            @Override
             protected void prologue()
             {
                 inputParams();
@@ -1187,6 +1192,7 @@ public class GlyphTrainer
                 lastAction.setEnabled(false);
             }
 
+            @Override
             protected void epilogue()
             {
                 stopAction.setEnabled(false);
@@ -1211,6 +1217,7 @@ public class GlyphTrainer
                 confirmationRequired = true;
             }
 
+            @Override
             protected void prologue()
             {
                 super.prologue();
