@@ -13,6 +13,8 @@ package omr.sheet;
 import omr.Main;
 import omr.ProcessingException;
 import omr.check.Check;
+import omr.check.Checkable;
+import omr.check.CheckBoard;
 import omr.check.CheckSuite;
 import omr.check.FailureResult;
 import omr.check.SuccessResult;
@@ -27,7 +29,6 @@ import omr.stick.Stick;
 import omr.stick.StickSection;
 import omr.stick.StickView;
 import omr.ui.BoardsPane;
-import omr.ui.FilterBoard;
 import omr.ui.PixelBoard;
 import omr.ui.ScrollLagView;
 import omr.ui.SectionBoard;
@@ -42,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
+import omr.check.Result;
 
 /**
  * Class <code>VerticalsBuilder</code> is in charge of retrieving all the
@@ -81,8 +83,11 @@ public class VerticalsBuilder
     private final GlyphLag vLag;
     private final VerticalArea verticalsArea;
 
+    private StemCheckSuite suite = new StemCheckSuite();
     private MyView view;
 
+    // To displat check results
+    private CheckBoard<Context> checkBoard;
     //~ Constructors ------------------------------------------------------
 
     //------------------//
@@ -156,6 +161,8 @@ public class VerticalsBuilder
         }
 
         // Create a hosting frame for the view
+        checkBoard = new CheckBoard<Context>(suite);
+        view.setCheckMonitor(checkBoard);
         sheet.getAssembly().addViewTab
             ("Verticals", new ScrollLagView(view),
              new BoardsPane
@@ -163,18 +170,15 @@ public class VerticalsBuilder
               new PixelBoard(),
               new SectionBoard(vLag.getLastVertexId()),
               new GlyphBoard(vLag.getLastGlyphId(), knownIds),
-              new FilterBoard()));
+              checkBoard));
     }
 
     //-------------------//
     // retrieveVerticals //
     //-------------------//
     private int retrieveVerticals (SystemInfo system)
-            throws ProcessingException
+        throws ProcessingException
     {
-        // Define the suite of Checks
-        StemCheckSuite suite = new StemCheckSuite(system);
-
         double minResult = constants.minCheckResult.getValue();
         int stemNb = 0;
         List<Stick> sticks = system.getVerticalSticks();
@@ -186,7 +190,7 @@ public class VerticalsBuilder
 
         for (Stick stick : sticks) {
             // Run the various Checks
-            double res = suite.pass(stick);
+            double res = suite.pass(new Context(stick, system));
 
             if (logger.isDebugEnabled()) {
                 logger.debug("suite=> " + res + " for " + stick);
@@ -218,7 +222,7 @@ public class VerticalsBuilder
     // MyView //
     //--------//
     private class MyView
-        extends StickView
+        extends StickView<Context>
     {
         //~ Constructors --------------------------------------------------
 
@@ -232,6 +236,7 @@ public class VerticalsBuilder
         //----------//
         // colorize //
         //----------//
+        @Override
         public void colorize ()
         {
             super.colorize();
@@ -263,6 +268,7 @@ public class VerticalsBuilder
         //-------------//
         // renderItems //
         //-------------//
+        @Override
         public void renderItems (Graphics g)
         {
             Zoom z = getZoom();
@@ -297,15 +303,21 @@ public class VerticalsBuilder
             protected void glyphSelected (Glyph glyph,
                                           Point pt)
         {
-            try {
-                if (glyph instanceof Stick) {
-                    SystemInfo systemInfo = sheet.getSystemAtY(pt.y);
-                    StemCheckSuite suite = new StemCheckSuite(systemInfo);
+            Context context = null;
+            if (glyph instanceof Stick) {
+                try {
+                    // Get a fresh suite
+                    suite = new StemCheckSuite();
+                    checkBoard.setSuite(suite);
+
                     Stick stick = (Stick) glyph;
-                    filterMonitor.tellHtml(suite.passHtml(null, stick));
+                    SystemInfo system = sheet.getSystemAtY(pt.y);
+                    context = new Context(stick, system);
+                } catch (ProcessingException ex){
+                    logger.warning("Glyph cannot be processed");
                 }
-            } catch (ProcessingException ex) {
             }
+            checkMonitor.tellObject(context);
         }
 
         //---------------//
@@ -332,23 +344,22 @@ public class VerticalsBuilder
     // MinLengthCheck //
     //----------------//
     private class MinLengthCheck
-            extends Check<Stick>
+        extends Check<Context>
     {
-        //~ Constructors --------------------------------------------------
-
         protected MinLengthCheck ()
                 throws ProcessingException
         {
-            super("MinLength", constants.minStemLengthLow.getValue(),
-                  constants.minStemLengthHigh.getValue(), true, TOO_SHORT);
+            super("MinLength",
+                  "Check that stick is long enough (unit is interline)",
+                  constants.minStemLengthLow.getValue(),
+                  constants.minStemLengthHigh.getValue(),
+                  true, TOO_SHORT);
         }
 
-        //~ Methods -------------------------------------------------------
-
         // Retrieve the length data
-        protected double getValue (Stick stick)
+        protected double getValue (Context context)
         {
-            return sheet.getScale().pixelsToFrac(stick.getLength());
+            return sheet.getScale().pixelsToFrac(context. stick.getLength());
         }
     }
 
@@ -356,22 +367,22 @@ public class VerticalsBuilder
     // MaxAspectCheck //
     //----------------//
     private static class MaxAspectCheck
-            extends Check<Stick>
+        extends Check<Context>
     {
-        //~ Constructors --------------------------------------------------
-
         protected MaxAspectCheck ()
         {
-            super("MaxAspect", constants.maxStemAspectLow.getValue(),
-                  constants.maxStemAspectHigh.getValue(), false, TOO_FAT);
+            super("MaxAspect",
+                  "Check that stick aspect (thickness/length) is not too"+
+                  " high (dimension-less)",
+                  constants.maxStemAspectLow.getValue(),
+                  constants.maxStemAspectHigh.getValue(),
+                  false, TOO_FAT);
         }
 
-        //~ Methods -------------------------------------------------------
-
         // Retrieve the ratio thickness / length
-        protected double getValue (Stick stick)
+        protected double getValue (Context context)
         {
-            return stick.getAspect();
+            return context.stick.getAspect();
         }
     }
 
@@ -379,24 +390,22 @@ public class VerticalsBuilder
     // FirstAdjacencyCheck //
     //---------------------//
     private static class FirstAdjacencyCheck
-            extends Check<Stick>
+        extends Check<Context>
     {
-        //~ Constructors --------------------------------------------------
-
         protected FirstAdjacencyCheck ()
         {
-            super("LeftAdj", constants.maxStemAdjacencyLow.getValue(),
-                  constants.maxStemAdjacencyHigh.getValue(), false,
-                  TOO_HIGH_ADJACENCY);
+            super("LeftAdj",
+                  "Check that stick is open on left side (dimension-less)",
+                  constants.maxStemAdjacencyLow.getValue(),
+                  constants.maxStemAdjacencyHigh.getValue(),
+                  false, TOO_HIGH_ADJACENCY);
         }
 
-        //~ Methods -------------------------------------------------------
-
         // Retrieve the adjacency value
-        protected double getValue (Stick stick)
+        protected double getValue (Context context)
         {
+            Stick stick = context.stick;
             int length = stick.getLength();
-
             return (double) stick.getFirstStuck() / (double) length;
         }
     }
@@ -405,24 +414,22 @@ public class VerticalsBuilder
     // LastAdjacencyCheck //
     //--------------------//
     private static class LastAdjacencyCheck
-            extends Check<Stick>
+        extends Check<Context>
     {
-        //~ Constructors --------------------------------------------------
-
         protected LastAdjacencyCheck ()
         {
-            super("RightAdj", constants.maxStemAdjacencyLow.getValue(),
-                  constants.maxStemAdjacencyHigh.getValue(), false,
-                  TOO_HIGH_ADJACENCY);
+            super("RightAdj",
+                  "Check that stick is open on right side (dimension-less)",
+                  constants.maxStemAdjacencyLow.getValue(),
+                  constants.maxStemAdjacencyHigh.getValue(),
+                  false, TOO_HIGH_ADJACENCY);
         }
 
-        //~ Methods -------------------------------------------------------
-
         // Retrieve the adjacency value
-        protected double getValue (Stick stick)
+        protected double getValue (Context context)
         {
+            Stick stick = context.stick;
             int length = stick.getLength();
-
             return (double) stick.getLastStuck() / (double) length;
         }
     }
@@ -431,23 +438,23 @@ public class VerticalsBuilder
     // LeftCheck //
     //-----------//
     private class LeftCheck
-            extends Check<Stick>
+        extends Check<Context>
     {
-        //~ Constructors --------------------------------------------------
-
-        protected LeftCheck (int val)
+        protected LeftCheck ()
                 throws ProcessingException
         {
-            super("LeftLimit", val, val, true, OUTSIDE_SYSTEM);
+            super("LeftLimit",
+                  "Check stick is on right of the system beginning bar",
+                  0, 0, true, OUTSIDE_SYSTEM);
         }
 
-        //~ Methods -------------------------------------------------------
-
         // Retrieve the stick abscissa
-        protected double getValue (Stick stick)
+        protected double getValue (Context context)
         {
-
-            return stick.getFirstPos();
+            Stick stick = context.stick;
+            int x = stick.getMidPos();
+            return sheet.getScale().pixelsToFrac
+                (x - context.system.getLeft());
         }
     }
 
@@ -455,23 +462,24 @@ public class VerticalsBuilder
     // RightCheck //
     //------------//
     private class RightCheck
-            extends Check<Stick>
+        extends Check<Context>
     {
-        //~ Constructors --------------------------------------------------
-
-        protected RightCheck (int val)
+        protected RightCheck ()
                 throws ProcessingException
         {
-            super("RightLimit", val, val, false, OUTSIDE_SYSTEM);
+            super("RightLimit",
+                  "Check stick is on left of the system ending bar",
+                  0, 0, true, OUTSIDE_SYSTEM);
         }
 
-        //~ Methods -------------------------------------------------------
-
         // Retrieve the stick abscissa
-        protected double getValue (Stick stick)
+        protected double getValue (Context context)
         {
-
-            return stick.getFirstPos();
+            Stick stick = context.stick;
+            int x = stick.getMidPos();
+            return sheet.getScale().pixelsToFrac
+                (context.system.getLeft() + context.system.getWidth()
+                 - context.stick.getFirstPos());
         }
     }
 
@@ -479,24 +487,24 @@ public class VerticalsBuilder
     // MinDensityCheck //
     //-----------------//
     private class MinDensityCheck
-            extends Check<Stick>
+        extends Check<Context>
     {
-        //~ Constructors --------------------------------------------------
-
         protected MinDensityCheck ()
         {
-            super("MinDensity", constants.minDensityLow.getValue(),
-                  constants.minDensityHigh.getValue(), true, TOO_HOLLOW);
+            super("MinDensity",
+                  "Check that stick fills its bounding rectangle"+
+                  " (unit is interline squared)",
+                  constants.minDensityLow.getValue(),
+                  constants.minDensityHigh.getValue(),
+                  true, TOO_HOLLOW);
         }
 
-        //~ Methods -------------------------------------------------------
-
         // Retrieve the density
-        protected double getValue (Stick stick)
+        protected double getValue (Context context)
         {
+            Stick stick = context.stick;
             Rectangle rect = stick.getBounds();
             double area = rect.width * rect.height;
-
             return (double) stick.getWeight() / area;
         }
     }
@@ -509,7 +517,7 @@ public class VerticalsBuilder
 //      * or note head) at top or bottom
 //      */
 //     private class MinChunkCheck
-//             extends Check<Stick>
+//             extends Check<Context>
 //     {
 //         //~ Instance variables --------------------------------------------
 
@@ -561,24 +569,50 @@ public class VerticalsBuilder
 //         }
 //     }
 
+    //---------//
+    // Context //
+    //---------//
+    private class Context
+        implements Checkable
+    {
+        //~ Instance variables --------------------------------------------
+
+        Stick      stick;
+        SystemInfo system;
+
+        //~ Constructors --------------------------------------------------
+
+        public Context (Stick      stick,
+                        SystemInfo system)
+        {
+            this.stick  = stick;
+            this.system = system;
+        }
+
+        //~ Methods -------------------------------------------------------
+
+        public void setResult (Result result)
+        {
+            stick.setResult(result);
+        }
+    }
+
     //----------------//
     // StemCheckSuite //
     //----------------//
     private class StemCheckSuite
-            extends CheckSuite<Stick>
+        extends CheckSuite<Context>
     {
-        //~ Constructors --------------------------------------------------
-
-        public StemCheckSuite (SystemInfo info)
-                throws ProcessingException
+        public StemCheckSuite ()
+            throws ProcessingException
         {
-            super("Stems " + info, constants.minCheckResult.getValue());
+            super("Stem", constants.minCheckResult.getValue());
             add(1, new MinLengthCheck());
             add(1, new MaxAspectCheck());
             add(1, new FirstAdjacencyCheck());
             add(1, new LastAdjacencyCheck());
-            add(0, new LeftCheck(info.getLeft()));
-            add(0, new RightCheck(info.getLeft() + info.getWidth()));
+            add(0, new LeftCheck());
+            add(0, new RightCheck());
             add(2, new MinDensityCheck());
 
             // This step is much too expensive (and not really useful ...)
