@@ -123,9 +123,6 @@ public class GlyphVerifier
         frame.setBounds(new Rectangle(20, 20, 1000, 600));
         frame.setVisible(true);
 
-        // Launch loading of XML mapper
-        repository.preloadGlyphMapper();
-
         if (standAlone) {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         }
@@ -547,9 +544,9 @@ public class GlyphVerifier
             CellConstraints cst = new CellConstraints();
             builder.setDefaultDialogBorder();
 
-            builder.add(navigator,      cst.xy (1, 1));
-            builder.add(board,          cst.xy (1, 2));
-            builder.add(evaluatorsPanel,cst.xy (1, 3));
+            builder.add(navigator,                      cst.xy (1, 1));
+            builder.add(board.getComponent(),           cst.xy (1, 2));
+            builder.add(evaluatorsPanel.getComponent(), cst.xy (1, 3));
 
             return builder.getPanel();
         }
@@ -667,7 +664,7 @@ public class GlyphVerifier
 
                         for (GlyphSection section : glyph.getMembers()) {
                             section.getViews().clear();
-                            section.setId(vLag.addVertex(section)); // Trick!
+                            vLag.addVertex(section); // Trick!
                             section.setGraph(vLag);
                             section.complete();
                         }
@@ -812,7 +809,7 @@ public class GlyphVerifier
                 // Layout
                 setLayout(new BorderLayout());
                 add(slider, BorderLayout.WEST);
-                add(slv, BorderLayout.CENTER);
+                add(slv.getComponent(), BorderLayout.CENTER);
             }
         }
 

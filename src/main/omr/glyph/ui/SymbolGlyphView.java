@@ -116,12 +116,12 @@ public class SymbolGlyphView
         if (glyphs.size() > 0) {
             if (glyphs.size() == 1) {
                 pane.getPopup().updateForGlyph(glyphs.get(0));
-                pane.getPopup().show(this, e.getX(), e.getY());
+                pane.getPopup().getPopup().show(this, e.getX(), e.getY());
             } else if (glyphs.size() > 1) {
                 pane.getPopup().updateForGlyphs(glyphs);
             }
             // Show the popup menu
-            pane.getPopup().show(this, e.getX(), e.getY());
+            pane.getPopup().getPopup().show(this, e.getX(), e.getY());
         } else {
             // Popup with no glyph selected ?
         }

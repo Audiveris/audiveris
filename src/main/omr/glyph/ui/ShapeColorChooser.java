@@ -38,11 +38,11 @@ import java.util.EnumSet;
  * @version $Id$
  */
 public class ShapeColorChooser
-    extends JPanel
     implements ChangeListener
 {
     //~ Instance variables ------------------------------------------------
 
+    private JPanel        component;
     private RangesPane    ranges;
     private ShapesPane    shapes;
     private JColorChooser colorChooser;
@@ -59,7 +59,7 @@ public class ShapeColorChooser
      */
     public ShapeColorChooser ()
     {
-        super(new BorderLayout());
+        component = new JPanel(new BorderLayout());
 
         // Range Panel
         ranges = new RangesPane();
@@ -77,11 +77,24 @@ public class ShapeColorChooser
         colorChooser.setBorder
             (BorderFactory.createTitledBorder("Choose Shape Color"));
 
-        add(globalPanel, BorderLayout.WEST);
-        add(colorChooser, BorderLayout.EAST);
+        component.add(globalPanel, BorderLayout.WEST);
+        component.add(colorChooser, BorderLayout.EAST);
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent()
+    {
+        return component;
+    }
 
     //------//
     // main //
@@ -135,7 +148,7 @@ public class ShapeColorChooser
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Create and set up the content pane.
-        JComponent newContentPane = new ShapeColorChooser();
+        JComponent newContentPane = new ShapeColorChooser().getComponent();
         newContentPane.setOpaque(true); //content panes must be opaque
         frame.setContentPane(newContentPane);
 
