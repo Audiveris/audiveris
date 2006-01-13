@@ -353,6 +353,7 @@ public class GlyphNetwork
     /**
      * Forward s "Stop" order to the network neing trained
      */
+    @Override
     public void stop()
     {
         network.stop();

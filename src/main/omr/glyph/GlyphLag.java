@@ -162,6 +162,7 @@ public class GlyphLag
      *
      * @param title a specific title to be used for the dump
      */
+    @Override
     public void dump (String title)
     {
         // Normal dump of sections
