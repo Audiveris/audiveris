@@ -27,13 +27,14 @@ import javax.swing.*;
  * @version $Id$
  */
 public class LogPane
-        extends JScrollPane
 {
     //~ Static variables/initializers -------------------------------------
 
     private static final Constants constants = new Constants();
 
     //~ Instance variables ------------------------------------------------
+
+    private JScrollPane component;
 
     // Status/log area
     private final JTextArea logArea;
@@ -53,7 +54,7 @@ public class LogPane
     public LogPane ()
     {
         // Build the scroll pane
-        super();
+        component = new JScrollPane();
 
         // Allocate message mail box for several simultaneous msgs max
         logMbx = new MailBox(constants.msgQueueSize.getValue());
@@ -65,10 +66,23 @@ public class LogPane
 
         //logArea.setMargin (new Insets (5,5,5,5));
         // Let the scroll pane display the log area
-        setViewportView(logArea);
+        component.setViewportView(logArea);
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Give access to the real component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent()
+    {
+        return component;
+    }
 
     //-----//
     // log //
