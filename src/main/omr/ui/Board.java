@@ -27,7 +27,6 @@ import javax.swing.border.*;
  * @version $Id$
  */
 public class Board
-    extends Panel
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -37,6 +36,9 @@ public class Board
     public static final int NO_VALUE = 0;
 
     //~ Instance variables ------------------------------------------------
+
+    // Concrete UI panel
+    private final Panel component;
 
     // Board Tag
     private Tag tag;
@@ -54,6 +56,22 @@ public class Board
     public Board (Tag tag)
     {
         this.tag = tag;
+        component = new Panel();
+    }
+
+    //~ Methods -----------------------------------------------------------
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JPanel getComponent()
+    {
+        return component;
     }
 
     //--------//
@@ -73,13 +91,13 @@ public class Board
     // emptyFields //
     //-------------//
     /**
-     * Empty all the text fields of the given panel
+     * Empty all the text fields of a given JComponent
      *
-     * @param panel the panel to "blank".
+     * @param component the component to "blank".
      */
-    protected void emptyFields(JPanel panel)
+    public static void emptyFields(JComponent component)
     {
-        for (Component comp : panel.getComponents()) {
+        for (Component comp : component.getComponents()) {
             if (comp instanceof JTextField){
                 ((JTextField) comp).setText("");
             }
@@ -105,8 +123,8 @@ public class Board
             /** Board for glyph info */
             GLYPH   ("Glyph"),
 
-            /** Board for filter results */
-            FILTER  ("Filter"),
+            /** Board for check results */
+            CHECK   ("Check"),
 
             /** Custom board */
             CUSTOM  ("Custom");
