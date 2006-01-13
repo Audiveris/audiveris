@@ -53,7 +53,7 @@ public class Measure
     //---------//
 
     /**
-     * Default constructor (needed by Castor)
+     * Default constructor (needed by XML Binder)
      */
     public Measure ()
     {
@@ -115,8 +115,7 @@ public class Measure
     //--------------//
 
     /**
-     * Set the abscissa of the left part of the ending bar line (needed for
-     * Castor unmarshalling)
+     * Set the abscissa of the left part of the ending bar line
      *
      * @param leftlinex the abscissa (in units)
      */
@@ -139,35 +138,6 @@ public class Measure
         return leftlinex;
     }
 
-    //-----------------//
-    // setLineinvented //
-    //-----------------//
-
-    /**
-     * Set the flag on artificial existence of the ending bar line (needed
-     * for Castor unmarshalling)
-     *
-     * @param lineinvented true if artificial
-     */
-    public void setLineinvented (boolean lineinvented)
-    {
-        this.lineinvented = lineinvented;
-    }
-
-    //-----------------//
-    // getLineinvented //
-    //-----------------//
-
-    /**
-     * Report the flag on artificial existence of the ending bar line
-     *
-     * @return true if no physical ending bar line
-     */
-    public boolean getLineinvented ()
-    {
-        return lineinvented;
-    }
-
     //-------------//
     // setLinetype //
     //-------------//
@@ -187,8 +157,7 @@ public class Measure
     //-------------//
 
     /**
-     * Set the line type of the ending bar line (needed for Castor
-     * unmarshalling)
+     * Set the line type of the ending bar line
      *
      * @param linetype the line type, as a string
      */
@@ -214,10 +183,8 @@ public class Measure
     //---------------//
     // setRightlinex //
     //---------------//
-
     /**
-     * Set the abscissa of the right part of the ending bar line (needed
-     * for Castor unmarshalling)
+     * Set the abscissa of the right part of the ending bar line
      *
      * @param rightlinex the abscissa (in units)
      */
@@ -267,6 +234,7 @@ public class Measure
      *
      * @return true if processing must continue
      */
+    @Override
     protected boolean colorizeNode (Lag lag,
                                     int viewIndex,
                                     Color color)
@@ -289,6 +257,7 @@ public class Measure
      *
      * @return true, so that processing continues
      */
+    @Override
     protected boolean computeNode ()
     {
         // Fix the stave reference
@@ -325,6 +294,7 @@ public class Measure
      *
      * @return true if painting of children must be done also
      */
+    @Override
     protected boolean paintNode (Graphics g)
     {
         Point origin = getOrigin();
@@ -357,6 +327,7 @@ public class Measure
      *
      * @return true if rendered
      */
+    @Override
     protected boolean renderNode (Graphics g,
                                   Zoom z)
     {
