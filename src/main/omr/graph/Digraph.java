@@ -114,7 +114,11 @@ public class Digraph <D extends Digraph <D, V>,
      */
     public void setVertexClass (Class<? extends V> vertexClass)
     {
-        this.vertexClass = vertexClass;
+        if (vertexClass == null) {
+            throw new IllegalArgumentException("null vertex class");
+        } else {
+            this.vertexClass = vertexClass;
+        }
     }
 
     //-----------------//
@@ -272,16 +276,20 @@ public class Digraph <D extends Digraph <D, V>,
     // addVertex //
     //-----------//
     /**
-     * (package access from {@link Vertex}) to add a vertex in the graph
+     * (package access from {@link Vertex}) to add a vertex in the graph,
+     * the vertex is being assigned a unique id by the graph.
      *
      * @param vertex the newly created vertex
-     *
-     * @return the unique vertex id in the graph
      */
-    public int addVertex (V vertex)     // HB PUBLIC just for Verifier
+    public void addVertex (V vertex)     // HB PUBLIC just for Verifier
     {
+        if (vertex == null) {
+            throw new IllegalArgumentException("Cannot add a null vertex");
+        }
+
         vertices.put(++globalVertexId, vertex);
-        return globalVertexId;
+        vertex.setId(globalVertexId);
+        vertex.setGraph(this);          // Compiler warning here
     }
 
     //--------------//
@@ -297,19 +305,16 @@ public class Digraph <D extends Digraph <D, V>,
         V vertex;
         try {
             vertex = vertexClass.newInstance();
-            vertex.setId(addVertex(vertex));
-            vertex.setGraph(this);
+            addVertex(vertex);
             return vertex;
         } catch (NullPointerException ex) {
-            logger.severe("Digraph cannot create vertex, vertexClass not set");
-            return null;
+            throw new RuntimeException
+                ("Digraph cannot create vertex, vertexClass not set");
         } catch (InstantiationException ex) {
-            logger.severe("Cannot createVertex with an abstract class or interface: " + vertexClass);
-            return null;
+            throw new RuntimeException
+                ("Cannot createVertex with an abstract class or interface: " + vertexClass);
         } catch (IllegalAccessException ex) {
-            System.err.println("IllegalAccessException occurred in createVertex");
-            ex.printStackTrace();
-            return null;
+            throw new RuntimeException(ex);
         }
     }
 
@@ -326,8 +331,15 @@ public class Digraph <D extends Digraph <D, V>,
         if (logger.isDebugEnabled()) {
             logger.debug("remove " + vertex);
         }
+
+        if (vertex == null) {
+            throw new IllegalArgumentException
+                ("Trying to remove a null vertex");
+        }
+
         if (vertices.remove(vertex.getId()) == null) {
-            logger.severe("removeVertex. vertex not found: " + vertex);
+            throw new RuntimeException
+                ("Trying to remove an unknown vertex: " + vertex);
         }
     }
 }
