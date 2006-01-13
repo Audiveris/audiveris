@@ -10,7 +10,7 @@
 
 package omr.math;
 
-import omr.util.Logger;
+import java.awt.Point;
 
 /**
  * Class <code>Moments</code> encapsulates the set of all moments that
@@ -23,8 +23,6 @@ public class Moments
     implements java.io.Serializable
 {
     //~ Static variables/initializers -------------------------------------
-
-    private static final Logger logger = Logger.getLogger(Moments.class);
 
     /**  Number of moments handled : {@value}*/
     public static final int size = 19;
@@ -58,7 +56,8 @@ public class Moments
     /**
      * The various moments, implemented as an array of double's
      */
-    public double[] k;
+    private Double[] k = new Double[size];
+
 
     //~ Constructors ------------------------------------------------------
 
@@ -66,8 +65,7 @@ public class Moments
     // Moments //
     //---------//
     /**
-     * Default constructor for Castor
-     *
+     * Default constructor, needed for XML binder
      */
     public Moments ()
     {
@@ -91,8 +89,6 @@ public class Moments
                     int dim,
                     int unit)
     {
-        k = new double[size];
-
         int xMin = Integer.MAX_VALUE;
         int xMax = Integer.MIN_VALUE;
         int yMin = Integer.MAX_VALUE;
@@ -188,33 +184,39 @@ public class Moments
         //
         k[11] = ((n20 - n02) * (n20 - n02)) + (4 * n11 * n11);
         //
-        k[12] = ((n30 - (3 * n12)) * (n30 - (3 * n12)))
-                + ((n03 - (3 * n21)) * (n03 - (3 * n21)));
+        k[12] =
+            ((n30 - (3 * n12)) * (n30 - (3 * n12))) +
+            ((n03 - (3 * n21)) * (n03 - (3 * n21)));
         //
-        k[13] = ((n30 + n12) * (n30 + n12)) + ((n03 + n21) * (n03 + n21));
+        k[13] =
+            ((n30 + n12) * (n30 + n12)) +
+            ((n03 + n21) * (n03 + n21));
         //
-        k[14] = ((n30 - (3 * n12)) * (n30 + n12) * (((n30 + n12) * (n30 + n12))
-                                                    - (3 * (n21 + n03) * (n21 + n03))))
-                + ((n03 - (3 * n21)) * (n03 + n21) * (((n03 + n21) * (n03
-                                                                      + n21)) - (3 * (n12 + n30) * (n12 + n30))));
+        k[14] =
+            ((n30 - (3 * n12))
+             * (n30 + n12)
+             * (((n30 + n12) * (n30 + n12)) - (3 * (n21 + n03) * (n21 + n03)))) +
+            ((n03 - (3 * n21))
+             * (n03 + n21)
+             * (((n03 + n21) * (n03 + n21)) - (3 * (n12 + n30) * (n12 + n30))));
         //
-        k[15] = ((n20 - n02) * (((n30 + n12) * (n30 + n12))
-                                - ((n03 + n21) * (n03 + n21))))
-                + (4 * n11 * (n30 + n12) * (n03 + n21));
+        k[15] =
+            ((n20 - n02)
+             * (((n30 + n12) * (n30 + n12)) - ((n03 + n21) * (n03 + n21)))) +
+            (4 * n11 * (n30 + n12) * (n03 + n21));
         //
-        k[16] = (((3 * n21) - n03) * (n30 + n12) * (((n30 + n12) * (n30 + n12))
-                                                    - (3 * (n21 + n03) * (n21 + n03))))
-                - (((3 * n12) - n30) * (n03 + n21) * (((n03 + n21) * (n03
-                                                                      + n21)) - (3 * (n12 + n30) * (n12 + n30))));
+        k[16] =
+            (((3 * n21) - n03)
+             * (n30 + n12)
+             * (((n30 + n12) * (n30 + n12)) - (3 * (n21 + n03) * (n21 + n03)))) -
+            (((3 * n12) - n30)
+             * (n03 + n21)
+             * (((n03 + n21) * (n03 + n21)) - (3 * (n12 + n30) * (n12 + n30))));
 
 
         // Mass center placed here
         k[17] = n10; // xBar
         k[18] = n01; // yBar
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(toString());
-        }
     }
 
     //~ Methods -----------------------------------------------------------
@@ -222,14 +224,15 @@ public class Moments
     //----------//
     // toString //
     //----------//
+    @Override
     public String toString ()
     {
-        StringBuffer sb = new StringBuffer();
-        sb.append("{");
+        StringBuilder sb = new StringBuilder();
+        sb.append("{Moments");
 
         for (int i = 0; i < k.length; i++) {
-            sb.
-                append(" ")
+            sb
+                .append(" ")
                 .append(i)
                 .append("/")
                 .append(labels[i])
@@ -240,5 +243,45 @@ public class Moments
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-----------//
+    // getWeight //
+    //-----------//
+    /**
+     * Report the total weight of the glyph, normalized by unit**2
+     *
+     * @return the normalized weight
+     */
+    public Double getWeight()
+    {
+        return k[0];
+    }
+
+    //-------------//
+    // getCentroid //
+    //-------------//
+    /**
+     * Report the mass center of the glyph
+     *
+     * @return the centroid
+     */
+    public Point getCentroid()
+    {
+        return new Point((int) Math.rint(k[17]),
+                         (int) Math.rint(k[18]));
+    }
+
+    //-----------//
+    // getValues //
+    //-----------//
+    /**
+     * Report the array of moment values
+     *
+     * @return the moment values
+     */
+    public Double[] getValues()
+    {
+        return k;
     }
 }
