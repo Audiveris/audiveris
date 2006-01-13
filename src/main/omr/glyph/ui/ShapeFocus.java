@@ -391,6 +391,7 @@ public class ShapeFocus
         //--------------//
         // stateChanged //
         //--------------//
+        @Override
         public void stateChanged (ChangeEvent e)
         {
             super.stateChanged(e);
@@ -427,6 +428,7 @@ public class ShapeFocus
         //--------------//
         // stateChanged //
         //--------------//
+        @Override
         public void stateChanged (ChangeEvent e)
         {
             super.stateChanged(e);
