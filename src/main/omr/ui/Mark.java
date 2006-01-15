@@ -230,6 +230,7 @@ public class Mark
      *
      * @return a string based on the location pointed by the mark, if any.
      */
+    @Override
     public String toString ()
     {
         return "{Mark " + getLocation() + "}";
