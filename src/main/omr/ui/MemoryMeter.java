@@ -29,7 +29,6 @@ import omr.util.Memory;
  * @version $Id$
  */
 public class MemoryMeter
-    extends JPanel
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -40,6 +39,9 @@ public class MemoryMeter
     public static final int DEFAULT_ALARM_THRESHOLD = 40960;
 
     //~ Instance variables ------------------------------------------------
+
+    // Related concrete component
+    private JPanel component;
 
     // Progress bar
     private JProgressBar progressBar = new JProgressBar();
@@ -106,6 +108,8 @@ public class MemoryMeter
                         int  displayPeriod,
                         int  alarmThreshold)
     {
+        component = new JPanel();
+
         setDisplayPeriod(displayPeriod);
         setAlarmThreshold(alarmThreshold);
 
@@ -118,6 +122,19 @@ public class MemoryMeter
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent()
+    {
+        return component;
+    }
 
     //-------------------//
     // setAlarmThreshold //
@@ -251,13 +268,13 @@ public class MemoryMeter
     //----------//
     private void defineUI (Icon buttonIcon)
     {
-        setLayout(new BorderLayout());
+        component.setLayout(new BorderLayout());
 
         // Progress bar
         progressBar.setToolTipText("Used memory of total memory");
         progressBar.setString("0KB / 0KB");
         progressBar.setStringPainted(true);
-        add(progressBar, BorderLayout.CENTER);
+        component.add(progressBar, BorderLayout.CENTER);
 
         // Garbage button
         JButton button = new JButton();
@@ -281,7 +298,7 @@ public class MemoryMeter
                     }
                 }
              );
-        add(button, BorderLayout.EAST);
+        component.add(button, BorderLayout.EAST);
 
         // Remember the default foreground color
         defaultForeground = progressBar.getForeground();

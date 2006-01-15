@@ -61,10 +61,11 @@ public class PixelBoard
     {
         super(Board.Tag.PIXEL);
 
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put
+        getComponent().getInputMap
+            (JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put
             (KeyStroke.getKeyStroke("ENTER"),
              "ParamAction");
-        getActionMap().put("ParamAction", new ParamAction());
+        getComponent().getActionMap().put("ParamAction", new ParamAction());
 
         defineLayout();
     }
@@ -76,12 +77,12 @@ public class PixelBoard
     //--------------//
     private void defineLayout()
     {
-        FormLayout layout = makeFormLayout(3, 3);
+        FormLayout layout = Panel.makeFormLayout(3, 3);
 
         // Specify that columns 1 & 5 as well as 3 & 7 have equal widths.
         layout.setColumnGroups(new int[][]{{1, 5, 9}, {3, 7, 11}});
 
-        PanelBuilder builder = new PanelBuilder(layout, this);
+        PanelBuilder builder = new PanelBuilder(layout, getComponent());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
