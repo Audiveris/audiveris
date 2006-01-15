@@ -213,7 +213,7 @@ public class NameSet
     public JMenu menu (String label,
                        ActionListener listener)
     {
-        return new MyMenu(label, listener);
+        return new MyMenu(label, listener).getMenu();
     }
 
     //~ Classes -----------------------------------------------------------
@@ -222,7 +222,7 @@ public class NameSet
     // MyMenu //
     //--------//
     private class MyMenu
-            extends DynamicMenu
+        extends DynamicMenu
     {
         //~ Instance variables --------------------------------------------
 
@@ -245,7 +245,7 @@ public class NameSet
             for (String f : names) {
                 JMenuItem menuItem = new JMenuItem(f);
                 menuItem.addActionListener(listener);
-                add(menuItem);
+                getMenu().add(menuItem);
             }
         }
     }
