@@ -169,7 +169,7 @@ public class SectionBoard
              "pref," + Panel.getPanelInterline() + "," +
              "pref");
 
-        PanelBuilder builder = new PanelBuilder(layout, this);
+        PanelBuilder builder = new PanelBuilder(layout, getComponent());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
@@ -188,7 +188,7 @@ public class SectionBoard
     //-------------//
     private JPanel getRunPanel()
     {
-        FormLayout layout = makeFormLayout(2, 3);
+        FormLayout layout = Panel.makeFormLayout(2, 3);
 
         Panel panel = new Panel();
         panel.setNoInsets();
@@ -218,7 +218,7 @@ public class SectionBoard
     //-----------------//
     private JPanel getSectionPanel()
     {
-        FormLayout layout = makeFormLayout(4, 3);
+        FormLayout layout = Panel.makeFormLayout(4, 3);
 
         Panel panel = new Panel();
         panel.setNoInsets();

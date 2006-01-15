@@ -25,8 +25,8 @@ import javax.swing.event.ChangeListener;
  * provides a comprehensive combination of the following entities: <dl>
  *
  * <dt> <b>view:</b> </dt> <dd>the display of a {@link RubberZoomedPanel},
- * a component potentially linked to a {@link Zoom} and a {@link
- * Rubber}</dd>
+ * a component potentially linked to a {@link Zoom} and a mouse adapter
+ * {@link Rubber}</dd>
  *
  * <dt> <b>zoom:</b> </dt> <dd>the {@link Zoom} whose ratio is to be used
  * when the component is rendered </dd>
@@ -35,13 +35,15 @@ import javax.swing.event.ChangeListener;
  * @version $Id$
  */
 public class ScrollView
-    extends JScrollPane
 {
     //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(ScrollView.class);
 
     //~ Instance variables ------------------------------------------------
+
+    // The concrete UI component
+    private JScrollPane component = new JScrollPane();
 
     /** Current view inside the scrolled pane */
     protected RubberZoomedPanel view;
@@ -94,6 +96,19 @@ public class ScrollView
 
     //~ Methods -----------------------------------------------------------
 
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JScrollPane getComponent()
+    {
+        return component;
+    }
+
     //---------//
     // setView //
     //---------//
@@ -105,7 +120,7 @@ public class ScrollView
     public void setView (RubberZoomedPanel view)
     {
         // Display the view in the scrollpane
-        setViewportView(view);
+        component.setViewportView(view);
 
         // At the end, to avoid too early setting of the zoom ratio
         this.view = view;

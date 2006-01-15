@@ -31,15 +31,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class <code>ScorePane</code> encapsulates the horizontal display of all
- * the score systems in a horizontal and scrollable display. This is
- * organized as a JTabbedPane, with one tab for each score handled.
+ * Class <code>ScorePane</code> encapsulates a set of horizontal displays
+ * of all the score systems in a horizontal and scrollable display. This is
+ * internally organized as a JTabbedPane, with one tab for each score
+ * handled as a {@link omr.score.ScoreView}.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class ScorePane
-        extends JTabbedPane
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -47,6 +47,13 @@ public class ScorePane
     private static final Logger logger = Logger.getLogger(ScorePane.class);
 
     //~ Instance variables ------------------------------------------------
+
+    // The related JTabbedPane
+    private JTabbedPane component;
+
+    // Ordered list of all score views (This list is kept parallel to
+    // components of JTabbedPane)
+    private ArrayList<ScoreView> views;
 
     // Toolbar needed to add buttons in it
     private final JToolBar toolBar;
@@ -79,6 +86,9 @@ public class ScorePane
     {
         this.toolBar = toolBar;
 
+        component = new JTabbedPane();
+        views = new ArrayList<ScoreView>();
+
         // History menu
         JMenuItem historyMenu = ScoreManager.getInstance().getHistory()
                 .menu("History",
@@ -99,7 +109,7 @@ public class ScorePane
         new DumpAllAction();
 
         // Listener on all tab operations
-        getModel().addChangeListener(new ChangeListener()
+        component.getModel().addChangeListener(new ChangeListener()
         {
             public void stateChanged (ChangeEvent e)
             {
@@ -113,6 +123,19 @@ public class ScorePane
 
     //~ Methods -----------------------------------------------------------
 
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent()
+    {
+        return component;
+    }
+
     //-----------------//
     // getCurrentScore //
     //-----------------//
@@ -124,9 +147,9 @@ public class ScorePane
      */
     public Score getCurrentScore ()
     {
-        ScoreView view = (ScoreView) getSelectedComponent();
-
-        if (view != null) {
+        int index = component.getSelectedIndex();
+        if (index != -1) {
+            ScoreView view = views.get(index);
             return view.getScore();
         } else {
             return null;
@@ -196,14 +219,14 @@ public class ScorePane
             }
 
             // Make sure the view is part of the tabbed pane
-            int index = indexOfComponent(view);
+            int index = component.indexOfComponent(view.getComponent());
 
             if (index == -1) {
+                views.add(view);
                 // Insert in tabbed pane
-                addTab(score.getName(), null, view,
-                       score.getRadix());
-
-                index = indexOfComponent(view);
+                component.addTab(score.getName(), null,
+                                 view.getComponent(), score.getRadix());
+                index = component.indexOfComponent(view.getComponent());
             }
 
             // Focus info
@@ -246,12 +269,13 @@ public class ScorePane
      */
     public void close (Component view)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("close " + ((ScoreView) view).toString());
+        int index = component.indexOfComponent(view);
+        if (index != -1) {
+            // Remove view from list of views
+            views.remove(index);
+            // Remove view from tabs
+            component.remove(index);
         }
-
-        // Remove view from tabs
-        remove(view);
     }
 
     //---------------//
@@ -274,7 +298,7 @@ public class ScorePane
         }
 
         setSynchroWanted(synchro);
-        setSelectedIndex(index);
+        component.setSelectedIndex(index);
         setSynchroWanted(true);
     }
 
@@ -296,7 +320,8 @@ public class ScorePane
                          " synchro=" + synchro);
         }
 
-        showScoreView(indexOfComponent(view), synchro);
+        showScoreView(component.indexOfComponent(view.getComponent()),
+                      synchro);
     }
 
     //---------------//
@@ -389,9 +414,9 @@ public class ScorePane
         Jui.enableActions(scoreDependentActions, score != null);
 
         // Synchronize the sheet side ?
-        ScoreView view = (ScoreView) getSelectedComponent();
-
-        if ((view != null) && isSynchroWanted()) {
+        int index = component.getSelectedIndex();
+        if (index != -1 && isSynchroWanted()) {
+            ScoreView view = views.get(index);
             view.showRelatedSheet();
         }
 
@@ -465,7 +490,7 @@ public class ScorePane
      * menu, and inserts a button in the toolbar if an icon is provided.
      */
     private abstract class ScoreAction
-            extends AbstractAction
+        extends AbstractAction
     {
         //~ Constructors --------------------------------------------------
 
@@ -529,7 +554,7 @@ public class ScorePane
      * selected score, using an XML format.
      */
     private class SaveAction
-            extends ScoreAction
+        extends ScoreAction
     {
         //~ Constructors --------------------------------------------------
 
@@ -564,7 +589,7 @@ public class ScorePane
      * a score (XML) file to be loaded as a new score.
      */
     private class SelectAction
-            extends ScoreAction
+        extends ScoreAction
     {
         //~ Constructors --------------------------------------------------
 
@@ -588,7 +613,8 @@ public class ScorePane
                                     ScoreManager.SCORE_FILE_EXTENSION
                                 }));
 
-            if (fc.showOpenDialog(Main.getJui()) == JFileChooser.APPROVE_OPTION) {
+            if (fc.showOpenDialog(Main.getJui().getFrame())
+                == JFileChooser.APPROVE_OPTION) {
                 loadScore(fc.getSelectedFile());
             }
         }
