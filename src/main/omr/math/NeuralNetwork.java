@@ -402,10 +402,12 @@ public class NeuralNetwork
      * @param desiredOutputs the corresponding desired values for output
      * cells
      * @param monitor a monitor interface to be kept informed (or null)
+     *
+     * @return mse, the final mean square error
      */
-    public void train (double[][] inputs,
-                       double[][] desiredOutputs,
-                       Monitor    monitor)
+    public double train (double[][] inputs,
+                         double[][] desiredOutputs,
+                         Monitor    monitor)
     {
         logger.debug("Network being trained");
         stopping = false;
@@ -544,6 +546,7 @@ public class NeuralNetwork
                   (stopTime - startTime)/1000, epochs, patternNb));
         }
 
+        return mse;
     }
 
     //--------------//
