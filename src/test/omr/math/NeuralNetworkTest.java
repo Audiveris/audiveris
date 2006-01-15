@@ -1,0 +1,253 @@
+//-----------------------------------------------------------------------//
+//                                                                       //
+//                   N e u r a l N e t w o r k T e s t                   //
+//                                                                       //
+//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  This software is released under the terms of the GNU General Public  //
+//  License. Please contact the author at herve.bitteur@laposte.net      //
+//  to report bugs & suggestions.                                        //
+//-----------------------------------------------------------------------//
+
+package omr.math;
+
+//import org.testng.annotations.*;
+import omr.util.BaseTestCase;
+
+import static junit.framework.Assert.*;
+import junit.framework.*;
+
+/**
+ * Class <code>NeuralNetworkTest</code> performs unit tests on
+ * NeuralNetwork class.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
+ */
+public class NeuralNetworkTest
+    extends BaseTestCase
+{
+    //~ Static variables/initializers -------------------------------------
+
+    private static final int[] xx = new int[] {1,  2,  3,  4,  5};
+    private static final int[] yy = new int[] {4,  5, 24,  9,  0};
+
+    //~ Instance variables ------------------------------------------------
+
+    //~ Constructors ------------------------------------------------------
+
+    //~ Methods -----------------------------------------------------------
+
+    //--------//
+    // testOr //
+    //--------//
+    //@Test
+        public void testOr()
+    {
+        NeuralNetwork nn = createNetwork();
+
+        double[][] inputs = new double[][]
+            {
+                {0, 0},
+                {1, 0},
+                {0, 1},
+                {1, 1}
+            };
+
+        double[][] desiredOutputs = new double[][]
+            {
+                {0},
+                {1},
+                {1},
+                {1}
+            };
+        NeuralNetwork.Monitor monitor = new MyMonitor();;
+
+        nn.train (inputs,
+                  desiredOutputs,
+                  monitor);
+
+        nn.dump();
+
+        assertNears("0 or 0 should be 0",
+                    0d, nn.run(new double[] {0,0}, null, null)[0], 0.1d);
+
+        assertNears("1 or 0 should be 1",
+                    1d, nn.run(new double[] {1,0}, null, null)[0], 0.1d);
+
+        assertNears("0 or 1 should be 1",
+                    1d, nn.run(new double[] {0,1}, null, null)[0], 0.1d);
+
+        assertNears("1 or 1 should be 1",
+                    1d, nn.run(new double[] {1,1}, null, null)[0], 0.1d);
+    }
+
+    //---------//
+    // testXOr //
+    //---------//
+    //@Test
+        public void testXOr()
+    {
+        NeuralNetwork nn = createNetwork();
+
+        double[][] inputs = new double[][]
+            {
+                {0, 0},
+                {1, 0},
+                {0, 1},
+                {1, 1}
+            };
+
+        double[][] desiredOutputs = new double[][]
+            {
+                {0},
+                {1},
+                {1},
+                {0}
+            };
+        NeuralNetwork.Monitor monitor = new MyMonitor();;
+
+        nn.train (inputs,
+                  desiredOutputs,
+                  monitor);
+
+        nn.dump();
+
+        assertNears("0 xor 0 should be 0",
+                    0d, nn.run(new double[] {0,0}, null, null)[0], 0.1d);
+
+        assertNears("1 xor 0 should be 1",
+                    1d, nn.run(new double[] {1,0}, null, null)[0], 0.1d);
+
+        assertNears("0 xor 1 should be 1",
+                    1d, nn.run(new double[] {0,1}, null, null)[0], 0.1d);
+
+        assertNears("1 xor 1 should be 0",
+                    0d, nn.run(new double[] {1,1}, null, null)[0], 0.1d);
+    }
+
+
+    //-------------------//
+    // testBackupRestore //
+    //-------------------//
+    //@Test
+    public void testBackupRestore()
+    {
+        NeuralNetwork nn = createNetwork();
+
+        double[][] inputs = new double[][]
+            {
+                {0, 0},
+                {1, 0},
+                {0, 1},
+                {1, 1}
+            };
+
+        double[][] desiredOutputs = new double[][]
+            {
+                {0},
+                {1},
+                {1},
+                {0}
+            };
+        NeuralNetwork.Monitor monitor = new MyMonitor();;
+
+        nn.train (inputs,
+                  desiredOutputs,
+                  monitor);
+
+        nn.dump();
+
+        NeuralNetwork.Backup backup = nn.backup();
+
+        // Check behavior on incompatible network
+        NeuralNetwork pp = createNetwork(1,2,3);
+        try {
+            pp.restore(backup);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException expected) {
+            checkException(expected);
+        }
+
+        pp = createNetwork();
+
+        // Check behavior on a null backup
+        try {
+            pp.restore(null);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException expected) {
+            checkException(expected);
+        }
+
+        // Check normal backup
+        pp.restore(backup);
+
+        assertNears("0 xor 0 should be 0",
+                    0d, pp.run(new double[] {0,0}, null, null)[0], 0.1d);
+
+        assertNears("1 xor 0 should be 1",
+                    1d, pp.run(new double[] {1,0}, null, null)[0], 0.1d);
+
+        assertNears("0 xor 1 should be 1",
+                    1d, pp.run(new double[] {0,1}, null, null)[0], 0.1d);
+
+        assertNears("1 xor 1 should be 0",
+                    0d, pp.run(new double[] {1,1}, null, null)[0], 0.1d);
+    }
+
+    //~ Methods private----------------------------------------------------
+
+    //---------------//
+    // createNetwork //
+    //---------------//
+    private NeuralNetwork createNetwork(int inputSize,
+                                        int hiddenSize,
+                                        int outputSize)
+    {
+        double amplitude    = 0.5;
+        double learningRate = 0.25;
+        double momentum     = 0.25;
+        double maxError     = 0.02;
+        int    epochs       = 500000;
+
+        return new NeuralNetwork(inputSize,
+                                 hiddenSize,
+                                 outputSize,
+                                 amplitude,
+                                 learningRate,
+                                 momentum,
+                                 maxError,
+                                 epochs);
+    }
+
+    private NeuralNetwork createNetwork()
+    {
+        return createNetwork(2,2,1);
+    }
+
+    //-----------//
+    // MyMonitor //
+    //-----------//
+    private static class MyMonitor
+        implements NeuralNetwork.Monitor
+    {
+        public void trainingStarted (final int    epochIndex,
+                                     final double mse)
+        {
+            System.out.println("trainingStarted." +
+                               " epochIndex=" + epochIndex +
+                               " mse=" + mse);
+        }
+
+        public void epochEnded (int    epochIndex,
+                                double mse)
+        {
+            if (epochIndex % 10000 == 0) {
+
+                System.out.println("epochEnded." +
+                                   " epochIndex=" + epochIndex +
+                                   " mse=" + mse);
+            }
+        }
+    }
+
+}
