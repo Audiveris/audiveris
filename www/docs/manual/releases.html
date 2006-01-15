@@ -109,6 +109,102 @@
 
 	    <!-- ====================================================== -->
 	    
+	    <A NAME="2.4">
+		<H3>2.4 Release</H3>
+	    </A>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH>Introduction</TH>
+		    <TD>
+			<UL>
+			    <LI>This is a release intended to cleanup
+			   major deficiencies before switching to the
+			   development of release 3.0 with brand new
+			   features.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Distribution Changes</TH>
+		    <TD>
+			<UL>
+			    <LI>XML Mapping : We've dropped Castor for
+			    JiBX. JiBX is reported more performant,
+			    especially at startup, since the binding
+			    is pre-compiled directly in the class byte
+			    code. Moreover, JiBX is the XML mapper
+			    used by MusicXMLrep which we'll use to
+			    handle the mapping to MusicXML format. So
+			    instead of the Castor environment, the
+			    JiBX one must now be installed (see the <A
+			    HREF="Installation.html#OTHER_COMPONENTS">
+			    Installation Manual</A> for
+			    details). </LI>
+			    <LI>Tests : The distribution archive now
+			    comprises the source code for unit tests,
+			    based on the JUnit framework.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>New Features</TH>
+		    <TD>
+			<UL>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Bug Fixes</TH>
+		    <TD>
+			<UL>
+			    <LI>Memory : At last, the origin of memory
+			    leak was discovered : it originated in
+			    Swing component handling an HTML text. So
+			    the workaround has been to simply drop
+			    HTML used by FilterBoard in favor of
+			    standard JGoodies form fields of
+			    CheckBoard.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Known Issues</TH>
+		    <TD>
+			<UL>
+			    <LI>Java : There are 4 compiler
+				warnings related to generics.</LI>
+			</UL>
+		    </TD>
+		</TR>
+		
+		<TR>
+		    <TH>Other Changes</TH>
+		    <TD>
+			<UL>
+			    <LI>Math : The Line class is now better
+				defined as an interface with a
+				BasicLine implementation which can be
+				used whatever the orientation of the
+				Line.</LI>
+			    <LI>Java : Consistent application of an
+				inner Swing component rather than
+				direct derivation from Swing, except
+				in obvious specializations. Main
+				improvement is visible in Javadocs
+				that used to be filled with Swing
+				inherited members.</LI>
+			</UL>
+		    </TD>
+		</TR>
+	    </TABLE>
+
+	    <!-- ====================================================== -->
+	    
 	    <A NAME="2.3">
 		<H3>2.3 Release</H3>
 	    </A>
@@ -219,120 +315,6 @@
 	    </TABLE>
 
 	    <!-- ====================================================== -->
-	    
-	    <A NAME="2.2">
-		<H3>2.2 Release</H3>
-	    </A>
-	    
-	    <TABLE WIDTH=100% BORDER=1>
-		<TR>
-		    <TH>Introduction</TH>
-		    <TD>
-			<UL>
-			    <LI>This is a release still focused on
-				improvement of existing features
-				rather than functional extension.</LI>
-			    <LI>In particular, the attempt to handle
-				clutter as a recognized glyph shape in
-				the neural network (to avoid false
-				positives) has been postponed to next
-				release.</LI>
-			</UL>
-		    </TD>
-		</TR>
-		
-		<TR>
-		    <TH>Distribution Changes</TH>
-		    <TD>
-			<UL>
-			    <LI>Tools : All the companion tools have
-				been upgraded to their latest version,
-				and the Installation manual updated
-				accordingly. </LI>
-			    <LI>Documentation : The whole set of
-				documentations, including the JavaDoc
-				API, has been organized under the same
-				umbrella to allow convenient access to
-				any piece from the documentation
-				banner.</LI>
-			</UL>
-		    </TD>
-		</TR>
-		
-		<TR>
-		    <TH>New Features</TH>
-		    <TD>
-			<UL>
-			    <LI>Image : Added the conversion from
-				color image to gray-scale image. This
-				operation is launched automatically
-				when a color image is detected at load
-				time.</LI>
-			    <LI>Glyphs : Added a Deassign button in
-				the Glyph board, with action depending
-				upon the glyph at hand (for example
-				deassigning a stem has important
-				consequences, more than for a
-				standalone symbol).</LI>
-			</UL>
-		    </TD>
-		</TR>
-		
-		<TR>
-		    <TH>Bug Fixes</TH>
-		    <TD>
-			<UL>
-			    <LI>GUI : No more toggle button is active
-				for the Bars step, since there were no
-				specific Sections to handle.</LI>
-			    <LI>Documentation : Fixed the use of CVS
-				tags in java files (for version
-				information) which were mistaken with
-				real CVS tags in related javadoc HTML
-				files</LI>
-			</UL>
-		    </TD>
-		</TR>
-		
-		<TR>
-		    <TH>Known Issues</TH>
-		    <TD>
-			<UL>
-			    <LI>Memory : There is still a memory leak,
-				since even after current Sheet has
-				been closed, there is still a Sheet
-				instance referenced with Score,
-				related views, etc... Workaround if
-				several Sheets have to be processed
-				interactively is to exit the
-				application after each
-				processing.</LI>
-			    <LI>Documentation : Because of JavaScript
-				building of doc frames, the "Back" and
-				"Forward" commands trigger duplicate
-				frame loads. Function is OK, but this
-				flickering should be avoided.</LI>
-			    <LI>Java : There is still half a dozen of
-				compiler warnings related to unchecked
-				generics assignments, to be cleaned in
-				a next release.</LI>
-			</UL>
-		    </TD>
-		</TR>
-		
-		<TR>
-		    <TH>Other Changes</TH>
-		    <TD>
-			<UL>
-			    <LI>Verticals : Managing of stems is done
-				as much as possible like other glyphs,
-				since managing separate lists in synch
-				was too much error-prone.</LI>
-			</UL>
-		    </TD>
-		</TR>
-	    </TABLE>
-
 	    
 	    <A NAME="2.2">
 		<H3>2.2 Release</H3>
