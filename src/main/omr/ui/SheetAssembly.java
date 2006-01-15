@@ -17,7 +17,6 @@ import omr.glyph.GlyphSection;
 import omr.lag.LagView;
 import omr.lag.Run;
 import omr.lag.Section;
-import omr.sheet.PictureView;
 import omr.sheet.Sheet;
 import omr.util.Logger;
 
@@ -30,21 +29,22 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>SheetAssembly</code> is a UI assembly dedicated to the
- * display of one sheet, gathering a {@link Zoom}, a related {@link
- * LogSlider}, a mouse {@link Rubber}, and a tabbed collection of {@link
- * ScrollView}'s for all views of this sheet.
+ * display of one sheet, gathering a {@link Zoom} with its dedicated
+ * graphical {@link LogSlider}, a mouse adapter {@link Rubber}, and a
+ * tabbed collection of {@link ScrollView}'s for all views of this sheet.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
 public class SheetAssembly
-    extends JPanel
+    implements ChangeListener
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -52,16 +52,35 @@ public class SheetAssembly
 
     //~ Instance variables ------------------------------------------------
 
+    // The concrete UI component
+    private JPanel component;
+
     // Link with sheet
     private final Sheet sheet;
 
-    private final MyTabbedPane tabbedPane;
-    private final LogSlider    slider;
-    private final Zoom         zoom;
-    private final Rubber       rubber;
+    // To manually control the zoom ratio
+    private final LogSlider slider
+        = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 4, 0);
 
-    // Map to retrieve the boardspane related to a tab
-    private final Map<Integer, BoardsPane> boardsPaneMap;
+    // Zoom , with default ratio set to 1
+    private final Zoom zoom = new Zoom(slider, 1);
+
+    // Mouse adapter
+    private final Rubber rubber = new Rubber(zoom);
+
+    // Tabbed container for all views of the sheet
+    private final JTabbedPane tabbedPane = new JTabbedPane();
+
+    // Map tab title -> BoardsPane
+    private final HashMap<String,BoardsPane> map
+        = new HashMap<String,BoardsPane>();
+
+    // Map tab component -> ScrollView
+    private final HashMap<JScrollPane,ScrollView> viewMap
+        = new HashMap<JScrollPane,ScrollView>();
+
+    // Previously selected view
+    protected JScrollPane previousScrollView;
 
     //~ Constructors ------------------------------------------------------
 
@@ -80,31 +99,40 @@ public class SheetAssembly
             logger.debug("creating SheetAssembly on " + sheet);
         }
 
+        component = new JPanel();
+
         // Cross links between sheet and its assembly
         this.sheet = sheet;
         sheet.setAssembly(this);
 
-        // Allocate all surrounding entities
-        slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 4, 0);
+        // GUI stuff
         slider.setToolTipText("Adjust Zoom Ratio");
-
-        zoom = new Zoom(slider, 1);     // Default ratio set to 1
-
-        rubber = new Rubber(zoom);
-
-        // Tabbed container for all views of the sheet
-        tabbedPane = new MyTabbedPane();
+        tabbedPane.addChangeListener(this);
 
         // General layout
-        setLayout(new BorderLayout());
-        add(slider, BorderLayout.WEST);
-        add(tabbedPane, BorderLayout.CENTER);
+        component.setLayout(new BorderLayout());
+        component.add(slider, BorderLayout.WEST);
+        component.add(tabbedPane, BorderLayout.CENTER);
 
-        // Map of boardspanes
-        boardsPaneMap = new HashMap<Integer, BoardsPane>();
+        if (logger.isDebugEnabled()) {
+            logger.debug("SheetAssembly created.");
+        }
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent()
+    {
+        return component;
+    }
 
     //------------------//
     // assemblySelected //
@@ -118,8 +146,9 @@ public class SheetAssembly
     public void assemblySelected()
     {
         logger.debug("assemblySelected");
-        // Update boards according to current rubber state
-        updateBoards();
+
+        // Display current context
+        displayContext();
     }
 
     //------------//
@@ -135,10 +164,15 @@ public class SheetAssembly
                             ScrollView sv,
                             BoardsPane boardsPane)
     {
+        boardsPane.setName(sheet.getName() + ":" + title);
+
         if (logger.isDebugEnabled()) {
-            logger.debug("addViewTab title=" + title + " sv=" + sv
-                         + " boardsPane=" + boardsPane);
+            logger.debug("addViewTab title=" + title +
+                         " boardsPane=" + boardsPane);
         }
+
+        // Remember the association between tab and boardsPane
+        map.put(title, boardsPane);
 
         sv.setZoom(zoom);
         sv.getView().setRubber(rubber);
@@ -150,18 +184,19 @@ public class SheetAssembly
             sv.getView().setModelSize(sheet.getPicture().getDimension());
         }
 
-        // Register the related boardspane
-        boardsPaneMap.put(tabbedPane.getTabCount(), boardsPane);
-
         // Force scroll bar computations
         zoom.forceRatio(zoom.getRatio());
 
         // Forward mouse actions to this entity
         rubber.setMouseMonitor(sv.getView());
 
+        // Add the boardsPane to Jui
+        Main.getJui().addBoardsPane(boardsPane);
+
         // Insert the scrollView as a new tab
-        tabbedPane.addTab(title, sv);
-        tabbedPane.setSelectedComponent(sv);
+        viewMap.put(sv.getComponent(), sv);
+        tabbedPane.addTab(title, sv.getComponent());
+        tabbedPane.setSelectedComponent(sv.getComponent());
     }
 
     //-----------------//
@@ -174,7 +209,8 @@ public class SheetAssembly
      */
     public ScrollView getSelectedView()
     {
-        return (ScrollView) tabbedPane.getSelectedComponent();
+        JScrollPane pane = (JScrollPane) tabbedPane.getSelectedComponent();
+        return viewMap.get(pane);
     }
 
     //----------//
@@ -199,10 +235,18 @@ public class SheetAssembly
      */
     public void close ()
     {
-        Main.getJui().sheetPane.close(this);
+        Jui jui = Main.getJui();
 
-        // Disconnect from boards
-        Main.getJui().setBoardsPane(null);
+        jui.sheetPane.close(this);
+
+        // Disconnect all boards panes for this assembly
+        for (int i = tabbedPane.getTabCount() -1; i >= 0; i--) {
+            String title = tabbedPane.getTitleAt(i);
+            jui.removeBoardsPane(map.get(title));
+            JScrollPane pane = (JScrollPane) tabbedPane.getComponentAt(i);
+            viewMap.remove(pane);
+            map.remove(title);
+        }
     }
 
     //--------------//
@@ -218,17 +262,28 @@ public class SheetAssembly
         zoom.setRatio(ratio);
     }
 
-    //--------------//
-    // updateBoards //
-    //--------------//
-    private void updateBoards()
+    //----------------//
+    // displayContext //
+    //----------------//
+    private void displayContext()
     {
-        logger.debug("updateBoards");
-        Jui jui = Main.getJui();
+        logger.debug("displayContext");
 
-        BoardsPane boardsPane = boardsPaneMap.get(tabbedPane.getSelectedIndex());
-        jui.setBoardsPane(boardsPane);
+        // Make sure the tab is ready
+        int index = tabbedPane.getSelectedIndex();
+        if (index == -1) {
+            return;
+        }
 
+        // Display the proper boards pane
+        BoardsPane boardsPane = map.get
+            (tabbedPane.getTitleAt(index));
+        if (logger.isDebugEnabled()) {
+            logger.debug("displaying " + boardsPane);
+        }
+        Main.getJui().showBoardsPane(boardsPane);
+
+        // Display proper view selection if any
         Rectangle rect = rubber.getRectangle();
         if (rect != null) {
             ScrollView scrollView = getSelectedView();
@@ -242,59 +297,36 @@ public class SheetAssembly
         }
     }
 
-    //~ Classes -----------------------------------------------------------
-
     //--------------//
-    // MyTabbedPane //
+    // stateChanged //
     //--------------//
-    private class MyTabbedPane
-        extends JTabbedPane
-        implements ChangeListener
+    /**
+     * This method is called whenever a view tab is selected in the Sheet
+     * Assembly.
+     *
+     * @param e the originating change event
+     */
+    public void stateChanged (ChangeEvent e)
     {
-        //~ Instance variables --------------------------------------------
+        logger.debug("stateChanged");
+        ScrollView scrollView = getSelectedView();
+        RubberZoomedPanel view = scrollView.getView();
 
-        protected ScrollView previousScrollView;
+        // Link rubber with proper view
+        rubber.setComponent(view);
+        rubber.setMouseMonitor(view);
 
-        //~ Constructors --------------------------------------------------
-
-        public MyTabbedPane ()
-        {
-            addChangeListener(this);
+        // Keep previous scroll bar positions
+        if (previousScrollView != null) {
+            scrollView.getComponent().getVerticalScrollBar().setValue
+                (previousScrollView.getVerticalScrollBar().getValue());
+            scrollView.getComponent().getHorizontalScrollBar().setValue
+                (previousScrollView.getHorizontalScrollBar().getValue());
         }
 
-        //~ Methods -------------------------------------------------------
+        // Restore display of proper context
+        displayContext();
 
-        //--------------//
-        // stateChanged //
-        //--------------//
-        /**
-         * This method is called whenever a view tab is selected in the
-         * Sheet Assembly.
-         *
-         * @param e the originating change event
-         */
-        public void stateChanged (ChangeEvent e)
-        {
-            logger.debug("stateChanged");
-            ScrollView scrollView = getSelectedView();
-            RubberZoomedPanel view = scrollView.getView();
-
-            // Link rubber with right view
-            rubber.setComponent(view);
-            rubber.setMouseMonitor(view);
-
-            // Keep previous scroll bar positions
-            if (previousScrollView != null) {
-                scrollView.getVerticalScrollBar().setValue
-                    (previousScrollView.getVerticalScrollBar().getValue());
-                scrollView.getHorizontalScrollBar().setValue
-                    (previousScrollView.getHorizontalScrollBar().getValue());
-            }
-
-            // Restore proper boardspane
-            updateBoards();
-
-            previousScrollView = scrollView;
-        }
+        previousScrollView = scrollView.getComponent();
     }
 }

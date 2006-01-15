@@ -42,7 +42,6 @@ import javax.swing.event.ChangeListener;
  * @version $Id$
  */
 public class SheetPane
-    extends JTabbedPane
     implements ChangeListener
 {
     //~ Static variables/initializers -------------------------------------
@@ -54,6 +53,12 @@ public class SheetPane
     public static final int DIFFERED_INDEX = -2;
 
     //~ Instance variables ------------------------------------------------
+
+    // The concrete tabbed pane
+    private final JTabbedPane component;
+
+    // Ordered list of sheet assemblies
+    private final ArrayList<SheetAssembly> assemblies;
 
     // Ref of toolbar where buttons are inserted
     private final JToolBar toolBar;
@@ -85,6 +90,9 @@ public class SheetPane
     public SheetPane (Jui jui,
                       JToolBar toolBar)
     {
+        component = new JTabbedPane();
+        assemblies = new ArrayList<SheetAssembly>();
+
         this.toolBar = toolBar;
 
         toolBar.addSeparator();
@@ -105,7 +113,8 @@ public class SheetPane
         new ZoomHeightAction();
 
         // Toggle button
-        toggleButton = new JButton(IconManager.buttonIconOf("general/Refresh"));
+        toggleButton = new JButton
+            (IconManager.buttonIconOf("general/Refresh"));
         toolBar.add(toggleButton);
         toggleButton.setBorder(Jui.toolBorder);
         toggleButton.setEnabled(false);
@@ -121,13 +130,26 @@ public class SheetPane
         new LinePlotAction();
 
         // Listener on tab operations
-        addChangeListener(this);
+        component.addChangeListener(this);
 
         // Initially disabled actions
         Jui.enableActions(sheetDependentActions, false);
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //----------//
+    // getComponent //
+    //----------//
+    /**
+     * Give access to the real pane
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent()
+    {
+        return component;
+    }
 
     //---------------------//
     // getSelectedAssembly //
@@ -139,7 +161,12 @@ public class SheetPane
      */
     public SheetAssembly getSelectedAssembly()
     {
-        return (SheetAssembly) getSelectedComponent();
+        int index = component.getSelectedIndex();
+        if (index != -1) {
+            return assemblies.get(index);
+        } else {
+            return null;
+        }
     }
 
     //-----------------//
@@ -241,7 +268,8 @@ public class SheetPane
                                  PagePoint pagPt)
     {
         if (logger.isDebugEnabled()) {
-            logger.debug("setSheetAssembly " + sheet + " pagPt=" + pagPt);
+            logger.debug("setSheetAssembly for sheet " + sheet.getName() +
+                         " pagPt=" + pagPt);
         }
 
         if (sheet != null) {
@@ -265,14 +293,21 @@ public class SheetPane
             }
 
             // Make sure the assembly is part of the tabbed pane
-            int index = indexOfComponent(assembly);
+            int index = component.indexOfComponent
+                (assembly.getComponent());
 
             if (index == -1) {
-                logger.debug("Adding assembly in tab for " + sheet);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Adding assembly for sheet " +
+                                 sheet.getName());
+                }
 
                 // Insert in tabbed pane
-                addTab(sheet.getName(), null, assembly, sheet.getPath());
-                index = indexOfComponent(assembly);
+                assemblies.add(assembly);
+                component.addTab
+                    (sheet.getName(), null, assembly.getComponent(),
+                     sheet.getPath());
+                index = component.indexOfComponent(assembly.getComponent());
             }
 
             // Focus info
@@ -315,9 +350,15 @@ public class SheetPane
         if (logger.isDebugEnabled()) {
             logger.debug("close " + assembly.toString());
         }
+        int index = component.indexOfComponent
+            (assembly.getComponent());
 
-        // Remove view from tabs
-        remove(assembly);
+        if (index != -1) {
+            // Remove from assemblies
+            assemblies.remove(index);
+            // Remove from tabs
+            component.remove(index);
+        }
     }
 
     //---------------//
@@ -334,7 +375,7 @@ public class SheetPane
                                boolean synchro)
     {
         setSynchroWanted(synchro);
-        setSelectedIndex(index);
+        component.setSelectedIndex(index);
         setSynchroWanted(true);
     }
 
@@ -430,7 +471,7 @@ public class SheetPane
                                                      ".tif"
                                                  }));
 
-        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+        if (fc.showOpenDialog(component) == JFileChooser.APPROVE_OPTION) {
             final File file = fc.getSelectedFile();
 
             if (file.exists()) {

@@ -31,14 +31,17 @@ import java.awt.event.ActionListener;
  * @version $Id$
  */
 public class StepMenu
-    extends JMenu
 {
+    //~ Instance variables ------------------------------------------------
+
+    // The concrete UI menu
+    private final JMenu menu;
+
     //~ Constructors ------------------------------------------------------
 
     //----------//
     // StepMenu //
     //----------//
-
     /**
      * Generates the sub-menu to be inserted in the application menu
      * hierarchy.
@@ -47,21 +50,34 @@ public class StepMenu
      */
     public StepMenu (String label)
     {
-        super(label);
+        menu = new JMenu(label);
 
         // Listener to item selection
         ActionListener actionListener = new StepListener();
 
         // List of Steps classes
         for (Step step : Sheet.getSteps()) {
-            add(new StepItem(step, actionListener));
+            menu.add(new StepItem(step, actionListener));
         }
 
         // Listener to modify attributes on-the-fly
-        addMenuListener(new Listener());
+        menu.addMenuListener(new Listener());
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //---------//
+    // getMenu //
+    //---------//
+    /**
+     * Report the concrete UI menu
+     *
+     * @return the menu entity
+     */
+    public JMenu getMenu()
+    {
+        return menu;
+    }
 
     //----------//
     // getSheet //
@@ -180,8 +196,8 @@ public class StepMenu
         {
             Sheet sheet = getSheet();
 
-            for (int i = 0; i < getItemCount(); i++) {
-                StepItem item = (StepItem) getItem(i);
+            for (int i = 0; i < menu.getItemCount(); i++) {
+                StepItem item = (StepItem) menu.getItem(i);
 
                 // Adjust the status for each step
                 item.displayState(sheet);
