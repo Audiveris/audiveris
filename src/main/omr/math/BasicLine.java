@@ -26,35 +26,35 @@ public class BasicLine
     //~ Instance variables ------------------------------------------------
 
     // Line equation
-    protected double a;
-    protected double b;
-    protected double c;
+    private double a;
+    private double b;
+    private double c;
 
     // Orientation indication
-    protected boolean isRatherVertical = false;
+    private boolean isRatherVertical = false;
 
     // For regression
 
     // Number of points */
-    protected int n;
+    private int n;
 
     // Sigma (x) */
-    protected double sx;
+    private double sx;
 
     // Sigma (y) */
-    protected double sy;
+    private double sy;
 
     // Sigma (x**2) */
-    protected double sx2;
+    private double sx2;
 
     // Sigma (y**2) */
-    protected double sy2;
+    private double sy2;
 
     // Sigma (x*y) */
-    protected double sxy;
+    private double sxy;
 
     // Flag to indicate that data needs to be recomputed */
-    protected boolean dirty;
+    private boolean dirty;
 
     //~ Constructors ------------------------------------------------------
 
@@ -367,7 +367,7 @@ public class BasicLine
         return sb.toString();
     }
 
-    //~ Methods protected -------------------------------------------------
+    //~ Methods private ---------------------------------------------------
 
     //---------------------//
     // checkLineParameters //
@@ -375,7 +375,7 @@ public class BasicLine
     /**
      * Make sure the line parameters are usable.
      */
-    protected void checkLineParameters()
+    private void checkLineParameters()
     {
         // Recompute parameters based on points if so needed
         if (dirty) {
@@ -397,7 +397,7 @@ public class BasicLine
     /**
      * Compute the distance normalizing factor
      */
-    protected void normalize ()
+    private void normalize ()
     {
         double norm = hypot(a, b);
         a /= norm;
@@ -411,7 +411,7 @@ public class BasicLine
     /**
      * Compute the line equation, based on the cumulated number of points
      */
-    protected void compute ()
+    private void compute ()
     {
         if (n < 2) {
             throw new UndefinedLineException
