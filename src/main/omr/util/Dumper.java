@@ -225,6 +225,7 @@ public abstract class Dumper
      *
      * @return the dump of the object as a string
      */
+    @Override
     public String toString ()
     {
         // Do the processing
@@ -429,6 +430,7 @@ public abstract class Dumper
 
         //~ Methods -------------------------------------------------------
 
+        @Override
         protected void printClassProlog ()
         {
             // We print the class name only for the lowest class in
@@ -440,6 +442,7 @@ public abstract class Dumper
             }
         }
 
+        @Override
         protected void printField (String name,
                                    Object value)
         {
@@ -517,12 +520,14 @@ public abstract class Dumper
 
         //~ Methods -------------------------------------------------------
 
+        @Override
         protected void printClassEpilog ()
         {
             // End table of fields
             sb.append("</table>");
         }
 
+        @Override
         protected void printClassProlog ()
         {
             // Class name
@@ -533,6 +538,7 @@ public abstract class Dumper
             sb.append("<tr><th>Name</th><th>Value</th></tr>");
         }
 
+        @Override
         protected void printField (String name,
                                    Object value)
         {
