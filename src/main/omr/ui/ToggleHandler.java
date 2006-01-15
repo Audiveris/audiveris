@@ -142,6 +142,7 @@ public class ToggleHandler
 
         button.setToolTipText(tip);
         button.setEnabled(true);
+        button.removeActionListener(this); // Safer
         button.addActionListener(this);
     }
 }
