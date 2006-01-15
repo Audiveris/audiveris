@@ -28,8 +28,8 @@ public class NeuralNetworkTest
 {
     //~ Static variables/initializers -------------------------------------
 
-    private static final int[] xx = new int[] {1,  2,  3,  4,  5};
-    private static final int[] yy = new int[] {4,  5, 24,  9,  0};
+    private static final double maxMSE = 0.3;
+    private static NeuralNetwork nn;
 
     //~ Instance variables ------------------------------------------------
 
@@ -43,8 +43,6 @@ public class NeuralNetworkTest
     //@Test
         public void testOr()
     {
-        NeuralNetwork nn = createNetwork();
-
         double[][] inputs = new double[][]
             {
                 {0, 0},
@@ -60,11 +58,13 @@ public class NeuralNetworkTest
                 {1},
                 {1}
             };
-        NeuralNetwork.Monitor monitor = new MyMonitor();;
+        NeuralNetwork.Monitor monitor = new MyMonitor();
 
-        nn.train (inputs,
-                  desiredOutputs,
-                  monitor);
+        do {
+            nn = createNetwork();
+        } while (nn.train (inputs,
+                           desiredOutputs,
+                           monitor) > maxMSE);
 
         nn.dump();
 
@@ -87,8 +87,6 @@ public class NeuralNetworkTest
     //@Test
         public void testXOr()
     {
-        NeuralNetwork nn = createNetwork();
-
         double[][] inputs = new double[][]
             {
                 {0, 0},
@@ -104,12 +102,13 @@ public class NeuralNetworkTest
                 {1},
                 {0}
             };
-        NeuralNetwork.Monitor monitor = new MyMonitor();;
+        NeuralNetwork.Monitor monitor = new MyMonitor();
 
-        nn.train (inputs,
-                  desiredOutputs,
-                  monitor);
-
+        do {
+            nn = createNetwork();
+        } while (nn.train (inputs,
+                           desiredOutputs,
+                           monitor) > maxMSE);
         nn.dump();
 
         assertNears("0 xor 0 should be 0",
@@ -132,8 +131,6 @@ public class NeuralNetworkTest
     //@Test
     public void testBackupRestore()
     {
-        NeuralNetwork nn = createNetwork();
-
         double[][] inputs = new double[][]
             {
                 {0, 0},
@@ -149,11 +146,13 @@ public class NeuralNetworkTest
                 {1},
                 {0}
             };
-        NeuralNetwork.Monitor monitor = new MyMonitor();;
+        NeuralNetwork.Monitor monitor = new MyMonitor();
 
-        nn.train (inputs,
-                  desiredOutputs,
-                  monitor);
+        do {
+            nn = createNetwork();
+        } while (nn.train (inputs,
+                           desiredOutputs,
+                           monitor) > maxMSE);
 
         nn.dump();
 
@@ -246,6 +245,12 @@ public class NeuralNetworkTest
                 System.out.println("epochEnded." +
                                    " epochIndex=" + epochIndex +
                                    " mse=" + mse);
+
+                // Test for convergence
+                if (epochIndex > 100000) {
+                    nn.stop();
+                }
+
             }
         }
     }
