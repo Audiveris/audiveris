@@ -16,12 +16,18 @@ import javax.swing.JTextField;
  * Class <code>SField</code> is a simple JTextField with predefined
  * attributes
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class SField
     extends JTextField
 {
+    //~ Static variables/initializers -------------------------------------
+
+    private final static int FIELD_WIDTH = 6;
+
+    //~ Instance variables ------------------------------------------------
+
     //~ Constructors ------------------------------------------------------
 
     //--------//
@@ -49,7 +55,7 @@ public class SField
     public SField (boolean editable,
                    String  tip)
     {
-        super(6);
+        super(FIELD_WIDTH);
 
         setHorizontalAlignment(JTextField.CENTER);
 
