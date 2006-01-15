@@ -264,6 +264,7 @@ public class Rubber
      *
      * @param e the mouse event
      */
+    @Override
     public void mouseDragged (MouseEvent e)
     {
         if (isDragWanted(e)) {
@@ -295,6 +296,7 @@ public class Rubber
      *
      * @param e the mouse event
      */
+    @Override
     public void mousePressed (MouseEvent e)
     {
         if (logger.isDebugEnabled()) {
@@ -324,6 +326,7 @@ public class Rubber
      *
      * @param e the mouse event
      */
+    @Override
     public void mouseReleased (MouseEvent e)
     {
         if (mouseMonitor != null) {

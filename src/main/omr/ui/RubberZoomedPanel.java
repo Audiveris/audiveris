@@ -149,6 +149,7 @@ public class RubberZoomedPanel
      *
      * @param g the graphic context
      */
+    @Override
     protected final void paintComponent (Graphics g)
     {
         // Background first

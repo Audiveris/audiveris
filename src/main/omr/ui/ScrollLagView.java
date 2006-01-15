@@ -50,6 +50,7 @@ public class ScrollLagView
     //---------//
     // getView //
     //---------//
+    @Override
     public LagView getView ()
     {
         return (LagView) view;
