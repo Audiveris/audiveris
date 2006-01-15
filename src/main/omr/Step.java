@@ -2,7 +2,7 @@
 //                                                                       //
 //                                S t e p                                //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -240,6 +240,7 @@ public class Step
      *
      * @return a short string
      */
+    @Override
     public String toString ()
     {
         return field.getName();
@@ -303,6 +304,7 @@ public class Step
         if (view != null) {
             sheet.getInstanceStep(this).displayUI();
         }
+
 
         if (logger.isDebugEnabled()) {
             final long stopTime = System.currentTimeMillis();
