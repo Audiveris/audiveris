@@ -49,7 +49,7 @@ public class SpinnerUtilities
     {
         JSpinner.DefaultEditor editor;
         editor = (JSpinner.DefaultEditor) spinner.getEditor();
-        final JFormattedTextField ftf = (JFormattedTextField) editor.getTextField();
+        final JFormattedTextField ftf = editor.getTextField();
         ftf.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "enterAction");
         ftf.getActionMap().put("enterAction", new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
