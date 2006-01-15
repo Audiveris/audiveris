@@ -154,8 +154,8 @@ public interface Line
     // yAt //
     //-----//
     /**
-     * Retrieve the ordinate where the line crosses the given abscissa x,
-     * rounded to the nearest integer value.  Beware of vertical lines !!!
+     * Retrieve the ordinate where the line crosses the given abscissa x.
+     * Beware of vertical lines !!!
      *
      * @param x the imposed abscissa
      *
@@ -167,8 +167,9 @@ public interface Line
     // xAt //
     //-----//
     /**
-     * Retrieve the abscissa where the line crosses the given ordinate y.
-     * Beware of horizontal lines !!!
+     * Retrieve the abscissa where the line crosses the given ordinate y,
+     * rounded to the nearest integer value.  Beware of horizontal lines
+     * !!!
      *
      * @param y the imposed ordinate
      *
