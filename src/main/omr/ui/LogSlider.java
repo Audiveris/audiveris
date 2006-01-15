@@ -22,7 +22,7 @@ import java.util.Hashtable;
  * @version $Id$
  */
 public class LogSlider
-        extends JSlider
+    extends JSlider
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -116,7 +116,7 @@ public class LogSlider
      */
     public double getDoubleValue ()
     {
-        return expOf((int) super.getValue());
+        return expOf(super.getValue());
     }
 
     //----------------//
