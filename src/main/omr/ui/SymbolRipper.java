@@ -365,7 +365,7 @@ public class SymbolRipper
     private void defineFont ()
     {
         String name = (String) fontName.getSpinner().getValue();
-        int val = (Integer) fontSize.getValue();
+        int val = fontSize.getValue();
         musicFont = new Font(name, Font.PLAIN, val);
 
     }
@@ -432,6 +432,7 @@ public class SymbolRipper
     private class Drawing
         extends Panel
     {
+        @Override
         public void paintComponent(Graphics g)
         {
             // For background

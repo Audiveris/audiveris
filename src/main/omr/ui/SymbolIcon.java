@@ -65,6 +65,7 @@ public class SymbolIcon
      *
      * @return the standard width in pixels
      */
+    @Override
     public int getIconWidth()
     {
         return standardWidth;
