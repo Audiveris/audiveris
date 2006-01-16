@@ -2,7 +2,7 @@
 //                                                                       //
 //                        G l y p h L a g V i e w                        //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -34,7 +34,7 @@ import java.util.Collection;
  * <p> This class implements the {@link GlyphFocus} interface, so this view
  * can programmatically focus on a specified glyph.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class GlyphLagView

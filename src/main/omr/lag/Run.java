@@ -2,7 +2,7 @@
 //                                                                       //
 //                                 R u n                                 //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -16,7 +16,7 @@ import java.awt.*;
  * Class <code>Run</code> implements a contiguous run of pixels of the same
  * color. Note that the direction (vertical or horizontal) is not relevant.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Run

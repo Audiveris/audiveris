@@ -2,7 +2,7 @@
 //                                                                       //
 //                         S y s t e m S p l i t                         //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -27,7 +27,7 @@ import java.util.List;
  * entities (sections, sticks, ...) according to the system areas
  * previously found in a sheet
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class SystemSplit

@@ -2,7 +2,7 @@
 //                                                                       //
 //                   R u b b e r Z o o m e d P a n e l                   //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -23,7 +23,7 @@ import java.awt.Rectangle;
  * rendering is done in proper sequence, with the rubber rectangle rendered
  * at the end on top of any other stuff.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class RubberZoomedPanel

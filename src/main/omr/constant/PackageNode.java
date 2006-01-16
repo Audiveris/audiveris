@@ -2,7 +2,7 @@
 //                                                                       //
 //                         P a c k a g e N o d e                         //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -20,7 +20,7 @@ import java.util.TreeSet;
  * example, the unit/class <b>omr.score.Page</b> will need PackageNode
  * <b>omr</b> and PackageNode <b>omr.score</b>.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class PackageNode

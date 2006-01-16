@@ -2,7 +2,7 @@
 //                                                                       //
 //                      L o g G u i A p p e n d e r                      //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -22,7 +22,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * <p/> To be activated, this class must be explicitly listed as an
  * appender in the "log4j.properties" configuration file. </p>
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class LogGuiAppender

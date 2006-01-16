@@ -2,7 +2,7 @@
 //                                                                       //
 //                       G l y p h V e r i f i e r                       //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -60,7 +60,7 @@ import javax.swing.border.*;
  * panel. If the user wants to discard the glyph, it can be removed from
  * the repository of training material.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class GlyphVerifier

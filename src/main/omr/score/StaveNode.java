@@ -2,7 +2,7 @@
 //                                                                       //
 //                           S t a v e N o d e                           //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -17,7 +17,7 @@ import java.awt.*;
  * any MusicNode, whose location is known with respect to its containing
  * stave. So this class encapsulated a direct link to the enclosing stave.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public abstract class StaveNode

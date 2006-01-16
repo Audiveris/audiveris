@@ -2,7 +2,7 @@
 //                                                                       //
 //                           D i r e c t o r y                           //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -18,7 +18,7 @@ package omr.util;
  * @param <K> type for the key
  * @param <E> type for the entity
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public interface Directory <K, E>

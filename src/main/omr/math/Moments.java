@@ -2,7 +2,7 @@
 //                                                                       //
 //                             M o m e n t s                             //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -16,7 +16,7 @@ import java.awt.Point;
  * Class <code>Moments</code> encapsulates the set of all moments that
  * characterize a figure made of points.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Moments

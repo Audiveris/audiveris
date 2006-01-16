@@ -2,7 +2,7 @@
 //                                                                       //
 //                          C h e c k S u i t e                          //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -21,13 +21,13 @@ import java.util.List;
  * that is checks working on the same type. Every check in the suite is
  * assigned a weight, to represent its relative importance in the suite.
  *
- * @param <T> the subtype of Checkable-compatible objects used in the
+ * @param <C> the subtype of Checkable-compatible objects used in the
  * homogeneous collection of checks in this suite
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class CheckSuite <T extends Checkable>
+public class CheckSuite <C extends Checkable>
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -45,7 +45,7 @@ public class CheckSuite <T extends Checkable>
     protected double threshold;
 
     // List of checks in the suite
-    private final List<Check<T>> checks = new ArrayList<Check<T>>();
+    private final List<Check<C>> checks = new ArrayList<Check<C>>();
 
     // List of related weights in the suite
     private final List<Double> weights = new ArrayList<Double>();
@@ -84,7 +84,7 @@ public class CheckSuite <T extends Checkable>
     //-----------//
     // getChecks //
     //-----------//
-    public List<Check<T>> getChecks()
+    public List<Check<C>> getChecks()
     {
         return checks;
     }
@@ -159,7 +159,7 @@ public class CheckSuite <T extends Checkable>
      * @param check  the check to add to the suite
      */
     public void add (double weight,
-                     Check<T> check)
+                     Check<C> check)
     {
         checks.add(check);
         weights.add(weight);
@@ -174,10 +174,10 @@ public class CheckSuite <T extends Checkable>
      *
      * @param suite the suite of checks to be appended
      */
-    public CheckSuite addAll (CheckSuite<T> suite)
+    public CheckSuite addAll (CheckSuite<C> suite)
     {
         int index = 0;
-        for (Check<T> check : suite.checks) {
+        for (Check<C> check : suite.checks) {
             double weight = suite.weights.get(index++);
             add(weight, check);
         }
@@ -226,7 +226,7 @@ public class CheckSuite <T extends Checkable>
      *
      * @return the computed grade.
      */
-    public double pass (T object)
+    public double pass (C object)
     {
         double grade = 0.0d;
         CheckResult result = new CheckResult();
@@ -238,7 +238,7 @@ public class CheckSuite <T extends Checkable>
         }
 
         int index = 0;
-        for (Check<T> check : checks) {
+        for (Check<C> check : checks) {
             check.pass(object, result, true);
 
             if (logger.isDebugEnabled()) {

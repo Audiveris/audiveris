@@ -2,7 +2,7 @@
 //                                                                       //
 //                 J u n c t i o n D e l t a P o l i c y                 //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -15,7 +15,7 @@ package omr.lag;
  * on the delta between the length of the candidate run and the length of
  * the last run of the section.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class JunctionDeltaPolicy

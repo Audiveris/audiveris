@@ -2,7 +2,7 @@
 //                                                                       //
 //                             D i g r a p h                             //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -37,7 +37,7 @@ import java.util.TreeMap;
  * @param <D> precise (sub)type for the graph
  * @param <V> precise type for handled vertices
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Digraph <D extends Digraph <D, V>,

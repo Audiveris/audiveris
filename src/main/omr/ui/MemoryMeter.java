@@ -2,7 +2,7 @@
 //                                                                          //
 //                          M e m o r y M e t e r                           //
 //                                                                          //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.             //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.             //
 //  This software is released under the terms of the GNU General Public     //
 //  License. Please contact the author at herve.bitteur@laposte.net         //
 //  to report bugs & suggestions.                                           //
@@ -25,7 +25,7 @@ import omr.util.Memory;
  * <P>There is a alarm threshold that triggers a color switch to red whenever
  * the used memory exceeds the threshold.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class MemoryMeter

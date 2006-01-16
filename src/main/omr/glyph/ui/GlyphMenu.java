@@ -2,7 +2,7 @@
 //                                                                       //
 //                           G l y p h M e n u                           //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -23,7 +23,7 @@ import java.util.ArrayList;
  * Class <code>GlyphMenu</code> defines the popup menu which is linked to
  * the current selection of either one or several glyphs
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class GlyphMenu

@@ -2,7 +2,7 @@
 //                                                                       //
 //                         S e c t i o n R o l e                         //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -18,7 +18,7 @@ import static java.awt.Color.*;
  * Class <code>SectionRole</code> handles the role of a section in the
  * building of a stick.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public enum SectionRole

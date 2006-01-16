@@ -2,7 +2,7 @@
 //                                                                       //
 //                         C o n s t a n t S e t                         //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -25,7 +25,7 @@ import java.util.TreeMap;
  * <p>We recommend to define only one such static ConstantSet per
  * class/unit as a subclass of this (abstract) ConstantSet. </p>
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public abstract class ConstantSet

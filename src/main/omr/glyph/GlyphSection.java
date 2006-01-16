@@ -2,7 +2,7 @@
 //                                                                       //
 //                        G l y p h S e c t i o n                        //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -21,7 +21,7 @@ import omr.lag.Section;
  * Class <code>GlyphSection</code> implements a specific class of section,
  * meant for easy glyph elaboration.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class GlyphSection

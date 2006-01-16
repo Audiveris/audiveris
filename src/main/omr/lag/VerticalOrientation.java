@@ -2,7 +2,7 @@
 //                                                                       //
 //                 V e r t i c a l O r i e n t a t i o n                 //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -17,7 +17,7 @@ import java.awt.Rectangle;
  * Class <code>VerticalOrientation</code> defines an orientation where
  * sections are vertical (coord is y, pos is x)
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class VerticalOrientation

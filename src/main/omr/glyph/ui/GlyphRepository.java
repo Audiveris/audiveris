@@ -2,7 +2,7 @@
 //                                                                       //
 //                     G l y p h R e p o s i t o r y                     //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -44,7 +44,7 @@ import omr.glyph.ui.GlyphRepository.Monitor;
  * base" (just the glyphs of the core) which are accessible respectively by
  * {@link #getWholeBase} and {@link #getCoreBase} methods.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class GlyphRepository

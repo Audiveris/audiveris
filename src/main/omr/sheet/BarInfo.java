@@ -2,7 +2,7 @@
 //                                                                       //
 //                             B a r I n f o                             //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -19,7 +19,7 @@ import java.awt.*;
 /**
  * Class <code>BarInfo</code> handles information about a bar line.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class BarInfo

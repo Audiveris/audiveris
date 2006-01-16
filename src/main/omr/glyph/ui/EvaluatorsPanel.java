@@ -2,7 +2,7 @@
 //                                                                       //
 //                     E v a l u a t o r s P a n e l                     //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -33,7 +33,7 @@ import javax.swing.border.*;
  * Class <code>EvaluatorsPanel</code> is dedicated to the display of
  * evaluation results performed by a pool of evaluators
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class EvaluatorsPanel

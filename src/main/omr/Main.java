@@ -64,7 +64,7 @@ import java.util.StringTokenizer;
  *
  * </dd> </dl>
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Main

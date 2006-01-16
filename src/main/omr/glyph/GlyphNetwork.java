@@ -2,7 +2,7 @@
 //                                                                       //
 //                        G l y p h N e t w o r k                        //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -32,7 +32,7 @@ import java.io.InputStream;
  * Class <code>GlyphNetwork</code> encapsulates a neural network dedicated
  * to glyph recognition
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class GlyphNetwork

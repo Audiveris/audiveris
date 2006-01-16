@@ -2,7 +2,7 @@
 //                                                                       //
 //                        M o u s e M o n i t o r                        //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -18,7 +18,7 @@ import java.awt.event.MouseEvent;
  * Interface <code>MouseMonitor</code> defines the entries of an entity to
  * be notified of mouse actions.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public interface MouseMonitor

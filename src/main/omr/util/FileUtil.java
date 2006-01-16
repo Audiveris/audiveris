@@ -2,7 +2,7 @@
 //                                                                       //
 //                            F i l e U t i l                            //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -20,7 +20,7 @@ import java.nio.channels.FileChannel;
 /**
  * Class <code>FileUtil</code> gathers convenient utility methods for files
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class FileUtil

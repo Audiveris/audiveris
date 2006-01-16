@@ -2,7 +2,7 @@
 //                                                                       //
 //                        L D o u b l e F i e l d                        //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -18,7 +18,7 @@ import javax.swing.JTextField;
  * Class <code>LDoubleField</code> is an {@link LField}, whose field is
  * meant to handle a double value.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class LDoubleField

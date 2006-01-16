@@ -2,7 +2,7 @@
 //                                                                       //
 //                             B a r l i n e                             //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -16,7 +16,7 @@ import java.awt.*;
  * Enum <code>Barline</code> handles the enumeration of various kinds of
  * bar lines.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public enum Barline

@@ -2,7 +2,7 @@
 //                                                                       //
 //                               C h e c k                               //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -23,12 +23,12 @@ import omr.util.Logger;
  * <p/>
  * Checks can be gathered in check suites. </p>
  *
- * @param <T> precise type of the objects to be checked
+ * @param <C> precise type of the objects to be checked
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public abstract class Check <T extends Checkable>
+public abstract class Check <C extends Checkable>
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -214,7 +214,7 @@ public abstract class Check <T extends Checkable>
      * ({@link #RED}, {@link #ORANGE}, {@link #GREEN}) that characterizes
      * the result of passing the check on this object
      */
-    public CheckResult pass (T obj,
+    public CheckResult pass (C obj,
                              CheckResult result,
                              boolean update)
     {
@@ -281,7 +281,7 @@ public abstract class Check <T extends Checkable>
      *
      * @return the data value relevant for the check
      */
-    protected abstract double getValue (T obj);
+    protected abstract double getValue (C obj);
 
     //-------------//
     // verifyRange //

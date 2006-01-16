@@ -2,7 +2,7 @@
 //                                                                       //
 //                       N e u r a l N e t w o r k                       //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -19,7 +19,7 @@ import java.io.*;
  * network, with one input layer, one hidden layer and one output
  * layer. The transfer function is the sigmoid.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class NeuralNetwork

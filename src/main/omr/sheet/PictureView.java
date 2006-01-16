@@ -2,7 +2,7 @@
 //                                                                       //
 //                         P i c t u r e V i e w                         //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -25,7 +25,7 @@ import java.util.List;
  * Class <code>PictureView</code> defines the view dedicated to the display
  * of the picture bitmap of a music sheet.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class PictureView

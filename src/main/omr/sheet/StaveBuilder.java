@@ -2,7 +2,7 @@
 //                                                                       //
 //                        S t a v e B u i l d e r                        //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -24,7 +24,7 @@ import omr.glyph.GlyphSection;
  * Class <code>StaveBuilder</code> processes the (five) line areas, according
  * to the peaks found previously.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class StaveBuilder

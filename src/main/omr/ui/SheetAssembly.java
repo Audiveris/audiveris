@@ -2,7 +2,7 @@
 //                                                                       //
 //                       S h e e t A s s e m b l y                       //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -40,7 +40,7 @@ import javax.swing.event.ChangeListener;
  * graphical {@link LogSlider}, a mouse adapter {@link Rubber}, and a
  * tabbed collection of {@link ScrollView}'s for all views of this sheet.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class SheetAssembly

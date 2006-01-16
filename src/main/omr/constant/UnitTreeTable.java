@@ -2,7 +2,7 @@
 //                                                                       //
 //                       U n i t T r e e T a b l e                       //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -26,7 +26,7 @@ import java.awt.*;
  * and/or Loggers, and a table to display and edit the various Constants in
  * each ConstantSet as well as the logger level of units.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class UnitTreeTable

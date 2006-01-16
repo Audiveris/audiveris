@@ -2,7 +2,7 @@
 //                                                                       //
 //                               S h a p e                               //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -38,7 +38,7 @@ import java.awt.Color;
  * icons that are manually built, to fill the missing
  * ones. (<b>Nota</b>These icons are currently disabled)
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public enum Shape

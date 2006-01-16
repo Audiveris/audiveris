@@ -2,7 +2,7 @@
 //                                                                       //
 //                   S h a p e C o l o r C h o o s e r                   //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -34,7 +34,7 @@ import java.util.EnumSet;
  * color assigned by default to the color of the containing range, unless
  * a color is specifically assigned to this individual shape.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class ShapeColorChooser

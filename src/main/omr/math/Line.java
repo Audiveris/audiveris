@@ -2,7 +2,7 @@
 //                                                                       //
 //                                L i n e                                //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -17,7 +17,7 @@ import omr.util.Logger;
  * orientation, using the form : a*x + b*y + c = 0. The equation is
  * normalized, in other words, we always have a**2 + b**2 = 1.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public interface Line

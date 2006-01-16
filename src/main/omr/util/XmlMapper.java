@@ -2,7 +2,7 @@
 //                                                                       //
 //                           X m l M a p p e r                           //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -22,7 +22,7 @@ import java.io.File;
  * of any entity with an external XML support. This is implemented on top
  * of JiBX utility.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class XmlMapper

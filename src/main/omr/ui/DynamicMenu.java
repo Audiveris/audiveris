@@ -2,7 +2,7 @@
 //                                                                       //
 //                         D y n a m i c M e n u                         //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -19,7 +19,7 @@ import javax.swing.event.MenuListener;
  * whose content needs to be updated on-the-fly when the menu is being
  * selected.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public abstract class DynamicMenu

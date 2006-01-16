@@ -2,7 +2,7 @@
 //                                                                       //
 //                           U n i t M o d e l                           //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -36,7 +36,7 @@ import javax.swing.*;
  * <li><b>Constant</b> to represent a constant within a ConstantSet. In
  * that case, its parent node is a UnitNode. It has no children rows. </ul>
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class UnitModel

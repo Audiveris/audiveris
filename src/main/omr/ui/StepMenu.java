@@ -2,7 +2,7 @@
 //                                                                       //
 //                            S t e p M e n u                            //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -27,7 +27,7 @@ import java.awt.event.ActionListener;
  * one being a check box, to indicate the current status regarding the
  * execution of the step (done or not done).
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class StepMenu

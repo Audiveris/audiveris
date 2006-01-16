@@ -2,7 +2,7 @@
 //                                                                       //
 //                         S w i n g W o r k e r                         //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -27,7 +27,7 @@ import javax.swing.SwingUtilities;
  * <p> This is a generic version by H.Bitteur
  * @param <T> the type used to convey the result of the worker
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public abstract class SwingWorker<T> {

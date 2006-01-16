@@ -23,7 +23,7 @@ import java.lang.reflect.Field;
  * steps that are defined on a sheet. The comprehensive ordered list of
  * step names is defined in {@link omr.sheet.Sheet} class.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Step

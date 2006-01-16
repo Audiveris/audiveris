@@ -2,7 +2,7 @@
 //                                                                       //
 //                        B a s e T e s t C a s e                        //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -18,7 +18,7 @@ import junit.framework.*;
  * Class <code>BaseTestCase</code> is a customized version of TestCase, in
  * order to factor additional test features.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class BaseTestCase

@@ -2,7 +2,7 @@
 //                                                                       //
 //                         I c o n M a n a g e r                         //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -25,7 +25,7 @@ import java.net.URL;
 /**
  * Class <code>IconManager</code> manages icons in their loading and storing.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class IconManager

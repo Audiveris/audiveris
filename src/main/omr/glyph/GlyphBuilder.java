@@ -2,7 +2,7 @@
 //                                                                       //
 //                        G l y p h B u i l d e r                        //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -36,7 +36,7 @@ import java.util.List;
  * handles the gathering of remaining glyphs out of a sheet, as well as the
  * building of compound glyphs.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class GlyphBuilder

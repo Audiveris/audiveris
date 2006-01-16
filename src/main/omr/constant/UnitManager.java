@@ -2,7 +2,7 @@
 //                                                                       //
 //                         U n i t M a n a g e r                         //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -29,7 +29,7 @@ import java.util.TreeMap;
  * UnitManager pre-loads all the classes known to contain a ConstantSet or
  * a Logger. This list is kept up-to-date and stored as a property
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class UnitManager

@@ -2,7 +2,7 @@
 //                                                                       //
 //               D e f a u l t S e c t i o n S u b j e c t               //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -20,7 +20,7 @@ import java.awt.Rectangle;
  * Class <code>DefaultPixelSubject</code> is an implementation of the
  * specific {@link Subject} meant for {@link PixelObserver} observers
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class DefaultPixelSubject

@@ -2,7 +2,7 @@
 //                                                                       //
 //                  H o r i z o n t a l s B u i l d e r                  //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -53,7 +53,7 @@ import javax.swing.event.*;
  * Class <code>HorizontalsBuilder</code> is in charge of retrieving
  * horizontal dashes in the given sheet.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class HorizontalsBuilder

@@ -2,7 +2,7 @@
 //                                                                       //
 //                    V e r t i c a l s B u i l d e r                    //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -51,7 +51,7 @@ import omr.check.Result;
  * have been already recognized, so this accounts for stems, vertical edges
  * of endings, and potentially parts of alterations (sharp, natural, flat).
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class VerticalsBuilder

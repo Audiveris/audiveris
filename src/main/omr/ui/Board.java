@@ -2,7 +2,7 @@
 //                                                                       //
 //                               B o a r d                               //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -23,7 +23,7 @@ import javax.swing.border.*;
  * Class <code>Board</code> defines the common properties of any user board
  * such as PixelBoard, SectionBoard, and the like
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Board

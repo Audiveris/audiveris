@@ -2,7 +2,7 @@
 //                                                                       //
 //                   L o g B a s i c F o r m a t t e r                   //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -18,7 +18,7 @@ import java.util.logging.LogRecord;
 /**
  * Class <code>LogBasicFormatter</code> formats a log record.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class LogBasicFormatter

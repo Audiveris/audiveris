@@ -2,7 +2,7 @@
 //                                                                       //
 //                      H o r i z o n t a l A r e a                      //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -30,7 +30,7 @@ import java.util.Comparator;
  * <p/>Output is a list of horizontal sticks that represent good
  * candidates.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class HorizontalArea

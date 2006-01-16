@@ -2,7 +2,7 @@
 //                                                                       //
 //                        I n s t a n c e S t e p                        //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -20,7 +20,7 @@ import java.io.Serializable;
  * @param <R> the type produced by the step as result
  * @see omr.Step The various steps defined
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public abstract class InstanceStep <R>

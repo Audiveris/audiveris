@@ -2,7 +2,7 @@
 //                                                                       //
 //                       S c r o l l L a g V i e w                       //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -19,7 +19,7 @@ import omr.util.Logger;
  * dedicated to the display of a {@link omr.lag.LagView}, with monitoring
  * of run and section informations
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class ScrollLagView

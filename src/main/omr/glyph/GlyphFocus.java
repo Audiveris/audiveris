@@ -2,7 +2,7 @@
 //                                                                       //
 //                          G l y p h F o c u s                          //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -14,7 +14,7 @@ package omr.glyph;
  * Interface <code>GlyphFocus</code> define the features related to setting
  * a focus determined by a glyph, it is thus an input entity.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public interface GlyphFocus
