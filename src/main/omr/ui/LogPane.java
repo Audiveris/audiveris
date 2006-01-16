@@ -2,7 +2,7 @@
 //                                                                       //
 //                             L o g P a n e                             //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -12,8 +12,9 @@ package omr.ui;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import omr.util.MailBox;
+import omr.util.Logger;
 
+import java.util.concurrent.ArrayBlockingQueue;
 import javax.swing.*;
 
 /**
@@ -23,13 +24,14 @@ import javax.swing.*;
  * @see omr.util.Logger
  * @see omr.util.LogGuiAppender
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class LogPane
 {
     //~ Static variables/initializers -------------------------------------
 
+    private static final Logger logger = Logger.getLogger(LogPane.class);
     private static final Constants constants = new Constants();
 
     //~ Instance variables ------------------------------------------------
@@ -40,7 +42,7 @@ public class LogPane
     private final JTextArea logArea;
 
     // Mail box for incoming messages
-    private final MailBox logMbx;
+    private final ArrayBlockingQueue<String> logMbx;
 
     //~ Constructors ------------------------------------------------------
 
@@ -57,7 +59,8 @@ public class LogPane
         component = new JScrollPane();
 
         // Allocate message mail box for several simultaneous msgs max
-        logMbx = new MailBox(constants.msgQueueSize.getValue());
+        logMbx = new ArrayBlockingQueue<String>
+            (constants.msgQueueSize.getValue());
 
         // log/status area
         logArea = new JTextArea(1, // nb of rows
@@ -97,9 +100,8 @@ public class LogPane
     {
         try {
             logMbx.put(msg);
-        } catch (InterruptedException ex) {
-            System.out.println("InterruptedException occurred in log method");
-
+        } catch (Exception ex) {
+            logger.warning(ex.getMessage());
             return;
         }
 
@@ -107,18 +109,14 @@ public class LogPane
         {
             public void run ()
             {
-                try {
-                    while (logMbx.getCount() != 0) {
-                        String msg = (String) logMbx.poll();
+                while (logMbx.size() != 0) {
+                    String msg = logMbx.poll();
 
-                        if (msg != null) {
-                            logArea.append(msg);
-                            logArea.setCaretPosition(logArea.getDocument()
-                                                     .getLength());
-                        }
+                    if (msg != null) {
+                        logArea.append(msg);
+                        logArea.setCaretPosition(logArea.getDocument()
+                                                 .getLength());
                     }
-                } catch (InterruptedException ex) {
-                    System.out.println("InterruptedException occurred in log method");
                 }
             }
         });

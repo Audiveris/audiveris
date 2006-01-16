@@ -2,7 +2,7 @@
 //                                                                       //
 //                            S t e p V i e w                            //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -16,8 +16,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.sheet.Sheet;
 import omr.util.Logger;
-import omr.util.MailBox;
 
+import java.util.concurrent.ArrayBlockingQueue;
 import javax.swing.*;
 
 /**
@@ -25,7 +25,7 @@ import javax.swing.*;
  * monitor step progression, and require manually a step series to be
  * performed.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class StepView
@@ -42,10 +42,12 @@ public class StepView
     private int progress = 0;
 
     // Mail box for steps
-    private final MailBox msgs = new MailBox(20);
+    private final ArrayBlockingQueue<String> msgs
+        = new ArrayBlockingQueue<String>(20);
 
     // Mail box for orders
-    private final MailBox orders = new MailBox(20);
+    private final ArrayBlockingQueue<Order> orders
+        = new ArrayBlockingQueue<Order>(20);
 
     //----------------//
     // updateProgress //
@@ -56,24 +58,16 @@ public class StepView
         {
             JProgressBar bar = Main.getJui().progressBar;
 
-            try {
-                while (msgs.getCount() != 0) {
-                    Object obj = msgs.poll();
-
-                    if (obj instanceof String) {
-                        bar.setString((String) obj);
-
-                        if (constants.useDeterminateProgress.getValue()) {
-                            int value = bar.getValue();
-                            value++;
-                            bar.setValue(value);
-                        }
-                    } else {
-                        logger.severe("What is " + obj);
+            while (msgs.size() != 0) {
+                String obj = msgs.poll();
+                if (obj != null) {
+                    bar.setString(obj);
+                    if (constants.useDeterminateProgress.getValue()) {
+                        int value = bar.getValue();
+                        value++;
+                        bar.setValue(value);
                     }
                 }
-            } catch (InterruptedException ex) {
-                logger.warning("Error in updating ProgressBar", ex);
             }
         }
     };
@@ -250,7 +244,7 @@ public class StepView
 
                 try {
                     // Hold on here, waiting for the next incoming order
-                    order = (Order) orders.get();
+                    order = orders.take();
 
                     if (logger.isDebugEnabled()) {
                         logger.debug("Got " + order);
