@@ -30,7 +30,7 @@ public class LDoubleField
     // LDoubleField //
     //--------------//
     /**
-     * Create a (initially) non-editable double labelled field with proper
+     * Create an (initially) editable double labelled field with proper
      * characteristics
      *
      * @param label string for the label text
@@ -39,7 +39,7 @@ public class LDoubleField
     public LDoubleField(String label,
                         String tip)
     {
-        super(true, label, tip);
+        this(true, label, tip);
     }
 
     //--------------//
@@ -48,7 +48,7 @@ public class LDoubleField
     /**
      * Create a double labelled field with proper characteristics
      *
-     * @param editable tells whether the field muste be editable
+     * @param editable tells whether the field must be editable
      * @param label string for the label text
      * @param tip related tool tip text
      */
@@ -94,7 +94,7 @@ public class LDoubleField
     /**
      * Set the field value with a double
      *
-     * @param val the provideddouble value
+     * @param val the provided double value
      * @param format the specific format to be used
      */
     public void setValue (double val,
