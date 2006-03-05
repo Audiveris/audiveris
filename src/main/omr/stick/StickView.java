@@ -75,31 +75,4 @@ public class StickView <C extends Checkable>
     {
         this.checkMonitor = checkMonitor;
     }
-
-    //---------------//
-    // pointSelected //
-    //---------------//
-    /**
-     * Selection of a stick by point designation. If the glyph look up
-     * succeeds, then the method {@link #glyphSelected} is called.
-     *
-     * @param e the mouse event
-     * @param pt the selected point in model pixel coordinates
-     */
-    @Override
-        public void pointSelected (MouseEvent e,
-                                   Point pt)
-    {
-        // Provide info related to designated point
-        super.pointSelected(e, pt);
-
-        // Then, look for a stick selection
-        Glyph glyph = null;
-        final StickSection section = (StickSection) lookupSection(pt);
-        if (section != null) {
-            glyph =  section.getGlyph();
-        }
-
-        glyphSelected(glyph, pt);       // Glypg may be null
-    }
 }
