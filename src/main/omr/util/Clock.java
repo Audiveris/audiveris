@@ -66,7 +66,6 @@ public class Clock
     //---------//
     // getDate //
     //---------//
-
     /**
      * Retrieves the values of current date and time of day, and formats a
      * standard string,
@@ -81,7 +80,6 @@ public class Clock
     //------------//
     // getElapsed //
     //------------//
-
     /**
      * Retrieves the number of milliseconds since the reference start time,
      * and formats a standardized string using seconds and
@@ -100,7 +98,6 @@ public class Clock
     //-----------//
     // resetTime //
     //-----------//
-
     /**
      * Resets the reference start value at the time this method is called.
      */

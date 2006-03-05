@@ -38,7 +38,6 @@ public class LogGuiAppender
     //-------//
     // close //
     //-------//
-
     /**
      * Called when the appender must be closed. It's a void routine for the
      * time being.
@@ -50,7 +49,6 @@ public class LogGuiAppender
     //----------------//
     // requiresLayout //
     //----------------//
-
      /**
      * This appender requires no external layout, since we do it
      * internally.
@@ -65,7 +63,6 @@ public class LogGuiAppender
     //--------//
     // append //
     //--------//
-
     /**
      * Appends one message to be logged
      *

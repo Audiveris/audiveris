@@ -27,7 +27,6 @@ public class OmrLoggerFactory
     //-----------------------//
     // makeNewLoggerInstance //
     //-----------------------//
-
     /**
      * Called by log4j to actually create a logger instance
      *

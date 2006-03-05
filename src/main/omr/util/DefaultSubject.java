@@ -42,9 +42,9 @@ public class DefaultSubject<S extends Subject  <S, O, E>,
 
     //~ Methods -----------------------------------------------------------
 
-    //------------//
+    //-------------//
     // addObserver //
-    //------------//
+    //-------------//
     /**
      * Register a new observer for the subject
      *
@@ -57,9 +57,9 @@ public class DefaultSubject<S extends Subject  <S, O, E>,
         }
     }
 
-    //---------------//
+    //----------------//
     // removeObserver //
-    //---------------//
+    //----------------//
     /**
      * Unregister an observer on the subject
      *
@@ -72,9 +72,9 @@ public class DefaultSubject<S extends Subject  <S, O, E>,
         }
     }
 
-    //----------------//
+    //-----------------//
     // notifyObservers //
-    //----------------//
+    //-----------------//
     /**
      * Push the subject entity to all registered observers
      *

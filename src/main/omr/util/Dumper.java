@@ -105,7 +105,6 @@ public abstract class Dumper
     //------//
     // dump //
     //------//
-
     /**
      * Helper function that prints the internal data of an object onto the
      * standard output.
@@ -120,7 +119,6 @@ public abstract class Dumper
     //------//
     // dump //
     //------//
-
     /**
      * Helper function that prints the internal data of an object onto the
      * standard output, with a specified left indentation level.
@@ -137,7 +135,6 @@ public abstract class Dumper
     //------//
     // dump //
     //------//
-
     /**
      * Helper function that prints the internal data of an object onto the
      * standard output, with the ability to print a related title
@@ -154,7 +151,6 @@ public abstract class Dumper
     //------//
     // dump //
     //------//
-
     /**
      * Helper function that prints the internal data of an object onto the
      * standard output, with room for a title and left indentation.
@@ -173,7 +169,6 @@ public abstract class Dumper
     //--------//
     // dumpOf //
     //--------//
-
     /**
      * Helper function that returns a line which contains the whole set of
      * internal data
@@ -190,7 +185,6 @@ public abstract class Dumper
     //------------//
     // htmlDumpOf //
     //------------//
-
     /**
      * Helper function that prints a special kind of information string,
      * using HTML tags so that an html editor can easily render this.
@@ -207,7 +201,6 @@ public abstract class Dumper
     //-------//
     // print //
     //-------//
-
     /**
      * Print the dump string onto the standard output
      */
@@ -219,7 +212,6 @@ public abstract class Dumper
     //----------//
     // toString //
     //----------//
-
     /**
      * Return the string buffer content
      *
@@ -238,7 +230,6 @@ public abstract class Dumper
     //-----------------//
     // isClassRelevant //
     //-----------------//
-
     /**
      * Predicate to determine if a given class is worth being printed. This
      * method could be overridden to reflect customozed policy. Note that
@@ -257,7 +248,6 @@ public abstract class Dumper
     //-----------------//
     // isFieldRelevant //
     //-----------------//
-
     /**
      * Predicate to determine if a given field is worth being printed. This
      * method could be overridden to reflect customozed policy.
@@ -285,7 +275,6 @@ public abstract class Dumper
     //------------------//
     // printClassEpilog //
     //------------------//
-
     /**
      * To be overridden so as to print the epilog of class data
      */
@@ -296,7 +285,6 @@ public abstract class Dumper
     //------------------//
     // printClassProlog //
     //------------------//
-
     /**
      * To be overridden so as to print the prolog of class data
      */
@@ -307,7 +295,6 @@ public abstract class Dumper
     //------------//
     // printField //
     //------------//
-
     /**
      * Basic printing of field name and value. The method can of course be
      * overridden.
@@ -386,7 +373,6 @@ public abstract class Dumper
     //--------//
     // Column //
     //--------//
-
     /**
      * Class <code>Column</code> implements a Dumper where all fields are
      * presented in one column, each field on a separate line. The column
@@ -456,7 +442,6 @@ public abstract class Dumper
     //-----//
     // Row //
     //-----//
-
     /**
      * Class <code>Row</code> implements a Dumper where all fields are
      * presented on the same line.
@@ -503,7 +488,6 @@ public abstract class Dumper
     //------//
     // Html //
     //------//
-
     /**
      * Class <code>Html</code> implements a Dumper using HTML tags to
      * present fields in a table.
