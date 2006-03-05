@@ -49,7 +49,6 @@ public class LogPane
     //---------//
     // LogPane //
     //---------//
-
     /**
      * Create the log pane, with a standard mailbox.
      */
@@ -90,7 +89,6 @@ public class LogPane
     //-----//
     // log //
     //-----//
-
     /**
      * Display the given message in the dedicated status area.
      *
