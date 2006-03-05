@@ -10,6 +10,7 @@
 
 package omr.sheet;
 
+import java.awt.Rectangle;
 import omr.constant.Constant;
 import omr.score.PagePoint;
 import omr.score.ScoreView;
@@ -63,7 +64,6 @@ public class Scale
     //-------//
     // Scale //
     //-------//
-
     /**
      * Create a scale entity, this is meant for allocation after a score is
      * read.
@@ -81,7 +81,6 @@ public class Scale
     //-------//
     // Scale //
     //-------//
-
     /**
      * Create a scale entity, this is meant for a specific stave.
      *
@@ -99,7 +98,6 @@ public class Scale
     //-------//
     // Scale //
     //-------//
-
     /**
      * Create a scale entity, by processing the provided sheet picture.
      *
@@ -136,7 +134,6 @@ public class Scale
     //--------------//
     // fracToPixels //
     //--------------//
-
     /**
      * Compute the number of pixels that corresponds to the fraction of
      * interline provided, according to the scale.
@@ -153,7 +150,6 @@ public class Scale
     //--------------------//
     // fracToPixelsDouble //
     //--------------------//
-
     /**
      * Same as fracToPixels, but the result is a double instead of a
      * rounded int.
@@ -171,7 +167,6 @@ public class Scale
     //--------------------//
     // fracToSquarePixels //
     //-------------------//
-
     /**
      * Compute the squared-normalized number of pixels, according to the
      * scale.
@@ -190,7 +185,6 @@ public class Scale
     //-----------//
     // interline //
     //-----------//
-
     /**
      * Report the interline value this scale is based upon
      *
@@ -205,7 +199,6 @@ public class Scale
     //----------//
     // mainBack //
     //----------//
-
     /**
      * Report the white space between two lines
      *
@@ -219,7 +212,6 @@ public class Scale
     //----------//
     // mainFore //
     //----------//
-
     /**
      * Report the line thickness this scale is based upon
      *
@@ -233,7 +225,6 @@ public class Scale
     //--------------//
     // pixelsToFrac //
     //--------------//
-
     /**
      * Compute the interline fraction that corresponds to the given number
      * of pixels.
@@ -251,7 +242,6 @@ public class Scale
     //---------------//
     // pixelsToUnits //
     //---------------//
-
     /**
      * Convert a point whose coordinates are in pixels to a point whose
      * coordinates are in units.
@@ -279,7 +269,6 @@ public class Scale
     //---------------//
     // pixelsToUnits //
     //---------------//
-
     /**
      * Same as pixelsToUnitsDouble, but result is rounded to nearest int.
      *
@@ -296,7 +285,6 @@ public class Scale
     //---------------------//
     // pixelsToUnitsDouble //
     //---------------------//
-
     /**
      * Convert a number of pixels to its equivalent in units (1/16th of
      * interline)
@@ -313,7 +301,6 @@ public class Scale
     //---------//
     // spacing //
     //---------//
-
     /**
      * Report a measure of spacing, based on the interline
      *
@@ -329,7 +316,6 @@ public class Scale
     //---------------//
     // unitsToPixels //
     //---------------//
-
     /**
      * Convert a point with coordinates in units into its equivalent with
      * coordinates in pixels. Reverse function of pixelsToUnits
@@ -357,7 +343,35 @@ public class Scale
     //---------------//
     // unitsToPixels //
     //---------------//
+    /**
+     * Convert a rectangle with coordinates in units into its equivalent with
+     * coordinates in pixels. Reverse function of pixelsToUnits
+     *
+     * @param pagPt point in units
+     * @param pixPt point in pixels, or null if allocation to be made by
+     *              the routine
+     *
+     * @return the computed point in pixels
+     * @see #pixelsToUnits
+     */
+    public Rectangle unitsToPixels (Rectangle pagRect,
+                                     Rectangle pixRect)
+    {
+        if (pixRect == null) {
+            pixRect = new Rectangle();
+        }
 
+        pixRect.x = unitsToPixels(pagRect.x);
+        pixRect.y = unitsToPixels(pagRect.y);
+        pixRect.width = unitsToPixels(pagRect.width);
+        pixRect.height= unitsToPixels(pagRect.height);
+
+        return pixRect;
+    }
+
+    //---------------//
+    // unitsToPixels //
+    //---------------//
     /**
      * Converts a number of units into its equivalent in pixels
      *
@@ -375,7 +389,6 @@ public class Scale
     //----------//
     // Fraction //
     //----------//
-
     /**
      * A subclass of Double, meant to store a fraction of interline, since
      * many distances on a music sheet are expressed in fraction of stave
