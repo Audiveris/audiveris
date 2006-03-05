@@ -11,11 +11,8 @@
 package omr.score;
 
 import omr.Main;
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
 import omr.util.FileUtil;
 import omr.util.Logger;
-import omr.util.NameSet;
 import omr.util.XmlMapper;
 
 import java.io.*;
@@ -34,22 +31,15 @@ public class ScoreManager
 {
     //~ Static variables/initializers -------------------------------------
 
-    private static final Constants constants = new Constants();
     private static final Logger logger = Logger.getLogger(ScoreManager.class);
 
     // Specific glyph XML mapper
-    private static final XmlMapper xmlMapper = null; //TEMP FIX  = new XmlMapper(ScoreManager.class);
-
-    /** File extension for serialized scores */
-    public static final String SCORE_FILE_EXTENSION = ".score";
+    private static XmlMapper xmlMapper;
 
     // The single instance of this class
     private static ScoreManager INSTANCE;
 
     //~ Instance variables ------------------------------------------------
-
-    // Score file history
-    private NameSet history;
 
     // Instances of score
     private List<Score> instances = new ArrayList<Score>();
@@ -69,10 +59,20 @@ public class ScoreManager
 
     //~ Methods -----------------------------------------------------------
 
+    //--------------//
+    // getXmlMapper //
+    //--------------//
+    private XmlMapper getXmlMapper() 
+    {
+        if (xmlMapper == null) {
+            xmlMapper = new XmlMapper(Score.class);
+        }
+        return xmlMapper;
+    }
+
     //---------------//
     // checkInserted //
     //---------------//
-
     /**
      * Register score in score instances if not yet done
      */
@@ -86,7 +86,6 @@ public class ScoreManager
     //-------//
     // close //
     //-------//
-
     /**
      * Close a score instance
      */
@@ -105,7 +104,6 @@ public class ScoreManager
     //----------//
     // closeAll //
     //----------//
-
     /**
      * Close all score instances
      */
@@ -178,25 +176,6 @@ public class ScoreManager
         java.lang.System.out.println("------------------------------");
     }
 
-    //------------//
-    // getHistory //
-    //------------//
-
-    /**
-     * Get access to the list of previously handled scores
-     *
-     * @return The history set of score files
-     */
-    public NameSet getHistory ()
-    {
-        if (history == null) {
-            history = new NameSet("omr.score.Score.history",
-                                  constants.maxHistorySize.getValue());
-        }
-
-        return history;
-    }
-
     //-------------//
     // getInstance //
     //-------------//
@@ -216,7 +195,6 @@ public class ScoreManager
     //-----------//
     // getScores //
     //-----------//
-
     /**
      * Get the collection of scores currently handled by OMR
      *
@@ -265,7 +243,6 @@ public class ScoreManager
     //---------------//
     // linkAllScores //
     //---------------//
-
     /**
      * Make an attempt to link every score to proper sheet entity
      */
@@ -295,9 +272,7 @@ public class ScoreManager
      */
     public Score load (File file)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("load " + file.getPath());
-        }
+        logger.info("Loading score from " + file.getPath());
 
         // Make file canonical
         try {
@@ -312,15 +287,17 @@ public class ScoreManager
         Score score = null;
 
         String ext = FileUtil.getExtension(file);
-        if (ext.equals(".xml")) {
+        if (ext.equals(ScoreFormat.XML.extension)) {
             try {
                 // This may take a while, and even fail ...
-                score = (Score) xmlMapper.load(file);
+                score = (Score) getXmlMapper().load(file);
             } catch (Exception ex) {
             }
-        } else {
+        } else if (ext.equals(ScoreFormat.BINARY.extension)) {
             // This may take a while, and even fail ...
             score = deserialize(file);
+        } else {
+            logger.warning ("Unrecognized score extension on " + file);
         }
 
         if (score != null) {
@@ -330,12 +307,6 @@ public class ScoreManager
             // Fix the container relationships
             score.setChildrenContainer();
 
-            // Insert in history
-            try {
-                getHistory().add(file.getCanonicalPath());
-            } catch (IOException ex) {
-            }
-
             // Insert in list of instances
             insertInstance(score);
 
@@ -344,13 +315,10 @@ public class ScoreManager
 
             // Update UI wrt to the current sheet step
             Sheet sheet = score.getSheet();
-            sheet.getInstanceStep(sheet.currentStep()).displayUI();
-        } else {
-            // Remove from history
-            try {
-                getHistory().remove(file.getCanonicalPath());
-            } catch (IOException ex) {
-            }
+            /// TBD HB
+//             if (sheet != null) {
+//                 sheet.getInstanceStep(sheet.currentStep()).displayUI();
+//             }
         }
 
         return score;
@@ -375,12 +343,12 @@ public class ScoreManager
     //-----------//
     // serialize //
     //-----------//
-
     /**
      * Serialize the score to its binary file, and remember the actual file
      * used
      */
     public void serialize (Score score)
+        throws Exception
     {
         // Make sure the destination directory exists
         File dir = new File(Main.getOutputFolder());
@@ -389,31 +357,24 @@ public class ScoreManager
             dir.mkdirs();
         }
 
-        File file = new File(dir, score.getName() + SCORE_FILE_EXTENSION);
+        File file = new File
+            (dir,
+             score.getName() + ScoreFormat.BINARY.extension);
         logger.info("Serializing score to " + file + " ...");
 
-        try {
-            long s0 = java.lang.System.currentTimeMillis();
-            ObjectOutput s = new ObjectOutputStream
-                (new FileOutputStream(file));
+        long s0 = java.lang.System.currentTimeMillis();
+        ObjectOutput s = new ObjectOutputStream
+            (new FileOutputStream(file));
 
-            s.writeObject(score);
-            s.close();
-            long s1 = java.lang.System.currentTimeMillis();
-            logger.info("Score serialized in " + (s1 - s0) + " ms");
-
-            // Add the score file in the score history
-            getHistory().add(file.getCanonicalPath());
-        } catch (Exception ex) {
-            logger.error("Could not serialize score to " + file);
-            logger.error(ex.toString());
-        }
+        s.writeObject(score);
+        s.close();
+        long s1 = java.lang.System.currentTimeMillis();
+        logger.info("Score serialized in " + (s1 - s0) + " ms");
     }
 
     //--------------//
     // serializeAll //
     //--------------//
-
     /**
      * Serialize all score instances
      */
@@ -424,33 +385,56 @@ public class ScoreManager
         }
 
         for (Score score : instances) {
-            score.serialize();
+            try {
+                score.serialize();
+            } catch (Exception ex) {
+                logger.warning("Could not serialize " + score);
+            }
         }
     }
 
     //-------//
     // store //
     //-------//
-
     /**
      * Marshal a score to its XML file
      */
     public void store (Score score)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("store");
+        store(score, null);
+    }
+
+    //-------//
+    // store //
+    //-------//
+    /**
+     * Marshal a score to its XML file
+     */
+    public void store (Score score,
+                       File  xmlFile)
+    {
+        // Where do we write the score xml file?
+        if (xmlFile == null) {
+            xmlFile = new File(Main.getOutputFolder(),
+                               score.getRadix() +
+                               ScoreFormat.XML.extension);
         }
 
-        // Where do we write the score xml file?
-        File xmlFile = new File(Main.getOutputFolder(),
-                                score.getRadix() + ".xml");
+        // Make sure the folder exists
+        File folder = new File(xmlFile.getParent());
+        if (!folder.exists()) {
+            logger.info("Creating folder " + folder);
+            folder.mkdirs();
+        }
+
+        logger.info("Storing score to " + xmlFile + " ...");
 
         try {
+            long s0 = java.lang.System.currentTimeMillis();
             // Store to disk
-            xmlMapper.store(score, xmlFile);
-
-            // Add the score file in the score history
-            getHistory().add(xmlFile.getCanonicalPath());
+            getXmlMapper().store(score, xmlFile);
+            long s1 = java.lang.System.currentTimeMillis();
+            logger.info("Score stored in " + (s1 - s0) + " ms");
         } catch (Exception ex) {
         }
     }
@@ -458,7 +442,6 @@ public class ScoreManager
     //----------//
     // storeAll //
     //----------//
-
     /**
      * Store all score instances
      */
@@ -470,23 +453,6 @@ public class ScoreManager
 
         for (Score score : instances) {
             score.store();
-        }
-    }
-
-    //~ Classes -----------------------------------------------------------
-
-    private static class Constants
-            extends ConstantSet
-    {
-        //~ Instance variables --------------------------------------------
-
-        Constant.Integer maxHistorySize = new Constant.Integer
-                (10,
-                 "Maximum number of score files kept in history");
-
-        Constants ()
-        {
-            initialize();
         }
     }
 }
