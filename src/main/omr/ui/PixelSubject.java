@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                      S e c t i o n S u b j e c t                      //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
+//--------------------------------------------------------------------------//
+//                                                                          //
+//                         P i x e l S u b j e c t                          //
+//                                                                          //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.             //
+//  This software is released under the terms of the GNU General Public     //
+//  License. Please contact the author at herve.bitteur@laposte.net         //
+//  to report bugs & suggestions.                                           //
+//--------------------------------------------------------------------------//
 
 package omr.ui;
 
