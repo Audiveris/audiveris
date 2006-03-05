@@ -78,7 +78,6 @@ public enum Barline
     //----------//
     // getImage //
     //----------//
-
     /**
      * Report the image to be used to display a specific bar line in the
      * score representations

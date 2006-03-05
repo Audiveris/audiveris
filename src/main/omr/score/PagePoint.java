@@ -22,6 +22,6 @@ import java.awt.*;
  * @version $Id$
  */
 public class PagePoint
-        extends Point
+    extends Point
 {
 }

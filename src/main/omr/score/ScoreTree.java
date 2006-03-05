@@ -114,7 +114,6 @@ public class ScoreTree
 //     //------//
 //     // main //
 //     //------//
-
 //     /**
 //      * This class can be used in stand-alone, to browse a score specified
 //      * in the command line
@@ -136,7 +135,6 @@ public class ScoreTree
     //-----------//
     // makeFrame //
     //-----------//
-
     /**
      * Create a frame for the score tree
      *
