@@ -49,6 +49,9 @@ public class PixelBoard
     // Pixel Focus if any
     private PixelFocus pixelFocus;
 
+    // To avoid circular updates
+    private volatile transient boolean selfUpdating = false;
+
     //~ Constructors ------------------------------------------------------
 
     //------------//
@@ -205,12 +208,19 @@ public class PixelBoard
         // parameter fields
         public void actionPerformed (ActionEvent e)
         {
-            if (pixelFocus != null) {
+            if (pixelFocus != null && !selfUpdating) {
+                selfUpdating = true;
                 // A rectangle (which can be degenerated to a point)
-                pixelFocus.setFocusRectangle
-                    (new Rectangle
-                     (x.getValue(), y.getValue(),
-                      width.getValue(), height.getValue()));
+                if (width.getValue() != 0 || height.getValue() != 0) {
+                    pixelFocus.setFocusRectangle
+                        (new Rectangle
+                         (x.getValue(), y.getValue(),
+                          width.getValue(), height.getValue()));
+                } else {
+                    pixelFocus.setFocusPoint
+                        (new Point(x.getValue(), y.getValue()));
+                }
+                selfUpdating = false;
             }
         }
     }
