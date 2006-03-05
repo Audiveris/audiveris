@@ -175,7 +175,6 @@ public class LinesBuilder
     //--------//
     // getLag //
     //--------//
-
     /**
      * Report the underlying lag
      *
@@ -189,7 +188,6 @@ public class LinesBuilder
     //-----------//
     // getStaves //
     //-----------//
-
     /**
      * Report the list of staves found in the sheet
      *
@@ -298,7 +296,6 @@ public class LinesBuilder
     //---------------//
     // retrieveStaves //
     //---------------//
-
     /**
      * Stave are detected in the list of (raw) peaks, simply by looking for
      * regular series of peaks.
@@ -443,7 +440,6 @@ public class LinesBuilder
     //---------------//
     // retrievePeaks //
     //---------------//
-
     /**
      * Peaks are detected in the horizontal projections. The resulting list
      * of peaks is made of all peaks higher than a given threshold, so they
@@ -626,11 +622,7 @@ public class LinesBuilder
             if (rect == null) {
                 return;
             }
-            if ((rect.width != 0) || (rect.height != 0)) {
-                rectangleSelected(null, rect);
-            } else {
-                pointSelected(null, rubber.getCenter());
-            }
+            setFocusRectangle(rect);
         }
     }
 
