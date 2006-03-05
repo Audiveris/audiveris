@@ -596,7 +596,12 @@ public class GlyphPane
                 {
                     public Object construct()
                     {
-                        sheet.getScore().serialize();
+                        try {
+                            sheet.getScore().serialize();
+                        } catch (Exception ex) {
+                            logger.warning("Could not serialize " +
+                                           sheet.getScore());
+                        }
                         return null;
                     }
                 };
