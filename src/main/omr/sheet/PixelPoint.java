@@ -26,4 +26,18 @@ import java.awt.*;
 public class PixelPoint
         extends Point
 {
+    //------------//
+    // PixelPoint //
+    //------------//
+    public PixelPoint ()
+    {
+    }
+
+    //------------//
+    // PixelPoint //
+    //------------//
+    public PixelPoint (Point point)
+    {
+        super(point);
+    }
 }
