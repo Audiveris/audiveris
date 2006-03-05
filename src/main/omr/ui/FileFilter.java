@@ -34,7 +34,6 @@ public class FileFilter
     //------------//
     // FileFilter //
     //------------//
-
     /**
      * Create a file filter, with only one file extension to consider
      *
@@ -48,7 +47,6 @@ public class FileFilter
     //------------//
     // FileFilter //
     //------------//
-
     /**
      * Create a file filter, with only one file extension to consider, and
      * a related description.
@@ -67,7 +65,6 @@ public class FileFilter
     //------------//
     // FileFilter //
     //------------//
-
     /**
      * Create a file filter with a whole array of file name extensions, and
      * the related user description.
@@ -98,7 +95,6 @@ public class FileFilter
     //----------------//
     // getDescription //
     //----------------//
-
     /**
      * Report the filter description
      *
@@ -112,7 +108,6 @@ public class FileFilter
     //--------//
     // accept //
     //--------//
-
     /**
      * Return a boolean to state whether the provided file should be
      * considered. Directories are always accepted, and tests on file name
