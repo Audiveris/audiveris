@@ -21,10 +21,8 @@ import java.util.List;
 
 /**
  * Class <code>System</code> encapsulates a system in a score.
- * <p/>
- * <p/>
- * A system contains two direct children : staves and slurs, each in its
- * dedicated list </p>
+ * <p>A system contains two direct children : staves and slurs, each in its
+ * dedicated list.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -42,8 +40,8 @@ public class System
     private SystemInfo info;
 
     // Specific Children
-    private StaveList staves;
-    private SlurList slurs;
+    private final StaveList staves;
+    private final SlurList slurs;
 
     // Cached attributes
     private int top;
@@ -74,18 +72,12 @@ public class System
      */
     public System ()
     {
-        super(null);
-        allocateChildren();
-
-        if (logger.isDebugEnabled()) {
-            Dumper.dump(this, "Construction");
-        }
+        this(null, null, 0, 0, 0, 0);
     }
 
     //--------//
     // System //
     //--------//
-
     /**
      * Create a system with all needed parameters
      *
@@ -105,7 +97,10 @@ public class System
                    int height)
     {
         super(score);
-        allocateChildren();
+
+        // Allocate stave and slur (node) lists
+        staves = new StaveList(this);
+        slurs = new SlurList(this);
 
         this.info = info;
         this.top = top;
@@ -123,7 +118,6 @@ public class System
     //-------------------//
     // getFirstMeasureId //
     //-------------------//
-
     /**
      * Report the id of the first measure in the system, knowing that 0 is
      * the id of the very first measure of the very first system in the
@@ -139,7 +133,6 @@ public class System
     //---------------//
     // getFirstStave //
     //---------------//
-
     /**
      * Report the first stave in this system
      *
@@ -153,7 +146,6 @@ public class System
     //-----------//
     // setHeight //
     //-----------//
-
     /**
      * Set the system height (top of first stave, down to bottom of last
      * stave)
@@ -168,7 +160,6 @@ public class System
     //-----------//
     // getHeight //
     //-----------//
-
     /**
      * Report the system height
      *
@@ -182,7 +173,6 @@ public class System
     //---------//
     // getInfo //
     //---------//
-
     /**
      * Report the physical information retrieved from the sheet for this
      * system
@@ -197,7 +187,6 @@ public class System
     //------------------//
     // setLastMeasureId //
     //------------------//
-
     /**
      * Remember the id of the last measure in this system
      *
@@ -211,7 +200,6 @@ public class System
     //------------------//
     // getLastMeasureId //
     //------------------//
-
     /**
      * Report the id of the last measure in this system
      *
@@ -225,7 +213,6 @@ public class System
     //--------------//
     // getLastStave //
     //--------------//
-
     /**
      * Report the last stave in this system
      *
@@ -239,7 +226,6 @@ public class System
     //---------//
     // setLeft //
     //---------//
-
     /**
      * Set the abscissa of the left side of the system in the score
      *
@@ -253,7 +239,6 @@ public class System
     //---------//
     // getLeft //
     //---------//
-
     /**
      * Report the abscissa of the left edge of this system in its
      * containing score
@@ -268,7 +253,6 @@ public class System
     //-----------//
     // getOrigin //
     //-----------//
-
     /**
      * Report the display origin for this system
      *
@@ -282,7 +266,6 @@ public class System
     //------------------//
     // getRightPosition //
     //------------------//
-
     /**
      * Return the actual display position of the right side.
      *
@@ -296,7 +279,6 @@ public class System
     //----------//
     // setSlurs //
     //----------//
-
     /**
      * Set the collection of slurs
      *
@@ -304,19 +286,16 @@ public class System
      */
     public void setSlurs (List<TreeNode> slurs)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setSlurs slurs=" + slurs + "this.slurs="
-                         + this.slurs);
+        final List<TreeNode> list = getSlurs();
+        if (list != slurs) {
+            list.clear();
+            list.addAll(slurs);
         }
-
-        this.slurs = new SlurList(this);
-        getSlurs().addAll(slurs);
     }
 
     //----------//
     // getSlurs //
     //----------//
-
     /**
      * Report the collection of slurs
      *
@@ -324,17 +303,12 @@ public class System
      */
     public List<TreeNode> getSlurs ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getSlurs slurs=" + slurs);
-        }
-
         return slurs.getChildren();
     }
 
     //-----------//
     // setStaves //
     //-----------//
-
     /**
      * Set the collection of staves
      *
@@ -342,14 +316,16 @@ public class System
      */
     public void setStaves (List<TreeNode> staves)
     {
-        this.staves = new StaveList(this);
-        getStaves().addAll(staves);
+        final List<TreeNode> list = getStaves();
+        if (list != staves) {
+            list.clear();
+            list.addAll(staves);
+        }
     }
 
     //-----------//
     // getStaves //
     //-----------//
-
     /**
      * Report the collection of staves
      *
@@ -363,7 +339,6 @@ public class System
     //--------//
     // setTop //
     //--------//
-
     /**
      * Set the ordinate of the upper left corner of the system in the score
      *
@@ -377,7 +352,6 @@ public class System
     //--------//
     // getTop //
     //--------//
-
     /**
      * Report the ordinate in the score of the upper left point of the system
      *
@@ -391,7 +365,6 @@ public class System
     //----------//
     // setWidth //
     //----------//
-
     /**
      * Set the width of the system
      *
@@ -405,7 +378,6 @@ public class System
     //----------//
     // getWidth //
     //----------//
-
     /**
      * Report the system width
      *
@@ -419,7 +391,6 @@ public class System
     //----------//
     // addChild //
     //----------//
-
     /**
      * Overrides normal behavior, to deal with the separation of children
      * into slurs and staves
@@ -448,7 +419,6 @@ public class System
     //--------------//
     // sheetToScore //
     //--------------//
-
     /**
      * Compute the score display point that correspond to a given sheet
      * point, since systems are displayed horizontally in the score
@@ -469,7 +439,6 @@ public class System
     //--------------//
     // scoreToSheet //
     //--------------//
-
     /**
      * Compute the point in the sheet that corresponds to a given point in
      * the score display
@@ -489,7 +458,6 @@ public class System
     //----------//
     // toString //
     //----------//
-
     /**
      * Report a readable description
      *
@@ -505,7 +473,6 @@ public class System
     //---------//
     // xLocate //
     //---------//
-
     /**
      * Return the position of given x, relative to the system.
      *
@@ -529,7 +496,6 @@ public class System
     //---------//
     // yLocate //
     //---------//
-
     /**
      * Return the position of given y, relative to the system
      *
@@ -553,7 +519,6 @@ public class System
     //-------------//
     // computeNode //
     //-------------//
-
     /**
      * The <code>computeNode</code> method overrides the normal routine,
      * for specific system computation. The various 'systems' are aligned
@@ -563,8 +528,10 @@ public class System
      * @return true
      */
     @Override
-    protected boolean computeNode ()
+        protected boolean computeNode ()
     {
+        super.computeNode();
+
         // Containing score
         Score score = (Score) container;
 
@@ -594,22 +561,22 @@ public class System
     //-----------//
     // paintNode //
     //-----------//
-
     /**
      * Specific <code>paintNode</code> method, just the system left and
      * right sides are drawn
      *
      * @param g the graphic context
+     * @param comp the containing component
      *
      * @return true if painted was actually done, so that depending
      *         entities (stave, slurs) are also rendered, false otherwise
      *         to stop the painting
      */
     @Override
-    protected boolean paintNode (Graphics g)
+        protected boolean paintNode (Graphics g,
+                                     Zoom zoom,
+                                     Component comp)
     {
-        Zoom zoom = ScoreView.getZoom();
-
         // What is the clipping region
         Rectangle clip = g.getClipBounds();
 
@@ -634,20 +601,9 @@ public class System
         }
     }
 
-    //------------------//
-    // allocateChildren //
-    //------------------//
-    private void allocateChildren ()
-    {
-        // Allocate stave and slur (node) lists
-        staves = new StaveList(this);
-        slurs = new SlurList(this);
-    }
-
     //------------//
     // xIntersect //
     //------------//
-
     /**
      * Check for intersection of a given stick determined by (left, right)
      * with the system abscissa range

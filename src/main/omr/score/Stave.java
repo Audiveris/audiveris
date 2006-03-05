@@ -167,7 +167,6 @@ public class Stave
     //-----------------//
     // getFirstMeasure //
     //-----------------//
-
     /**
      * Report the first measure in this stave
      *
@@ -323,8 +322,10 @@ public class Stave
      */
     public void setMeasures (List<TreeNode> measures)
     {
-        this.measures = new MeasureList(this);
-        getMeasures().addAll(measures);
+        if (getMeasures() != measures) {
+            getMeasures().clear();
+            getMeasures().addAll(measures);
+        }
     }
 
     //-------------//
@@ -450,7 +451,6 @@ public class Stave
     //----------//
     // setWidth //
     //----------//
-
     /**
      * Set the stave width
      *
@@ -575,6 +575,8 @@ public class Stave
      */
     protected boolean computeNode ()
     {
+        super.computeNode();
+
         // Display origin for system
         Point sysorg = getSystem().getOrigin();
 
@@ -585,32 +587,21 @@ public class Stave
         // First/Last measure ids
         firstMeasureId = lastMeasureId = getSystem().getFirstMeasureId();
 
-        if (logger.isDebugEnabled()) {
-            Dumper.dump(this, "Computed");
-        }
-
         return true;
     }
 
     //-----------//
     // paintNode //
     //-----------//
-    /**
-     * Painting on the provided graphics environment, overriden method
-     *
-     * @param g the graphics context
-     *
-     * @return true
-     */
     @Override
-        protected boolean paintNode (Graphics g)
+        protected boolean paintNode (Graphics g,
+                                     Zoom zoom,
+                                     Component comp)
     {
         //System.out.println ("StaveItf. origin=" + origin + " size=" + size);
         g.setColor(Color.black);
 
         // Draw the staff lines
-        Zoom zoom = ScoreView.getZoom();
-
         for (int i = 0; i < ScoreView.LINE_NB; i++) {
             // Y of this staff line
             int y = zoom.scaled(origin.y + (i * ScoreView.INTER_LINE));
@@ -632,6 +623,7 @@ public class Stave
      *
      * @return true if rendered
      */
+    @Override
     protected boolean renderNode (Graphics g,
                                   Zoom z)
     {
@@ -667,10 +659,8 @@ public class Stave
     // MeasureList //
     //-------------//
     private static class MeasureList
-            extends MusicNode
+        extends MusicNode
     {
-        //~ Constructors --------------------------------------------------
-
         MeasureList (MusicNode container)
         {
             super(container);
@@ -683,8 +673,6 @@ public class Stave
     private static class LyricList
             extends MusicNode
     {
-        //~ Constructors -----------------------------------------------------
-
         LyricList (MusicNode container)
         {
             super(container);
@@ -697,8 +685,6 @@ public class Stave
     private static class TextList
             extends MusicNode
     {
-        //~ Constructors --------------------------------------------------
-
         TextList (MusicNode container)
         {
             super(container);
@@ -711,8 +697,6 @@ public class Stave
     private static class DynamicList
             extends MusicNode
     {
-        //~ Constructors --------------------------------------------------
-
         DynamicList (MusicNode container)
         {
             super(container);

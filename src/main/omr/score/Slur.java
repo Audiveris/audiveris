@@ -204,22 +204,17 @@ public class Slur
     //-----------//
     // paintNode //
     //-----------//
-    /**
-     * Overrides the method, so that this slur node be rendered
-     *
-     * @param g the graphics context
-     *
-     * @return true
-     */
     @Override
-        protected boolean paintNode (Graphics g)
+        protected boolean paintNode (Graphics g,
+                                     Zoom zoom,
+                                     Component comp)
     {
         // Compute data needed for drawing
         if (arc == null) {
             arc = new Arc(leftcolumn, leftrow, rightcolumn, rightrow, radius);
         }
 
-        arc.draw(g, getOrigin(), ScoreView.getZoom());
+        arc.draw(g, getOrigin(), zoom);
 
         return true;
     }
