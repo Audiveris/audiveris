@@ -288,21 +288,21 @@ public class LagView <L extends Lag     <L, S>,
     }
 
     //---------------//
-    // pointSelected //
+    // setFocusPoint //
     //---------------//
     /**
      * Selection of a Section and a Run by point designation. Registered
      * observers are notified of the Section and Run informations.
      *
-     * @param e the mouse event
      * @param pt the selected point in model pixel coordinates
      */
     @Override
-        public void pointSelected (MouseEvent e,
-                                   Point      pt)
+        public void setFocusPoint (Point pt)
     {
+        ///logger.info(getClass() + " setFocusPoint " + pt);
+
         // Update pixel board if any
-        super.pointSelected(e, pt);
+        super.setFocusPoint(pt);
 
         if (countObservers() > 0) {
 
@@ -360,9 +360,6 @@ public class LagView <L extends Lag     <L, S>,
 
             // Update section info
             notifyObservers(section);
-
-            // Update pixel info as well
-            notifyObservers(rect);
         } else {
             logger.warning ("setFocusSection. Section is null");
         }
