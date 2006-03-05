@@ -20,6 +20,8 @@ import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 import omr.util.Logger;
 
+import static omr.ui.UIUtilities.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -116,7 +118,7 @@ public class SheetPane
         toggleButton = new JButton
             (IconManager.buttonIconOf("general/Refresh"));
         toolBar.add(toggleButton);
-        toggleButton.setBorder(Jui.toolBorder);
+        toggleButton.setBorder(getToolBorder());
         toggleButton.setEnabled(false);
 
         menu.addSeparator();
@@ -133,14 +135,14 @@ public class SheetPane
         component.addChangeListener(this);
 
         // Initially disabled actions
-        Jui.enableActions(sheetDependentActions, false);
+        UIUtilities.enableActions(sheetDependentActions, false);
     }
 
     //~ Methods -----------------------------------------------------------
 
-    //----------//
+    //--------------//
     // getComponent //
-    //----------//
+    //--------------//
     /**
      * Give access to the real pane
      *
@@ -202,30 +204,31 @@ public class SheetPane
         return toggleButton;
     }
 
-//     //-------------------//
-//     // setScoreSheetView //
-//     //-------------------//
-//     /**
-//      * Preset (before info is actually shown by another explicit order
-//      * showSheetView) the view parameters for the sheet that relates to the
-//      * provided score. This method is called from the score side, to prepare
-//      * the display of the counter part on sheet side.
-//      *
-//      * @param score the score for which related sheet view is to be prepared.
-//      * @param pagPt The desired focus point in the virtual page coordinates.
-//      *              If no focus point is explicitely given (pagPt value is
-//      *              null), then there is no attempt to actually load the
-//      *              related sheet if it is not yet loaded. So, this may end up
-//      *              is just preparing a blank tab, when we have no sheet
-//      *              information available, and no explicit desire to load and
-//      *              show the sheet.
-//      *
-//      * @return The index in the tabbed pane of the prepared view, so that the
-//      *         following showSheetView can point directly to this index. Since
-//      *         sheet loading is performed asynchronously, a special index
-//      *         value (DIFFERED_INDEX) is used to signal that the tab index is
-//      *         not yet known.
-//      */
+    //-------------------//
+    // setScoreSheetView //
+    //-------------------//
+    /**
+     * Preset (before info is actually shown by another explicit order
+     * showSheetView) the view parameters for the sheet that relates to the
+     * provided score. This method is called from the score side, to prepare
+     * the display of the counter part on sheet side.
+     *
+     * @param score the score for which related sheet view is to be
+     *              prepared.
+     * @param pagPt The desired focus point in the virtual page
+     *              coordinates.  If no focus point is explicitely given
+     *              (pagPt value is null), then there is no attempt to
+     *              actually load the related sheet if it is not yet
+     *              loaded. So, this may end up is just preparing a blank
+     *              tab, when we have no sheet information available, and
+     *              no explicit desire to load and show the sheet.
+     *
+     * @return The index in the tabbed pane of the prepared view, so that
+     *         the following showSheetView can point directly to this
+     *         index. Since sheet loading is performed asynchronously, a
+     *         special index value (DIFFERED_INDEX) is used to signal that
+     *         the tab index is not yet known.
+     */
 //     public int setScoreSheetView (Score score,
 //                                   PagePoint pagPt)
 //     {
@@ -524,10 +527,10 @@ public class SheetPane
         Sheet sheet = getCurrentSheet();
 
         if (logger.isDebugEnabled()) {
-            logger.debug("viewUpdated for " + sheet);
+            logger.debug("stateChanged for " + sheet);
         }
 
-        Jui.enableActions(sheetDependentActions, sheet != null);
+        UIUtilities.enableActions(sheetDependentActions, sheet != null);
 
 //         // Synchronize the score side ?
 //         SheetView view = (SheetView) getSelectedComponent();
@@ -556,7 +559,7 @@ public class SheetPane
      * when selected from the history of previous sheets.
      */
     private class HistoryListener
-            implements ActionListener
+        implements ActionListener
     {
         //~ Methods -------------------------------------------------------
 
@@ -613,7 +616,7 @@ public class SheetPane
             // Tool bar
             if (onToolBar) {
                 final JButton button = toolBar.add(this);
-                button.setBorder(Jui.toolBorder);
+                button.setBorder(getToolBorder());
                 button.setToolTipText(tip);
             }
         }
@@ -865,7 +868,7 @@ public class SheetPane
                  "Default directory for selection of image files");
 
         Constant.Double initialZoomRatio = new Constant.Double
-                (1,
+                (1d,
                  "Initial zoom ratio for displayed sheet pictures");
 
         Constants ()
