@@ -19,13 +19,19 @@ public class Audiveris
 {
     //~ Constructors ------------------------------------------------------
 
-    // To avoid instantiation
+    //-----------//
+    // Audiveris //
+    //-----------//
+    /** To avoid instantiation */
     private Audiveris ()
     {
     }
 
     //~ Methods -----------------------------------------------------------
 
+    //------//
+    // main //
+    //------//
     /**
      * The main entry point, which just calls {@link omr.Main#main}
      *
