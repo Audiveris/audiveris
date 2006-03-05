@@ -28,16 +28,13 @@ import omr.ui.BoardsPane;
 import omr.ui.Jui;
 import omr.ui.PixelBoard;
 import omr.ui.SheetAssembly;
-import omr.ui.StepView;
+import omr.ui.StepMonitor;
 import omr.ui.Zoom;
 import omr.util.FileUtil;
 import omr.util.Logger;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -130,9 +127,6 @@ public class Sheet
     // Related assembly instance
     private transient SheetAssembly assembly;
 
-    // Current order if any
-    private transient StepView.Order order;
-
     // A staff line extractor for this sheet
     private transient LinesBuilder linesBuilder;
     private transient SkewBuilder skewBuilder;
@@ -148,6 +142,9 @@ public class Sheet
 
     // Specific pane dealing with glyphs
     private transient GlyphPane glyphPane;
+
+    // To avoid concurrent modifications
+    private transient volatile boolean busy = false;
 
     //- InstanceStep Definitions (in proper order) ------------------------
 
@@ -200,7 +197,7 @@ public class Sheet
 
                 throw new ProcessingException();
             } catch (Exception ex) {
-                ex.printStackTrace();
+                ///ex.printStackTrace();
                 logger.warning(ex.getMessage());
                 throw new ProcessingException();
             }
@@ -296,7 +293,8 @@ public class Sheet
             };
 
     /**
-     * Step to retrieve all bar lines
+     * Step to retrieve all bar lines. This allocates and links the sheet
+     * related score.
      */
     public final InstanceStep<List<BarInfo>> BARS
             = new InstanceStep<List<BarInfo>>("Detect vertical Bar lines")
@@ -312,7 +310,7 @@ public class Sheet
                     Jui jui = Main.getJui();
 
                     if (jui != null) {
-                        jui.scorePane.setScoreView(score, null);
+                        jui.scoreController.setScoreView(score);
                     }
                 }
             };
@@ -475,22 +473,33 @@ public class Sheet
      * @param imgFile a <code>File</code> value to specify the image file.
      *                Beware, this file path is assumed to be in canonical
      *                form (both absolute and unique)
+     * @param force should we keep the sheet structure even if the image
+     *                cannot be loaded for whatever reason
      *
-     * @throws ProcessingException raised if image file cannot be loaded
+     * @throws ProcessingException raised if, while 'force' is false, image
+     *                  file cannot be loaded
      */
-    public Sheet (File imgFile)
-            throws ProcessingException
+    public Sheet (File imgFile,
+                  boolean force)
+        throws ProcessingException
     {
+        this();
+
         if (logger.isDebugEnabled()) {
-            logger.debug("creating Sheet " + imgFile);
+            logger.debug("creating Sheet form image " + imgFile);
         }
-        checkTransientSteps();
 
         // We assume we have a canonical form for the file name
         this.imgFile = imgFile;
 
         // Load this image picture
-        LOAD.doit();
+        try {
+            LOAD.doit();
+        } catch (ProcessingException ex) {
+            if (!force) {
+                throw ex;
+            }
+        }
 
         // Insert in sheet history
         SheetManager.getInstance().getHistory().add(getPath());
@@ -509,16 +518,49 @@ public class Sheet
     // Sheet //
     //-------//
     /**
-     * Meant for local and XML binder use only
+     * Create a sheet as a score companion
+     *
+     * @param score the existing score
+     */
+    public Sheet (Score score)
+        throws ProcessingException
+    {
+        this(new File(score.getImageFPath()),
+             /* force => */ true);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Created Sheet from " + score);
+        }
+    }
+
+    //-------//
+    // Sheet //
+    //-------//
+    /**
+     * Meant for local (and XML binder ?) use only
      */
     private Sheet ()
     {
-        // Keep the compiler happy
-        imgFile = null;
         checkTransientSteps();
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //--------//
+    // isBusy //
+    //--------//
+    public synchronized boolean isBusy()
+    {
+        return busy;
+    }
+
+    //---------//
+    // setBusy //
+    //---------//
+    public synchronized void setBusy (boolean busy)
+    {
+        this.busy = busy;
+    }
 
     //---------------------//
     // checkTransientSteps //
@@ -760,19 +802,6 @@ public class Sheet
     }
 
     //----------//
-    // getOrder //
-    //----------//
-    /**
-     * Report the processing order currently posted on this sheet if any.
-     *
-     * @return the current order, or null otherwise
-     */
-    public StepView.Order getOrder ()
-    {
-        return order;
-    }
-
-    //----------//
     // getScore //
     //----------//
     /**
@@ -971,19 +1000,6 @@ public class Sheet
     }
 
     //----------//
-    // setOrder //
-    //----------//
-    /**
-     * Post a processing order on this sheet
-     *
-     * @param order the order to post
-     */
-    public void setOrder (StepView.Order order)
-    {
-        this.order = order;
-    }
-
-    //----------//
     // setScore //
     //----------//
     /**
@@ -993,6 +1009,14 @@ public class Sheet
      */
     public void setScore (Score score)
     {
+        // If there was already a linked score, clean up everything
+        if (this.score != null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Deconnecting " + this.score);
+            }
+            this.score.close();
+        }
+
         this.score = score;
     }
 
