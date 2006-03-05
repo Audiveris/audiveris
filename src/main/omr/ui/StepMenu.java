@@ -129,18 +129,28 @@ public class StepMenu
                 setState(false);
                 setEnabled(false);
             } else {
-                InstanceStep is = sheet.getInstanceStep(step);
-                if (is != null) {
-                    setState(is.isDone());
-                    if (sheet.getOrder() == null) {
-                        setEnabled(!is.isDone());
-                    } else {
-                        setEnabled(false);
-                    }
-                } else {
+                if (sheet.isBusy()) {
                     setState(false);
                     setEnabled(false);
+                } else {
+                    InstanceStep is = sheet.getInstanceStep(step);
+                    if (is != null) {
+                        setState(is.isDone());
+                        setEnabled(!is.isDone());
+                    }
                 }
+//                 InstanceStep is = sheet.getInstanceStep(step);
+//                 if (is != null) {
+//                     setState(is.isDone());
+//                     if (sheet.isBusy()) {
+//                         setEnabled(false);
+//                     } else {
+//                         setEnabled(!is.isDone());
+//                     }
+//                 } else {
+//                     setState(false);
+//                     setEnabled(false);
+//                 }
             }
         }
     }
@@ -148,7 +158,6 @@ public class StepMenu
     //--------------//
     // StepListener //
     //--------------//
-
     /**
      * Class <code>StepListener</code> is triggered when a specific menu
      * item is selected
@@ -173,7 +182,6 @@ public class StepMenu
     //----------//
     // Listener //
     //----------//
-
     /**
      * Class <code>Listener</code> is triggered when the whole sub-menu is
      * entered. This is done with respect to currently displayed sheet. The
