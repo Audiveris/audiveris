@@ -112,7 +112,6 @@ public class ScaleBuilder
     //-------------//
     // getMainFore //
     //-------------//
-
     /**
      * A (package private) lazy method to retrieve the main length of
      * foreground runs of pixels
@@ -133,7 +132,6 @@ public class ScaleBuilder
     //---------------//
     // retrieveScale //
     //---------------//
-
     /**
      * Create a scale entity, by processing the provided sheet picture.
      *
