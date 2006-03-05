@@ -30,7 +30,6 @@ import omr.glyph.ui.GlyphBoard;
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.LagBuilder;
 import omr.lag.VerticalOrientation;
-import omr.score.Barline;
 import omr.score.Measure;
 import omr.score.Score;
 import omr.score.ScoreView;
@@ -134,7 +133,6 @@ public class BarsBuilder
     //-------------//
     // BarsBuilder //
     //-------------//
-
     /**
      * Prepare a bar retriever on the provided sheet
      *
@@ -240,7 +238,6 @@ public class BarsBuilder
     //---------//
     // getBars //
     //---------//
-
     /**
      * Report the list of bar lines retrieved
      *
@@ -254,7 +251,6 @@ public class BarsBuilder
     //--------//
     // getLag //
     //--------//
-
     /**
      * Report the vertical lag used for this step
      *
@@ -268,7 +264,6 @@ public class BarsBuilder
     //------------//
     // isThickBar //
     //------------//
-
     /**
      * Check if the stick/bar is a thick one
      *
@@ -333,7 +328,6 @@ public class BarsBuilder
     //---------------//
     // buildMeasures //
     //---------------//
-
     /**
      * Bar lines are first sorted according to their abscissa, then we run
      * additional checks on each bar line, since we now know its enclosing
@@ -400,7 +394,7 @@ public class BarsBuilder
                     if (logger.isDebugEnabled()) {
                         logger.debug("Creating measure for bar-line " + barInfo.getStick());
                     }
-                    new Measure(barInfo, stave, Barline.SINGLE,
+                    new Measure(barInfo, stave, Shape.SINGLE_BARLINE,
                                 scale.pixelsToUnits(barAbscissa)
                                 - stave.getLeft(),
                                 scale.pixelsToUnits(barAbscissa)
@@ -429,7 +423,6 @@ public class BarsBuilder
     //------------------//
     // buildSystemInfos //
     //------------------//
-
     /**
      * Knowing the starting stave indice of each stave system, we are able
      * to allocate and describe the proper number of systems in the score.
@@ -472,7 +465,6 @@ public class BarsBuilder
     //-----------------------//
     // buildSystemsAndStaves //
     //-----------------------//
-
     /**
      * For each SystemInfo, build the corresponding System entity with all
      * its depending Staves
@@ -510,7 +502,6 @@ public class BarsBuilder
     //--------------------//
     // checkBarAlignments //
     //--------------------//
-
     /**
      * Check alignment of each measure of each stave with the other stave
      * measures, a test that needs several staves in the system
@@ -568,7 +559,6 @@ public class BarsBuilder
     //----------------//
     // checkEndingBar //
     //----------------//
-
     /**
      * Use ending bar line if any, to adjust the right abscissa of the
      * system and its staves.
@@ -600,7 +590,6 @@ public class BarsBuilder
     //---------------//
     // checkMeasures //
     //---------------//
-
     /**
      * Check measure reality, using a set of aditional tests.
      */
@@ -700,7 +689,6 @@ public class BarsBuilder
     //------------//
     // mergeLines //
     //------------//
-
     /**
      * Check whether two close bar lines are not in fact double lines (with
      * variants)
@@ -732,13 +720,13 @@ public class BarsBuilder
                                 logger.debug("Merging a thinThick bar");
                             }
 
-                            prevMeasure.setLinetype(Barline.THIN_THICK);
+                            prevMeasure.setLinetype(Shape.FINAL_BARLINE);
                         } else {
                             if (logger.isDebugEnabled()) {
                                 logger.debug("Merging a double bar");
                             }
 
-                            prevMeasure.setLinetype(Barline.DOUBLE);
+                            prevMeasure.setLinetype(Shape.DOUBLE_BARLINE);
                         }
 
                         prevMeasure.setRightlinex(measure.getRightlinex());
@@ -757,7 +745,6 @@ public class BarsBuilder
     //-------------------//
     // removeStartingBar //
     //-------------------//
-
     /**
      * We associate measures only with their ending bar line(s), so the
      * starting bar of a stave (or system) does not end a measure, we thus
@@ -905,7 +892,6 @@ public class BarsBuilder
     //------------------//
     // retrieveBarLines //
     //------------------//
-
     /**
      * From the list of vertical sticks, this method uses several tests
      * based on stick location, and stick shape (the test is based on
@@ -1065,6 +1051,7 @@ public class BarsBuilder
             protected void glyphSelected (Glyph glyph,
                                           Point pt)
         {
+            ///logger.info(getClass() + " glyphSelected " + glyph);
             if (glyph == null) {
                 checkMonitor.tellObject(null);
             } else if (glyph instanceof Stick) {
@@ -1337,7 +1324,6 @@ public class BarsBuilder
     //---------------//
     // TopChunkCheck //
     //---------------//
-
     /**
      * Class <code>TopChunkCheck</code> checks for lack of chunk at top
      */
@@ -1385,7 +1371,6 @@ public class BarsBuilder
     //------------------//
     // BottomChunkCheck //
     //------------------//
-
     /**
      * Class <code>BottomChunkCheck</code> checks for lack of chunk at
      * bottom
