@@ -10,9 +10,10 @@
 
 package omr.glyph;
 
-import omr.Main;
 import omr.constant.Constant;
+import omr.ui.IconManager;
 
+import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.util.EnumSet;
@@ -22,7 +23,6 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import java.awt.Color;
 
 /**
  * Class <code>Shape</code> defines the comprehensive list of glyph shapes,
@@ -31,12 +31,7 @@ import java.awt.Color;
  * is organized according to the Unicode Standard 4.0, with a few addition
  * for convenience only.
  *
- * <p>As far as possible, an Icon should be generated for every shape. The
- * icon is preferably based on an existing music font ("Musette").
- *
- * <p>Since this font does not contain all desired symbols, we also use
- * icons that are manually built, to fill the missing
- * ones. (<b>Nota</b>These icons are currently disabled)
+ * <p>As far as possible, an Icon should be generated for every shape.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -570,6 +565,10 @@ public enum Shape
      */
     public Icon getIcon()
     {
+        if (icon == null) {
+            setIcon(IconManager.getInstance().loadIcon(toString()));
+        }
+
         return icon;
     }
 
@@ -859,7 +858,8 @@ public enum Shape
     public static final Range Ornaments     = new Range(EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
     public static final Range Pedals        = new Range(EnumSet.range(PEDAL_MARK, PEDAL_UP_MARK));
     //
-    public static final Range Logicals      = new Range(EnumSet.range(SINGLE_BARLINE, ENDING));
+    public static final Range Barlines      = new Range(EnumSet.range(SINGLE_BARLINE, BACK_TO_BACK_REPEAT_SIGN));
+    public static final Range Logicals      = new Range(EnumSet.range(REPEAT_DOTS, ENDING));
 
     // Assign proper name to all ranges and proper color to their contained
     // shapes
@@ -884,7 +884,7 @@ public enum Shape
     }
 
     /**
-     * symbols that can be attached to a stem
+     * Symbols that can be attached to a stem
      */
     public static EnumSet<Shape> stemSymbols = EnumSet.noneOf(Shape.class);
     static
