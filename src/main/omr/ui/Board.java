@@ -10,6 +10,7 @@
 
 package omr.ui;
 
+import omr.ui.Panel;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
@@ -57,6 +58,7 @@ public class Board
     {
         this.tag = tag;
         component = new Panel();
+        component.setNoInsets();
     }
 
     //~ Methods -----------------------------------------------------------

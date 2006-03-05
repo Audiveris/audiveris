@@ -17,7 +17,6 @@ import omr.glyph.ui.GlyphBoard;
 import omr.lag.LagView;
 import omr.lag.Run;
 import omr.lag.Section;
-import omr.stick.StickView;
 import omr.ui.Panel;
 import omr.util.Logger;
 
@@ -50,7 +49,7 @@ public class BoardsPane
     //~ Instance variables ------------------------------------------------
 
     // The concrete UI component
-    private JPanel component;
+    private Panel component;
 
     // Unique (application-wide) name for this pane.
     private String name;
@@ -71,7 +70,8 @@ public class BoardsPane
             logger.severe("BoardsPane needs a non-null view");
         }
 
-        component = new JPanel();
+        component = new Panel();
+        component.setNoInsets();
 
         // Prepare layout elements
         final String panelInterline = Panel.getPanelInterline();
@@ -127,15 +127,9 @@ public class BoardsPane
                 break;
 
             case CHECK :
-                // CheckBoard checkBoard = (CheckBoard) board;
-                // if (view instanceof StickView) {
-                //     StickView stickView = (StickView) view;
-                //     stickView.setCheckMonitor(checkBoard);
-                // }
                 break;
 
             case CUSTOM :
-                // CustomBoard customBoard = board;
                 break;
             }
             r += 2;
