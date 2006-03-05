@@ -17,11 +17,18 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class <code>RubberZoomedPanel</code> is a combination two linked
- * entities: a {@link ZoomedPanel} and a {@link Rubber}. Its
- * <i>paintComponent</i> method is declared final to ensure that the
+ * Class <code>RubberZoomedPanel</code> is a combination of two linked
+ * entities: a {@link ZoomedPanel} and a {@link Rubber}.
+ *
+ * <p>Its <i>paintComponent</i> method is declared final to ensure that the
  * rendering is done in proper sequence, with the rubber rectangle rendered
- * at the end on top of any other stuff.
+ * at the end on top of any other stuff. Any specific rendering required by
+ * a subclass is performed by overriding the {@link #render} method.
+ *
+ * <p>The Zoom instance and the Rubber instance can be provided separately,
+ * after this RubberZoomedPanel has been constructed. This is meant for
+ * cases where the same Zoom and Rubber instances are shared by several
+ * views, as in the {@link SheetAssembly} example.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -84,10 +91,6 @@ public class RubberZoomedPanel
     @Override
         public void reDisplay ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("reDisplay rubber=" + rubber);
-        }
-
         if (rubber != null) {
             setFocusRectangle(rubber.getRectangle());
         } else {
@@ -130,7 +133,7 @@ public class RubberZoomedPanel
     //-----------//
     /**
      * Allows to provide the rubber instance, only after this
-     * RubberZoomedPanel has been built. This can be use to solve circular
+     * RubberZoomedPanel has been built. This can be used to solve circular
      * elaboration problems.
      *
      * @param rubber the rubber instance to be used
@@ -138,6 +141,8 @@ public class RubberZoomedPanel
     public void setRubber (Rubber rubber)
     {
         this.rubber = rubber;
+        rubber.setZoom(zoom);
+        rubber.setComponent(this);
     }
 
     //----------------//
