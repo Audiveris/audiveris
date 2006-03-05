@@ -69,7 +69,6 @@ public class Score
     //-------//
     // Score //
     //-------//
-
     /**
      * Creates a blank score, to be fed with informations from sheet
      * analysis or from an XML binder.
@@ -79,14 +78,13 @@ public class Score
         super(null); // No container
 
         if (logger.isDebugEnabled()) {
-            Dumper.dump(this, "Construction");
+            logger.debug("Construction of an empty score");
         }
     }
 
     //-------//
     // Score //
     //-------//
-
     /**
      * Create a Score, with the specified parameters
      *
@@ -119,7 +117,6 @@ public class Score
     //----------//
     // addChild //
     //----------//
-
     /**
      * Overriding version, so that we can register the score in the list of
      * score instances.
@@ -136,7 +133,6 @@ public class Score
     //-------//
     // close //
     //-------//
-
     /**
      * Close this score instance, as well as its view if any
      */
@@ -153,7 +149,6 @@ public class Score
     //------//
     // dump //
     //------//
-
     /**
      * Dump a whole score hierarchy
      *
@@ -175,7 +170,6 @@ public class Score
     //-----------//
     // getHeight //
     //-----------//
-
     /**
      * Report the height of the score
      *
@@ -189,7 +183,6 @@ public class Score
     //---------------//
     // getImageFPath //
     //---------------//
-
     /**
      * Report the (canonical) file name of the score image.
      *
@@ -203,7 +196,6 @@ public class Score
     //---------------//
     // getLastSystem //
     //---------------//
-
     /**
      * Report the last system in the score
      *
@@ -217,7 +209,6 @@ public class Score
     //---------//
     // getName //
     //---------//
-
     /**
      * report just the name of the score (no path, no extension)
      *
@@ -232,7 +223,6 @@ public class Score
     //----------//
     // getRadix //
     //----------//
-
     /**
      * Report the radix of the file that corresponds to the score. It is
      * based on the name of the sheet of this score, with no extension.
@@ -243,7 +233,8 @@ public class Score
     {
         if (radix == null) {
             if (getSheet() != null) {
-                radix = getSheet().getRadix();
+                //radix = getSheet().getRadix();
+                radix = getSheet().getName();
             }
         }
 
@@ -253,7 +244,6 @@ public class Score
     //---------//
     // getView //
     //---------//
-
     /**
      * Report the UI view, if any
      *
@@ -267,7 +257,6 @@ public class Score
     //----------//
     // getSheet //
     //----------//
-
     /**
      * Report the related sheet entity
      *
@@ -281,7 +270,6 @@ public class Score
     //--------------//
     // getSkewangle //
     //--------------//
-
     /**
      * Report the score skew angle
      *
@@ -295,7 +283,6 @@ public class Score
     //--------------------//
     // getSkewangleDouble //
     //--------------------//
-
     /**
      * Report the score skew angle
      *
@@ -309,7 +296,6 @@ public class Score
     //------------//
     // getSpacing //
     //------------//
-
     /**
      * Report the main interline spacing in the score
      *
@@ -323,7 +309,6 @@ public class Score
     //------------//
     // getSystems //
     //------------//
-
     /**
      * Report the collection of systems in that score
      *
@@ -331,16 +316,30 @@ public class Score
      */
     public List<TreeNode> getSystems ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getSystems children=" + children);
+        return getChildren();
+    }
+
+    //-------------------//
+    // getMaxStaveNumber //
+    //-------------------//
+    /**
+     * Report the maximum number of staves per system
+     *
+     * @return the maximum number of staves per system
+     */
+    public int getMaxStaveNumber()
+    {
+        int nb = 0;
+        for (TreeNode node : children) {
+            System system = (System) node;
+            nb = Math.max(nb, system.getStaves().size());
         }
-        return children;
+        return nb;
     }
 
     //----------//
     // getWidth //
     //----------//
-
     /**
      * Report the width of the score
      *
@@ -361,7 +360,7 @@ public class Score
     {
         for (Sheet sheet : SheetManager.getInstance().getSheets()) {
             if (sheet.getPath().equals(getImageFPath())) {
-                setSheet(sheet);
+                this.setSheet(sheet);
                 sheet.setScore(this);
 
                 if (logger.isDebugEnabled()) {
@@ -388,19 +387,23 @@ public class Score
             if (logger.isDebugEnabled()) {
                 logger.debug(this + " not linked");
             }
+            // Create a void related sheet
+            try {
+                Sheet sheet = new Sheet(this);
+            } catch (Exception ex) {
+                logger.warning(ex.toString());
+            }
         }
-
-
     }
 
     //-----------//
     // serialize //
     //-----------//
-
     /**
      * Serialize the score to its binary file
      */
     public void serialize ()
+        throws Exception
     {
         ScoreManager.getInstance().serialize(this);
     }
@@ -499,7 +502,6 @@ public class Score
     //---------------//
     // xLocateSystem //
     //---------------//
-
     /**
      * Retrieve the system 'x' is pointing to.
      *
@@ -574,7 +576,6 @@ public class Score
     //---------------//
     // yLocateSystem //
     //---------------//
-
     /**
      * Retrieve the system 'y' is pointing to.
      *
@@ -596,10 +597,8 @@ public class Score
                     if (prevSystem == null) { // Very first system
 
                         return recentSystem;
-                    } else {
-                        if (prevSystem.yLocate(y) > 0) {
-                            return recentSystem;
-                        }
+                    } else if (prevSystem.yLocate(y) > 0) {
+                        return recentSystem;
                     }
 
                     break;
@@ -615,10 +614,8 @@ public class Score
                     if (nextSystem == null) { // Very last system
 
                         return recentSystem;
-                    } else {
-                        if (nextSystem.yLocate(y) < 0) {
-                            return recentSystem;
-                        }
+                    } else if (nextSystem.yLocate(y) < 0) {
+                        return recentSystem;
                     }
 
                     break;
