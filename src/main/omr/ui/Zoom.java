@@ -19,18 +19,29 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.swing.event.*;
 
 /**
- * Class <code>Zoom</code> encapsulates a zoom ratio, with methods to go
- * between model/source values (coordinates, lengths) and display values.
+ * Class <code>Zoom</code> encapsulates a zoom ratio, which is typically
+ * the ratio between display values (such as the size of the display of an
+ * entity) and model values (such as the size of the entity itself). For
+ * example, a Zoom with ratio set to a 2.0 value would double the display
+ * of a given entity.
+ *
+ * <p>Since this class is meant to be used when handling display tasks, it
+ * also provides utility methods to go back and forth between display and
+ * model values, for simple items such as primitive data (double), Point,
+ * Dimension and Rectangle.
+ *
+ * <p>It handles an internal collection of change listeners, that are
+ * entities registered to be notified whenever a new ratio value is set.
+ *
+ * <p>A new value is programmatically set by calling the {@link #setRatio}
+ * method. The newly defined ratio value is then pushed to all registered
+ * observers.
  *
  * <p>A {@link LogSlider} can be connected to this zoom entity, to provide
  * UI for both output and input.
- *
- * <p>Stolen from Swing implementation, it also handles a list of change
- * listeners.  </p>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -47,7 +58,7 @@ public class Zoom
 
     //~ Instance variables ------------------------------------------------
 
-    // Unique Id
+    // Unique Id (to ease debugging)
     private int id = ++globalId;
 
     /** Current ratio value */
@@ -56,7 +67,7 @@ public class Zoom
     /** Potential logarithmic slider to drive this zoom */
     protected LogSlider slider;
 
-    /** List of event listeners */
+    /** Collection of event listeners */
     protected Set<ChangeListener> listeners = new HashSet<ChangeListener>();
 
     /** Unique event, created lazily */
@@ -95,7 +106,6 @@ public class Zoom
     //------//
     // Zoom //
     //------//
-
     /**
      * Create a zoom entity, with the provided initial ratio value. and a
      * related slider
@@ -147,11 +157,11 @@ public class Zoom
     // forceRatio //
     //------------//
     /**
-     * Impose the new ratio (should be called by the slider only)
+     * Impose and propagate the new ratio
      *
      * @param ratio the new ratio
      */
-    public void forceRatio (double ratio)
+    private void forceRatio (double ratio)
     {
         if (logger.isDebugEnabled()) {
             logger.debug("forceRatio ratio=" + ratio);
@@ -400,7 +410,7 @@ public class Zoom
      * In charge of forwarding the change notification to all registered
      * listeners
      */
-    protected void fireStateChanged ()
+    public void fireStateChanged ()
     {
         if (logger.isDebugEnabled()) {
             logger.debug("Listeners= " + listeners.size());
