@@ -12,7 +12,6 @@ package omr.score;
 
 import omr.Main;
 import omr.sheet.Sheet;
-import omr.ui.SheetPane;
 import omr.util.Logger;
 import omr.ui.Zoom;
 
@@ -264,29 +263,6 @@ public class ScoreView
             score.getMaxStaveNumber() * STAVE_AREA_HEIGHT;
         panel.setModelSize
             (new Dimension(SCORE_INIT_X + totalWidth + INTER_SYSTEM, 2*h));
-    }
-
-    //------------------//
-    // showRelatedSheet //
-    //------------------//
-    /**
-     * Make an attempt to trigger the display of the sheet related to this
-     * score.
-     */
-    public void showRelatedSheet ()
-    {
-//         if (logger.isDebugEnabled()) {
-//             logger.debug("showRelatedSheet for " + score);
-//         }
-
-//         SheetPane sheetPane = Main.getJui().sheetPane;
-//         Sheet sheet = score.getSheet();
-
-//         if (sheet != null) {
-//             sheetPane.showSheetView(sheet.getView());
-//         } else {
-//             sheetPane.showSheetView(null);
-//         }
     }
 
     //----------//
