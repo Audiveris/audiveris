@@ -32,7 +32,6 @@ public class Peak
     //------//
     // Peak //
     //------//
-
     /**
      * Create a peak, starting at ordinate 'y', for which we have 'val'
      * projections.
@@ -53,7 +52,6 @@ public class Peak
     //-----------//
     // getBottom //
     //-----------//
-
     /**
      * Selector for last ordinate value
      *
@@ -67,7 +65,6 @@ public class Peak
     //--------//
     // getMax //
     //--------//
-
     /**
      * Report the maximum histogram value across this peak
      *
@@ -81,7 +78,6 @@ public class Peak
     //--------//
     // getTop //
     //--------//
-
     /**
      * Selector for the ordinate value at the beginning of the peak
      *
@@ -95,7 +91,6 @@ public class Peak
     //--------//
     // extend //
     //--------//
-
     /**
      * Continues a peak, extending its ordinate range, and perhaps its max
      * value if this projection is the highest one since the beginning of

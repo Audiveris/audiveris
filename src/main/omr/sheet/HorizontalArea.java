@@ -47,7 +47,6 @@ public class HorizontalArea
     //----------------//
     // HorizontalArea //
     //----------------//
-
     /**
      * Build a family of horizontal sticks, that will later be checked for
      * finer recognition

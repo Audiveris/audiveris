@@ -143,19 +143,4 @@ public abstract class InstanceStep <R>
     {
         result = null;
     }
-
-//     private void writeObject(java.io.ObjectOutputStream os)
-//         throws java.io.IOException
-//     {
-//         System.err.println("wo " + getClass().getName() + " " + this);
-//         os.defaultWriteObject();
-//     }
-
-//     private void readObject(java.io.ObjectInputStream is)
-//         throws java.io.IOException,
-//                ClassNotFoundException
-//     {
-//         is.defaultReadObject();
-//         System.err.println("ro " + getClass().getName() + " " + this);
-//     }
 }

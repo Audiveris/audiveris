@@ -195,7 +195,6 @@ public class LineBuilder
     //-------//
     // reset //
     //-------//
-
     /**
      * Reset the internal identification counter
      */
@@ -207,7 +206,6 @@ public class LineBuilder
     //---------//
     // cleanup //
     //---------//
-
     /**
      * Cleanup the line
      */
@@ -224,7 +222,6 @@ public class LineBuilder
     //-------------//
     // computeLine //
     //-------------//
-
     /**
      * Perform the least-square computation of the best fitting line.
      */
@@ -240,7 +237,6 @@ public class LineBuilder
     //-----------//
     // scanHoles //
     //-----------//
-
     /**
      * This method is meant to be called when significant information on
      * line has already been retrieved. The purpose is to scan every

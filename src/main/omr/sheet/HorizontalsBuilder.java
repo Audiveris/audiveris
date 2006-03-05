@@ -416,6 +416,7 @@ public class HorizontalsBuilder
             protected void glyphSelected (Glyph glyph,
                                           Point pt)
         {
+            ///logger.info(getClass() + " glyphSelected " + glyph);
             Stick stick = null;
             if (glyph != null) {
                 // Safer to recreate suites, to take modifs into account
@@ -631,7 +632,6 @@ public class HorizontalsBuilder
     //------------//
     // ChunkCheck //
     //------------//
-
     /**
      * Class <code>ChunkCheck</code> checks for absence of a chunk either
      * at start or stop
