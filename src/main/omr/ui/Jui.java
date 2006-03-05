@@ -19,6 +19,7 @@ import omr.glyph.ui.ShapeColorChooser;
 import omr.glyph.ui.GlyphVerifier;
 import omr.score.ScoreController;
 import omr.sheet.Sheet;
+import omr.sheet.SheetController;
 import omr.ui.Panel;
 import omr.ui.treetable.JTreeTable;
 import omr.util.Logger;
@@ -68,7 +69,7 @@ public class Jui
     /**
      * Sheet tabbed pane, which may contain several views
      */
-    public final SheetPane sheetPane;
+    public final SheetController sheetPane;
 
     /**
      * Log pane, which displays logging info
@@ -120,7 +121,7 @@ public class Jui
         new ExitAction(fileMenu);
 
         // Sheet actions
-        sheetPane = new SheetPane(this, toolBar);
+        sheetPane = new SheetController(this, toolBar);
 
         // Score actions
         toolBar.addSeparator();

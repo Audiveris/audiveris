@@ -414,12 +414,11 @@ public class SheetController
     // getMenu //
     //---------//
     /**
-     * This method is meant for access by Jui (in the same package), to
-     * report the menu dedicated to sheet handling.
+     * Report the menu dedicated to sheet handling.
      *
      * @return the sheet menu
      */
-    JMenu getMenu ()
+    public JMenu getMenu ()
     {
         return menu;
     }
