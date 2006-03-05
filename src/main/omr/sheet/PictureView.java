@@ -10,7 +10,6 @@
 
 package omr.sheet;
 
-import omr.score.PagePoint;
 import omr.ui.ScrollView;
 import omr.ui.Rubber;
 import omr.ui.RubberZoomedPanel;
@@ -191,21 +190,23 @@ public class PictureView
         }
 
         //---------------//
-        // pointSelected //
+        // setFocusPoint //
         //---------------//
         /**
          * Point designation. Registered observers are notified of the
          * Point and Pixel informations.
          *
-         * @param e the mouse event
          * @param pt the selected point in model pixel coordinates
          */
         @Override
-            public void pointSelected (MouseEvent e,
-                                       Point pt)
+            public void setFocusPoint (Point pt)
         {
+            ///logger.info(getClass() + " setFocusPoint w/ pixel " + pt);
+
+            super.setFocusPoint(pt);
+
             // We use a specific version which displays the pixel level
             notifyObservers(pt, getPixel(pt));
         }
-     }
+    }
 }
