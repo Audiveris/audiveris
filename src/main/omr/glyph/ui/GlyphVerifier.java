@@ -833,19 +833,18 @@ public class GlyphVerifier
             }
 
             //---------------//
-            // pointSelected //
+            // setFocusPoint //
             //---------------//
             /**
              * Selection of a glyph by point designation.
              *
-             * @param e the mouse event
              * @param pt the selected point in model pixel coordinates
              */
             @Override
-                public void pointSelected (MouseEvent e,
-                                           Point pt)
+                public void setFocusPoint (Point pt)
             {
-                super.pointSelected(e, pt);
+                ///logger.info(getClass() + " setFocusPoint " + pt);
+                super.setFocusPoint(pt);
 
                 // Brute force
                 if (names != null) {
