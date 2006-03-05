@@ -44,7 +44,7 @@ public class GlyphLagView
 {
     //~ Static variables/initializers -------------------------------------
 
-    private static final Logger logger = Logger.getLogger(GlyphLagView.class);
+    protected static final Logger logger = Logger.getLogger(GlyphLagView.class);
 
     //~ Instance variables ------------------------------------------------
 
@@ -148,16 +148,16 @@ public class GlyphLagView
         if (glyph != null) {
             rect = glyph.getContourBox();
             glyphSelected(glyph, rect.getLocation());
+        } else {
+            glyphSelected(null, null);
         }
+
         setFocusRectangle(rect);
 
         notifyObservers(glyph);
 
         // Empty section info
         notifyObservers((Section) null);
-
-        // Update pixel info as well
-        notifyObservers(rect);
     }
 
     //---------------//
@@ -202,7 +202,7 @@ public class GlyphLagView
     }
 
     //---------------//
-    // pointSelected //
+    // setFocusPoint //
     //---------------//
     /**
      * Selection of a glyph by point designation. Registered observers are
@@ -210,19 +210,15 @@ public class GlyphLagView
      * is called with the glyph information, whether the glyph lookup has
      * succeeded or not.
      *
-     * @param e the mouse event
      * @param pt the selected point in model pixel coordinates
      */
     @Override
-        public void pointSelected (MouseEvent e,
-                                   Point pt)
+        public void setFocusPoint (Point pt)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug ("GlyphLagView pointSelected");
-        }
+        ///logger.info(getClass() + " setFocusPoint " + pt);
 
         // First, provide info related to designated point
-        super.pointSelected(e, pt);
+        super.setFocusPoint(pt);
 
         // Then, look for a glyph selection
         Glyph glyph = null;
@@ -233,12 +229,7 @@ public class GlyphLagView
         }
 
         glyphSelected(glyph, pt);       // glyph may be null
-
         notifyObservers(glyph);
-
-//         if (logger.isDebugEnabled()) {
-//             logger.debug ("End of GlyphLagView pointSelected");
-//         }
     }
 
     //------------//
@@ -264,10 +255,6 @@ public class GlyphLagView
         }
 
         glyphAdded(glyph, pt);
-
-//         if (logger.isDebugEnabled()) {
-//             logger.debug("End of GlyphLagView pointAdded");
-//         }
     }
 
     //---------------//
@@ -283,10 +270,8 @@ public class GlyphLagView
     protected void glyphSelected (Glyph glyph,
                                   Point pt)
     {
+        ///logger.info(getClass() + " glyphSelected " + glyph);
         // Empty by default
-        if (logger.isDebugEnabled()) {
-            logger.debug ("Empty GlyphLagView glyphSelected " + glyph);
-        }
     }
 
     //------------//
