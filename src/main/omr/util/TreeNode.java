@@ -53,7 +53,6 @@ public class TreeNode
     //----------//
     // TreeNode //
     //----------//
-
     /**
      * Create a node in the tree, given its container
      *
@@ -75,7 +74,6 @@ public class TreeNode
     //-------------//
     // setChildren //
     //-------------//
-
     /**
      * Set a (new) list of children
      *
@@ -87,15 +85,15 @@ public class TreeNode
         if (logger.isDebugEnabled()) {
             logger.debug("setChildren of " + this);
         }
-
-        this.children.clear();
-        this.children.addAll(children);
+        if (this.children != children) {
+            this.children.clear();
+            this.children.addAll(children);
+        }
     }
 
     //-------------//
     // getChildren //
     //-------------//
-
     /**
      * Report the list of (direct) children
      *
@@ -113,7 +111,6 @@ public class TreeNode
     //----------------------//
     // setChildrenContainer //
     //----------------------//
-
     /**
      * Register this node as the container of all its children
      */
@@ -133,7 +130,6 @@ public class TreeNode
     //--------------//
     // setContainer //
     //--------------//
-
     /**
      * Modify the link to the container of this node
      *
@@ -152,7 +148,6 @@ public class TreeNode
     //--------------//
     // getContainer //
     //--------------//
-
     /**
      * Report the container of this node
      *
@@ -166,7 +161,6 @@ public class TreeNode
     //----------------//
     // getNextSibling //
     //----------------//
-
     /**
      * Report the next node in the children of this node container
      *
@@ -188,7 +182,6 @@ public class TreeNode
     //--------------------//
     // getPreviousSibling //
     //--------------------//
-
     /**
      * Report the previous node in the children of this node container
      *
@@ -210,7 +203,6 @@ public class TreeNode
     //----------//
     // addChild //
     //----------//
-
     /**
      * Add a child in the list of node children
      *
@@ -229,7 +221,6 @@ public class TreeNode
     //--------------//
     // dumpChildren //
     //--------------//
-
     /**
      * Utility to dump recursively all the children of this node, with no
      * starting indentation
@@ -242,7 +233,6 @@ public class TreeNode
     //--------------//
     // dumpChildren //
     //--------------//
-
     /**
      * Utility to dump recursively all the children of this node, with the
      * starting indentation specified
@@ -261,7 +251,6 @@ public class TreeNode
     //----------//
     // dumpNode //
     //----------//
-
     /**
      * Utility to dump the current node, with no indentation
      *
@@ -275,7 +264,6 @@ public class TreeNode
     //----------//
     // dumpNode //
     //----------//
-
     /**
      * Utility to dump the current node, with the specified level of
      * indentation.
