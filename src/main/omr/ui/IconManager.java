@@ -219,11 +219,15 @@ public class IconManager
         for (int i = charTable.length -1; i >= 0; i--) {
             if (charTable[i] == c) {
                 int level = 3 + i * 36; // Range 3 .. 255 (not too bad)
-                return
-                    255   << 24 |      // Alpha
-                    level << 16 |      // R
-                    level <<  8 |      // G
-                    level;             // B
+                if (level == 255) {     // White = background
+                    return 0;           // transparent
+                } else {
+                    return
+                        255   << 24 |      // Alpha
+                        level << 16 |      // R
+                        level <<  8 |      // G
+                        level;             // B
+                }
             }
         }
         logger.error("Invalid pixel encoding char : '" + c + "'");
