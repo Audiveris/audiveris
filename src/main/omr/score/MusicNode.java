@@ -76,14 +76,14 @@ import java.awt.*;
  * <li> Computation of cached parameters, by use of <b>computeNode()</b>
  * </li>
  *
- * <li> Painting of music entities in the dedicated score panel, by use of
+ * <li> Painting of music entities in the dedicated score view, by use of
  * <b>paintNode()</b> </li>
  *
  * <li> Colorization (setting colors) of related sections, by use of
  * <b>colorizeNode()</b> </li>
  *
- * <li> Rendering of related sections (with preset colors), by use of
- * <b>renderNode()</b> </li>
+ * <li> Rendering of related sections (with preset colors) in the dedicated
+ * sheet view, by use of <b>renderNode()</b> </li>
  *
  * </ul> </p>
  *
@@ -102,7 +102,6 @@ public class MusicNode
     //-----------//
     // MusicNode //
     //-----------//
-
     /**
      * Create a node in the tree, given its container
      *
@@ -122,7 +121,6 @@ public class MusicNode
     //------------------//
     // colorizeChildren //
     //------------------//
-
     /**
      * Just forward the colorizing instruction to the direct depending
      * children.
@@ -147,7 +145,6 @@ public class MusicNode
     //-----------------//
     // computeChildren //
     //-----------------//
-
     /**
      * Pattern to launch computation recursively on all children of this
      * node
@@ -161,7 +158,9 @@ public class MusicNode
         for (TreeNode node : children) {
             MusicNode child = (MusicNode) node;
             if (child.computeNode()) {
-                child.computeChildren();
+                if (child.children.size() > 0 ) {
+                    child.computeChildren();
+                }
             }
         }
     }
@@ -169,20 +168,22 @@ public class MusicNode
     //---------------//
     // paintChildren //
     //---------------//
-
     /**
      * Just forwards the paint instruction to the direct depending
      * children.
      *
      * @param g the graphics context
+     * @param comp the containing component
      */
-    public void paintChildren (final Graphics g)
+    public void paintChildren (Graphics g,
+                               Zoom z,
+                               Component comp)
     {
         //if (logger.isDebugEnabled ()) logger.debug ("paintChildren of " + this);
         for (TreeNode node : children) {
             MusicNode child = (MusicNode) node;
-            if (child.paintNode(g)) {
-                child.paintChildren(g);
+            if (child.paintNode(g, z, comp)) {
+                child.paintChildren(g, z, comp);
             }
         }
     }
@@ -190,7 +191,6 @@ public class MusicNode
     //----------------//
     // renderChildren //
     //----------------//
-
     /**
      * Just forwards the rendering instruction to the direct depending
      * children.
@@ -213,7 +213,6 @@ public class MusicNode
     //--------------//
     // colorizeNode //
     //--------------//
-
     /**
      * Placeholder for colorizing the sections that compose the physical
      * info that corresponds to this MusicNode.
@@ -233,7 +232,6 @@ public class MusicNode
     //-------------//
     // computeNode //
     //-------------//
-
     /**
      * Placeholder for specific computation on this node
      *
@@ -242,7 +240,7 @@ public class MusicNode
     protected boolean computeNode ()
     {
         if (logger.isDebugEnabled()) {
-            logger.debug("computeNode " + this);
+            logger.debug("computeNode of " + this);
         }
 
         return true; // Let computation continue down the tree
@@ -251,7 +249,6 @@ public class MusicNode
     //-----------//
     // paintNode //
     //-----------//
-
     /**
      * Placeholder for painting the node at hand, and returning true is the
      * rendering has been made, so that (contained) children will be
@@ -259,10 +256,13 @@ public class MusicNode
      * partially.
      *
      * @param g the graphics context
+     * @param comp the containing component
      *
      * @return true if wholy or partly painted
      */
-    protected boolean paintNode (Graphics g)
+    protected boolean paintNode (Graphics g,
+                                 Zoom z,
+                                 Component comp)
     {
         return true;
     }
@@ -270,7 +270,6 @@ public class MusicNode
     //------------//
     // renderNode //
     //------------//
-
     /**
      * Placeholder for rendering the node at hand, and returning true is
      * the rendering has been made, so that (contained) children will be
