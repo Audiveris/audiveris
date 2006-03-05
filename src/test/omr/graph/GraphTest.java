@@ -12,7 +12,6 @@ package omr.graph;
 
 import omr.util.BaseTestCase;
 
-//import org.testng.annotations.*;
 import static junit.framework.Assert.*;
 import junit.framework.*;
 
