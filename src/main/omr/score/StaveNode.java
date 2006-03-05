@@ -35,7 +35,6 @@ public abstract class StaveNode
     //-----------//
     // StaveNode //
     //-----------//
-
     /**
      * Create a StaveNode
      *
@@ -55,7 +54,6 @@ public abstract class StaveNode
     //-----------//
     // getOrigin //
     //-----------//
-
     /**
      * The display origin which is relevant for this node (this is the
      * stave origin)
@@ -70,7 +68,6 @@ public abstract class StaveNode
     //----------//
     // setStave //
     //----------//
-
     /**
      * Set the containing stave
      *
