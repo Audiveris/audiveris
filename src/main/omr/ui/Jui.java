@@ -17,10 +17,14 @@ import omr.glyph.Shape;
 import omr.glyph.ui.GlyphTrainer;
 import omr.glyph.ui.ShapeColorChooser;
 import omr.glyph.ui.GlyphVerifier;
+import omr.score.ScoreController;
 import omr.sheet.Sheet;
+import omr.ui.Panel;
 import omr.ui.treetable.JTreeTable;
 import omr.util.Logger;
 import omr.util.Memory;
+
+import static omr.ui.UIUtilities.*;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -46,11 +50,6 @@ public class Jui
     private static final Constants constants = new Constants();
     private static final Logger logger = Logger.getLogger(Jui.class);
 
-    /**
-     * A tool border to use consistently in all UI components
-     */
-    static final Border toolBorder = BorderFactory.createRaisedBevelBorder();
-
     //~ Instance variables ------------------------------------------------
 
     // The related concrete frame
@@ -67,16 +66,6 @@ public class Jui
     private final JToolBar toolBar;
 
     /**
-     * Progress bar for actions performed on sheet
-     */
-    final JProgressBar progressBar = new JProgressBar();
-
-    /**
-     * Score pane, which may contain several score views
-     */
-    public final ScorePane scorePane;
-
-    /**
      * Sheet tabbed pane, which may contain several views
      */
     public final SheetPane sheetPane;
@@ -89,7 +78,7 @@ public class Jui
     /**
      * Boards pane, which displays several boards
      */
-    private JPanel boardsHolder;
+    private Panel boardsHolder;
 
     // The splitted panes
     private final JSplitPane splitPane;
@@ -97,6 +86,9 @@ public class Jui
 
     // Color chooser for shapes
     private JFrame shapeColorFrame;
+
+    /** User actions for scores */
+    public final ScoreController scoreController;
 
     //~ Constructors ------------------------------------------------------
 
@@ -132,7 +124,7 @@ public class Jui
 
         // Score actions
         toolBar.addSeparator();
-        scorePane = new ScorePane(this, toolBar);
+        scoreController = new ScoreController(toolBar);
 
         // Frame title
         updateTitle();
@@ -149,16 +141,13 @@ public class Jui
         // Help
         new AboutAction(helpMenu);
 
-        // Progress Bar
-        progressBar.setToolTipText("On going Step activity");
-
         // Menus in the frame
         JMenuBar menuBar = new JMenuBar();
         frame.setJMenuBar(menuBar);
         menuBar.add(fileMenu);
         menuBar.add(sheetPane.getMenu());
         menuBar.add(stepMenu);
-        menuBar.add(scorePane.getMenu());
+        menuBar.add(scoreController.getMenu());
         menuBar.add(toolMenu);
         menuBar.add(Box.createHorizontalStrut(30));
         menuBar.add(helpMenu);
@@ -203,19 +192,19 @@ public class Jui
         splitPane.setDividerLocation(constants.logDivider.getValue());
         splitPane.setResizeWeight(1d);  // Give extra space to left part
 
-        progressBar.setBorder(toolBorder);
-
         JPanel toolKeyPanel = new JPanel();
         toolKeyPanel.setLayout(new BorderLayout());
         toolKeyPanel.add(toolBar, BorderLayout.WEST);
-        toolKeyPanel.add(progressBar, BorderLayout.CENTER);
+        toolKeyPanel.add(Step.createMonitor().getComponent(),
+                         BorderLayout.CENTER);
         toolKeyPanel.add
             (new MemoryMeter
              (IconManager.buttonIconOf("general/Delete")).getComponent(),
              BorderLayout.EAST);
 
         // Boards
-        boardsHolder = new JPanel();
+        boardsHolder = new Panel();
+        boardsHolder.setNoInsets();
 
         bigSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                                       splitPane, boardsHolder);
@@ -227,11 +216,6 @@ public class Jui
         // Global layout
         frame.getContentPane().add(toolKeyPanel, BorderLayout.NORTH);
         frame.getContentPane().add(bigSplitPane, BorderLayout.CENTER);
-
-        // Build all shape icons
-        for (Shape shape : Shape.values()) {
-            shape.setIcon(IconManager.getInstance().loadIcon(shape.toString()));
-        }
 
         // Differ realization
         EventQueue.invokeLater(new FrameShower(frame));
@@ -458,39 +442,12 @@ public class Jui
             frame.setTitle(sb.toString());
         } else {
             // Look for score second
-            omr.score.Score score = scorePane.getCurrentScore();
+            omr.score.Score score = scoreController.getCurrentScore();
 
             if (score != null) {
                 frame.setTitle(score.getRadix() + " - " + toolInfo);
             } else {
                 frame.setTitle(toolInfo);
-            }
-        }
-    }
-
-    //---------------//
-    // enableActions //
-    //---------------//
-    /**
-     * Given a list of actions, set all these actions (whether they descend
-     * from AbstractAction or AbstractButton) enabled or not, according to
-     * the bool parameter provided.
-     *
-     * @param actions list of actions to enable/disable as a whole
-     * @param bool    true for enable, false for disable
-     */
-    static void enableActions (Collection actions,
-                               boolean bool)
-    {
-        for (Iterator it = actions.iterator(); it.hasNext();) {
-            Object next = it.next();
-
-            if (next instanceof AbstractAction) {
-                ((AbstractAction) next).setEnabled(bool);
-            } else if (next instanceof AbstractButton) {
-                ((AbstractButton) next).setEnabled(bool);
-            } else {
-                logger.warning("Neither Button nor Action : " + next);
             }
         }
     }
@@ -565,7 +522,7 @@ public class Jui
             menu.add(this).setToolTipText(tiptext);
 
             final JButton button = toolBar.add(this);
-            button.setBorder(toolBorder);
+            button.setBorder(getToolBorder());
             button.setToolTipText(tiptext);
         }
 
