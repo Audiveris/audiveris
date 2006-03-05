@@ -11,7 +11,7 @@
 package omr;
 
 import omr.sheet.Sheet;
-import omr.ui.StepView;
+import omr.ui.StepMonitor;
 import omr.util.Logger;
 import omr.util.Memory;
 
@@ -33,7 +33,7 @@ public class Step
     private static final Logger logger = Logger.getLogger(Step.class);
 
     // Related UI when used in interactive mode
-    private static StepView view;
+    private static StepMonitor monitor;
 
     // The most popular step, so it's easier to get it directly
     private static Step LOAD;
@@ -67,7 +67,6 @@ public class Step
     //----------------//
     // getDescription //
     //----------------//
-
     /**
      * Return a description for this step, usable for a tip for example.
      *
@@ -81,7 +80,6 @@ public class Step
     //----------//
     // getField //
     //----------//
-
     /**
      * Return the reflection field of the related Sheet.InstanceStep
      *
@@ -95,7 +93,6 @@ public class Step
     //-------------//
     // getLoadStep //
     //-------------//
-
     /**
      * Return the most popular step accessed by name : LOAD
      *
@@ -110,24 +107,9 @@ public class Step
         return LOAD;
     }
 
-    //-------------//
-    // getPosition //
-    //-------------//
-
-    /**
-     * Report the index of this step in the list of known steps
-     *
-     * @return the index, starting from 0.
-     */
-    public int getPosition ()
-    {
-        return Sheet.getSteps().indexOf(this);
-    }
-
     //---------//
     // getStep //
     //---------//
-
     /**
      * Retrieve a step, knowing its name
      *
@@ -151,7 +133,6 @@ public class Step
     //-----------//
     // doPerform //
     //-----------//
-
     /**
      * Meant to actually perform the series of step(s), with or without UI.
      *
@@ -183,7 +164,6 @@ public class Step
     //-----------//
     // notifyMsg //
     //-----------//
-
     /**
      * Notify a simple message, which may be not related to any step.
      *
@@ -192,8 +172,8 @@ public class Step
      */
     public static void notifyMsg (String msg)
     {
-        if (view != null) {
-            view.notifyMsg(msg);
+        if (monitor != null) {
+            monitor.notifyMsg(msg);
         } else {
             logger.info(msg);
         }
@@ -202,7 +182,6 @@ public class Step
     //---------//
     // perform //
     //---------//
-
     /**
      * Trigger the execution of all needed steps up to this one.
      *
@@ -217,11 +196,8 @@ public class Step
                          Object param)
     {
         try {
-            if (view != null) {
-                Step from = (sheet == null)
-                            ? LOAD
-                            : sheet.fromStep(this);
-                view.perform(this, sheet, param, from);
+            if (monitor != null) {
+                monitor.perform(this, sheet, param);
             } else {
                 doPerform(sheet, param);
             }
@@ -234,7 +210,6 @@ public class Step
     //----------//
     // toString //
     //----------//
-
     /**
      * Usual method to return a readable string
      *
@@ -246,23 +221,21 @@ public class Step
         return field.getName();
     }
 
-    //---------//
-    // setView //
-    //---------//
-
+    //---------------//
+    // createMonitor //
+    //---------------//
     /**
-     * Allows to couple the steps with a UI. This is done from 'Main' in
-     * the same omr package.
+     * Allows to couple the steps with a UI.
      */
-    static void setView ()
+    public static StepMonitor createMonitor ()
     {
-        view = new StepView();
+        monitor = new StepMonitor();
+        return monitor;
     }
 
     //--------//
     // doStep //
     //--------//
-
     /**
      * Do just one step (probably within a larger series)
      *
@@ -274,7 +247,7 @@ public class Step
      */
     private Sheet doStep (Sheet sheet,
                           Object param)
-            throws ProcessingException
+        throws ProcessingException
     {
         long startTime = 0;
 
@@ -287,10 +260,10 @@ public class Step
                                 ? (" " + param)
                                 : ""));
 
-        // Do we have the sheet already
+        // Do we have the sheet already ?
         if (sheet == null) {
             // Load sheet using the provided parameter
-            sheet = new Sheet((File) param);
+            sheet = new Sheet((File) param, /* force => */ false);
         }
 
         // Check for loading of a sheet
@@ -301,7 +274,7 @@ public class Step
         }
 
         // Update user interface ?
-        if (view != null) {
+        if (monitor != null) {
             sheet.getInstanceStep(this).displayUI();
         }
 
