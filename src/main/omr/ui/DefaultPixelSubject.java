@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//               D e f a u l t S e c t i o n S u b j e c t               //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
+//--------------------------------------------------------------------------//
+//                                                                          //
+//                  D e f a u l t P i x e l S u b j e c t                   //
+//                                                                          //
+//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.             //
+//  This software is released under the terms of the GNU General Public     //
+//  License. Please contact the author at herve.bitteur@laposte.net         //
+//  to report bugs & suggestions.                                           //
+//--------------------------------------------------------------------------//
 
 package omr.ui;
 
@@ -26,9 +26,9 @@ import java.awt.Rectangle;
 public class DefaultPixelSubject
     extends DefaultSubject<PixelSubject, PixelObserver, Point>
 {
-    //----------------//
+    //-----------------//
     // notifyObservers //
-    //----------------//
+    //-----------------//
     public void notifyObservers (Point ul,
                                  int level)
     {
@@ -37,9 +37,9 @@ public class DefaultPixelSubject
         }
     }
 
-    //----------------//
+    //-----------------//
     // notifyObservers //
-    //----------------//
+    //-----------------//
     public void notifyObservers (Rectangle rect)
     {
         for (PixelObserver observer : observers) {
