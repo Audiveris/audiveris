@@ -19,7 +19,7 @@ package omr;
  * @version $Id$
  */
 public class ProcessingException
-        extends Exception
+    extends Exception
 {
     //~ Constructors ------------------------------------------------------
 
