@@ -10,6 +10,8 @@
 
 package omr.ui;
 
+import omr.constant.*;
+
 import javax.swing.*;
 import java.util.Hashtable;
 
@@ -17,6 +19,10 @@ import java.util.Hashtable;
  * Class <code>LogSlider</code> is a specific {@link JSlider} which handles
  * double values with a logarithmic scale (while normal JSlider handles only
  * integer values).
+ *
+ *<p>As with a basic JSlider, any external entity can be notified of new
+ *slider value, by first registering to this LogSlider via the {@link
+ *#addChangeListener} method.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -26,10 +32,11 @@ public class LogSlider
 {
     //~ Static variables/initializers -------------------------------------
 
-    // Internal resolution (number of values between two major ticks)
-    // There is no real need to export this value to the user.
-    private static final int unit = 480;
-    private static final double doubleUnit = unit; // To speed computing up
+    private static final Constants constants = new Constants();
+
+    // Internal resolution
+    private static final int unit = constants.resolution.getValue();
+    private static final double doubleUnit = unit; // To speed up
 
     //~ Instance variables ------------------------------------------------
 
@@ -41,7 +48,6 @@ public class LogSlider
     //-----------//
     // LogSlider //
     //-----------//
-
     /**
      * Creates a new <code>LogSlider</code> instance.
      *
@@ -182,5 +188,23 @@ public class LogSlider
     {
         return (int) Math.rint
             ((doubleUnit * Math.log(d)) / Math.log(base));
+    }
+
+    //~ Classes -----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+        extends ConstantSet
+    {
+        Constant.Integer resolution = new Constant.Integer
+                (480,
+                 "Number of values between two major ticks");
+
+        Constants ()
+        {
+            initialize();
+        }
     }
 }
