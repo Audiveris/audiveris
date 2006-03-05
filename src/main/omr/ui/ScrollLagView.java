@@ -34,7 +34,6 @@ public class ScrollLagView
     //---------------//
     // ScrollLagView //
     //---------------//
-
     /**
      * Create a scroll view on a lag.
      *
