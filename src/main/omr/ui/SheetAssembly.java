@@ -17,34 +17,42 @@ import omr.glyph.GlyphSection;
 import omr.lag.LagView;
 import omr.lag.Run;
 import omr.lag.Section;
+import omr.score.PagePoint;
+import omr.score.ScoreView;
+import omr.sheet.PixelPoint;
+import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.util.Logger;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.event.*;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>SheetAssembly</code> is a UI assembly dedicated to the
- * display of one sheet, gathering a {@link Zoom} with its dedicated
- * graphical {@link LogSlider}, a mouse adapter {@link Rubber}, and a
- * tabbed collection of {@link ScrollView}'s for all views of this sheet.
+ * display of one sheet, gathering : <ul>
+ *
+ * <li>a single {@link omr.score.ScoreView}</li>
+ *
+ * <li>a {@link Zoom} with its dedicated graphical {@link LogSlider}</li>
+ *
+ * <li>a mouse adapter {@link Rubber}</li>
+ *
+ * <li>a tabbed collection of {@link ScrollView}'s for all views of this
+ * sheet.
+ *
+ * </ul><p>Although not part of the same Swing container, the SheetAssembly
+ * also refers to a collection of {@link BoardsPane} which is parallel to
+ * the collection of ScrollView's.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class SheetAssembly
-    implements ChangeListener
+    implements ChangeListener,
+               PixelObserver
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -53,7 +61,7 @@ public class SheetAssembly
     //~ Instance variables ------------------------------------------------
 
     // The concrete UI component
-    private JPanel component;
+    private Panel component;
 
     // Link with sheet
     private final Sheet sheet;
@@ -68,11 +76,18 @@ public class SheetAssembly
     // Mouse adapter
     private final Rubber rubber = new Rubber(zoom);
 
+    // Split pane for score and sheet views
+    private final JSplitPane splitPane
+        = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+
+    // Related Score view
+    private ScoreView scoreView;
+
     // Tabbed container for all views of the sheet
     private final JTabbedPane tabbedPane = new JTabbedPane();
 
     // Map tab title -> BoardsPane
-    private final HashMap<String,BoardsPane> map
+    private final HashMap<String,BoardsPane> paneMap
         = new HashMap<String,BoardsPane>();
 
     // Map tab component -> ScrollView
@@ -99,7 +114,7 @@ public class SheetAssembly
             logger.debug("creating SheetAssembly on " + sheet);
         }
 
-        component = new JPanel();
+        component = new Panel();
 
         // Cross links between sheet and its assembly
         this.sheet = sheet;
@@ -111,8 +126,17 @@ public class SheetAssembly
 
         // General layout
         component.setLayout(new BorderLayout());
-        component.add(slider, BorderLayout.WEST);
-        component.add(tabbedPane, BorderLayout.CENTER);
+        component.setNoInsets();
+        Panel views = new Panel();
+        views.setNoInsets();
+        views.setLayout(new BorderLayout());
+        views.add(slider, BorderLayout.WEST);
+        views.add(tabbedPane, BorderLayout.CENTER);
+        splitPane.setBottomComponent(views);
+        component.add(splitPane);
+
+        splitPane.setBorder(null);
+        splitPane.setDividerSize(2);
 
         if (logger.isDebugEnabled()) {
             logger.debug("SheetAssembly created.");
@@ -132,6 +156,46 @@ public class SheetAssembly
     public JComponent getComponent()
     {
         return component;
+    }
+
+    //-----------//
+    // getRubber //
+    //-----------//
+    public Rubber getRubber()
+    {
+        return rubber;
+    }
+
+    //--------------//
+    // setScoreView //
+    //--------------//
+    public void setScoreView (ScoreView scoreView)
+    {
+        if (this.scoreView != null) {
+            closeScoreView();
+        }
+
+        splitPane.setTopComponent(scoreView.getPane().getComponent());
+        splitPane.setDividerLocation(150);
+        
+        scoreView.getPane().getView().getZoom().fireStateChanged();
+        
+        //splitPane.resetToPreferredSizes();
+        component.validate();
+        component.repaint();
+        this.scoreView = scoreView;
+    }
+
+    //----------------//
+    // closeScoreView //
+    //----------------//
+    public void closeScoreView()
+    {
+        if (scoreView != null) {
+            logger.debug("Closing scoreView for " + scoreView.getScore());
+            splitPane.setTopComponent(null);
+            scoreView = null;
+        }
     }
 
     //------------------//
@@ -165,18 +229,19 @@ public class SheetAssembly
                             BoardsPane boardsPane)
     {
         boardsPane.setName(sheet.getName() + ":" + title);
-
         if (logger.isDebugEnabled()) {
             logger.debug("addViewTab title=" + title +
                          " boardsPane=" + boardsPane);
         }
 
         // Remember the association between tab and boardsPane
-        map.put(title, boardsPane);
+        paneMap.put(title, boardsPane);
 
-        sv.setZoom(zoom);
+        // Make the new view reuse the common zoom and rubber instances
+        sv.getView().setZoom(zoom);
         sv.getView().setRubber(rubber);
-
+        
+        // Set the model size
         if (sheet.getWidth() != -1) {
             sv.getView().setModelSize(new Dimension(sheet.getWidth(),
                                                     sheet.getHeight()));
@@ -185,13 +250,14 @@ public class SheetAssembly
         }
 
         // Force scroll bar computations
-        zoom.forceRatio(zoom.getRatio());
-
-        // Forward mouse actions to this entity
-        rubber.setMouseMonitor(sv.getView());
+        zoom.fireStateChanged();
 
         // Add the boardsPane to Jui
         Main.getJui().addBoardsPane(boardsPane);
+
+        // Connect the assembly as a pixel observer of the view, in order to
+        // forward such events to the scoreView if relevant.
+        sv.getView().addObserver(this);
 
         // Insert the scrollView as a new tab
         viewMap.put(sv.getComponent(), sv);
@@ -239,13 +305,25 @@ public class SheetAssembly
 
         jui.sheetPane.close(this);
 
+        // Disconnect all keyboard bindings from PixelBoard's (as a
+        // workaround for a Swing memory leak)
+        for (BoardsPane pane : paneMap.values()) {
+            for (Component topComp : pane.getComponent().getComponents()) {
+                for (Component comp : ((Container) topComp).getComponents()) {
+                    if (comp instanceof JComponent) {
+                        ((JComponent) comp).resetKeyboardActions();
+                    }
+                }
+            }
+        }
+
         // Disconnect all boards panes for this assembly
         for (int i = tabbedPane.getTabCount() -1; i >= 0; i--) {
             String title = tabbedPane.getTitleAt(i);
-            jui.removeBoardsPane(map.get(title));
+            jui.removeBoardsPane(paneMap.get(title));
             JScrollPane pane = (JScrollPane) tabbedPane.getComponentAt(i);
             viewMap.remove(pane);
-            map.remove(title);
+            paneMap.remove(title);
         }
     }
 
@@ -262,13 +340,35 @@ public class SheetAssembly
         zoom.setRatio(ratio);
     }
 
+    //--------------------//
+    // setSheetFocusPoint //
+    //--------------------//
+    public void setSheetFocusPoint (PagePoint point)
+    {
+        ScrollView sv = getSelectedView();
+        if (sv != null) {
+            Point pt = sheet.getScale().unitsToPixels(point, null);
+            sv.getView().setFocusPoint(pt);
+        }
+    }
+
+    //------------------------//
+    // setSheetFocusRectangle //
+    //------------------------//
+    public void setSheetFocusRectangle (Rectangle rect)
+    {
+        ScrollView sv = getSelectedView();
+        if (sv != null) {
+            Rectangle r = sheet.getScale().unitsToPixels(rect, null);
+            sv.getView().setFocusRectangle(r);
+        }
+    }
+
     //----------------//
     // displayContext //
     //----------------//
     private void displayContext()
     {
-        logger.debug("displayContext");
-
         // Make sure the tab is ready
         int index = tabbedPane.getSelectedIndex();
         if (index == -1) {
@@ -276,7 +376,7 @@ public class SheetAssembly
         }
 
         // Display the proper boards pane
-        BoardsPane boardsPane = map.get
+        BoardsPane boardsPane = paneMap.get
             (tabbedPane.getTitleAt(index));
         if (logger.isDebugEnabled()) {
             logger.debug("displaying " + boardsPane);
@@ -288,12 +388,7 @@ public class SheetAssembly
         if (rect != null) {
             ScrollView scrollView = getSelectedView();
             RubberZoomedPanel view = scrollView.getView();
-
-            if (rect.width != 0 || rect.height != 0) {
-                view.rectangleSelected(null, rect);
-            } else {
-                view.pointSelected(null, rect.getLocation());
-            }
+            view.setFocusRectangle(rect);
         }
     }
 
@@ -308,7 +403,6 @@ public class SheetAssembly
      */
     public void stateChanged (ChangeEvent e)
     {
-        logger.debug("stateChanged");
         ScrollView scrollView = getSelectedView();
         RubberZoomedPanel view = scrollView.getView();
 
@@ -328,5 +422,50 @@ public class SheetAssembly
         displayContext();
 
         previousScrollView = scrollView.getComponent();
+    }
+
+    //~ Methods for PixelObserver interface --------------------------------
+
+    //--------//
+    // update //
+    //--------//
+    public void update (Point ul)
+    {
+        // Forward to the score view
+        if (scoreView != null) {
+            scoreView.setFocus
+                (sheet.getScale().pixelsToUnits(new PixelPoint(ul), null));
+        }
+    }
+
+    //--------//
+    // update //
+    //--------//
+    public void update (Point ul,
+                        int   level)
+    {
+        // Forward to the score view
+        if (scoreView != null) {
+            scoreView.setFocus
+                (sheet.getScale().pixelsToUnits(new PixelPoint(ul), null));
+        }
+    }
+
+    //--------//
+    // update //
+    //--------//
+    public void update (Rectangle rect)
+    {
+        // Forward to the score view
+        if (scoreView != null) {
+            if (rect != null) {
+                Point pt = new Point(rect.x + rect.width/2,
+                                     rect.y + rect.height/2);
+                scoreView.setFocus
+                    (sheet.getScale().pixelsToUnits(new PixelPoint(pt), null));
+            } else {
+                scoreView.setFocus(null);
+            }
+        }
     }
 }
