@@ -16,7 +16,8 @@ import java.awt.event.MouseEvent;
 
 /**
  * Interface <code>MouseMonitor</code> defines the entries of an entity to
- * be notified of mouse actions.
+ * be notified of mouse actions. This is ordinarily used in conjunction
+ * with a {@link omr.ui.Rubber}.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
