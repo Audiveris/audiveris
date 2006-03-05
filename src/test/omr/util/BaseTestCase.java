@@ -24,6 +24,15 @@ import junit.framework.*;
 public class BaseTestCase
     extends TestCase
 {
+    public BaseTestCase()
+    {
+    }
+
+    public BaseTestCase (String name)
+    {
+        super(name);
+    }
+
     //---------//
     // runTest //
     //---------//
