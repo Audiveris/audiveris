@@ -10,15 +10,18 @@
 
 package omr.score;
 
+import omr.glyph.Shape;
 import omr.lag.Lag;
 import omr.sheet.BarInfo;
 import omr.util.Dumper;
 import omr.util.Logger;
+import omr.ui.SymbolIcon;
 import omr.ui.Zoom;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Icon;
 
 /**
  * Class <code>Measure</code> handles a measure of a staff.
@@ -39,7 +42,7 @@ public class Measure
     private List<BarInfo> infos = new ArrayList<BarInfo>(2);
 
     // Attributes
-    private Barline linetype;
+    private Shape linetype;
     private int leftlinex;
     private int rightlinex;
     private boolean lineinvented;
@@ -51,7 +54,6 @@ public class Measure
     //---------//
     // Measure //
     //---------//
-
     /**
      * Default constructor (needed by XML Binder)
      */
@@ -63,7 +65,6 @@ public class Measure
     //---------//
     // Measure //
     //---------//
-
     /**
      * Create a measure with the specified parameters
      *
@@ -76,7 +77,7 @@ public class Measure
      */
     public Measure (BarInfo info,
                     Stave stave,
-                    Barline linetype,
+                    Shape linetype,
                     int leftlinex,
                     int rightlinex,
                     boolean lineinvented)
@@ -99,7 +100,6 @@ public class Measure
     //----------//
     // getInfos //
     //----------//
-
     /**
      * Report the BarInfo list related to the ending bar line(s)
      *
@@ -113,7 +113,6 @@ public class Measure
     //--------------//
     // setLeftlinex //
     //--------------//
-
     /**
      * Set the abscissa of the left part of the ending bar line
      *
@@ -127,7 +126,6 @@ public class Measure
     //--------------//
     // getLeftlinex //
     //--------------//
-
     /**
      * Report the abscissa of the left part of the ending bar line
      *
@@ -141,13 +139,12 @@ public class Measure
     //-------------//
     // setLinetype //
     //-------------//
-
     /**
      * Set the line type of the ending bar line
      *
      * @param linetype the line type, as the proper enumerated type
      */
-    public void setLinetype (Barline linetype)
+    public void setLinetype (Shape linetype)
     {
         this.linetype = linetype;
     }
@@ -155,7 +152,6 @@ public class Measure
     //-------------//
     // setLinetype //
     //-------------//
-
     /**
      * Set the line type of the ending bar line
      *
@@ -163,13 +159,12 @@ public class Measure
      */
     public void setLinetype (String linetype)
     {
-        setLinetype(Barline.valueOf(linetype));
+        setLinetype(Shape.valueOf(linetype));
     }
 
     //-------------//
     // getLinetype //
     //-------------//
-
     /**
      * Report the type of the ending bar line
      *
@@ -196,7 +191,6 @@ public class Measure
     //---------------//
     // getRightlinex //
     //---------------//
-
     /**
      * Report the abscissa of the right part of the ending bar line
      *
@@ -210,7 +204,6 @@ public class Measure
     //----------//
     // addInfos //
     //----------//
-
     /**
      * Merge the provided barinfos with existing one
      *
@@ -224,7 +217,6 @@ public class Measure
     //--------------//
     // colorizeNode //
     //--------------//
-
     /**
      * Colorize the physical information of this measure
      *
@@ -250,7 +242,6 @@ public class Measure
     //-------------//
     // computeNode //
     //-------------//
-
     /**
      * Overriding definition, so that computations specific to a measure
      * are performed
@@ -258,8 +249,10 @@ public class Measure
      * @return true, so that processing continues
      */
     @Override
-    protected boolean computeNode ()
+        protected boolean computeNode ()
     {
+        super.computeNode();
+
         // Fix the stave reference
         setStave((Stave) container.getContainer());
 
@@ -276,36 +269,32 @@ public class Measure
             leftX = prevMeasure.rightlinex;
         }
 
-        if (logger.isDebugEnabled()) {
-            Dumper.dump(this, "Computed");
-        }
-
         return true;
     }
 
     //-----------//
     // paintNode //
     //-----------//
-
-    /**
-     * Renders the measure in the provided graphic context
-     *
-     * @param g the graphic context to be used
-     *
-     * @return true if painting of children must be done also
-     */
     @Override
-    protected boolean paintNode (Graphics g)
+        protected boolean paintNode (Graphics g,
+                                     Zoom zoom,
+                                     Component comp)
     {
         Point origin = getOrigin();
 
-//         // Draw the bar line symbol
+        // Draw the bar line symbol
+        SymbolIcon icon = (SymbolIcon) linetype.getIcon();
+        icon.paintIcon
+            (comp,
+             g,
+             zoom.scaled(origin.x + (leftlinex + rightlinex) / 2) - icon.getActualWidth()/2,
+             zoom.scaled(origin.y));
+
 //         Symbols.drawPos(g, linetype.getImage(), origin, 0,
 //                         (leftlinex + rightlinex) / 2, Symbols.CENTER);
 
         // Draw the measure id, if on the first stave only
         if (stave.getStavelink() == 0) {
-            Zoom zoom = ScoreView.getZoom();
             g.setColor(Color.lightGray);
             g.drawString(Integer.toString(id),
                          zoom.scaled(origin.x + leftX) - 5,
@@ -318,7 +307,6 @@ public class Measure
     //------------//
     // renderNode //
     //------------//
-
     /**
      * Render the physical information of this measure
      *
