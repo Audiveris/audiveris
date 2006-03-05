@@ -141,9 +141,7 @@ public class SymbolGlyphView
         protected void glyphSelected (Glyph glyph,
                                       Point pt)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug ("SymbolGlyphView glyphSelected " + glyph);
-        }
+        ///logger.info(getClass() + " glyphSelected " + glyph);
 
         // Process the selected glyph
         List<Glyph> glyphs = pane.getCurrentGlyphs();
@@ -163,10 +161,6 @@ public class SymbolGlyphView
                 pane.getEvaluatorsPanel().evaluate(glyph);
              }
         }
-
-//         if (logger.isDebugEnabled()) {
-//             logger.debug ("End of SymbolGlyphView glyphSelected " + glyph);
-//         }
     }
 
     //------------//
@@ -197,21 +191,18 @@ public class SymbolGlyphView
             }
         }
         pane.getEvaluatorsPanel().evaluate(glyph);
-
-//         if (logger.isDebugEnabled()) {
-//             logger.debug ("End of SymbolGlyphView glyphAdded");
-//         }
     }
 
     //-------------------//
-    // rectangleSelected //
+    // setFocusRectangle //
     //-------------------//
     @Override
-        public void rectangleSelected (MouseEvent e,
-                                       Rectangle rect)
+        public void setFocusRectangle (Rectangle rect)
     {
+        ///logger.info(getClass() + " setFocusRectangle " + rect);
+
         // Notify observers about rectangle information
-        super.rectangleSelected(e, rect);
+        super.setFocusRectangle(rect);
 
         // Retrieve glyphs for this rectangle
         pane.setCurrentGlyphs(sheet.lookupGlyphs(rect));
