@@ -139,7 +139,6 @@ public class Main
         // Interactive or Batch mode ?
         if (!batchMode) {
             logger.debug("Interactive processing");
-            Step.setView();
 
             // Make sure we have nice window decorations.
             JFrame.setDefaultLookAndFeelDecorated(true);
@@ -196,7 +195,7 @@ public class Main
             Score score = ScoreManager.getInstance().load(new File(name));
 
             if (!batchMode) {
-                Main.getJui().scorePane.setScoreView(score);
+                Main.getJui().scoreController.setScoreView(score);
             }
         }
     }
@@ -571,13 +570,11 @@ public class Main
     private class Worker
         extends Thread
     {
-        //~ Methods -------------------------------------------------------
-
         //-----//
         // run //
         //-----//
         @Override
-        public void run()
+            public void run()
         {
             browse();
         }
