@@ -36,7 +36,6 @@ public class BarInfo
     //---------//
     // BarInfo //
     //---------//
-
     /**
      * Create a bar info, with provided parameters
      *
@@ -58,7 +57,6 @@ public class BarInfo
     //-----------//
     // getBotIdx //
     //-----------//
-
     /**
      * Report the index of the stave at bottom of bar line
      *
@@ -72,7 +70,6 @@ public class BarInfo
     //----------//
     // getStick //
     //----------//
-
     /**
      * Report the vertical stick that represents in the sheet picture, this
      * bar line
@@ -100,7 +97,6 @@ public class BarInfo
     //----------//
     // colorize //
     //----------//
-
     /**
      * Define the display color for the related stick
      *
@@ -118,7 +114,6 @@ public class BarInfo
     //--------//
     // render //
     //--------//
-
     /**
      * Paint the bar contour
      *
