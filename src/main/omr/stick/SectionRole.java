@@ -92,7 +92,6 @@ public enum SectionRole
     //-------------//
     // SectionRole //
     //-------------//
-
     /**
      * Define a section role.
      *
@@ -108,7 +107,6 @@ public enum SectionRole
     //----------//
     // getColor //
     //----------//
-
     /**
      * Define a color, according to the role at hand, that is according to the
      * role of this section in the enclosing stick.

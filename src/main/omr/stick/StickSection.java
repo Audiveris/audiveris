@@ -148,7 +148,6 @@ public class StickSection
     //-------------//
     // isCandidate //
     //-------------//
-
     /**
      * Checks whether the section is a good candidate to be a member of a
      * stick
@@ -182,7 +181,6 @@ public class StickSection
     //----------//
     // toString //
     //----------//
-
     /**
      * A readable description of this entity
      *
