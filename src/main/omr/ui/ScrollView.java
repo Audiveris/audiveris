@@ -15,14 +15,13 @@ import omr.constant.ConstantSet;
 import omr.util.Logger;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.event.*;
 
 /**
- * Class <code>ScrollView</code>, is a subclass of JScrollPane, which
- * provides a comprehensive combination of the following entities: <dl>
+ * Class <code>ScrollView</code> contains a JScrollPane, which provides a
+ * comprehensive combination of the following entities: <dl>
  *
  * <dt> <b>view:</b> </dt> <dd>the display of a {@link RubberZoomedPanel},
  * a component potentially linked to a {@link Zoom} and a mouse adapter
@@ -47,9 +46,6 @@ public class ScrollView
 
     /** Current view inside the scrolled pane */
     protected RubberZoomedPanel view;
-
-    /** Related zoom */
-    protected Zoom zoom;
 
     //~ Constructors ------------------------------------------------------
 
@@ -76,22 +72,6 @@ public class ScrollView
     public ScrollView (RubberZoomedPanel view)
     {
         setView(view);
-    }
-
-    //------------//
-    // ScrollView //
-    //------------//
-    /**
-     * Create a view pane, with pre-built view, pixel monitor and zoom
-     *
-     * @param view the pre-built panel
-     * @param zoom the zoom that drives the rendering of the view
-     */
-    public ScrollView (RubberZoomedPanel view,
-                       Zoom zoom)
-    {
-        setView(view);
-        setZoom(zoom);
     }
 
     //~ Methods -----------------------------------------------------------
@@ -154,40 +134,6 @@ public class ScrollView
         return -1;
     }
 
-    //---------//
-    // setZoom //
-    //---------//
-    /**
-     * Assign a zoom to drive the rendering scale of the displayed view
-     *
-     * @param zoom the zoom entity
-     */
-    public void setZoom (final Zoom zoom)
-    {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setZoom zoom=" + zoom);
-        }
-
-        this.zoom = zoom;
-
-        if (view != null) {
-            view.setZoom(zoom);
-        }
-    }
-
-    //---------//
-    // getZoom //
-    //---------//
-    /**
-     * Retrieve the zoom entity related to the displayed view.
-     *
-     * @return the zoom entity
-     */
-    public Zoom getZoom ()
-    {
-        return zoom;
-    }
-
     //----------------//
     // getRubberFocus //
     //----------------//
@@ -233,12 +179,11 @@ public class ScrollView
     public void setZoomRatio (double zoomRatio)
     {
         if (logger.isDebugEnabled()) {
-            logger.debug("setZoomRatio zoomRatio=" + zoomRatio
-                         + " zoom=" + zoom);
+            logger.debug("setZoomRatio zoomRatio=" + zoomRatio);
         }
 
-        if (zoom != null) {
-            zoom.setRatio(zoomRatio);
+        if (view.getZoom() != null) {
+            view.getZoom().setRatio(zoomRatio);
         } else {
             logger.warning("setZoomRatio. No zoom assigned");
         }
