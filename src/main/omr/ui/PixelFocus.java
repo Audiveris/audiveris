@@ -15,7 +15,9 @@ import java.awt.Rectangle;
 
 /**
  * Interface <code>PixelFocus</code> define the features related to setting
- * a focus determined by pixels coordinates, it is thus an input entity.
+ * a focus determined by pixels coordinates. Pixel information is used to
+ * focus the user display on the given point or rectangle, and to notify
+ * this information to registered observers.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
