@@ -22,12 +22,11 @@ import static java.awt.event.InputEvent.*;
 /**
  * Class <code>Rubber</code> keeps track of nothing more than a rectangle,
  * to define an area of interest. The rectangle can be degenerated to a
- * simple point, when both its width and height are zero. Morover, the
+ * simple point, when both its width and height are zero. Moreover, the
  * display can be moved or resized (see the precise triggers below).
  *
  * <p> The rubber data is rendered as a 'rubber', so the name, using a
- * rectangle in inverted video, reflecting the dragged position of the
- * mouse.
+ * rectangle, reflecting the dragged position of the mouse.
  *
  * <p> Rubber data is meant to be modified by the user when he presses
  * and/or drags the mouse. But it can also be modified programmatically,
@@ -58,11 +57,12 @@ import static java.awt.event.InputEvent.*;
  * {@link #setComponent} method. Rubber is then called on its
  * <i>mouseDragged, mousePressed, mouseReleased</i> methods.
  *
- * <li> <b>High-level events</b>, as computed by Rubber from low-level
- * mouse events, are forwarded to a connected {@link MouseMonitor} if any,
- * which is then called on its <i>pointSelected, rectangleSelected,
- * rectangleZoomed</i> methods. Generally, this MouseMonitor is the
- * originating JComponent, but this is not mandatory.  </ul>
+ * <li> <b>High-level events</b>, as computed by Rubber from low-level mouse
+ * events, are forwarded to a connected {@link MouseMonitor} if any, which is
+ * then called on its <i>pointSelected, pointAdded, contextSelected,
+ * rectangleSelected, rectangleZoomed</i> methods. Generally, this
+ * MouseMonitor is the originating JComponent, but this is not mandatory.
+ * </ul>
  *
  * <p> The Rubber can be linked to a {@link Zoom} to cope with display
  * factor of the related component, but this is not mandatory: If no zoom
@@ -77,9 +77,6 @@ public class Rubber
     //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(Rubber.class);
-
-    // Length in pixels of mark half legs
-    private static final int leg = 20;
 
     // Color used for drawing horizontal & vertical rules
     private static final Color ruleColor = new Color(255, 200, 0);
@@ -112,11 +109,11 @@ public class Rubber
     // Rubber //
     //--------//
     /**
-     * Create a rubber, which will be linked to a component later, and
-     * which will have a zoom attached later
+     * Create a rubber, with no predefined parameter (zoom, component)
+     * which are meant to be provided later.
      *
-     * @see #setComponent
      * @see #setZoom
+     * @see #setComponent
      */
     public Rubber ()
     {
@@ -134,21 +131,7 @@ public class Rubber
      */
     public Rubber (Zoom zoom)
     {
-        this.zoom = zoom;
-    }
-
-    //--------//
-    // Rubber //
-    //--------//
-    /**
-     * Create a rubber linked to a component, and no zoom initially
-     *
-     * @param component the related component
-     * @see #setZoom
-     */
-    public Rubber (JComponent component)
-    {
-        setComponent(component);
+        setZoom(zoom);
     }
 
     //--------//
@@ -215,6 +198,12 @@ public class Rubber
      */
     public void setComponent (JComponent component)
     {
+        // Clean up if needed
+        if (this.component != null) {
+            this.component.removeMouseListener(this);
+            this.component.removeMouseMotionListener(this);
+        }
+
         // Remember the related component (to get visible rect, etc ...)
         this.component = component;
 
@@ -285,6 +274,11 @@ public class Rubber
             if (mouseMonitor != null) {
                 mouseMonitor.rectangleSelected(e, rect);
             }
+        } else {
+            reset(e);
+            if (mouseMonitor != null) {
+                mouseMonitor.pointSelected(e, getCenter());
+            }
         }
     }
 
@@ -300,7 +294,8 @@ public class Rubber
     public void mousePressed (MouseEvent e)
     {
         if (logger.isDebugEnabled()) {
-            logger.debug("\nmousePressed : " + InputEvent.getModifiersExText(e.getModifiersEx()));
+            logger.debug("\nmousePressed : " +
+                    InputEvent.getModifiersExText(e.getModifiersEx()));
         }
 
         reset(e);
@@ -481,7 +476,7 @@ public class Rubber
      */
     protected boolean isRubberWanted (MouseEvent e)
     {
-        int onmask = BUTTON1_DOWN_MASK;
+        int onmask = BUTTON1_DOWN_MASK | SHIFT_DOWN_MASK;
         int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
 
         return (e.getModifiersEx() & (onmask | offmask)) == onmask;
