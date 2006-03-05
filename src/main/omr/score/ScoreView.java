@@ -13,7 +13,7 @@ package omr.score;
 import omr.Main;
 import omr.sheet.Sheet;
 import omr.util.Logger;
-import omr.ui.Zoom;
+import omr.ui.view.Zoom;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,9 +22,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.Iterator;
 import omr.ui.SheetAssembly;
-import omr.ui.Rubber;
-import omr.ui.RubberZoomedPanel;
-import omr.ui.ScrollView;
+import omr.ui.view.Rubber;
+import omr.ui.view.RubberZoomedPanel;
+import omr.ui.view.ScrollView;
 
 /**
  * Class <code>ScoreView</code> encapsulates the horizontal display of all
@@ -102,9 +102,9 @@ public class ScoreView
 
     // Point in virtual sheet display in units  (not zoomed, not skewed)
     private PagePoint pagPt = new PagePoint();
-    
+
     // To avoid circular updating
-    private volatile transient boolean selfUpdating;
+    private volatile transient boolean localSelfUpdating;
 
     //~ Constructors ------------------------------------------------------
 
@@ -162,12 +162,12 @@ public class ScoreView
              final System system = score.yLocateSystem(pagPt.y);
 
              if (system != null) {
-                 if (!selfUpdating) {
-                    system.sheetToScore(pagPt, scrPt);
-                    selfUpdating = true;
-                    panel.setFocusPoint(scrPt);
-                    selfUpdating = false;
-                 }
+                if (!localSelfUpdating) {
+                   system.sheetToScore(pagPt, scrPt);
+                   localSelfUpdating = true;
+                   panel.setFocusPoint(scrPt);
+                   localSelfUpdating = false;
+                }
              }
          }
     }
@@ -333,10 +333,6 @@ public class ScoreView
         {
             // Display the point in score view
             super.setFocusPoint(scrPt);
-            
-            if (selfUpdating) {
-                return;
-            }
 
             // The enclosing system
             final System system = score.xLocateSystem(scrPt.x);
@@ -363,7 +359,7 @@ public class ScoreView
         public void setFocusRectangle (Rectangle rect)
         {
             super.setFocusRectangle(rect);
-            
+
             if (rect != null) {
                 setFocusPoint(new Point(rect.x + rect.width,
                                         rect.y + rect.height));

@@ -20,12 +20,12 @@ import omr.glyph.GlyphLagView;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.lag.VerticalOrientation;
-import omr.ui.LogSlider;
-import omr.ui.Panel;
-import omr.ui.Rubber;
-import omr.ui.SField;
-import omr.ui.ScrollLagView;
-import omr.ui.Zoom;
+import omr.ui.view.LogSlider;
+import omr.ui.util.Panel;
+import omr.ui.view.Rubber;
+import omr.ui.field.SField;
+import omr.lag.ScrollLagView;
+import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;

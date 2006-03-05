@@ -24,8 +24,8 @@ import omr.stick.Stick;
 import omr.stick.StickSection;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import omr.ui.ScrollLagView;
-import omr.ui.SectionBoard;
+import omr.lag.ScrollLagView;
+import omr.lag.SectionBoard;
 import omr.util.Clock;
 import omr.util.Logger;
 

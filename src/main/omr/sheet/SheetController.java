@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------//
 //                                                                       //
-//                           S h e e t P a n e                           //
+//                     S h e e t C o n t r o l l e r                     //
 //                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
+//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
@@ -16,30 +16,27 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.score.PagePoint;
 import omr.score.Score;
-import omr.ui.*;
+import omr.ui.Jui;
+import omr.ui.SheetAssembly;
+import omr.ui.icon.IconManager;
+import omr.ui.util.FileFilter;
+import omr.ui.util.UIUtilities;
 import omr.util.Logger;
 
-import static omr.ui.UIUtilities.*;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.awt.event.*;
+import java.io.*;
+import java.util.*;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.event.*;
 
 /**
  * Class <code>SheetController</code> encapsulates the display of (possibly
  * several) sheet(s).
- * 
+ *
  * <p>Multiple sheets are handled by means of a tabbed pane. For each tab,
  * and thus for each sheet, we have a separate {@link SheetAssembly}.
- * 
- * 
+ *
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -85,8 +82,8 @@ public class SheetController
     //-----------//
     /**
      * Create the SheetController, within the jui frame.
-     * 
-     * 
+     *
+     *
      * @param jui     the enclosing jui entity
      * @param toolBar the jui tool bar
      */
@@ -119,7 +116,7 @@ public class SheetController
         toggleButton = new JButton
             (IconManager.buttonIconOf("general/Refresh"));
         toolBar.add(toggleButton);
-        toggleButton.setBorder(getToolBorder());
+        toggleButton.setBorder(UIUtilities.getToolBorder());
         toggleButton.setEnabled(false);
 
         menu.addSeparator();
@@ -616,7 +613,7 @@ public class SheetController
             // Tool bar
             if (onToolBar) {
                 final JButton button = toolBar.add(this);
-                button.setBorder(getToolBorder());
+                button.setBorder(UIUtilities.getToolBorder());
                 button.setToolTipText(tip);
             }
         }

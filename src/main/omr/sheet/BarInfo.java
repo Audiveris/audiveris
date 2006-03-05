@@ -12,7 +12,7 @@ package omr.sheet;
 
 import omr.lag.Lag;
 import omr.stick.Stick;
-import omr.ui.Zoom;
+import omr.ui.view.Zoom;
 
 import java.awt.*;
 

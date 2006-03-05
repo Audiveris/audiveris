@@ -30,9 +30,9 @@ import omr.stick.StickSection;
 import omr.stick.StickView;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import omr.ui.ScrollLagView;
-import omr.ui.SectionBoard;
-import omr.ui.Zoom;
+import omr.lag.ScrollLagView;
+import omr.lag.SectionBoard;
+import omr.ui.view.Zoom;
 import omr.util.Logger;
 import omr.util.Predicate;
 

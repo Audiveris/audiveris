@@ -15,9 +15,9 @@ import omr.glyph.GlyphFocus;
 import omr.glyph.GlyphObserver;
 import omr.glyph.Shape;
 import omr.ui.Board;
-import omr.ui.Panel;
-import omr.ui.SField;
-import omr.ui.SpinnerUtilities;
+import omr.ui.util.Panel;
+import omr.ui.field.SField;
+import omr.ui.field.SpinnerUtilities;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;

@@ -13,9 +13,9 @@ package omr.glyph.ui;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
-import omr.ui.LField;
-import omr.ui.LIntegerField;
-import omr.ui.SpinnerUtilities;
+import omr.ui.field.LField;
+import omr.ui.field.LIntegerField;
+import omr.ui.field.SpinnerUtilities;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;

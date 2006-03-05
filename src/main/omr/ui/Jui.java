@@ -12,6 +12,7 @@ package omr.ui;
 
 import omr.Main;
 import omr.Step;
+import omr.StepMenu;
 import omr.constant.*;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphTrainer;
@@ -20,12 +21,14 @@ import omr.glyph.ui.GlyphVerifier;
 import omr.score.ScoreController;
 import omr.sheet.Sheet;
 import omr.sheet.SheetController;
-import omr.ui.Panel;
+import omr.ui.icon.IconManager;
+import omr.ui.util.Panel;
 import omr.ui.treetable.JTreeTable;
+import omr.ui.util.MemoryMeter;
 import omr.util.Logger;
 import omr.util.Memory;
 
-import static omr.ui.UIUtilities.*;
+import static omr.ui.util.UIUtilities.*;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

@@ -15,8 +15,8 @@ import omr.lag.Lag;
 import omr.sheet.BarInfo;
 import omr.util.Dumper;
 import omr.util.Logger;
-import omr.ui.SymbolIcon;
-import omr.ui.Zoom;
+import omr.ui.icon.SymbolIcon;
+import omr.ui.view.Zoom;
 
 import java.awt.*;
 import java.util.ArrayList;

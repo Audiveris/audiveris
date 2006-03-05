@@ -10,10 +10,10 @@
 
 package omr.sheet;
 
-import omr.ui.ScrollView;
-import omr.ui.Rubber;
-import omr.ui.RubberZoomedPanel;
-import omr.ui.Zoom;
+import omr.ui.view.ScrollView;
+import omr.ui.view.Rubber;
+import omr.ui.view.RubberZoomedPanel;
+import omr.ui.view.Zoom;
 import omr.util.*;
 
 import java.awt.*;

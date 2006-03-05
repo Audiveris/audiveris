@@ -24,11 +24,11 @@ import omr.sheet.SystemInfo;
 import omr.stick.Stick;
 import omr.ui.Board;
 import omr.ui.BoardsPane;
-import omr.ui.Panel;
+import omr.ui.util.Panel;
 import omr.ui.PixelBoard;
-import omr.ui.ScrollLagView;
-import omr.ui.SectionBoard;
-import omr.ui.SwingWorker;
+import omr.lag.ScrollLagView;
+import omr.lag.SectionBoard;
+import omr.ui.util.SwingWorker;
 import omr.util.Dumper;
 import omr.util.Logger;
 

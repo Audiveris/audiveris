@@ -31,10 +31,10 @@ import omr.ui.BoardsPane;
 import omr.check.CheckBoard;
 import omr.glyph.ui.GlyphBoard;
 import omr.ui.PixelBoard;
-import omr.ui.ScrollLagView;
-import omr.ui.SectionBoard;
+import omr.lag.ScrollLagView;
+import omr.lag.SectionBoard;
 import omr.ui.ToggleHandler;
-import omr.ui.Zoom;
+import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.Color;

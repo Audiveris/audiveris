@@ -13,7 +13,7 @@ package omr.lag;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.graph.VertexView;
-import omr.ui.Zoom;
+import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.util.Arrays;

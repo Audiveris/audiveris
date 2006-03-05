@@ -22,6 +22,13 @@ import omr.score.ScoreView;
 import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.ui.util.Panel;
+import omr.ui.view.LogSlider;
+import omr.ui.view.PixelObserver;
+import omr.ui.view.Rubber;
+import omr.ui.view.RubberZoomedPanel;
+import omr.ui.view.ScrollView;
+import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.*;

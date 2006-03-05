@@ -17,7 +17,9 @@ import omr.glyph.ui.GlyphBoard;
 import omr.lag.LagView;
 import omr.lag.Run;
 import omr.lag.Section;
-import omr.ui.Panel;
+import omr.lag.SectionBoard;
+import omr.ui.util.Panel;
+import omr.ui.view.RubberZoomedPanel;
 import omr.util.Logger;
 
 import static omr.ui.Board.Tag.*;

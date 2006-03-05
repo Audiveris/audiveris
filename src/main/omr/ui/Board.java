@@ -10,7 +10,7 @@
 
 package omr.ui;
 
-import omr.ui.Panel;
+import omr.ui.util.Panel;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;

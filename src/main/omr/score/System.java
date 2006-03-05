@@ -14,7 +14,7 @@ import omr.sheet.SystemInfo;
 import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
-import omr.ui.Zoom;
+import omr.ui.view.Zoom;
 
 import java.awt.*;
 import java.util.List;

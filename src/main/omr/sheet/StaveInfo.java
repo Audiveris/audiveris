@@ -11,7 +11,7 @@
 package omr.sheet;
 
 import omr.math.Line;
-import omr.ui.Zoom;
+import omr.ui.view.Zoom;
 
 import java.awt.*;
 import java.util.List;

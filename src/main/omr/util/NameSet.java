@@ -11,7 +11,7 @@
 package omr.util;
 
 import omr.constant.Constant;
-import omr.ui.DynamicMenu;
+import omr.ui.util.DynamicMenu;
 
 import javax.swing.*;
 import java.awt.event.ActionListener;

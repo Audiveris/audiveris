@@ -12,7 +12,7 @@ package omr.sheet;
 
 import omr.math.Line;
 import omr.stick.Stick;
-import omr.ui.Zoom;
+import omr.ui.view.Zoom;
 
 import java.awt.Graphics;
 import java.awt.Point;

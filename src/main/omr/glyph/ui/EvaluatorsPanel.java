@@ -18,7 +18,7 @@ import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.ui.Panel;
+import omr.ui.util.Panel;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;

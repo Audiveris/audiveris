@@ -15,7 +15,7 @@ import omr.glyph.GlyphLag;
 import omr.glyph.GlyphLagView;
 import omr.glyph.Shape;
 import omr.sheet.Sheet;
-import omr.ui.Zoom;
+import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.*;

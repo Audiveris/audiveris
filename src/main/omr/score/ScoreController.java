@@ -14,15 +14,15 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.sheet.Sheet;
-import omr.ui.FileFilter;
-import omr.ui.IconManager;
+import omr.ui.util.FileFilter;
+import omr.ui.icon.IconManager;
 import omr.ui.Jui;
-import omr.ui.SwingWorker;
-import omr.ui.UIUtilities;
+import omr.ui.util.SwingWorker;
+import omr.ui.util.UIUtilities;
 import omr.util.Logger;
 import omr.util.NameSet;
 
-import static omr.ui.UIUtilities.*;
+import static omr.ui.util.UIUtilities.*;
 import static omr.score.ScoreFormat.*;
 
 import java.awt.*;

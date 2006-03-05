@@ -28,8 +28,8 @@ import omr.ui.BoardsPane;
 import omr.ui.Jui;
 import omr.ui.PixelBoard;
 import omr.ui.SheetAssembly;
-import omr.ui.StepMonitor;
-import omr.ui.Zoom;
+import omr.StepMonitor;
+import omr.ui.view.Zoom;
 import omr.util.FileUtil;
 import omr.util.Logger;
 

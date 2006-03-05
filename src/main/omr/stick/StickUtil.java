@@ -24,7 +24,7 @@ import omr.math.BasicLine;
 import omr.math.Line;
 import omr.sheet.Picture;
 import omr.util.Logger;
-import omr.ui.Zoom;
+import omr.ui.view.Zoom;
 
 import java.util.ArrayList;
 import java.util.List;

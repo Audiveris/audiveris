@@ -11,8 +11,8 @@
 package omr.lag;
 
 import omr.graph.DigraphView;
-import omr.ui.RubberZoomedPanel;
-import omr.ui.Zoom;
+import omr.ui.view.RubberZoomedPanel;
+import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.Color;

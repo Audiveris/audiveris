@@ -11,7 +11,7 @@
 package omr.glyph;
 
 import omr.constant.Constant;
-import omr.ui.IconManager;
+import omr.ui.icon.IconManager;
 
 import java.awt.Color;
 import java.awt.event.ActionListener;

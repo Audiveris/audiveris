@@ -19,7 +19,7 @@ import omr.math.Moments;
 import omr.sheet.Picture;
 import omr.util.Logger;
 import omr.util.Predicate;
-import omr.ui.Zoom;
+import omr.ui.view.Zoom;
 
 import java.awt.*;
 import java.util.ArrayList;
