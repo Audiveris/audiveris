@@ -101,7 +101,6 @@ public class SheetManager
     //---------------//
     // dumpAllSheets //
     //---------------//
-
     /**
      * Dump all sheet instances
      */

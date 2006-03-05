@@ -460,7 +460,6 @@ public class SystemInfo
     //----------//
     // getRight //
     //----------//
-
     /**
      * Report the abscissa of the end of the system
      *

@@ -64,7 +64,6 @@ public class SystemSplit
     //-----------//
     // splitBars //
     //-----------//
-
     /**
      * Split the various BarInfo entities
      *
@@ -100,7 +99,6 @@ public class SystemSplit
     //-------------------------//
     // splitHorizontalSections //
     //-------------------------//
-
     /**
      * Split the various horizontal sections [Unused].
      * @param sheet the containing sheet
@@ -138,7 +136,6 @@ public class SystemSplit
     //-----------------------//
     // splitHorizontalSticks //
     //-----------------------//
-
     /**
      * Split the collection of provided horizontal sticks [Unused].
      *
@@ -174,7 +171,6 @@ public class SystemSplit
     //------------------//
     // splitHorizontals //
     //------------------//
-
     /**
      * Split the various horizontals among systems (Used by Systems).
      * @param sheet the containing sheet
@@ -228,7 +224,6 @@ public class SystemSplit
     //-----------------------//
     // splitVerticalSections //
     //-----------------------//
-
     /**
      * Split the various horizontal sections (Used by Glyphs).
      * @param sheet the containing sheet
@@ -261,7 +256,6 @@ public class SystemSplit
     //---------------------//
     // splitVerticalSticks //
     //---------------------//
-
     /**
      * Split the collection of provided vertical sticks (Used by
      * VerticalsBuilder).
@@ -298,7 +292,6 @@ public class SystemSplit
     //---------------------//
     // computeSystemLimits //
     //---------------------//
-
     /**
      * Compute the top and bottom ordinates of the related area of each
      * system
@@ -334,7 +327,6 @@ public class SystemSplit
     //---------//
     // process //
     //---------//
-
     /**
      * A generic method, meant to process a given collection of source
      * entities according to the different systems of the sheet.

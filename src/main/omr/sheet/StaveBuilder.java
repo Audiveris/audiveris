@@ -53,7 +53,6 @@ public class StaveBuilder
     //--------------//
     // StaveBuilder //
     //--------------//
-
     /**
      * Create a stave retriever, based on an underlying horizontal lag..
      *

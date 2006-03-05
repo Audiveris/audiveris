@@ -303,6 +303,7 @@ public class VerticalsBuilder
             protected void glyphSelected (Glyph glyph,
                                           Point pt)
         {
+            ///logger.info(getClass() + " glyphSelected " + glyph);
             Context context = null;
             if (glyph instanceof Stick) {
                 try {

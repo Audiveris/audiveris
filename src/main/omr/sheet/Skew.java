@@ -40,7 +40,6 @@ public class Skew
     //------//
     // Skew //
     //------//
-
     /**
      * This is meant to generate a skew entity, when its key informations
      * (the skew angle) is already known.
@@ -61,7 +60,6 @@ public class Skew
     //-------//
     // angle //
     //-------//
-
     /**
      * Report the skew angle
      *
