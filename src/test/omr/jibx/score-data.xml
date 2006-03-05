@@ -1,0 +1,53 @@
+<score
+    width="1815"
+    height="2346"
+    skewangle="0"
+    spacing="15360"
+    image="U:\soft\audiveris\examples\Country.png"
+    >
+
+    <system
+        top="486"
+        left="107"
+        width="1598"
+        height="0"
+        />
+
+    <system
+        top="123"
+        left="456"
+        width="2006"
+        height="20"
+        >
+	<stave
+	    top="100"
+	    left="200"
+	    width="1000"
+	    size="64"
+	    stavelink="0">
+
+	    <measure
+		linetype="SINGLE_BARLINE"
+		leftlinex="100"
+		rightlinex="100"
+		lineinvented="false">
+	    </measure>
+
+	    <measure
+		linetype="DOUBLE_BARLINE"
+		leftlinex="200"
+		rightlinex="210"
+		lineinvented="false">
+	    </measure>
+	</stave>
+
+	<slur
+	    leftrow="11"
+	    leftcolumn="22"
+	    rightrow="12"
+	    rightcolumn="24"
+	    radius="30" />
+    </system>
+
+</score>
+    
