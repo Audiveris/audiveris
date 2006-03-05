@@ -17,7 +17,7 @@ import omr.score.ScoreManager;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 import omr.ui.Jui;
-import omr.ui.UILookAndFeel;
+import omr.ui.util.UILookAndFeel;
 import omr.util.Clock;
 import omr.util.Logger;
 

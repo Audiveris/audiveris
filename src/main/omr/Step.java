@@ -11,7 +11,7 @@
 package omr;
 
 import omr.sheet.Sheet;
-import omr.ui.StepMonitor;
+import omr.StepMonitor;
 import omr.util.Logger;
 import omr.util.Memory;
 
