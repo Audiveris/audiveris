@@ -66,7 +66,6 @@ public class UnitTreeTable
     //---------------//
     // adjustColumns //
     //---------------//
-
     /**
      * Allows to adjust the related columnModel, for each and every column
      *

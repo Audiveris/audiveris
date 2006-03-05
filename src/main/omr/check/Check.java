@@ -187,7 +187,6 @@ public abstract class Check <C extends Checkable>
     //-------------//
     // isCovariant //
     //-------------//
-
     /**
      * Report the covariant flag
      *

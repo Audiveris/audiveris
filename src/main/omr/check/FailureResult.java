@@ -25,7 +25,6 @@ public class FailureResult
     //---------------//
     // FailureResult //
     //---------------//
-
     /**
      * Creates a new FailureResult object.
      *
@@ -41,7 +40,6 @@ public class FailureResult
     //----------//
     // toString //
     //----------//
-
     /**
      * Report a readable string about this failure instance
      *

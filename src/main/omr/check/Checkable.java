@@ -24,7 +24,6 @@ public interface Checkable
     //-----------//
     // setResult //
     //-----------//
-
     /**
      * Store the check result directly into the checkable entity.
      *

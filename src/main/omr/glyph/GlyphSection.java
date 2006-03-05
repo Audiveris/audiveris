@@ -86,7 +86,6 @@ public class GlyphSection
     //----------//
     // isMember //
     //----------//
-
     /**
      * Checks whether the section is already a member of a glyph, whether this
      * glyph has been successfully recognized or not.
@@ -120,7 +119,6 @@ public class GlyphSection
     //----------//
     // toString //
     //----------//
-
     /**
      * A readable description of this entity
      *

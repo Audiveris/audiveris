@@ -154,7 +154,6 @@ public class Glyph
     //----------//
     // colorize //
     //----------//
-
     /**
      * Set the display color of all sections that compose this glyph.
      *

@@ -53,7 +53,6 @@ public abstract class Constant
     //----------//
     // Constant //
     //----------//
-
     /**
      * Creates a constant instance, while providing a default value, in
      * case the external property is not yet defined.
@@ -88,7 +87,6 @@ public abstract class Constant
     //----------//
     // setValue //
     //----------//
-
     /**
      * Allows to modify the current value of the constant; This abstract
      * method is actually defined in each subclass, to enforce validation
@@ -101,7 +99,6 @@ public abstract class Constant
     //----------------//
     // getDescription //
     //----------------//
-
     /**
      * Get the description sentence recorded with the constant
      *
@@ -149,7 +146,6 @@ public abstract class Constant
     //------------//
     // isModified //
     //------------//
-
     /**
      * Checks whether the current value is different from the original one.
      * NB: The test is made on string literal, which may result in false
@@ -182,7 +178,6 @@ public abstract class Constant
     //-------//
     // reset //
     //-------//
-
     /**
      * Forget any modification eventually made, and reset to the initial
      * value.
@@ -195,7 +190,6 @@ public abstract class Constant
     //-----------//
     // toBoolean //
     //-----------//
-
     /**
      * Gets the current value, as a boolean type.
      *
@@ -228,7 +222,6 @@ public abstract class Constant
     //-----------//
     // setString //
     //-----------//
-
     /**
      * Modifies the current parameter value, with no validity check of the
      * string
@@ -247,7 +240,6 @@ public abstract class Constant
     //--------//
     // toByte //
     //--------//
-
     /**
      * Gets the current value, as a byte type.
      *
@@ -265,7 +257,6 @@ public abstract class Constant
     //--------//
     // toChar //
     //--------//
-
     /**
      * Gets the current value, as a character type.
      *
@@ -283,7 +274,6 @@ public abstract class Constant
     //----------//
     // toDouble //
     //----------//
-
     /**
      * Gets the current value, as a double type.
      *
@@ -301,7 +291,6 @@ public abstract class Constant
     //---------//
     // toFloat //
     //---------//
-
     /**
      * Gets the current value, as a float type.
      *
@@ -319,7 +308,6 @@ public abstract class Constant
     //-------//
     // toInt //
     //-------//
-
     /**
      * Gets the current value, as a int type.
      *
@@ -337,7 +325,6 @@ public abstract class Constant
     //--------//
     // toLong //
     //--------//
-
     /**
      * Gets the current value, as a long type.
      *
@@ -355,7 +342,6 @@ public abstract class Constant
     //---------//
     // toShort //
     //---------//
-
     /**
      * Gets the current value, as a short type.
      *
@@ -393,7 +379,6 @@ public abstract class Constant
     //---------//
     // setName //
     //---------//
-
     /**
      * (package access) Allows to record the name of the constant
      *
@@ -413,7 +398,6 @@ public abstract class Constant
     //---------//
     // setUnit //
     //---------//
-
     /**
      * (package access) Allows to record the containing unit of the
      * constant
@@ -432,7 +416,6 @@ public abstract class Constant
     //---------------//
     // currentString //
     //---------------//
-
     /**
      * Gets the current value, as a String type. This is package private.
      *
@@ -474,7 +457,6 @@ public abstract class Constant
     //---------//
     // Boolean //
     //---------//
-
     /**
      * A subclass of Constant, meant to store a boolean value.
      */
@@ -549,7 +531,6 @@ public abstract class Constant
     //--------//
     // Double //
     //--------//
-
     /**
      * A subclass of Constant, meant to store a double value.
      */
@@ -791,7 +772,6 @@ public abstract class Constant
     //--------//
     // String //
     //--------//
-
     /**
      * A subclass of Constant, meant to store a string value.
      */

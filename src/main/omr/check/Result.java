@@ -32,7 +32,6 @@ public abstract class Result
     //--------//
     // Result //
     //--------//
-
     /**
      * Creates a new Result object.
      *
@@ -48,7 +47,6 @@ public abstract class Result
     //----------//
     // toString //
     //----------//
-
     /**
      * Report a description of this result
      *

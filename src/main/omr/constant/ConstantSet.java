@@ -49,7 +49,6 @@ public abstract class ConstantSet
     //-------------//
     // ConstantSet //
     //-------------//
-
     /**
      * Registers this ConstantSet at ConstantSetMAnager
      */
@@ -64,7 +63,6 @@ public abstract class ConstantSet
     //------------//
     // isModified //
     //------------//
-
     /**
      * Predicate to check whether at least one of the constant of the set
      * has been modified
@@ -85,7 +83,6 @@ public abstract class ConstantSet
     //------//
     // dump //
     //------//
-
     /**
      * A utility method to dump current value of each constant in the set.
      */
@@ -101,7 +98,6 @@ public abstract class ConstantSet
     //----------//
     // toString //
     //----------//
-
     /**
      * Return the last part of the ConstantSet name, without the leading
      * package names. This short name is used by Constant TreeTable
@@ -128,7 +124,6 @@ public abstract class ConstantSet
     //------------//
     // initialize //
     //------------//
-
     /**
      * This is meant to be called in the constructor of subclasses, to
      * actually initialize some needed fields in the ConstantSet.
@@ -218,7 +213,6 @@ public abstract class ConstantSet
     //---------//
     // getName //
     //---------//
-
     /**
      * Report the name of the enclosing unit
      *

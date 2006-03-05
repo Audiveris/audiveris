@@ -25,7 +25,6 @@ public class SuccessResult
     //---------------//
     // SuccessResult //
     //---------------//
-
     /**
      * Creates a new SuccessResult object.
      *
@@ -41,7 +40,6 @@ public class SuccessResult
     //----------//
     // toString //
     //----------//
-
     /**
      * Report a description of this success
      *

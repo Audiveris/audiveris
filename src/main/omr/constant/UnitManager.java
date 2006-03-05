@@ -64,7 +64,6 @@ public class UnitManager
     //-------------//
     // UnitManager //
     //-------------//
-
     private UnitManager (String main)
     {
         INSTANCE = this;

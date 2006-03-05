@@ -124,7 +124,6 @@ public class UnitModel
     //-----------//
     // UnitModel //
     //-----------//
-
     /**
      * Builds the model
      */
@@ -150,7 +149,6 @@ public class UnitModel
     //----------//
     // getChild //
     //----------//
-
     /**
      * Returns the child of <code>parent</code> at index <code>index</code>
      * in the parent's child array.
@@ -185,7 +183,6 @@ public class UnitModel
     //---------------//
     // getChildCount //
     //---------------//
-
     /**
      * Returns the number of children of <code>parent</code>.
      *
@@ -247,7 +244,6 @@ public class UnitModel
     //--------//
     // isLeaf //
     //--------//
-
     /**
      * Returns <code>true</code> if <code>node</code> is a leaf.
      *
