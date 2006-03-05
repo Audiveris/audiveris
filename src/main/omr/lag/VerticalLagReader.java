@@ -29,7 +29,6 @@ public class VerticalLagReader
     //-----------//
     // LagReader //
     //-----------//
-
     /**
      * Create a vertical lag adapter, with its key parameters.
      *

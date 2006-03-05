@@ -93,7 +93,6 @@ public class GlyphBoard
      */
     protected volatile boolean focusWanted = true;
 
-
     /** The JGoodies/Form layout to be used by all subclasses  */
     protected FormLayout layout = Panel.makeFormLayout(5, 3);
 

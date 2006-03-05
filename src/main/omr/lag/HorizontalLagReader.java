@@ -29,7 +29,6 @@ public class HorizontalLagReader
     //-----------//
     // LagReader //
     //-----------//
-
     /**
      * Create a horizontal lag adapter, with its key parameters.
      *

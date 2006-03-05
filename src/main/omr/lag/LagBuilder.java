@@ -62,7 +62,6 @@ public class LagBuilder <L extends Lag     <L, S>,
     //------------//
     // LagBuilder //
     //------------//
-
     /**
      * Create an instance of LagBuilder.
      */
@@ -75,7 +74,6 @@ public class LagBuilder <L extends Lag     <L, S>,
     //-----//
     // rip //
     //-----//
-
     /**
      * Populate a lag, with run compatibility policy, by ripping a picture
      *

@@ -39,7 +39,6 @@ public class Run
     //-----//
     // Run //
     //-----//
-
     /**
      * Creates a new <code>Run</code> instance.
      *
@@ -62,7 +61,6 @@ public class Run
     //----------//
     // readRuns //
     //----------//
-
     /**
      * The <code>readRuns</code> method can be used to build the runs on
      * the fly, by providing a given rectangle. Note that the w and h
@@ -147,7 +145,6 @@ public class Run
     //-----------//
     // getLength //
     //-----------//
-
     /**
      * Report the length of the run in pixels
      *
@@ -161,7 +158,6 @@ public class Run
     //----------//
     // getLevel //
     //----------//
-
     /**
      * Return the mean grey level of the run
      *
@@ -175,7 +171,6 @@ public class Run
     //----------//
     // getStart //
     //----------//
-
     /**
      * Report the starting coordinate of the run (x for horizontal, y for
      * vertical)
@@ -190,7 +185,6 @@ public class Run
     //---------//
     // getStop //
     //---------//
-
     /**
      * Return the coordinate of the stop for a run.  This is the bottom
      * ordinate for a vertical run, or the right abscissa for a horizontal
@@ -206,7 +200,6 @@ public class Run
     //----------//
     // toString //
     //----------//
-
     /**
      * The <code>toString</code> method is used to get a readable image of
      * the run.
@@ -238,7 +231,6 @@ public class Run
         //--------//
         // isFore //
         //--------//
-
         /**
          * This method is used to check if the grey level corresponds to a
          * foreground pixel.
@@ -252,7 +244,6 @@ public class Run
         //----------//
         // getLevel //
         //----------//
-
         /**
          * This method is used to report the grey level of the pixel read
          * at location (coord, pos).
@@ -269,7 +260,6 @@ public class Run
         //---------//
         // backRun //
         //---------//
-
         /**
          * Called at end of a background run, with the related coordinates
          *
@@ -284,7 +274,6 @@ public class Run
         //---------//
         // foreRun //
         //---------//
-
         /**
          * Same as background, but for a foreground run. We also provide
          * the measure of accumulated grey level in that case.
@@ -302,7 +291,6 @@ public class Run
         //-----------//
         // terminate //
         //-----------//
-
         /**
          * Called at the very end of run retrieval
          */

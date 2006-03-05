@@ -38,7 +38,6 @@ public class JunctionRatioPolicy
     //---------------------//
     // JunctionRatioPolicy //
     //---------------------//
-
     /**
      * Creates a policy based on ratio of run length versus mean length of
      * section runs
@@ -70,7 +69,6 @@ public class JunctionRatioPolicy
     //----------//
     // toString //
     //----------//
-
     /**
      * Return a descriptive string of this junction policy
      *

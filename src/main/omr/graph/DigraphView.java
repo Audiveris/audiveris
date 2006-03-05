@@ -24,7 +24,6 @@ public interface DigraphView
     //--------//
     // render //
     //--------//
-
     /**
      * Render the whole graph view
      *

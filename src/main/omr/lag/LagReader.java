@@ -68,7 +68,6 @@ public class LagReader
     //-----------//
     // LagReader //
     //-----------//
-
     /**
      * Create an adapter, with its key parameters.
      *

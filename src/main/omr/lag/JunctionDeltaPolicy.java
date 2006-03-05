@@ -33,7 +33,6 @@ public class JunctionDeltaPolicy
     //---------------------//
     // JunctionDeltaPolicy //
     //---------------------//
-
     /**
      * Creates an instance of policy based on delta run length
      *
@@ -62,7 +61,6 @@ public class JunctionDeltaPolicy
     //----------//
     // toString //
     //----------//
-
     /**
      * Report a readable description of the policy
      *

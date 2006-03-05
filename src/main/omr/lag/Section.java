@@ -434,7 +434,6 @@ public class Section <L extends Lag,
     //------------//
     // getLastPos //
     //------------//
-
     /**
      * Return the position of the last run of the section
      *
@@ -571,7 +570,6 @@ public class Section <L extends Lag,
     //-----------//
     // getWeight //
     //-----------//
-
     /**
      * Return the total weight of the section, which is the sum of the
      * weight (length) of all runs.

@@ -23,9 +23,9 @@ import omr.util.Subject;
 public class DefaultSectionSubject
     extends DefaultSubject<SectionSubject, SectionObserver, Section>
 {
-    //----------------//
+    //-----------------//
     // notifyObservers //
-    //----------------//
+    //-----------------//
     /**
      * Push the Run information to registered observers
      *

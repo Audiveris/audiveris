@@ -25,7 +25,6 @@ public abstract class JunctionPolicy
     //---------------//
     // consistentRun //
     //---------------//
-
     /**
      * Check if provided run is consistent with the section as defined so
      * far

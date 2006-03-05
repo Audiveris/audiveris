@@ -134,7 +134,6 @@ public class Vertex <D extends Digraph,
     //-------//
     // getId //
     //-------//
-
     /**
      * Report the unique Id (within the containing graph) of this vertex
      *
@@ -148,7 +147,6 @@ public class Vertex <D extends Digraph,
     //-------//
     // setId //
     //-------//
-
     /**
      * Assign a new Id (for expert use only)
      *
@@ -162,7 +160,6 @@ public class Vertex <D extends Digraph,
     //-------------//
     // getInDegree //
     //-------------//
-
     /**
      * Return how many incoming edges we have
      *
@@ -176,7 +173,6 @@ public class Vertex <D extends Digraph,
     //--------------//
     // getOutDegree //
     //--------------//
-
     /**
      * Return the number of edges outgoing from this vertex
      *
@@ -190,7 +186,6 @@ public class Vertex <D extends Digraph,
     //----------//
     // getViews //
     //----------//
-
     /**
      * Pointers to the related view if any
      *
@@ -208,7 +203,6 @@ public class Vertex <D extends Digraph,
     //---------//
     // addView //
     //---------//
-
     /**
      * Add the related view of this vertex
      *
@@ -222,7 +216,6 @@ public class Vertex <D extends Digraph,
     //------//
     // dump //
     //------//
-
     /**
      * Prints on standard output a detailed information about this vertex.
      */
@@ -246,7 +239,6 @@ public class Vertex <D extends Digraph,
     //-----------//
     // getPrefix //
     //-----------//
-
     /**
      * Return a distinctive string, to be used as a prefix in toString()
      * for example.
@@ -261,7 +253,6 @@ public class Vertex <D extends Digraph,
     //------------//
     // getSources //
     //------------//
-
     /**
      * An access to incoming vertices
      *
@@ -275,7 +266,6 @@ public class Vertex <D extends Digraph,
     //------------//
     // getTargets //
     //------------//
-
     /**
      * Return an access to the outgoing vertices of this vertex
      *
@@ -316,7 +306,6 @@ public class Vertex <D extends Digraph,
     //----------//
     // toString //
     //----------//
-
     /**
      * Return a readable description of the vertex
      *
