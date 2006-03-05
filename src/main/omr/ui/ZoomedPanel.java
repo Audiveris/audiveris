@@ -21,29 +21,40 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>ZoomedPanel</code> is an abstract class meant to handle
- * recurrent tasks of a display with a magnifying lens, as provided by a
- * related {@link Zoom} entity.
+ * Class <code>ZoomedPanel</code> is a class meant to handle common
+ * task of a display with a magnifying lens, as provided by a related
+ * {@link Zoom} entity.
  *
- * <p>Via the {@link PixelFocus} interface, we can ask this panel fo focus
- * on a specific point or rectangle.
+ * <p>This class does not allocate any zoom instance. When using this
+ * class, we have to provide our own Zoom instance, either at contruction
+ * time by using the proper constructor or later by using the {@link
+ * #setZoom} method. The class then registers itself as an observer of the
+ * Zoom instance, to be notified when the zoom ratio is modified.
+ *
+ * <p>The ModelSize is the unzoomed size of the data to be displayed, it
+ * can be updated through {@link #setModelSize}. This is useful when used
+ * in combination with a JScrollPane container (see {@link ScrollView}
+ * example).
+ *
+ * <p>Via the {@link PixelFocus} interface, we can programmatically ask
+ * this panel fo focus on a specific point or rectangle.
  *
  * <p>Via the {@link MouseMonitor} interface, this panel traps the various
  * mouse actions.
  *
- * <p> This class is best used when enclosed in a scroll pane, so that the
- * zooming and focus features are really effective. </p>
- *
- * <p> Remark : this class cannot directly implement PixelSubject because
- * of several informations to be pushed. To be more thoroughly
- * investigated, TBD.
+ * <p> This class cannot directly declare that it implements the interface
+ * {@link PixelSubject}, because there are several informations to be
+ * pushed. However, the PixelSubject methods (such as addObserver, etc) are
+ * indeed provided, to allow a registered {@link PixelObserver} to be
+ * notified of any modification in the pixel information (point and/or
+ * rectangle).
  *
  * @see RubberZoomedPanel
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public abstract class ZoomedPanel
+public class ZoomedPanel
     extends JPanel
     implements ChangeListener,
                MouseMonitor,
@@ -66,13 +77,17 @@ public abstract class ZoomedPanel
     protected DefaultPixelSubject pixelSubject
         = new DefaultPixelSubject();
 
+    /** To avoid circular updating */
+    protected volatile transient boolean selfUpdating;
+
     //~ Constructors ------------------------------------------------------
 
     //-------------//
     // ZoomedPanel //
     //-------------//
     /**
-     * Create a bare zoomed panel, assuming zoom will be assigned later
+     * Create a zoomed panel, with no predefined zoom, assuming a zoom
+     * instance will be provided later via the {@link #setZoom} method..
      */
     public ZoomedPanel ()
     {
@@ -82,11 +97,30 @@ public abstract class ZoomedPanel
     // ZoomedPanel //
     //-------------//
     /**
-     * Create a zoomed panel
+     * Create a zoomed panel, with a driving zoom instance.
+     *
+     * @param zoom the related zoom instance
      */
     public ZoomedPanel (Zoom zoom)
     {
         setZoom(zoom);
+    }
+
+    //-------------//
+    // ZoomedPanel //
+    //-------------//
+    /**
+     * Create a zoomed panel, with a driving zoom instance and the
+     * underlying model size.
+     *
+     * @param zoom the related zoom instance
+     * @param modelSize the underlying model size
+     */
+    public ZoomedPanel (Zoom      zoom,
+                        Dimension modelSize)
+    {
+        setZoom(zoom);
+        setModelSize(modelSize);
     }
 
     //~ Methods -----------------------------------------------------------
@@ -148,7 +182,9 @@ public abstract class ZoomedPanel
     public void pointSelected (MouseEvent e,
                                Point pt)
     {
-        notifyObservers(pt);
+        selfUpdating = true;
+        setFocusPoint(pt);
+        selfUpdating = false;
     }
 
     //------------//
@@ -157,7 +193,9 @@ public abstract class ZoomedPanel
     public void pointAdded (MouseEvent e,
                             Point pt)
     {
+        selfUpdating = true;
         pointSelected(e, pt);
+        selfUpdating = false;
     }
 
     //-----------//
@@ -169,10 +207,6 @@ public abstract class ZoomedPanel
      */
     public void reDisplay ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("reDisplay");
-        }
-
         setFocusRectangle(null);
     }
 
@@ -182,11 +216,9 @@ public abstract class ZoomedPanel
     public void rectangleSelected (MouseEvent e,
                                    Rectangle  rect)
     {
-        if ((rect.width != 0) || (rect.height != 0)) {
-            notifyObservers(rect);
-        } else {
-            pointSelected(e, rect.getLocation());
-        }
+        selfUpdating = true;
+        setFocusRectangle(rect);
+        selfUpdating = false;
     }
 
     //-----------------//
@@ -195,7 +227,7 @@ public abstract class ZoomedPanel
     public void rectangleZoomed (MouseEvent e,
                                  final Rectangle rect)
     {
-        // First center of the specified rectangle
+        // First focus on center of the specified rectangle
         setFocusRectangle(rect);
 
         // Then, adjust zoom ratio to fit the rectangle size
@@ -228,13 +260,17 @@ public abstract class ZoomedPanel
 
         updatePreferredSize();
 
-        if (pt != null) {
-            Rectangle vr = getVisibleRect();
-            vr.x = zoom.scaled(pt.x) - (vr.width /2);
-            vr.y = zoom.scaled(pt.y) - (vr.height /2);
+        if (pt != null && !selfUpdating) {
+            int margin = constants.focusMargin.getValue();
+            Rectangle vr = new Rectangle
+                (zoom.scaled(pt.x) - margin,
+                 zoom.scaled(pt.y) - margin,
+                 zoom.scaled(2 * margin),
+                 zoom.scaled(2 * margin));
             scrollRectToVisible(vr);
         }
 
+        notifyObservers(pt);
         repaint();
     }
 
@@ -243,31 +279,23 @@ public abstract class ZoomedPanel
     //-------------------//
     public void setFocusRectangle (Rectangle rect)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setFocusRectangle rect=" + rect);
-        }
-
         updatePreferredSize();
 
-        if (rect != null) {
-            // To center rectangle in the window
-            //             Rectangle vr = getVisibleRect();
-            //             vr.x = zoom.scaled(rect.x) +
-            //                 zoom.scaled(rect.width/2) - (vr.width / 2);
-            //             vr.y = zoom.scaled(rect.y) +
-            //                 zoom.scaled(rect.height/2) - (vr.height / 2);
-            //             scrollRectToVisible(vr);
-
-            // Or, with less movements
+        if (rect != null && !selfUpdating) {
+            if (rect.width != 0 || rect.height != 0) {
             int margin = constants.focusMargin.getValue();
             Rectangle vr = new Rectangle
                 (zoom.scaled(rect.x) - margin,
                  zoom.scaled(rect.y) - margin,
-                 zoom.scaled(rect.width   + 2*margin),
-                 zoom.scaled(rect.height) + 2*margin);
-            scrollRectToVisible(vr);
+                 zoom.scaled(rect.width   + 2 * margin),
+                 zoom.scaled(rect.height) + 2 * margin);
+                scrollRectToVisible(vr);
+            } else {
+                setFocusPoint(rect.getLocation());
+            }
         }
 
+        notifyObservers(rect);
         repaint();
     }
 
@@ -301,9 +329,9 @@ public abstract class ZoomedPanel
     // notifyObservers //
     //-----------------//
     /**
-     * Push the point information to registered observer
+     * Push the point information to registered observers
      *
-     * @param ul the point info
+     * @param ul the point information
      */
     public void notifyObservers (Point ul)
     {
@@ -317,7 +345,7 @@ public abstract class ZoomedPanel
      * Push the point information and the grey level to registered
      * observers
      *
-     * @param ul the point info
+     * @param ul the point information
      * @param level the grey level of the pixel
      */
     public void notifyObservers (Point ul,
@@ -349,6 +377,11 @@ public abstract class ZoomedPanel
      */
     public void setZoom (final Zoom zoom)
     {
+        // Clean up if needed
+        if (this.zoom != null) {
+            this.zoom.removeChangeListener(this);
+        }
+
         this.zoom = zoom;
 
         if (zoom != null) {
@@ -407,14 +440,14 @@ public abstract class ZoomedPanel
         revalidate();
     }
 
+    //~ Classes -----------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
-        //~ Instance variables -----------------------------------------------
-
         Constant.Integer focusMargin = new Constant.Integer
                 (20,
                  "Margin (in pixels) visible around a focus");
