@@ -12,7 +12,6 @@ package omr.score;
 
 import omr.Main;
 import omr.sheet.Sheet;
-import omr.ui.Mark;
 import omr.ui.SheetPane;
 import omr.util.Logger;
 import omr.ui.Zoom;
@@ -23,16 +22,15 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.Iterator;
+import omr.ui.SheetAssembly;
+import omr.ui.Rubber;
+import omr.ui.RubberZoomedPanel;
+import omr.ui.ScrollView;
 
 /**
  * Class <code>ScoreView</code> encapsulates the horizontal display of all
  * the score systems which may encompass several pages & systems. It knows
  * about the display zoom ratio of the score.
- *
- * <B>NOTA</B> : For the time being, this score display has been removed
- * from the Audiveris application. The file is still here, because of
- * dependencies on logical constants. This should be cleaned up someday of
- * course.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -45,79 +43,58 @@ public class ScoreView
 
     // Symbolic constants
 
-    /**
-     * Height in pixels of the score display : {@value}
-     */
-    public static final int SCORE_AREA_HEIGHT = 500;
+    /** Height in pixels of a stave display : {@value} */
+    public static final int STAVE_AREA_HEIGHT = 100;
 
-    /**
-     * Horizontal offset in pixels of the score origin : {@value}
-     */
+    /** Height in pixels above/under a stave display : {@value} */
+    public static final int STAVE_MARGIN_HEIGHT = 40;
+
+    /** Horizontal offset in pixels of the score origin : {@value} */
     public static final int SCORE_INIT_X = 200;
 
-    /**
-     * Vertical offset in pixels of the score origin : {@value}
-     */
-    public static final int SCORE_INIT_Y = 200;
+    /** Vertical offset in pixels of the score origin : {@value} */
+    public static final int SCORE_INIT_Y = 150;
 
-    /**
-     * Horizontal gutter in pixels between two systems : {@value}
-     */
+    /** Horizontal gutter in pixels between two systems : {@value} */
     public static final int INTER_SYSTEM = 100;
 
-    /**
-     * Vertical distance in pixels between two lines of a staff : {@value}
-     */
+    /** Vertical distance in pixels between two lines of a staff :
+        {@value} */
     public static final int INTER_LINE = 16;
 
-    /**
-     * Horizontal gutter in pixels between two pages : {@value}
-     */
+    /** Horizontal gutter in pixels between two pages : {@value} */
     public static final int INTER_PAGE = 200;
 
-    /**
-     * Number of lines in a staff : {@value}
-     */
+    /** Number of lines in a staff : {@value} */
     public static final int LINE_NB = 5;
 
-    /**
-     * Height in pixels of one staff : {@value}
-     */
+    /** Height in pixels of one staff : {@value} */
     public static final int STAFF_HEIGHT = (LINE_NB - 1) * INTER_LINE;
 
-    /**
-     * Used to code fractions with an integer value, with a resolution of
-     * 1/{@value}
-     */
+    /** Used to code fractions with an integer value, with a resolution of
+        1/{@value} */
     public static final int BASE = 1024;
 
-    // Display zoom
-    private static final Zoom zoom = new Zoom(0.5d);
-
-    // Default view position
-    private static final Point defaultPosition
-            = new Point(0,
-                        zoom.scaled(SCORE_INIT_Y / 2));
-
     //~ Instance variables ------------------------------------------------
-
-    // The concrete component
-    private JPanel component;
-
-    // The displayed panel
-    private final Panel panel = new Panel();
 
     // The related score
     private final Score score;
 
-    // To mark a location
-    private final Mark mark = new Mark(Color.orange);
+    // Display zoom
+    private final Zoom zoom = new Zoom(0.5d);
 
-    // Scrolled pane
-    private final JScrollPane scrollPane;
+    // Mouse rubber
+    private final Rubber rubber = new Rubber(zoom);
 
-    // Related Information display
-    private final JLabel info = new JLabel();
+    // Default view position
+    private final Point defaultPosition
+            = new Point(0, zoom.scaled(SCORE_INIT_Y / 2));
+
+    // The displayed panel
+    private final MyPanel panel = new MyPanel(zoom, rubber);
+
+    // The scroll pane
+    private final ScrollView pane = new ScrollView(panel);
 
     // Meant for Point computation, w/o continuous allocations
     //
@@ -126,6 +103,9 @@ public class ScoreView
 
     // Point in virtual sheet display in units  (not zoomed, not skewed)
     private PagePoint pagPt = new PagePoint();
+    
+    // To avoid circular updating
+    private volatile transient boolean selfUpdating;
 
     //~ Constructors ------------------------------------------------------
 
@@ -142,54 +122,31 @@ public class ScoreView
         if (logger.isDebugEnabled()) {
             logger.debug("new ScoreView on " + score);
         }
-        component = new JPanel();
 
         // Cross referencing between score and its view
         this.score = score;
         score.setView(this);
 
-        // Default mark location
-        //////////////mark.setLocation (new Point (SCORE_INIT_X, SCORE_INIT_Y));
-        // Global organization
-        component.setLayout(new BorderLayout());
-
-        // Scroll pane to contain the component
-        scrollPane = new JScrollPane(panel);
-        component.add(scrollPane, BorderLayout.CENTER);
-
-        // Information display
-        component.add(info, BorderLayout.SOUTH);
-
-        // The panel in the scroll pane
-        ////setViewportView (panel);
-        // Compute origin of all memners
+        // Compute origin of all members
         computePositions();
-
-        // Pre-position the scroll
-        scrollPane.getViewport().setViewPosition(defaultPosition);
     }
 
     //~ Methods -----------------------------------------------------------
 
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the UI component
-     *
-     * @return the concrete component
-     */
-    public JComponent getComponent()
+    //---------//
+    // getPane //
+    //---------//
+    public ScrollView getPane()
     {
-        return component;
+        return pane;
     }
 
     //----------//
     // setFocus //
     //----------//
-
     /**
-     * Move the score display, so that focus is on the specified page point.
+     * Move the score display, so that focus is on the specified page
+     * point.
      *
      * @param pagPt the point in the score
      */
@@ -199,19 +156,21 @@ public class ScoreView
             logger.debug("setFocus pagPt=" + pagPt);
         }
 
-        if (pagPt != null) {
-            tellUnits(pagPt);
+         if (pagPt != null) {
+             tellPoint(pagPt);
 
-            // Which system ?
-            final System system = score.yLocateSystem(pagPt.y);
+             // Which system ?
+             final System system = score.yLocateSystem(pagPt.y);
 
-            if (system != null) {
-                system.sheetToScore(pagPt, scrPt);
-                mark.setLocation(scrPt);
-                panel.repaint();
-                panel.scrollRectToVisible(mark.getRectangle(zoom));
-            }
-        }
+             if (system != null) {
+                 if (!selfUpdating) {
+                    system.sheetToScore(pagPt, scrPt);
+                    selfUpdating = true;
+                    panel.setFocusPoint(scrPt);
+                    selfUpdating = false;
+                 }
+             }
+         }
     }
 
     //----------//
@@ -224,18 +183,18 @@ public class ScoreView
      */
     public PagePoint getFocus ()
     {
-        if (mark.isActive()) {
-            scrPt = mark.getLocation();
+//         if (mark.isActive()) {
+//             scrPt = mark.getLocation();
 
-            // The enclosing system
-            System system = score.xLocateSystem(scrPt.x);
+//             // The enclosing system
+//             System system = score.xLocateSystem(scrPt.x);
 
-            if (system != null) {
-                system.scoreToSheet(scrPt, pagPt); // Point in the sheet
+//             if (system != null) {
+//                 system.scoreToSheet(scrPt, pagPt); // Point in the sheet
 
-                return pagPt;
-            }
-        }
+//                 return pagPt;
+//             }
+//         }
 
         return null;
     }
@@ -243,7 +202,6 @@ public class ScoreView
     //----------//
     // getScore //
     //----------//
-
     /**
      * Report the score this view is dedicated to
      *
@@ -254,37 +212,31 @@ public class ScoreView
         return score;
     }
 
-    //---------//
-    // getZoom //
-    //---------//
-
-    /**
-     * Report the zoom used to display scores
-     *
-     * @return the zoom entity (actually, its ratio is the constant 1/2)
-     */
-    public static Zoom getZoom ()
-    {
-        return zoom;
-    }
-
     //-------//
     // close //
     //-------//
-
     /**
      * Close the score display, by removing it from the enclosing tabbed
      * pane.
      */
     public void close ()
     {
-        Main.getJui().scorePane.close(component);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Closing scoreView");
+        }
+
+        Sheet sheet = score.getSheet();
+        if (sheet != null) {
+            SheetAssembly assembly = sheet.getAssembly();
+            if (assembly != null) {
+                assembly.closeScoreView();
+            }
+        }
     }
 
     //------------------//
     // computePositions //
     //------------------//
-
     /**
      * Run computations on the tree of score, systems, etc, so that all
      * display data, such as origins and widths are available for display
@@ -293,6 +245,7 @@ public class ScoreView
     public void computePositions ()
     {
         if (logger.isDebugEnabled()) {
+            score.dump();
             logger.debug("computePositions");
         }
 
@@ -306,20 +259,19 @@ public class ScoreView
         }
 
         // Total size of this panel (for proper scrolling)
-        panel.setPreferredSize(new Dimension(zoom.scaled((SCORE_INIT_X
-                                                          + totalWidth
-                                                          + INTER_SYSTEM)),
-                                             SCORE_AREA_HEIGHT));
-        scrollPane.setViewportView(panel);
+        int w = zoom.scaled(SCORE_INIT_X + totalWidth + INTER_SYSTEM);
+        int h = 2 * STAVE_MARGIN_HEIGHT +
+            score.getMaxStaveNumber() * STAVE_AREA_HEIGHT;
+        panel.setModelSize
+            (new Dimension(SCORE_INIT_X + totalWidth + INTER_SYSTEM, 2*h));
     }
 
     //------------------//
     // showRelatedSheet //
     //------------------//
-
     /**
-     * Make an attempt to trigger the display (on the other side) of the
-     * sheet related to this score.
+     * Make an attempt to trigger the display of the sheet related to this
+     * score.
      */
     public void showRelatedSheet ()
     {
@@ -340,7 +292,6 @@ public class ScoreView
     //----------//
     // toString //
     //----------//
-
     /**
      * Report a readable description
      *
@@ -353,50 +304,11 @@ public class ScoreView
     }
 
     //-----------//
-    // tellUnits //
+    // tellPoint //
     //-----------//
-    private void tellUnits (PagePoint pagPt)
+    private void tellPoint (PagePoint pagPt)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("tellUnits pagPt=" + pagPt);
-        }
-
-        info.setText("ScoreView. Units X:" + pagPt.x + " Y:" + pagPt.y);
-    }
-
-    //---------------//
-    // useMouseFocus //
-    //---------------//
-    private void useMouseFocus (Point pt)
-    {
-        if (logger.isDebugEnabled()) {
-            logger.debug("useMouseFocus pt=" + pt);
-        }
-
-        // The designated mouse point, transformed into score units
-        scrPt.x = zoom.unscaled(pt.x);
-        scrPt.y = zoom.unscaled(pt.y);
-
-        // Update local mark, where the mouse is in the score display
-        mark.setLocation(scrPt);
-        panel.repaint();
-
-        // The enclosing system
-        final System system = score.xLocateSystem(scrPt.x);
-
-        if (system != null) {
-            system.scoreToSheet(scrPt, pagPt); // Point in the sheet
-            tellUnits(pagPt); // Update score panel
-
-//             // Focus on that point in the original sheet
-//             int viewIndex = Main.getJui().sheetPane.setScoreSheetView(score,
-//                                                                       pagPt);
-
-//             // Make it visible
-//             if (viewIndex != SheetPane.DIFFERED_INDEX) {
-//                 Main.getJui().sheetPane.showSheetView(viewIndex);
-//             }
-        }
+        ////info.setText("PagePoint X:" + pagPt.x + " Y:" + pagPt.y);
     }
 
     //~ Classes -----------------------------------------------------------
@@ -404,64 +316,81 @@ public class ScoreView
     //-------//
     // Panel //
     //-------//
-    private class Panel
-        extends JPanel
+    private class MyPanel
+        extends RubberZoomedPanel
     {
         //~ Constructors --------------------------------------------------
 
-        //-------//
-        // Panel //
-        //-------//
-        Panel ()
+        //---------//
+        // MyPanel //
+        //---------//
+        MyPanel (Zoom zoom,
+                Rubber rubber)
         {
+            super(zoom, rubber);
+            rubber.setMouseMonitor(this);
+
             // Initialize drawing colors, border, opacity.
             setBackground(new Color(255, 255, 220)); // (Color.white);
             setForeground(Color.black);
-
-            // Track pressed mouse events
-            addMouseListener(new MouseAdapter()
-            {
-                public void mousePressed (MouseEvent e)
-                {
-                    useMouseFocus(e.getPoint());
-
-                    // TBD HB add case of object selection (see DisplayPane)
-                }
-            });
-
-            // Track dragged mouse events
-            addMouseMotionListener(new MouseMotionAdapter()
-            {
-                public void mouseDragged (MouseEvent e)
-                {
-                    useMouseFocus(e.getPoint());
-                }
-            });
         }
 
         //~ Methods -------------------------------------------------------
 
-        //----------------//
-        // paintComponent //
-        //----------------//
+        //--------//
+        // render //
+        //--------//
         @Override
-        public void paintComponent (Graphics g)
+            public void render (Graphics g)
         {
-            if (logger.isDebugEnabled()) {
-                logger.debug("paintComponent for " + score);
-            }
-
             Graphics2D g2 = (Graphics2D) g;
 
-            // Paint background
-            super.paintComponent(g2);
-
             // All nodes information
-            score.paintChildren(g2);
+            score.paintChildren(g2, zoom, this);
+        }
 
-            // The location mark if any
-            if (mark.isActive()) {
-                mark.render(g, zoom);
+        //---------------//
+        // setFocusPoint //
+        //---------------//
+        @Override
+            public void setFocusPoint (Point scrPt)
+        {
+            // Display the point in score view
+            super.setFocusPoint(scrPt);
+            
+            if (selfUpdating) {
+                return;
+            }
+
+            // The enclosing system
+            final System system = score.xLocateSystem(scrPt.x);
+
+            if (system != null) {
+                system.scoreToSheet(scrPt, pagPt); // Point in the sheet
+                tellPoint(pagPt); // Update score panel
+                ///logger.info("scrPt=" + scrPt + " pagPt=" + pagPt);
+
+                // Focus on that point in the related sheet
+                Sheet sheet = score.getSheet();
+                if (sheet != null) {
+                    SheetAssembly assembly = sheet.getAssembly();
+                    if (assembly != null) {
+                        assembly.setSheetFocusPoint(pagPt);
+                    }
+                }
+            }
+        }
+
+        //-------------------//
+        // setFocusRectangle //
+        //-------------------//
+        public void setFocusRectangle (Rectangle rect)
+        {
+            super.setFocusRectangle(rect);
+            
+            if (rect != null) {
+                setFocusPoint(new Point(rect.x + rect.width,
+                                        rect.y + rect.height));
             }
         }
     }
