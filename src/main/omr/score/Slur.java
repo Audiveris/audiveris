@@ -10,9 +10,9 @@
 
 package omr.score;
 
+import omr.ui.view.Zoom;
 import omr.util.Dumper;
 import omr.util.Logger;
-import omr.ui.view.Zoom;
 
 import java.awt.*;
 

@@ -13,10 +13,10 @@ package omr.score;
 import omr.glyph.Shape;
 import omr.lag.Lag;
 import omr.sheet.BarInfo;
-import omr.util.Dumper;
-import omr.util.Logger;
 import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
+import omr.util.Dumper;
+import omr.util.Logger;
 
 import java.awt.*;
 import java.util.ArrayList;

@@ -13,10 +13,10 @@ package omr.score;
 import omr.lag.Lag;
 import omr.sheet.BarInfo;
 import omr.sheet.StaveInfo;
+import omr.ui.view.Zoom;
 import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
-import omr.ui.view.Zoom;
 
 import static omr.score.ScoreConstants.*;
 

@@ -12,21 +12,21 @@ package omr.score;
 
 import omr.Main;
 import omr.sheet.Sheet;
-import omr.util.Logger;
+import omr.ui.SheetAssembly;
+import omr.ui.view.Rubber;
+import omr.ui.view.RubberZoomedPanel;
+import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
+import omr.util.Logger;
 
 import static omr.score.ScoreConstants.*;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.Iterator;
-import omr.ui.SheetAssembly;
-import omr.ui.view.Rubber;
-import omr.ui.view.RubberZoomedPanel;
-import omr.ui.view.ScrollView;
+import javax.swing.*;
 
 /**
  * Class <code>ScoreView</code> encapsulates the horizontal display of all

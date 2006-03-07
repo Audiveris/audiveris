@@ -11,9 +11,9 @@
 package omr.score;
 
 import omr.lag.Lag;
+import omr.ui.view.Zoom;
 import omr.util.Logger;
 import omr.util.TreeNode;
-import omr.ui.view.Zoom;
 
 import java.awt.*;
 

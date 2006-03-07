@@ -12,14 +12,14 @@ package omr.score;
 
 import omr.util.Dumper;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.event.*;
+import javax.swing.tree.*;
 
 /**
  * Class <code>ScoreTree</code> provides a user interface (a frame) where
