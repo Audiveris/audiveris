@@ -15,6 +15,8 @@ import omr.sheet.Sheet;
 import omr.util.Logger;
 import omr.ui.view.Zoom;
 
+import static omr.score.ScoreConstants.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -39,40 +41,6 @@ public class ScoreView
     //~ Static variables/initializers -------------------------------------
 
     private static final Logger logger = Logger.getLogger(ScoreView.class);
-
-    // Symbolic constants
-
-    /** Height in pixels of a stave display : {@value} */
-    public static final int STAVE_AREA_HEIGHT = 100;
-
-    /** Height in pixels above/under a stave display : {@value} */
-    public static final int STAVE_MARGIN_HEIGHT = 40;
-
-    /** Horizontal offset in pixels of the score origin : {@value} */
-    public static final int SCORE_INIT_X = 200;
-
-    /** Vertical offset in pixels of the score origin : {@value} */
-    public static final int SCORE_INIT_Y = 150;
-
-    /** Horizontal gutter in pixels between two systems : {@value} */
-    public static final int INTER_SYSTEM = 100;
-
-    /** Vertical distance in pixels between two lines of a staff :
-        {@value} */
-    public static final int INTER_LINE = 16;
-
-    /** Horizontal gutter in pixels between two pages : {@value} */
-    public static final int INTER_PAGE = 200;
-
-    /** Number of lines in a staff : {@value} */
-    public static final int LINE_NB = 5;
-
-    /** Height in pixels of one staff : {@value} */
-    public static final int STAFF_HEIGHT = (LINE_NB - 1) * INTER_LINE;
-
-    /** Used to code fractions with an integer value, with a resolution of
-        1/{@value} */
-    public static final int BASE = 1024;
 
     //~ Instance variables ------------------------------------------------
 

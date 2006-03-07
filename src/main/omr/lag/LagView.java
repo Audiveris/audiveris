@@ -26,9 +26,9 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * Class <code>LagView</code> derives {@link omr.ui.RubberZoomedPanel} to
- * provide an implementation of a comprehensive display for lags, whether
- * they are vertical or horizontal.
+ * Class <code>LagView</code> derives {@link omr.ui.view.RubberZoomedPanel}
+ * to provide an implementation of a comprehensive display for lags,
+ * whether they are vertical or horizontal.
  *
  * <p>This view has the ability to handle a collection of "specific"
  * sections, provided in the constructor. These sections are supposed not

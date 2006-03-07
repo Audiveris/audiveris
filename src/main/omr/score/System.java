@@ -16,6 +16,8 @@ import omr.util.Logger;
 import omr.util.TreeNode;
 import omr.ui.view.Zoom;
 
+import static omr.score.ScoreConstants.*;
+
 import java.awt.*;
 import java.util.List;
 
@@ -509,7 +511,7 @@ public class System
             return -1;
         }
 
-        if (y > (top + height + ScoreView.STAFF_HEIGHT)) {
+        if (y > (top + height + STAFF_HEIGHT)) {
             return +1;
         }
 
@@ -540,14 +542,12 @@ public class System
 
         if (prevSystem == null) {
             // Very first system in the score
-            origin = new Point(ScoreView.SCORE_INIT_X,
-                               ScoreView.SCORE_INIT_Y);
+            origin = new Point(SCORE_INIT_X, SCORE_INIT_Y);
             firstMeasureId = 0;
         } else {
             // Not the first system
             origin = new Point(prevSystem.origin);
-            origin.translate(prevSystem.width - 1 + ScoreView.INTER_SYSTEM,
-                             0);
+            origin.translate(prevSystem.width - 1 + INTER_SYSTEM, 0);
             firstMeasureId = prevSystem.lastMeasureId;
         }
 
@@ -588,12 +588,12 @@ public class System
             // Draw the system left edge
             g.drawLine(zoom.scaled(origin.x), zoom.scaled(origin.y),
                        zoom.scaled(origin.x),
-                       zoom.scaled(origin.y + height + ScoreView.STAFF_HEIGHT));
+                       zoom.scaled(origin.y + height + STAFF_HEIGHT));
 
             // Draw the system right edge
             g.drawLine(zoom.scaled(origin.x + width), zoom.scaled(origin.y),
                        zoom.scaled(origin.x + width),
-                       zoom.scaled(origin.y + height + ScoreView.STAFF_HEIGHT));
+                       zoom.scaled(origin.y + height + STAFF_HEIGHT));
 
             return true;
         } else {

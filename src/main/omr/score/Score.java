@@ -290,7 +290,7 @@ public class Score
      */
     public double getSkewangleDouble ()
     {
-        return (double) skewangle / (double) ScoreView.BASE;
+        return (double) skewangle / (double) ScoreConstants.BASE;
     }
 
     //------------//

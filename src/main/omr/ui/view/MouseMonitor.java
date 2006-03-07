@@ -10,15 +10,15 @@
 
 package omr.ui.view;
 
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
 import omr.ui.*;
+
+import java.awt.*;
+import java.awt.event.*;
 
 /**
  * Interface <code>MouseMonitor</code> defines the entries of an entity to
  * be notified of mouse actions. This is ordinarily used in conjunction
- * with a {@link omr.ui.Rubber}.
+ * with a {@link omr.ui.view.Rubber}.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$

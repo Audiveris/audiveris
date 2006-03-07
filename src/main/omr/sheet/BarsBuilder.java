@@ -32,7 +32,7 @@ import omr.lag.LagBuilder;
 import omr.lag.VerticalOrientation;
 import omr.score.Measure;
 import omr.score.Score;
-import omr.score.ScoreView;
+import omr.score.ScoreConstants;
 import omr.score.Stave;
 import omr.score.System;
 import omr.stick.Stick;
@@ -635,7 +635,7 @@ public class BarsBuilder
         score = new Score(scale.pixelsToUnits(sheet.getWidth()),
                           scale.pixelsToUnits(sheet.getHeight()),
                           (int) Math.rint(sheet.getSkew().angle()
-                                          * ScoreView.BASE),
+                                          * ScoreConstants.BASE),
                           scale.spacing(), sheet.getPath());
 
         // Mutual referencing

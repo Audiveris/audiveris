@@ -184,9 +184,9 @@ public class SheetAssembly
 
         splitPane.setTopComponent(scoreView.getPane().getComponent());
         splitPane.setDividerLocation(150);
-        
+
         scoreView.getPane().getView().getZoom().fireStateChanged();
-        
+
         //splitPane.resetToPreferredSizes();
         component.validate();
         component.repaint();
@@ -211,8 +211,8 @@ public class SheetAssembly
     /**
      * Method called when this sheet assembly is selected (since we can
      * have several sheets displayed, each one with its own sheet
-     * assembly). This is called from {@link SheetPane} when the tab of
-     * another sheet is selected.
+     * assembly). This is called from {@link omr.sheet.SheetController}
+     * when the tab of another sheet is selected.
      */
     public void assemblySelected()
     {
@@ -247,7 +247,7 @@ public class SheetAssembly
         // Make the new view reuse the common zoom and rubber instances
         sv.getView().setZoom(zoom);
         sv.getView().setRubber(rubber);
-        
+
         // Set the model size
         if (sheet.getWidth() != -1) {
             sv.getView().setModelSize(new Dimension(sheet.getWidth(),

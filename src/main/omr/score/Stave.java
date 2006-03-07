@@ -18,6 +18,8 @@ import omr.util.Logger;
 import omr.util.TreeNode;
 import omr.ui.view.Zoom;
 
+import static omr.score.ScoreConstants.*;
+
 import java.awt.*;
 import java.util.List;
 
@@ -602,9 +604,9 @@ public class Stave
         g.setColor(Color.black);
 
         // Draw the staff lines
-        for (int i = 0; i < ScoreView.LINE_NB; i++) {
+        for (int i = 0; i < LINE_NB; i++) {
             // Y of this staff line
-            int y = zoom.scaled(origin.y + (i * ScoreView.INTER_LINE));
+            int y = zoom.scaled(origin.y + (i * INTER_LINE));
             g.drawLine(zoom.scaled(origin.x), y,
                        zoom.scaled(origin.x + width), y);
         }

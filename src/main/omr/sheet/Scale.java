@@ -10,11 +10,13 @@
 
 package omr.sheet;
 
-import java.awt.Rectangle;
 import omr.constant.Constant;
 import omr.score.PagePoint;
-import omr.score.ScoreView;
 import omr.util.Logger;
+
+import static omr.score.ScoreConstants.*;
+
+import java.awt.Rectangle;
 
 /**
  * Class <code>Scale</code> encapsulates what drives the scale of a given
@@ -27,17 +29,19 @@ import omr.util.Logger;
  * the interline is actually worth. There are three different measurements
  * :
  *
- * <p> <dl> <dt> <b>pixel</b> </dt> <dd> This is simply an absolute number
- * of pixels, so generally an integer. One pixel is worth 1 pixel (sic)
- * </dd> <dt> <b>(interline) fraction</b> </dt> <dd> This is a number of
+ * <dl> <dt> <b>pixel</b> </dt> <dd> This is simply an absolute number of
+ * pixels, so generally an integer. One pixel is worth 1 pixel (sic) </dd>
+ *
+ * <dt> <b>(interline) fraction</b> </dt> <dd> This is a number of
  * interlines, so generally a fraction which is implemented as a
  * double. One interline is worth whatever the scale is, generally
- * something around 20 pixels </dd> <dt> <b>unit</b> </dt> <dd> This is a
- * number of 1/16th of interline, since the score display is built on this
- * value. One unit is thus generally worth something like 20/16 of pixels
- * </dd> </dl> </p>
+ * something around 20 pixels </dd>
  *
- * @see omr.score.ScoreView#BASE
+ * <dt> <b>unit</b> </dt> <dd> This is a number of 1/16th of interline,
+ * since the score display is built on this value. One unit is thus
+ * generally worth something like 20/16 of pixels </dd> </dl>
+ *
+ * @see omr.score.ScoreConstants#BASE
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -71,11 +75,11 @@ public class Scale
      * @param spacing the score spacing value, expressed using BASE
      *                resolution, since this is an int.
      *
-     * @see omr.score.ScoreView#BASE
+     * @see omr.score.ScoreConstants#BASE
      */
     public Scale (int spacing)
     {
-        interline = spacing / ScoreView.BASE;
+        interline = spacing / BASE;
     }
 
     //-------//
@@ -295,7 +299,7 @@ public class Scale
      */
     public double pixelsToUnitsDouble (double pixels)
     {
-        return (pixels * ScoreView.INTER_LINE) / (double) interline;
+        return (pixels * INTER_LINE) / (double) interline;
     }
 
     //---------//
@@ -306,11 +310,11 @@ public class Scale
      *
      * @return an int value, which is the interline value (expressed in
      *         pixels) times the BASE resolution
-     * @see omr.score.ScoreView#BASE
+     * @see omr.score.ScoreConstants#BASE
      */
     public int spacing ()
     {
-        return interline * ScoreView.BASE;
+        return interline * BASE;
     }
 
     //---------------//
@@ -347,15 +351,15 @@ public class Scale
      * Convert a rectangle with coordinates in units into its equivalent with
      * coordinates in pixels. Reverse function of pixelsToUnits
      *
-     * @param pagPt point in units
-     * @param pixPt point in pixels, or null if allocation to be made by
-     *              the routine
+     * @param pagRect rectangle in units
+     * @param pixRect rectangle in pixels, or null if allocation to be made
+     *              by the routine
      *
-     * @return the computed point in pixels
+     * @return the computed rectangle in pixels
      * @see #pixelsToUnits
      */
     public Rectangle unitsToPixels (Rectangle pagRect,
-                                     Rectangle pixRect)
+                                    Rectangle pixRect)
     {
         if (pixRect == null) {
             pixRect = new Rectangle();
@@ -381,7 +385,7 @@ public class Scale
      */
     private int unitsToPixels (int units)
     {
-        return (units * interline) / ScoreView.INTER_LINE;
+        return (units * interline) / INTER_LINE;
     }
 
     //~ Classes -----------------------------------------------------------
