@@ -11,7 +11,6 @@
 package omr.stick;
 
 import omr.glyph.Glyph;
-import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.lag.Lag;
 import omr.lag.Run;
@@ -109,8 +108,8 @@ public class Stick
             }
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Stick" + id + " " + area + " getAlienPixelsIn="
+        if (logger.isFineEnabled()) {
+            logger.fine("Stick" + id + " " + area + " getAlienPixelsIn="
                          + count);
         }
 
@@ -644,8 +643,8 @@ public class Stick
             line.includeLine(ss.getLine());
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(line + " pointNb=" + line.getNumberOfPoints()
+        if (logger.isFineEnabled()) {
+            logger.fine(line + " pointNb=" + line.getNumberOfPoints()
                          + " meanDistance=" + (float) line.getMeanDistance());
         }
     }

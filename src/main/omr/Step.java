@@ -157,7 +157,7 @@ public class Step
             //logger.warning("Processing aborted", ex);
             //logger.warning("Processing aborted");
         } catch (Exception ex) {
-            logger.error("Exception in performing step " + current, ex);
+            logger.warning("Exception in performing step " + current, ex);
         }
     }
 
@@ -251,8 +251,8 @@ public class Step
     {
         long startTime = 0;
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Starting " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("Starting " + this);
             startTime = System.currentTimeMillis();
         }
 
@@ -279,9 +279,9 @@ public class Step
         }
 
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             final long stopTime = System.currentTimeMillis();
-            logger.debug("Completed " + this + " in "
+            logger.fine("Completed " + this + " in "
                          + (stopTime - startTime) + " ms with "
                          + Memory.getValue() + " bytes");
         }

@@ -92,7 +92,7 @@ public class Stave
         super(null);
         allocateChildren();
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             Dumper.dump(this, "Construction");
         }
     }
@@ -132,7 +132,7 @@ public class Stave
         this.size = size;
         this.stavelink = stavelink;
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             Dumper.dump(this, "Constructed");
         }
     }

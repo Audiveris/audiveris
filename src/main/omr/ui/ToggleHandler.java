@@ -122,8 +122,8 @@ public class ToggleHandler
     //---------------//
     private void discardButton ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug(title + " discardButton");
+        if (logger.isFineEnabled()) {
+            logger.fine(title + " discardButton");
         }
 
         button.setToolTipText("");
@@ -136,8 +136,8 @@ public class ToggleHandler
     //-----------//
     private void useButton ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug(title + " useButton");
+        if (logger.isFineEnabled()) {
+            logger.fine(title + " useButton");
         }
 
         button.setToolTipText(tip);

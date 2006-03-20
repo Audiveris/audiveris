@@ -452,14 +452,14 @@ public class GlyphVerifier
             Collection<String> shapeList = Arrays.asList(shapes);
 
             // Debug
-            if (logger.isDebugEnabled()) {
-                logger.debug("Glyph Selector. Got Sheets:");
+            if (logger.isFineEnabled()) {
+                logger.fine("Glyph Selector. Got Sheets:");
                 for (String fName : sheets) {
-                    logger.debug(fName);
+                    logger.fine(fName);
                 }
-                logger.debug("Glyph Selector. Got Shapes:");
+                logger.fine("Glyph Selector. Got Shapes:");
                 for (String shapeName : shapes) {
-                    logger.debug(shapeName);
+                    logger.fine(shapeName);
                 }
             }
 

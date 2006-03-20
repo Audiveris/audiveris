@@ -319,9 +319,9 @@ public class CheckPanel <C extends Checkable>
             sbr.append("pref");
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("sb cols=" + sbc);
-            logger.debug("sb rows=" + sbr);
+        if (logger.isFineEnabled()) {
+            logger.fine("sb cols=" + sbc);
+            logger.fine("sb rows=" + sbr);
             }
 
         // Create proper form layout

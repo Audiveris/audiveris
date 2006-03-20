@@ -149,8 +149,8 @@ public class SkewBuilder
         maxThickness = scale.mainFore();
         detectSticks();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("angle=" + angle);
+        if (logger.isFineEnabled()) {
+            logger.fine("angle=" + angle);
         }
 
         // Produce histogram of slopes
@@ -237,8 +237,8 @@ public class SkewBuilder
         for (GlyphSection s : hLag.getVertices()) {
             StickSection section = (StickSection) s;
 
-            if (logger.isDebugEnabled()) {
-                logger.debug(section.toString());
+            if (logger.isFineEnabled()) {
+                logger.fine(section.toString());
             }
 
             // We consider only significant chunks
@@ -280,7 +280,7 @@ public class SkewBuilder
                     }
                 }
 
-                if (logger.isDebugEnabled()) {
+                if (logger.isFineEnabled()) {
                     stick.dump(false);
                 }
             }
@@ -344,8 +344,8 @@ public class SkewBuilder
     //-----------//
     private void writePlot ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Slope computation based on following sticks :");
+        if (logger.isFineEnabled()) {
+            logger.fine("Slope computation based on following sticks :");
         }
 
         final int RESOLUTION = 10000;
@@ -360,7 +360,7 @@ public class SkewBuilder
 
         for (Stick stick : sticks) {
             if (stick.getLength() >= lengthThreshold) {
-                if (logger.isDebugEnabled()) {
+                if (logger.isFineEnabled()) {
                     stick.dump(false);
                 }
 
@@ -431,8 +431,8 @@ public class SkewBuilder
         @Override
             public void colorize ()
         {
-            if (logger.isDebugEnabled()) {
-                logger.debug("colorize");
+            if (logger.isFineEnabled()) {
+                logger.fine("colorize");
             }
 
             // Default colors for lag sections

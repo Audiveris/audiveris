@@ -110,7 +110,7 @@ public class System
         this.width = width;
         this.height = height;
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             Dumper.dump(this, "Constructed");
         }
     }
@@ -551,7 +551,7 @@ public class System
             firstMeasureId = prevSystem.lastMeasureId;
         }
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             Dumper.dump(this, "Computed");
         }
 

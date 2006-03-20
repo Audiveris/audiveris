@@ -182,8 +182,8 @@ public class SymbolGlyphBoard
      */
     public void assignGlyph (int id)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug ("assign id=" + id);
+        if (logger.isFineEnabled()) {
+            logger.fine ("assign id=" + id);
         }
 
         Integer iden = new Integer(id);
@@ -204,8 +204,8 @@ public class SymbolGlyphBoard
      */
     public void deassignGlyph (int id)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug ("deassign id=" + id);
+        if (logger.isFineEnabled()) {
+            logger.fine ("deassign id=" + id);
         }
 
         Integer iden = new Integer(id);
@@ -227,8 +227,8 @@ public class SymbolGlyphBoard
     {
         final int id = glyph.getId();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug ("add id=" + id  + " glyph=" + glyph);
+        if (logger.isFineEnabled()) {
+            logger.fine ("add id=" + id  + " glyph=" + glyph);
         }
 
         // Universal id spinner
@@ -257,8 +257,8 @@ public class SymbolGlyphBoard
      */
     public void removeGlyphId (int id)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug ("remove id=" + id);
+        if (logger.isFineEnabled()) {
+            logger.fine ("remove id=" + id);
         }
 
         Integer integerId = new Integer(id);
@@ -311,7 +311,7 @@ public class SymbolGlyphBoard
         try {
             super.update(glyph);
         } catch (IllegalArgumentException ex) {
-            logger.error("Illegal glyph id for " + glyph);
+            logger.warning("Illegal glyph id for " + glyph);
             return;
         }
 

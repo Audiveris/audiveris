@@ -252,8 +252,8 @@ public class HorizontalsBuilder
         createSuites();
 
         for (Stick stick : horizontalsArea.getSticks()) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Checking " + stick);
+            if (logger.isFineEnabled()) {
+                logger.fine("Checking " + stick);
             }
 
             // Run the Ledger Checks
@@ -275,8 +275,8 @@ public class HorizontalsBuilder
         allDashes.addAll(info.getLedgers());
         allDashes.addAll(info.getEndings());
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Found " + info.getLedgers().size() +
+        if (logger.isFineEnabled()) {
+            logger.fine("Found " + info.getLedgers().size() +
                          " ledgers and " + info.getEndings().size() +
                          " endings");
         }
@@ -321,7 +321,7 @@ public class HorizontalsBuilder
         endingList.add(commonSuite);
         endingList.add(endingSuite);
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             commonSuite.dump();
             ledgerSuite.dump();
             endingSuite.dump();
@@ -666,8 +666,8 @@ public class HorizontalsBuilder
             setLowHigh(area * constants.chunkRatioLow.getValue(),
                        area * constants.chunkRatioHigh.getValue());
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("MaxPixLow=" + getLow() + ", MaxPixHigh="
+            if (logger.isFineEnabled()) {
+                logger.fine("MaxPixLow=" + getLow() + ", MaxPixHigh="
                              + getHigh());
             }
         }
@@ -680,8 +680,8 @@ public class HorizontalsBuilder
             int res = Math.min(stick.getAliensAtStart(nHeight, nWidth),
                                stick.getAliensAtStop(nHeight, nWidth));
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("MaxAliens= " + res + " for " + stick);
+            if (logger.isFineEnabled()) {
+                logger.fine("MaxAliens= " + res + " for " + stick);
             }
 
             return res;

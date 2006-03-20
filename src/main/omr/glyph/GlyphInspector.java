@@ -296,8 +296,8 @@ public class GlyphInspector
                     // Let's try a compound
                     List<Glyph> parts = Arrays.asList(glyph, g);
                     Glyph compound = builder.buildCompound(parts);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(glyph + " & " + g + " -> " + compound);
+                    if (logger.isFineEnabled()) {
+                        logger.fine(glyph + " & " + g + " -> " + compound);
                     }
 
                     Shape vote = evaluator.vote(compound, maxGrade);
@@ -306,8 +306,8 @@ public class GlyphInspector
                         compound.setShape(vote);
                         builder.insertCompound(compound, parts);
                         nb ++;
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Compound " + compound);
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Compound " + compound);
                         }
                         break SUB_GLYPHS;
                     }
@@ -370,7 +370,7 @@ public class GlyphInspector
      */
     public int processSystemUndueStems (SystemInfo system)
     {
-        logger.debug("processSystemUndueStems " + system);
+        logger.fine("processSystemUndueStems " + system);
         int nb = 0;
 
 
@@ -383,8 +383,8 @@ public class GlyphInspector
                 glyph.getSymbolsBefore(reliableStemSymbols, goods, bads);
                 glyph.getSymbolsAfter(reliableStemSymbols, goods, bads);
                 if (goods.size() == 0) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Suspected Stem " + glyph);
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Suspected Stem " + glyph);
                     }
                     SuspectedStems.add(glyph);
                     // Discard "bad" ones
@@ -414,8 +414,8 @@ public class GlyphInspector
                 if (vote != null) {
                     glyph.setShape(vote);
                     if (glyph.isWellKnown()) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("New symbol " + glyph);
+                        if (logger.isFineEnabled()) {
+                            logger.fine("New symbol " + glyph);
                         }
                         symbols.add(glyph);
                         nb++;
@@ -489,8 +489,8 @@ public class GlyphInspector
                              SystemInfo system,
                              boolean    cutSections)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug ("Removing glyph " + glyph);
+        if (logger.isFineEnabled()) {
+            logger.fine ("Removing glyph " + glyph);
         }
 
         // Remove from system glyph list

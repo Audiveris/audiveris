@@ -247,8 +247,8 @@ public class Lag <L extends Lag <L, S>,
         for (S section : getSections()) {
             // Check predicate on the current section
             if (predicate.check(section)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Purging " + section);
+                if (logger.isFineEnabled()) {
+                    logger.fine("Purging " + section);
                 }
 
                 purges.add(section);

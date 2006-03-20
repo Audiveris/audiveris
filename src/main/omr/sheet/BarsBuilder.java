@@ -359,7 +359,7 @@ public class BarsBuilder
 
             if (systemInfo == null) { // Should not occur, but that's safer
                 logger.warning("Bar not belonging to any system");
-                logger.debug("barInfo = " + barInfo);
+                logger.fine("barInfo = " + barInfo);
                 Dumper.dump(barInfo);
                 Dumper.dump(barInfo.getStick());
 
@@ -376,8 +376,8 @@ public class BarsBuilder
                     .getLine().yAt(barAbscissa);
 
             if ((barInfo.getStick().getStop() - systemBottom) > maxDy) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Bar stopping too low");
+                if (logger.isFineEnabled()) {
+                    logger.fine("Bar stopping too low");
                 }
 
                 barInfo.getStick().setResult(NOT_WITHIN_SYSTEM);
@@ -391,8 +391,8 @@ public class BarsBuilder
             for (TreeNode node : system.getStaves()) {
                 Stave stave = (Stave) node;
                 if (isStaveEmbraced (stave, barInfo)) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Creating measure for bar-line " + barInfo.getStick());
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Creating measure for bar-line " + barInfo.getStick());
                     }
                     new Measure(barInfo, stave, Shape.SINGLE_BARLINE,
                                 scale.pixelsToUnits(barAbscissa)
@@ -452,7 +452,7 @@ public class BarsBuilder
 
         systems.add(new SystemInfo(++id, sheet, start, starts.length - 1));
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             for (SystemInfo info : systems) {
                 Dumper.dump(info);
             }
@@ -533,8 +533,8 @@ public class BarsBuilder
                         }
 
                         if (null == stv.getMeasureAt(x, maxShiftDx)) {
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Singular measure removed: "
+                            if (logger.isFineEnabled()) {
+                                logger.fine("Singular measure removed: "
                                              + Dumper.dumpOf(measure));
                             }
 
@@ -573,8 +573,8 @@ public class BarsBuilder
         int minWidth = scale.fracToPixels(constants.minMeasureWidth);
 
         if ((stave.getWidth() - lastX) < minWidth) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Adjusting EndingBar " + system);
+            if (logger.isFineEnabled()) {
+                logger.fine("Adjusting EndingBar " + system);
             }
 
             // Adjust end of system & stave(s) to this one
@@ -628,8 +628,8 @@ public class BarsBuilder
     //-------------//
     private void createScore ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Allocating score");
+        if (logger.isFineEnabled()) {
+            logger.fine("Allocating score");
         }
 
         score = new Score(scale.pixelsToUnits(sheet.getWidth()),
@@ -716,14 +716,14 @@ public class BarsBuilder
                         BarInfo bar = measure.getInfos().get(0);
 
                         if (isThickBar(bar.getStick())) {
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Merging a thinThick bar");
+                            if (logger.isFineEnabled()) {
+                                logger.fine("Merging a thinThick bar");
                             }
 
                             prevMeasure.setLinetype(Shape.FINAL_BARLINE);
                         } else {
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Merging a double bar");
+                            if (logger.isFineEnabled()) {
+                                logger.fine("Merging a double bar");
                             }
 
                             prevMeasure.setLinetype(Shape.DOUBLE_BARLINE);
@@ -764,8 +764,8 @@ public class BarsBuilder
 
         if (firstX < minWidth) {
             // Adjust beginning of system to this one
-            if (logger.isDebugEnabled()) {
-                logger.debug("Adjusting firstX=" + firstX + " " + system);
+            if (logger.isFineEnabled()) {
+                logger.fine("Adjusting firstX=" + firstX + " " + system);
             }
 
             system.setLeft(system.getLeft() + firstX);
@@ -841,16 +841,16 @@ public class BarsBuilder
                         BarInfo info = (BarInfo) bit.next();
                         if (info == bar) {
                             // Remove the bar info
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Removing " + info +
+                            if (logger.isFineEnabled()) {
+                                logger.fine("Removing " + info +
                                              " from " + measure);
                             }
                             bit.remove();
 
                             // Remove measure as well ?
                             if (measure.getInfos().size() == 0) {
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("Removing " + measure);
+                                if (logger.isFineEnabled()) {
+                                    logger.fine("Removing " + measure);
                                 }
                                 mit.remove();
                             }
@@ -909,8 +909,8 @@ public class BarsBuilder
     {
         // The list of candidate vertical sticks
         clutter = new ArrayList<Stick>(barsArea.getSticks());
-        if (logger.isDebugEnabled()) {
-            logger.debug(clutter.size() + " sticks to check");
+        if (logger.isFineEnabled()) {
+            logger.fine(clutter.size() + " sticks to check");
         }
 
         // A way to tell the System for each stave, by providing the stave
@@ -932,8 +932,8 @@ public class BarsBuilder
             Context context = new Context(stick);
             double res = suite.pass(context);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("suite => " + res + " for " + stick);
+            if (logger.isFineEnabled()) {
+                logger.fine("suite => " + res + " for " + stick);
             }
 
             if (res >= minResult) {
@@ -952,14 +952,14 @@ public class BarsBuilder
 
                     stick.setResult(BAR_SYSTEM_DEFINING);
 
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("System-defining Bar line from stave "
+                    if (logger.isFineEnabled()) {
+                        logger.fine("System-defining Bar line from stave "
                                      + context.topIdx + " to stave "
                                      + context.botIdx + " " + stick);
                     }
                 } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Non-System-defining Bar line "
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Non-System-defining Bar line "
                                      + ((context.topIdx != -1)
                                         ? (" topIdx=" + context.topIdx)
                                         : "")
@@ -975,8 +975,8 @@ public class BarsBuilder
 
         // Sanity check on the systems found
         for (int i = 0; i < starts.length; i++) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("stave " + i + " system " + starts[i]);
+            if (logger.isFineEnabled()) {
+                logger.fine("stave " + i + " system " + starts[i]);
             }
 
             if (starts[i] == -1) {
@@ -1529,7 +1529,7 @@ public class BarsBuilder
             add(1, new LeftAdjacencyCheck());
             add(1, new RightAdjacencyCheck());
 
-            if (logger.isDebugEnabled()) {
+            if (logger.isFineEnabled()) {
                 dump();
             }
         }

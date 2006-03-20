@@ -148,8 +148,8 @@ public class LagBuilder <L extends Lag     <L, S>,
                 // Process all sections of previous column, then
                 // prevActives will contain only active sections (i.e. that
                 // may be continued)
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Prev column");
+                if (logger.isFineEnabled()) {
+                    logger.fine("Prev column");
                 }
 
                 for (S section : prevActives) {
@@ -157,8 +157,8 @@ public class LagBuilder <L extends Lag     <L, S>,
                 }
 
                 // Process all runs of next column
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Next column");
+                if (logger.isFineEnabled()) {
+                    logger.fine("Next column");
                 }
 
                 for (Run run : runList) {
@@ -197,8 +197,8 @@ public class LagBuilder <L extends Lag     <L, S>,
     private void continueSection (S   section,
                                   Run run)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Continuing section " + section + " with " + run);
+        if (logger.isFineEnabled()) {
+            logger.fine("Continuing section " + section + " with " + run);
         }
 
         section.append(run);
@@ -222,8 +222,8 @@ public class LagBuilder <L extends Lag     <L, S>,
                                   int col,
                                   Run run)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("processNextSide for run " + run);
+        if (logger.isFineEnabled()) {
+            logger.fine("processNextSide for run " + run);
         }
 
         int nextStart = run.getStart();
@@ -241,8 +241,8 @@ public class LagBuilder <L extends Lag     <L, S>,
             }
 
             if (lastRun.getStop() >= nextStart) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Overlap from " + lastRun + " to " + run);
+                if (logger.isFineEnabled()) {
+                    logger.fine("Overlap from " + lastRun + " to " + run);
                 }
 
                 overlappingSections.add(section);
@@ -250,8 +250,8 @@ public class LagBuilder <L extends Lag     <L, S>,
         }
 
         // Processing now depends on nb of overlapping runs
-        if (logger.isDebugEnabled()) {
-            logger.debug("overlap=" + overlappingSections.size());
+        if (logger.isFineEnabled()) {
+            logger.fine("overlap=" + overlappingSections.size());
         }
 
         switch (overlappingSections.size()) {
@@ -277,8 +277,8 @@ public class LagBuilder <L extends Lag     <L, S>,
 
             default : // Converging sections, end them, start a new one
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Converging at " + run);
+                if (logger.isFineEnabled()) {
+                    logger.fine("Converging at " + run);
                 }
 
                 S newSection = lag.createSection(col, run);
@@ -307,8 +307,8 @@ public class LagBuilder <L extends Lag     <L, S>,
         int prevStart = lastRun.getStart();
         int prevStop = lastRun.getStop();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("processPrevSide for section " + section);
+        if (logger.isFineEnabled()) {
+            logger.fine("processPrevSide for section " + section);
         }
 
         // Check if overlap with a run in next column
@@ -320,8 +320,8 @@ public class LagBuilder <L extends Lag     <L, S>,
                 break;
             }
             if (run.getStop() >= prevStart) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Overlap from " + lastRun + " to " + run);
+                if (logger.isFineEnabled()) {
+                    logger.fine("Overlap from " + lastRun + " to " + run);
                 }
                 overlapNb++;
                 overlapRun = run;
@@ -329,15 +329,15 @@ public class LagBuilder <L extends Lag     <L, S>,
         }
 
         // Now consider how many overlapping runs we have in next column
-        if (logger.isDebugEnabled()) {
-            logger.debug("overlap=" + overlapNb);
+        if (logger.isFineEnabled()) {
+            logger.fine("overlap=" + overlapNb);
         }
 
         switch (overlapNb) {
             case 0: // Nothing : end of the section
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Ending section " + section);
+                if (logger.isFineEnabled()) {
+                    logger.fine("Ending section " + section);
                 }
 
                 break;
@@ -345,13 +345,13 @@ public class LagBuilder <L extends Lag     <L, S>,
             case 1: // Continue if consistent
 
                 if (junctionPolicy.consistentRun(overlapRun, section)) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Perhaps extending section " +
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Perhaps extending section " +
                                      section + " with run " + overlapRun);
                     }
                 } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Incompatible height between " +
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Incompatible height between " +
                                      section + " and run " + overlapRun);
                     }
                     finish(section);

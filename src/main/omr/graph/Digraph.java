@@ -328,8 +328,8 @@ public class Digraph <D extends Digraph <D, V>,
      */
     void removeVertex (V vertex)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("remove " + vertex);
+        if (logger.isFineEnabled()) {
+            logger.fine("remove " + vertex);
         }
 
         if (vertex == null) {

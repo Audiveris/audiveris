@@ -84,8 +84,8 @@ public class XmlMapper
             Object entity = uctx.unmarshalDocument
                 (new FileInputStream(xmlFile), null);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("Entity loaded from " + xmlFile);
+            if (logger.isFineEnabled()) {
+                logger.fine("Entity loaded from " + xmlFile);
             }
 
             return entity;
@@ -115,8 +115,8 @@ public class XmlMapper
             mctx.setIndent(XML_INDENT);
             mctx.marshalDocument(entity, XML_ENCODING, null,
                                  new FileOutputStream(xmlFile));
-            if (logger.isDebugEnabled()) {
-                logger.debug("Entity written to " + xmlFile);
+            if (logger.isFineEnabled()) {
+                logger.fine("Entity written to " + xmlFile);
             }
         } catch (Exception ex) {
             logger.warning("Cannot marshall entity to file " + xmlFile);

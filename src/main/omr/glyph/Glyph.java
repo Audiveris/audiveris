@@ -694,7 +694,7 @@ public class Glyph
     {
         section.setGlyph(null);
         if (!members.remove(section)) {
-            logger.error("removeSection " + section +
+            logger.warning("removeSection " + section +
                          " not part of " + this);
         }
 

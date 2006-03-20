@@ -11,35 +11,42 @@
 package omr.util;
 
 import omr.constant.UnitManager;
-import org.apache.log4j.spi.LoggerFactory;
+
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 
 /**
- * Class <code>Logger</code> is a specific subclass of log4j Logger,
- * augmented to fit the needs of Audiveris project
+ * Class <code>Logger</code> is a specific subclass of standard java Logger,
+ * augmented to fit the needs of Audiveris project.
+ *
+ * <p>The levels in descending order are: <ol>
+ * <li>SEVERE (highest value)</li>
+ * <li>WARNING</li>
+ * <li>INFO</li>
+ * <li>CONFIG</li>
+ * <li>FINE</li>
+ * <li>FINER</li>
+ * <li>FINEST (lowest value)</li>
+ *</ol>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Logger
-        extends org.apache.log4j.Logger
+    extends java.util.logging.Logger
 {
     //~ Static variables/initializers -------------------------------------
 
-    private static LoggerFactory factory = new OmrLoggerFactory();
+    //~ Instance variables ------------------------------------------------
 
     //~ Constructors ------------------------------------------------------
 
     //--------//
-    // Logger //
+    // Logger // Not meant to be instantiated from outside
     //--------//
-    /**
-     * Creates a new Logger object.
-     *
-     * @param name the name of the class
-     */
-    protected Logger (String name)
+    private Logger (String name)
     {
-        super(name);
+        super(name, null);
     }
 
     //~ Methods -----------------------------------------------------------
@@ -56,15 +63,70 @@ public class Logger
      */
     public static Logger getLogger (Class cl)
     {
-        //System.out.println("getLogger for " + cl.getName());
-        Logger logger = (Logger) org.apache.log4j.Logger.getLogger
-            (cl.getName(),
-             factory);
+        return getLogger(cl.getName());
+    }
 
-        // Insert in the hierarchy of units with logger
-        UnitManager.getInstance().addLogger(logger);
+    //-----------//
+    // getLogger //
+    //-----------//
+    /**
+     * Report (and possibly create) the logger related to the provided
+     * name (usually the full class name)
+     *
+     * @param name the logger name
+     * @return the logger found or created
+     */
+    public static synchronized Logger getLogger(String name)
+    {
+        LogManager manager = LogManager.getLogManager();
+        Logger result = (Logger) manager.getLogger(name);
 
-        return logger;
+        if (result == null) {
+            result = new Logger(name);
+            manager.addLogger(result);
+            result = (Logger) manager.getLogger(name);
+
+            // Insert in the hierarchy of units with logger
+            UnitManager.getInstance().addLogger(result);
+        }
+
+        return result;
+    }
+
+    //-------------------//
+    // getEffectiveLevel //
+    //-------------------//
+    /**
+     * Report the resulting level for the logger, which may be inherited 
+     * from parents higher in the hierarchy
+     *
+     * @return The effective logging level for this logger
+     */
+    public Level getEffectiveLevel()
+    {
+        java.util.logging.Logger logger = this;
+        Level level = getLevel();
+        while (level == null) {
+            logger = logger.getParent();
+            if (logger == null) {
+                return null;
+            }
+            level = logger.getLevel();
+        }
+        return level;
+    }
+
+    //---------------//
+    // isFineEnabled //
+    //---------------//
+    /**
+     * Check if a Debug (Fine) would actually be logged
+     *
+     * @return true if to be logged
+     */
+    public boolean isFineEnabled()
+    {
+        return isLoggable(Level.FINE);
     }
 
     //-----------//
@@ -86,6 +148,20 @@ public class Logger
         }
     }
 
+    //----------//
+    // setLevel //
+    //----------//
+    /**
+     * Set the logger level, using a level name
+     *
+     * @param levelStr the name of the level (case is irrelevant), 
+     *                 such as Fine or INFO
+     */
+    public void setLevel (String levelStr)
+    {
+        setLevel(Level.parse(levelStr.toUpperCase()));
+    }
+
     //--------//
     // severe //
     //--------//
@@ -94,9 +170,9 @@ public class Logger
      *
      * @param msg the (severe) message
      */
-    public void severe (Object msg)
+    public void severe (String msg)
     {
-        fatal(msg);
+        super.severe(msg);
         new Throwable().printStackTrace();
         System.exit(-1);
     }
@@ -110,24 +186,12 @@ public class Logger
      * @param msg the (severe) message
      * @param thrown the exception
      */
-    public void severe (Object msg,
+    public void severe (String msg,
                         Throwable thrown)
     {
-        fatal(msg, thrown);
+        super.severe(msg);
+        thrown.printStackTrace();
         System.exit(-1);
-    }
-
-    //---------//
-    // warning //
-    //---------//
-    /**
-     * Log a warning message and continue
-     *
-     * @param msg the (warning) message
-     */
-    public void warning (Object msg)
-    {
-        error(msg);
     }
 
     //---------//
@@ -139,39 +203,10 @@ public class Logger
      * @param msg the (warning) message
      * @param thrown the related exception
      */
-    public void warning (Object msg,
+    public void warning (String msg,
                          Throwable thrown)
     {
-        error(msg, thrown);
-    }
-
-    //~ Classes -----------------------------------------------------------
-
-    //-------//
-    // Level //
-    //-------//
-    /**
-     * Class <code>Level</code> is defined here as a convenience for omr
-     * user, to avoid the need for directly referencing
-     * org.apache.log4j.Level
-     */
-    public static class Level
-            extends org.apache.log4j.Level
-    {
-        //~ Constructors --------------------------------------------------
-
-        /**
-         * A relay to log4j Level constructor
-         *
-         * @param level
-         * @param levelStr
-         * @param syslogEquivalent
-         */
-        protected Level (int level,
-                         String levelStr,
-                         int syslogEquivalent)
-        {
-            super(level, levelStr, syslogEquivalent);
-        }
+        super.warning(msg);
+        thrown.printStackTrace();
     }
 }

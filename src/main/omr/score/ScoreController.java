@@ -151,8 +151,8 @@ public class ScoreController
     public void setScoreView (Score score,
                               PagePoint pagPt)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setScoreView score=" + score + " pagPt=" + pagPt);
+        if (logger.isFineEnabled()) {
+            logger.fine("setScoreView score=" + score + " pagPt=" + pagPt);
         }
 
         if (score != null) {
@@ -178,8 +178,8 @@ public class ScoreController
 
             // Focus info
             if (pagPt == null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("No focus specified on Score side");
+                if (logger.isFineEnabled()) {
+                    logger.fine("No focus specified on Score side");
                 }
 
                 // Does the sheet view has a defined focus ?
@@ -259,7 +259,7 @@ public class ScoreController
 //         // The currently selected score, which may be null, if none is left
 //         Score score = getCurrentScore();
 
-//         if (logger.isDebugEnabled()) {
+//         if (logger.isFineEnabled()) {
 //             logger.debug("viewUpdated for " + score);
 //         }
 
@@ -574,8 +574,8 @@ public class ScoreController
                                 break;
                             }
                         } catch (Exception ex) {
-                            logger.error("Could not store score");
-                            logger.error(ex.toString());
+                            logger.warning("Could not store score");
+                            logger.warning(ex.toString());
                         }
 
                         return null;

@@ -183,8 +183,8 @@ public class GlyphBuilder
         // Add this glyph to list of system glyphs
         system.getGlyphs().add(glyph);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Created " + glyph);
+        if (logger.isFineEnabled()) {
+            logger.fine("Created " + glyph);
         }
 
         return glyph;
@@ -277,7 +277,7 @@ public class GlyphBuilder
             SystemInfo closest = sheet.getClosestSystem(system, y);
             if (closest != null) {
                 if (!closest.getGlyphs().remove(glyph)) {
-                    logger.error("Cannot find " + glyph +
+                    logger.warning("Cannot find " + glyph +
                                  " close to " + system +
                                  " closest was " + closest);
                 }

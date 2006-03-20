@@ -82,14 +82,14 @@ public class StickUtil
                 if (Math.abs(foo.getLine().getSlope()
                              - bar.getLine().getSlope()) <= maxDeltaSlope) {
                     return true;
-                } else if (logger.isDebugEnabled()) {
-                    logger.debug("isExtensionOf:  Incompatible slopes");
+                } else if (logger.isFineEnabled()) {
+                    logger.fine("isExtensionOf:  Incompatible slopes");
                 }
-            } else if (logger.isDebugEnabled()) {
-                logger.debug("isExtensionOf:  Incompatible positions");
+            } else if (logger.isFineEnabled()) {
+                logger.fine("isExtensionOf:  Incompatible positions");
             }
-        } else if (logger.isDebugEnabled()) {
-            logger.debug("isExtensionOf:  Incompatible coordinates");
+        } else if (logger.isFineEnabled()) {
+            logger.fine("isExtensionOf:  Incompatible coordinates");
         }
 
         return false;
@@ -113,8 +113,8 @@ public class StickUtil
                                 int minPointNb,
                                 Picture picture)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("cleanup stick=" + stick
+        if (logger.isFineEnabled()) {
+            logger.fine("cleanup stick=" + stick
                          + ", lag=" + lag
                          + ", minPointNb=" + minPointNb);
         }
@@ -127,7 +127,7 @@ public class StickUtil
             StickSection section = (StickSection) s;
 
             // Extend crossing vertices before and after
-//             if (logger.isDebugEnabled()) {
+//             if (logger.isFineEnabled()) {
 //                 logger.debug("before lineSection=" + section);
 //             }
             for (GlyphSection source : section.getSources()) {
@@ -135,7 +135,7 @@ public class StickUtil
                                minPointNb, section, (StickSection) source,
                                +1, true);
             }
-//             if (logger.isDebugEnabled()) {
+//             if (logger.isFineEnabled()) {
 //                 logger.debug("after lineSection=" + section);
 //             }
             for (GlyphSection target : section.getTargets()) {
@@ -156,16 +156,16 @@ public class StickUtil
         for (GlyphSection s : borders) {
             StickSection section = (StickSection) s;
             // Extend crossing vertices before and after
-            if (logger.isDebugEnabled()) {
-                logger.debug("border. before lineSection=" + section);
+            if (logger.isFineEnabled()) {
+                logger.fine("border. before lineSection=" + section);
             }
             for (GlyphSection source : section.getSources()) {
                 cleanupSection(stick, borders, patches, lag, picture,
                                minPointNb, section, (StickSection) source,
                                +1, false);
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("border. after lineSection=" + section);
+            if (logger.isFineEnabled()) {
+                logger.fine("border. after lineSection=" + section);
             }
             for (GlyphSection target : section.getTargets()) {
                 cleanupSection(stick, borders, patches, lag, picture,
@@ -213,8 +213,8 @@ public class StickUtil
                                         int direction,
                                         boolean borderEnabled)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("sct=" + sct
+        if (logger.isFineEnabled()) {
+            logger.fine("sct=" + sct
                          + ", direction=" + direction
                          + ", borderEnabled=" + borderEnabled);
         }
@@ -223,8 +223,8 @@ public class StickUtil
         // sticks
         if (sct.isMember()) {
             if (!(sct.getGlyph().getResult() instanceof FailureResult)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Member of successful stick");
+                if (logger.isFineEnabled()) {
+                    logger.fine("Member of successful stick");
                 }
                 return;
             }
@@ -243,8 +243,8 @@ public class StickUtil
                     // section to the line border.
                     sct.setParams(SectionRole.BORDER, 0, 0);
                     borders.add(sct);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Is a border");
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Is a border");
                     }
                     return;
                 }
@@ -329,8 +329,8 @@ public class StickUtil
 
         // Use line portion instead if shorter
         if (lineRun.getLength() < length) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("line shorter than external contact");
+            if (logger.isFineEnabled()) {
+                logger.fine("line shorter than external contact");
             }
             x1 = lineRun.getStart();
             x2 = lineRun.getStop();
@@ -343,8 +343,8 @@ public class StickUtil
         }
 
         x = (double) (x1 + x2) / 2;
-        if( logger.isDebugEnabled()) {
-            logger.debug("x1=" + x1 + " x=" + x + " x2=" + x2);
+        if( logger.isFineEnabled()) {
+            logger.fine("x1=" + x1 + " x=" + x + " x2=" + x2);
         }
         ////axis.includePoint(x, yBegin);
 
@@ -363,8 +363,8 @@ public class StickUtil
             while (startTg.getNumberOfPoints() < minPointNb) {
                 y -= direction;
                 Run r = sct.getRunAt(y);
-                if( logger.isDebugEnabled()) {
-                    logger.debug("y=" + y +
+                if( logger.isFineEnabled()) {
+                    logger.fine("y=" + y +
                                  " xl=" + r.getStart() +
                                  " x=" + (double) (r.getStart() + r.getStop())/2 +
                                  " xr=" + r.getStop());
@@ -377,18 +377,18 @@ public class StickUtil
 
         // Check whether we have enough runs to compute extension axis
         if (startTg.getNumberOfPoints() >= minPointNb) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("startTg=" + startTg + " invertedSlope=" + startTg.getInvertedSlope());
-                logger.debug("axis=" + axis + " invertedSlope=" + axis.getInvertedSlope());
-                logger.debug("stopTg=" + stopTg + " invertedSlope=" + stopTg.getInvertedSlope());
+            if (logger.isFineEnabled()) {
+                logger.fine("startTg=" + startTg + " invertedSlope=" + startTg.getInvertedSlope());
+                logger.fine("axis=" + axis + " invertedSlope=" + axis.getInvertedSlope());
+                logger.fine("stopTg=" + stopTg + " invertedSlope=" + stopTg.getInvertedSlope());
             }
             // Check that we don't diverge (convergence to the line is OK)
             if (((stopTg.getInvertedSlope() - startTg.getInvertedSlope())
                  * direction) > constants.maxDeltaSlope.getValue()) {
                 /////axis = startTg.includeLine(stopTg); // Merge the two sides
                 startTg = stopTg = null;
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Merged. Axis=" + axis);
+                if (logger.isFineEnabled()) {
+                    logger.fine("Merged. Axis=" + axis);
                 }
             }
         } else {
@@ -404,10 +404,10 @@ public class StickUtil
 
         // Sanity check
         if (((yPast - yBegin) * direction) <= 0) {
-            logger.debug("Weird relative positions yBegin=" + yBegin
+            logger.fine("Weird relative positions yBegin=" + yBegin
                          + " yPast=" + yPast + " dir=" + direction);
-            logger.debug("patchSection line=" + section);
-            logger.debug("patchSection contact=" + sct);
+            logger.fine("patchSection line=" + section);
+            logger.fine("patchSection contact=" + sct);
         } else {
             for (int y = yBegin; y != yPast; y += direction) {
                 int start = -1;
@@ -425,8 +425,8 @@ public class StickUtil
                     }
                     start = (int) Math.rint(x - ((double) length / 2));
                 }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("y=" + y + ", start=" + start + ", length=" + length);
+                if (logger.isFineEnabled()) {
+                    logger.fine("y=" + y + ", start=" + start + ", length=" + length);
                 }
 
                 //Run newRun = new Run(start, length, Picture.FOREGROUND); // TBD
@@ -452,8 +452,8 @@ public class StickUtil
                     }
                 }
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("newSct=" + newSct);
+                if (logger.isFineEnabled()) {
+                    logger.fine("newSct=" + newSct);
                 }
             }
 

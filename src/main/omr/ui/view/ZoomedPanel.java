@@ -141,8 +141,8 @@ public class ZoomedPanel
         Point pt = new Point(zoom.unscaled(vr.x + (vr.width / 2)),
                              zoom.unscaled(vr.y + (vr.height / 2)));
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("getPanelCenter=" + pt);
+        if (logger.isFineEnabled()) {
+            logger.fine("getPanelCenter=" + pt);
         }
 
         return pt;
@@ -255,8 +255,8 @@ public class ZoomedPanel
      */
     public void setFocusPoint (Point pt)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setFocusPoint pt=" + pt);
+        if (logger.isFineEnabled()) {
+            logger.fine("setFocusPoint pt=" + pt);
         }
 
         updatePreferredSize();

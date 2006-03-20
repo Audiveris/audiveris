@@ -203,8 +203,8 @@ public class BasicLine
     public void includePoint (double x,
                               double y)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("includePoint x=" + x + " y=" + y);
+        if (logger.isFineEnabled()) {
+            logger.fine("includePoint x=" + x + " y=" + y);
         }
 
         n   += 1;
@@ -422,8 +422,8 @@ public class BasicLine
         double hDen = (n * sx2) - (sx * sx);
         double vDen = (n * sy2) - (sy * sy);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("hDen=" + hDen + " vDen=" + vDen);
+        if (logger.isFineEnabled()) {
+            logger.fine("hDen=" + hDen + " vDen=" + vDen);
         }
 
         if (abs(hDen) >= abs(vDen)) {

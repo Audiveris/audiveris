@@ -140,7 +140,7 @@ public class LagReader
     //-----------//
     public void terminate ()
     {
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             StringBuffer buf = new StringBuffer(2048);
             buf.append("Retrieved runs");
 
@@ -149,7 +149,7 @@ public class LagReader
                 buf.append("\nCol " + i++ + " = " + runList.size());
             }
 
-            logger.debug(buf.toString());
+            logger.fine(buf.toString());
         }
     }
 }

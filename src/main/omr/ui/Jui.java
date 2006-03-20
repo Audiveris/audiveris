@@ -325,7 +325,7 @@ public class Jui
      */
     public void showBoardsPane (BoardsPane boards)
     {
-        logger.debug("showing " + boards);
+        logger.fine("showing " + boards);
 
         for (Component component : boardsHolder.getComponents()) {
             if (component != boards.getComponent()) {
@@ -346,7 +346,7 @@ public class Jui
     public void removeBoardsPane (BoardsPane boards)
     {
         boardsHolder.remove(boards.getComponent());
-        logger.debug("removed " + boards + " holderCount=" +
+        logger.fine("removed " + boards + " holderCount=" +
                      boardsHolder.getComponentCount());
 
         // Refresh the display
@@ -409,8 +409,8 @@ public class Jui
             result = targetString.equals(name);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("isTarget this=" + target +
+        if (logger.isFineEnabled()) {
+            logger.fine("isTarget this=" + target +
                          " test=" + name + " -> " + result);
         }
 
@@ -461,8 +461,8 @@ public class Jui
     //-----------------//
     private synchronized void setObjectTarget (Object target)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setObjectTarget " + target);
+        if (logger.isFineEnabled()) {
+            logger.fine("setObjectTarget " + target);
         }
 
         this.target = target;

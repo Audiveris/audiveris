@@ -161,8 +161,8 @@ public class StickArea
         this.source = source;
         this.longAlignment = longAlignment;
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("initialize StickArea#" + id + " minCoreLength="
+        if (logger.isFineEnabled()) {
+            logger.fine("initialize StickArea#" + id + " minCoreLength="
                          + minCoreLength + " maxAdjacency=" + maxAdjacency
                          + " maxThickness=" + maxThickness
                          + " longAlignment=" + longAlignment);
@@ -210,8 +210,8 @@ public class StickArea
             thickenAlignmentCore(candidates, members);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(members.size() + " Core sections");
+        if (logger.isFineEnabled()) {
+            logger.fine(members.size() + " Core sections");
         }
 
         // Collect candidate sections around the core ones
@@ -234,8 +234,8 @@ public class StickArea
             members.addAll(candidates);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(members.size() + " total sections");
+        if (logger.isFineEnabled()) {
+            logger.fine(members.size() + " total sections");
         }
 
         // Aggregate member sections into as few sticks as possible. This
@@ -254,8 +254,8 @@ public class StickArea
                 stick.setResult(NOT_STRAIGHT);
 
                 for (GlyphSection section : stick.getMembers()) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Discarding for not straight stick "
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Discarding for not straight stick "
                                      + section);
                     }
 
@@ -266,7 +266,7 @@ public class StickArea
             }
         }
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             dump(true);
         }
     }
@@ -287,8 +287,8 @@ public class StickArea
                        int maxDeltaPos,
                        double maxDeltaSlope)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("merge maxDeltaCoord=" + maxDeltaCoord
+        if (logger.isFineEnabled()) {
+            logger.fine("merge maxDeltaCoord=" + maxDeltaCoord
                          + " maxDeltaPos=" + maxDeltaPos
                          + " maxDeltaSlope=" + maxDeltaSlope);
         }
@@ -322,8 +322,8 @@ public class StickArea
 
                 if (StickUtil.areExtensions(stick, other, maxDeltaCoord,
                                             maxDeltaPos, maxDeltaSlope)) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("merging stick " + stick.getId()
+                    if (logger.isFineEnabled()) {
+                        logger.fine("merging stick " + stick.getId()
                                      + " into stick " + other.getId());
                     }
                     other.addGlyphSections(stick,
@@ -339,8 +339,8 @@ public class StickArea
             sticks.remove(stick);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("merged " + removals.size() + " sticks in "
+        if (logger.isFineEnabled()) {
+            logger.fine("merged " + removals.size() + " sticks in "
                          + (System.currentTimeMillis() - startTime)
                          + " ms");
         }
@@ -408,8 +408,8 @@ public class StickArea
                 }
 
                 if (thick > maxThickness) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Too thick real line " + thick + " "
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Too thick real line " + thick + " "
                                      + section);
                     }
 

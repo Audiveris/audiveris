@@ -259,6 +259,7 @@ public class MemoryMeter
                     }
                 }
             };
+        monitorThread.setName(getClass().getName());
         monitorThread.setPriority(Thread.MIN_PRIORITY);
         monitorThread.start();
     }

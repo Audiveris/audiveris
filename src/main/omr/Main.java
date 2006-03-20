@@ -138,7 +138,7 @@ public class Main
 
         // Interactive or Batch mode ?
         if (!batchMode) {
-            logger.debug("Interactive processing");
+            logger.fine("Interactive processing");
 
             // Make sure we have nice window decorations.
             JFrame.setDefaultLookAndFeelDecorated(true);
@@ -150,6 +150,7 @@ public class Main
             if (sheetNames.size() > 0 ||
                 scoreNames.size() > 0) {
                 Worker worker = new Worker();
+                worker.setName(getClass().getName());
                 // Make sure the Gui gets priority
                 worker.setPriority(Thread.MIN_PRIORITY);
                 worker.start();
@@ -219,7 +220,7 @@ public class Main
     private static File getHomeFolder()
     {
         if (audiverisHome == null) {
-            logger.error("Environment variable '" + AUDIVERIS_HOME
+            logger.warning("Environment variable '" + AUDIVERIS_HOME
                          + "' not set.");
             logger.info("Exiting");
             System.exit(-1);
@@ -459,13 +460,13 @@ public class Main
         }
 
         // Results
-        if (logger.isDebugEnabled()) {
-            logger.debug("batchMode=" + batchMode);
-            logger.debug("writeScore=" + writeScore);
-            logger.debug("savePath="   + constants.savePath.getValue());
-            logger.debug("targetStep=" + targetStep);
-            logger.debug("sheetNames=" + sheetNames);
-            logger.debug("scoreNames=" + scoreNames);
+        if (logger.isFineEnabled()) {
+            logger.fine("batchMode=" + batchMode);
+            logger.fine("writeScore=" + writeScore);
+            logger.fine("savePath="   + constants.savePath.getValue());
+            logger.fine("targetStep=" + targetStep);
+            logger.fine("sheetNames=" + sheetNames);
+            logger.fine("scoreNames=" + scoreNames);
         }
 
         // Launch the processing
@@ -529,7 +530,7 @@ public class Main
     {
         // Print message if any
         if (msg != null) {
-            logger.error(msg);
+            logger.warning(msg);
         }
 
         StringBuffer buf = new StringBuffer(1024);

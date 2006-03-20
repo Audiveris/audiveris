@@ -149,14 +149,14 @@ public class ScrollView
         Point center = view.rubber.getCenter();
 
         if (center != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("getRubberFocus rubber center=" + center);
+            if (logger.isFineEnabled()) {
+                logger.fine("getRubberFocus rubber center=" + center);
             }
 
             return center; // Of rubber band
         } else if (view != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("getRubberFocus panelcenter="
+            if (logger.isFineEnabled()) {
+                logger.fine("getRubberFocus panelcenter="
                              + view.getPanelCenter());
             }
 
@@ -179,8 +179,8 @@ public class ScrollView
      */
     public void setZoomRatio (double zoomRatio)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setZoomRatio zoomRatio=" + zoomRatio);
+        if (logger.isFineEnabled()) {
+            logger.fine("setZoomRatio zoomRatio=" + zoomRatio);
         }
 
         if (view.getZoom() != null) {
@@ -203,8 +203,8 @@ public class ScrollView
         Rectangle vr = view.getVisibleRect();
         Dimension dim = view.getModelSize();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("fitHeight vr=" + vr + " dim=" + dim);
+        if (logger.isFineEnabled()) {
+            logger.fine("fitHeight vr=" + vr + " dim=" + dim);
         }
 
         setZoomRatio((double) (vr.height) / (double) dim.height);
@@ -222,8 +222,8 @@ public class ScrollView
         Rectangle vr = view.getVisibleRect();
         Dimension dim = view.getModelSize();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("fitWhole vr=" + vr + " dim=" + dim);
+        if (logger.isFineEnabled()) {
+            logger.fine("fitWhole vr=" + vr + " dim=" + dim);
         }
 
         setZoomRatio(Math.min((double) (vr.width) / (double) dim.width,
@@ -246,8 +246,8 @@ public class ScrollView
         Rectangle vr = view.getVisibleRect();
         Dimension dim = view.getModelSize();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("fitWidth vr=" + vr + " dim=" + dim);
+        if (logger.isFineEnabled()) {
+            logger.fine("fitWidth vr=" + vr + " dim=" + dim);
         }
 
         if ((vr.width > 0) && (dim.width > 0)) {

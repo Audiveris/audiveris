@@ -77,8 +77,8 @@ public class Score
     {
         super(null); // No container
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Construction of an empty score");
+        if (logger.isFineEnabled()) {
+            logger.fine("Construction of an empty score");
         }
     }
 
@@ -107,7 +107,7 @@ public class Score
         this.spacing = spacing;
         this.imagefpath = imagefpath;
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             Dumper.dump(this, "Constructed");
         }
     }
@@ -363,8 +363,8 @@ public class Score
                 this.setSheet(sheet);
                 sheet.setScore(this);
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug(this + " linked to " + sheet);
+                if (logger.isFineEnabled()) {
+                    logger.fine(this + " linked to " + sheet);
                 }
 
                 return;
@@ -375,8 +375,8 @@ public class Score
         // this score with some sheet info, let's use it
         if (getSheet() != null) {
             SheetManager.getInstance().insertInstance(getSheet());
-            if (logger.isDebugEnabled()) {
-                logger.debug(this + " linked to newly inserted "
+            if (logger.isFineEnabled()) {
+                logger.fine(this + " linked to newly inserted "
                              + getSheet());
             }
 
@@ -384,8 +384,8 @@ public class Score
             getSheet().checkTransientSteps();
             getSheet().displayAssembly();
         } else {
-            if (logger.isDebugEnabled()) {
-                logger.debug(this + " not linked");
+            if (logger.isFineEnabled()) {
+                logger.fine(this + " not linked");
             }
             // Create a void related sheet
             try {
@@ -450,8 +450,8 @@ public class Score
      */
     public void setView (ScoreView view)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setView view=" + view);
+        if (logger.isFineEnabled()) {
+            logger.fine("setView view=" + view);
         }
 
         this.view = view;
@@ -622,8 +622,8 @@ public class Score
             }
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("yLocateSystem. Not within recent system");
+        if (logger.isFineEnabled()) {
+            logger.fine("yLocateSystem. Not within recent system");
         }
 
         // Recent system is not OK, Browse though all the score systems

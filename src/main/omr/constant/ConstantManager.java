@@ -126,8 +126,8 @@ public class ConstantManager
 
         // Then, save the remaining USER values
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Store constants into " + USER_FILE_NAME);
+            if (logger.isFineEnabled()) {
+                logger.fine("Store constants into " + USER_FILE_NAME);
             }
 
             FileOutputStream out = new FileOutputStream(USER_FILE_NAME);
@@ -254,8 +254,8 @@ public class ConstantManager
 
             if (defaultValue != null) {
                 if (value.equals(defaultValue)) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Removing identical User" +
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Removing identical User" +
                                      " and Default value for key : " + key +
                                      " = " + value);
                     }

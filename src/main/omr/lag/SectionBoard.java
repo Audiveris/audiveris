@@ -135,8 +135,8 @@ public class SectionBoard
                         if (sectionFocus != null) {
                             if (focusWanted) {
                                 int sectionId = (Integer) id.getValue();
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("sectionId=" + sectionId);
+                                if (logger.isFineEnabled()) {
+                                    logger.fine("sectionId=" + sectionId);
                                 }
                                 if (sectionId != NO_VALUE) {
                                     sectionFocus.setFocusSection(sectionId);

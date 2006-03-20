@@ -120,8 +120,8 @@ public class StepMonitor
 		    // This is supposed to run in the background, so...
 		    Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Executing " + step +
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Executing " + step +
                                      " sheet=" + sheet +
                                      " param=" + param +
                                      " ...");
@@ -154,8 +154,8 @@ public class StepMonitor
                             bar.setIndeterminate(false);
                         }
 
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Ending " + step +
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Ending " + step +
                                          " sheet=" + sheet +
                                          " param=" + param +
                                          ".");

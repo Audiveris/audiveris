@@ -539,7 +539,7 @@ public class SymbolRipper
                 // Dsable new storing
                 disableStore();
             } else {
-                logger.error("No name defined for symbol output");
+                logger.warning("No name defined for symbol output");
             }
         }
     }

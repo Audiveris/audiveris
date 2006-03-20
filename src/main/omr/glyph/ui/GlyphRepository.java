@@ -177,13 +177,13 @@ public class GlyphRepository
             if (!file.exists()) {
                 file = new File(getSheetsFolder(), gName);
                 if (!file.exists()) {
-                    logger.error("Unable to find file for glyph " + gName);
+                    logger.warning("Unable to find file for glyph " + gName);
                     return null;
                 }
             }
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("Reading " + file);
+            if (logger.isFineEnabled()) {
+                logger.fine("Reading " + file);
             }
             try {
                 glyph = (Glyph) getXmlMapper().load(file);
@@ -238,7 +238,7 @@ public class GlyphRepository
 
         for (File file : files) {
             if (FileUtil.getExtension(file).equals(FILE_EXTENSION)) {
-                logger.debug("Adding " + file);
+                logger.fine("Adding " + file);
                 glyphFiles.add(file);
             }
         }
@@ -327,8 +327,8 @@ public class GlyphRepository
                         shape != Shape.NOISE &&
                         shape != Shape.COMBINING_STEM) {
 
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Storing " + glyph);
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Storing " + glyph);
                         }
 
                         int y = glyph.getMembers().get(0).getStart();
@@ -419,7 +419,7 @@ public class GlyphRepository
     synchronized void storeCoreBase ()
     {
         if (coreBase == null) {
-            logger.error("Core base is null");
+            logger.warning("Core base is null");
             return;
         }
 
@@ -437,14 +437,14 @@ public class GlyphRepository
                                       source.getParentFile().getName());
             targetDir.mkdirs();
             File target = new File(targetDir, source.getName());
-            if (logger.isDebugEnabled()) {
-                logger.debug("Storing " + gName + " as core");
+            if (logger.isFineEnabled()) {
+                logger.fine("Storing " + gName + " as core");
             }
 
             try {
                 FileUtil.copy(source, target);
             } catch (IOException ex) {
-                logger.error("Cannot copy " + source + " to " + target);
+                logger.warning("Cannot copy " + source + " to " + target);
             }
         }
 
@@ -523,7 +523,7 @@ public class GlyphRepository
     private void loadDirectory (File dir,
                                 List<File> all)
     {
-        logger.debug("Recursing through " + dir);
+        logger.fine("Recursing through " + dir);
         File[] files = dir.listFiles();
         if (files == null) {
             logger.warning("Directory " + dir + " not found");
@@ -536,7 +536,7 @@ public class GlyphRepository
                 loadDirectory(file, all);
             } else {
                 if (FileUtil.getExtension(file).equals(FILE_EXTENSION)) {
-                    logger.debug("Adding " + file);
+                    logger.fine("Adding " + file);
                     all.add(file);
                 }
             }

@@ -485,8 +485,8 @@ public class Sheet
     {
         this();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("creating Sheet form image " + imgFile);
+        if (logger.isFineEnabled()) {
+            logger.fine("creating Sheet form image " + imgFile);
         }
 
         // We assume we have a canonical form for the file name
@@ -528,8 +528,8 @@ public class Sheet
         this(new File(score.getImageFPath()),
              /* force => */ true);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Created Sheet from " + score);
+        if (logger.isFineEnabled()) {
+            logger.fine("Created Sheet from " + score);
         }
     }
 
@@ -1011,8 +1011,8 @@ public class Sheet
     {
         // If there was already a linked score, clean up everything
         if (this.score != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Deconnecting " + this.score);
+            if (logger.isFineEnabled()) {
+                logger.fine("Deconnecting " + this.score);
             }
             this.score.close();
         }

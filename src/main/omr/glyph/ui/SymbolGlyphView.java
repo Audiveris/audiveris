@@ -96,8 +96,8 @@ public class SymbolGlyphView
         public void contextSelected (MouseEvent e,
                                      Point pt)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug ("SymbolGlyphView contextSelected");
+        if (logger.isFineEnabled()) {
+            logger.fine ("SymbolGlyphView contextSelected");
         }
 
         contextSelected = true;
@@ -177,8 +177,8 @@ public class SymbolGlyphView
     protected void glyphAdded (Glyph glyph,
                                Point pt)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug ("SymbolGlyphView glyphAdded");
+        if (logger.isFineEnabled()) {
+            logger.fine ("SymbolGlyphView glyphAdded");
         }
 
         if (glyph != null) {

@@ -230,7 +230,7 @@ public class SheetController
 //     public int setScoreSheetView (Score score,
 //                                   PagePoint pagPt)
 //     {
-//         if (logger.isDebugEnabled()) {
+//         if (logger.isFineEnabled()) {
 //             logger.debug("setScoreSheetView " + score + " pagPt=" + pagPt);
 //         }
 
@@ -268,8 +268,8 @@ public class SheetController
     public int setSheetAssembly (Sheet sheet,
                                  PagePoint pagPt)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setSheetAssembly for sheet " + sheet.getName() +
+        if (logger.isFineEnabled()) {
+            logger.fine("setSheetAssembly for sheet " + sheet.getName() +
                          " pagPt=" + pagPt);
         }
 
@@ -298,8 +298,8 @@ public class SheetController
                 (assembly.getComponent());
 
             if (index == -1) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Adding assembly for sheet " +
+                if (logger.isFineEnabled()) {
+                    logger.fine("Adding assembly for sheet " +
                                  sheet.getName());
                 }
 
@@ -313,8 +313,8 @@ public class SheetController
 
             // Focus info
             if (pagPt == null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("No focus specified on Sheet side");
+                if (logger.isFineEnabled()) {
+                    logger.fine("No focus specified on Sheet side");
                 }
 
 //                 // Does the score view has a defined focus ?
@@ -348,8 +348,8 @@ public class SheetController
      */
     public void close (SheetAssembly assembly)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("close " + assembly.toString());
+        if (logger.isFineEnabled()) {
+            logger.fine("close " + assembly.toString());
         }
         int index = component.indexOfComponent
             (assembly.getComponent());
@@ -523,8 +523,8 @@ public class SheetController
         // Enable actions ?
         Sheet sheet = getCurrentSheet();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("stateChanged for " + sheet);
+        if (logger.isFineEnabled()) {
+            logger.fine("stateChanged for " + sheet);
         }
 
         UIUtilities.enableActions(sheetDependentActions, sheet != null);
@@ -564,15 +564,15 @@ public class SheetController
         {
             String fileName = e.getActionCommand();
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("HistoryListener for " + fileName);
+            if (logger.isFineEnabled()) {
+                logger.fine("HistoryListener for " + fileName);
             }
 
             Main.getJui().setTarget(fileName);
             Step.getLoadStep().perform(null, new File(fileName));
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("End of HistoryListener");
+            if (logger.isFineEnabled()) {
+                logger.fine("End of HistoryListener");
             }
 
             // Other UI actions will be triggered when the sheet has

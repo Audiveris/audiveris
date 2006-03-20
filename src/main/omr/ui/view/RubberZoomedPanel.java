@@ -57,8 +57,8 @@ public class RubberZoomedPanel
      */
     public RubberZoomedPanel ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("new RubberZoomedPanel");
+        if (logger.isFineEnabled()) {
+            logger.fine("new RubberZoomedPanel");
         }
     }
 
@@ -77,8 +77,8 @@ public class RubberZoomedPanel
         super(zoom);
         setRubber(rubber);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("new RubberZoomedPanel"
+        if (logger.isFineEnabled()) {
+            logger.fine("new RubberZoomedPanel"
                          + " zoom=" + zoom
                          + " rubber=" + rubber);
         }

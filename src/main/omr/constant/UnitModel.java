@@ -278,7 +278,7 @@ public class UnitModel
             UnitNode unit = (UnitNode) node;
             Logger logger = unit.getLogger();
             if (logger != null) {
-                logger.setLevel(Logger.Level.toLevel((String) value));
+                logger.setLevel((String) value);
             }
         }
 

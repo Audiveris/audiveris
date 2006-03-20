@@ -220,9 +220,9 @@ public class Panel
             }
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("sbc=" + sbc);
-            logger.debug("sbr=" + sbr);
+        if (logger.isFineEnabled()) {
+            logger.fine("sbc=" + sbc);
+            logger.fine("sbr=" + sbr);
         }
 
         return new FormLayout(sbc.toString(), sbr.toString());

@@ -217,8 +217,8 @@ public class Section <L extends Lag,
             centroid.x /= (2 * weight);
             centroid.y /= (2 * weight);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("Centroid of " + this + " is " + centroid);
+            if (logger.isFineEnabled()) {
+                logger.fine("Centroid of " + this + " is " + centroid);
             }
         }
 
@@ -600,8 +600,8 @@ public class Section <L extends Lag,
         runs.add(run);
         addRun(run);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Appended " + run + " to " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("Appended " + run + " to " + this);
         }
     }
 
@@ -626,8 +626,8 @@ public class Section <L extends Lag,
         // Invalidate cached data
         invalidateCache();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Parameters of " + this + " maxRunLength="
+        if (logger.isFineEnabled()) {
+            logger.fine("Parameters of " + this + " maxRunLength="
                          + getMaxRunLength() + " meanRunLength="
                          + getMeanRunLength() + " weight=" + weight
                          + "foreWeight=" + foreWeight);
@@ -708,15 +708,15 @@ public class Section <L extends Lag,
      */
     public void merge (S other)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Merging " + this + " with " + other);
+        if (logger.isFineEnabled()) {
+            logger.fine("Merging " + this + " with " + other);
         }
 
         runs.addAll(other.runs);
         computeParameters();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Merged " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("Merged " + this);
         }
     }
 
@@ -730,16 +730,16 @@ public class Section <L extends Lag,
      */
     public void prepend (Run run)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Prepending " + run + " to " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("Prepending " + run + " to " + this);
         }
 
         firstPos--;
         runs.add(0, run);
         addRun(run);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Prepended " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("Prepended " + this);
         }
     }
 

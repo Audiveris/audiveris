@@ -69,8 +69,8 @@ public class SheetManager
      */
     public void close (Sheet sheet)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("close " + sheet);
+        if (logger.isFineEnabled()) {
+            logger.fine("close " + sheet);
         }
 
         // Remove from list of instance
@@ -87,8 +87,8 @@ public class SheetManager
      */
     public void closeAll ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("closeAll");
+        if (logger.isFineEnabled()) {
+            logger.fine("closeAll");
         }
 
         for (Iterator<Sheet> it = instances.iterator(); it.hasNext();) {
@@ -128,8 +128,8 @@ public class SheetManager
      */
     public void insertInstance (Sheet sheet)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("insertInstance " + sheet);
+        if (logger.isFineEnabled()) {
+            logger.fine("insertInstance " + sheet);
         }
 
         // Remove duplicate if any
@@ -137,8 +137,8 @@ public class SheetManager
             Sheet s = it.next();
 
             if (s.getPath().equals(sheet.getPath())) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Removing duplicate " + s);
+                if (logger.isFineEnabled()) {
+                    logger.fine("Removing duplicate " + s);
                 }
 
                 it.remove();

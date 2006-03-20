@@ -373,8 +373,8 @@ public class GlyphTrainer
                 if (++counters[index] <= maxSimilar) {
                     set.add(ng);
                 } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(String.format("%.5f worst Core %s",
+                    if (logger.isFineEnabled()) {
+                        logger.fine(String.format("%.5f worst Core %s",
                                                    ng.grade, ng.gName));
                     }
                 }
@@ -391,8 +391,8 @@ public class GlyphTrainer
                 if (++counters[index] <= maxSimilar) {
                     set.add(ng);
                 } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(String.format("%.5f best Core %s",
+                    if (logger.isFineEnabled()) {
+                        logger.fine(String.format("%.5f best Core %s",
                                                    ng.grade, ng.gName));
                     }
                 }

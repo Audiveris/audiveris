@@ -239,8 +239,8 @@ public class GlyphLagView
         public void pointAdded (MouseEvent e,
                                 Point pt)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("GlyphLagView pointAdded");
+        if (logger.isFineEnabled()) {
+            logger.fine("GlyphLagView pointAdded");
         }
 
         // First, provide info related to designated point
@@ -288,8 +288,8 @@ public class GlyphLagView
                                Point pt)
     {
         // Empty by default
-        if (logger.isDebugEnabled()) {
-            logger.debug ("Empty GlyphLagView glyphAdded " + glyph);
+        if (logger.isFineEnabled()) {
+            logger.fine ("Empty GlyphLagView glyphAdded " + glyph);
         }
     }
 }

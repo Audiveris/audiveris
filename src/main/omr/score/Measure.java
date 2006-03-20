@@ -90,7 +90,7 @@ public class Measure
         this.rightlinex = rightlinex;
         this.lineinvented = lineinvented;
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             Dumper.dump(this, "Constructed");
         }
     }

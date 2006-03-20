@@ -232,7 +232,7 @@ public class CheckSuite <C extends Checkable>
         CheckResult result = new CheckResult();
         StringBuffer sb = null;
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             sb = new StringBuffer(512);
             sb.append(name).append(" ");
         }
@@ -241,14 +241,14 @@ public class CheckSuite <C extends Checkable>
         for (Check<C> check : checks) {
             check.pass(object, result, true);
 
-            if (logger.isDebugEnabled()) {
+            if (logger.isFineEnabled()) {
                 sb.append(String.format("%15s :%5.2f", check.getName(), result.value));
             }
 
             if (result.flag == Check.RED) {
                 // The check totally failed, we give up immediately!
-                if (logger.isDebugEnabled()) {
-                    logger.debug(sb.toString());
+                if (logger.isFineEnabled()) {
+                    logger.fine(sb.toString());
                 }
 
                 return result.flag;
@@ -263,9 +263,9 @@ public class CheckSuite <C extends Checkable>
         // Final grade
         grade /= totalWeight;
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             sb.append(String.format("=> %5.2f ", grade));
-            logger.debug(sb.toString());
+            logger.fine(sb.toString());
         }
 
         return grade;
@@ -420,7 +420,7 @@ public class CheckSuite <C extends Checkable>
 //         sb.append("</tr>");
 //         sb.append("</table>");
 
-//         if (logger.isDebugEnabled()) {
+//         if (logger.isFineEnabled()) {
 //             logger.debug(sb.toString());
 //         }
 

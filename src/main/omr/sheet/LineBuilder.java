@@ -134,8 +134,8 @@ public class LineBuilder
     {
         id = ++globalId;
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Building LineBuilder #" + id + " ...");
+        if (logger.isFineEnabled()) {
+            logger.fine("Building LineBuilder #" + id + " ...");
         }
 
         maxThickness = staveScale.fracToPixels(constants.maxThickness);
@@ -151,8 +151,8 @@ public class LineBuilder
              constants.maxSlope.getValue(), // max stick slope
              true); // closeTest
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("End of scanning LineBuilder #" + id + ", found "
+        if (logger.isFineEnabled()) {
+            logger.fine("End of scanning LineBuilder #" + id + ", found "
                          + sticks.size() + " stick(s)");
         }
 
@@ -179,8 +179,8 @@ public class LineBuilder
             stick.setShape(Shape.STAFF_LINE);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("End of LineBuilder #" + id + ", left=" + left
+        if (logger.isFineEnabled()) {
+            logger.fine("End of LineBuilder #" + id + ", left=" + left
                          + " right=" + right);
         }
 
@@ -278,8 +278,8 @@ public class LineBuilder
 
         // Here we have hole areas, with aggregated sticks
         // Make sure we don't have large empty regions between sticks
-        if (logger.isDebugEnabled()) {
-            logger.debug("hole areas : " + holeAreas.size());
+        if (logger.isFineEnabled()) {
+            logger.fine("hole areas : " + holeAreas.size());
         }
 
         // Include sticks from hole areas into sticks list
@@ -290,7 +290,7 @@ public class LineBuilder
         // Sort new collection of sticks, and check for empty regions
         Collections.sort(sticks, stickComparator);
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             si = sticks.listIterator();
 
             int i = 0;
@@ -344,8 +344,8 @@ public class LineBuilder
                         // We are on left of the stave, remove everything before
                         firstIdx = si.previousIndex();
 
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Discarding before " + firstIdx
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Discarding before " + firstIdx
                                          + " left=" + left + " stop="
                                          + leftStick.getStop() + " start="
                                          + rightStick.getStart());
@@ -354,8 +354,8 @@ public class LineBuilder
                         // We are on right of the stave, remove everything after
                         lastIdx = si.previousIndex() - 1;
 
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Discarding after " + lastIdx
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Discarding after " + lastIdx
                                          + " right=" + right + " stop="
                                          + leftStick.getStop() + " start="
                                          + rightStick.getStart());
@@ -370,8 +370,8 @@ public class LineBuilder
                             firstIdx = si.previousIndex();
                             left = rightStick.getStart();
 
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Discarding left stick before "
+                            if (logger.isFineEnabled()) {
+                                logger.fine("Discarding left stick before "
                                              + firstIdx + " now left=" + left);
                             }
                         } else {
@@ -380,8 +380,8 @@ public class LineBuilder
                                 lastIdx = si.previousIndex() - 1;
                                 right = leftStick.getStop();
 
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("Discarding right stick after "
+                                if (logger.isFineEnabled()) {
+                                    logger.fine("Discarding right stick after "
                                                  + lastIdx + " now right="
                                                  + right);
                                 }
@@ -403,8 +403,8 @@ public class LineBuilder
                 lastIdx = sticks.size() - 1;
             }
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("Discarding sticks firstIdx=" + firstIdx
+            if (logger.isFineEnabled()) {
+                logger.fine("Discarding sticks firstIdx=" + firstIdx
                              + " lastIdx=" + lastIdx + " (out of "
                              + sticks.size() + ")");
             }
@@ -476,8 +476,8 @@ public class LineBuilder
                            double yLeft,
                            double yRight)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("scanRect xMin=" + xMin + " xMax=" + xMax);
+        if (logger.isFineEnabled()) {
+            logger.fine("scanRect xMin=" + xMin + " xMax=" + xMax);
         }
 
         // List of hole candidates
@@ -578,8 +578,8 @@ public class LineBuilder
                 }
             }
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("LineSource size : " + sections.size());
+            if (logger.isFineEnabled()) {
+                logger.fine("LineSource size : " + sections.size());
             }
 
             // Sort my list on starting abscissa

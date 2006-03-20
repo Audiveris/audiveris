@@ -86,8 +86,8 @@ public class VerticalArea
                          int              maxThickness)
             throws omr.ProcessingException
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("maxThickness=" + maxThickness);
+        if (logger.isFineEnabled()) {
+            logger.fine("maxThickness=" + maxThickness);
         }
 
         // Retrieve the stick(s)
@@ -118,8 +118,8 @@ public class VerticalArea
                              }
                          });
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("End of scanning Vertical Area, found "
+        if (logger.isFineEnabled()) {
+            logger.fine("End of scanning Vertical Area, found "
                          + sticks.size() + " stick(s)");
         }
     }

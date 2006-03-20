@@ -135,7 +135,7 @@ public class IconManager
      */
     public Icon loadIcon (String name)
     {
-        logger.debug("Trying to load Icon '" + name + "'");
+        logger.fine("Trying to load Icon '" + name + "'");
 
         // First, find out the proper input stream
         InputStream is;
@@ -150,12 +150,12 @@ public class IconManager
                     (Main.getIconsResource() + "/" +
                      name + FILE_EXTENSION);
             } catch (Exception e) {
-                logger.error("Cannot load icon " + name);
+                logger.warning("Cannot load icon " + name);
                 return null;
             }
         }
         if (is == null) {
-            logger.debug("No file for icon " + name);
+            logger.fine("No file for icon " + name);
             return null;
         }
 
@@ -163,10 +163,10 @@ public class IconManager
         Icon icon = loadFromStream(is);
 
         if (icon == null) {
-            logger.error("Could not load icon '" + name + "'");
+            logger.warning("Could not load icon '" + name + "'");
         } else {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Icon '" + name + "' loaded");
+            if (logger.isFineEnabled()) {
+                logger.fine("Icon '" + name + "' loaded");
             }
         }
 
@@ -191,7 +191,7 @@ public class IconManager
         try {
             os = new FileOutputStream(getIconFile(name));
         } catch (FileNotFoundException ex) {
-            logger.error("Cannot store icon " + name);
+            logger.warning("Cannot store icon " + name);
             return;
         }
 
@@ -199,7 +199,7 @@ public class IconManager
         if (storeToStream(icon, name, os)) {
             logger.info("Icon '" + name + "' successfully stored");
         } else {
-            logger.error("Could not store icon " + name);
+            logger.warning("Could not store icon " + name);
         }
     }
 
@@ -231,7 +231,7 @@ public class IconManager
                 }
             }
         }
-        logger.error("Invalid pixel encoding char : '" + c + "'");
+        logger.warning("Invalid pixel encoding char : '" + c + "'");
         return 0;
     }
 
@@ -289,15 +289,15 @@ public class IconManager
             // Parsing
             st.nextToken(); st.nextToken();
             name   = st.sval;
-            logger.debug("name='" + name + "'");
+            logger.fine("name='" + name + "'");
 
             st.nextToken(); st.nextToken();
             width  = (int) st.nval;
-            logger.debug("width='" + width + "'");
+            logger.fine("width='" + width + "'");
 
             st.nextToken(); st.nextToken();
             height = (int) st.nval;
-            logger.debug("height='" + height + "'");
+            logger.fine("height='" + height + "'");
 
             r.readLine();               // Finish current ligne
 
@@ -305,8 +305,8 @@ public class IconManager
             int index = 0;
             for (int y = 0; y < height; y++) {
                 String line = r.readLine();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Line='" + line + "'");
+                if (logger.isFineEnabled()) {
+                    logger.fine("Line='" + line + "'");
                 }
                 for (int x = 0; x < width; x++) {
                     int argb = decodeARGB(line.charAt(x));
@@ -323,7 +323,7 @@ public class IconManager
                 (tk.createImage
                  (new MemoryImageSource(width, height, pix, 0, width)));
         } catch (IOException ex) {
-            logger.error("IconManager.loadFromStream : " + ex);
+            logger.warning("IconManager.loadFromStream : " + ex);
             ex.printStackTrace();
             return null;
         }
@@ -338,7 +338,7 @@ public class IconManager
     {
         // Safer
         if (!(icon instanceof SymbolIcon)) {
-            logger.error("Trying to store a non SymbolIcon : " + name);
+            logger.warning("Trying to store a non SymbolIcon : " + name);
             return false;
         }
 

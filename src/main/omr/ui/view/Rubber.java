@@ -294,8 +294,8 @@ public class Rubber
     @Override
     public void mousePressed (MouseEvent e)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("\nmousePressed : " +
+        if (logger.isFineEnabled()) {
+            logger.fine("\nmousePressed : " +
                     InputEvent.getModifiersExText(e.getModifiersEx()));
         }
 

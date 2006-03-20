@@ -429,19 +429,19 @@ public abstract class Constant
             if (currentString == null) { // Not defined by property files
 
                 if (defaultString != null) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Property " +
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Property " +
                                      qualifiedName + " = " + currentString
                                      + " -> " + defaultString);
                     }
 
                     currentString = defaultString; // Use default
                 } else {
-                    logger.debug("No value found for Property "
+                    logger.fine("No value found for Property "
                                  + qualifiedName);
                 }
-            } else if (logger.isDebugEnabled()) {
-                logger.debug("Property " + qualifiedName + " = "
+            } else if (logger.isFineEnabled()) {
+                logger.fine("Property " + qualifiedName + " = "
                              + currentString);
             }
 

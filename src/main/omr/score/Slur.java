@@ -61,7 +61,7 @@ public class Slur
     {
         super(null);
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             Dumper.dump(this, "Construction");
         }
     }
@@ -96,7 +96,7 @@ public class Slur
         this.rightcolumn = rightcolumn;
         this.radius = radius;
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             Dumper.dump(this, "Constructed");
         }
     }

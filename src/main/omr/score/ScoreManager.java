@@ -91,8 +91,8 @@ public class ScoreManager
      */
     public void close (Score score)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("close " + score);
+        if (logger.isFineEnabled()) {
+            logger.fine("close " + score);
         }
 
         // Remove from list of instance
@@ -109,8 +109,8 @@ public class ScoreManager
      */
     public void closeAll ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("closeAll");
+        if (logger.isFineEnabled()) {
+            logger.fine("closeAll");
         }
 
         for (Iterator<Score> it = instances.iterator(); it.hasNext();) {
@@ -148,8 +148,8 @@ public class ScoreManager
             logger.info("Score deserialized in " + (s1 - s0) + " ms");
             return score;
         } catch (Exception ex) {
-            logger.error("Could not deserialize score from " + file);
-            logger.error(ex.toString());
+            logger.warning("Could not deserialize score from " + file);
+            logger.warning(ex.toString());
             return null;
         }
     }
@@ -210,8 +210,8 @@ public class ScoreManager
     //----------------//
     private void insertInstance (Score score)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("insertInstance " + score);
+        if (logger.isFineEnabled()) {
+            logger.fine("insertInstance " + score);
         }
 
         if (score.getRadix() != null) {
@@ -219,13 +219,13 @@ public class ScoreManager
             for (Iterator<Score> it = instances.iterator(); it.hasNext();) {
                 Score s = it.next();
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("checking with " + s.getRadix());
+                if (logger.isFineEnabled()) {
+                    logger.fine("checking with " + s.getRadix());
                 }
 
                 if (s.getRadix().equals(score.getRadix())) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Removing duplicate " + s);
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Removing duplicate " + s);
                     }
 
                     it.remove();
@@ -248,8 +248,8 @@ public class ScoreManager
      */
     public void linkAllScores ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("linkAllScores");
+        if (logger.isFineEnabled()) {
+            logger.fine("linkAllScores");
         }
 
         for (Score score : instances) {
@@ -380,8 +380,8 @@ public class ScoreManager
      */
     public void serializeAll ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("serializeAll");
+        if (logger.isFineEnabled()) {
+            logger.fine("serializeAll");
         }
 
         for (Score score : instances) {
@@ -447,8 +447,8 @@ public class ScoreManager
      */
     public void storeAll ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("storeAll");
+        if (logger.isFineEnabled()) {
+            logger.fine("storeAll");
         }
 
         for (Score score : instances) {

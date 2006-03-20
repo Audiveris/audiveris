@@ -158,7 +158,7 @@ public abstract class ConstantSet
         }
 
         // Dump the current constant values for this unit, if so asked for
-        if (logger.isDebugEnabled()
+        if (logger.isFineEnabled()
             || (new Constant.Boolean(unit, "constantValues", false,
                                      "Debugging flag for ConstantSet")
                 .getValue())) {

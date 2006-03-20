@@ -99,7 +99,7 @@ public class NeuralNetwork
         // +1 for bias
         outputWeights = createMatrix(outputSize, hiddenSize + 1, amplitude);
 
-        logger.debug("Network created");
+        logger.fine("Network created");
     }
 
     //~ Methods -----------------------------------------------------------
@@ -115,7 +115,7 @@ public class NeuralNetwork
      */
     public Backup backup ()
     {
-        logger.debug("Network memory backup");
+        logger.fine("Network memory backup");
         return new Backup (hiddenWeights,
                            outputWeights);
     }
@@ -145,7 +145,7 @@ public class NeuralNetwork
             throw new IllegalArgumentException("Incompatible backup");
         }
 
-        logger.debug("Network memory restore");
+        logger.fine("Network memory restore");
         this.hiddenWeights = cloneMatrix(backup.hiddenWeights);
         this.outputWeights = cloneMatrix(backup.outputWeights);
     }
@@ -172,8 +172,8 @@ public class NeuralNetwork
 
             return nn;
         } catch (Exception ex) {
-            logger.error("Could not deserialize Network");
-            logger.error(ex.toString());
+            logger.warning("Could not deserialize Network");
+            logger.warning(ex.toString());
             return null;
         }
     }
@@ -195,9 +195,9 @@ public class NeuralNetwork
             s.close();
             logger.info("Network serialized to " + file.getPath());
         } catch (Exception ex) {
-            logger.error("Could not serialize Network to " +
+            logger.warning("Could not serialize Network to " +
                          file.getPath());
-            logger.error(ex.toString());
+            logger.warning(ex.toString());
         }
     }
 
@@ -388,7 +388,7 @@ public class NeuralNetwork
     public void stop()
     {
         stopping = true;
-        logger.debug("Stopping Network training ...");
+        logger.fine("Stopping Network training ...");
     }
 
     //-------//
@@ -409,7 +409,7 @@ public class NeuralNetwork
                          double[][] desiredOutputs,
                          Monitor    monitor)
     {
-        logger.debug("Network being trained");
+        logger.fine("Network being trained");
         stopping = false;
 
         long startTime = System.currentTimeMillis();
@@ -538,9 +538,9 @@ public class NeuralNetwork
             }
         } // for (int ie = 0; ie < epochs; ie++)
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             long stopTime = System.currentTimeMillis();
-            logger.debug
+            logger.fine
                 (String.format
                  ("Duration  %,d seconds, %d epochs on %d patterns",
                   (stopTime - startTime)/1000, epochs, patternNb));

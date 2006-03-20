@@ -97,8 +97,8 @@ public class Zoom
      */
     public Zoom (double ratio)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Zoom created with ratio " + ratio);
+        if (logger.isFineEnabled()) {
+            logger.fine("Zoom created with ratio " + ratio);
         }
 
         setRatio(ratio);
@@ -117,8 +117,8 @@ public class Zoom
     public Zoom (LogSlider slider,
                  double    ratio)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Zoom created" +
+        if (logger.isFineEnabled()) {
+            logger.fine("Zoom created" +
                          " slider=" + slider +
                          " ratio=" + ratio);
         }
@@ -141,8 +141,8 @@ public class Zoom
      */
     public void setRatio (double ratio)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setRatio ratio=" + ratio);
+        if (logger.isFineEnabled()) {
+            logger.fine("setRatio ratio=" + ratio);
         }
 
         // Propagate to slider (useful to keep slider in sync when ratio is
@@ -164,8 +164,8 @@ public class Zoom
      */
     private void forceRatio (double ratio)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("forceRatio ratio=" + ratio);
+        if (logger.isFineEnabled()) {
+            logger.fine("forceRatio ratio=" + ratio);
         }
 
         this.ratio = ratio;
@@ -200,8 +200,8 @@ public class Zoom
     {
         this.slider = slider;
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("setSlider");
+        if (logger.isFineEnabled()) {
+            logger.fine("setSlider");
         }
 
         if (slider != null) {
@@ -215,8 +215,8 @@ public class Zoom
                             || ! slider.getValueIsAdjusting()) {
                             double newRatio = slider.getDoubleValue();
 
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Slider firing zoom newRatio=" + newRatio);
+                            if (logger.isFineEnabled()) {
+                                logger.fine("Slider firing zoom newRatio=" + newRatio);
                             }
 
                             // Stop condition to avoid endless loop between
@@ -243,8 +243,8 @@ public class Zoom
     {
         listeners.add(listener);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("addChangeListener " + listener +
+        if (logger.isFineEnabled()) {
+            logger.fine("addChangeListener " + listener +
                          " -> " + listeners.size());
         }
     }
@@ -413,11 +413,11 @@ public class Zoom
      */
     public void fireStateChanged ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Listeners= " + listeners.size());
+        if (logger.isFineEnabled()) {
+            logger.fine("Listeners= " + listeners.size());
 
             for (ChangeListener listener : listeners) {
-                logger.debug(this + " will Fire " + listener);
+                logger.fine(this + " will Fire " + listener);
             }
         }
 
@@ -425,8 +425,8 @@ public class Zoom
             if (changeEvent == null) {
                 changeEvent = new ChangeEvent(this);
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug(this + " Firing " + listener);
+            if (logger.isFineEnabled()) {
+                logger.fine(this + " Firing " + listener);
             }
 
             listener.stateChanged(changeEvent);

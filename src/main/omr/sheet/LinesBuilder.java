@@ -335,8 +335,8 @@ public class LinesBuilder
             // Get peak at hand
             Peak peak = li.next();
 
-            if (logger.isDebugEnabled()) {
-                logger.debug((li.nextIndex() - 1) + " " + peak);
+            if (logger.isFineEnabled()) {
+                logger.fine((li.nextIndex() - 1) + " " + peak);
             }
 
             // If very first one, we don't yet have intervals
@@ -349,8 +349,8 @@ public class LinesBuilder
             // Compute interval with previous peak
             double interval = computeInterval(prevPeak, peak);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("interval=" + interval);
+            if (logger.isFineEnabled()) {
+                logger.fine("interval=" + interval);
             }
 
             intervals.includeValue(interval);
@@ -360,19 +360,19 @@ public class LinesBuilder
             if (intervals.getCardinality() > 1) {
                 double stdDev = intervals.getStandardDeviation();
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("stdDev=" + (float) stdDev);
+                if (logger.isFineEnabled()) {
+                    logger.fine("stdDev=" + (float) stdDev);
                 }
 
                 if (stdDev > maxDeviation) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Interval gap detected");
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Interval gap detected");
                     }
 
                     intervals.reset(interval);
                 } else if (intervals.getCardinality() == interlineNb) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("End of staff");
+                    if (logger.isFineEnabled()) {
+                        logger.fine("End of staff");
                     }
 
                     // We have a suitable series.  However, let's look for
@@ -388,8 +388,8 @@ public class LinesBuilder
                         if ((Math.abs(interval - intervals.getMeanValue()) <= maxDiff) // Good candidate, compare with first one
 
                             && (nextPeak.getMax() > peaks.get(firstPeak).getMax())) {
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Moving to sixth line");
+                            if (logger.isFineEnabled()) {
+                                logger.fine("Moving to sixth line");
                             }
 
                             // Fix computation of interval value
@@ -407,8 +407,8 @@ public class LinesBuilder
                     }
 
                     // We now have a set of peaks that signals a stave area
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Staff from peaks " + firstPeak + " to "
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Staff from peaks " + firstPeak + " to "
                                      + lastPeak);
                     }
 
@@ -417,7 +417,7 @@ public class LinesBuilder
                                                               lastPeak + 1),
                                                 intervals.getMeanValue()));
 
-                    if (logger.isDebugEnabled()) {
+                    if (logger.isFineEnabled()) {
                         System.out.println();
                     }
 
@@ -427,8 +427,8 @@ public class LinesBuilder
                         intervals.reset();
                         prevPeak = li.next();
 
-                        if (logger.isDebugEnabled()) {
-                            logger.debug((li.nextIndex() - 1) + " "
+                        if (logger.isFineEnabled()) {
+                            logger.fine((li.nextIndex() - 1) + " "
                                          + prevPeak);
                         }
                     }
@@ -507,13 +507,13 @@ public class LinesBuilder
         }
 
         // Dump peaks for debugging
-        if (logger.isDebugEnabled()) {
-            logger.debug("Peak nb = " + peaks.size());
+        if (logger.isFineEnabled()) {
+            logger.fine("Peak nb = " + peaks.size());
 
             int i = 0;
             for (Peak pk : peaks) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(i++ + " " + pk);
+                if (logger.isFineEnabled()) {
+                    logger.fine(i++ + " " + pk);
                 }
             }
         }

@@ -86,8 +86,8 @@ public class ScoreView
      */
     public ScoreView (Score score)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("new ScoreView on " + score);
+        if (logger.isFineEnabled()) {
+            logger.fine("new ScoreView on " + score);
         }
 
         // Cross referencing between score and its view
@@ -119,8 +119,8 @@ public class ScoreView
      */
     public void setFocus (PagePoint pagPt)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setFocus pagPt=" + pagPt);
+        if (logger.isFineEnabled()) {
+            logger.fine("setFocus pagPt=" + pagPt);
         }
 
          if (pagPt != null) {
@@ -188,8 +188,8 @@ public class ScoreView
      */
     public void close ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Closing scoreView");
+        if (logger.isFineEnabled()) {
+            logger.fine("Closing scoreView");
         }
 
         Sheet sheet = score.getSheet();
@@ -211,9 +211,9 @@ public class ScoreView
      */
     public void computePositions ()
     {
-        if (logger.isDebugEnabled()) {
+        if (logger.isFineEnabled()) {
             score.dump();
-            logger.debug("computePositions");
+            logger.fine("computePositions");
         }
 
         score.computeChildren();

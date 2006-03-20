@@ -57,8 +57,8 @@ public class PictureView
     {
         view = new MyView();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("creating PictureView on " + sheet);
+        if (logger.isFineEnabled()) {
+            logger.fine("creating PictureView on " + sheet);
         }
 
         this.sheet = sheet;
@@ -66,8 +66,8 @@ public class PictureView
         // Insert view
         setView(view);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("PictureView ready");
+        if (logger.isFineEnabled()) {
+            logger.fine("PictureView ready");
         }
     }
 
@@ -120,7 +120,7 @@ public class PictureView
 //         // Do we have the corresponding score ?
 //         final Score score = sheet.getScore();
 
-//         if (logger.isDebugEnabled()) {
+//         if (logger.isFineEnabled()) {
 //             logger.debug("showRelatedScore: " + score);
 //         }
 

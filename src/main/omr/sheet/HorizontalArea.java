@@ -62,8 +62,8 @@ public class HorizontalArea
                            int maxThickness)
             throws omr.ProcessingException
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("maxThickness=" + maxThickness);
+        if (logger.isFineEnabled()) {
+            logger.fine("maxThickness=" + maxThickness);
         }
 
         // Retrieve the stick(s)
@@ -93,8 +93,8 @@ public class HorizontalArea
                              }
                          });
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("End of scanning Horizontal Area, found "
+        if (logger.isFineEnabled()) {
+            logger.fine("End of scanning Horizontal Area, found "
                          + sticks.size() + " stick(s)");
         }
     }

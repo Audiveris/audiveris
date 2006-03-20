@@ -53,7 +53,7 @@ public class DefaultSubject<S extends Subject  <S, O, E>,
     public void addObserver (O observer)
     {
         if (!observers.add(observer)) {
-            logger.error("Adding an Observer already registered");
+            logger.warning("Adding an Observer already registered");
         }
     }
 
@@ -68,7 +68,7 @@ public class DefaultSubject<S extends Subject  <S, O, E>,
     public void removeObserver (O observer)
     {
         if (!observers.remove(observer)) {
-            logger.error("Trying to remove a non-registered Observer");
+            logger.warning("Trying to remove a non-registered Observer");
         }
     }
 

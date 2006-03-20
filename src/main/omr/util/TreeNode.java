@@ -60,8 +60,8 @@ public class TreeNode
      */
     public TreeNode (TreeNode container)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("new TreeNode container=" + container);
+        if (logger.isFineEnabled()) {
+            logger.fine("new TreeNode container=" + container);
         }
 
         if (container != null) {
@@ -82,8 +82,8 @@ public class TreeNode
      */
     public void setChildren (List<? extends TreeNode> children)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setChildren of " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("setChildren of " + this);
         }
         if (this.children != children) {
             this.children.clear();
@@ -101,8 +101,8 @@ public class TreeNode
      */
     public List<TreeNode> getChildren ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getChildren of " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("getChildren of " + this);
         }
 
         return children;
@@ -116,8 +116,8 @@ public class TreeNode
      */
     public void setChildrenContainer ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setChildrenContainer of " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("setChildrenContainer of " + this);
         }
 
         // Make all children point to this node as container
@@ -137,8 +137,8 @@ public class TreeNode
      */
     public void setContainer (TreeNode container)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setContainer container=" + container + " for "
+        if (logger.isFineEnabled()) {
+            logger.fine("setContainer container=" + container + " for "
                          + this);
         }
 
@@ -210,8 +210,8 @@ public class TreeNode
      */
     public void addChild (TreeNode node)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("addChild node=" + node + " for " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("addChild node=" + node + " for " + this);
         }
 
         children.add(node);

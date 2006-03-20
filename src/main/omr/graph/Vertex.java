@@ -82,8 +82,8 @@ public class Vertex <D extends Digraph,
      */
     protected Vertex ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("new vertex");
+        if (logger.isFineEnabled()) {
+            logger.fine("new vertex");
         }
     }
 
@@ -96,8 +96,8 @@ public class Vertex <D extends Digraph,
      */
     protected Vertex (D graph)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("new vertex in graph " + graph);
+        if (logger.isFineEnabled()) {
+            logger.fine("new vertex in graph " + graph);
         }
         //this.graph = graph;
         graph.addVertex(this);          // Compiler warning here
@@ -285,8 +285,8 @@ public class Vertex <D extends Digraph,
      */
     public void delete ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("deleting vertex " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("deleting vertex " + this);
         }
 
         // Remove in vertices of the vertex
@@ -340,8 +340,8 @@ public class Vertex <D extends Digraph,
                    D extends Digraph<D, V>> void addEdge (V source,
                                                           V target)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("adding edge from " + source + " to " + target);
+        if (logger.isFineEnabled()) {
+            logger.fine("adding edge from " + source + " to " + target);
         }
 
         // Assert we have real vertices
@@ -377,8 +377,8 @@ public class Vertex <D extends Digraph,
     public static <V extends Vertex> void removeEdge (V source,
                                                       V target)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("removing edge from " + source + " to " + target);
+        if (logger.isFineEnabled()) {
+            logger.fine("removing edge from " + source + " to " + target);
         }
 
         if (!source.targets.remove(target)) {

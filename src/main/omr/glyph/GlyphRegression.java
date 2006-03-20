@@ -58,7 +58,7 @@ public class GlyphRegression
     private GlyphRegression ()
     {
         // Allocate shape descriptors, as a brand new one
-        logger.debug ("Creating a brand new GlyphRegression");
+        logger.fine ("Creating a brand new GlyphRegression");
         shapeDescs = new ShapeDesc[outSize];
         for (int s = outSize - 1; s >= 0; s--) {
             shapeDescs[s] = new ShapeDesc(Shape.values()[s]);

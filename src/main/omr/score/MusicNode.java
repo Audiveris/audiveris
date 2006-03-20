@@ -111,8 +111,8 @@ public class MusicNode
     {
         super(container);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("new MusicNode container=" + container);
+        if (logger.isFineEnabled()) {
+            logger.fine("new MusicNode container=" + container);
         }
     }
 
@@ -151,8 +151,8 @@ public class MusicNode
      */
     public void computeChildren ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("computeChildren of " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("computeChildren of " + this);
         }
 
         for (TreeNode node : children) {
@@ -179,7 +179,7 @@ public class MusicNode
                                Zoom z,
                                Component comp)
     {
-        //if (logger.isDebugEnabled ()) logger.debug ("paintChildren of " + this);
+        //if (logger.isFineEnabled ()) logger.debug ("paintChildren of " + this);
         for (TreeNode node : children) {
             MusicNode child = (MusicNode) node;
             if (child.paintNode(g, z, comp)) {
@@ -201,7 +201,7 @@ public class MusicNode
     public void renderChildren (final Graphics g,
                                 Zoom z)
     {
-        //if (logger.isDebugEnabled ()) logger.debug ("renderChildren of " + this);
+        //if (logger.isFineEnabled ()) logger.debug ("renderChildren of " + this);
         for (TreeNode node : children) {
             MusicNode child = (MusicNode) node;
             if (child.renderNode(g, z)) {
@@ -239,8 +239,8 @@ public class MusicNode
      */
     protected boolean computeNode ()
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("computeNode of " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("computeNode of " + this);
         }
 
         return true; // Let computation continue down the tree

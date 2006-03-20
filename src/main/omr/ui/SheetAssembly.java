@@ -117,8 +117,8 @@ public class SheetAssembly
      */
     public SheetAssembly (Sheet sheet)
     {
-        if (logger.isDebugEnabled()) {
-            logger.debug("creating SheetAssembly on " + sheet);
+        if (logger.isFineEnabled()) {
+            logger.fine("creating SheetAssembly on " + sheet);
         }
 
         component = new Panel();
@@ -145,8 +145,8 @@ public class SheetAssembly
         splitPane.setBorder(null);
         splitPane.setDividerSize(2);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("SheetAssembly created.");
+        if (logger.isFineEnabled()) {
+            logger.fine("SheetAssembly created.");
         }
     }
 
@@ -199,7 +199,7 @@ public class SheetAssembly
     public void closeScoreView()
     {
         if (scoreView != null) {
-            logger.debug("Closing scoreView for " + scoreView.getScore());
+            logger.fine("Closing scoreView for " + scoreView.getScore());
             splitPane.setTopComponent(null);
             scoreView = null;
         }
@@ -216,7 +216,7 @@ public class SheetAssembly
      */
     public void assemblySelected()
     {
-        logger.debug("assemblySelected");
+        logger.fine("assemblySelected");
 
         // Display current context
         displayContext();
@@ -236,8 +236,8 @@ public class SheetAssembly
                             BoardsPane boardsPane)
     {
         boardsPane.setName(sheet.getName() + ":" + title);
-        if (logger.isDebugEnabled()) {
-            logger.debug("addViewTab title=" + title +
+        if (logger.isFineEnabled()) {
+            logger.fine("addViewTab title=" + title +
                          " boardsPane=" + boardsPane);
         }
 
@@ -385,8 +385,8 @@ public class SheetAssembly
         // Display the proper boards pane
         BoardsPane boardsPane = paneMap.get
             (tabbedPane.getTitleAt(index));
-        if (logger.isDebugEnabled()) {
-            logger.debug("displaying " + boardsPane);
+        if (logger.isFineEnabled()) {
+            logger.fine("displaying " + boardsPane);
         }
         Main.getJui().showBoardsPane(boardsPane);
 

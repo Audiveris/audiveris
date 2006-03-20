@@ -183,8 +183,8 @@ public class VerticalsBuilder
         int stemNb = 0;
         List<Stick> sticks = system.getVerticalSticks();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Searching verticals among " + sticks.size()
+        if (logger.isFineEnabled()) {
+            logger.fine("Searching verticals among " + sticks.size()
                          + " sticks from " + system);
         }
 
@@ -192,8 +192,8 @@ public class VerticalsBuilder
             // Run the various Checks
             double res = suite.pass(new Context(stick, system));
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("suite=> " + res + " for " + stick);
+            if (logger.isFineEnabled()) {
+                logger.fine("suite=> " + res + " for " + stick);
             }
 
             if (res >= minResult) {
@@ -209,8 +209,8 @@ public class VerticalsBuilder
         // (Re)Sort the modified list of glyphs, by abscissa
         system.sortGlyphs();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Found " + stemNb + " stems");
+        if (logger.isFineEnabled()) {
+            logger.fine("Found " + stemNb + " stems");
         }
 
         return stemNb;
@@ -544,7 +544,7 @@ public class VerticalsBuilder
 //             setLowHigh(area * constants.chunkRatioLow.getValue(),
 //                        area * constants.chunkRatioHigh.getValue());
 
-//             if (logger.isDebugEnabled()) {
+//             if (logger.isFineEnabled()) {
 //                 logger.debug("MinPixLow=" + getLow() + ", MinPixHigh="
 //                              + getHigh());
 //             }
@@ -562,7 +562,7 @@ public class VerticalsBuilder
 //             res = Math.max(res, stick.getAliensAtStopFirst(nHeight, nWidth));
 //             res = Math.max(res, stick.getAliensAtStopLast(nHeight, nWidth));
 
-//             if (logger.isDebugEnabled()) {
+//             if (logger.isFineEnabled()) {
 //                 logger.debug("MinAliens= " + res + " for " + stick);
 //             }
 
@@ -619,7 +619,7 @@ public class VerticalsBuilder
             // This step is much too expensive (and not really useful ...)
             ////add(2, new MinChunkCheck());
 
-            if (logger.isDebugEnabled()) {
+            if (logger.isFineEnabled()) {
                 dump();
             }
         }

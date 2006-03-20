@@ -118,8 +118,8 @@ public class GlyphBoard
     {
         this(maxGlyphId);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("knownIds=" + knownIds);
+        if (logger.isFineEnabled()) {
+            logger.fine("knownIds=" + knownIds);
         }
 
         known.setModel(new SpinnerListModel(knownIds));
@@ -293,8 +293,8 @@ public class GlyphBoard
             JSpinner spinner = (JSpinner) e.getSource();
             int glyphId = (Integer) spinner.getValue();
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("glyphId=" + glyphId);
+            if (logger.isFineEnabled()) {
+                logger.fine("glyphId=" + glyphId);
             }
 
             if (glyphId != NO_VALUE) {

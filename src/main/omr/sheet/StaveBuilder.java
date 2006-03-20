@@ -85,8 +85,8 @@ public class StaveBuilder
         // Id for the newly created stave
         ++id;
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Stave #" + id + " interval=" + interval);
+        if (logger.isFineEnabled()) {
+            logger.fine("Stave #" + id + " interval=" + interval);
         }
 
         // Specific stave scale
@@ -118,8 +118,8 @@ public class StaveBuilder
         int left = lefts.get(2);
         int right = rights.get(2);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("End of Stave #" + id + " " + this);
+        if (logger.isFineEnabled()) {
+            logger.fine("End of Stave #" + id + " " + this);
         }
 
         // Allocate the stave info
