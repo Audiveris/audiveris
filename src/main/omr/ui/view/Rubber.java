@@ -294,11 +294,6 @@ public class Rubber
     @Override
     public void mousePressed (MouseEvent e)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("\nmousePressed : " +
-                    InputEvent.getModifiersExText(e.getModifiersEx()));
-        }
-
         reset(e);
 
         if (mouseMonitor != null) {
@@ -337,8 +332,6 @@ public class Rubber
                 rawRect.setBounds(vr.x + (vr.width / 2),
                                   vr.y + (vr.height / 2), 0, 0);
                 normalize();
-            } else {
-                reset(e);
             }
         }
     }
