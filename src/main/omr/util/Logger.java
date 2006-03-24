@@ -97,7 +97,7 @@ public class Logger
     // getEffectiveLevel //
     //-------------------//
     /**
-     * Report the resulting level for the logger, which may be inherited 
+     * Report the resulting level for the logger, which may be inherited
      * from parents higher in the hierarchy
      *
      * @return The effective logging level for this logger
@@ -154,7 +154,7 @@ public class Logger
     /**
      * Set the logger level, using a level name
      *
-     * @param levelStr the name of the level (case is irrelevant), 
+     * @param levelStr the name of the level (case is irrelevant),
      *                 such as Fine or INFO
      */
     public void setLevel (String levelStr)
