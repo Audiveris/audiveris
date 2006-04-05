@@ -102,7 +102,11 @@ public class SheetAssembly
         = new HashMap<JScrollPane,ScrollView>();
 
     // Previously selected view
-    protected JScrollPane previousScrollView;
+    private JScrollPane previousScrollView;
+
+    // To avoid cycles in forwarding between score and sheet views
+    private transient volatile boolean sheetBarred = false;
+    private transient volatile boolean scoreBarred = false;
 
     //~ Constructors ------------------------------------------------------
 
@@ -165,17 +169,13 @@ public class SheetAssembly
         return component;
     }
 
-    //-----------//
-    // getRubber //
-    //-----------//
-    public Rubber getRubber()
-    {
-        return rubber;
-    }
-
     //--------------//
     // setScoreView //
     //--------------//
+    /**
+     * Assign the ScoreView part to the assembly
+     * @param scoreView the Score View
+     */
     public void setScoreView (ScoreView scoreView)
     {
         if (this.scoreView != null) {
@@ -196,6 +196,9 @@ public class SheetAssembly
     //----------------//
     // closeScoreView //
     //----------------//
+    /**
+     * Close the score view part
+     */
     public void closeScoreView()
     {
         if (scoreView != null) {
@@ -227,9 +230,9 @@ public class SheetAssembly
     //------------//
     /**
      * Add a new tab, that contains a new view on the sheet
-     *
      * @param title label to be used for the tab
      * @param sv the view on the sheet
+     * @param boardsPane the board pane associated to the tab
      */
     public void addViewTab (String     title,
                             ScrollView sv,
@@ -350,24 +353,38 @@ public class SheetAssembly
     //--------------------//
     // setSheetFocusPoint //
     //--------------------//
+    /**
+     * Called from score view, to forward pixel info to the sheet part
+     * @param point The point to focus upon
+     */
     public void setSheetFocusPoint (PagePoint point)
     {
-        ScrollView sv = getSelectedView();
-        if (sv != null) {
-            Point pt = sheet.getScale().unitsToPixels(point, null);
-            sv.getView().setFocusPoint(pt);
+        if (!sheetBarred) {
+            ScrollView sv = getSelectedView();
+            if (sv != null) {
+                Point pt = sheet.getScale().unitsToPixels(point, null);
+                scoreBarred = true;
+                sv.getView().setFocusPoint(pt);
+                scoreBarred = false;
+            }
         }
     }
 
     //------------------------//
     // setSheetFocusRectangle //
     //------------------------//
+    /**
+     * Called from the score view, to forward rectangle info to the sheet part
+     * @param rect the rectangle to focus upon
+     */
     public void setSheetFocusRectangle (Rectangle rect)
     {
         ScrollView sv = getSelectedView();
         if (sv != null) {
             Rectangle r = sheet.getScale().unitsToPixels(rect, null);
+            scoreBarred = true;
             sv.getView().setFocusRectangle(r);
+            scoreBarred = false;
         }
     }
 
@@ -436,35 +453,54 @@ public class SheetAssembly
     //--------//
     // update //
     //--------//
+    /**
+     * Triggered from sheet pixel subject, to notify the new upper left point
+     * @param ul The upper left point
+     */
     public void update (Point ul)
     {
         // Forward to the score view
-        if (scoreView != null) {
+        if (scoreView != null && !scoreBarred) {
+            sheetBarred = true;
             scoreView.setFocus
                 (sheet.getScale().pixelsToUnits(new PixelPoint(ul), null));
+            sheetBarred = false;
         }
     }
 
     //--------//
     // update //
     //--------//
+    /**
+     * Triggered from sheet pixel subject, to notify new values for point
+     * position an pixel level
+     * @param ul new value for point
+     * @param level new value for pixel level
+     */
     public void update (Point ul,
                         int   level)
     {
         // Forward to the score view
-        if (scoreView != null) {
+        if (scoreView != null && !scoreBarred) {
+            sheetBarred = true;
             scoreView.setFocus
                 (sheet.getScale().pixelsToUnits(new PixelPoint(ul), null));
+            sheetBarred = false;
         }
     }
 
     //--------//
     // update //
     //--------//
+    /**
+     * Triggered from sheet pixel subject, to notify new rectangle focus
+     * @param rect the new rectangle focus
+     */
     public void update (Rectangle rect)
     {
         // Forward to the score view
-        if (scoreView != null) {
+        if (scoreView != null && !scoreBarred) {
+            sheetBarred = true;
             if (rect != null) {
                 Point pt = new Point(rect.x + rect.width/2,
                                      rect.y + rect.height/2);
@@ -473,6 +509,7 @@ public class SheetAssembly
             } else {
                 scoreView.setFocus(null);
             }
+            sheetBarred = false;
         }
     }
 }

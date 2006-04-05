@@ -76,9 +76,6 @@ public class LineBuilder
     private int left = Integer.MAX_VALUE;
     private int right = Integer.MIN_VALUE;
 
-    // Sections found in holes
-    private Stick holeStick;
-
     // Max Thickness for the various staff line chunks
     private int maxThickness;
 

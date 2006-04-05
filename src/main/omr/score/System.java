@@ -534,9 +534,6 @@ public class System
     {
         super.computeNode();
 
-        // Containing score
-        Score score = (Score) container;
-
         // Is there a Previous System ?
         System prevSystem = (System) getPreviousSibling();
 

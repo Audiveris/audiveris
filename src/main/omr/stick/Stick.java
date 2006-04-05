@@ -772,7 +772,7 @@ public class Stick
             sb.append(" ").append(line);
         }
 
-        if (this.getClass().getName() == Stick.class.getName()) {
+        if (this.getClass().getName().equals (Stick.class.getName())) {
             sb.append("}");
         }
 

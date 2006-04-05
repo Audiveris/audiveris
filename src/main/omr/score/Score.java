@@ -389,7 +389,7 @@ public class Score
             }
             // Create a void related sheet
             try {
-                Sheet sheet = new Sheet(this);
+                new Sheet(this);
             } catch (Exception ex) {
                 logger.warning(ex.toString());
             }

@@ -206,10 +206,9 @@ public class Glyph
 
         int[] coord = new int[weight];
         int[] pos = new int[weight];
-        int nb = 0;
-
+        
         // Append recursively all points
-        nb = cumulatePoints(coord, pos, nb);
+        cumulatePoints(coord, pos, 0);
 
         // Then compute the moments, swapping pos & coord since the lag is
         // vertical
@@ -888,7 +887,7 @@ public class Glyph
         //         if (moments != null)
         //             sb.append(" moments=" + moments);
 
-        if (this.getClass().getName() == Glyph.class.getName()) {
+        if (this.getClass().getName().equals (Glyph.class.getName())) {
             sb.append("}");
         }
 

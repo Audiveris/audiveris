@@ -284,12 +284,12 @@ public class ZoomedPanel
 
         if (rect != null && !selfUpdating) {
             if (rect.width != 0 || rect.height != 0) {
-            int margin = constants.focusMargin.getValue();
-            Rectangle vr = new Rectangle
-                (zoom.scaled(rect.x) - margin,
-                 zoom.scaled(rect.y) - margin,
-                 zoom.scaled(rect.width   + 2 * margin),
-                 zoom.scaled(rect.height) + 2 * margin);
+                int margin = constants.focusMargin.getValue();
+                Rectangle vr = new Rectangle
+                    (zoom.scaled(rect.x) - margin,
+                     zoom.scaled(rect.y) - margin,
+                     zoom.scaled(rect.width   + 2 * margin),
+                     zoom.scaled(rect.height) + 2 * margin);
                 scrollRectToVisible(vr);
             } else {
                 setFocusPoint(rect.getLocation());

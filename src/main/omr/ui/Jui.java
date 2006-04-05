@@ -427,7 +427,8 @@ public class Jui
      */
     public void updateTitle ()
     {
-        final String toolInfo = Main.toolName + " " + Main.toolVersion;
+        final String toolInfo = Main.getToolName() +
+                " " + Main.getToolVersion();
 
         // Look for sheet first
         Sheet sheet = sheetPane.getCurrentSheet();
@@ -466,7 +467,6 @@ public class Jui
         }
 
         this.target = target;
-        notify();
     }
 
     //------//
@@ -477,7 +477,6 @@ public class Jui
         // Remember latest jui frame parameters
         final int state = frame.getExtendedState();
         constants.frameState.setValue(state);
-
 
         if (state == Frame.NORMAL) {
             Rectangle bounds = frame.getBounds();
@@ -541,7 +540,7 @@ public class Jui
     //--------------//
     // MemoryAction //
     //--------------//
-    private class MemoryAction
+    private static class MemoryAction
         extends AbstractAction
     {
         //~ Constructors --------------------------------------------------
@@ -566,7 +565,7 @@ public class Jui
     //---------------//
     // TrainerAction //
     //---------------//
-    private class TrainerAction
+    private static class TrainerAction
         extends AbstractAction
     {
         //~ Constructors --------------------------------------------------
@@ -592,7 +591,7 @@ public class Jui
     //--------------//
     // OptionAction //
     //--------------//
-    private class OptionAction
+    private static class OptionAction
         extends AbstractAction
     {
         //~ Constructors --------------------------------------------------
@@ -676,7 +675,7 @@ public class Jui
     //----------------//
     // MaterialAction //
     //----------------//
-    private class MaterialAction
+    private static class MaterialAction
         extends AbstractAction
     {
         //~ Constructors --------------------------------------------------
@@ -708,7 +707,7 @@ public class Jui
         {
             super("About", IconManager.buttonIconOf("general/About"));
 
-            final String tiptext = "About " + Main.toolName;
+            final String tiptext = "About " + Main.getToolName();
             menu.add(this).setToolTipText(tiptext);
         }
 
@@ -719,12 +718,12 @@ public class Jui
             StringBuffer sb = new StringBuffer();
             sb
                 .append("<HTML>")
-                .append("<B>").append(Main.toolName).append("</B> ")
+                .append("<B>").append(Main.getToolName()).append("</B> ")
                 .append("<I>version ")
-                .append(Main.toolVersion)
+                .append(Main.getToolVersion())
                 .append("<BR>")
                 .append(" build ")
-                .append(Main.toolBuild)
+                .append(Main.getToolBuild())
                 .append("</I>")
                 .append("<BR>")
                 .append("Refer to <B>https://audiveris.dev.java.net</B>")

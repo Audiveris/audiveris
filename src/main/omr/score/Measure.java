@@ -287,11 +287,9 @@ public class Measure
         icon.paintIcon
             (comp,
              g,
-             zoom.scaled(origin.x + (leftlinex + rightlinex) / 2) - icon.getActualWidth()/2,
+             zoom.scaled(origin.x + (leftlinex + rightlinex) / 2)
+             - icon.getActualWidth()/2,
              zoom.scaled(origin.y));
-
-//         Symbols.drawPos(g, linetype.getImage(), origin, 0,
-//                         (leftlinex + rightlinex) / 2, Symbols.CENTER);
 
         // Draw the measure id, if on the first stave only
         if (stave.getStavelink() == 0) {

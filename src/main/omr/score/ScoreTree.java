@@ -42,9 +42,6 @@ public class ScoreTree
     // Concrete UI component
     private JPanel component;
 
-    // Global value so it can be ref'd by the tree-adapter
-    private Score score;
-
     //~ Constructors ------------------------------------------------------
 
     //-----------//
@@ -168,7 +165,7 @@ public class ScoreTree
     //~ Classes -----------------------------------------------------------
 
     // This adapter converts the current Score into a JTree model.
-    private class Adapter
+    private static class Adapter
         implements TreeModel
     {
         //~ Instance variables --------------------------------------------

@@ -174,7 +174,7 @@ public class Logger
     {
         super.severe(msg);
         new Throwable().printStackTrace();
-        System.exit(-1);
+        ///System.exit(-1);
     }
 
     //--------//
@@ -191,7 +191,7 @@ public class Logger
     {
         super.severe(msg);
         thrown.printStackTrace();
-        System.exit(-1);
+        ///System.exit(-1);
     }
 
     //---------//

@@ -304,10 +304,6 @@ public class Panel
     private static class Constants
         extends ConstantSet
     {
-        Constant.Boolean paintGrid = new Constant.Boolean
-                (true,
-                 "Should I paint the forms grid ?");
-
         Constant.Integer insetTop = new Constant.Integer
                 (6,
                  "Value of Top inset");

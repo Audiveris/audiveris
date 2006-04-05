@@ -52,7 +52,7 @@ public class SectionBoard
         (false, "Level", "Average pixel level on this run");
 
     // Section
-    private Section section;
+    private Section section = null;
     private JPanel sectionPanel;
     private final JButton dump = new JButton("Dump");
     private final JSpinner id = new JSpinner();

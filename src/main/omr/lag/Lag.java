@@ -301,7 +301,7 @@ public class Lag <L extends Lag <L, S>,
 
         sb.append(super.toString());
 
-        if (this.getClass().getName() == Lag.class.getName()) {
+        if (this.getClass().getName().equals (Lag.class.getName())) {
             sb.append("}");
         }
 

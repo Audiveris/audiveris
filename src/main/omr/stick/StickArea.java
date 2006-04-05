@@ -84,10 +84,6 @@ public class StickArea
     //  totally straight) alignments.
     private boolean longAlignment;
 
-    // The slope of a stick, whether vertical or horizontal, must always be
-    // close to zero
-    private double maxSlope;
-
     // Maximum fatness (thickness / length) for a section
     private double maxSectionFatness = constants.maxSectionFatness.getValue();
 
@@ -157,7 +153,6 @@ public class StickArea
         // Cache computing parameters
         this.maxAdjacency = maxAdjacency;
         this.maxThickness = maxThickness;
-        this.maxSlope = maxSlope;
         this.source = source;
         this.longAlignment = longAlignment;
 

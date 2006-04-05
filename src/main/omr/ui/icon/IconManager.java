@@ -250,7 +250,7 @@ public class IconManager
         int r = (argb & 0x00ff0000) >>> 16;
         int g = (argb & 0x0000ff00) >>> 8;
         int b = (argb & 0x000000ff);
-        int index = (int) Math.rint((r+g+b) / 96);
+        int index = (int) Math.rint((r+g+b) / 96.0);
 
         return charTable[index];
     }
@@ -344,7 +344,6 @@ public class IconManager
 
         SymbolIcon symbolIcon = (SymbolIcon) icon;
         BufferedImage image = (BufferedImage) symbolIcon.getImage();
-        DataBuffer dataBuffer = image.getData().getDataBuffer();
 
         // Retrieve proper image width & height values
         final int width = ((SymbolIcon) icon).getActualWidth();

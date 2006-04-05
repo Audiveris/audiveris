@@ -101,10 +101,6 @@ public class ScoreConstants
                 (5,
                  "Number of lines in a staff");
 
-        Constant.Integer base = new Constant.Integer
-                (1024,
-                 "Used to code fractions with an integer value, with a resolution of 1/value");
-
         Constants ()
         {
             initialize();

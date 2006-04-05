@@ -177,22 +177,22 @@ public class ScoreController
             }
 
             // Focus info
-            if (pagPt == null) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("No focus specified on Score side");
-                }
-
-                // Does the sheet view has a defined focus ?
-                Sheet sheet = score.getSheet();
-
-                if (sheet != null) {
+//            if (pagPt == null) {
+//                if (logger.isFineEnabled()) {
+//                    logger.fine("No focus specified on Score side");
+//                }
+//
+//                // Does the sheet view has a defined focus ?
+//                Sheet sheet = score.getSheet();
+//
+//                if (sheet != null) {
 //                     SheetView sheetView = sheet.getView();
 
 //                     if (sheetView != null) {
-// //                         pagPt = sheetView.getFocus();
+//                         pagPt = sheetView.getFocus();
 //                     }
-                }
-            }
+//                }
+//            }
 
             if (pagPt != null) {
                 // Use this focus information
@@ -228,7 +228,6 @@ public class ScoreController
     private synchronized void setSynchroWanted (boolean synchroWanted)
     {
         this.synchroWanted = synchroWanted;
-        notify();
     }
 
     //-----------------//

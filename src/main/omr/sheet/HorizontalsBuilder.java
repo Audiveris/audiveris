@@ -100,9 +100,6 @@ public class HorizontalsBuilder
     // The collection of all horizontal items
     private final List<Dash> allDashes = new ArrayList<Dash>();
 
-    // Specific model on section id
-    private SpinnerModel idModel;
-
     // The various check suites
     private CheckSuite<Stick> commonSuite;
     private CheckSuite<Stick> ledgerSuite;
@@ -544,7 +541,7 @@ public class HorizontalsBuilder
     //-----------------//
     // MinDensityCheck //
     //-----------------//
-    private class MinDensityCheck
+    private static class MinDensityCheck
             extends Check<Stick>
     {
         //~ Constructors --------------------------------------------------
@@ -754,15 +751,6 @@ public class HorizontalsBuilder
         Constant.Boolean displayFrame = new Constant.Boolean
                 (false,
                  "Should we display a frame on the horizontal sticks");
-
-        Constant.Integer maxDeltaLength = new Constant.Integer
-                (4,
-                 "Maximum difference in run length to be part of the same"+
-                 " section");
-
-        Scale.Fraction minForeWeight = new Scale.Fraction
-                (1.25,
-                 "Minimum foreground weight for a section to be kept");
 
         Constant.Double minCheckResult = new Constant.Double
                 (0.50,

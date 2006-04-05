@@ -228,10 +228,10 @@ public class Slur
     {
         //~ Instance variables --------------------------------------------
 
-        private Point upperleft;
-        private int squareside;
-        private int startangle;
-        private int arcangle;
+        private final Point upperleft;
+        private final int squareside;
+        private final int startangle;
+        private final int arcangle;
 
         //~ Constructors --------------------------------------------------
 

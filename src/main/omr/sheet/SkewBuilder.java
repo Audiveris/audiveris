@@ -171,6 +171,8 @@ public class SkewBuilder
         // De-skew the picture if necessary
         if (Math.abs(angle) > constants.maxSkewAngle.getValue()) {
             picture.rotate(-angle);
+        } else {
+            logger.info ("No image rotation needed.");
         }
 
         // Report the computed info

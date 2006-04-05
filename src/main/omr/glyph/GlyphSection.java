@@ -135,7 +135,7 @@ public class GlyphSection
             sb.append(" glyph=").append(glyph.getId());
         }
 
-        if (this.getClass().getName() == GlyphSection.class.getName()) {
+        if (this.getClass().getName().equals (GlyphSection.class.getName())) {
             sb.append("}");
         }
 

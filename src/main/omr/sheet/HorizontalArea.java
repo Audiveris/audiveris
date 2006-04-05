@@ -118,10 +118,6 @@ public class HorizontalArea
                 (0.25,
                  "Maximum difference of ordinates when merging two sticks");
 
-        Scale.Fraction maxDeltaLength = new Scale.Fraction
-                (0.25,
-                 "Maximum difference in run length to be part of the same section");
-
         Scale.Fraction maxDeltaPos = new Scale.Fraction
                 (0.2,
                  "Maximum difference of abscissa (in units) when merging two sticks");

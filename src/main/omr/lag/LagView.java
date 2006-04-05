@@ -82,7 +82,7 @@ public class LagView <L extends Lag     <L, S>,
     protected Rectangle rectangle = new Rectangle();
 
     /** Subject for section/run observers if any */
-    protected DefaultSectionSubject sectionSubject
+    protected transient DefaultSectionSubject sectionSubject
         = new DefaultSectionSubject();
 
     /** Trick to cache the result of previous lookupSection */

@@ -181,7 +181,7 @@ public class UnitTreeTable
     //----------------//
     // LoggerRenderer //
     //----------------//
-    private class LoggerRenderer
+    private static class LoggerRenderer
             extends DefaultTableCellRenderer
     {
         //~ Methods -------------------------------------------------------
@@ -201,18 +201,18 @@ public class UnitTreeTable
                                                 hasFocus, row, column);
 
             // Display the proper tip text
-            TreePath tp = tree.getPathForRow(row);
-            Node node = UnitManager.getInstance().getNode(buildKey(tp));
-            if (node instanceof UnitNode) {
-                UnitNode unit = (UnitNode) node;
-                Logger logger = unit.getLogger();
-                if (logger != null) {
+//            TreePath tp = tree.getPathForRow(row);
+//            Node node = UnitManager.getInstance().getNode(buildKey(tp));
+//            if (node instanceof UnitNode) {
+//                UnitNode unit = (UnitNode) node;
+//                Logger logger = unit.getLogger();
+//                if (logger != null) {
 //                     Logger.Level level = (Logger.Level) logger.getLevel();
 //                     if (level != null) {
 //                         setFont(table.getFont().deriveFont(Font.BOLD).deriveFont(12.0f));
 //                     }
-                }
-            }
+//                }
+//            }
 
             return this;
         }

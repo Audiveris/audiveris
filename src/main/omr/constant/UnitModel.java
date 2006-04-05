@@ -350,7 +350,7 @@ public class UnitModel
                     Constant constant = (Constant) node;
                     if (constant instanceof Constant.Boolean) {
                         Constant.Boolean cb = (Constant.Boolean) constant;
-                        return new Boolean(cb.getValue());
+                        return Boolean.valueOf (cb.getValue());
                     } else {
                         return constant.currentString();
                     }
@@ -397,7 +397,7 @@ public class UnitModel
             case MODIF:
                 if (node instanceof Constant) {
                     Constant constant = (Constant) node;
-                    return new Boolean(constant.isModified());
+                    return Boolean.valueOf (constant.isModified());
                 } else {
                     return null;
                 }

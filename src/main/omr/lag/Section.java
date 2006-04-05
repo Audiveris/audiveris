@@ -884,7 +884,7 @@ public class Section <L extends Lag,
         sb.append(" lv=").append(getLevel());
         sb.append(" fW=").append(foreWeight);
 
-        if (this.getClass().getName() == Section.class.getName()) {
+        if (this.getClass().getName().equals (Section.class.getName())) {
             sb.append("}");
         }
 

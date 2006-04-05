@@ -95,13 +95,13 @@ public class StepMenu
      * Class <code>StepItem</code> implements a menu item linked to a given
      * step
      */
-    private class StepItem
+    private static class StepItem
         extends JCheckBoxMenuItem
     {
         //~ Instance variables --------------------------------------------
 
         // The related step
-        final Step step;
+        final transient Step step;
 
         //~ Constructors --------------------------------------------------
 

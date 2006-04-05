@@ -115,7 +115,6 @@ public class BarsBuilder
     private final Sheet sheet;
     private Score score;
     private Scale scale;
-    private int basicCoreLength;
 
     // Lag view on bars, if so desired
     private MyLagView lagView;
@@ -276,8 +275,8 @@ public class BarsBuilder
         // Max width of a thin bar line, otherwise this must be a thick bar
         final int maxThinWidth = scale.fracToPixels(constants.maxThinWidth);
 
-        final int meanWidth = (int) Math.rint(stick.getWeight()
-                                              / stick.getLength());
+        final int meanWidth = (int) Math.rint((double) stick.getWeight()
+                                              / (double) stick.getLength());
 
         return meanWidth > maxThinWidth;
     }
@@ -1478,7 +1477,7 @@ public class BarsBuilder
     //---------//
     // Context //
     //---------//
-    private class Context
+    private static class Context
         implements Checkable
     {
         //~ Instance variables --------------------------------------------
@@ -1603,10 +1602,6 @@ public class BarsBuilder
         Scale.Fraction minMeasureWidth = new Scale.Fraction
                 (0.75,
                  "Minimum width for a measure");
-
-        Scale.Fraction minForeWeight = new Scale.Fraction
-                (1.25,
-                 "Minimum foreground weight for a section to be kept");
 
         Constant.Double minCheckResult = new Constant.Double
                 (0.50,

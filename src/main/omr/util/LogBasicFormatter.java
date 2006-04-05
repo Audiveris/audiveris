@@ -99,17 +99,12 @@ public class LogBasicFormatter
         sb.append(lineSeparator);
 
         if (record.getThrown() != null) {
-            try {
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                record.getThrown().printStackTrace(pw);
-                pw.close();
-                sb.append(sw.toString());
-            } catch (Exception ex) {
-            }
+            StringWriter sw = new StringWriter ();
+            PrintWriter pw = new PrintWriter (sw);
+            record.getThrown ().printStackTrace (pw);
+            pw.close ();
+            sb.append (sw.toString ());
         }
-
-        notify();
 
         return sb.toString();
     }

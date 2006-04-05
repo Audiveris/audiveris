@@ -200,7 +200,8 @@ public class StickSection
             sb.append(" ").append(role);
         }
 
-        if (this.getClass().getName() == StickSection.class.getName()) {
+        if (this.getClass().getName().equals 
+                (StickSection.class.getName())) {
             sb.append("}");
         }
 

@@ -886,7 +886,7 @@ public enum Shape
     /**
      * Symbols that can be attached to a stem
      */
-    public static EnumSet<Shape> stemSymbols = EnumSet.noneOf(Shape.class);
+    public static final EnumSet<Shape> stemSymbols = EnumSet.noneOf(Shape.class);
     static
     {
         stemSymbols.add(Shape.BEAM);

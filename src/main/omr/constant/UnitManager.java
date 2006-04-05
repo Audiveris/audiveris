@@ -66,8 +66,6 @@ public class UnitManager
     //-------------//
     private UnitManager (String main)
     {
-        INSTANCE = this;
-
         mapOfNodes.put("<root>", root);
 
         // Pre-load all known units with a ConstantSet and/or Logger
@@ -91,7 +89,7 @@ public class UnitManager
     {
         //log ("getInstance");
         if (INSTANCE == null) {
-            new UnitManager(null);
+            INSTANCE = new UnitManager(null);
         }
         return INSTANCE;
     }
@@ -109,7 +107,7 @@ public class UnitManager
     {
         //log ("getInstance main=" + main);
         if (INSTANCE == null) {
-            new UnitManager(main);
+            INSTANCE = new UnitManager(main);
         } else {
             INSTANCE.preLoadUnits(main);
         }

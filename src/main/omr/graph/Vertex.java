@@ -320,7 +320,7 @@ public class Vertex <D extends Digraph,
         sb.append(" ").append(getInDegree());
         sb.append("/").append(getOutDegree());
 
-        if (this.getClass().getName() == Vertex.class.getName()) {
+        if (this.getClass().getName().equals (Vertex.class.getName())) {
             sb.append("}");
         }
 

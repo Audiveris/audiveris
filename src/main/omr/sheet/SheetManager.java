@@ -43,9 +43,6 @@ public class SheetManager
     // Instances of sheet
     private List<Sheet> instances = new ArrayList<Sheet>();
 
-    // List of steps
-    private List<Step> steps;
-
     //~ Constructors ------------------------------------------------------
 
     //--------------//
@@ -56,7 +53,6 @@ public class SheetManager
      */
     private SheetManager ()
     {
-        INSTANCE = this;
     }
 
     //~ Methods -----------------------------------------------------------
@@ -180,7 +176,7 @@ public class SheetManager
     public static SheetManager getInstance ()
     {
         if (INSTANCE == null) {
-            new SheetManager();
+            INSTANCE = new SheetManager();
         }
         return INSTANCE;
     }

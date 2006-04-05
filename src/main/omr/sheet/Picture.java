@@ -87,9 +87,6 @@ public class Picture
     // Remember if we have actually rotated the image
     private boolean rotated = false;
 
-    // Work variables
-    private int[] pix = new int[1];
-
     //~ Constructors ------------------------------------------------------
 
     //---------//
@@ -111,10 +108,6 @@ public class Picture
     {
         // Try to read the image file
         logger.info("Loading image from " + imgFile + " ...");
-        if (image != null) {
-            image.dispose();
-        }
-
         image = JAI.create("fileload", imgFile.getPath());
 
         // Check that the whole image has been loaded
@@ -164,7 +157,6 @@ public class Picture
 
         // Array of images and related shifts
         RenderedOp[] images = new RenderedOp[files.length];
-        AffineTransform[] shifts = new AffineTransform[files.length];
 
         for (int i = 0; i < files.length; i++) {
             // Load from file
@@ -584,11 +576,11 @@ public class Picture
         ColorSpace colorSpace = ColorSpace.getInstance
             (java.awt.color.ColorSpace.CS_GRAY);
 
-        int[] bits = new int[]{8};
-        int opaque = Transparency.OPAQUE;
-        int dataType = DataBuffer.TYPE_BYTE;
-        ColorModel colorModel = new ComponentColorModel
-            (colorSpace, bits, false, false, opaque, dataType);
+//        int[] bits = new int[]{8};
+//        int opaque = Transparency.OPAQUE;
+//        int dataType = DataBuffer.TYPE_BYTE;
+//        ColorModel colorModel = new ComponentColorModel
+//            (colorSpace, bits, false, false, opaque, dataType);
 
         return JAI.create("colorConvert", image, colorSpace, null);
     }

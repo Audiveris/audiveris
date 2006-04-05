@@ -330,7 +330,7 @@ public class Sheet
                         firstSymbolId = getGlyphBuilder().buildInfo();
                     }
 
-                    result = new Boolean(true);
+                    result = Boolean.valueOf (true);
                     // Accept consistent votes
                     GlyphInspector inspector = getGlyphInspector();
                     inspector.evaluateGlyphs(inspector.getSymbolMaxGrade());
@@ -355,7 +355,7 @@ public class Sheet
                     SYMBOLS.getResult();
                     GlyphInspector inspector = getGlyphInspector();
                     inspector.processCompounds(inspector.getSymbolMaxGrade());
-                    result = new Boolean(true);
+                    result = Boolean.valueOf (true);
                     inspector.evaluateGlyphs(inspector.getSymbolMaxGrade());
                 }
 
@@ -379,7 +379,7 @@ public class Sheet
                     SYMBOLS_COMPOUNDS.getResult();
 
                     getGlyphInspector().processVerticals();
-                    result = new Boolean(true);
+                    result = Boolean.valueOf (true);
                 }
 
                 public void displayUI ()
@@ -401,7 +401,7 @@ public class Sheet
                     VERTICALS.getResult();
 
                     getGlyphInspector().processLeaves();
-                    result = new Boolean(true);
+                    result = Boolean.valueOf (true);
                     getGlyphInspector().evaluateGlyphs
                     (GlyphInspector.getLeafMaxGrade());
                 }
@@ -426,7 +426,7 @@ public class Sheet
 
                     getGlyphInspector().processCompounds
                     (GlyphInspector.getLeafMaxGrade());
-                    result = new Boolean(true);
+                    result = Boolean.valueOf (true);
                     getGlyphInspector().evaluateGlyphs
                     (GlyphInspector.getLeafMaxGrade());
                 }
@@ -449,7 +449,7 @@ public class Sheet
                     LEAVES_COMPOUNDS.getResult();
 
                     getGlyphInspector().processUndueStems();
-                    result = new Boolean(true);
+                    result = Boolean.valueOf (true);
                     getGlyphInspector().evaluateGlyphs
                     (GlyphInspector.getCleanupMaxGrade());
                 }
@@ -1218,10 +1218,12 @@ public class Sheet
     {
         List<SystemInfo> list = new ArrayList<SystemInfo>();
 
-        for (SystemInfo info : getSystems()) {
-            if (rect.y <= info.getAreaBottom() &&
-                (rect.y + rect.height >= info.getAreaTop())) {
-                list.add(info);
+        if (rect != null) {
+            for (SystemInfo info : getSystems()) {
+                if (rect.y <= info.getAreaBottom() &&
+                    (rect.y + rect.height >= info.getAreaTop())) {
+                    list.add(info);
+                }
             }
         }
 

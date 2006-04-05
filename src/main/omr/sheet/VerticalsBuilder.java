@@ -487,7 +487,7 @@ public class VerticalsBuilder
     //-----------------//
     // MinDensityCheck //
     //-----------------//
-    private class MinDensityCheck
+    private static class MinDensityCheck
         extends Check<Context>
     {
         protected MinDensityCheck ()
@@ -510,70 +510,10 @@ public class VerticalsBuilder
         }
     }
 
-//     //---------------//
-//     // MinChunkCheck //
-//     //---------------//
-//     /**
-//      * Class <code>MinChunkCheck</code> checks for presence of a chunk (beam
-//      * or note head) at top or bottom
-//      */
-//     private class MinChunkCheck
-//             extends Check<Context>
-//     {
-//         //~ Instance variables --------------------------------------------
-
-//         // Half-dimensions for window at top and bottom, checking for
-//         // chunks
-//         private final int nWidth;
-//         private final int nHeight;
-
-//         //~ Constructors --------------------------------------------------
-
-//         protected MinChunkCheck ()
-//                 throws ProcessingException
-//         {
-//             super("MinChunk", 0, 0, true, NO_CHUNK);
-
-//             // Adjust chunk window according to system scale (problem, we
-//             // have sheet scale and stave scale, not system scale...)
-//             Scale scale = sheet.getScale();
-//             nWidth = scale.fracToPixels(constants.chunkWidth);
-//             nHeight = scale.fracToPixels(constants.chunkHeight);
-
-//             int area = 2 * nWidth * nHeight;
-//             setLowHigh(area * constants.chunkRatioLow.getValue(),
-//                        area * constants.chunkRatioHigh.getValue());
-
-//             if (logger.isFineEnabled()) {
-//                 logger.debug("MinPixLow=" + getLow() + ", MinPixHigh="
-//                              + getHigh());
-//             }
-//         }
-
-//         //~ Methods -------------------------------------------------------
-
-//         protected double getValue (Stick stick)
-//         {
-
-//             // Retrieve the biggest stick chunk either at top or bottom
-//             int res = 0;
-//             res = Math.max(res, stick.getAliensAtStartFirst(nHeight, nWidth));
-//             res = Math.max(res, stick.getAliensAtStartLast(nHeight, nWidth));
-//             res = Math.max(res, stick.getAliensAtStopFirst(nHeight, nWidth));
-//             res = Math.max(res, stick.getAliensAtStopLast(nHeight, nWidth));
-
-//             if (logger.isFineEnabled()) {
-//                 logger.debug("MinAliens= " + res + " for " + stick);
-//             }
-
-//             return res;
-//         }
-//     }
-
     //---------//
     // Context //
     //---------//
-    private class Context
+    private static class Context
         implements Checkable
     {
         //~ Instance variables --------------------------------------------
@@ -654,10 +594,6 @@ public class VerticalsBuilder
                 (true,
                  "Should we display a frame on the stem sticks");
 
-        Constant.Integer maxDeltaLength = new Constant.Integer
-                (4,
-                 "Maximum difference in run length to be part of the same section");
-
         Constant.Double maxStemAspectLow = new Constant.Double
                 (0.08,
                  "Low Maximum aspect ratio for a stem stick");
@@ -690,10 +626,6 @@ public class VerticalsBuilder
                 (0.50,
                  "Minimum result for suite of check");
 
-        Scale.Fraction minForeWeight = new Scale.Fraction
-                (1.25,
-                 "Minimum foreground weight for a section to be kept");
-
         Constant.Double minDensityLow = new Constant.Double
                 (0.8,
                  "Low Minimum density for a stem");
@@ -705,14 +637,6 @@ public class VerticalsBuilder
         Scale.Fraction chunkHeight = new Scale.Fraction
                 (0.33,
                  "Height of half area to look for chunks");
-
-        Constant.Double chunkRatioLow = new Constant.Double
-                (0.25,
-                 "LowMinimum ratio of alien pixels to detect chunks");
-
-        Constant.Double chunkRatioHigh = new Constant.Double
-                (0.25,
-                 "HighMinimum ratio of alien pixels to detect chunks");
 
         Scale.Fraction chunkWidth = new Scale.Fraction
                 (0.33,

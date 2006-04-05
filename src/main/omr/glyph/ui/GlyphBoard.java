@@ -64,7 +64,7 @@ public class GlyphBoard
     //~ Instance variables ------------------------------------------------
 
     /** The glyph displayed */
-    protected Glyph glyph;
+    protected Glyph glyph = null;
 
     /** A dump action */
     protected final JButton dump = new JButton("Dump");

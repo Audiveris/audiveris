@@ -86,16 +86,9 @@ public class LinesBuilder
     // Cached data
     private final Scale scale;
     private final Sheet sheet;
-    private final int width;
 
     // Lag view on staff lines, if so desired
     private MyLagView lagView;
-
-    // Show the (removed) former line sections
-    private boolean showLines = false;
-
-    // Specific model on section id
-    private SpinnerModel idModel;
 
     // Needed for displayChart
     private int[] histo;
@@ -120,7 +113,6 @@ public class LinesBuilder
         sheet.getSkew();                // Will run Skew  if not yet done
 
         Picture picture = sheet.getPicture();
-        this.width = picture.getWidth();
 
         // Retrieve the horizontal lag of runs
         hLag = new GlyphLag(new HorizontalOrientation());

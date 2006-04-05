@@ -327,10 +327,10 @@ public class SheetController
 //                 }
             }
 
-            if (pagPt != null) {
+//            if (pagPt != null) {
                 // Use this focus information in the assembly
                 //                 assembly.setFocus(pagPt);
-            }
+//            }
 
             return index;
         } else {
@@ -432,7 +432,6 @@ public class SheetController
     private synchronized void setSynchroWanted (boolean synchroWanted)
     {
         this.synchroWanted = synchroWanted;
-        notify();
     }
 
     //-----------------//
@@ -555,7 +554,7 @@ public class SheetController
      * Class <code>HistoryListener</code> is used to reload a sheet file,
      * when selected from the history of previous sheets.
      */
-    private class HistoryListener
+    private static class HistoryListener
         implements ActionListener
     {
         //~ Methods -------------------------------------------------------

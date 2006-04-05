@@ -474,7 +474,6 @@ public class Rubber
         int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
 
         return (e.getModifiersEx() & (onmask | offmask)) == onmask;
-
     }
 
     //-----------------//
@@ -600,7 +599,8 @@ public class Rubber
     private int scaled (int val)
     {
         if (zoom != null) {
-            return zoom.truncScaled(val);
+            //return zoom.truncScaled(val);
+            return zoom.scaled(val);
         } else {
             return val;
         }
@@ -612,7 +612,8 @@ public class Rubber
     private int unscaled (int val)
     {
         if (zoom != null) {
-            return zoom.truncUnscaled(val);
+            //return zoom.truncUnscaled(val);
+            return zoom.unscaled(val);
         } else {
             return val;
         }

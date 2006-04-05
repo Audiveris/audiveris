@@ -54,7 +54,6 @@ public class ScoreManager
      */
     private ScoreManager ()
     {
-        INSTANCE = this;
     }
 
     //~ Methods -----------------------------------------------------------
@@ -187,7 +186,7 @@ public class ScoreManager
     public static ScoreManager getInstance ()
     {
         if (INSTANCE == null) {
-            new ScoreManager();
+            INSTANCE = new ScoreManager();
         }
         return INSTANCE;
     }
@@ -314,7 +313,7 @@ public class ScoreManager
             score.linkWithSheet();
 
             // Update UI wrt to the current sheet step
-            Sheet sheet = score.getSheet();
+//            Sheet sheet = score.getSheet();
             /// TBD HB
 //             if (sheet != null) {
 //                 sheet.getInstanceStep(sheet.currentStep()).displayUI();
@@ -435,7 +434,8 @@ public class ScoreManager
             getXmlMapper().store(score, xmlFile);
             long s1 = java.lang.System.currentTimeMillis();
             logger.info("Score stored in " + (s1 - s0) + " ms");
-        } catch (Exception ex) {
+        } catch (Exception ignored) {
+            // Exception already signaled to the user
         }
     }
 

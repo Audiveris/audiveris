@@ -305,15 +305,15 @@ public class StickUtil
                                       StickSection sct,
                                       int direction)
     {
-        Run lineRun;               // Run of staff line in contact
-        Run run;                   // Run to be extended
-        int yBegin;                // y value at beginning of the extension
+        Run lineRun;                     // Run of staff line in contact
+        Run run;                         // Run to be extended
+        int yBegin;                      // y value at beginning of the extension
         Line startTg = new BasicLine(); // Vertical tangent at runs starts
         Line stopTg = new BasicLine();  // Vertical tangent at runs stops
         Line axis = new BasicLine();    // Middle axis
-        int x1;                    // Left abscissa
-        int x2;                    // Right abscissa
-        double x;                  // Middle abscissa
+        int x1;                          // Left abscissa
+        int x2;                          // Right abscissa
+        double x;                        // Middle abscissa
 
         if (direction > 0) { // Going downwards
             run = sct.getLastRun();
@@ -416,14 +416,24 @@ public class StickUtil
                     start = startTg.xAt(y);
                     length = stopTg.xAt(y) - start + 1;
 
+                    if (logger.isFineEnabled()) {
+                        logger.fine("y=" + y + " start=" + start + " length=" + length);
+                    }
+                    
                     if (length <= 0) { // We have decreased to nothing
+                        if (logger.isFineEnabled()) {
+                            logger.fine("* length is zero *");
+                        }
                         break;
                     }
                 } else {
                     if (axis != null) {
                         x = axis.xAt(y);
+                        if (logger.isFineEnabled()) {
+                            logger.fine("x=" + x);
+                        }
                     }
-                    start = (int) Math.rint(x - ((double) length / 2));
+                    start = (int) (0.5 + x - ((double) length / 2));
                 }
                 if (logger.isFineEnabled()) {
                     logger.fine("y=" + y + ", start=" + start + ", length=" + length);

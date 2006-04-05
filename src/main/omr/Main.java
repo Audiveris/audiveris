@@ -74,9 +74,6 @@ public class Main
     // First things first!
     static
     {
-        // UI Look and Feel
-        UILookAndFeel.setUI(null);
-
         // Time stamps
         Clock.resetTime();
     }
@@ -90,55 +87,177 @@ public class Main
                              System.getenv(AUDIVERIS_HOME));
     private static File homeFolder;
 
-    // Batch mode if any
-    private static boolean batchMode = false;
+    private static final Constants constants = new Constants();
 
-    // Request to write score if any
-    private static boolean writeScore = false;
+    // Singleton
+    private static Main INSTANCE;
+
+    //~ Instance variables ------------------------------------------------
+
+    // Name of the application as displayed to the user
+    private final String toolName;
+
+    // Version of the application as displayed to the user
+    private final String toolVersion;
+
+    // Build reference of the application as displayed to the user
+    private final String toolBuild;
 
     // Master View
-    private static Jui jui;
+    private Jui jui;
+
+    // Batch mode if any
+    private boolean batchMode = false;
+
+    // Request to write score if any
+    private boolean writeScore = false;
 
     // Target step
-    private static Step targetStep;
+    private Step targetStep;
 
     // List of sheet file names to process
-    private static List<String> sheetNames = new ArrayList<String>();
+    private List<String> sheetNames = new ArrayList<String>();
 
     // List of score file names to process
-    private static List<String> scoreNames = new ArrayList<String>();
-
-    /**
-     * Name of the application as displayed to the user
-     */
-    public static String toolName;
-
-    /**
-     * Version of the application as displayed to the user
-     */
-    public static String toolVersion;
-
-    /**
-     * Build reference of the application as displayed to the user
-     */
-    public static String toolBuild;
-
-    private static final Constants constants = new Constants();
+    private List<String> scoreNames = new ArrayList<String>();
 
     //~ Constructors ------------------------------------------------------
 
     //------//
     // Main //
     //------//
-    private Main ()
+    private Main (String[] args)
     {
-        if (targetStep == null) {
-            targetStep = Step.getLoadStep();
+        Package thisPackage = Main.class.getPackage();
+        toolName    = thisPackage.getSpecificationTitle();
+        toolVersion = thisPackage.getSpecificationVersion();
+        toolBuild   = thisPackage.getImplementationVersion();
+
+        // Check installation home
+        getHomeFolder();
+    }
+
+    //~ Methods -----------------------------------------------------------
+
+    //------//
+    // main //
+    //------//
+    /**
+     * Usual starting method for the application.
+     *
+     * @param args        the command line parameters
+     *
+     * @see omr.Main the possible command line parameters
+     */
+    public static void main (String[] args)
+    {
+        // Problem, from Emacs all args are passed in one string
+        // sequence.  We recognize this by detecting a single
+        // argument starting with '-'
+        if ((args.length == 1) && (args[0].startsWith("-"))) {
+            // Redispatch the real args
+            StringTokenizer st = new StringTokenizer(args[0]);
+            int argNb = 0;
+
+            // First just count the number of real arguments
+            while (st.hasMoreTokens()) {
+                argNb++;
+                st.nextToken();
+            }
+
+            String[] newArgs = new String[argNb];
+
+            // Second copy all real arguments into newly
+            // allocated array
+            argNb = 0;
+            st = new StringTokenizer(args[0]);
+
+            while (st.hasMoreTokens()) {
+                newArgs[argNb++] = st.nextToken();
+            }
+
+            // Fake the args
+            args = newArgs;
         }
+
+        // Launch the processing
+        INSTANCE = new Main(args);
+        try {
+            INSTANCE.process(args);
+        } catch (Main.StopRequired ex) {
+            logger.info ("Exiting.");
+        }
+    }
+
+    //--------//
+    // getJui //
+    //--------//
+    /**
+     * Points to the single instance of the User Interface, if any.
+     *
+     * @return Jui instance, which may be null
+     */
+    public static Jui getJui ()
+    {
+        return INSTANCE.jui;
+    }
+
+    //-------------//
+    // getToolName //
+    //-------------//
+    /**
+     * Report the name of the application as displayed to the user
+     *
+     * @return Name of the application
+     */
+    public static String getToolName ()
+    {
+        return INSTANCE.toolName;
+    }
+
+    //----------------//
+    // getToolVersion //
+    //----------------//
+    /**
+     * Report the version of the application as displayed to the user
+     *
+     * @return version of the application
+     */
+    public static String getToolVersion ()
+    {
+        return INSTANCE.toolVersion;
+    }
+
+    //--------------//
+    // getToolBuild //
+    //--------------//
+    /**
+     * Report the build reference of the application as displayed to the user
+     *
+     * @return Build reference of the application
+     */
+    public static String getToolBuild ()
+    {
+        return INSTANCE.toolBuild;
+    }
+
+    //~ Methods private ---------------------------------------------------
+
+    //---------//
+    // process //
+    //---------//
+    private void process (String[] args)
+        throws StopRequired
+    {
+        // First parse the provided arguments if any
+        parseArguments(args);
 
         // Interactive or Batch mode ?
         if (!batchMode) {
             logger.fine("Interactive processing");
+
+            // UI Look and Feel
+            UILookAndFeel.setUI(null);
 
             // Make sure we have nice window decorations.
             JFrame.setDefaultLookAndFeelDecorated(true);
@@ -160,8 +279,6 @@ public class Main
             browse();
         }
     }
-
-    //~ Methods -----------------------------------------------------------
 
     //--------//
     // browse //
@@ -199,19 +316,6 @@ public class Main
                 Main.getJui().scoreController.setScoreView(score);
             }
         }
-    }
-
-    //--------//
-    // getJui //
-    //--------//
-    /**
-     * Points to the single instance of the User Interface, if any.
-     *
-     * @return Jui instance, which may be null
-     */
-    public static Jui getJui ()
-    {
-        return jui;
     }
 
     //---------------//
@@ -297,55 +401,12 @@ public class Main
         return new File(getHomeFolder(), "train");
     }
 
-    //------//
-    // main //
-    //------//
-    /**
-     * Usual starting method for the application.
-     *
-     * @param args        the command line parameters
-     *
-     * @see omr.Main the possible command line parameters
-     */
-    public static void main (String[] args)
+    //----------------//
+    // parseArguments //
+    //----------------//
+    private void parseArguments (final String[] args)
+        throws StopRequired
     {
-        Package thisPackage = Main.class.getPackage();
-        Main.toolName    = thisPackage.getSpecificationTitle();
-        Main.toolVersion = thisPackage.getSpecificationVersion();
-        Main.toolBuild   = thisPackage.getImplementationVersion();
-
-        // Check installation home
-        getHomeFolder();
-
-        // Problem, from Emacs all args are passed in one string
-        // sequence.  We recognize this by detecting a single
-        // argument starting with '-'
-        if ((args.length == 1) && (args[0].startsWith("-"))) {
-            // Redispatch the real args
-            StringTokenizer st = new StringTokenizer(args[0]);
-            int argNb = 0;
-
-            // First just count the number of real arguments
-            while (st.hasMoreTokens()) {
-                argNb++;
-                st.nextToken();
-            }
-
-            String[] newArgs = new String[argNb];
-
-            // Second copy all real arguments into newly
-            // allocated array
-            argNb = 0;
-            st = new StringTokenizer(args[0]);
-
-            while (st.hasMoreTokens()) {
-                newArgs[argNb++] = st.nextToken();
-            }
-
-            // Fake the args
-            args = newArgs;
-        }
-
         // Status of the finite state machine
         final int STEP  = 0;
         final int SHEET = 1;
@@ -468,15 +529,12 @@ public class Main
             logger.fine("sheetNames=" + sheetNames);
             logger.fine("scoreNames=" + scoreNames);
         }
-
-        // Launch the processing
-        new Main();
     }
 
     //--------//
     // addRef //
     //--------//
-    private static void addRef (String ref,
+    private void addRef (String ref,
                                 List<String> list)
     {
         // The ref may be a plain file name or the name of a pack
@@ -514,7 +572,7 @@ public class Main
     //------------------//
     // printCommandLine //
     //------------------//
-    private static void printCommandLine(String[] args)
+    private void printCommandLine(String[] args)
     {
         System.out.println("\nCommandParameters:");
         for (String arg : args) {
@@ -526,7 +584,8 @@ public class Main
     //-----------//
     // stopUsage //
     //-----------//
-    private static void stopUsage (String msg)
+    private void stopUsage (String msg)
+        throws StopRequired
     {
         // Print message if any
         if (msg != null) {
@@ -538,7 +597,7 @@ public class Main
         // Print standard command line syntax
         buf
             .append("usage: java ")
-            .append(toolName)
+            .append(getToolName())
             .append(" [-help]")
             .append(" [-batch]")
             .append(" [-write]")
@@ -561,9 +620,10 @@ public class Main
         logger.info(buf.toString());
 
         // Stop application immediately
-        logger.info("Exiting");
-        System.exit(-1);
+        throw new StopRequired();
     }
+
+    //~ Classes -----------------------------------------------------------
 
     //--------//
     // Worker //
@@ -587,8 +647,6 @@ public class Main
     private static class Constants
             extends ConstantSet
     {
-        //~ Instance variables --------------------------------------------
-
         Constant.String savePath = new Constant.String
                 ("",
                  "Directory for saved files, defaulted to 'save' audiveris subdir");
@@ -597,5 +655,14 @@ public class Main
         {
             initialize();
         }
+    }
+
+
+    //--------------//
+    // StopRequired //
+    //--------------//
+    private static class StopRequired
+        extends Exception
+    {
     }
 }

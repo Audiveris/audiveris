@@ -198,7 +198,7 @@ public abstract class Constant
     public boolean toBoolean ()
     {
         if (cachedValue == null) {
-            cachedValue = new java.lang.Boolean(currentString());
+            cachedValue = java.lang.Boolean.valueOf (currentString());
         }
 
         return ((java.lang.Boolean) cachedValue).booleanValue();

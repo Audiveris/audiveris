@@ -416,12 +416,14 @@ public class NeuralNetwork
 
         // Check size consistencies.
         if (inputs == null) {
-            logger.severe("train method. inputs array is null");
+            throw new IllegalArgumentException
+                    ("inputs array is null");
         }
         final int patternNb = inputs.length;
 
         if (desiredOutputs == null) {
-            logger.severe("train method. desiredOutputs array is null");
+            throw new IllegalArgumentException
+                    ("desiredOutputs array is null");
         }
 
         // Allocate needed arrays

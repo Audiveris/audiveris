@@ -49,10 +49,11 @@ public class GlyphLagView
     //~ Instance variables ------------------------------------------------
 
     /** Directory of Glyphs */
-    protected final GlyphDirectory directory;
+    protected final transient GlyphDirectory directory;
 
     /** Subject for glyph observers if any */
-    protected DefaultGlyphSubject glyphSubject = new DefaultGlyphSubject();
+    protected final transient DefaultGlyphSubject glyphSubject 
+            = new DefaultGlyphSubject();
 
     //~ Constructors -----------------------------------------------------
 

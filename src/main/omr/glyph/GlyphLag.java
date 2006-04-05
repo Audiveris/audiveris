@@ -191,7 +191,7 @@ public class GlyphLag
 
         sb.append(" ").append(glyphs.size()).append(" glyphs");
 
-        if (this.getClass().getName() == GlyphLag.class.getName()) {
+        if (this.getClass().getName().equals (GlyphLag.class.getName())) {
             sb.append("}");
         }
 

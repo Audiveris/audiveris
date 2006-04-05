@@ -77,7 +77,7 @@ public abstract class Evaluator
     /**
      * A special evaluation array, used to report NOISE
      */
-    protected static final Evaluation[] noiseEvaluations =
+    static final Evaluation[] noiseEvaluations =
     {
         new Evaluation(Shape.NOISE, 0d)
     };
@@ -86,7 +86,7 @@ public abstract class Evaluator
      * An Evaluation comparator in increasing order, where smaller grave
      * value means better interpretation
      */
-    protected static Comparator<Evaluation> comparator
+    protected static final Comparator<Evaluation> comparator
             = new Comparator<Evaluation>()
             {
                 public int compare (Evaluation e1,
@@ -103,7 +103,7 @@ public abstract class Evaluator
             };
 
     /** Descriptive labels for glyph characteristics */
-    protected static String[] labels;
+    static String[] labels;
 
     //~ Methods -----------------------------------------------------------
 
@@ -185,7 +185,10 @@ public abstract class Evaluator
         return ins;
     }
 
-    public static String[] getLabels ()
+    //-----------//
+    // getLabels // Lazy initialization
+    //-----------//
+    private static String[] getLabels ()
     {
         if (labels == null) {
             labels = new String[inSize];
@@ -202,6 +205,20 @@ public abstract class Evaluator
         }
 
         return labels;
+    }
+
+    //----------//
+    // getLabel //
+    //----------//
+    /**
+     * Report the label assigned to a given variable
+     *
+     * @param index the variable index
+     * @return the assigned label
+     */
+    public static String getLabel (int index)
+    {
+        return getLabels()[index];
     }
 
     //-------------------//
@@ -410,10 +427,6 @@ public abstract class Evaluator
         Constant.Double minWeight = new Constant.Double
                 (0.19,
                  "Minimum normalized weight to be considered not a noise");
-
-        Constant.Double okDistance = new Constant.Double
-                (1.5,
-                 "Threshold on OK distance");
 
         Constant.Double maxDistance = new Constant.Double
                 (5.0,

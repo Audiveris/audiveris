@@ -53,10 +53,6 @@ public class ScoreView
     // Mouse rubber
     private final Rubber rubber = new Rubber(zoom);
 
-    // Default view position
-    private final Point defaultPosition
-            = new Point(0, zoom.scaled(SCORE_INIT_Y / 2));
-
     // The displayed panel
     private final MyPanel panel = new MyPanel(zoom, rubber);
 
@@ -226,7 +222,6 @@ public class ScoreView
         }
 
         // Total size of this panel (for proper scrolling)
-        int w = zoom.scaled(SCORE_INIT_X + totalWidth + INTER_SYSTEM);
         int h = 2 * STAVE_MARGIN_HEIGHT +
             score.getMaxStaveNumber() * STAVE_AREA_HEIGHT;
         panel.setModelSize

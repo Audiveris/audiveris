@@ -42,12 +42,6 @@ public class StaveBuilder
     private GlyphLag hLag;
     private ListIterator<GlyphSection> vi;
 
-    // Top of stave related area
-    private int areaTop = -1;
-
-    // Bottom of stave related area
-    private int areaBottom = -1;
-
     //~ Constructors ------------------------------------------------------
 
     //--------------//
