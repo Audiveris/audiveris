@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="PEDAL_UP_MARK">
+    <dimension width="14" height="14"/>
+    <centroid x="6" y="7"/>
+    <bitmap>
+        <row>-----+#*------</row>
+        <row>-----0##------</row>
+        <row>--*$--#+-+$+--</row>
+        <row>--##+-0--*#*--</row>
+        <row>--+0*-0--*0.--</row>
+        <row>----.0*+0-----</row>
+        <row>$#o..0+0+.+$#+</row>
+        <row>##*++*-oo+o##+</row>
+        <row>.+---0*0o---+-</row>
+        <row>--.o0-o-+o+---</row>
+        <row>-.##+-o--##0--</row>
+        <row>--##--$o-0#+--</row>
+        <row>-----+##------</row>
+        <row>-----.#*------</row>
+    </bitmap>
+</icon>

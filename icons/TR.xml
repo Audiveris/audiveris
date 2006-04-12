@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="TR">
+    <dimension width="16" height="12"/>
+    <centroid x="7" y="6"/>
+    <bitmap>
+        <row>-----.#*--------</row>
+        <row>-----0#+--------</row>
+        <row>--+.-#$---------</row>
+        <row>o*+0##00###.0$$.</row>
+        <row>$---##$+-+##0$#0</row>
+        <row>*--o##.--0#$-$#+</row>
+        <row>o0o##0o--$#+--.-</row>
+        <row>--+#$-*-+#$-----</row>
+        <row>--*#+-*-$#o-----</row>
+        <row>--##-.0.##------</row>
+        <row>--$$-*.*#o------</row>
+        <row>--.##+.##-------</row>
+    </bitmap>
+</icon>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="COMBINING_FLAG_4">
+    <dimension width="10" height="41"/>
+    <centroid x="3" y="17"/>
+    <bitmap>
+        <row>*---------</row>
+        <row>$---------</row>
+        <row>#o--------</row>
+        <row>##.-------</row>
+        <row>###.------</row>
+        <row>####+-----</row>
+        <row>#####+----</row>
+        <row>$0*###o---</row>
+        <row>*--.*##o--</row>
+        <row>#.---+##--</row>
+        <row>##----+#0-</row>
+        <row>##$----o#-</row>
+        <row>###$----#.</row>
+        <row>*###*---0+</row>
+        <row>--0##0--++</row>
+        <row>o---*#+-+.</row>
+        <row>$----o#-o-</row>
+        <row>#o----o*o-</row>
+        <row>##+----$+-</row>
+        <row>###+---+0-</row>
+        <row>####+---$-</row>
+        <row>#####+--*-</row>
+        <row>--.o##+-++</row>
+        <row>o----*#..+</row>
+        <row>$-----0$-o</row>
+        <row>#o-----*o+</row>
+        <row>##+-----#.</row>
+        <row>###+----0o</row>
+        <row>####+---+o</row>
+        <row>#####+--.+</row>
+        <row>--.o##+-.+</row>
+        <row>-----*#.o-</row>
+        <row>------0$+-</row>
+        <row>-------*o-</row>
+        <row>--------#-</row>
+        <row>--------0+</row>
+        <row>--------++</row>
+        <row>--------.+</row>
+        <row>--------.+</row>
+        <row>--------o-</row>
+        <row>--------+-</row>
+    </bitmap>
+</icon>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="COMBINING_STACCATO">
+    <dimension width="2" height="2"/>
+    <centroid x="0" y="0"/>
+    <bitmap>
+        <row>$$</row>
+        <row>$$</row>
+    </bitmap>
+</icon>

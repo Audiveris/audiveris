@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="ARPEGGIATO_UP">
+    <dimension width="4" height="27"/>
+    <centroid x="2" y="13"/>
+    <bitmap>
+        <row>--$-</row>
+        <row>--#*</row>
+        <row>-*##</row>
+        <row>0##o</row>
+        <row>##o-</row>
+        <row>0#--</row>
+        <row>-$o-</row>
+        <row>-.#.</row>
+        <row>-.#$</row>
+        <row>-$#$</row>
+        <row>*##.</row>
+        <row>##+-</row>
+        <row>o#--</row>
+        <row>-*0-</row>
+        <row>--#o</row>
+        <row>-+##</row>
+        <row>.##*</row>
+        <row>$#$-</row>
+        <row>$#.-</row>
+        <row>.#.-</row>
+        <row>-o$-</row>
+        <row>--#0</row>
+        <row>-o##</row>
+        <row>+##0</row>
+        <row>##*-</row>
+        <row>*#--</row>
+        <row>-*.-</row>
+    </bitmap>
+</icon>

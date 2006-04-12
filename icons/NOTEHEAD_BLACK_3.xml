@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="NOTEHEAD_BLACK_3">
+    <dimension width="11" height="24"/>
+    <centroid x="5" y="11"/>
+    <bitmap>
+        <row>---+*###0--</row>
+        <row>--*######$-</row>
+        <row>-$########.</row>
+        <row>0#########.</row>
+        <row>#########*-</row>
+        <row>#########.-</row>
+        <row>0######$.--</row>
+        <row>-o$##*+----</row>
+        <row>---+*###0--</row>
+        <row>--*######$-</row>
+        <row>-$########.</row>
+        <row>0#########.</row>
+        <row>#########*-</row>
+        <row>#########.-</row>
+        <row>0######$.--</row>
+        <row>-o$##*+----</row>
+        <row>---+*###0--</row>
+        <row>--*######$-</row>
+        <row>-$########.</row>
+        <row>0#########.</row>
+        <row>#########*-</row>
+        <row>#########.-</row>
+        <row>0######$.--</row>
+        <row>-o$##*+----</row>
+    </bitmap>
+</icon>

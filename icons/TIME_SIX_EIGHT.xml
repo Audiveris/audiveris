@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="TIME_SIX_EIGHT">
+    <dimension width="12" height="33"/>
+    <centroid x="5" y="16"/>
+    <bitmap>
+        <row>----0###*+--</row>
+        <row>--+##0.o##0-</row>
+        <row>-.##$--.###.</row>
+        <row>-$##o--$###+</row>
+        <row>.###+--0###.</row>
+        <row>0###----0#o-</row>
+        <row>$###--------</row>
+        <row>####+*###$.-</row>
+        <row>#####*o####.</row>
+        <row>####0--.###$</row>
+        <row>*###+---$###</row>
+        <row>o###----*###</row>
+        <row>-###.---$##$</row>
+        <row>-o##+---###+</row>
+        <row>--0#$--0##+-</row>
+        <row>---.***$0---</row>
+        <row>------------</row>
+        <row>--.*####*.--</row>
+        <row>-o#*.---0#o-</row>
+        <row>.##------0#-</row>
+        <row>0##------.#+</row>
+        <row>*##$.-----#+</row>
+        <row>0####*+--o#.</row>
+        <row>.#######0#o-</row>
+        <row>-+########o-</row>
+        <row>-+#$#######o</row>
+        <row>.#+--+*####$</row>
+        <row>$$-----+####</row>
+        <row>#*------o###</row>
+        <row>#$------+##0</row>
+        <row>0#.-----*##-</row>
+        <row>-*#o--.*#$.-</row>
+        <row>--.*###$o---</row>
+    </bitmap>
+</icon>

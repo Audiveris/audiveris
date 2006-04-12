@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="MORDENT">
+    <dimension width="20" height="8"/>
+    <centroid x="9" y="3"/>
+    <bitmap>
+        <row>----0*------o$------</row>
+        <row>---*##*----0##*-----</row>
+        <row>--*####*--0####0--.+</row>
+        <row>-*o#####**######0.$-</row>
+        <row>$.-+######.*######--</row>
+        <row>.---o####.--$####.--</row>
+        <row>-----0##+----###.---</row>
+        <row>------*+-----.$.----</row>
+    </bitmap>
+</icon>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="TIME_SEVEN">
+    <dimension width="13" height="16"/>
+    <centroid x="6" y="6"/>
+    <bitmap>
+        <row>o-.0##*+----$</row>
+        <row>#$######*.-0#</row>
+        <row>##########*#*</row>
+        <row>#+--o#######o</row>
+        <row>*----.$##$*#-</row>
+        <row>.------...#*-</row>
+        <row>---------$#.-</row>
+        <row>--------$#*--</row>
+        <row>-------$##.--</row>
+        <row>------###*---</row>
+        <row>-----$###.---</row>
+        <row>----*####----</row>
+        <row>---.####*----</row>
+        <row>---0####o----</row>
+        <row>---$####+----</row>
+        <row>---##$##+----</row>
+    </bitmap>
+</icon>

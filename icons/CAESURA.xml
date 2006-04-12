@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="CAESURA">
+    <dimension width="14" height="16"/>
+    <centroid x="6" y="8"/>
+    <bitmap>
+        <row>--------*---.*</row>
+        <row>-------0.---*.</row>
+        <row>------.*---.*-</row>
+        <row>------0.---*.-</row>
+        <row>-----.*---.*--</row>
+        <row>-----*.---*.--</row>
+        <row>----.*---.*---</row>
+        <row>----*.---*.---</row>
+        <row>---.*---.*----</row>
+        <row>---*.---*.----</row>
+        <row>--.*---.0-----</row>
+        <row>--*.---*------</row>
+        <row>-.*---.0------</row>
+        <row>-*.---$-------</row>
+        <row>.0---+0-------</row>
+        <row>*.---$--------</row>
+    </bitmap>
+</icon>

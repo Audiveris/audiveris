@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="SINGLE_BARLINE">
+    <dimension width="1" height="33"/>
+    <centroid x="0" y="16"/>
+    <bitmap>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+        <row>#</row>
+    </bitmap>
+</icon>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="DOUBLE_FLAT">
+    <dimension width="14" height="19"/>
+    <centroid x="6" y="11"/>
+    <bitmap>
+        <row>*------*------</row>
+        <row>*------*------</row>
+        <row>*------*------</row>
+        <row>*------*------</row>
+        <row>*------*------</row>
+        <row>*------*------</row>
+        <row>*------*------</row>
+        <row>*------*------</row>
+        <row>*------*------</row>
+        <row>*+*##o-*.*##0-</row>
+        <row>##*###+*#*###0</row>
+        <row>#.-+##**o--###</row>
+        <row>#---##**.--*##</row>
+        <row>#---##o*---$#0</row>
+        <row>$--o#$-*--.##-</row>
+        <row>*--#*--*--$$--</row>
+        <row>*.$o---*-$0---</row>
+        <row>#$.----*$+----</row>
+        <row>0------o------</row>
+    </bitmap>
+</icon>

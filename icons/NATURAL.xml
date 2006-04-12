@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="NATURAL">
+    <dimension width="6" height="24"/>
+    <centroid x="2" y="12"/>
+    <bitmap>
+        <row>*-----</row>
+        <row>*-----</row>
+        <row>*-----</row>
+        <row>*-----</row>
+        <row>*-----</row>
+        <row>*-----</row>
+        <row>*.0$#+</row>
+        <row>#####+</row>
+        <row>#####+</row>
+        <row>#$0+0+</row>
+        <row>*---0+</row>
+        <row>*---0+</row>
+        <row>*---0+</row>
+        <row>*---0+</row>
+        <row>*-o*#+</row>
+        <row>#####+</row>
+        <row>#####+</row>
+        <row>##*+*+</row>
+        <row>.---0+</row>
+        <row>----0+</row>
+        <row>----0+</row>
+        <row>----0+</row>
+        <row>----0+</row>
+        <row>----0+</row>
+    </bitmap>
+</icon>

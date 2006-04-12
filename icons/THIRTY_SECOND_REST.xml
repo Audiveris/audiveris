@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="THIRTY_SECOND_REST">
+    <dimension width="13" height="31"/>
+    <centroid x="5" y="12"/>
+    <bitmap>
+        <row>-----o$#+----</row>
+        <row>----o####---o</row>
+        <row>----*####+-*o</row>
+        <row>----*####*$$.</row>
+        <row>----.####$.*-</row>
+        <row>-----.**+--*-</row>
+        <row>----------++-</row>
+        <row>----------0--</row>
+        <row>---o$$.---*--</row>
+        <row>--o####--.0--</row>
+        <row>--$####--$+--</row>
+        <row>--$####o**---</row>
+        <row>--o####0-*---</row>
+        <row>---+*0.--0---</row>
+        <row>--------++---</row>
+        <row>--------0----</row>
+        <row>-.0o----*----</row>
+        <row>o###0--.o----</row>
+        <row>#####--*.----</row>
+        <row>#####+*#-----</row>
+        <row>*#####+*-----</row>
+        <row>-*#$o-.o-----</row>
+        <row>------o------</row>
+        <row>------*------</row>
+        <row>------0------</row>
+        <row>-----o+------</row>
+        <row>-----*-------</row>
+        <row>-----$-------</row>
+        <row>----o0-------</row>
+        <row>----$+-------</row>
+        <row>---.#--------</row>
+    </bitmap>
+</icon>

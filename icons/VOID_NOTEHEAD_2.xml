@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="VOID_NOTEHEAD_2">
+    <dimension width="11" height="16"/>
+    <centroid x="5" y="7"/>
+    <bitmap>
+        <row>---+*###$+-</row>
+        <row>--$###0.-*+</row>
+        <row>-$##0----oo</row>
+        <row>o#$.-----$+</row>
+        <row>$*-----+##-</row>
+        <row>#----.*##+-</row>
+        <row>*--.0###o--</row>
+        <row>-0$###0.---</row>
+        <row>---+*###$+-</row>
+        <row>--$###0.-*+</row>
+        <row>-$##0----oo</row>
+        <row>o#$.-----$+</row>
+        <row>$*-----+##-</row>
+        <row>#----.*##+-</row>
+        <row>*--.0###o--</row>
+        <row>-0$###0.---</row>
+    </bitmap>
+</icon>

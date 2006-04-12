@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="GRACE_NOTE_NO_SLASH">
+    <dimension width="12" height="22"/>
+    <centroid x="5" y="13"/>
+    <bitmap>
+        <row>-----+------</row>
+        <row>-----+o-----</row>
+        <row>-----+#-----</row>
+        <row>-----+#$----</row>
+        <row>-----+##*---</row>
+        <row>-----+###o--</row>
+        <row>-----++-o#.-</row>
+        <row>-----++--+*-</row>
+        <row>-----++---$-</row>
+        <row>-----++---+o</row>
+        <row>-----++----*</row>
+        <row>-----++----0</row>
+        <row>-----++----o</row>
+        <row>-----++----o</row>
+        <row>-----++----0</row>
+        <row>-----++----+</row>
+        <row>--o***+---+-</row>
+        <row>-$####+-----</row>
+        <row>0#####+-----</row>
+        <row>######------</row>
+        <row>#####+------</row>
+        <row>+##*.-------</row>
+    </bitmap>
+</icon>

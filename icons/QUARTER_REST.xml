@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="QUARTER_REST">
+    <dimension width="8" height="23"/>
+    <centroid x="3" y="12"/>
+    <bitmap>
+        <row>-0------</row>
+        <row>-.*-----</row>
+        <row>--00----</row>
+        <row>---#+---</row>
+        <row>---*#.--</row>
+        <row>---*##--</row>
+        <row>---###$-</row>
+        <row>--+####-</row>
+        <row>--$###+-</row>
+        <row>-0###*--</row>
+        <row>.####.--</row>
+        <row>.###$---</row>
+        <row>-+##*---</row>
+        <row>--o#*---</row>
+        <row>---0#---</row>
+        <row>--..0*--</row>
+        <row>.#####+-</row>
+        <row>$######+</row>
+        <row>###$o+o*</row>
+        <row>*##-----</row>
+        <row>-##-----</row>
+        <row>-.$+----</row>
+        <row>---0.---</row>
+    </bitmap>
+</icon>

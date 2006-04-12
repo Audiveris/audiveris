@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="COMBINING_AUGMENTATION_DOT">
+    <dimension width="3" height="3"/>
+    <centroid x="1" y="1"/>
+    <bitmap>
+        <row>0#*</row>
+        <row>###</row>
+        <row>o#*</row>
+    </bitmap>
+</icon>
