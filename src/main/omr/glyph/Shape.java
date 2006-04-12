@@ -566,7 +566,7 @@ public enum Shape
     public Icon getIcon()
     {
         if (icon == null) {
-            setIcon(IconManager.getInstance().loadIcon(toString()));
+            setIcon(IconManager.loadIcon(toString()));
         }
 
         return icon;
@@ -604,7 +604,7 @@ public enum Shape
         // All shapes in the given range
         for (Shape shape : range.shapes) {
             JMenuItem menuItem  = new JMenuItem
-                (shape.toString(), shape.icon);
+                (shape.toString(), shape.getIcon());
             addColoredItem(top, menuItem, shape.getColor());
 
             menuItem.setToolTipText(shape.description);
