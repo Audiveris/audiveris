@@ -11,6 +11,7 @@
 package omr.ui;
 
 import omr.ui.field.LDoubleField;
+import omr.ui.view.*;
 import omr.util.BaseTestCase;
 
 import static junit.framework.Assert.*;
