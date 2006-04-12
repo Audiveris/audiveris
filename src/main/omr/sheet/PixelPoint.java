@@ -36,8 +36,9 @@ public class PixelPoint
     //------------//
     // PixelPoint //
     //------------//
-    public PixelPoint (Point point)
+    public PixelPoint (int x,
+                       int y)
     {
-        super(point);
+        super(x, y);
     }
 }
