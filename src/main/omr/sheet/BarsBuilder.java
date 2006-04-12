@@ -13,9 +13,9 @@ package omr.sheet;
 import omr.Main;
 import omr.ProcessingException;
 import omr.check.Check;
+import omr.check.CheckBoard;
 import omr.check.CheckSuite;
 import omr.check.Checkable;
-import omr.check.CheckBoard;
 import omr.check.FailureResult;
 import omr.check.Result;
 import omr.check.SuccessResult;
@@ -29,19 +29,21 @@ import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.LagBuilder;
+import omr.lag.ScrollLagView;
+import omr.lag.SectionBoard;
 import omr.lag.VerticalOrientation;
 import omr.score.Measure;
+import omr.score.PagePoint;
 import omr.score.Score;
 import omr.score.ScoreConstants;
 import omr.score.Stave;
 import omr.score.System;
+import omr.score.UnitDimension;
 import omr.stick.Stick;
 import omr.stick.StickSection;
 import omr.stick.StickView;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import omr.lag.ScrollLagView;
-import omr.lag.SectionBoard;
 import omr.ui.view.Zoom;
 import omr.util.Dumper;
 import omr.util.Logger;
@@ -49,7 +51,6 @@ import omr.util.TreeNode;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.GridLayout;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -395,9 +396,9 @@ public class BarsBuilder
                     }
                     new Measure(barInfo, stave, Shape.SINGLE_BARLINE,
                                 scale.pixelsToUnits(barAbscissa)
-                                - stave.getLeft(),
+                                - stave.getTopLeft().x,
                                 scale.pixelsToUnits(barAbscissa)
-                                - stave.getLeft(), false); // invented ?
+                                - stave.getTopLeft().x, false); // invented ?
                 }
             }
         }
@@ -414,7 +415,7 @@ public class BarsBuilder
         int botUnit = scale.pixelsToUnits(bar.getStick().getStop());
 
         // Check that middle of stave is within bar top & bottom
-        final int midStave = stave.getTop() + (stave.getSize() / 2);
+        final int midStave = stave.getTopLeft().y + (stave.getSize() / 2);
 
         return (midStave > topUnit) && (midStave < botUnit);
     }
@@ -474,11 +475,12 @@ public class BarsBuilder
         for (SystemInfo info : systems) {
             // Allocate the system
             omr.score.System system =
-                new omr.score.System(info, score,
-                                     scale.pixelsToUnits(info.getTop()),
-                                     scale.pixelsToUnits(info.getLeft()),
-                                     scale.pixelsToUnits(info.getWidth()),
-                                     scale.pixelsToUnits(info.getDeltaY()));
+                new omr.score.System
+                (info, score,
+                 scale.pixelsToUnits(new PixelPoint(info.getLeft(),
+                                                    info.getTop())),
+                 scale.pixelsToUnits(new PixelDimension(info.getWidth(),
+                                                        info.getDeltaY())));
 
             // Set the link SystemInfo -> System
             info.setScoreSystem(system);
@@ -488,12 +490,14 @@ public class BarsBuilder
 
             for (StaveInfo set : info.getStaves()) {
                 LineInfo line = set.getFirstLine();
-                new Stave(set, system,
-                          scale.pixelsToUnits(line.getLine().yAt(line.getLeft())),
-                          scale.pixelsToUnits(set.getLeft()),
-                          scale.pixelsToUnits(set.getRight() - set.getLeft()),
-                          64, // Staff vertical size in units
-                          staveLink++);
+                new Stave
+                    (set, system,
+                     scale.pixelsToUnits
+                     (new PixelPoint(set.getLeft(),
+                                    line.getLine().yAt(line.getLeft()))),
+                     scale.pixelsToUnits(set.getRight() - set.getLeft()),
+                     64, // Staff vertical size in units
+                     staveLink++);
             }
         }
     }
@@ -577,11 +581,16 @@ public class BarsBuilder
             }
 
             // Adjust end of system & stave(s) to this one
-            system.setWidth(lastX);
+            UnitDimension dim = system.getDimension ();
+            if (dim == null) {
+                system.setDimension (new UnitDimension(lastX, 0));
+            } else {
+                dim.width = lastX;
+            }
 
             for (Iterator sit = system.getStaves().iterator(); sit.hasNext();) {
                 Stave stv = (Stave) sit.next();
-                stv.setWidth(system.getWidth());
+                stv.setWidth(system.getDimension().width);
             }
         }
     }
@@ -631,11 +640,12 @@ public class BarsBuilder
             logger.fine("Allocating score");
         }
 
-        score = new Score(scale.pixelsToUnits(sheet.getWidth()),
-                          scale.pixelsToUnits(sheet.getHeight()),
-                          (int) Math.rint(sheet.getSkew().angle()
-                                          * ScoreConstants.BASE),
-                          scale.spacing(), sheet.getPath());
+        score = new Score
+            (scale.pixelsToUnits(new PixelDimension(sheet.getWidth(),
+                                                    sheet.getHeight())),
+             (int) Math.rint(sheet.getSkew().angle() * ScoreConstants.BASE),
+             scale.spacing(),
+             sheet.getPath());
 
         // Mutual referencing
         score.setSheet(sheet);
@@ -767,14 +777,19 @@ public class BarsBuilder
                 logger.fine("Adjusting firstX=" + firstX + " " + system);
             }
 
-            system.setLeft(system.getLeft() + firstX);
+            system.getTopLeft().translate (firstX, 0);
 
             // Adjust beginning of all stave(s) to this one
             // Remove this false "measure" in all staves of the system
             for (Iterator sit = system.getStaves().iterator(); sit.hasNext();) {
                 Stave stv = (Stave) sit.next();
-                int staveDx = system.getLeft() - stv.getLeft();
-                stv.setLeft(system.getLeft());
+                int staveDx = system.getTopLeft().x - stv.getTopLeft().x;
+                PagePoint ul = stv.getTopLeft ();
+                if (ul == null) {
+                    stv.setTopLeft (new PagePoint(system.getTopLeft().x, 0));
+                } else {
+                    ul.x = system.getTopLeft().x;
+                }
 
                 // Remove this first measure
                 stv.getMeasures().remove(0);
