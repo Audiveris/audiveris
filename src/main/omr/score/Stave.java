@@ -46,11 +46,8 @@ public class Stave
     // Related info from sheet analysis
     private StaveInfo info;
 
-    // Attributes
-    private int top;
-
-    // Attributes
-    private int left;
+    // Top left corner of the stave (relative to the system top left corner)
+    private PagePoint topLeft;
 
     // Attributes
     private int width;
@@ -105,10 +102,8 @@ public class Stave
      *
      * @param info      the physical information read from the sheet
      * @param system    the containing system
-     * @param top       the ordinate,in units, wrt to the score upper left
-     *                  corner
-     * @param left      the abscissa, in units, wrt to the score upper left
-     *                  corner
+     * @param topLeft   the coordinate,in units, wrt to the score upper left
+     *                  corner, of the upper left corner of this stave
      * @param width     the stave width, in units
      * @param size      the stave height, in units ??? TBD ???
      * @param stavelink the index of the stave in the containing system,
@@ -116,8 +111,7 @@ public class Stave
      */
     public Stave (StaveInfo info,
                   System system,
-                  int top,
-                  int left,
+                  PagePoint topLeft,
                   int width,
                   int size,
                   int stavelink)
@@ -126,8 +120,7 @@ public class Stave
         allocateChildren();
 
         this.info = info;
-        this.top = top;
-        this.left = left;
+        this.topLeft = topLeft;
         this.width = width;
         this.size = size;
         this.stavelink = stavelink;
@@ -232,30 +225,30 @@ public class Stave
         return lastMeasureId;
     }
 
-    //---------//
-    // setLeft //
-    //---------//
+    //------------//
+    // setTopLeft //
+    //------------//
     /**
-     * Set the abscissa of the starting point in the score
+     * Set the coordinates of the top left point in the score
      *
-     * @param left x in units
+     * @param topLeft coordinates in units, wrt system top left corner
      */
-    public void setLeft (int left)
+    public void setTopLeft (PagePoint topLeft)
     {
-        this.left = left;
+        this.topLeft = topLeft;
     }
 
-    //---------//
-    // getLeft //
-    //---------//
+    //------------//
+    // getTopLeft //
+    //------------//
     /**
-     * Report the abscissa of the left side of the stave, wrt to the score
+     * Report the coordinates of the top left corner of the stave, wrt to the score
      *
-     * @return x, in units, of the left side
+     * @return the top left coordinates
      */
-    public int getLeft ()
+    public PagePoint getTopLeft ()
     {
-        return left;
+        return topLeft;
     }
 
     //---------------//
@@ -436,20 +429,6 @@ public class Stave
         return (System) container.getContainer();
     }
 
-    //--------//
-    // getTop //
-    //--------//
-    /**
-     * Report the ordinate of the starting point of this stave, wrt to the
-     * score
-     *
-     * @return y, in units, in the containing score
-     */
-    public int getTop ()
-    {
-        return top;
-    }
-
     //----------//
     // setWidth //
     //----------//
@@ -535,8 +514,7 @@ public class Stave
     public String toString ()
     {
         return "{Stave" +
-            " top=" + top +
-            " left=" + left +
+            " topLeft=" + topLeft +
             " width=" + width +
             " size=" + size +
             " origin=" + origin + "}";
@@ -583,8 +561,8 @@ public class Stave
         Point sysorg = getSystem().getOrigin();
 
         // Display origin for the stave
-        origin = new Point(sysorg.x + (left - getSystem().getLeft()),
-                           sysorg.y + (top - getSystem().getTop()));
+        origin = new Point(sysorg.x + (topLeft.x - getSystem().getTopLeft().x),
+                           sysorg.y + (topLeft.y - getSystem().getTopLeft().y));
 
         // First/Last measure ids
         firstMeasureId = lastMeasureId = getSystem().getFirstMeasureId();
