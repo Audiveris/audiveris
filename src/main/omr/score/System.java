@@ -30,7 +30,7 @@ import java.util.List;
  * @version $Id$
  */
 public class System
-        extends MusicNode
+    extends MusicNode
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -41,24 +41,20 @@ public class System
     // Related info from sheet analysis
     private SystemInfo info;
 
-    // Specific Children
+    // Specific Child : list of staves
     private final StaveList staves;
+
+    // Specific Child : list of slurs
     private final SlurList slurs;
 
-    // Cached attributes
-    private int top;
+    // Top left corner of the system
+    private PagePoint topLeft;
 
-    // Cached attributes
-    private int left;
+    // System dimensions, expressed in units
+    private UnitDimension dimension;
 
-    // Cached attributes
-    private int width;
-
-    // Cached attributes
-    private int height;
-
-    // Actual cached display origin
-    private Point origin;
+    // Actual display origin
+    private ScorePoint origin;
 
     // First, and last measure ids
     private int firstMeasureId = 0;
@@ -74,7 +70,7 @@ public class System
      */
     public System ()
     {
-        this(null, null, 0, 0, 0, 0);
+        this(null, null, null, null);
     }
 
     //--------//
@@ -83,20 +79,16 @@ public class System
     /**
      * Create a system with all needed parameters
      *
-     * @param info   the physical information retrieved from the sheet
-     * @param score  the containing score
-     * @param top    the ordinate, in units, of the upper left point of the
-     *               system in its containing score
-     * @param left   the abscissa, in units, of the upper left
-     * @param width  the system width, in units
-     * @param height the system height, in units
+     * @param info      the physical information retrieved from the sheet
+     * @param score     the containing score
+     * @param topLeft   the coordinate, in units, of the upper left point of the
+     *                  system in its containing score
+     * @param dimension the dimension of the system, expressed in units
      */
-    public System (SystemInfo info,
-                   Score score,
-                   int top,
-                   int left,
-                   int width,
-                   int height)
+    public System (SystemInfo     info,
+                   Score          score,
+                   PagePoint      topLeft,
+                   UnitDimension  dimension)
     {
         super(score);
 
@@ -104,11 +96,9 @@ public class System
         staves = new StaveList(this);
         slurs = new SlurList(this);
 
-        this.info = info;
-        this.top = top;
-        this.left = left;
-        this.width = width;
-        this.height = height;
+        this.info      = info;
+        this.topLeft   = topLeft;
+        this.dimension = dimension;
 
         if (logger.isFineEnabled()) {
             Dumper.dump(this, "Constructed");
@@ -145,31 +135,37 @@ public class System
         return (Stave) getStaves().get(0);
     }
 
-    //-----------//
-    // setHeight //
-    //-----------//
+    //--------------//
+    // getDimension //
+    //--------------//
     /**
-     * Set the system height (top of first stave, down to bottom of last
-     * stave)
+     * Report the system dimension.
      *
-     * @param height system height, in units
+     * @return the system dimension, in units
+     * @see #setDimension
      */
-    public void setHeight (int height)
+    public UnitDimension getDimension ()
     {
-        this.height = height;
+        return dimension;
     }
 
-    //-----------//
-    // getHeight //
-    //-----------//
+    //--------------//
+    // setDimension //
+    //--------------//
     /**
-     * Report the system height
+     * Set the system dimension.
      *
-     * @return height in units
+     * <p>Width is the distance, in units, between left edge and right
+     * edge.
+     *
+     * <p>Height is the distance, in units, from top of first stave, down
+     * to bottom of last stave
+     *
+     * @param dimension system dimension, in units
      */
-    public int getHeight ()
+    public void setDimension (UnitDimension dimension)
     {
-        return height;
+        this.dimension = dimension;
     }
 
     //---------//
@@ -225,42 +221,44 @@ public class System
         return (Stave) getStaves().get(getStaves().size() - 1);
     }
 
-    //---------//
-    // setLeft //
-    //---------//
+    //------------//
+    // setTopLeft //
+    //------------//
     /**
-     * Set the abscissa of the left side of the system in the score
+     * Set the coordinates of the top left cormer of the system in the score
      *
-     * @param left x in units of the left edge
+     * @param topLeft the upper left point, with coordinates in units, in
+     * virtual score page
      */
-    public void setLeft (int left)
+    public void setTopLeft (PagePoint topLeft)
     {
-        this.left = left;
+        this.topLeft = topLeft;
     }
 
-    //---------//
-    // getLeft //
-    //---------//
+    //------------//
+    // getTopLeft //
+    //------------//
     /**
-     * Report the abscissa of the left edge of this system in its
-     * containing score
+     * Report the coordinates of the upper left corner of this system in
+     * its containing score
      *
-     * @return x, in units, of the left side
+     * @return the top left corner
+     * @see #setTopLeft
      */
-    public int getLeft ()
+    public PagePoint getTopLeft ()
     {
-        return left;
+        return topLeft;
     }
 
     //-----------//
     // getOrigin //
     //-----------//
     /**
-     * Report the display origin for this system
+     * Report the origin for this system, in the horizontal score display
      *
      * @return the display origin
      */
-    public Point getOrigin ()
+    public ScorePoint getOrigin ()
     {
         return origin;
     }
@@ -275,7 +273,7 @@ public class System
      */
     public int getRightPosition ()
     {
-        return (origin.x + width) - 1;
+        return (origin.x + dimension.width) - 1;
     }
 
     //----------//
@@ -338,58 +336,6 @@ public class System
         return staves.getChildren();
     }
 
-    //--------//
-    // setTop //
-    //--------//
-    /**
-     * Set the ordinate of the upper left corner of the system in the score
-     *
-     * @param top y in units of the upper left corner
-     */
-    public void setTop (int top)
-    {
-        this.top = top;
-    }
-
-    //--------//
-    // getTop //
-    //--------//
-    /**
-     * Report the ordinate in the score of the upper left point of the system
-     *
-     * @return y, in units, for the upper left point of the system
-     */
-    public int getTop ()
-    {
-        return top;
-    }
-
-    //----------//
-    // setWidth //
-    //----------//
-    /**
-     * Set the width of the system
-     *
-     * @param width width, in units, between left edge and right edge
-     */
-    public void setWidth (int width)
-    {
-        this.width = width;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the system width
-     *
-     * @return system width, in units
-     */
-    public int getWidth ()
-    {
-        return width;
-    }
-
     //----------//
     // addChild //
     //----------//
@@ -431,11 +377,11 @@ public class System
      *
      * @see #scoreToSheet
      */
-    public void sheetToScore (PagePoint pagPt,
-                              Point scrPt)
+    public void sheetToScore (PagePoint  pagPt,
+                              ScorePoint scrPt)
     {
-        scrPt.x = (origin.x + pagPt.x) - left;
-        scrPt.y = (origin.y + pagPt.y) - top;
+        scrPt.x = (origin.x + pagPt.x) - topLeft.x;
+        scrPt.y = (origin.y + pagPt.y) - topLeft.y;
     }
 
     //--------------//
@@ -450,11 +396,11 @@ public class System
      *
      * @see #sheetToScore
      */
-    public void scoreToSheet (Point scrPt,
+    public void scoreToSheet (ScorePoint scrPt,
                               PagePoint pagPt)
     {
-        pagPt.x = (left + scrPt.x) - origin.x;
-        pagPt.y = (top + scrPt.y) - origin.y;
+        pagPt.x = (topLeft.x + scrPt.x) - origin.x;
+        pagPt.y = (topLeft.y + scrPt.y) - origin.y;
     }
 
     //----------//
@@ -468,8 +414,8 @@ public class System
     @Override
     public String toString ()
     {
-        return "{System" + " top=" + top + " left=" + left + " height="
-               + height + " width=" + width + "}";
+        return "{System" + " topLeft=" + topLeft + " dimension=" + dimension
+                + "}";
     }
 
     //---------//
@@ -507,11 +453,11 @@ public class System
      */
     public int yLocate (int y)
     {
-        if (y < top) {
+        if (y < topLeft.y) {
             return -1;
         }
 
-        if (y > (top + height + STAFF_HEIGHT)) {
+        if (y > (topLeft.y + dimension.height + STAFF_HEIGHT)) {
             return +1;
         }
 
@@ -539,12 +485,14 @@ public class System
 
         if (prevSystem == null) {
             // Very first system in the score
-            origin = new Point(SCORE_INIT_X, SCORE_INIT_Y);
+            origin = new ScorePoint();
+            origin.move (SCORE_INIT_X, SCORE_INIT_Y);
             firstMeasureId = 0;
         } else {
             // Not the first system
-            origin = new Point(prevSystem.origin);
-            origin.translate(prevSystem.width - 1 + INTER_SYSTEM, 0);
+            origin = new ScorePoint();
+            origin.setLocation (prevSystem.origin);
+            origin.translate(prevSystem.dimension.width - 1 + INTER_SYSTEM, 0);
             firstMeasureId = prevSystem.lastMeasureId;
         }
 
@@ -583,14 +531,16 @@ public class System
             g.setColor(Color.lightGray);
 
             // Draw the system left edge
-            g.drawLine(zoom.scaled(origin.x), zoom.scaled(origin.y),
+            g.drawLine(zoom.scaled(origin.x),
+                       zoom.scaled(origin.y),
                        zoom.scaled(origin.x),
-                       zoom.scaled(origin.y + height + STAFF_HEIGHT));
+                       zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
 
             // Draw the system right edge
-            g.drawLine(zoom.scaled(origin.x + width), zoom.scaled(origin.y),
-                       zoom.scaled(origin.x + width),
-                       zoom.scaled(origin.y + height + STAFF_HEIGHT));
+            g.drawLine(zoom.scaled(origin.x + dimension.width),
+                       zoom.scaled(origin.y),
+                       zoom.scaled(origin.x + dimension.width),
+                       zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
 
             return true;
         } else {
