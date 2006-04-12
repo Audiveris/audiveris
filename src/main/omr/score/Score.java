@@ -88,12 +88,9 @@ public class Score
     //-------//
     /**
      * Create a Score, with the specified parameters
-     *
-     *
-     * @param width      sheet width in units
-     * @param height     sheet height in units
-     * @param skewAngle  the detected skew angle, in radians, clockwise
-     * @param spacing    the main interline spacing, in 1/1024 of units
+     * @param dimension the score dimension, expressed in units
+     * @param skewAngle the detected skew angle, in radians, clockwise
+     * @param spacing the main interline spacing, in 1/1024 of units
      * @param imagefpath canonical name of the original sheet file
      */
     public Score (UnitDimension dimension,
@@ -388,6 +385,8 @@ public class Score
     //-----------//
     /**
      * Serialize the score to its binary file
+     *
+     * @throws java.lang.Exception if anything goes wrong
      */
     public void serialize ()
         throws Exception

@@ -123,6 +123,9 @@ public class LogPane
     //----------//
     // clearLog //
     //----------//
+    /**
+     * Clear the current content of the log
+     */
     public void clearLog()
     {
         logArea.setText("");
