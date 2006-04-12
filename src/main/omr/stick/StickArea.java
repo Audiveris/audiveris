@@ -84,8 +84,8 @@ public class StickArea
     //  totally straight) alignments.
     private boolean longAlignment;
 
-    // Maximum fatness (thickness / length) for a section
-    private double maxSectionFatness = constants.maxSectionFatness.getValue();
+    // Minimum aspect (length / thickness) for a section
+    private double minSectionAspect= constants.minSectionAspect.getValue();
 
     // Used to flag sections already visited wrt a given stick
     private int[] visited;
@@ -591,7 +591,7 @@ public class StickArea
         }
 
         // Include only sections that are slim enough
-        if ((section.getRunNb() > 1) && (section.getAspect() > maxSectionFatness)) {
+        if ((section.getRunNb() > 1) && (section.getAspect() < minSectionAspect)) {
             mark(section, null, TOO_FAT, layer, direction);
 
             return;
@@ -897,9 +897,9 @@ public class StickArea
                 (3,
                  "Minimum value for stick number of pixels");
 
-        Constant.Double maxSectionFatness = new Constant.Double
-                (0.2d,
-                 "Maximum value for section fatness (thickness / length)");
+        Constant.Double minSectionAspect = new Constant.Double
+                (5.0d,
+                 "Minimum value for section aspect (length / thickness)");
 
         Constant.Integer minSectionGreyLevel = new Constant.Integer
                 (85,

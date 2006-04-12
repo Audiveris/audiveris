@@ -266,13 +266,13 @@ public class Stick
     // getAspect //
     //-----------//
     /**
-     * Report the ratio of thickness over length
+     * Report the ratio of length over thickness
      *
-     * @return the "fatness" of the stick
+     * @return the "slimness" of the stick
      */
     public double getAspect ()
     {
-        return (double) getThickness() / (double) getLength();
+        return (double) getLength() / (double) getThickness();
     }
 
     //------------//
@@ -762,7 +762,7 @@ public class Stick
 
         sb.append(" th=").append(getThickness());
         sb.append(" lg=").append(getLength());
-        sb.append(" t/l=").append((int) (100 * getAspect())).append("%");
+        sb.append(" l/t=").append(String.format("%.2f", getAspect()));
         sb.append(" fa=").append((100 * getFirstStuck()) / getLength())
                 .append("%");
         sb.append(" la=").append((100 * getLastStuck()) / getLength())
