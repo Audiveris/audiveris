@@ -282,7 +282,7 @@ public class Measure
     {
         Point origin = getOrigin();
 
-        // Draw the bar line symbol
+        // Draw the bar line symbol at the end of the measure
         SymbolIcon icon = (SymbolIcon) linetype.getIcon();
         icon.paintIcon
             (comp,
