@@ -1,5 +1,0 @@
-name DASH
-width 9
-height 2
-#########
-+++++++++

@@ -1,6 +1,0 @@
-name COMBINING_AUGMENTATION_DOT
-width 3
-height 3
-0#*
-###
-o#*
