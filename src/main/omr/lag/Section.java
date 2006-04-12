@@ -129,13 +129,13 @@ public class Section <L extends Lag,
     // getAspect //
     //-----------//
     /**
-     * Report the ratio of thickness over length
+     * Report the ratio of length over thickness
      *
-     * @return the "fatness" of the section
+     * @return the "slimness" of the section
      */
     public double getAspect ()
     {
-        return (double) getThickness() / (double) getLength();
+        return (double) getLength() / (double) getThickness();
     }
 
     //-----------//
