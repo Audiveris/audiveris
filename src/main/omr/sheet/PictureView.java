@@ -11,14 +11,10 @@
 package omr.sheet;
 
 import omr.ui.view.ScrollView;
-import omr.ui.view.Rubber;
 import omr.ui.view.RubberZoomedPanel;
-import omr.ui.view.Zoom;
 import omr.util.*;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.util.List;
 
 /**
  * Class <code>PictureView</code> defines the view dedicated to the display
@@ -206,7 +202,7 @@ public class PictureView
             super.setFocusPoint(pt);
 
             // We use a specific version which displays the pixel level
-            notifyObservers(pt, getPixel(pt));
+            notifyObservers(new PixelPoint(pt.x, pt.y), getPixel(pt));
         }
     }
 }
