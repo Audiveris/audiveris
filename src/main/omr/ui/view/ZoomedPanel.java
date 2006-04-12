@@ -12,7 +12,7 @@ package omr.ui.view;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import omr.ui.*;
+import omr.sheet.PixelPoint;
 import omr.util.Logger;
 
 import java.awt.*;
@@ -271,7 +271,7 @@ public class ZoomedPanel
             scrollRectToVisible(vr);
         }
 
-        notifyObservers(pt);
+        notifyObservers(new PixelPoint(pt.x, pt.y));
         repaint();
     }
 
@@ -334,7 +334,7 @@ public class ZoomedPanel
      *
      * @param ul the point information
      */
-    public void notifyObservers (Point ul)
+    public void notifyObservers (PixelPoint ul)
     {
         pixelSubject.notifyObservers(ul);
     }
@@ -349,7 +349,7 @@ public class ZoomedPanel
      * @param ul the point information
      * @param level the grey level of the pixel
      */
-    public void notifyObservers (Point ul,
+    public void notifyObservers (PixelPoint ul,
                                  int level)
     {
         pixelSubject.notifyObservers(ul, level);

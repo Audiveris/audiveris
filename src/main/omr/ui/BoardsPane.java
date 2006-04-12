@@ -10,7 +10,6 @@
 
 package omr.ui;
 
-import omr.check.CheckBoard;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLagView;
 import omr.glyph.ui.GlyphBoard;
@@ -26,10 +25,8 @@ import static omr.ui.Board.Tag.*;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
-
-import java.awt.*;
-import java.util.EnumMap;
 import javax.swing.*;
+import omr.sheet.PixelPoint;
 
 /**
  * Class <code>BoardsPane</code> defines a comprehensive user board, where
@@ -106,7 +103,7 @@ public class BoardsPane
                 PixelBoard pixelBoard = (PixelBoard) board;
                 pixelBoard.setPixelFocus(view);
                 view.addObserver(pixelBoard);
-                pixelBoard.update((Point) null);
+                pixelBoard.update((PixelPoint) null);
                 break;
 
             case SECTION :

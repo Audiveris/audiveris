@@ -10,10 +10,9 @@
 
 package omr.ui.view;
 
-import omr.ui.*;
+import omr.sheet.PixelPoint;
 import omr.util.Observer;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
@@ -24,7 +23,7 @@ import java.awt.Rectangle;
  * @version $Id$
  */
 public interface PixelObserver
-    extends Observer<Point>
+    extends Observer<PixelPoint>
 {
     //--------//
     // update //
@@ -35,7 +34,7 @@ public interface PixelObserver
      * @param ul upper left point
      * @param level pixel level. A -1 value means no value is provided
      */
-    void update (Point ul,
+    void update (PixelPoint ul,
                  int   level);
 
     //--------//

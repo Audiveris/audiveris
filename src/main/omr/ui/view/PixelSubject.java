@@ -10,10 +10,9 @@
 
 package omr.ui.view;
 
-import omr.ui.*;
+import omr.sheet.PixelPoint;
 import omr.util.Subject;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
@@ -24,7 +23,7 @@ import java.awt.Rectangle;
  * @version $Id$
  */
 public interface PixelSubject
-    extends Subject<PixelSubject, PixelObserver, Point>
+    extends Subject<PixelSubject, PixelObserver, PixelPoint>
 {
     /**
      * Special addition to notify observers about pixel point and pixel
@@ -33,7 +32,7 @@ public interface PixelSubject
      * @param ul Point at the upper left corner
      * @param level pixel level (-1 means no level is provided)
      */
-    void notifyObservers (Point ul,
+    void notifyObservers (PixelPoint ul,
                           int level);
 
 

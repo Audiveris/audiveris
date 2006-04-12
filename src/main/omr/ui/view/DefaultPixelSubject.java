@@ -12,8 +12,8 @@ package omr.ui.view;
 
 import omr.util.DefaultSubject;
 import omr.util.Subject;
+import omr.sheet.PixelPoint;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
@@ -24,12 +24,12 @@ import java.awt.Rectangle;
  * @version $Id$
  */
 public class DefaultPixelSubject
-    extends DefaultSubject<PixelSubject, PixelObserver, Point>
+    extends DefaultSubject<PixelSubject, PixelObserver, PixelPoint>
 {
     //-----------------//
     // notifyObservers //
     //-----------------//
-    public void notifyObservers (Point ul,
+    public void notifyObservers (PixelPoint ul,
                                  int level)
     {
         for (PixelObserver observer : observers) {
