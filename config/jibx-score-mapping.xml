@@ -1,0 +1,133 @@
+<!-- ================================================================== -->
+<!--                                                                    -->
+<!--                 s c o r e - b i n d i n g . x m l                  -->
+<!--                                                                    -->
+<!-- Copyright (C) Herve Bitteur 2000-2006. All rights reserved.        -->
+<!-- This software is released under the terms of the GNU General Public-->
+<!-- License. Please contact the author at herve.bitteur@laposte.net    -->
+<!-- to report bugs & suggestions.                                      -->
+<!-- ================================================================== -->
+
+<binding>
+
+    <!--       -->
+    <!-- Score -->
+    <!--       -->
+    <mapping name="score"
+             class="omr.score.Score"
+             value-style="attribute">
+        <value name="skew-angle" field="skewAngle" />
+        <value name="spacing"    field="spacing" />
+        <value name="image"      field="imagefpath" />
+        
+        <structure name="dimension" field="dimension" >
+            <value name="width"	 field="width" />
+            <value name="height" field="height" />
+        </structure>
+
+        <!--  Systems -->
+        <collection 
+            item-type="omr.score.System"
+            type="java.util.ArrayList"
+            get-method="getChildren"
+            set-method="setChildren"
+            />
+
+    </mapping>
+
+    <!--        -->
+    <!-- System -->
+    <!--        -->
+    <mapping name="system"
+             class="omr.score.System"
+             value-style="attribute">
+        
+        <structure name="top-left" field="topLeft">
+            <value name="x" field="x" />
+            <value name="y" field="y" />
+        </structure>
+        
+        <structure name="dimension" field="dimension" >
+            <value name="width"	 field="width" />
+            <value name="height" field="height" />
+        </structure>
+
+        <!--  Staves -->
+        <collection 
+            item-type="omr.score.Stave"
+            type="java.util.ArrayList"
+            get-method="getStaves"
+            set-method="setStaves"
+            />
+
+        <!--  Slurs -->
+        <collection 
+            item-type="omr.score.Slur"
+            type="java.util.ArrayList"
+            get-method="getSlurs"
+            set-method="setSlurs"
+            />
+
+    </mapping>
+
+    <!--      -->
+    <!-- Slur -->
+    <!--      -->
+    <mapping name="slur"
+             class="omr.score.Slur"
+             value-style="attribute">
+        <value name="leftrow"		field="leftrow" />
+        <value name="leftcolumn"	field="leftcolumn" />
+        <value name="rightrow"		field="rightrow" />
+        <value name="rightcolumn"	field="rightcolumn" />
+        <value name="radius"		field="radius" />
+    </mapping>
+
+    <!--       -->
+    <!-- Stave -->
+    <!--       -->
+    <mapping name="stave"
+             class="omr.score.Stave"
+             value-style="attribute">
+        
+        <structure name="top-left" field="topLeft">
+            <value name="x" field="x" />
+            <value name="y" field="y" />
+        </structure>
+
+        <value name="width"     field="width" />
+        <value name="size"      field="size" />
+        <value name="stavelink" field="stavelink" />
+
+        <!-- Measures -->
+        <collection 
+            item-type="omr.score.Measure"
+            type="java.util.ArrayList"
+            get-method="getMeasures"
+            set-method="setMeasures"
+            />
+        
+        <!--  Lyrics -->
+        <!--  Texts -->
+        <!--  Dynamics -->
+
+    </mapping>
+
+    <!--         -->
+    <!-- Measure -->
+    <!--         -->
+    <mapping name="measure"
+             class="omr.score.Measure"
+             value-style="attribute">
+        <value name="linetype"       field="linetype"
+	       deserializer="omr.glyph.Shape.valueOf"
+	       />
+        <value name="leftlinex"      field="leftlinex" />
+        <value name="rightlinex"     field="rightlinex" />
+        <value name="lineinvented"   field="lineinvented" />
+	
+        <!-- Chords -->
+
+    </mapping>
+    
+</binding>
