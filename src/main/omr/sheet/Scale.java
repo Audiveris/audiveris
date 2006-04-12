@@ -12,6 +12,7 @@ package omr.sheet;
 
 import omr.constant.Constant;
 import omr.score.PagePoint;
+import omr.score.UnitDimension;
 import omr.util.Logger;
 
 import static omr.score.ScoreConstants.*;
@@ -110,7 +111,7 @@ public class Scale
      * @throws omr.ProcessingException
      */
     public Scale (Sheet sheet)
-            throws omr.ProcessingException
+        throws omr.ProcessingException
     {
         builder = new ScaleBuilder(sheet);
         mainFore = builder.getMainFore();
@@ -251,11 +252,26 @@ public class Scale
      * coordinates are in units.
      *
      * @param pixPt point in pixels
+     *
+     * @return the result in units
+     */
+    public PagePoint pixelsToUnits (PixelPoint pixPt)
+    {
+        return pixelsToUnits(pixPt, null);
+    }
+
+    //---------------//
+    // pixelsToUnits //
+    //---------------//
+    /**
+     * Convert a point whose coordinates are in pixels to a point whose
+     * coordinates are in units.
+     *
+     * @param pixPt point in pixels
      * @param pagPt equivalent point in units, or null if allocation to be
      *              performed by the routine
      *
      * @return the result in units
-     * @see #pixelsToUnitsDouble
      */
     public PagePoint pixelsToUnits (PixelPoint pixPt,
                                     PagePoint pagPt)
@@ -268,6 +284,48 @@ public class Scale
         pagPt.y = pixelsToUnits(pixPt.y);
 
         return pagPt;
+    }
+
+    //---------------//
+    // pixelsToUnits //
+    //---------------//
+    /**
+     * Convert a dimension whose compoents are in pixels to a dimension
+     * whose components are in units.
+     *
+     * @param pixelDim dimension in pixels
+     *
+     * @return the result in units
+     */
+    public UnitDimension pixelsToUnits (PixelDimension pixelDim)
+    {
+        return pixelsToUnits(pixelDim, null);
+    }
+
+    //---------------//
+    // pixelsToUnits //
+    //---------------//
+    /**
+     * Convert a dimension whose compoents are in pixels to a dimension
+     * whose components are in units.
+     *
+     * @param pixelDim dimension in pixels
+     * @param unitDim equivalent dimension in units, or null if allocation to be
+     *                performed by the routine
+     *
+     * @return the result in units
+     */
+    public UnitDimension pixelsToUnits (PixelDimension pixelDim,
+                                        UnitDimension  unitDim)
+    {
+        if (unitDim == null) {
+            unitDim = new UnitDimension();
+        }
+
+        unitDim.width = pixelsToUnits(pixelDim.width);
+        unitDim.height = pixelsToUnits(pixelDim.height);
+
+        return unitDim;
     }
 
     //---------------//
@@ -325,6 +383,22 @@ public class Scale
      * coordinates in pixels. Reverse function of pixelsToUnits
      *
      * @param pagPt point in units
+     *
+     * @return the computed point in pixels
+     */
+    public PixelPoint unitsToPixels (PagePoint pagPt)
+    {
+        return unitsToPixels(pagPt, null);
+    }
+
+    //---------------//
+    // unitsToPixels //
+    //---------------//
+    /**
+     * Convert a point with coordinates in units into its equivalent with
+     * coordinates in pixels. Reverse function of pixelsToUnits
+     *
+     * @param pagPt point in units
      * @param pixPt point in pixels, or null if allocation to be made by
      *              the routine
      *
@@ -348,6 +422,64 @@ public class Scale
     // unitsToPixels //
     //---------------//
     /**
+     * Convert a dimension with components in units into its equivalent with
+     * components in pixels. Reverse function of pixelsToUnits
+     *
+     * @param unitDim  dimension in units
+     * @param pixelDim dimension in pixels, or null if allocation to be made by
+     *                 the routine
+     *
+     * @return the computed point in pixels
+     */
+    public PixelDimension unitsToPixels (UnitDimension  unitDim,
+                                         PixelDimension pixelDim)
+    {
+        if (pixelDim == null) {
+            pixelDim = new PixelDimension();
+        }
+
+        pixelDim.width  = unitsToPixels(unitDim.width);
+        pixelDim.height = unitsToPixels(unitDim.height);
+
+        return pixelDim;
+    }
+
+    //---------------//
+    // unitsToPixels //
+    //---------------//
+    /**
+     * Convert a dimension with components in units into its equivalent with
+     * components in pixels. Reverse function of pixelsToUnits
+     *
+     * @param unitDim  dimension in units
+     *
+     * @return the computed point in pixels
+     */
+    public PixelDimension unitsToPixels (UnitDimension  unitDim)
+    {
+        return unitsToPixels(unitDim, null);
+    }
+
+    //---------------//
+    // unitsToPixels //
+    //---------------//
+    /**
+     * Convert a rectangle with coordinates in units into its equivalent with
+     * coordinates in pixels. Reverse function of pixelsToUnits
+     *
+     * @param pagRect rectangle in units
+     *
+     * @return the computed rectangle in pixels
+     */
+    public Rectangle unitsToPixels (Rectangle pagRect)
+    {
+        return unitsToPixels(pagRect, null);
+    }
+
+    //---------------//
+    // unitsToPixels //
+    //---------------//
+    /**
      * Convert a rectangle with coordinates in units into its equivalent with
      * coordinates in pixels. Reverse function of pixelsToUnits
      *
@@ -356,7 +488,6 @@ public class Scale
      *              by the routine
      *
      * @return the computed rectangle in pixels
-     * @see #pixelsToUnits
      */
     public Rectangle unitsToPixels (Rectangle pagRect,
                                     Rectangle pixRect)
