@@ -41,7 +41,7 @@ public class ScoreConstants
     /** Horizontal gutter in pixels between two systems */
     public static final int INTER_SYSTEM = constants.interSystem.getValue();
 
-    /** Vertical distance in pixels between two lines of a staff : {@value} */
+    /** Vertical distance in pixels between two lines of a standard staff : {@value} */
     public static final int INTER_LINE = 16;
 
     /** Horizontal gutter in pixels between two pages */
