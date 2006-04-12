@@ -22,7 +22,7 @@ import javax.swing.*;
  * messages, those that are logged using the <code>Logger</code> class.
  *
  * @see omr.util.Logger
- * @see omr.util.LogGuiAppender
+ * @see omr.util.LogGuiHandler
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
