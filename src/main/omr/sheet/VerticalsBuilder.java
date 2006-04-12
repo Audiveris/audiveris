@@ -365,22 +365,22 @@ public class VerticalsBuilder
     }
 
     //----------------//
-    // MaxAspectCheck //
+    // MinAspectCheck //
     //----------------//
-    private static class MaxAspectCheck
+    private static class MinAspectCheck
         extends Check<Context>
     {
-        protected MaxAspectCheck ()
+        protected MinAspectCheck ()
         {
-            super("MaxAspect",
-                  "Check that stick aspect (thickness/length) is not too"+
-                  " high (dimension-less)",
-                  constants.maxStemAspectLow.getValue(),
-                  constants.maxStemAspectHigh.getValue(),
-                  false, TOO_FAT);
+            super("MinAspect",
+                  "Check that stick aspect (length/thickness) is"+
+                  " high enough (dimension-less)",
+                  constants.minStemAspectLow.getValue(),
+                  constants.minStemAspectHigh.getValue(),
+                  true, TOO_FAT);
         }
 
-        // Retrieve the ratio thickness / length
+        // Retrieve the ratio length / thickness
         protected double getValue (Context context)
         {
             return context.stick.getAspect();
@@ -549,7 +549,7 @@ public class VerticalsBuilder
         {
             super("Stem", constants.minCheckResult.getValue());
             add(1, new MinLengthCheck());
-            add(1, new MaxAspectCheck());
+            add(1, new MinAspectCheck());
             add(1, new FirstAdjacencyCheck());
             add(1, new LastAdjacencyCheck());
             add(0, new LeftCheck());
@@ -591,56 +591,56 @@ public class VerticalsBuilder
         //~ Instance variables --------------------------------------------
 
         Constant.Boolean displayFrame = new Constant.Boolean
-                (true,
-                 "Should we display a frame on the stem sticks");
+            (true,
+             "Should we display a frame on the stem sticks");
 
-        Constant.Double maxStemAspectLow = new Constant.Double
-                (0.08,
-                 "Low Maximum aspect ratio for a stem stick");
+        Constant.Double minStemAspectLow = new Constant.Double
+            (10.0,
+             "Low Minimum aspect ratio for a stem stick");
 
-        Constant.Double maxStemAspectHigh = new Constant.Double
-                (0.10,
-                 "High Maximum aspect ratio for a stem stick");
+        Constant.Double minStemAspectHigh = new Constant.Double
+            (12.5,
+             "High Minimum aspect ratio for a stem stick");
 
         Constant.Double maxStemAdjacencyLow = new Constant.Double
-                (0.60,
-                 "Low Maximum adjacency ratio for a stem stick");
+            (0.60,
+             "Low Maximum adjacency ratio for a stem stick");
 
         Constant.Double maxStemAdjacencyHigh = new Constant.Double
-                (0.70,
-                 "High Maximum adjacency ratio for a stem stick");
+            (0.70,
+             "High Maximum adjacency ratio for a stem stick");
 
         Scale.Fraction maxStemThickness = new Scale.Fraction
-                (0.3,
-                 "Maximum thickness of an interesting vertical stick");
+            (0.3,
+             "Maximum thickness of an interesting vertical stick");
 
         Scale.Fraction minStemLengthLow = new Scale.Fraction
-                (2.5,
-                 "Low Minimum length for a stem");
+            (2.5,
+             "Low Minimum length for a stem");
 
         Scale.Fraction minStemLengthHigh = new Scale.Fraction
-                (3.5,
-                 "High Minimum length for a stem");
+            (3.5,
+             "High Minimum length for a stem");
 
         Constant.Double minCheckResult = new Constant.Double
-                (0.50,
-                 "Minimum result for suite of check");
+            (0.50,
+             "Minimum result for suite of check");
 
         Constant.Double minDensityLow = new Constant.Double
-                (0.8,
-                 "Low Minimum density for a stem");
+            (0.8,
+             "Low Minimum density for a stem");
 
         Constant.Double minDensityHigh = new Constant.Double
-                (0.9,
-                 "High Minimum density for a stem");
+            (0.9,
+             "High Minimum density for a stem");
 
         Scale.Fraction chunkHeight = new Scale.Fraction
-                (0.33,
-                 "Height of half area to look for chunks");
+            (0.33,
+             "Height of half area to look for chunks");
 
         Scale.Fraction chunkWidth = new Scale.Fraction
-                (0.33,
-                 "Width of half area to look for chunks");
+            (0.33,
+             "Width of half area to look for chunks");
 
         Constants ()
         {
