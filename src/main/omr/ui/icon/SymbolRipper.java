@@ -49,6 +49,8 @@ public class SymbolRipper
         UILookAndFeel.setUI(null);
     }
 
+    //~ Instance variables ------------------------------------------------
+
     // Related frame
     private final JFrame frame;
 
@@ -495,7 +497,7 @@ public class SymbolRipper
         {
             // Populate with defined symbols
             for (Shape shape : Shape.values()) {
-                shape.setIcon(IconManager.getInstance().loadIcon(shape.toString()));
+                shape.setIcon(IconManager.loadIcon(shape.toString()));
             }
 
             // Update the shape menu accordingly
@@ -519,15 +521,14 @@ public class SymbolRipper
         {
             if (!output.getText().equals("")) {
                 // Store the new icon definition
-                IconManager.getInstance().
-                    storeIcon(new SymbolIcon(image), output.getText());
+                IconManager.storeIcon(new SymbolIcon(image),
+                                      output.getText());
 
                 // Try to load this new definition as a shape
                 try {
                     // This may fail
                     Shape shape = Shape.valueOf(output.getText());
-                    shape.setIcon
-                        (IconManager.getInstance().loadIcon(shape.toString()));
+                    shape.setIcon(IconManager.loadIcon(shape.toString()));
 
                     // Update the shape menu accordingly
                     menu.removeAll();
