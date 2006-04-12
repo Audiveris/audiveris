@@ -597,7 +597,7 @@ public class ScoreController
         public BrowseAction ()
         {
             super(false, "Browse Score", "Browse through the score document",
-                  IconManager.buttonIconOf("general/Information"));
+                  IconManager.buttonIconOf("general/PrintPreview"));
         }
 
         public void actionPerformed (ActionEvent e)
