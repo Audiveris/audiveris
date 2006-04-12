@@ -457,13 +457,13 @@ public class SheetAssembly
      * Triggered from sheet pixel subject, to notify the new upper left point
      * @param ul The upper left point
      */
-    public void update (Point ul)
+    public void update (PixelPoint ul)
     {
         // Forward to the score view
         if (scoreView != null && !scoreBarred) {
             sheetBarred = true;
             scoreView.setFocus
-                (sheet.getScale().pixelsToUnits(new PixelPoint(ul), null));
+                (sheet.getScale().pixelsToUnits(ul, null));
             sheetBarred = false;
         }
     }
@@ -477,14 +477,14 @@ public class SheetAssembly
      * @param ul new value for point
      * @param level new value for pixel level
      */
-    public void update (Point ul,
+    public void update (PixelPoint ul,
                         int   level)
     {
         // Forward to the score view
         if (scoreView != null && !scoreBarred) {
             sheetBarred = true;
             scoreView.setFocus
-                (sheet.getScale().pixelsToUnits(new PixelPoint(ul), null));
+                (sheet.getScale().pixelsToUnits(ul, null));
             sheetBarred = false;
         }
     }
@@ -505,7 +505,8 @@ public class SheetAssembly
                 Point pt = new Point(rect.x + rect.width/2,
                                      rect.y + rect.height/2);
                 scoreView.setFocus
-                    (sheet.getScale().pixelsToUnits(new PixelPoint(pt), null));
+                    (sheet.getScale().pixelsToUnits(new PixelPoint(pt.x,
+                                                                   pt.y)));
             } else {
                 scoreView.setFocus(null);
             }
