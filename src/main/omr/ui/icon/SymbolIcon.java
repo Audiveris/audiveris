@@ -43,6 +43,9 @@ public class SymbolIcon
     //------------//
     // SymbolIcon //
     //------------//
+    /**
+     * No-arg constructor for the XML mapper
+     */
     public SymbolIcon ()
     {
     }
@@ -50,6 +53,11 @@ public class SymbolIcon
     //------------//
     // SymbolIcon //
     //------------//
+    /**
+     * Create a symbol icon with the provided image
+     *
+     * @param image the icon image
+     */
     public SymbolIcon (Image image)
     {
         setImage(image);
@@ -91,6 +99,11 @@ public class SymbolIcon
     //----------//
     // setImage //
     //----------//
+    /**
+     * Overridden to allow computation of largest width
+     *
+     * @param image the icon image
+     */
     @Override
     public void setImage(Image image)
     {
@@ -105,6 +118,10 @@ public class SymbolIcon
     //-------------//
     // getCentroid //
     //-------------//
+    /**
+     * Report the mass center for the symbol
+     * @return the mass center (coordinates with origin at upper left)
+     */
     public Point getCentroid ()
     {
         if (centroid == null) {
@@ -141,6 +158,10 @@ public class SymbolIcon
     //--------------//
     // getDimension //
     //--------------//
+    /**
+     * Report the bounding dimension of the symbol
+     * @return the size of the symbol
+     */
     public Dimension getDimension ()
     {
         if (dimension == null) {
@@ -171,6 +192,11 @@ public class SymbolIcon
     //-----------//
     // setBitmap //
     //-----------//
+    /**
+     * Allows to define the bitmap, from an array of strings
+     *
+     * @param rows the array of strings which describe the bitmap
+     */
     public void setBitmap (String[] rows)
     {
         // Elaborate the image from the string array
@@ -180,6 +206,11 @@ public class SymbolIcon
     //-----------//
     // getBitmap //
     //-----------//
+    /**
+     * Report an array of strings that describe the bitmap
+     *
+     * @return the array of strings for file storing
+     */
     public String[] getBitmap()
     {
         if (getIconHeight() == -1) {
@@ -192,6 +223,11 @@ public class SymbolIcon
     //---------//
     // getName //
     //---------//
+    /**
+     * Report the name (generally the shape name) of the symbol
+     *
+     * @return the symbol name
+     */
     public String getName ()
     {
         return name;
@@ -200,6 +236,11 @@ public class SymbolIcon
     //---------//
     // setName //
     //---------//
+    /**
+     * Assign a name to the symbol
+     *
+     * @param name the related (shape) name
+     */
     public void setName (String name)
     {
         this.name = name;
