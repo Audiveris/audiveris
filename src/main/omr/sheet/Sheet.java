@@ -19,16 +19,14 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.ui.GlyphPane;
-import omr.lag.Lag;
 import omr.score.Score;
+import omr.score.ScoreBuilder;
 import omr.score.ScoreManager;
 import omr.stick.Stick;
-import omr.stick.StickSection;
 import omr.ui.BoardsPane;
 import omr.ui.Jui;
 import omr.ui.PixelBoard;
 import omr.ui.SheetAssembly;
-import omr.StepMonitor;
 import omr.ui.view.Zoom;
 import omr.util.FileUtil;
 import omr.util.Logger;
@@ -84,6 +82,8 @@ import java.util.ListIterator;
  * glyphs. </li>
  *
  * <li> {@link #CLEANUP} is a final cleanup step. </li>
+ *
+ * <li> {@link #SCORE} is the score recognition step. </li>
  *
  * </ol>
  *
@@ -452,6 +452,27 @@ public class Sheet
                     result = Boolean.valueOf (true);
                     getGlyphInspector().evaluateGlyphs
                     (GlyphInspector.getCleanupMaxGrade());
+                }
+
+                public void displayUI ()
+                {
+                    getGlyphPane().refresh();
+                }
+            };
+
+    /**
+     * Step to translate recognized glyphs into score items
+     */
+    public final InstanceStep<Boolean> SCORE
+            = new InstanceStep<Boolean>("Translate glyphs to score items")
+            {
+                public void doit ()
+                        throws ProcessingException
+                {
+                    CLEANUP.getResult();
+                    
+                    ScoreBuilder builder = new ScoreBuilder(score, Sheet.this);
+                    builder.buildInfo ();
                 }
 
                 public void displayUI ()
@@ -1326,7 +1347,7 @@ public class Sheet
         }
 
         if (!SKEW.isDone()) {
-            setSkew(new Skew(score.getSkewangleDouble()));
+            setSkew(new Skew(score.getSkewAngleDouble()));
         }
     }
 
