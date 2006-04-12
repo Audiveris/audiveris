@@ -16,6 +16,7 @@ import com.jgoodies.forms.layout.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import omr.sheet.PixelPoint;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 import omr.ui.view.PixelFocus;
@@ -164,7 +165,7 @@ public class PixelBoard
      * @param ul coordinates of the upper left corner
      * @param lVal grey level (-1 means no value)
      */
-    public void update (Point ul,
+    public void update (PixelPoint ul,
                         int lVal)
     {
         if (ul != null) {
@@ -195,7 +196,7 @@ public class PixelBoard
      *
      * @param ul coordinates of the upper left corner
      */
-    public void update (Point ul)
+    public void update (PixelPoint ul)
     {
         update(ul, -1);
     }
