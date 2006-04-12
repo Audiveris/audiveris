@@ -62,7 +62,7 @@ public class ScoreView
     // Meant for Point computation, w/o continuous allocations
     //
     // Point in score display in units  (not zoomed)
-    private Point scrPt = new Point();
+    private ScorePoint scrPt = new ScorePoint();
 
     // Point in virtual sheet display in units  (not zoomed, not skewed)
     private PagePoint pagPt = new PagePoint();
@@ -218,7 +218,7 @@ public class ScoreView
         int totalWidth = 0;
         for (Iterator it = score.getChildren().iterator(); it.hasNext();) {
             System system = (System) it.next();
-            totalWidth += (system.getWidth() + INTER_SYSTEM);
+            totalWidth += (system.getDimension().width + INTER_SYSTEM);
         }
 
         // Total size of this panel (for proper scrolling)
@@ -301,9 +301,10 @@ public class ScoreView
             final System system = score.xLocateSystem(scrPt.x);
 
             if (system != null) {
-                system.scoreToSheet(scrPt, pagPt); // Point in the sheet
+                ScorePoint sp = new ScorePoint();
+                sp.setLocation (scrPt);
+                system.scoreToSheet(sp, pagPt); // Point in the sheet
                 tellPoint(pagPt); // Update score panel
-                ///logger.info("scrPt=" + scrPt + " pagPt=" + pagPt);
 
                 // Focus on that point in the related sheet
                 Sheet sheet = score.getSheet();
