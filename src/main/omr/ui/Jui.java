@@ -141,6 +141,8 @@ public class Jui
         toolMenu.addSeparator();
         new MemoryAction(toolMenu);
         new OptionAction(toolMenu);
+        toolMenu.addSeparator();
+        new ClearLogAction(toolMenu);
 
         // Help
         new AboutAction(helpMenu);
@@ -633,6 +635,28 @@ public class Jui
             frame.setSize(constants.paramWidth.getValue(),
                           constants.paramHeight.getValue());
             frame.setVisible(true);
+        }
+    }
+
+    //----------------//
+    // ClearLogAction //
+    //----------------//
+    private class ClearLogAction
+        extends AbstractAction
+    {
+        //~ Constructors --------------------------------------------------
+
+        public ClearLogAction (JMenu menu)
+        {
+            super("Clear Log", IconManager.buttonIconOf("general/Cut"));
+            menu.add(this).setToolTipText("Clear the whole log display");
+        }
+
+        //~ Methods -------------------------------------------------------
+
+        public void actionPerformed (ActionEvent e)
+        {
+            logPane.clearLog();
         }
     }
 

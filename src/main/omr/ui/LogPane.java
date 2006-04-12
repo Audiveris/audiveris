@@ -120,6 +120,16 @@ public class LogPane
         });
     }
 
+    //----------//
+    // clearLog //
+    //----------//
+    public void clearLog()
+    {
+        logArea.setText("");
+        logArea.setCaretPosition(0);
+        component.repaint();
+    }
+
     //~ Classes -----------------------------------------------------------
 
     //-----------//
