@@ -27,6 +27,8 @@ import java.util.List;
  * to have been deskewed and concatenated beforehand in one single picture
  * and thus one single score.
  *
+ * <p>All distances and coordinates are assumed to be expressed in Units
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -39,23 +41,22 @@ public class Score
 
     //~ Instance variables ------------------------------------------------
 
-    // The related file radix (path + name w/o extension)
+    // The related file radix (name w/o extension)
     private String radix;
 
     // Link with image
     private Sheet sheet;
 
-    // Cached attributes
-    private int width;
+    // Sheet dimension in units
+    private UnitDimension dimension = new UnitDimension(0,0);
 
-    // Cached attributes
-    private int height;
+    // Sheet skew angle in radians
+    private int skewAngle;
 
-    // Cached attributes
-    private int skewangle;
-
-    // Cached attributes
+    // Sheet global line spacing expressed in pixels * BASE
     private int spacing;
+
+    // File path to the related sheet image
     private String imagefpath;
 
     // The most recent system pointed at
@@ -88,22 +89,21 @@ public class Score
     /**
      * Create a Score, with the specified parameters
      *
+     *
      * @param width      sheet width in units
      * @param height     sheet height in units
-     * @param skewangle  the detected skew angle, in radians, clockwise
+     * @param skewAngle  the detected skew angle, in radians, clockwise
      * @param spacing    the main interline spacing, in 1/1024 of units
      * @param imagefpath canonical name of the original sheet file
      */
-    public Score (int width,
-                  int height,
-                  int skewangle,
+    public Score (UnitDimension dimension,
+                  int skewAngle,
                   int spacing,
                   String imagefpath)
     {
         this();
-        this.width = width;
-        this.height = height;
-        this.skewangle = skewangle;
+        this.dimension = dimension;
+        this.skewAngle = skewAngle;
         this.spacing = spacing;
         this.imagefpath = imagefpath;
 
@@ -165,19 +165,6 @@ public class Score
         java.lang.System.out.println("-----------------------------------------------------------------------");
 
         return true;
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    /**
-     * Report the height of the score
-     *
-     * @return the height in units
-     */
-    public int getHeight ()
-    {
-        return height;
     }
 
     //---------------//
@@ -268,29 +255,29 @@ public class Score
     }
 
     //--------------//
-    // getSkewangle //
+    // getSkewAngle //
     //--------------//
     /**
      * Report the score skew angle
      *
      * @return skew angle, in 1/1024 of radians, clock-wise
      */
-    public int getSkewangle ()
+    public int getSkewAngle ()
     {
-        return skewangle;
+        return skewAngle;
     }
 
     //--------------------//
-    // getSkewangleDouble //
+    // getSkewAngleDouble //
     //--------------------//
     /**
      * Report the score skew angle
      *
      * @return skew angle, in radians, clock-wise
      */
-    public double getSkewangleDouble ()
+    public double getSkewAngleDouble ()
     {
-        return (double) skewangle / (double) ScoreConstants.BASE;
+        return (double) skewAngle / (double) ScoreConstants.BASE;
     }
 
     //------------//
@@ -338,16 +325,16 @@ public class Score
     }
 
     //----------//
-    // getWidth //
+    // getDimension//
     //----------//
     /**
-     * Report the width of the score
+     * Report the dimension of the sheet/score
      *
-     * @return the width in units
+     * @return the score/sheet dimension in units
      */
-    public int getWidth ()
+    public UnitDimension getDimension()
     {
-        return width;
+        return dimension;
     }
 
     //---------------//
@@ -414,7 +401,7 @@ public class Score
     /**
      * Set the radix name for this score
      *
-     * @param radix  (path + name w/o extension)
+     * @param radix (name w/o extension)
      */
     public void setRadix (String radix)
     {
@@ -503,9 +490,11 @@ public class Score
     // xLocateSystem //
     //---------------//
     /**
-     * Retrieve the system 'x' is pointing to.
+     * Retrieve the system 'x' is pointing to, knowing that Systems in the
+     * <b>SCORE</b> display, are arranged horizontally one after the other,
+     * while they were arranged vertically in the related Sheet.
      *
-     * @param x the point abscissa, unzoomed, in the SCORE horizontal
+     * @param x the point pixel abscissa, unzoomed, in the SCORE horizontal
      * display
      *
      * @return the nearest system
@@ -516,38 +505,32 @@ public class Score
             // Check first with most recent system (loosely)
             switch (recentSystem.xLocate(x)) {
                 case -1:
-
                     // Check w/ previous system
                     System prevSystem = (System) recentSystem.getPreviousSibling();
 
                     if (prevSystem == null) { // Very first system
-
                         return recentSystem;
                     } else {
                         if (prevSystem.xLocate(x) > 0) {
                             return recentSystem;
                         }
                     }
-
                     break;
 
                 case 0:
                     return recentSystem;
 
                 case +1:
-
                     // Check w/ next system
                     System nextSystem = (System) recentSystem.getNextSibling();
 
                     if (nextSystem == null) { // Very last system
-
                         return recentSystem;
                     } else {
                         if (nextSystem.xLocate(x) < 0) {
                             return recentSystem;
                         }
                     }
-
                     break;
             }
         }
@@ -579,8 +562,8 @@ public class Score
     /**
      * Retrieve the system 'y' is pointing to.
      *
-     * @param y the point ordinate, unzoomed, in score units, in the SHEET
-     *          display
+     * @param y the point ordinate, unzoomed, in score units, in the
+     *          <b>SHEET</b> display
      *
      * @return the nearest system.
      */
@@ -590,34 +573,28 @@ public class Score
             // Check first with most recent system (loosely)
             switch (recentSystem.yLocate(y)) {
                 case -1:
-
                     // Check w/ previous system
                     System prevSystem = (System) recentSystem.getPreviousSibling();
 
                     if (prevSystem == null) { // Very first system
-
                         return recentSystem;
                     } else if (prevSystem.yLocate(y) > 0) {
                         return recentSystem;
                     }
-
                     break;
 
                 case 0:
                     return recentSystem;
 
                 case +1:
-
                     // Check w/ next system
                     System nextSystem = (System) recentSystem.getNextSibling();
 
                     if (nextSystem == null) { // Very last system
-
                         return recentSystem;
                     } else if (nextSystem.yLocate(y) < 0) {
                         return recentSystem;
                     }
-
                     break;
             }
         }
