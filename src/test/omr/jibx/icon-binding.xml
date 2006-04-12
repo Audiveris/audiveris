@@ -1,0 +1,42 @@
+<!-- ================================================================== -->
+<!--                                                                    -->
+<!--                  i c o n - b i n d i n g . x m l                   -->
+<!--                                                                    -->
+<!-- Copyright (C) Herve Bitteur 2000-2006. All rights reserved.        -->
+<!-- This software is released under the terms of the GNU General Public-->
+<!-- License. Please contact the author at herve.bitteur@laposte.net    -->
+<!-- to report bugs & suggestions.                                      -->
+<!-- ================================================================== -->
+
+<binding>
+
+    <!--      -->
+    <!-- Icon -->
+    <!--      -->
+    <mapping name="icon"
+             class="omr.ui.icon.SymbolIcon"
+	     value-style="attribute">
+	
+	<value name="name" field="name"/>
+	
+	<structure name="dimension" field="dimension" usage="optional"
+		   get-method="getDimension" >
+	    <value name="width"	 field="width" />
+	    <value name="height" field="height" />
+	</structure>
+        
+	<structure name="centroid" field="centroid" usage="optional"
+		   get-method="getCentroid" >
+	    <value name="x" field="x" />
+	    <value name="y" field="y" />
+         </structure>
+
+	<collection name="bitmap" value-style="element"
+		    get-method="getBitmap"
+		    set-method="setBitmap">
+  	    <value name="row" />
+	</collection>
+
+    </mapping>
+    
+</binding>
