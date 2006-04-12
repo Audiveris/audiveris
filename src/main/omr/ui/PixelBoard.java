@@ -10,17 +10,18 @@
 
 package omr.ui;
 
+import omr.sheet.PixelPoint;
+import omr.ui.field.LIntegerField;
+import omr.ui.util.Panel;
+import omr.ui.view.PixelFocus;
+import omr.ui.view.PixelObserver;
+
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import omr.sheet.PixelPoint;
-import omr.ui.field.LIntegerField;
-import omr.ui.util.Panel;
-import omr.ui.view.PixelFocus;
-import omr.ui.view.PixelObserver;
 
 /**
  * Class <code>PixelBoard</code> is a board that displays pixel information
