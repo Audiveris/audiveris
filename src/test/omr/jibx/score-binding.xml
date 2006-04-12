@@ -16,11 +16,14 @@
     <mapping name="score"
              class="omr.score.Score"
              value-style="attribute">
-        <value name="width"     field="width" />
-        <value name="height"    field="height" />
-        <value name="skewangle" field="skewangle" />
+        <value name="skew-angle" field="skewAngle" />
         <value name="spacing"   field="spacing" />
         <value name="image"     field="imagefpath" />
+
+        <structure name="dimension" field="dimension" >
+            <value name="width"	 field="width" />
+            <value name="height" field="height" />
+        </structure>
 
         <!--  Systems -->
         <collection 
@@ -38,10 +41,16 @@
     <mapping name="system"
              class="omr.score.System"
              value-style="attribute">
-        <value name="top"       field="top" />
-        <value name="left"      field="left" />
+        
+        <structure name="top-left" field="topLeft">
+            <value name="x" field="x" />
+            <value name="y" field="y" />
+        </structure>
+        
+        <structure name="dimension" field="dimension" >
         <value name="width"     field="width" />
         <value name="height"    field="height" />
+        </structure>
 
         <!--  Staves -->
         <collection 
@@ -80,8 +89,12 @@
     <mapping name="stave"
              class="omr.score.Stave"
              value-style="attribute">
-        <value name="top"       field="top" />
-        <value name="left"      field="left" />
+        
+        <structure name="top-left" field="topLeft">
+            <value name="x" field="x" />
+            <value name="y" field="y" />
+        </structure>
+
         <value name="width"     field="width" />
         <value name="size"      field="size" />
         <value name="stavelink" field="stavelink" />
