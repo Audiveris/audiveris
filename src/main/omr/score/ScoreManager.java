@@ -61,7 +61,7 @@ public class ScoreManager
     //--------------//
     // getXmlMapper //
     //--------------//
-    private XmlMapper getXmlMapper() 
+    private XmlMapper getXmlMapper()
     {
         if (xmlMapper == null) {
             xmlMapper = new XmlMapper(Score.class);
@@ -301,7 +301,7 @@ public class ScoreManager
 
         if (score != null) {
             // Some adjustments
-            score.setRadix(FileUtil.getPathSansExtension(file));
+            score.setRadix(FileUtil.getNameSansExtension(file));
 
             // Fix the container relationships
             score.setChildrenContainer();
@@ -426,14 +426,10 @@ public class ScoreManager
             folder.mkdirs();
         }
 
-        logger.info("Storing score to " + xmlFile + " ...");
-
         try {
-            long s0 = java.lang.System.currentTimeMillis();
             // Store to disk
             getXmlMapper().store(score, xmlFile);
-            long s1 = java.lang.System.currentTimeMillis();
-            logger.info("Score stored in " + (s1 - s0) + " ms");
+            logger.info("Score stored to " + xmlFile);
         } catch (Exception ignored) {
             // Exception already signaled to the user
         }
