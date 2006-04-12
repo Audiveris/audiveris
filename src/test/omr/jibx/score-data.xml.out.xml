@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<score skew-angle="0" spacing="15360" image="U:\soft\audiveris\examples\Country.png">
+    <dimension width="1813" height="2346"/>
+    <system>
+        <top-left x="107" y="486"/>
+        <dimension width="1598" height="0"/>
+        <stave width="1598" size="64" stavelink="0">
+            <top-left x="107" y="486"/>
+            <measure linetype="DOUBLE_BARLINE" leftlinex="802" rightlinex="810" lineinvented="false"/>
+            <measure linetype="SINGLE_BARLINE" leftlinex="1598" rightlinex="1598" lineinvented="false"/>
+        </stave>
+    </system>
+    <system>
+        <top-left x="107" y="723"/>
+        <dimension width="1598" height="0"/>
+        <stave width="1598" size="64" stavelink="0">
+            <top-left x="107" y="723"/>
+            <measure linetype="SINGLE_BARLINE" leftlinex="932" rightlinex="932" lineinvented="false"/>
+            <measure linetype="SINGLE_BARLINE" leftlinex="1598" rightlinex="1598" lineinvented="false"/>
+        </stave>
+    </system>
+    <system>
+        <top-left x="107" y="960"/>
+        <dimension width="1598" height="0"/>
+        <stave width="1598" size="64" stavelink="0">
+            <top-left x="107" y="960"/>
+            <measure linetype="SINGLE_BARLINE" leftlinex="898" rightlinex="898" lineinvented="false"/>
+            <measure linetype="SINGLE_BARLINE" leftlinex="1598" rightlinex="1598" lineinvented="false"/>
+        </stave>
+    </system>
+    <system>
+        <top-left x="107" y="1197"/>
+        <dimension width="1598" height="0"/>
+        <stave width="1598" size="64" stavelink="0">
+            <top-left x="107" y="1197"/>
+            <measure linetype="SINGLE_BARLINE" leftlinex="887" rightlinex="887" lineinvented="false"/>
+            <measure linetype="SINGLE_BARLINE" leftlinex="1598" rightlinex="1598" lineinvented="false"/>
+        </stave>
+    </system>
+    <system>
+        <top-left x="107" y="1435"/>
+        <dimension width="798" height="0"/>
+        <stave width="798" size="64" stavelink="0">
+            <top-left x="107" y="1435"/>
+            <measure linetype="DOUBLE_BARLINE" leftlinex="789" rightlinex="798" lineinvented="false"/>
+        </stave>
+    </system>
+</score>
