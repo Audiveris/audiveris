@@ -269,7 +269,7 @@ public class SheetController
                                  PagePoint pagPt)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("setSheetAssembly for sheet " + sheet.getName() +
+            logger.fine("setSheetAssembly for sheet " + sheet.getRadix() +
                          " pagPt=" + pagPt);
         }
 
@@ -300,13 +300,13 @@ public class SheetController
             if (index == -1) {
                 if (logger.isFineEnabled()) {
                     logger.fine("Adding assembly for sheet " +
-                                 sheet.getName());
+                                 sheet.getRadix());
                 }
 
                 // Insert in tabbed pane
                 assemblies.add(assembly);
                 component.addTab
-                    (sheet.getName(), null, assembly.getComponent(),
+                    (sheet.getRadix(), null, assembly.getComponent(),
                      sheet.getPath());
                 index = component.indexOfComponent(assembly.getComponent());
             }

@@ -103,7 +103,7 @@ public class Sheet
     //~ Instance variables ------------------------------------------------
 
     // Link with sheet original image file. Set by constructor.
-    private File imgFile;
+    private File imageFile;
 
     // Link with related score. Set by BARS.
     private Score score;
@@ -169,7 +169,7 @@ public class Sheet
                 throws ProcessingException
         {
             try {
-                result = new Picture(imgFile);
+                result = new Picture(imageFile);
 
                 // Display sheet picture if not batch mode
                 if (Main.getJui() != null) {
@@ -181,13 +181,13 @@ public class Sheet
                                         new PixelBoard()));
                 }
             } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find file " + imgFile);
+                logger.warning("Cannot find file " + imageFile);
                 throw new ProcessingException();
             } catch (IOException ex) {
-                logger.warning("Input error on file " + imgFile);
+                logger.warning("Input error on file " + imageFile);
                 throw new ProcessingException();
             } catch (ImageFormatException ex) {
-                logger.warning("Unsupported image format in file " + imgFile);
+                logger.warning("Unsupported image format in file " + imageFile);
                 logger.warning(ex.getMessage());
                 if (Main.getJui() != null) {
                     Main.getJui().displayWarning
@@ -490,28 +490,30 @@ public class Sheet
      * Create a new <code>Sheet</code> instance, based on a given image
      * file.  Several files extensions are supported, including the most
      * common ones.
-     *
-     * @param imgFile a <code>File</code> value to specify the image file.
-     *                Beware, this file path is assumed to be in canonical
-     *                form (both absolute and unique)
+     * 
+     * 
+     * @param imageFile a <code>File</code> value to specify the image file.
      * @param force should we keep the sheet structure even if the image
      *                cannot be loaded for whatever reason
-     *
      * @throws ProcessingException raised if, while 'force' is false, image
      *                  file cannot be loaded
      */
-    public Sheet (File imgFile,
+    public Sheet (File imageFile,
                   boolean force)
         throws ProcessingException
     {
         this();
 
         if (logger.isFineEnabled()) {
-            logger.fine("creating Sheet form image " + imgFile);
+            logger.fine("creating Sheet form image " + imageFile);
         }
-
-        // We assume we have a canonical form for the file name
-        this.imgFile = imgFile;
+        
+        try {
+            // We make sure we have a canonical form for the file name
+            this.imageFile = imageFile.getCanonicalFile();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
 
         // Load this image picture
         try {
@@ -546,7 +548,7 @@ public class Sheet
     public Sheet (Score score)
         throws ProcessingException
     {
-        this(new File(score.getImageFPath()),
+        this(new File(score.getImagePath()),
              /* force => */ true);
 
         if (logger.isFineEnabled()) {
@@ -773,17 +775,17 @@ public class Sheet
         return hLag;
     }
 
-    //------------//
-    // getImgFile //
-    //------------//
+    //--------------//
+    // getImageFile //
+    //--------------//
     /**
      * Report the file used to load the image from.
      *
      * @return the File entity
      */
-    public File getImgFile ()
+    public File getImageFile ()
     {
-        return imgFile;
+        return imageFile;
     }
 
     //-----------------//
@@ -808,18 +810,18 @@ public class Sheet
         }
     }
 
-    //---------//
-    // getName //
-    //---------//
+    //----------//
+    // getRadix //
+    //----------//
     /**
      * Report a short name for this sheet (no path, no extension). Useful
      * for tab labels for example.
      *
      * @return just the name of the image file
      */
-    public String getName ()
+    public String getRadix ()
     {
-        return FileUtil.getNameSansExtension(imgFile);
+        return FileUtil.getNameSansExtension(imageFile);
     }
 
     //----------//
@@ -861,19 +863,6 @@ public class Sheet
 //         return score;
 //     }
 
-    //-----------//
-    // getParent //
-    //-----------//
-    /**
-     * Report the containing folder of the sheet picture image
-     *
-     * @return the path to the containing folder
-     */
-    public String getParent ()
-    {
-        return imgFile.getParent();
-    }
-
     //---------//
     // getPath //
     //---------//
@@ -885,20 +874,7 @@ public class Sheet
      */
     public String getPath ()
     {
-        return imgFile.getPath();
-    }
-
-    //---------//
-    // setPath //
-    //---------//
-    /**
-     * Assign the name of the related image file
-     *
-     * @param path the normalized image file path
-     */
-    public void setPath (String path)
-    {
-        imgFile = new File(path);
+        return imageFile.getPath();
     }
 
     //------------//
@@ -917,21 +893,6 @@ public class Sheet
             logger.severe("Picture not available");
             return null;
         }
-    }
-
-    //----------//
-    // getRadix //
-    //----------//
-    /**
-     * Convenient method, to report the full image file path, without the
-     * trailing extension if any. Useful to derive related file names, such
-     * as plots.
-     *
-     * @return file path without extension
-     */
-    public String getRadix ()
-    {
-        return getParent() + File.separator + getName();
     }
 
     //----------//

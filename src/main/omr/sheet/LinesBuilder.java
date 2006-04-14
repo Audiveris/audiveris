@@ -542,7 +542,7 @@ public class LinesBuilder
 
         // Chart
         JFreeChart chart = ChartFactory.createXYLineChart
-            (sheet.getName() + " Horizontal Projections", // Title
+            (sheet.getRadix() + " - Horizontal Projections", // Title
              "Ordinate",
              "Horizontal counts",
              dataset,                   // Dataset
@@ -553,7 +553,7 @@ public class LinesBuilder
              );
 
         // Hosting frame
-        ChartFrame frame = new ChartFrame(sheet.getName() + " Staff Lines",
+        ChartFrame frame = new ChartFrame(sheet.getRadix() + " - Staff Lines",
                                           chart, true) ;
         frame.pack();
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

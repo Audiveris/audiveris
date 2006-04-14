@@ -387,7 +387,7 @@ public class SkewBuilder
 
         // Chart
         JFreeChart chart = ChartFactory.createXYLineChart
-            (sheet.getName() + " Slope Histogram", // Title
+            (sheet.getRadix() + " - Slope Histogram", // Title
              "Slope [" + (float) (RESOLUTION * angle)
              + " Radians/" + RESOLUTION + "]", // X-Axis label
              "Counts",                 // Y-Axis label
@@ -399,7 +399,7 @@ public class SkewBuilder
              );
 
         // Hosting frame
-        ChartFrame frame = new ChartFrame(sheet.getName() + " Slope",
+        ChartFrame frame = new ChartFrame(sheet.getRadix() + " - Slope",
                                           chart, true) ;
         frame.pack();
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

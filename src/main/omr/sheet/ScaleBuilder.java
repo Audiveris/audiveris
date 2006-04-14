@@ -289,7 +289,7 @@ public class ScaleBuilder
 
             // Chart
             JFreeChart chart = ChartFactory.createXYLineChart
-                (sheet.getName() + " Run Lengths", // Title
+                (sheet.getRadix() + " - Run Lengths", // Title
                  "Lengths",                 // X-Axis label
                  "Numbers",                 // Y-Axis label
                  dataset,                   // Dataset
@@ -300,7 +300,7 @@ public class ScaleBuilder
                  );
 
             // Hosting frame
-            ChartFrame frame = new ChartFrame(sheet.getName() + " Runs",
+            ChartFrame frame = new ChartFrame(sheet.getRadix() + " - Runs",
                                               chart, true) ;
             frame.pack();
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
