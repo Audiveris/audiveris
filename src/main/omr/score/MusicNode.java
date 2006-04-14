@@ -59,33 +59,35 @@ import java.awt.*;
  *                                                       Note             |
  *  </pre>
  * </p>
- * <p/>
- * <p/>
- * Since the various score entities are organized in a tree of MusicNode
+ *
+ * <p> Since the various score entities are organized in a tree of MusicNode
  * instances, we use a lot the ability to browse the complete hierarchy,
- * starting generally from the top (the score instance). </p>
+ * starting generally from the top (the score instance).</p>
  *
- * <p> This is launched by calling an <b>xxxChildren()</b> method on the
- * score instance. To benefit from this, one only has to provide a
- * overriding version of the <b>xxxNode()</b> method for the sub-classes
- * where some processing is needed, since the hierarchy traversal is done
- * automatically.
+ * <p> This is launched by calling an <b>xxxChildren()</b> method on the score
+ * instance. To benefit from this, one only has to provide a overriding
+ * version of the <b>xxxNode()</b> method for the sub-classes where some
+ * processing is needed, since the hierarchy traversal is done
+ * automatically.</p>
  *
- * <p/> Currently, traversals are implemented for: <ul>
+ * <p>Each <b>xxxNode()</b> method returns a boolean to continue or stop the
+ * processing under the node at hand. This is especially useful for
+ * efficiently painting or rendering score entities.</p>
  *
- * <li> Computation of cached parameters, by use of <b>computeNode()</b>
- * </li>
+ * <p>Current implemented traversals are the following ones: <ul>
  *
- * <li> Painting of music entities in the dedicated score view, by use of
- * <b>paintNode()</b> </li>
+ * <li><b>computeNode()</b> for computation of score cached parameters</li>
  *
- * <li> Colorization (setting colors) of related sections, by use of
- * <b>colorizeNode()</b> </li>
+ * <li><b>paintNode()</b> for painting of music entities in the dedicated
+ * horizontal Score view</li>
  *
- * <li> Rendering of related sections (with preset colors) in the dedicated
- * sheet view, by use of <b>renderNode()</b> </li>
+ * <li><b>colorizeNode()</b> for colorization (assigning colors) of related
+ * sections in the Sheet display</li>
  *
- * </ul> </p>
+ * <li><b>renderNode()</b> for rendering of related sections (with preset
+ * colors) in the dedicated Sheet display</li>
+ *
+ * </ul>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -118,6 +120,26 @@ public class MusicNode
 
     //~ Methods -----------------------------------------------------------
 
+    //--------------//
+    // colorizeNode //
+    //--------------//
+    /**
+     * Placeholder for colorizing the sections that compose the physical
+     * info that corresponds to this MusicNode.
+     *
+     * @param lag       the lag to be colorized
+     * @param viewIndex the provided lag view index
+     * @param color     the color to be used
+     *
+     * @return true if processing must continue
+     */
+    protected boolean colorizeNode (Lag lag,
+                                    int viewIndex,
+                                    Color color)
+    {
+        return true;
+    }
+
     //------------------//
     // colorizeChildren //
     //------------------//
@@ -135,98 +157,10 @@ public class MusicNode
     {
         for (TreeNode node : children) {
             MusicNode child = (MusicNode) node;
-
             if (child.colorizeNode(lag, viewIndex, color)) {
                 child.colorizeChildren(lag, viewIndex, color);
             }
         }
-    }
-
-    //-----------------//
-    // computeChildren //
-    //-----------------//
-    /**
-     * Pattern to launch computation recursively on all children of this
-     * node
-     */
-    public void computeChildren ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("computeChildren of " + this);
-        }
-
-        for (TreeNode node : children) {
-            MusicNode child = (MusicNode) node;
-            if (child.computeNode()) {
-                if (child.children.size() > 0 ) {
-                    child.computeChildren();
-                }
-            }
-        }
-    }
-
-    //---------------//
-    // paintChildren //
-    //---------------//
-    /**
-     * Just forwards the paint instruction to the direct depending
-     * children.
-     *
-     * @param g the graphics context
-     * @param comp the containing component
-     */
-    public void paintChildren (Graphics g,
-                               Zoom z,
-                               Component comp)
-    {
-        //if (logger.isFineEnabled ()) logger.debug ("paintChildren of " + this);
-        for (TreeNode node : children) {
-            MusicNode child = (MusicNode) node;
-            if (child.paintNode(g, z, comp)) {
-                child.paintChildren(g, z, comp);
-            }
-        }
-    }
-
-    //----------------//
-    // renderChildren //
-    //----------------//
-    /**
-     * Just forwards the rendering instruction to the direct depending
-     * children.
-     *
-     * @param g the graphics context
-     * @param z the display zoom
-     */
-    public void renderChildren (final Graphics g,
-                                Zoom z)
-    {
-        //if (logger.isFineEnabled ()) logger.debug ("renderChildren of " + this);
-        for (TreeNode node : children) {
-            MusicNode child = (MusicNode) node;
-            if (child.renderNode(g, z)) {
-                child.renderChildren(g, z);
-            }
-        }
-    }
-
-    //--------------//
-    // colorizeNode //
-    //--------------//
-    /**
-     * Placeholder for colorizing the sections that compose the physical
-     * info that corresponds to this MusicNode.
-     *
-     * @param lag       the lag to be colorized
-     * @param viewIndex the provided lag view index
-     *
-     * @return true if processing must continue
-     */
-    protected boolean colorizeNode (Lag lag,
-                                    int viewIndex,
-                                    Color color)
-    {
-        return true;
     }
 
     //-------------//
@@ -239,42 +173,79 @@ public class MusicNode
      */
     protected boolean computeNode ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("computeNode of " + this);
-        }
+        return true;
+    }
 
-        return true; // Let computation continue down the tree
+    //-----------------//
+    // computeChildren //
+    //-----------------//
+    /**
+     * Pattern to launch computation recursively on all children of this
+     * node
+     */
+    public void computeChildren ()
+    {
+        for (TreeNode node : children) {
+            MusicNode child = (MusicNode) node;
+            if (child.computeNode()) {
+                child.computeChildren();
+            }
+        }
     }
 
     //-----------//
     // paintNode //
     //-----------//
     /**
-     * Placeholder for painting the node at hand, and returning true is the
-     * rendering has been made, so that (contained) children will be
-     * painted only if their container has been painted, at least
-     * partially.
+     * Placeholder for painting in the Score display the node at hand, and
+     * returning true is the rendering has been made, so that (contained)
+     * children will be painted only if their container has been painted, at
+     * least partially.
      *
      * @param g the graphics context
-     * @param comp the containing component
+     * @param z the zooming factor
+     * @param comp the containing component -TO BE REMOVED-
      *
      * @return true if wholy or partly painted
      */
     protected boolean paintNode (Graphics g,
-                                 Zoom z,
+                                 Zoom     z,
                                  Component comp)
     {
         return true;
+    }
+
+    //---------------//
+    // paintChildren //
+    //---------------//
+    /**
+     * Just forwards the paint instruction to the direct depending
+     * children.
+     *
+     * @param g the graphics context
+     * @param z the zooming factor
+     * @param comp the containing component -TO BE REMOVED-
+     */
+    public void paintChildren (Graphics g,
+                               Zoom     z,
+                               Component comp)
+    {
+        for (TreeNode node : children) {
+            MusicNode child = (MusicNode) node;
+            if (child.paintNode(g, z, comp)) {
+                child.paintChildren(g, z, comp);
+            }
+        }
     }
 
     //------------//
     // renderNode //
     //------------//
     /**
-     * Placeholder for rendering the node at hand, and returning true is
-     * the rendering has been made, so that (contained) children will be
-     * rendered only if their container has been rendered, at least
-     * partially.
+     * Placeholder for rendering in the Sheet display the node at hand, and
+     * returning true is the rendering has been made, so that (contained)
+     * children will be rendered only if their container has been rendered, at
+     * least partially.
      *
      * @param g the graphics context
      * @param z the display zoom
@@ -282,8 +253,29 @@ public class MusicNode
      * @return true if wholy or partly painted
      */
     protected boolean renderNode (Graphics g,
-                                  Zoom z)
+                                  Zoom     z)
     {
         return true;
+    }
+
+    //----------------//
+    // renderChildren //
+    //----------------//
+    /**
+     * Just forwards the rendering instruction to the direct depending
+     * children.
+     *
+     * @param g the graphics context
+     * @param z the display zoom
+     */
+    public void renderChildren (Graphics g,
+                                Zoom     z)
+    {
+        for (TreeNode node : children) {
+            MusicNode child = (MusicNode) node;
+            if (child.renderNode(g, z)) {
+                child.renderChildren(g, z);
+            }
+        }
     }
 }
