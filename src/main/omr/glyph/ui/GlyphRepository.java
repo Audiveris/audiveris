@@ -297,7 +297,7 @@ public class GlyphRepository
     {
         try {
             // Prepare target directory
-            File sheetDir = new File(getSheetsFolder(), sheet.getName());
+            File sheetDir = new File(getSheetsFolder(), sheet.getRadix());
             if (!sheetDir.exists()) {
                 // Make sure related directory chain exists
                 logger.info("Creating directory " + sheetDir);
@@ -308,7 +308,7 @@ public class GlyphRepository
 
             // Prepare structures directory
             File structuresDir = new File(getSheetsFolder(),
-                                          sheet.getName() + STRUCTURES_NAME);
+                                          sheet.getRadix() + STRUCTURES_NAME);
             if (!structuresDir.exists()) {
                 // Make sure related structure subdirectory exists
                 logger.info("Creating subdirectory " + structuresDir);
@@ -355,7 +355,7 @@ public class GlyphRepository
                     }
                 }
             }
-            logger.info(glyphNb + " glyphs stored from " + sheet.getName()
+            logger.info(glyphNb + " glyphs stored from " + sheet.getRadix()
                         + (structuresNb == 0 ? "" :
                            " (including " + structuresNb + " structures)"));
         } catch (Exception ex) {
