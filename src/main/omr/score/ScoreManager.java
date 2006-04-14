@@ -358,7 +358,7 @@ public class ScoreManager
 
         File file = new File
             (dir,
-             score.getName() + ScoreFormat.BINARY.extension);
+             score.getRadix() + ScoreFormat.BINARY.extension);
         logger.info("Serializing score to " + file + " ...");
 
         long s0 = java.lang.System.currentTimeMillis();

@@ -10,6 +10,7 @@
 
 package omr.score;
 
+import java.io.IOException;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 import omr.util.Dumper;
@@ -56,8 +57,8 @@ public class Score
     // Sheet global line spacing expressed in pixels * BASE
     private int spacing;
 
-    // File path to the related sheet image
-    private String imagefpath;
+    // File of the related sheet image
+    private File imageFile;
 
     // The most recent system pointed at
     private transient System recentSystem = null;
@@ -88,21 +89,23 @@ public class Score
     //-------//
     /**
      * Create a Score, with the specified parameters
+     * 
      * @param dimension the score dimension, expressed in units
      * @param skewAngle the detected skew angle, in radians, clockwise
      * @param spacing the main interline spacing, in 1/1024 of units
-     * @param imagefpath canonical name of the original sheet file
+     * @param imagePath full name of the original sheet file
      */
     public Score (UnitDimension dimension,
                   int skewAngle,
                   int spacing,
-                  String imagefpath)
+                  String imagePath)
     {
         this();
         this.dimension = dimension;
         this.skewAngle = skewAngle;
         this.spacing = spacing;
-        this.imagefpath = imagefpath;
+        
+        setImagePath(imagePath);
 
         if (logger.isFineEnabled()) {
             Dumper.dump(this, "Constructed");
@@ -164,17 +167,34 @@ public class Score
         return true;
     }
 
-    //---------------//
-    // getImageFPath //
-    //---------------//
+    //--------------//
+    // getImagePath //
+    //--------------//
     /**
      * Report the (canonical) file name of the score image.
      *
      * @return the file name
      */
-    public String getImageFPath ()
+    public String getImagePath ()
     {
-        return imagefpath;
+        return imageFile.getPath();
+    }
+
+    //--------------//
+    // setImagePath //
+    //--------------//
+    /**
+     * Assign the (canonical) file name of the score image.
+     *
+     * @param path the file name
+     */
+    public void setImagePath (String path)
+    {
+        try {
+            imageFile = new File(path).getCanonicalFile ();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     //---------------//
@@ -190,20 +210,6 @@ public class Score
         return (System) children.get(children.size() - 1);
     }
 
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * report just the name of the score (no path, no extension)
-     *
-     * @return the name
-     */
-    public String getName ()
-    {
-        File file = new File(getRadix());
-        return file.getName();
-    }
-
     //----------//
     // getRadix //
     //----------//
@@ -217,8 +223,7 @@ public class Score
     {
         if (radix == null) {
             if (getSheet() != null) {
-                //radix = getSheet().getRadix();
-                radix = getSheet().getName();
+                radix = getSheet().getRadix();
             }
         }
 
@@ -343,7 +348,7 @@ public class Score
     public void linkWithSheet ()
     {
         for (Sheet sheet : SheetManager.getInstance().getSheets()) {
-            if (sheet.getPath().equals(getImageFPath())) {
+            if (sheet.getPath().equals(getImagePath())) {
                 this.setSheet(sheet);
                 sheet.setScore(this);
 
@@ -482,7 +487,7 @@ public class Score
     public void viewScore ()
     {
         // Launch the ScoreTree application on the score
-        ScoreTree.makeFrame(getName(), this);
+        ScoreTree.makeFrame(getRadix(), this);
     }
 
     //---------------//
