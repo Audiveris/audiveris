@@ -125,6 +125,9 @@ public class SymbolIcon
     public Point getCentroid ()
     {
         if (centroid == null) {
+            if (getImage() == null) {
+                return null;
+            }
             BufferedImage bi = IconManager.toBufferedImage(getImage());
             final int width  = getDimension().width;
             final int height = getDimension().height;
