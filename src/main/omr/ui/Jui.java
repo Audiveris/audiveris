@@ -402,7 +402,7 @@ public class Jui
 
         if (target instanceof omr.score.Score) {
             omr.score.Score targetScore = (omr.score.Score) target;
-            result = targetScore.getImageFPath().equals(name);
+            result = targetScore.getImagePath().equals(name);
         } else if (target instanceof Sheet) {
             Sheet targetSheet = (Sheet) target;
             result = targetSheet.getPath().equals(name);
@@ -437,7 +437,7 @@ public class Jui
 
         if (sheet != null) {
             StringBuffer sb = new StringBuffer();
-            sb.append(sheet.getName());
+            sb.append(sheet.getRadix());
 
             Step step = sheet.currentStep();
             if (step != null) {

@@ -238,7 +238,7 @@ public class SheetAssembly
                             ScrollView sv,
                             BoardsPane boardsPane)
     {
-        boardsPane.setName(sheet.getName() + ":" + title);
+        boardsPane.setName(sheet.getRadix() + ":" + title);
         if (logger.isFineEnabled()) {
             logger.fine("addViewTab title=" + title +
                          " boardsPane=" + boardsPane);
