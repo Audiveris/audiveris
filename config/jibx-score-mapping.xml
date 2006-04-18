@@ -18,7 +18,10 @@
              value-style="attribute">
         <value name="skew-angle" field="skewAngle" />
         <value name="spacing"    field="spacing" />
-        <value name="image"      field="imagefpath" />
+        
+        <value name="image" 
+               get-method="getImagePath" 
+               set-method="setImagePath" />
         
         <structure name="dimension" field="dimension" >
             <value name="width"	 field="width" />
