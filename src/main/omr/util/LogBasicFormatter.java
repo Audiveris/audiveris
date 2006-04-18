@@ -53,7 +53,8 @@ public class LogBasicFormatter
      */
     public synchronized String format (LogRecord record)
     {
-        StringBuffer sb = new StringBuffer(256);
+        StringBuilder sb = new StringBuilder(256);
+        sb.append(" ");
 
         // First line (if any)
 
@@ -85,7 +86,8 @@ public class LogBasicFormatter
         }
 
         if (sb.length() > 0) {
-            sb.append(lineSeparator);
+            //sb.append(lineSeparator);
+            sb.append(" -- ");
         }
 
         // Second line
