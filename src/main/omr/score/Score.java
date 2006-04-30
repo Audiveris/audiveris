@@ -89,7 +89,7 @@ public class Score
     //-------//
     /**
      * Create a Score, with the specified parameters
-     * 
+     *
      * @param dimension the score dimension, expressed in units
      * @param skewAngle the detected skew angle, in radians, clockwise
      * @param spacing the main interline spacing, in 1/1024 of units
@@ -104,7 +104,7 @@ public class Score
         this.dimension = dimension;
         this.skewAngle = skewAngle;
         this.spacing = spacing;
-        
+
         setImagePath(imagePath);
 
         if (logger.isFineEnabled()) {
@@ -309,14 +309,14 @@ public class Score
     }
 
     //-------------------//
-    // getMaxStaveNumber //
+    // getMaxStaffNumber //
     //-------------------//
     /**
      * Report the maximum number of staves per system
      *
      * @return the maximum number of staves per system
      */
-    public int getMaxStaveNumber()
+    public int getMaxStaffNumber()
     {
         int nb = 0;
         for (TreeNode node : children) {

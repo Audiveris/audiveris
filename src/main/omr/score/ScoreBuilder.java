@@ -72,10 +72,9 @@ public class ScoreBuilder
                     logger.fine(glyph.toString ());
                     int y = glyph.getCentroid ().y;
                     int si = sheet.getStaffIndexAtY (y);
-                    StaffInfo staveInfo = sheet.getStaves ().get(si);
-                    int uY = staveInfo.getScale ().pixelsToUnits(y);
+                    StaffInfo staffInfo = sheet.getStaves ().get(si);
+                    int uY = staffInfo.getScale ().pixelsToUnits(y);
                     ///Staff staff = system.getStaffAtY(uY);
-
                 }
             }
         }
