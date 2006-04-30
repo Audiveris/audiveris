@@ -30,7 +30,7 @@ import javax.swing.Icon;
  * @version $Id$
  */
 public class Measure
-        extends StaveNode
+    extends StaffNode
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -47,7 +47,7 @@ public class Measure
     private int rightlinex;
     private boolean lineinvented;
     private int id = 0; // Measure Id
-    private int leftX; // X of start of this measure (wrt stave)
+    private int leftX; // X of start of this measure (wrt staff)
 
     //~ Constructors ------------------------------------------------------
 
@@ -69,20 +69,20 @@ public class Measure
      * Create a measure with the specified parameters
      *
      * @param info         physical description of the ending bar line
-     * @param stave        the containing stave
+     * @param staff        the containing staff
      * @param linetype     the kind of ending bar line
      * @param leftlinex    abscissa of the left part of the ending bar line
      * @param rightlinex   abscissa of the right part of the ending bar line
      * @param lineinvented flag an artificial ending bar line if none existed
      */
     public Measure (BarInfo info,
-                    Stave stave,
+                    Staff staff,
                     Shape linetype,
                     int leftlinex,
                     int rightlinex,
                     boolean lineinvented)
     {
-        super(stave, stave);
+        super(staff, staff);
 
         this.infos.add(info);
         this.linetype = linetype;
@@ -253,17 +253,17 @@ public class Measure
     {
         super.computeNode();
 
-        // Fix the stave reference
-        setStave((Stave) container.getContainer());
+        // Fix the staff reference
+        setStaff((Staff) container.getContainer());
 
         // First/Last measure ids
-        stave.incrementLastMeasureId();
-        id = stave.getLastMeasureId();
+        staff.incrementLastMeasureId();
+        id = staff.getLastMeasureId();
 
         // Start of the measure
         Measure prevMeasure = (Measure) getPreviousSibling();
 
-        if (prevMeasure == null) { // Very first measure in the stave
+        if (prevMeasure == null) { // Very first measure in the staff
             leftX = 0;
         } else {
             leftX = prevMeasure.rightlinex;
@@ -284,15 +284,19 @@ public class Measure
 
         // Draw the bar line symbol at the end of the measure
         SymbolIcon icon = (SymbolIcon) linetype.getIcon();
-        icon.paintIcon
-            (comp,
-             g,
-             zoom.scaled(origin.x + (leftlinex + rightlinex) / 2)
-             - icon.getActualWidth()/2,
-             zoom.scaled(origin.y));
+        if (icon == null) {
+            logger.warning("Need icon for " + linetype);
+        } else {
+            icon.paintIcon
+                (comp,
+                 g,
+                 zoom.scaled(origin.x + (leftlinex + rightlinex) / 2)
+                 - icon.getActualWidth()/2,
+                 zoom.scaled(origin.y));
+        }
 
-        // Draw the measure id, if on the first stave only
-        if (stave.getStavelink() == 0) {
+        // Draw the measure id, if on the first staff only
+        if (staff.getStafflink() == 0) {
             g.setColor(Color.lightGray);
             g.drawString(Integer.toString(id),
                          zoom.scaled(origin.x + leftX) - 5,

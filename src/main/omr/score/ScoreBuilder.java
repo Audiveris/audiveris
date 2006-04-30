@@ -14,7 +14,7 @@ import java.util.logging.Level;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.sheet.Sheet;
-import omr.sheet.StaveInfo;
+import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 import omr.util.Logger;
 
@@ -71,10 +71,10 @@ public class ScoreBuilder
                         glyph.getShape () != Shape.CLUTTER) {
                     logger.fine(glyph.toString ());
                     int y = glyph.getCentroid ().y;
-                    int si = sheet.getStaveIndexAtY (y);
-                    StaveInfo staveInfo = sheet.getStaves ().get(si);
+                    int si = sheet.getStaffIndexAtY (y);
+                    StaffInfo staveInfo = sheet.getStaves ().get(si);
                     int uY = staveInfo.getScale ().pixelsToUnits(y);
-                    ///Stave stave = system.getStaveAtY(uY);
+                    ///Staff staff = system.getStaffAtY(uY);
 
                 }
             }

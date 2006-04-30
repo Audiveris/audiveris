@@ -32,11 +32,11 @@ import java.awt.*;
  *                                 O                                      |
  *                                 |                                      |
  *                        ___________________                             |
- *                       {StaveList, SlurList}                    Dummy   |
+ *                       {StaffList, SlurList}                    Dummy   |
  *                             O         O                                |
  *                             |         |                                |
  *                             |         |                                |
- *                           Stave     Slur                               |
+ *                           Staff     Slur                               |
  *                             O                                          |
  *                             |                                          |
  *        _____________________________________________                   |

@@ -26,11 +26,11 @@ public class ScoreConstants
 
     private static final Constants constants = new Constants();
 
-    /** Height in pixels of a stave display */
-    public static final int STAVE_AREA_HEIGHT = constants.staveAreaheight.getValue();
+    /** Height in pixels of a staff display */
+    public static final int STAFF_AREA_HEIGHT = constants.staffAreaheight.getValue();
 
-    /** Height in pixels above/under a stave display */
-    public static final int STAVE_MARGIN_HEIGHT = constants.staveMarginHeight.getValue();
+    /** Height in pixels above/under a staff display */
+    public static final int STAFF_MARGIN_HEIGHT = constants.staffMarginHeight.getValue();
 
     /** Horizontal offset in pixels of the score origin */
     public static final int SCORE_INIT_X = constants.scoreInitX.getValue();
@@ -71,15 +71,15 @@ public class ScoreConstants
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
-        Constant.Integer staveAreaheight = new Constant.Integer
+        Constant.Integer staffAreaheight = new Constant.Integer
                 (100,
-                 "Height in pixels of a stave display");
+                 "Height in pixels of a staff display");
 
-        Constant.Integer staveMarginHeight = new Constant.Integer
+        Constant.Integer staffMarginHeight = new Constant.Integer
                 (40,
-                 "Height in pixels above/under a stave display : ");
+                 "Height in pixels above/under a staff display : ");
 
         Constant.Integer scoreInitX = new Constant.Integer
                 (200,
