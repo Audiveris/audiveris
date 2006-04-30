@@ -20,7 +20,7 @@ import java.awt.*;
  * @version $Id$
  */
 public class Run
-        implements java.io.Serializable
+    implements java.io.Serializable
 {
     //~ Instance variables ------------------------------------------------
 

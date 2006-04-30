@@ -28,7 +28,7 @@ import java.util.List;
  * @version $Id$
  */
 public class LagReader
-        implements Run.Reader
+    implements Run.Reader
 {
     //~ Static variables/initializers -------------------------------------
 

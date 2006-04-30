@@ -315,7 +315,7 @@ public class SectionView <L extends Lag     <L, S>,
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Constant.Boolean displayDensity = new Constant.Boolean
                 (false,

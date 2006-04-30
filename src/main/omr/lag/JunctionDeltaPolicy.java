@@ -19,7 +19,7 @@ package omr.lag;
  * @version $Id$
  */
 public class JunctionDeltaPolicy
-        extends JunctionPolicy
+    extends JunctionPolicy
 {
     //~ Instance variables ------------------------------------------------
 
