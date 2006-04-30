@@ -1288,7 +1288,7 @@ public class GlyphTrainer
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Constant.Double maxGrade = new Constant.Double
                 (1.2,

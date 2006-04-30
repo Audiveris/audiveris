@@ -348,7 +348,7 @@ public class GlyphMenu
     // ConfirmAction //
     //---------------//
     private class ConfirmAction
-            extends AbstractAction
+        extends AbstractAction
     {
         // Shape that could be assigned or confirmed
         private Shape targetShape;
@@ -379,7 +379,7 @@ public class GlyphMenu
     // DeassignAction //
     //----------------//
     private class DeassignAction
-            extends AbstractAction
+        extends AbstractAction
     {
         //~ Constructors --------------------------------------------------
 
@@ -418,7 +418,7 @@ public class GlyphMenu
     // DumpAction //
     //------------//
     private class DumpAction
-            extends AbstractAction
+        extends AbstractAction
     {
         //~ Constructors --------------------------------------------------
 
@@ -441,7 +441,7 @@ public class GlyphMenu
     // SimilarAction //
     //---------------//
     private class SimilarAction
-            extends AbstractAction
+        extends AbstractAction
     {
         //~ Constructors --------------------------------------------------
 

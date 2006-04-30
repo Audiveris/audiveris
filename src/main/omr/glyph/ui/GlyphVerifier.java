@@ -892,7 +892,7 @@ public class GlyphVerifier
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
 
         Constant.Boolean confirmDeletions = new Constant.Boolean
