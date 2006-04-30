@@ -112,14 +112,14 @@ public class GlyphRepository
     //--------------//
     // getXmlMapper //
     //--------------//
-    private XmlMapper getXmlMapper() 
+    private XmlMapper getXmlMapper()
     {
         if (xmlMapper == null) {
             xmlMapper = new XmlMapper(Glyph.class);
         }
         return xmlMapper;
     }
-    
+
     //-------------//
     // getCoreBase //
     //-------------//
@@ -333,7 +333,7 @@ public class GlyphRepository
 
                         int y = glyph.getMembers().get(0).getStart();
                         glyph.setInterline
-                            (system.getStaveAtY(y).getScale().interline());
+                            (system.getStaffAtY(y).getScale().interline());
 
                         // Build the proper glyph file
                         StringBuffer sb = new StringBuffer();
