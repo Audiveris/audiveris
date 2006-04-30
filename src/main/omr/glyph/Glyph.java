@@ -41,7 +41,7 @@ import java.util.Set;
  * @version $Id$
  */
 public class Glyph
-        implements Comparable<Glyph>,
+    implements Comparable<Glyph>,
                    Checkable,
                    java.io.Serializable
 {
@@ -78,7 +78,7 @@ public class Glyph
     /** Guessed shape of this glyph */
     protected Shape guess;
 
-    /** Interline of the containing stave (or sheet) */
+    /** Interline of the containing staff (or sheet) */
     protected int interline;
 
     /** Within system width ? */
@@ -206,7 +206,7 @@ public class Glyph
 
         int[] coord = new int[weight];
         int[] pos = new int[weight];
-        
+
         // Append recursively all points
         cumulatePoints(coord, pos, 0);
 
@@ -406,7 +406,7 @@ public class Glyph
     // getInterline //
     //--------------//
     /**
-     * Report the interline value for the glyph containing stave, which is
+     * Report the interline value for the glyph containing staff, which is
      * used for some of the moments
      *
      * @return the interline value
@@ -489,7 +489,7 @@ public class Glyph
     // getStepLine //
     //-------------//
     /**
-     * Report the stepLine feature (position relative to the stave)
+     * Report the stepLine feature (position relative to the staff)
      *
      * @return the stepLine value
      */
@@ -655,7 +655,7 @@ public class Glyph
     //----------------//
     /**
      * Checks whether the glyph if within the horizontal limits of the
-     * containing stave (this is usually wrong fro braces)
+     * containing staff (this is usually wrong fro braces)
      *
      * @return the test result
      */
@@ -783,7 +783,7 @@ public class Glyph
     /**
      * Setter for the interline value
      *
-     * @param interline the mean interline value of containing stave
+     * @param interline the mean interline value of containing staff
      */
     public void setInterline (int interline)
     {
@@ -834,7 +834,7 @@ public class Glyph
     //-------------//
     /**
      * Setter for the step line position, with respect to the containing
-     * stave
+     * staff
      *
      * @param stepLine the relative step line
      */

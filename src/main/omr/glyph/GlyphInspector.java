@@ -17,7 +17,7 @@ import omr.score.Score;
 import omr.score.ScoreManager;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-import omr.sheet.StaveInfo;
+import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 import omr.sheet.VerticalsBuilder;
 import omr.stick.Stick;
@@ -280,8 +280,8 @@ public class GlyphInspector
             }
 
             // Use a widened contour box
-            StaveInfo stave = system.getStaveAtY(glyph.getContourBox().y);
-            int dxy = stave.getScale().fracToPixels(constants.boxWiden);
+            StaffInfo staff = system.getStaffAtY(glyph.getContourBox().y);
+            int dxy = staff.getScale().fracToPixels(constants.boxWiden);
             Rectangle box = compoundBox(glyph.getContourBox(), dxy);
 
             // Consider neighboring glyphs, which are glyphs whose contour

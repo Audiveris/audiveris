@@ -16,7 +16,7 @@ import omr.glyph.ui.SymbolGlyphBoard;
 import omr.sheet.Dash;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-import omr.sheet.StaveInfo;
+import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemSplit;
 import omr.stick.Stick;
@@ -336,11 +336,11 @@ public class GlyphBuilder
         Rectangle box = glyph.getContourBox();
         int y = box.y;
 
-        // Nearest/containing stave
-        StaveInfo stave = system.getStaveAtY(y);
-        Scale scale = stave.getScale();
+        // Nearest/containing staff
+        StaffInfo staff = system.getStaffAtY(y);
+        Scale scale = staff.getScale();
 
-        // Stave interline value
+        // Staff interline value
         glyph.setInterline(scale.interline());
 
         // Mass center (which makes sure moments are available)
@@ -373,9 +373,9 @@ public class GlyphBuilder
                                               system.getMaxLedgerWidth(),
                                               ledgerBox(box, scale)));
 
-        // Vertical position wrt stave
-        final int top = stave.getFirstLine().getLine().yAt(centroid.x);
-        final int bottom = stave.getLastLine().getLine().yAt(centroid.x);
+        // Vertical position wrt staff
+        final int top = staff.getFirstLine().getLine().yAt(centroid.x);
+        final int bottom = staff.getLastLine().getLine().yAt(centroid.x);
         glyph.setStepLine(4*(double) (2* centroid.y - bottom - top)
                           / (double)(bottom - top));
     }
@@ -498,7 +498,7 @@ public class GlyphBuilder
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Scale.Fraction stemWiden = new Scale.Fraction
                 (0.1,
