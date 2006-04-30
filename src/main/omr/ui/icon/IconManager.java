@@ -104,7 +104,7 @@ public class IconManager
                                String fname)
     {
         final String resName = path + "/" + fname + ".gif";
-        final URL iconUrl = Jui.class.getResource(resName);
+        final URL iconUrl = IconManager.class.getResource(resName);
         if (iconUrl == null) {
             logger.warning("iconOf. Could not load icon from " + resName);
 
@@ -125,29 +125,18 @@ public class IconManager
      */
     public static SymbolIcon loadIcon (String name)
     {
-        logger.fine("Trying to load Icon '" + name + "'");
-
-        // First, find out the proper input stream
-        InputStream is;
-
-        // We first look into local dir
-        try {
-            is = new FileInputStream(getIconFile(name));
-        } catch (FileNotFoundException fnfe) {
-            // If not found, we look into the application jar file
-            try {
-                is = IconManager.class.getResourceAsStream
-                    (Main.getIconsResource() + "/" +
-                     name + FILE_EXTENSION);
-            } catch (Exception e) {
-                logger.warning("Cannot load icon " + name);
-                return null;
-            }
+        if (logger.isFineEnabled()) {
+            logger.fine("Trying to load Icon '" + name + "'");
         }
 
+
+        InputStream is = Main.class.getResourceAsStream
+            ("/icons/" + name + FILE_EXTENSION);
+
         if (is == null) {
-            System.out.println("No file for icon " + name);
-            logger.fine("No file for icon " + name);
+            if (logger.isFineEnabled()) {
+                logger.fine("No file for icon " + name);
+            }
             return null;
         }
 
@@ -200,7 +189,7 @@ public class IconManager
 
         // We store only into the local dir
         try {
-            os = new FileOutputStream(getIconFile(name));
+            os = getIconOutputStream(name);
         } catch (FileNotFoundException ex) {
             logger.warning("Cannot store icon " + name);
             return;
@@ -274,7 +263,7 @@ public class IconManager
         int index = 0;
         for (String row : rows) {
             if (logger.isFineEnabled ()) {
-                logger.fine ("Row='" + row + "'");
+                logger.finest ("Row='" + row + "'");
             }
             for (int x = 0; x < width; x++) {
                 pix[index++] = decodeARGB (row.charAt (x));
@@ -386,18 +375,11 @@ public class IconManager
         }
     }
 
-    //-------------//
-    // getIconFile //
-    //-------------//
-    /**
-     * Given the name of an icon, return the related file that stored the
-     * icon definition. This method thus implements the policy about the
-     * location of icon files.
-     *
-     * @param name the icon name
-     * @return the fully qualified file path
-     */
-    private static File getIconFile (String name)
+    //---------------------//
+    // getIconOutputStream //
+    //---------------------//
+    private static OutputStream getIconOutputStream (String name)
+        throws FileNotFoundException
     {
         File folder = Main.getIconsFolder();
         if (!folder.exists()) {
@@ -405,7 +387,13 @@ public class IconManager
             folder.mkdirs();
         }
 
-        return new File(folder, name + FILE_EXTENSION);
+        File file = new File (folder, name + FILE_EXTENSION);
+        try {
+            return new FileOutputStream (file);
+        } catch (FileNotFoundException ex) {
+            logger.warning("Cannot open output stream to icon " + file);
+            throw ex;
+        }
     }
 
     //-------------------//
