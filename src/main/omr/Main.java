@@ -46,7 +46,7 @@ import java.util.StringTokenizer;
  *
  * <dt> <b>-save SAVEPATH</b> </dt> <dd> to specify the directory where
  * score output files are saved. If not specified, files are simply written
- * to the 'save' sub-directory of Audiveris. </dd>
+ * to the 'save' sub-directory of the application. </dd>
  *
  * <dt> <b>-sheet (SHEETNAME | &#64;SHEETLIST)+</b> </dt> <dd> to specify
  * some sheets to be read, either by naming the image file or by
@@ -80,14 +80,11 @@ public class Main
 
     private static final Logger logger = Logger.getLogger(Main.class);
 
-    // Installation directory
-    private static final String AUDIVERIS_HOME = "AUDIVERIS_HOME";
-    private static String audiverisHome
-        = System.getProperty("audiveris.home",
-                             System.getenv(AUDIVERIS_HOME));
+    // Installation container and folder
+    private static File container;
     private static File homeFolder;
 
-    private static final Constants constants = new Constants();
+    private static Constants constants = new Constants();
 
     // Singleton
     private static Main INSTANCE;
@@ -126,15 +123,25 @@ public class Main
     //------//
     // Main //
     //------//
-    private Main (String[] args)
+    private Main (String[] args,
+                  Class    caller)
     {
         Package thisPackage = Main.class.getPackage();
         toolName    = thisPackage.getSpecificationTitle();
         toolVersion = thisPackage.getSpecificationVersion();
         toolBuild   = thisPackage.getImplementationVersion();
 
-        // Check installation home
-        getHomeFolder();
+        // Remember installation home
+        container = new File(caller
+                              .getProtectionDomain()
+                              .getCodeSource()
+                              .getLocation()
+                              .getFile());
+
+        // Home Folder
+        // .../build/classes
+        // .../dist/audiveris.jar
+        homeFolder = container.getParentFile().getParentFile();
     }
 
     //~ Methods -----------------------------------------------------------
@@ -143,13 +150,15 @@ public class Main
     // main //
     //------//
     /**
-     * Usual starting method for the application.
+     * Specific starting method for the application.
      *
-     * @param args        the command line parameters
+     * @param args the command line parameters
+     * @param caller the precise class of the caller
      *
      * @see omr.Main the possible command line parameters
      */
-    public static void main (String[] args)
+    public static void main (String[] args,
+                             Class    caller)
     {
         // Problem, from Emacs all args are passed in one string
         // sequence.  We recognize this by detecting a single
@@ -181,7 +190,14 @@ public class Main
         }
 
         // Launch the processing
-        INSTANCE = new Main(args);
+        INSTANCE = new Main(args, caller);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("homeFolder=" + homeFolder);
+            logger.fine("container=" + container);
+            logger.fine("isDirectory=" + container.isDirectory());
+        }
+
         try {
             INSTANCE.process(args);
         } catch (Main.StopRequired ex) {
@@ -323,18 +339,20 @@ public class Main
     //---------------//
     private static File getHomeFolder()
     {
-        if (audiverisHome == null) {
-            logger.warning("Environment variable '" + AUDIVERIS_HOME
-                         + "' not set.");
-            logger.info("Exiting");
-            System.exit(-1);
-        }
-
-        if (homeFolder == null) {
-            homeFolder = new File(audiverisHome);
-        }
-
         return homeFolder;
+    }
+
+    //-----------------//
+    // getConfigFolder //
+    //-----------------//
+    /**
+     * Report the folder where config parameters are stored
+     *
+     * @return the directory for configuration files
+     */
+    public static File getConfigFolder()
+    {
+        return new File(getHomeFolder(), "config");
     }
 
     //----------------//
@@ -348,19 +366,6 @@ public class Main
     public static File getIconsFolder()
     {
         return new File(getHomeFolder(), "icons");
-    }
-
-    //------------------//
-    // getIconsResource //
-    //------------------//
-    /**
-     * Report the resource path where pre-defined icons are stored
-     *
-     * @return the name of the resource path for icon files
-     */
-    public static String getIconsResource()
-    {
-        return "/" + "icons";
     }
 
     //-----------------//
@@ -645,7 +650,7 @@ public class Main
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Constant.String savePath = new Constant.String
                 ("",
