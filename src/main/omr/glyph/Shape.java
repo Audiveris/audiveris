@@ -396,6 +396,9 @@ public enum Shape
     // Potential related icon
     private Icon icon;
 
+    // Remember the fact that this shape has no related icon
+    private boolean hasNoIcon;
+
     //~ Constructors ------------------------------------------------------
 
     //-------//
@@ -565,8 +568,15 @@ public enum Shape
      */
     public Icon getIcon()
     {
+        if (hasNoIcon) {
+            return null;
+        }
+        
         if (icon == null) {
             setIcon(IconManager.loadIcon(toString()));
+            if (icon == null) {
+                hasNoIcon = true;
+            }
         }
 
         return icon;
