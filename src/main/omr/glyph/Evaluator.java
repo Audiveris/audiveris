@@ -107,36 +107,34 @@ public abstract class Evaluator
 
     //~ Methods -----------------------------------------------------------
 
-    //-----------------//
-    // getCustomBackup //
-    //-----------------//
+    //---------------//
+    // getCustomFile //
+    //---------------//
     /**
      * Report the custom file used to store or load the internal evaluator
      * data
      *
      * @return the evaluator custom backup file
      */
-    protected File getCustomBackup()
+    protected File getCustomFile()
     {
         // The custom file, if any, is located at the root of the train
         // folder
-        return new File(Main.getTrainFolder(), getName() + BACKUP_EXTENSION);
+        return new File(Main.getConfigFolder(), "neural" + BACKUP_EXTENSION);
     }
 
-    //-----------------//
-    // getSystemBackup //
-    //-----------------//
+    //----------------//
+    // getDefaultFile //
+    //----------------//
     /**
-     * Report the default system resource used to load the internal
-     * evaluator data
+     * Report the default file used to load the internal evaluator data
      *
-     * @return the evaluator system backup file
+     * @return the evaluator default backup file
      */
-    protected String getSystemBackup()
+    protected File getDefaultFile()
     {
-        // The system file, is located in the config directory of the
-        // application jar file
-        return "/config/" + getName() + BACKUP_EXTENSION;
+        // The system file, is located in the config folder
+        return new File(Main.getConfigFolder(), "neural.default" + BACKUP_EXTENSION);
     }
 
     //------//
@@ -420,7 +418,7 @@ public abstract class Evaluator
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         //~ Instance variables --------------------------------------------
 

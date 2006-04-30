@@ -64,29 +64,28 @@ public class GlyphNetwork
         // Retrieve last custom version if any
         try {
             // First, look for a custom version
-            File custom = getCustomBackup();
-            if (custom.exists()){
+            File customFile = getCustomFile();
+            if (customFile.exists()){
                 logger.info ("Deserializing GlyphNetwork from custom"
-                             + " file " + custom);
+                             + " file " + customFile);
                 network = NeuralNetwork.deserialize
-                    (new FileInputStream(custom));
+                    (new FileInputStream(customFile));
             }
         } catch (FileNotFoundException ex) {
             logger.warning ("Cannot find or read custom backup " +
-                            getCustomBackup());
+                            getCustomFile());
         }
 
         // Second, use the system default
         if (network == null){
-            String resource = getSystemBackup();
-            InputStream is = GlyphNetwork.class.getResourceAsStream
-                (resource);
-            if (is != null) {
-                logger.info ("Deserializing GlyphNetwork from " +
-                             "system resource "+ resource);
-                network = NeuralNetwork.deserialize(is);
-            } else {
-                logger.warning ("Cannot find system resource " + resource);
+            File defaultFile = getDefaultFile();
+            try {
+                logger.info ("Deserializing GlyphNetwork from default"
+                             + " file " + defaultFile);
+                network = NeuralNetwork.deserialize
+                    (new FileInputStream(defaultFile));
+            } catch (FileNotFoundException ex) {
+                logger.severe("Cannot find default backup" + defaultFile);
             }
         }
 
@@ -411,13 +410,13 @@ public class GlyphNetwork
         network.train(inputs, desiredOutputs, monitor);
 
         // Store the trained network as a custom file
-        network.serialize(getCustomBackup());
+        network.serialize(getCustomFile());
     }
 
     //~ Classes -----------------------------------------------------------
 
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         //~ Instance variables --------------------------------------------
 
