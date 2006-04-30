@@ -370,7 +370,7 @@ public class GlyphRegression
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Constant.Double weightMax = new Constant.Double
                 (5e3,
