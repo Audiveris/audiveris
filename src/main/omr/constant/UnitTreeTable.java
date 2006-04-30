@@ -30,7 +30,7 @@ import java.awt.*;
  * @version $Id$
  */
 public class UnitTreeTable
-        extends JTreeTable
+    extends JTreeTable
 {
     private TableCellRenderer loggerRenderer = new LoggerRenderer();
     private TableCellRenderer valueRenderer = new ValueRenderer();
@@ -140,7 +140,7 @@ public class UnitTreeTable
     // ValueRenderer //
     //---------------//
     private class ValueRenderer
-            extends DefaultTableCellRenderer
+        extends DefaultTableCellRenderer
     {
         //-------------------------------//
         // getTableCellRendererComponent //
@@ -182,7 +182,7 @@ public class UnitTreeTable
     // LoggerRenderer //
     //----------------//
     private static class LoggerRenderer
-            extends DefaultTableCellRenderer
+        extends DefaultTableCellRenderer
     {
         //~ Methods -------------------------------------------------------
 

@@ -24,7 +24,7 @@ import java.util.TreeSet;
  * @version $Id$
  */
 public class PackageNode
-        extends Node
+    extends Node
 {
     //~ Instance variables ------------------------------------------------
 

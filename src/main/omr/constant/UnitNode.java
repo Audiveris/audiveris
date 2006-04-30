@@ -21,7 +21,7 @@ import omr.util.Logger;
  * @version $Id$
  */
 public class UnitNode
-        extends Node
+    extends Node
 {
     //~ Instance variables ------------------------------------------------
 

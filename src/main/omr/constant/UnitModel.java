@@ -40,7 +40,7 @@ import javax.swing.*;
  * @version $Id$
  */
 public class UnitModel
-        extends AbstractTreeTableModel
+    extends AbstractTreeTableModel
 {
     //~ Static variables/initializers -------------------------------------
 
