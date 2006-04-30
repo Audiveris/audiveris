@@ -23,7 +23,7 @@ import java.awt.*;
  * @version $Id$
  */
 public class Slur
-        extends MusicNode
+    extends MusicNode
 {
     //~ Static variables/initializers -------------------------------------
 
