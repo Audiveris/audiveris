@@ -10,6 +10,7 @@
 
 package omr.constant;
 
+import omr.Main;
 import omr.util.Logger;
 
 import java.io.FileInputStream;
@@ -18,6 +19,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.io.File;
 
 /**
  * Class <code>ConstantManager</code> manages the whole population of
@@ -92,7 +94,7 @@ public class ConstantManager
 
     // Default properties
     private static Properties defaultProperties = new Properties();
-    private static String DEFAULT_FILE_NAME = "/config/run.default.properties";
+    private static String DEFAULT_FILE_NAME = "run.default.properties";
 
     // User properties
     private static Properties userProperties = null;
@@ -213,8 +215,11 @@ public class ConstantManager
     {
         // Load DEFAULT properties from the distribution
         try {
-            defaultProperties.load
-                (ConstantManager.class.getResourceAsStream(DEFAULT_FILE_NAME));
+            FileInputStream in = new FileInputStream
+                (new File(Main.getConfigFolder(),
+                          DEFAULT_FILE_NAME));
+            defaultProperties.load(in);
+            in.close();
         } catch (Exception ex) {
             logger.severe("Error while loading DEFAULT resource as "
                           + DEFAULT_FILE_NAME);
