@@ -644,7 +644,7 @@ public class ScoreController
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Constant.Integer maxHistorySize = new Constant.Integer
                 (10,
