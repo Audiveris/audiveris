@@ -461,7 +461,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store a boolean value.
      */
     public static class Boolean
-            extends Constant
+        extends Constant
     {
         //~ Constructors --------------------------------------------------
 
@@ -535,7 +535,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store a double value.
      */
     public static class Double
-            extends Constant
+        extends Constant
     {
         //~ Constructors --------------------------------------------------
 
@@ -609,7 +609,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store an int value.
      */
     public static class Integer
-            extends Constant
+        extends Constant
     {
         //~ Constructors --------------------------------------------------
 
@@ -776,7 +776,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store a string value.
      */
     public static class String
-            extends Constant
+        extends Constant
     {
         //~ Constructors --------------------------------------------------
 

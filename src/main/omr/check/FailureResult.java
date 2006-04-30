@@ -18,7 +18,7 @@ package omr.check;
  * @version $Id$
  */
 public class FailureResult
-        extends Result
+    extends Result
 {
     //~ Constructors ------------------------------------------------------
 
