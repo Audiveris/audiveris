@@ -222,8 +222,8 @@ public class ScoreView
         }
 
         // Total size of this panel (for proper scrolling)
-        int h = 2 * STAVE_MARGIN_HEIGHT +
-            score.getMaxStaveNumber() * STAVE_AREA_HEIGHT;
+        int h = 2 * STAFF_MARGIN_HEIGHT +
+            score.getMaxStaveNumber() * STAFF_AREA_HEIGHT;
         panel.setModelSize
             (new Dimension(SCORE_INIT_X + totalWidth + INTER_SYSTEM, 2*h));
     }
