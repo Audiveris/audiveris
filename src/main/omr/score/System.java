@@ -42,7 +42,7 @@ public class System
     private SystemInfo info;
 
     // Specific Child : list of staves
-    private final StaveList staves;
+    private final StaffList staves;
 
     // Specific Child : list of slurs
     private final SlurList slurs;
@@ -92,8 +92,8 @@ public class System
     {
         super(score);
 
-        // Allocate stave and slur (node) lists
-        staves = new StaveList(this);
+        // Allocate staff and slur (node) lists
+        staves = new StaffList(this);
         slurs = new SlurList(this);
 
         this.info      = info;
@@ -123,16 +123,16 @@ public class System
     }
 
     //---------------//
-    // getFirstStave //
+    // getFirstStaff //
     //---------------//
     /**
-     * Report the first stave in this system
+     * Report the first staff in this system
      *
-     * @return the first stave entity
+     * @return the first staff entity
      */
-    public Stave getFirstStave ()
+    public Staff getFirstStaff ()
     {
-        return (Stave) getStaves().get(0);
+        return (Staff) getStaves().get(0);
     }
 
     //--------------//
@@ -158,8 +158,8 @@ public class System
      * <p>Width is the distance, in units, between left edge and right
      * edge.
      *
-     * <p>Height is the distance, in units, from top of first stave, down
-     * to bottom of last stave
+     * <p>Height is the distance, in units, from top of first staff, down
+     * to bottom of last staff
      *
      * @param dimension system dimension, in units
      */
@@ -209,16 +209,16 @@ public class System
     }
 
     //--------------//
-    // getLastStave //
+    // getLastStaff //
     //--------------//
     /**
-     * Report the last stave in this system
+     * Report the last staff in this system
      *
-     * @return the last stave entity
+     * @return the last staff entity
      */
-    public Stave getLastStave ()
+    public Staff getLastStaff ()
     {
-        return (Stave) getStaves().get(getStaves().size() - 1);
+        return (Staff) getStaves().get(getStaves().size() - 1);
     }
 
     //------------//
@@ -329,7 +329,7 @@ public class System
     /**
      * Report the collection of staves
      *
-     * @return the stave list
+     * @return the staff list
      */
     public List<TreeNode> getStaves ()
     {
@@ -343,12 +343,12 @@ public class System
      * Overrides normal behavior, to deal with the separation of children
      * into slurs and staves
      *
-     * @param node the node to insert (either a slur or a stave)
+     * @param node the node to insert (either a slur or a staff)
      */
     @Override
     public void addChild (TreeNode node)
     {
-        if (node instanceof Stave) {
+        if (node instanceof Staff) {
             staves.addChild(node);
             node.setContainer(staves);
         } else if (node instanceof Slur) {
@@ -360,7 +360,7 @@ public class System
         } else {
             // Programming error
             Dumper.dump(node);
-            logger.severe("System node not Stave nor Slur");
+            logger.severe("System node not Staff nor Slur");
         }
     }
 
@@ -514,7 +514,7 @@ public class System
      * @param comp the containing component
      *
      * @return true if painted was actually done, so that depending
-     *         entities (stave, slurs) are also rendered, false otherwise
+     *         entities (staff, slurs) are also rendered, false otherwise
      *         to stop the painting
      */
     @Override
@@ -577,12 +577,12 @@ public class System
     //~ Classes -----------------------------------------------------------
 
     //-----------//
-    // StaveList //
+    // StaffList //
     //-----------//
-    private static class StaveList
-            extends MusicNode
+    private static class StaffList
+        extends MusicNode
     {
-        StaveList (MusicNode container)
+        StaffList (MusicNode container)
         {
             super(container);
         }
@@ -592,7 +592,7 @@ public class System
     // SlurList //
     //----------//
     private static class SlurList
-            extends MusicNode
+        extends MusicNode
     {
         SlurList (MusicNode container)
         {
