@@ -313,7 +313,7 @@ public class ScaleBuilder
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Constant.Boolean plotting = new Constant.Boolean
                 (false,

@@ -24,7 +24,7 @@ import java.awt.*;
  * @version $Id$
  */
 public class PixelPoint
-        extends Point
+    extends Point
 {
     //------------//
     // PixelPoint //

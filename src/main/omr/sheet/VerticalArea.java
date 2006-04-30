@@ -127,7 +127,7 @@ public class VerticalArea
     //~ Classes -----------------------------------------------------------
 
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Scale.Fraction coreSectionLength = new Scale.Fraction
                 (2.0,

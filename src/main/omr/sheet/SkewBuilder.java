@@ -463,7 +463,7 @@ public class SkewBuilder
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
 
         Constant.Double maxSkewAngle = new Constant.Double

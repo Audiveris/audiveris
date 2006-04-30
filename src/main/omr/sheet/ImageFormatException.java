@@ -18,7 +18,7 @@ package omr.sheet;
  * @version $Id$
  */
 public class ImageFormatException
-        extends Exception
+    extends Exception
 {
     //~ Constructors ------------------------------------------------------
 

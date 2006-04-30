@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * Class <code>LineBuilder</code> processes the horizontal area that
- * corresponds to one histogram peak, and thus one stave line. The main
+ * corresponds to one histogram peak, and thus one staff line. The main
  * purpose of this class is precisely to retrieve and clean up the staff
  * line.
  *
@@ -38,7 +38,7 @@ import java.util.List;
  * sections then peripheral and internal sections. This is done by the
  * inherited StickArea class. </li>
  *
- * <li> Then, after all lines of the containing stave have been processed,
+ * <li> Then, after all lines of the containing staff have been processed,
  * we have a better knowledge of what left and right extrema should be. We
  * use this information to scan "holes" in the current line, considering
  * that every suitable section found in such holes is actually part of the
@@ -81,7 +81,7 @@ public class LineBuilder
 
     // Cached data
     private Sheet sheet;
-    private Scale staveScale;
+    private Scale staffScale;
     private GlyphLag hLag;
 
     //~ Constructors ------------------------------------------------------
@@ -97,21 +97,21 @@ public class LineBuilder
      * @param yBottom    ordinate at the end of the peak
      * @param vi         the underlying vertex iterator
      * @param sheet      the sheet on which the analysis is performed
-     * @param staveScale the specific scale of the containing stave
+     * @param staffScale the specific scale of the containing staff
      */
     public LineBuilder (GlyphLag hLag,
                         int yTop,
                         int yBottom,
                         ListIterator<GlyphSection> vi,
                         Sheet sheet,
-                        Scale staveScale)
+                        Scale staffScale)
     {
         this.sheet = sheet;
-        this.staveScale = staveScale;
+        this.staffScale = staffScale;
         this.hLag = hLag;
 
         // source for adequate sections
-        int yMargin = staveScale.fracToPixels(constants.yMargin);
+        int yMargin = staffScale.fracToPixels(constants.yMargin);
         source = new LineSource(yTop - yMargin, yBottom + yMargin, vi);
     }
 
@@ -135,7 +135,7 @@ public class LineBuilder
             logger.fine("Building LineBuilder #" + id + " ...");
         }
 
-        maxThickness = staveScale.fracToPixels(constants.maxThickness);
+        maxThickness = staffScale.fracToPixels(constants.maxThickness);
 
         // Initialize the line area
         initialize
@@ -252,7 +252,7 @@ public class LineBuilder
         // First compute the line equation with the known sticks
         computeLine();
 
-        final int yMargin = staveScale.fracToPixels(constants.yHoleMargin);
+        final int yMargin = staffScale.fracToPixels(constants.yHoleMargin);
 
         ListIterator<Stick> si = sticks.listIterator();
         Stick leftStick = si.next();
@@ -299,7 +299,7 @@ public class LineBuilder
             }
         }
 
-        final int maxGapWidth = staveScale.fracToPixels(constants.maxGapWidth);
+        final int maxGapWidth = staffScale.fracToPixels(constants.maxGapWidth);
 
         si = sticks.listIterator();
         leftStick = si.next();
@@ -338,7 +338,7 @@ public class LineBuilder
                 if ((gapStop - gapStart) > maxGapWidth) {
                     // Which ones to keep ?
                     if (leftStick.getStop() <= left) {
-                        // We are on left of the stave, remove everything before
+                        // We are on left of the staff, remove everything before
                         firstIdx = si.previousIndex();
 
                         if (logger.isFineEnabled()) {
@@ -348,7 +348,7 @@ public class LineBuilder
                                          + rightStick.getStart());
                         }
                     } else if (rightStick.getStart() >= right) {
-                        // We are on right of the stave, remove everything after
+                        // We are on right of the staff, remove everything after
                         lastIdx = si.previousIndex() - 1;
 
                         if (logger.isFineEnabled()) {
@@ -360,7 +360,7 @@ public class LineBuilder
 
                         break;
                     } else {
-                        // We are in the stave itself ! This means that either
+                        // We are in the staff itself ! This means that either
                         // left or right value is wrong.
                         if ((gapStop + gapStart) < (left + right)) {
                             // Move left side to the right
@@ -481,12 +481,12 @@ public class LineBuilder
         List<GlyphSection> holeCandidates = null;
 
         // Determine the abscissa limits
-        final int xMargin = staveScale.fracToPixels(constants.xHoleMargin);
+        final int xMargin = staffScale.fracToPixels(constants.xHoleMargin);
         xMin -= xMargin;
         xMax += xMargin;
 
         // Determine the ordinate limits
-        final int yMargin = staveScale.fracToPixels(constants.yHoleMargin);
+        final int yMargin = staffScale.fracToPixels(constants.yHoleMargin);
         final int yMin = (int) Math.rint(Math.min(yLeft, yRight) - yMargin);
         final int yMax = (int) Math.rint(Math.max(yLeft, yRight) + yMargin);
 
@@ -644,7 +644,7 @@ public class LineBuilder
     // StickComparator //
     //-----------------//
     private static class StickComparator
-            implements Comparator<Stick>
+        implements Comparator<Stick>
     {
         //~ Methods -------------------------------------------------------
 
@@ -659,7 +659,7 @@ public class LineBuilder
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Scale.Fraction coreSectionLength = new Scale.Fraction
                 (10d,

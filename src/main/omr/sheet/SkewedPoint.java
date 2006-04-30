@@ -24,6 +24,6 @@ import java.awt.*;
  * @version $Id$
  */
 public class SkewedPoint
-        extends Point
+    extends Point
 {
 }

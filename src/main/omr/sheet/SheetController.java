@@ -589,7 +589,7 @@ public class SheetController
      * menu, and inserts a button in the toolbar if an icon is provided.
      */
     private abstract class SheetAction
-            extends AbstractAction
+        extends AbstractAction
     {
         //~ Constructors --------------------------------------------------
 
@@ -626,7 +626,7 @@ public class SheetController
      * selected sheet.
      */
     private class CloseAction
-            extends SheetAction
+        extends SheetAction
     {
         //~ Constructors --------------------------------------------------
 
@@ -659,7 +659,7 @@ public class SheetController
      * file interactively.
      */
     private class SelectSheetAction
-            extends SheetAction
+        extends SheetAction
     {
         //~ Constructors --------------------------------------------------
 
@@ -685,7 +685,7 @@ public class SheetController
      * zoom, so that the full height is shown.
      */
     private class ZoomHeightAction
-            extends SheetAction
+        extends SheetAction
     {
         //~ Constructors --------------------------------------------------
 
@@ -712,7 +712,7 @@ public class SheetController
      * zoom, so that the full width is shown.
      */
     private class ZoomWidthAction
-            extends SheetAction
+        extends SheetAction
     {
         //~ Constructors --------------------------------------------------
 
@@ -857,7 +857,7 @@ public class SheetController
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Constant.String initImgDir = new Constant.String
                 ("c:/",

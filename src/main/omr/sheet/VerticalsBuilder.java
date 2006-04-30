@@ -586,7 +586,7 @@ public class VerticalsBuilder
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         //~ Instance variables --------------------------------------------
 
