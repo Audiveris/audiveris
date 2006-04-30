@@ -59,7 +59,7 @@ import javax.swing.event.*;
 
 /**
  * Class <code>LinesBuilder</code> is dedicated to the retrieval of the
- * grid of stave lines. The various series of staves lines are detected,
+ * grid of staff lines. The various series of staves lines are detected,
  * and their lines are carefully cleaned up when an object crosses
  * them. Note that staves are not yet gathered into Systems, this will be
  * done in the BarsBuilder processing.
@@ -80,8 +80,8 @@ public class LinesBuilder
     // Lag of horizontal runs
     private GlyphLag hLag;
 
-    // Series of horizontal peaks that signal stave areas
-    private List<StaveInfo> staves = new ArrayList<StaveInfo>();
+    // Series of horizontal peaks that signal staff areas
+    private List<StaffInfo> staves = new ArrayList<StaffInfo>();
 
     // Cached data
     private final Scale scale;
@@ -131,10 +131,10 @@ public class LinesBuilder
         // Clean up the staff lines in the found staves.
         cleanup();
 
-        // Determine limits in ordinate for each stave area
-        computeStaveLimits();
+        // Determine limits in ordinate for each staff area
+        computeStaffLimits();
 
-        logger.info(staves.size() + " stave(s) found");
+        logger.info(staves.size() + " staff(s) found");
 
         // Display the resulting lag is so asked for
         if (constants.displayFrame.getValue() &&
@@ -186,7 +186,7 @@ public class LinesBuilder
      * @return the collection of staves found
      */
 
-    public List<StaveInfo> getStaves ()
+    public List<StaffInfo> getStaves ()
     {
         return staves;
     }
@@ -196,8 +196,8 @@ public class LinesBuilder
     //---------//
     private void cleanup ()
     {
-        for (StaveInfo stave : staves) {
-            stave.cleanup();
+        for (StaffInfo staff : staves) {
+            staff.cleanup();
         }
     }
 
@@ -212,34 +212,34 @@ public class LinesBuilder
     }
 
     //--------------------//
-    // computeStaveLimits //
+    // computeStaffLimits //
     //--------------------//
-    private void computeStaveLimits ()
+    private void computeStaffLimits ()
     {
-        StaveInfo prevStave = null;
+        StaffInfo prevStaff = null;
 
-        for (StaveInfo stave : staves) {
-            // Very first stave
-            if (prevStave == null) {
-                stave.setAreaTop(0);
+        for (StaffInfo staff : staves) {
+            // Very first staff
+            if (prevStaff == null) {
+                staff.setAreaTop(0);
             } else {
-                // Top of stave area, defined as middle ordinate between
-                // ordinate of last line of previous stave and ordinate of
-                // first line of current stave
-                int middle = (prevStave.getLastLine().getLine().yAt
-                              (prevStave.getLeft())
-                              + stave.getFirstLine().getLine().yAt
-                              (stave.getLeft())) / 2;
-                prevStave.setAreaBottom(middle);
-                stave.setAreaTop(middle);
+                // Top of staff area, defined as middle ordinate between
+                // ordinate of last line of previous staff and ordinate of
+                // first line of current staff
+                int middle = (prevStaff.getLastLine().getLine().yAt
+                              (prevStaff.getLeft())
+                              + staff.getFirstLine().getLine().yAt
+                              (staff.getLeft())) / 2;
+                prevStaff.setAreaBottom(middle);
+                staff.setAreaTop(middle);
             }
 
-            // Remember this stave for next one
-            prevStave = stave;
+            // Remember this staff for next one
+            prevStaff = staff;
         }
 
-        // Bottom of last stave
-        prevStave.setAreaBottom(Integer.MAX_VALUE);
+        // Bottom of last staff
+        prevStaff.setAreaBottom(Integer.MAX_VALUE);
     }
 
     //--------------//
@@ -254,10 +254,10 @@ public class LinesBuilder
         // Populate the lineMembers
         List<Integer> knownIds = new ArrayList<Integer>();
         knownIds.add(GlyphBoard.NO_VALUE);
-        // Browse StaveInfos
-        for (StaveInfo stave : staves) {
+        // Browse StaffInfos
+        for (StaffInfo staff : staves) {
             // Browse LineInfos
-            for (LineInfo line : stave.getLines()) {
+            for (LineInfo line : staff.getLines()) {
                 // Browse Sticks
                 for (Stick stick : line.getSticks()) {
                     knownIds.add(new Integer(stick.getId()));
@@ -289,7 +289,7 @@ public class LinesBuilder
     // retrieveStaves //
     //---------------//
     /**
-     * Stave are detected in the list of (raw) peaks, simply by looking for
+     * Staff are detected in the list of (raw) peaks, simply by looking for
      * regular series of peaks.
      *
      * @param peaks the raw list of peaks found
@@ -317,8 +317,8 @@ public class LinesBuilder
         Population intervals = new Population();
         LineBuilder.reset();
 
-        // Use a new stave retriever
-        StaveBuilder staveBuilder = new StaveBuilder(sheet, hLag, vi);
+        // Use a new staff retriever
+        StaffBuilder staffBuilder = new StaffBuilder(sheet, hLag, vi);
 
         // Browse through the peak list
         Peak prevPeak = null;
@@ -398,14 +398,14 @@ public class LinesBuilder
                         }
                     }
 
-                    // We now have a set of peaks that signals a stave area
+                    // We now have a set of peaks that signals a staff area
                     if (logger.isFineEnabled()) {
                         logger.fine("Staff from peaks " + firstPeak + " to "
                                      + lastPeak);
                     }
 
                     staves.add
-                        (staveBuilder.buildInfo(peaks.subList(firstPeak,
+                        (staffBuilder.buildInfo(peaks.subList(firstPeak,
                                                               lastPeak + 1),
                                                 intervals.getMeanValue()));
 
@@ -591,8 +591,8 @@ public class LinesBuilder
             // Draw the line info, lineset by lineset
             g.setColor(Color.black);
 
-            for (StaveInfo stave : staves) {
-                stave.render(g, getZoom());
+            for (StaffInfo staff : staves) {
+                staff.render(g, getZoom());
             }
         }
 
@@ -622,7 +622,7 @@ public class LinesBuilder
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Constant.Boolean displayFrame = new Constant.Boolean
                 (false,
@@ -638,11 +638,11 @@ public class LinesBuilder
 
         Scale.Fraction maxInterlineDeviation = new Scale.Fraction
                 (0.15d,
-                 "Maximum deviation in the series of interline values in a stave");
+                 "Maximum deviation in the series of interline values in a staff");
 
         Scale.Fraction maxInterlineDiffFrac = new Scale.Fraction
                 (0.1d,
-                 "Maximum difference between a new interline and the current stave value");
+                 "Maximum difference between a new interline and the current staff value");
 
         Constant.Boolean plotting = new Constant.Boolean
                 (false,

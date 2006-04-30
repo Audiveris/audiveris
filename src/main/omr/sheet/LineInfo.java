@@ -18,7 +18,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Class <code>LineInfo</code> handles one stave line.
+ * Class <code>LineInfo</code> handles one staff line.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$

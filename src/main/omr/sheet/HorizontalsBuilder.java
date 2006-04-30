@@ -75,7 +75,7 @@ public class HorizontalsBuilder
     private static final FailureResult TOO_THICK = new FailureResult("Hori-TooThick");
     private static final FailureResult TOO_FAT = new FailureResult("Hori-TooFat");
     private static final FailureResult TOO_HOLLOW = new FailureResult("Hori-TooHollow");
-    private static final FailureResult IN_STAVE = new FailureResult("Hori-InStave");
+    private static final FailureResult IN_STAFF = new FailureResult("Hori-InStaff");
     private static final FailureResult TOO_FAR = new FailureResult("Hori-TooFar");
     private static final FailureResult TOO_ADJA = new FailureResult("Hori-TooHighAdjacency");
     private static final FailureResult BI_CHUNK = new FailureResult("Hori-BiChunk");
@@ -326,18 +326,18 @@ public class HorizontalsBuilder
     }
 
     //---------------//
-    // staveDistance //
+    // staffDistance //
     //---------------//
-    private static double staveDistance (Sheet sheet,
+    private static double staffDistance (Sheet sheet,
                                          Stick stick)
     {
         // Compute the (algebraic) distance from the stick to the nearest
-        // stave. Distance is negative if the stick is within the stave,
+        // staff. Distance is negative if the stick is within the staff,
         // positive outside.
         final int y = stick.getMidPos();
         final int x = (stick.getStart() + stick.getStop()) / 2;
-        final int idx = sheet.getStaveIndexAtY(y);
-        StaveInfo area = sheet.getStaves().get(idx);
+        final int idx = sheet.getStaffIndexAtY(y);
+        StaffInfo area = sheet.getStaves().get(idx);
         final int top = area.getFirstLine().getLine().yAt(x);
         final int bottom = area.getLastLine().getLine().yAt(x);
         final int dist = Math.max(top - y, y - bottom);
@@ -438,7 +438,7 @@ public class HorizontalsBuilder
     // MinThicknessCheck //
     //-------------------//
     private class MinThicknessCheck
-            extends Check<Stick>
+        extends Check<Stick>
     {
         //~ Constructors --------------------------------------------------
 
@@ -464,7 +464,7 @@ public class HorizontalsBuilder
     // MaxThicknessCheck //
     //-------------------//
     private class MaxThicknessCheck
-            extends Check<Stick>
+        extends Check<Stick>
     {
         //~ Constructors --------------------------------------------------
 
@@ -490,7 +490,7 @@ public class HorizontalsBuilder
     // MinLengthCheck //
     //----------------//
     private class MinLengthCheck
-            extends Check<Stick>
+        extends Check<Stick>
     {
         //~ Constructors --------------------------------------------------
 
@@ -516,7 +516,7 @@ public class HorizontalsBuilder
     // MaxLengthCheck //
     //----------------//
     private class MaxLengthCheck
-            extends Check<Stick>
+        extends Check<Stick>
     {
         //~ Constructors --------------------------------------------------
 
@@ -542,7 +542,7 @@ public class HorizontalsBuilder
     // MinDensityCheck //
     //-----------------//
     private static class MinDensityCheck
-            extends Check<Stick>
+        extends Check<Stick>
     {
         //~ Constructors --------------------------------------------------
 
@@ -572,7 +572,7 @@ public class HorizontalsBuilder
     // MinDistCheck //
     //--------------//
     private class MinDistCheck
-            extends Check<Stick>
+        extends Check<Stick>
     {
         //~ Constructors --------------------------------------------------
 
@@ -582,9 +582,9 @@ public class HorizontalsBuilder
                   "Check that stick is not within staff height"+
                   " (unit is interline)",
                   0, 0,
-                  true, IN_STAVE);
-            setLowHigh(constants.minStaveDistanceLow.getValue(),
-                       constants.minStaveDistanceHigh.getValue());
+                  true, IN_STAFF);
+            setLowHigh(constants.minStaffDistanceLow.getValue(),
+                       constants.minStaffDistanceHigh.getValue());
         }
 
         //~ Methods -------------------------------------------------------
@@ -593,7 +593,7 @@ public class HorizontalsBuilder
         // system being checked.
         protected double getValue (Stick stick)
         {
-            return staveDistance(sheet, stick);
+            return staffDistance(sheet, stick);
         }
     }
 
@@ -601,7 +601,7 @@ public class HorizontalsBuilder
     // MaxDistCheck //
     //--------------//
     private class MaxDistCheck
-            extends Check<Stick>
+        extends Check<Stick>
     {
         //~ Constructors --------------------------------------------------
 
@@ -612,8 +612,8 @@ public class HorizontalsBuilder
                   " (unit is interline)",
                   0, 0,
                   false, TOO_FAR);
-            setLowHigh(constants.maxStaveDistanceLow.getValue(),
-                       constants.maxStaveDistanceHigh.getValue());
+            setLowHigh(constants.maxStaffDistanceLow.getValue(),
+                       constants.maxStaffDistanceHigh.getValue());
         }
 
         //~ Methods -------------------------------------------------------
@@ -622,7 +622,7 @@ public class HorizontalsBuilder
         // system being checked.
         protected double getValue (Stick stick)
         {
-            return staveDistance(sheet, stick);
+            return staffDistance(sheet, stick);
         }
     }
 
@@ -634,7 +634,7 @@ public class HorizontalsBuilder
      * at start or stop
      */
     private class ChunkCheck
-            extends Check<Stick>
+        extends Check<Stick>
     {
         //~ Instance variables --------------------------------------------
 
@@ -654,7 +654,7 @@ public class HorizontalsBuilder
                   BI_CHUNK);
 
             // Adjust chunk window according to system scale (problem, we
-            // have sheet scale and stave scale, not system scale...)
+            // have sheet scale and staff scale, not system scale...)
             Scale scale = sheet.getScale();
             nWidth = scale.fracToPixels(constants.chunkWidth);
             nHeight = scale.fracToPixels(constants.chunkHeight);
@@ -689,7 +689,7 @@ public class HorizontalsBuilder
     // FirstAdjacencyCheck //
     //---------------------//
     private static class FirstAdjacencyCheck
-            extends Check<Stick>
+        extends Check<Stick>
     {
         //~ Constructors --------------------------------------------------
 
@@ -804,21 +804,21 @@ public class HorizontalsBuilder
                 (0.9,
                  "High Minimum density for a horizontal");
 
-        Scale.Fraction maxStaveDistanceLow = new Scale.Fraction
+        Scale.Fraction maxStaffDistanceLow = new Scale.Fraction
                 (5,
-                 "Low Maximum stave distance for a horizontal");
+                 "Low Maximum staff distance for a horizontal");
 
-        Scale.Fraction maxStaveDistanceHigh = new Scale.Fraction
+        Scale.Fraction maxStaffDistanceHigh = new Scale.Fraction
                 (7,
-                 "High Maximum stave distance for a horizontal");
+                 "High Maximum staff distance for a horizontal");
 
-        Scale.Fraction minStaveDistanceLow = new Scale.Fraction
+        Scale.Fraction minStaffDistanceLow = new Scale.Fraction
                 (0.6,
-                 "Low Minimum stave distance for a horizontal");
+                 "Low Minimum staff distance for a horizontal");
 
-        Scale.Fraction minStaveDistanceHigh = new Scale.Fraction
+        Scale.Fraction minStaffDistanceHigh = new Scale.Fraction
                 (0.8,
-                 "High Minimum stave distance for a horizontal");
+                 "High Minimum staff distance for a horizontal");
 
         Scale.Fraction chunkHeight = new Scale.Fraction
                 (0.33,

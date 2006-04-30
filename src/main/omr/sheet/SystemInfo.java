@@ -31,7 +31,7 @@ import java.util.List;
  * @version $Id$
  */
 public class SystemInfo
-        implements java.io.Serializable
+    implements java.io.Serializable
 {
     //~ Instance variables ------------------------------------------------
 
@@ -45,14 +45,14 @@ public class SystemInfo
     // =========
     //
 
-    // Index of first stave of the system, counted from 0 within all staves
+    // Index of first staff of the system, counted from 0 within all staves
     // of the score
     private int startIdx;
 
-    // Index of last stave of the system, also counted from 0.
+    // Index of last staff of the system, also counted from 0.
     private int stopIdx;
 
-    // Ordinate of top of first stave of the system.
+    // Ordinate of top of first staff of the system.
     private int top;
 
     // Abscissa of beginning of system.
@@ -61,15 +61,15 @@ public class SystemInfo
     // Width of the system.
     private int width = -1;
 
-    // Ordinate of bottom of last stave of the system.
+    // Ordinate of bottom of last staff of the system.
     private int bottom;
 
-    // Delta ordinate between first line of first stave & first line of
-    // last stave.
+    // Delta ordinate between first line of first staff & first line of
+    // last staff.
     private int deltaY;
 
     // Staves of this system
-    private List<StaveInfo> staves;
+    private List<StaffInfo> staves;
 
     // Related System in Score hierarchy
     private System scoreSystem;
@@ -115,8 +115,8 @@ public class SystemInfo
      *
      * @param id       the unique identity
      * @param sheet    the containing sheet
-     * @param startIdx the index of the starting stave
-     * @param stopIdx  the index of the terminating stave
+     * @param startIdx the index of the starting staff
+     * @param stopIdx  the index of the terminating staff
      *
      * @throws omr.ProcessingException
      */
@@ -130,10 +130,10 @@ public class SystemInfo
         this.stopIdx = stopIdx;
 
         // Compute size
-        staves = new ArrayList<StaveInfo>();
+        staves = new ArrayList<StaffInfo>();
         staves.addAll(sheet.getStaves().subList(startIdx, stopIdx + 1));
 
-        for (StaveInfo set : staves) {
+        for (StaffInfo set : staves) {
             if (left == -1) {
                 left = set.getLeft();
             } else {
@@ -147,12 +147,12 @@ public class SystemInfo
             }
         }
 
-        // First stave
-        StaveInfo set = staves.get(0);
+        // First staff
+        StaffInfo set = staves.get(0);
         LineInfo line = set.getFirstLine();
         top = line.getLine().yAt(line.getLeft());
 
-        // Last stave
+        // Last staff
         set = staves.get(staves.size() - 1);
         line = set.getFirstLine();
         deltaY = line.getLine().yAt(line.getLeft()) - top;
@@ -246,7 +246,7 @@ public class SystemInfo
     //-----------//
     /**
      * Report the ordinate of the bottom of the system, which is the
-     * ordinate of the last line of the last stave of this system
+     * ordinate of the last line of the last staff of this system
      *
      * @return the system bottom, in pixels
      */
@@ -261,7 +261,7 @@ public class SystemInfo
     /**
      * Report the deltaY of the system, that is the difference in ordinate
      * between first and last staves of the system. This deltaY is of
-     * course 0 for a one-stave system.
+     * course 0 for a one-staff system.
      *
      * @return the deltaY value, expressed in pixels
      */
@@ -378,7 +378,7 @@ public class SystemInfo
      *
      * @return the staves
      */
-    public List<StaveInfo> getStaves ()
+    public List<StaffInfo> getStaves ()
     {
         return staves;
     }
@@ -391,7 +391,7 @@ public class SystemInfo
      *
      * @param staves the list of staves
      */
-    public void setStaves (List<StaveInfo> staves)
+    public void setStaves (List<StaffInfo> staves)
     {
         this.staves = staves;
     }
@@ -489,7 +489,7 @@ public class SystemInfo
     /**
      * Report a readable description
      *
-     * @return a description based on stave indices
+     * @return a description based on staff indices
      */
     public String toString ()
     {
@@ -521,7 +521,7 @@ public class SystemInfo
     // setStartIdx //
     //-------------//
     /**
-     * Set the index of the starting stave of this system
+     * Set the index of the starting staff of this system
      *
      * @param startIdx the staff index, counted from 0
      */
@@ -531,23 +531,23 @@ public class SystemInfo
     }
 
     //-------------//
-    // getStaveAtY //
+    // getStaffAtY //
     //-------------//
     /**
-     * Given an ordinate value, retrieve the closest stave within the system
+     * Given an ordinate value, retrieve the closest staff within the system
      *
      * @param y the ordinate value
-     * @return the "containing" stave
+     * @return the "containing" staff
      */
-    public StaveInfo getStaveAtY (int y)
+    public StaffInfo getStaffAtY (int y)
     {
-        for (StaveInfo stave : staves) {
-            if (y <= stave.getAreaBottom()) {
-                return stave;
+        for (StaffInfo staff : staves) {
+            if (y <= staff.getAreaBottom()) {
+                return staff;
             }
         }
 
-        // Return the last stave
+        // Return the last staff
         return staves.get(staves.size() -1);
     }
 

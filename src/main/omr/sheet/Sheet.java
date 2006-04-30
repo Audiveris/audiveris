@@ -265,8 +265,8 @@ public class Sheet
     /**
      * Step to retrieve all staff lines, and remove them from the picture
      */
-    public final InstanceStep<List<StaveInfo>> LINES
-        = new InstanceStep<List<StaveInfo>>
+    public final InstanceStep<List<StaffInfo>> LINES
+        = new InstanceStep<List<StaffInfo>>
         ("Detect & remove all Staff Lines")
             {
                 public void doit ()
@@ -470,7 +470,7 @@ public class Sheet
                         throws ProcessingException
                 {
                     CLEANUP.getResult();
-                    
+
                     ScoreBuilder builder = new ScoreBuilder(score, Sheet.this);
                     builder.buildInfo ();
                 }
@@ -490,8 +490,8 @@ public class Sheet
      * Create a new <code>Sheet</code> instance, based on a given image
      * file.  Several files extensions are supported, including the most
      * common ones.
-     * 
-     * 
+     *
+     *
      * @param imageFile a <code>File</code> value to specify the image file.
      * @param force should we keep the sheet structure even if the image
      *                cannot be loaded for whatever reason
@@ -507,7 +507,7 @@ public class Sheet
         if (logger.isFineEnabled()) {
             logger.fine("creating Sheet form image " + imageFile);
         }
-        
+
         try {
             // We make sure we have a canonical form for the file name
             this.imageFile = imageFile.getCanonicalFile();
@@ -705,7 +705,7 @@ public class Sheet
     // getLinesBuilder //
     //----------------//
     /**
-     * Give access to the builder in charge of stave lines
+     * Give access to the builder in charge of staff lines
      *
      * @return the builder instance
      */
@@ -1075,7 +1075,7 @@ public class Sheet
      *
      * @return the collection of staves found
      */
-    public List<StaveInfo> getStaves ()
+    public List<StaffInfo> getStaves ()
     {
         try {
             return LINES.getResult();
@@ -1086,17 +1086,17 @@ public class Sheet
     }
 
     //------------------//
-    // getStaveIndexAtY //
+    // getStaffIndexAtY //
     //------------------//
     /**
      * Given the ordinate of a point, retrieve the index of the nearest
-     * stave
+     * staff
      *
      * @param y the point ordinate
      *
-     * @return the index of the nearest stave
+     * @return the index of the nearest staff
      */
-    public int getStaveIndexAtY (int y)
+    public int getStaffIndexAtY (int y)
     {
         int res = Collections.binarySearch
             (getStaves(), new Integer(y),
@@ -1110,13 +1110,13 @@ public class Sheet
                      if (o1 instanceof Integer) {
                          y = ((Integer) o1).intValue();
 
-                         StaveInfo stave = (StaveInfo) o2;
+                         StaffInfo staff = (StaffInfo) o2;
 
-                         if (y < stave.getAreaTop()) {
+                         if (y < staff.getAreaTop()) {
                              return -1;
                          }
 
-                         if (y > stave.getAreaBottom()) {
+                         if (y > staff.getAreaBottom()) {
                              return +1;
                          }
 
@@ -1133,7 +1133,7 @@ public class Sheet
         } else {
             // Should not happen!
             logger.severe
-                ("getStaveIndexAtY. No nearest stave for y = " + y);
+                ("getStaffIndexAtY. No nearest staff for y = " + y);
 
             return -res - 1; // Not found
         }
@@ -1566,8 +1566,8 @@ public class Sheet
         } else {
             // Render what we have got so far
             if (LINES.isDone()) {
-                for (StaveInfo stave : getStaves()) {
-                    stave.render(g, z);
+                for (StaffInfo staff : getStaves()) {
+                    staff.render(g, z);
                 }
             }
         }
@@ -1585,9 +1585,9 @@ public class Sheet
 
                     g.setColor(Color.lightGray);
 
-                    // Stave lines
-                    for (StaveInfo stave : system.getStaves()) {
-                        stave.render(g, z);
+                    // Staff lines
+                    for (StaffInfo staff : system.getStaves()) {
+                        staff.render(g, z);
                     }
 
                     // Bar lines

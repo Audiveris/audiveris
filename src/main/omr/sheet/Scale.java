@@ -87,10 +87,10 @@ public class Scale
     // Scale //
     //-------//
     /**
-     * Create a scale entity, this is meant for a specific stave.
+     * Create a scale entity, this is meant for a specific staff.
      *
-     * @param interline the interline value (for this stave)
-     * @param mainFore  the line thickness (for this stave)
+     * @param interline the interline value (for this staff)
+     * @param mainFore  the line thickness (for this staff)
      */
     public Scale (int interline,
                   int mainFore)
@@ -526,11 +526,11 @@ public class Scale
     //----------//
     /**
      * A subclass of Double, meant to store a fraction of interline, since
-     * many distances on a music sheet are expressed in fraction of stave
+     * many distances on a music sheet are expressed in fraction of staff
      * interline.
      */
     public static class Fraction
-            extends Constant.Double
+        extends Constant.Double
     {
         //~ Constructors --------------------------------------------------
 

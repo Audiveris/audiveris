@@ -308,8 +308,8 @@ public class SystemSplit
                 info.setAreaTop(0);
             } else {
                 // Top of system area, defined as middle ordinate between
-                // ordinate of last line of last stave of previous system
-                // and ordinate of first line of first stave of current
+                // ordinate of last line of last staff of previous system
+                // and ordinate of first line of first staff of current
                 // system
                 int middle = (prevInfo.getBottom() + info.getTop()) / 2;
                 prevInfo.setAreaBottom(middle);

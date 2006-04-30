@@ -36,7 +36,7 @@ import omr.score.Measure;
 import omr.score.PagePoint;
 import omr.score.Score;
 import omr.score.ScoreConstants;
-import omr.score.Stave;
+import omr.score.Staff;
 import omr.score.System;
 import omr.score.UnitDimension;
 import omr.stick.Stick;
@@ -84,11 +84,11 @@ public class BarsBuilder
 
     // Failure
     private static final FailureResult TOO_SHORT_BAR             = new FailureResult("Bar-TooShort");
-    private static final FailureResult OUTSIDE_STAVE_WIDTH       = new FailureResult("Bar-OutsideStaveWidth");
-    private static final FailureResult NOT_STAVE_ANCHORED        = new FailureResult("Bar-NotStaveAnchored");
+    private static final FailureResult OUTSIDE_STAFF_WIDTH       = new FailureResult("Bar-OutsideStaffWidth");
+    private static final FailureResult NOT_STAFF_ANCHORED        = new FailureResult("Bar-NotStaffAnchored");
     private static final FailureResult NOT_SYSTEM_ALIGNED        = new FailureResult("Bar-NotSystemAligned");
     private static final FailureResult NOT_WITHIN_SYSTEM         = new FailureResult("Bar-NotWithinSystem");
-    private static final FailureResult SHORTER_THAN_STAVE_HEIGHT = new FailureResult("Bar-ShorterThanStaveHeight");
+    private static final FailureResult SHORTER_THAN_STAFF_HEIGHT = new FailureResult("Bar-ShorterThanStaffHeight");
     private static final FailureResult THICK_BAR_NOT_ALIGNED     = new FailureResult("Bar-ThickBarNotAligned");
     private static final FailureResult TOO_HIGH_ADJACENCY        = new FailureResult("Bar-TooHighAdjacency");
     private static final FailureResult CHUNK_AT_TOP              = new FailureResult("Bar-ChunkAtTop");
@@ -331,7 +331,7 @@ public class BarsBuilder
     /**
      * Bar lines are first sorted according to their abscissa, then we run
      * additional checks on each bar line, since we now know its enclosing
-     * system. If OK, then we add a corresponding measure in each stave.
+     * system. If OK, then we add a corresponding measure in each staff.
      */
     private void buildMeasures ()
     {
@@ -368,11 +368,11 @@ public class BarsBuilder
             omr.score.System system = systemInfo.getScoreSystem();
 
             // We don't check that the bar does not start before first
-            // stave, this is too restrictive because of alternate endings.
+            // staff, this is too restrictive because of alternate endings.
             // We however do check that the bar does not end after last
-            // stave of the system.
+            // staff of the system.
             int barAbscissa = barInfo.getStick().getMidPos();
-            int systemBottom = system.getLastStave().getInfo().getLastLine()
+            int systemBottom = system.getLastStaff().getInfo().getLastLine()
                     .getLine().yAt(barAbscissa);
 
             if ((barInfo.getStick().getStop() - systemBottom) > maxDy) {
@@ -386,51 +386,51 @@ public class BarsBuilder
                 continue;
             }
 
-            // We add a measure in each stave of this system, provided that
-            // the stave is embraced by the bar line
+            // We add a measure in each staff of this system, provided that
+            // the staff is embraced by the bar line
             for (TreeNode node : system.getStaves()) {
-                Stave stave = (Stave) node;
-                if (isStaveEmbraced (stave, barInfo)) {
+                Staff staff = (Staff) node;
+                if (isStaffEmbraced (staff, barInfo)) {
                     if (logger.isFineEnabled()) {
                         logger.fine("Creating measure for bar-line " + barInfo.getStick());
                     }
-                    new Measure(barInfo, stave, Shape.SINGLE_BARLINE,
+                    new Measure(barInfo, staff, Shape.SINGLE_BARLINE,
                                 scale.pixelsToUnits(barAbscissa)
-                                - stave.getTopLeft().x,
+                                - staff.getTopLeft().x,
                                 scale.pixelsToUnits(barAbscissa)
-                                - stave.getTopLeft().x, false); // invented ?
+                                - staff.getTopLeft().x, false); // invented ?
                 }
             }
         }
     }
 
     //-----------------//
-    // isStaveEmbraced //
+    // isStaffEmbraced //
     //-----------------//
-    private boolean isStaveEmbraced (Stave   stave,
+    private boolean isStaffEmbraced (Staff   staff,
                                      BarInfo bar)
     {
         // Extrema of bar, units
         int topUnit = scale.pixelsToUnits(bar.getStick().getStart());
         int botUnit = scale.pixelsToUnits(bar.getStick().getStop());
 
-        // Check that middle of stave is within bar top & bottom
-        final int midStave = stave.getTopLeft().y + (stave.getSize() / 2);
+        // Check that middle of staff is within bar top & bottom
+        final int midStaff = staff.getTopLeft().y + (staff.getSize() / 2);
 
-        return (midStave > topUnit) && (midStave < botUnit);
+        return (midStaff > topUnit) && (midStaff < botUnit);
     }
 
     //------------------//
     // buildSystemInfos //
     //------------------//
     /**
-     * Knowing the starting stave indice of each stave system, we are able
+     * Knowing the starting staff indice of each staff system, we are able
      * to allocate and describe the proper number of systems in the score.
      *
-     * @param starts indexed by any stave, to give the stave index of the
-     *               containing system. For a system with just one stave,
+     * @param starts indexed by any staff, to give the staff index of the
+     *               containing system. For a system with just one staff,
      *               both indices are equal. For a system of more than 1
-     *               stave, the indices differ.
+     *               staff, the indices differ.
      *
      * @throws omr.ProcessingException raised if processing failed
      */
@@ -486,18 +486,18 @@ public class BarsBuilder
             info.setScoreSystem(system);
 
             // Allocate the staves in this system
-            int staveLink = 0;
+            int staffLink = 0;
 
-            for (StaveInfo set : info.getStaves()) {
+            for (StaffInfo set : info.getStaves()) {
                 LineInfo line = set.getFirstLine();
-                new Stave
+                new Staff
                     (set, system,
                      scale.pixelsToUnits
                      (new PixelPoint(set.getLeft(),
                                     line.getLine().yAt(line.getLeft()))),
                      scale.pixelsToUnits(set.getRight() - set.getLeft()),
                      64, // Staff vertical size in units
-                     staveLink++);
+                     staffLink++);
             }
         }
     }
@@ -506,7 +506,7 @@ public class BarsBuilder
     // checkBarAlignments //
     //--------------------//
     /**
-     * Check alignment of each measure of each stave with the other stave
+     * Check alignment of each measure of each staff with the other staff
      * measures, a test that needs several staves in the system
      *
      * @param system the system to check
@@ -517,9 +517,9 @@ public class BarsBuilder
             int maxShiftDx = scale.fracToPixels(constants.maxAlignShiftDx);
 
             for (Iterator sit = system.getStaves().iterator(); sit.hasNext();) {
-                Stave stave = (Stave) sit.next();
+                Staff staff = (Staff) sit.next();
 
-                for (Iterator mit = stave.getMeasures().iterator();
+                for (Iterator mit = staff.getMeasures().iterator();
                      mit.hasNext();) {
                     Measure measure = (Measure) mit.next();
 
@@ -529,9 +529,9 @@ public class BarsBuilder
 
                     for (Iterator it = system.getStaves().iterator();
                          it.hasNext();) {
-                        Stave stv = (Stave) it.next();
+                        Staff stv = (Staff) it.next();
 
-                        if (stv == stave) {
+                        if (stv == staff) {
                             continue;
                         }
 
@@ -570,17 +570,17 @@ public class BarsBuilder
      */
     private void checkEndingBar (omr.score.System system)
     {
-        Stave stave = system.getFirstStave();
-        Measure measure = stave.getLastMeasure();
+        Staff staff = system.getFirstStaff();
+        Measure measure = staff.getLastMeasure();
         int lastX = measure.getRightlinex();
         int minWidth = scale.fracToPixels(constants.minMeasureWidth);
 
-        if ((stave.getWidth() - lastX) < minWidth) {
+        if ((staff.getWidth() - lastX) < minWidth) {
             if (logger.isFineEnabled()) {
                 logger.fine("Adjusting EndingBar " + system);
             }
 
-            // Adjust end of system & stave(s) to this one
+            // Adjust end of system & staff(s) to this one
             UnitDimension dim = system.getDimension ();
             if (dim == null) {
                 system.setDimension (new UnitDimension(lastX, 0));
@@ -589,7 +589,7 @@ public class BarsBuilder
             }
 
             for (Iterator sit = system.getStaves().iterator(); sit.hasNext();) {
-                Stave stv = (Stave) sit.next();
+                Staff stv = (Staff) sit.next();
                 stv.setWidth(system.getDimension().width);
             }
         }
@@ -608,8 +608,8 @@ public class BarsBuilder
              sysit.hasNext();) {
             omr.score.System system = (omr.score.System) sysit.next();
 
-            // Check alignment of each measure of each stave with the other
-            // stave measures, a test that needs several staves in the
+            // Check alignment of each measure of each staff with the other
+            // staff measures, a test that needs several staves in the
             // system
             checkBarAlignments(system);
 
@@ -617,9 +617,9 @@ public class BarsBuilder
             // bar lines.
             mergeLines(system);
 
-            // First barline may be just the beginning of the stave, so do
+            // First barline may be just the beginning of the staff, so do
             // not count the very first bar line, which in general defines
-            // the beginning of the stave rather than the end of a measure,
+            // the beginning of the staff rather than the end of a measure,
             // but use it to precisely define the left abscissa of the
             // system and all its contained staves.
             removeStartingBar(system);
@@ -709,11 +709,11 @@ public class BarsBuilder
         int maxDoubleDx = scale.fracToPixels(constants.maxDoubleBarDx);
 
         for (Iterator sit = system.getStaves().iterator(); sit.hasNext();) {
-            Stave stave = (Stave) sit.next();
+            Staff staff = (Staff) sit.next();
 
             Measure prevMeasure = null;
 
-            for (Iterator mit = stave.getMeasures().iterator();
+            for (Iterator mit = staff.getMeasures().iterator();
                  mit.hasNext();) {
                 Measure measure = (Measure) mit.next();
 
@@ -756,7 +756,7 @@ public class BarsBuilder
     //-------------------//
     /**
      * We associate measures only with their ending bar line(s), so the
-     * starting bar of a stave (or system) does not end a measure, we thus
+     * starting bar of a staff (or system) does not end a measure, we thus
      * have to remove the measure that we first had associated with it.
      *
      * @param system the system whose starting measure has to be checked
@@ -765,8 +765,8 @@ public class BarsBuilder
      */
     private void removeStartingBar (omr.score.System system)
     {
-        Stave stave = system.getFirstStave();
-        Measure measure = stave.getFirstMeasure();
+        Staff staff = system.getFirstStaff();
+        Measure measure = staff.getFirstMeasure();
         BarInfo bar = measure.getInfos().get(0);
         int firstX = measure.getLeftlinex();
         int minWidth = scale.fracToPixels(constants.minMeasureWidth);
@@ -779,11 +779,11 @@ public class BarsBuilder
 
             system.getTopLeft().translate (firstX, 0);
 
-            // Adjust beginning of all stave(s) to this one
+            // Adjust beginning of all staff(s) to this one
             // Remove this false "measure" in all staves of the system
             for (Iterator sit = system.getStaves().iterator(); sit.hasNext();) {
-                Stave stv = (Stave) sit.next();
-                int staveDx = system.getTopLeft().x - stv.getTopLeft().x;
+                Staff stv = (Staff) sit.next();
+                int staffDx = system.getTopLeft().x - stv.getTopLeft().x;
                 PagePoint ul = stv.getTopLeft ();
                 if (ul == null) {
                     stv.setTopLeft (new PagePoint(system.getTopLeft().x, 0));
@@ -794,15 +794,15 @@ public class BarsBuilder
                 // Remove this first measure
                 stv.getMeasures().remove(0);
 
-                // Set the bar as starting bar for the stave
+                // Set the bar as starting bar for the staff
                 stv.setStartingBar(bar);
 
                 // Update other bar lines abscissae accordingly
                 for (Iterator mit = stv.getMeasures().iterator();
                      mit.hasNext();) {
                     Measure meas = (Measure) mit.next();
-                    meas.setLeftlinex(meas.getLeftlinex() - staveDx);
-                    meas.setRightlinex(meas.getRightlinex() - staveDx);
+                    meas.setLeftlinex(meas.getLeftlinex() - staffDx);
+                    meas.setRightlinex(meas.getRightlinex() - staffDx);
                 }
             }
         }
@@ -845,9 +845,9 @@ public class BarsBuilder
         // Remove from the containing Measure
         System scoreSystem = system.getScoreSystem();
         for (Iterator it = scoreSystem.getStaves().iterator(); it.hasNext();) {
-            Stave stave = (Stave) it.next();
-            if (isStaveEmbraced (stave, bar)) {
-                for (Iterator mit = stave.getMeasures().iterator();
+            Staff staff = (Staff) it.next();
+            if (isStaffEmbraced (staff, bar)) {
+                for (Iterator mit = staff.getMeasures().iterator();
                      mit.hasNext();) {
                     Measure measure = (Measure) mit.next();
                     for (Iterator bit = measure.getInfos().iterator();
@@ -927,8 +927,8 @@ public class BarsBuilder
             logger.fine(clutter.size() + " sticks to check");
         }
 
-        // A way to tell the System for each stave, by providing the stave
-        // index of the starting stave of the containing system.
+        // A way to tell the System for each staff, by providing the staff
+        // index of the starting staff of the containing system.
         int[] starts = new int[sheet.getStaves().size()];
 
         for (int i = starts.length - 1; i >= 0; i--) {
@@ -967,8 +967,8 @@ public class BarsBuilder
                     stick.setResult(BAR_SYSTEM_DEFINING);
 
                     if (logger.isFineEnabled()) {
-                        logger.fine("System-defining Bar line from stave "
-                                     + context.topIdx + " to stave "
+                        logger.fine("System-defining Bar line from staff "
+                                     + context.topIdx + " to staff "
                                      + context.botIdx + " " + stick);
                     }
                 } else {
@@ -990,11 +990,11 @@ public class BarsBuilder
         // Sanity check on the systems found
         for (int i = 0; i < starts.length; i++) {
             if (logger.isFineEnabled()) {
-                logger.fine("stave " + i + " system " + starts[i]);
+                logger.fine("staff " + i + " system " + starts[i]);
             }
 
             if (starts[i] == -1) {
-                logger.warning("No system found for stave " + i);
+                logger.warning("No system found for staff " + i);
                 throw new ProcessingException();
             }
         }
@@ -1108,28 +1108,28 @@ public class BarsBuilder
             super("Top",
                   "Check that top of stick is close to top of staff"+
                   " (unit is interline)",
-                  constants.maxStaveShiftDyLow.getValue(),
-                  constants.maxStaveShiftDyHigh.getValue(),
+                  constants.maxStaveshiftDyLow.getValue(),
+                  constants.maxStaveshiftDyHigh.getValue(),
                   false, null);
         }
 
         //~ Methods -------------------------------------------------------
 
-        // Retrieve the distance with proper stave border
+        // Retrieve the distance with proper staff border
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
             int start = stick.getStart();
 
-            // Which stave area contains the top of the stick?
-            context.topArea = sheet.getStaveIndexAtY(start);
+            // Which staff area contains the top of the stick?
+            context.topArea = sheet.getStaffIndexAtY(start);
 
-            StaveInfo area = sheet.getStaves().get(context.topArea);
+            StaffInfo area = sheet.getStaves().get(context.topArea);
 
-            // How far are we from the start of the stave?
-            int staveTop = area.getFirstLine().getLine().yAt(stick.getMidPos());
+            // How far are we from the start of the staff?
+            int staffTop = area.getFirstLine().getLine().yAt(stick.getMidPos());
 
-            double dy = sheet.getScale().pixelsToFrac(Math.abs(staveTop
+            double dy = sheet.getScale().pixelsToFrac(Math.abs(staffTop
                                                                - start));
 
             // Side-effect
@@ -1154,29 +1154,29 @@ public class BarsBuilder
             super("Bottom",
                   "Check that bottom of stick is close to bottom of staff"+
                   " (unit is interline)",
-                  constants.maxStaveShiftDyLow.getValue(),
-                  constants.maxStaveShiftDyHigh.getValue(),
+                  constants.maxStaveshiftDyLow.getValue(),
+                  constants.maxStaveshiftDyHigh.getValue(),
                   false, null);
         }
 
         //~ Methods -------------------------------------------------------
 
-        // Retrieve the distance with proper stave border
+        // Retrieve the distance with proper staff border
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
             int stop = stick.getStop();
 
-            // Which stave area contains the bottom of the stick?
-            context.bottomArea = sheet.getStaveIndexAtY(stop);
+            // Which staff area contains the bottom of the stick?
+            context.bottomArea = sheet.getStaffIndexAtY(stop);
 
-            StaveInfo area = sheet.getStaves().get(context.bottomArea);
+            StaffInfo area = sheet.getStaves().get(context.bottomArea);
 
-            // How far are we from the stop of the stave?
-            int staveBottom = area.getLastLine().getLine().yAt(stick
+            // How far are we from the stop of the staff?
+            int staffBottom = area.getLastLine().getLine().yAt(stick
                                                                .getMidPos());
 
-            double dy = sheet.getScale().pixelsToFrac(Math.abs(staveBottom
+            double dy = sheet.getScale().pixelsToFrac(Math.abs(staffBottom
                                                                - stop));
 
             // Side-effect
@@ -1201,13 +1201,13 @@ public class BarsBuilder
             super("Anchor",
                   "Check that thick bars are top and bottom aligned with staff",
                   0.5, 0.5,
-                  true, NOT_STAVE_ANCHORED);
+                  true, NOT_STAFF_ANCHORED);
         }
 
         //~ Methods -------------------------------------------------------
 
-        // Make sure that at least top or bottom are stave anchors, and
-        // that both are stave anchors in the case of thick bars.
+        // Make sure that at least top or bottom are staff anchors, and
+        // that both are staff anchors in the case of thick bars.
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -1240,7 +1240,7 @@ public class BarsBuilder
             super("MinLength",
                   "Check that stick is as long as staff height"+
                   " (diff is in interline unit)",
-                  -constants.maxStaveShiftDyLow.getValue(), 0,
+                  -constants.maxStaveshiftDyLow.getValue(), 0,
                   true, TOO_SHORT_BAR);
         }
 
@@ -1253,9 +1253,9 @@ public class BarsBuilder
             int x = stick.getMidPos();
             int height = Integer.MAX_VALUE;
 
-            // Check wrt every stave in the stick range
+            // Check wrt every staff in the stick range
             for (int i = context.topArea; i <= context.bottomArea; i++) {
-                StaveInfo area = sheet.getStaves().get(i);
+                StaffInfo area = sheet.getStaves().get(i);
                 height = Math.min(height, area.getHeight());
             }
 
@@ -1277,7 +1277,7 @@ public class BarsBuilder
                   "Check that stick is on the right of staff beginning bar"+
                   " (diff is in interline unit)",
                   0, 0,
-                  true, OUTSIDE_STAVE_WIDTH);
+                  true, OUTSIDE_STAFF_WIDTH);
         }
 
         //~ Methods -------------------------------------------------------
@@ -1289,9 +1289,9 @@ public class BarsBuilder
             int x = stick.getMidPos();
             int dist = Integer.MAX_VALUE;
 
-            // Check wrt every stave in the stick range
+            // Check wrt every staff in the stick range
             for (int i = context.topArea; i <= context.bottomArea; i++) {
-                StaveInfo area = sheet.getStaves().get(i);
+                StaffInfo area = sheet.getStaves().get(i);
                 dist = Math.min(dist, x - area.getLeft());
             }
 
@@ -1313,7 +1313,7 @@ public class BarsBuilder
                   "Check that stick is on the left of staff ending bar"+
                   " (diff is in interline unit)",
                   0, 0,
-                  true, OUTSIDE_STAVE_WIDTH);
+                  true, OUTSIDE_STAFF_WIDTH);
         }
 
         //~ Methods -------------------------------------------------------
@@ -1325,9 +1325,9 @@ public class BarsBuilder
             int x = stick.getMidPos();
             int dist = Integer.MAX_VALUE;
 
-            // Check wrt every stave in the stick range
+            // Check wrt every staff in the stick range
             for (int i = context.topArea; i <= context.bottomArea; i++) {
-                StaveInfo area = sheet.getStaves().get(i);
+                StaffInfo area = sheet.getStaves().get(i);
                 dist = Math.min(dist, area.getRight() - x);
             }
 
@@ -1361,7 +1361,7 @@ public class BarsBuilder
                   false, CHUNK_AT_TOP);
 
             // Adjust chunk window according to system scale (problem, we
-            // have sheet scale and stave scale, not system scale...)
+            // have sheet scale and staff scale, not system scale...)
             Scale scale = sheet.getScale();
             nWidth = scale.fracToPixels(constants.chunkWidth);
             nHeight = scale.fracToPixels(constants.chunkHeight);
@@ -1408,7 +1408,7 @@ public class BarsBuilder
                   0, 0, false, CHUNK_AT_BOTTOM);
 
             // Adjust chunk window according to system scale (problem, we
-            // have sheet scale and stave scale, not system scale...)
+            // have sheet scale and staff scale, not system scale...)
             Scale scale = sheet.getScale();
             nWidth = scale.fracToPixels(constants.chunkWidth);
             nHeight = scale.fracToPixels(constants.chunkHeight);
@@ -1588,7 +1588,7 @@ public class BarsBuilder
 
         Scale.Fraction maxBarOffset = new Scale.Fraction
                 (1.0,
-                 "Vertical offset used to detect that a bar extends past a stave");
+                 "Vertical offset used to detect that a bar extends past a staff");
 
         Constant.Integer maxDeltaLength = new Constant.Integer
                 (4,
@@ -1598,13 +1598,13 @@ public class BarsBuilder
                 (0.75,
                  "Maximum horizontal distance between the two bars of a double bar");
 
-        Scale.Fraction maxStaveShiftDyLow = new Scale.Fraction
+        Scale.Fraction maxStaveshiftDyLow = new Scale.Fraction
                 (0.125,
-                 "LowMaximum vertical distance between a bar edge and the stave line");
+                 "LowMaximum vertical distance between a bar edge and the staff line");
 
-        Scale.Fraction maxStaveShiftDyHigh = new Scale.Fraction
+        Scale.Fraction maxStaveshiftDyHigh = new Scale.Fraction
                 (10,
-                 "HighMaximum vertical distance between a bar edge and the stave line");
+                 "HighMaximum vertical distance between a bar edge and the staff line");
 
         Scale.Fraction maxBarThickness = new Scale.Fraction
                 (0.75,

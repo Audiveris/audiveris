@@ -23,7 +23,7 @@ import java.awt.*;
  * @version $Id$
  */
 public class BarInfo
-        implements java.io.Serializable
+    implements java.io.Serializable
 {
     //~ Instance variables ------------------------------------------------
 
@@ -40,8 +40,8 @@ public class BarInfo
      * Create a bar info, with provided parameters
      *
      * @param stick  the stick that corresponds to the bar line
-     * @param topIdx the index of the stave at top of bar line
-     * @param botIdx the index of the stave at bottom of bar line
+     * @param topIdx the index of the staff at top of bar line
+     * @param botIdx the index of the staff at bottom of bar line
      */
     public BarInfo (Stick stick,
                     int topIdx,
@@ -58,9 +58,9 @@ public class BarInfo
     // getBotIdx //
     //-----------//
     /**
-     * Report the index of the stave at bottom of bar line
+     * Report the index of the staff at bottom of bar line
      *
-     * @return the stave index, starting from 0
+     * @return the staff index, starting from 0
      */
     public int getBotIdx ()
     {
@@ -85,9 +85,9 @@ public class BarInfo
     // getTopIdx //
     //-----------//
     /**
-     * Report the index of the stave at top of bar line
+     * Report the index of the staff at top of bar line
      *
-     * @return the stave index, starting from 0
+     * @return the staff index, starting from 0
      */
     public int getTopIdx ()
     {
