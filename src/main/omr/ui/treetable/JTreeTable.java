@@ -274,8 +274,8 @@ public class JTreeTable
      * TreeTableCellEditor implementation. Component returned is the JTree.
      */
     public class TreeTableCellEditor
-            extends AbstractCellEditor
-            implements TableCellEditor
+        extends AbstractCellEditor
+        implements TableCellEditor
     {
         //~ Methods ----------------------------------------------------------
 
@@ -348,7 +348,7 @@ public class JTreeTable
      * DefaultTreeSelectionModel.
      */
     protected class ListToTreeSelectionModelWrapper
-            extends DefaultTreeSelectionModel
+        extends DefaultTreeSelectionModel
     {
         //~ Instance variables -----------------------------------------------
 
@@ -452,7 +452,7 @@ public class JTreeTable
          * when the selection of the list changse.
          */
         class ListSelectionHandler
-                implements ListSelectionListener
+            implements ListSelectionListener
         {
             //~ Methods ------------------------------------------------------
 

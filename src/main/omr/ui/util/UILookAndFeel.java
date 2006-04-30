@@ -108,7 +108,7 @@ public class UILookAndFeel
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Constant.String lookAndFeel = new Constant.String
                 ("com.jgoodies.looks.plastic.Plastic3DLookAndFeel",

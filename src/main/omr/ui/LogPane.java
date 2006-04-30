@@ -139,7 +139,7 @@ public class LogPane
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         //~ Instance variables --------------------------------------------
 

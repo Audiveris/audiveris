@@ -26,7 +26,7 @@ import javax.swing.tree.TreePath;
  *          interface, handling the list of listeners.
  */
 public abstract class AbstractTreeTableModel
-        implements TreeTableModel
+    implements TreeTableModel
 {
     //~ Instance variables ---------------------------------------------------
 

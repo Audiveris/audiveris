@@ -36,7 +36,7 @@ import javax.swing.tree.TreeModel;
  * @author Scott Violet
  */
 public interface TreeTableModel
-        extends TreeModel
+    extends TreeModel
 {
     //~ Methods --------------------------------------------------------------
 

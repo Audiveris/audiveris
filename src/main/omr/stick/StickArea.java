@@ -891,7 +891,7 @@ public class StickArea
     // Constants //
     //-----------//
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         Constant.Integer minStickWeight = new Constant.Integer
                 (3,

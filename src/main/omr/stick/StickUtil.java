@@ -419,7 +419,7 @@ public class StickUtil
                     if (logger.isFineEnabled()) {
                         logger.fine("y=" + y + " start=" + start + " length=" + length);
                     }
-                    
+
                     if (length <= 0) { // We have decreased to nothing
                         if (logger.isFineEnabled()) {
                             logger.fine("* length is zero *");
@@ -492,7 +492,7 @@ public class StickUtil
     //~ Classes -----------------------------------------------------------
 
     private static class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         //~ Instance variables --------------------------------------------
 

@@ -8,7 +8,7 @@ import javax.swing.event.EventListenerList;
 import java.util.EventObject;
 
 public class AbstractCellEditor
-        implements CellEditor
+    implements CellEditor
 {
     //~ Instance variables ---------------------------------------------------
 

@@ -379,7 +379,7 @@ public abstract class Dumper
      * can be left indented, according to the specified indentation level.
      */
     public static class Column
-            extends Dumper
+        extends Dumper
     {
         //~ Static variables/initializers ---------------------------------
 
@@ -447,7 +447,7 @@ public abstract class Dumper
      * presented on the same line.
      */
     public static class Row
-            extends Dumper
+        extends Dumper
     {
         //~ Constructors --------------------------------------------------
 
@@ -493,7 +493,7 @@ public abstract class Dumper
      * present fields in a table.
      */
     public static class Html
-            extends Dumper
+        extends Dumper
     {
         //~ Constructors --------------------------------------------------
 

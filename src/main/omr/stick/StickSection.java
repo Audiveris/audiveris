@@ -29,7 +29,7 @@ import static omr.stick.SectionRole.*;
  * @version $Id$
  */
 public class StickSection
-        extends GlyphSection
+    extends GlyphSection
 {
     //~ Instance variables ------------------------------------------------
 
@@ -200,7 +200,7 @@ public class StickSection
             sb.append(" ").append(role);
         }
 
-        if (this.getClass().getName().equals 
+        if (this.getClass().getName().equals
                 (StickSection.class.getName())) {
             sb.append("}");
         }

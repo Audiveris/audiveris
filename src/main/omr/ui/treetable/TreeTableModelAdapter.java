@@ -33,7 +33,7 @@ import javax.swing.tree.TreePath;
  * @version 1.2 10/27/98
  */
 public class TreeTableModelAdapter
-        extends AbstractTableModel
+    extends AbstractTableModel
 {
     //~ Instance variables ---------------------------------------------------
 

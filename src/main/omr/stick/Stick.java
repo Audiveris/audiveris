@@ -39,7 +39,7 @@ import java.util.List;
  * @version $Id$
  */
 public class Stick
-        extends Glyph
+    extends Glyph
 {
     //~ Static variables/initializers -------------------------------------
 
