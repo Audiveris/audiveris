@@ -1,0 +1,874 @@
+<!-- +================================================================+ -->
+<!-- |                                                                | -->
+<!-- |                         b u i l d . x m l                      | -->
+<!-- |                                                                | -->
+<!-- | abstract: ant build for Audiveris application                  | -->
+<!-- | author:   herve.bitteur@laposte.net                            | -->
+<!-- |                                                                | -->
+<!-- +================================================================+ -->
+
+<project name="audiveris--3.0" basedir=".." default="run">
+
+    <description>
+        Building (and running) the Audiveris project via Ant.
+        $Id$
+
+	Use 'ant -projecthelp' to list public defined targets.
+	Targets whose name begins with '-' are only internal targets.
+    </description>
+
+    <!-- Give users first chance to override properties -->
+    <property file="${user.home}/.audiveris/build.properties" />
+
+    <!-- This property is defined right here, since it is itself -->
+    <!-- needed to access the various potential property files   -->
+    <property name="top.dir"          location="${basedir}"/>
+    <property name="dev.dir"          location="${top.dir}/src"/>
+    <property name="config.dir"       location="${top.dir}/config"/>
+    <property name="nb.javadoc.dir"   location="${top.dir}/dist/javadoc"/>
+
+    <!-- Give users second chance to override properties -->
+    <property file="${dev.dir}/build.properties" />
+
+    <!-- Finally, get all default property values -->
+    <property file="${dev.dir}/build.default.properties" />
+
+    <!-- Load the environment variables -->
+    <property environment="env" />
+    
+    <!-- Tools classpath -->
+    <path id="project.tools.classpath">
+        <pathelement path="${ant.dir}/lib/xercesImpl.jar"/>
+        <pathelement path="${jcommon.jar}"/>
+        <pathelement path="${jfreechart.jar}"/>
+        <pathelement path="${jgoodies.forms.jar}"/>
+        <pathelement path="${jgoodies.looks.jar}"/>
+        <pathelement path="${log.jar}"/>
+        <pathelement path="${jibx.dir}/bcel.jar"  /> 
+        <pathelement path="${jibx.dir}/jibx-bind.jar"  /> 
+        <pathelement path="${jibx.dir}/jibx-extras.jar"  /> 
+        <pathelement path="${jibx.dir}/jibx-run.jar"  /> 
+        <pathelement path="${jibx.dir}/xpp3.jar"  /> 
+    </path>
+    
+    <!-- Build classpath -->
+    <path id="project.build.classpath">
+        <pathelement path="${build.classes.dir}"/>
+        <path refid="project.tools.classpath" />
+    </path>
+    <property name="javac.classpath" refid="project.build.classpath" />
+    
+    <!-- Build Test classpath -->
+    <path id="project.build.test.classpath">
+        <path refid="project.build.classpath" />
+        <pathelement path="${build.test.classes.dir}" />
+    </path>
+    
+    <!-- Uml classpath -->
+    <path id="project.uml.classpath">
+	<pathelement path="${java.home}/../lib/tools.jar"/>
+        <path refid="project.build.classpath" />
+    </path>
+    
+    <!-- Run classpath -->
+    <path id="project.run.classpath">
+        <pathelement path="${dist.jar}"/>
+        <pathelement path="${icons.music.jar}"/>
+        <path refid="project.tools.classpath" />
+        <pathelement path="${icons.buttons.jar}" />
+    </path>
+    <property name="project.run.string" refid="project.run.classpath" />
+    
+    <!-- Run Test classpath -->
+    <path id="project.run.test.classpath">
+        <path refid="project.build.test.classpath" />
+        <pathelement path="${dist.jar}"/>
+	<pathelement location="${junit.jar}"  /> 
+<!--         <path refid="project.run.classpath" /> -->
+    </path>
+    
+             
+    <!-- ================================================================ -->
+    <!-- ======================  Internal Targets  ====================== -->
+    <!-- ================================================================ -->
+
+    <import file="${dev.dir}/build-targets.xml" />
+
+    <!-- ======================= -->
+    <!--  - B I N D - T E S T S  -->
+    <!-- ======================= -->
+    <target name="-bind-tests" depends="-compile-tests">
+	<!--             description="Experiment the Jibx framework (compile)"  -->
+	
+	<bind verbose="false"
+	      load="false">
+	    <bindingfileset dir="${src.test.dir}">
+		<include name="**/*-binding.xml"/>
+	    </bindingfileset>
+
+	    <classpathset dir="${build.test.classes.dir}"/>
+	    <classpathset dir="${build.classes.dir}"/>
+	</bind>
+	
+    </target>
+    
+    <!-- ========================= -->
+    <!--  - C L E A N - B U I L D  -->
+    <!-- ========================= -->
+    <target name="-clean-build">
+<!--         description="Remove all build generated outputs" -->
+        <delete verbose="${verbose}" dir="${build.dir}"/>
+    </target>
+
+    <!-- ======================= -->
+    <!--  - C L E A N - D I S T  -->
+    <!-- ======================= -->
+    <target name="-clean-dist">
+<!--         description="Remove all dist generated outputs" -->
+        <delete verbose="${verbose}" dir="${dist.dir}"/>
+    </target>
+    
+    <!-- ===================== -->
+    <!--  - C L E A N - J A R  -->
+    <!-- ===================== -->
+    <target name="-clean-jar">
+<!--         description="Remove all generated libraries" -->
+	<delete verbose="${verbose}" dir="${dist.dir}"/>
+    </target>
+    
+    <!-- ======================= -->
+    <!--  - D O - C O M P I L E  -->
+    <!-- ======================= -->
+    <target name="-compile"
+        depends="-do-compile, -bind" />
+    
+    <!-- ================= -->
+    <!--  - C O M P I L E  -->
+    <!-- ================= -->
+    <target name="-do-compile"
+        depends="-init">
+<!--         description="Compile the java code" -->
+
+        <mkdir dir="${build.classes.dir}"/>
+        
+        <!-- baseline classes -->
+        <javac
+            classpathref = "project.build.classpath"
+            debug        = "${build.compile.debug}"
+            deprecation  = "${build.compile.deprecation}"
+            destdir      = "${build.classes.dir}"
+            listfiles    = "${build.compile.listfiles}"
+            source       = "${build.compile.source}"
+            srcdir       = "${src.dir}"
+            >
+            <compilerarg value="-Xlint"/>
+            <compilerarg value="-Xlint:-serial"/>
+            <compilerarg value="-Xlint:-path"/>
+        </javac>
+    </target>
+    
+    <!-- ============================= -->
+    <!--  - C O M P I L E - T E S T S  -->
+    <!-- ============================= -->
+    <target name="-compile-tests"
+        depends="-compile">
+<!--         description="Compile the unit tests" -->
+
+        <mkdir dir="${build.test.classes.dir}"/>
+        
+        <javac
+            classpathref = "project.build.test.classpath"
+            debug        = "${build.compile.debug}"
+            deprecation  = "${build.compile.deprecation}"
+            destdir      = "${build.test.classes.dir}"
+            listfiles    = "${build.compile.listfiles}"
+            source       = "${build.compile.source}"
+            srcdir       = "${src.test.dir}"
+            >
+            <compilerarg value="-Xlint"/>
+            <compilerarg value="-Xlint:-serial"/>
+            <compilerarg value="-Xlint:-path"/>
+        </javac>
+    </target>
+
+    <!-- =============================== -->
+    <!--  - C O P Y - E V A L U A T O R  -->
+    <!-- =============================== -->
+    <target name="-copy-evaluator"
+	    if="custom.evaluator.present">
+<!-- 	    description="Copy the custom evaluator file to config dir" -->
+
+        <copy
+            verbose="${verbose}"
+            todir="${config.dir}">
+            <fileset dir="${train.dir}"  
+                     includes="*.def"/>
+        </copy>
+    </target>
+    
+    <!-- =========== -->
+    <!--  - I N I T  -->
+    <!-- =========== -->
+    <target name="-init">
+<!--         description="Initialize the environment" -->
+        
+        <!-- Create the time stamp -->
+        <tstamp/>
+	
+        <available
+            property="junit.jar.present"
+            file="${junit.jar}"
+        />
+        
+    </target>
+              
+    <!-- ========================= -->
+    <!--  - U M L - P A C K A G E  -->
+    <!-- ========================= -->
+    <target name="-uml-package">
+<!-- 	    description="Generate UML for one package" -->
+	
+	<echo message="Processing uml for ${package}..." />
+
+	<!-- Symbolic names -->
+	<property name="uml.html" location="${dist.javadoc.dir}/${package}/package-uml.html"/>
+	<property name="uml.gif"  location="${dist.javadoc.dir}/${package}/package-uml.gif"/>
+	<property name="uml.dot"  location="${src.dir}/${package}/package-uml.dot"/>
+	
+	<!-- Generate the dot information -->
+        <javadoc classpathref="project.uml.classpath"
+		 sourcepath="${src.dir}"
+		 additionalparam="-output ${uml.dot} -all -nodefillcolor cornsilk -nodefontcolor blue">
+	    <doclet name="UmlGraph"
+		    path="${uml.jar}">
+	    </doclet>
+            <package name="${package}"/>
+        </javadoc>
+	
+	<!-- Generate the uml gif -->
+        <exec executable="${dot.exe}"
+	      output="${uml.gif}">
+	    <arg line="-Tgif"/>
+            <arg line="${uml.dot}"/>
+        </exec>
+	
+	<!-- Generate the uml html -->
+	<echo file="${uml.html}"
+	      message="&lt;head&gt;
+		       &lt;base href=&quot;file://${dist.javadoc.dir}/&quot; /&gt;
+		       &lt;/head&gt;
+		       &lt;body&gt;
+		       &lt;center&gt;
+		       &lt;h2&gt;Hierarchy for package ${package}&lt;/h2&gt;
+		       &lt;/center&gt;
+		       &lt;img src=&quot;file://${uml.gif}&quot; usemap=&quot;#mainmap&quot;/&gt;
+		       &lt;map name=&quot;mainmap&quot;&gt;"
+	      />
+
+	<!-- Generate and append the uml map -->
+        <exec executable="${dot.exe}"
+	       output="${uml.html}"
+	       append="true">
+            <arg line="-Tcmap"/>
+            <arg line="${uml.dot}"/>
+        </exec>
+	
+	<!-- Append the end of the uml html -->
+	<echo file="${uml.html}"
+	      append="true"
+	      message="&lt;/map&gt;
+		       &lt;/body&gt;"
+	      />
+	
+	<!-- Cleanup the temporary dot file -->
+	<!--         <delete file="${uml.dot}"/> -->
+	<echo message="Done with ${uml.html}" />
+	
+    </target>
+
+    <!-- =================== -->
+    <!--  - Z I P - C O R E  -->
+    <!-- =================== -->
+    <target name="-zip-core"
+            depends="-init">
+<!--             description="Build zip archive of just core training files" -->
+
+        <delete verbose="${verbose}">
+            <fileset dir="${core.dir}" 
+                     includes="core.zip" 
+                     />
+        </delete>
+
+        <zip
+            destfile="${core.zip}" >
+            <zipfileset dir="${core.dir}" prefix="core"
+                     includes="**/*.xml"
+                     excludes="${dist.excludes}"
+                     />
+        </zip>
+    </target>
+    
+    <!-- ================================================================ -->
+    <!-- =======================  Public Targets  ======================= -->
+    <!-- ================================================================ -->
+
+    <!-- =========== -->
+    <!--  C L E A N  -->
+    <!-- =========== -->
+    <target name="clean"
+            depends="-clean-build, -clean-jar, -clean-dist"
+	    description="Remove all the generated outputs">
+    </target>
+    
+    <!-- ========= -->
+    <!--  D I S T  -->
+    <!-- ========= -->
+    <target name="dist"
+ 	    depends="clean, -zip-core, jar, launcher, javadoc"
+            description="Rebuild and package everything for distribution">
+
+        <mkdir dir="${dist.dir}"/>
+
+        <!-- Copy the custom evaluator file if any to config dir -->
+     	<available file="${train.dir}/Neural.def"
+		   property="custom.evaluator.present"/>
+	<antcall target="-copy-evaluator"/>
+
+        <!-- Generate the global zip archive -->
+        <zip 
+            destfile="${dist.dir}/${full.name}-${DSTAMP}.zip" >
+
+            <!-- Files on top dir-->
+            <fileset dir="${top.dir}" 
+                     includes="*.txt, *.html, *.xml, *.bat" 
+                     excludes="${dist.excludes}"
+                     />
+        
+            <!-- Bin files -->
+            <zipfileset dir="${bin.dir}" prefix="bin"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+        
+            <!-- Jar file -->
+            <zipfileset dir="${dist.dir}" prefix="lib"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+
+            <!-- Config files -->
+            <zipfileset dir="${config.dir}" prefix="config"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+
+            <!-- Www files -->
+            <zipfileset dir="${www.dir}" prefix="www"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+            
+            <!-- Source main and test files -->
+            <zipfileset dir="${src.dir}" prefix="src"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+
+            <!-- Examples files -->
+            <zipfileset dir="${examples.dir}" prefix="examples"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+
+            <!-- Core srchive -->
+            <zipfileset dir="${train.dir}" prefix="train"
+                     includes="${core.file}"
+                     />
+        </zip>
+        
+    </target>
+    
+    <!-- ===================== -->
+    <!--  D I S T - T R A I N  -->
+    <!-- ===================== -->
+    <target name="dist-train"
+            depends="-init"
+            description="Zip all training material">
+
+        <mkdir dir="${dist.dir}"/>
+
+        <delete verbose="${verbose}">
+            <fileset dir="${dist.dir}" 
+                     includes="*train*.zip" 
+                     />
+        </delete>
+        
+        <!-- Generate the train zip archive -->
+        <zip 
+            destfile="${dist.dir}/${full.name}-train-${DSTAMP}.zip" >
+
+            <!-- Train files -->
+            <zipfileset dir="${sheets.dir}" prefix="train/sheets"
+                     includes="**/*.xml"
+                     excludes="${dist.excludes}"
+                     />
+        </zip>
+    </target>
+
+    <!-- ============= -->
+    <!--  E X P O R T  -->
+    <!-- ============= -->
+    <target name="export"
+            depends="-init"
+            description="Build from CVS">
+
+	<delete verbose="${verbose}" dir="${export.dir}"/>
+
+	<!-- Nota : Use of export triggers a bug in ant cvs, so this
+	     workaround for first checking out everything, then
+	     updating for the desired tag. Correct direct command
+	     should be : line="export -r ${tag.version} audiveris"
+	     -->
+	<cvs
+ 	    cvsRoot=":pserver:${cvs.login}:${cvs.password}@audiveris.dev.java.net:/cvs"
+ 	    dest="${export.dir}">
+	    <commandline>
+		<argument line="checkout audiveris" />
+	    </commandline>
+	
+	    <commandline>
+		<argument line="update -r ${tag.version} audiveris" />
+	    </commandline>
+	</cvs>
+
+	<!-- Build from the fresh files -->
+	<ant
+	    dir="${export.dir}/audiveris"
+	    inheritAll="false">
+	    <target name="dist" />
+	</ant>
+
+    </target>
+    
+    <!-- ======= -->
+    <!--  J A R  -->
+    <!-- ======= -->
+    <target name="jar"
+        depends="-compile, -pre-jar"
+        description="Compile and generate the Audiveris jar file">
+
+        <mkdir dir="${dist.dir}"/>
+        
+        <!-- Put all ${build.classes.dir} into the Audiveris jar file -->
+        <jar basedir="${build.classes.dir}"
+	     jarfile="${dist.jar}">
+            <manifest>
+                <attribute name="Main-Class"
+                           value="${Name}"/>
+                <attribute name="Built-By"
+                           value="${build.owner}"/>
+                <attribute name="Specification-Title"
+                           value="${spec.title}" />
+                <attribute name="Specification-Version"
+                           value="${spec.version}" />
+                <attribute name="Implementation-Version"
+                           value="${impl.version} ${DSTAMP}" />
+            </manifest>
+        </jar>
+        
+    </target>
+    
+    <!-- =============== -->
+    <!--  J A V A D O C  -->
+    <!-- =============== -->
+    <target name="javadoc"
+	    depends="-javadoc-build, -post-javadoc, -post-post-javadoc"
+	    description="Generate project documentation" />
+    
+    <!-- ================= -->
+    <!--  L A U N C H E R  -->
+    <!-- ================= -->
+    <target name="launcher"
+	    depends="-init"
+	    description="Generate the launcher script">
+
+        <mkdir dir="${bin.dir}"/>
+
+        <!-- .bat file for windows -->
+        <echo file="${bin.dir}/audiveris.bat" append="false">@ECHO OFF
+REM audiveris.bat - file generated on ${DSTAMP}
+java -cp ${project.run.string} ${Name} %1 %2 %3 %4 %5 %6 %7 %8 %9
+        </echo>
+        
+    </target>
+    
+    <!-- =========== -->
+    <!--  R E J A R  -->
+    <!-- =========== -->
+    <target name="rejar"
+        depends="-clean-build, jar"
+        description="Rebuild jar file from scratch">
+    </target>
+    
+    <!-- ======= -->
+    <!--  R U N  -->
+    <!-- ======= -->
+    <target name="run"
+        depends="jar"
+        description="Run the application from its GUI">
+
+	<!-- Default values -->
+	<property name="run.batch" value=""/>
+	<property name="run.sheet" value=""/>
+	<property name="run.score" value=""/>
+	<property name="run.step"  value=""/>
+	
+        <java
+	    classname="Audiveris"
+            classpathref="project.run.classpath"
+            failonerror="true"
+            fork="true"
+            maxmemory="128m">
+            
+            <!-- Specific JVM arguments, if any -->
+<!--  	    <jvmarg value="-verbose:class" /> -->
+ 	    <jvmarg value="-Dcom.sun.management.jmxremote" />
+ 	    
+            <!-- Configuration file for logging -->
+            <sysproperty key="java.util.logging.config.file"
+                value="${config.dir}/logging.properties"/>
+            
+            <!-- Application arguments -->
+ 	    <arg line="${run.batch}"/>
+ 	    <arg line="${run.sheet}"/>
+ 	    <arg line="${run.score}"/>
+ 	    <arg line="${run.step}"/>
+	    
+            <arg line="-save ${save.dir}"/>
+            <arg line="-write"/>
+        </java>
+    </target>
+    
+    <!-- =================== -->
+    <!--  R U N - B A T C H  -->
+    <!-- =================== -->
+    <target name="run-batch"
+        description="Run the application in batch mode">
+
+	<property name="run.batch" value="-batch"/>
+	<property name="run.sheet" value="-sheet ${top.dir}/examples/Country.png"/>
+	<property name="run.score" value="-score ${top.dir}/save/batuque.xml"/>
+	<property name="run.step"  value="-stoooop horizontals"/>
+
+	<antcall target="run"/>
+    </target>
+    
+    <!-- ========================= -->
+    <!--  R U N - S P E C I F I C  -->
+    <!-- ========================= -->
+    <target name="run-specific"
+        description="Run the application with specific parameters">
+
+	<property name="run.sheet" value="-sheet ${top.dir}/examples/Country.png"/>
+	<property name="run.step"  value="-step bars"/>
+	<property name="run.score" value="-score ${top.dir}/save/Country.xml"/>
+
+	<antcall target="run"/>
+    </target>
+    
+    <!-- =================== -->
+    <!--  R U N - C L A S S  -->
+    <!-- =================== -->
+    <target name="run-class"
+        depends="-bind-tests, jar"
+        description="Run any class">
+        
+        <java classname="omr.ui.ZoomTest"
+            classpathref="project.run.test.classpath"
+            failonerror="true"
+            fork="true"
+            maxmemory="128m">
+ 	    
+            <!-- Configuration file for logging -->
+            <sysproperty key="java.util.logging.config.file"
+                value="${config.dir}/logging.properties"/>
+        </java>
+
+    </target>
+
+    <!-- =============== -->
+    <!--  R U N - H A T  -->
+    <!-- =============== -->
+    <target name="run-hat"
+        depends="jar"
+        description="Run to prepare the Heap Analysis Tool">
+        
+        <java
+	    classname="Audiveris"
+            classpathref="project.run.classpath"
+            failonerror="true"
+            fork="true"
+            maxmemory="128m">
+            
+            <!-- Specific JVM arguments, if any -->
+	    <jvmarg value="-Xrunhprof:file=dump-horizontals.hprof,format=b" />
+ 	    
+            <!-- Configuration file for logging -->
+            <sysproperty key="java.util.logging.config.file"
+                value="${config.dir}/logging.properties"/>
+
+            <arg line="-step bars"/> 
+	    <arg line="-sheet ${top.dir}/examples/Batuque.png"/>
+        </java>
+
+<!-- 	<exec -->
+<!-- 	    spawn="true" -->
+<!-- 	    executable="jhat.exe"> -->
+<!-- 	    <arg value="-J-mx256m" /> -->
+<!-- 	    <arg file="dump-horizontals.hprof" /> -->
+<!-- 	</exec> -->
+
+<!-- 	<echo message="Sleeping for a while ..." /> -->
+<!-- 	<sleep seconds="10"/> -->
+<!-- 	<echo message="Now, launching the browser..." /> -->
+<!-- 	<exec -->
+<!-- 	    spawn="true" -->
+<!-- 	    executable="${browser}"> -->
+<!-- 	    <arg value="http://localhost:7000/showInstanceCounts/" /> -->
+<!-- 	</exec> -->
+
+    </target>
+
+    <!-- ======================= -->
+    <!--  R U N - T R A I N E R  -->
+    <!-- ======================= -->
+    <target name="run-trainer"
+        depends="jar"
+        description="Run just the glyph trainer">
+        
+        <java classname="omr.glyph.ui.GlyphTrainer"
+            classpath="${dist.jar}"
+            failonerror="true"
+            fork="true"
+            maxmemory="128m">
+ 	    
+            <!-- Configuration file for logging -->
+            <sysproperty key="java.util.logging.config.file"
+                value="${config.dir}/logging.properties"/>
+        </java>
+    </target>
+
+    <!-- ================= -->
+    <!--  R U N - T E S T  -->
+    <!-- ================= -->
+    <target name="run-test"
+        depends="-bind-tests, jar"
+        description="Run test program w/o JUnit">
+        
+        <java classname="omr.score.ScoreViewTest"
+            classpathref="project.run.test.classpath"
+            failonerror="true"
+            fork="true"
+            maxmemory="128m">
+ 	    
+            <!-- Configuration file for logging -->
+            <sysproperty key="java.util.logging.config.file"
+                value="${config.dir}/logging.properties"/>
+
+            <arg line="/soft/audiveris/save/Country.xml"/> 
+	    
+        </java>
+    </target>
+    
+    <!-- ======== -->
+    <!--  S A V E -->
+    <!-- ======== -->
+    <target name="save"
+        depends="-init"
+        description="Make a backup of all important files" >
+        
+        <mkdir dir="${backup.dir}/${ant.project.name}" />
+
+        <!-- save relevant directories -->
+        <zip
+            update="yes"
+            destfile="${backup.dir}/${ant.project.name}/${DSTAMP}-${machine.name}-src.zip" >
+            <fileset dir="${top.dir}"  
+                     includes="build.xml, src/**, config/**, icons/**, www/**, train/*.def, nb/jp/**"
+                     excludes="${dist.excludes},www/docs/api/**,www/branding/**,nb/jp/dist/**" />
+            <fileset dir="${user.home}/.audiveris"
+                     includes="build.properties" />
+            <fileset dir="${user.home}/.audiveris"
+                     includes="run.properties" />
+        </zip>
+    </target>
+
+    <!-- ========= -->
+    <!--  T E S T  -->
+    <!-- ========= -->
+    <target name="test" depends="-bind-tests"
+	    if="junit.jar.present"
+            description="Run all unit tests in batch" >
+
+	<echo message="Performing unit tests ..." />
+
+        <delete verbose="${verbose}" dir="${build.test.results.dir}"/>
+        <mkdir dir="${build.test.results.dir}"/>
+	
+	<!-- Specific pattern -->
+     	<property name="tests" value="*Test" />
+
+	<!-- Default pattern -->
+	<property name="tests" value="*Test" />
+	<echo message="Unit test pattern : ${tests}" />
+	
+        <junit
+	    printsummary="yes"
+	    haltonfailure="no" >
+            <classpath refid="project.run.test.classpath"/>
+            <formatter type="plain" usefile="false" />
+            <formatter type="xml" />
+ 	    
+            <!-- Configuration file for logging -->
+            <sysproperty key="java.util.logging.config.file"
+                value="${config.dir}/logging.properties"/>
+
+            <batchtest
+		fork="yes"
+		todir="${build.test.results.dir}">
+                <fileset 
+		    dir="${src.test.dir}"
+		    includes="**/${tests}.java" />
+            </batchtest>
+        </junit>
+
+	<echo message="Generating reports of unit tests ..." />
+	<junitreport todir="${build.test.results.dir}">
+	    <fileset dir="${build.test.results.dir}">
+		<include name="TEST-*.xml"/>
+	    </fileset>
+	    <report format="frames" todir="${build.test.results.dir}/html"/>
+	</junitreport>
+	
+    </target>
+
+    <!-- =============== -->
+    <!--  T E S T - U I  -->
+    <!-- =============== -->
+    <target name="test-ui" depends="-compile-tests" if="junit.jar.present"
+            description="Run all unit tests from TestRunner GUI" >
+
+	<echo message="Launching TestRunner ..." />
+        
+        <java classname="junit.swingui.TestRunner"
+            classpathref="project.run.test.classpath"
+            failonerror="true"
+            fork="true"
+            maxmemory="128m">
+ 	    
+            <!-- Configuration file for logging -->
+            <sysproperty key="java.util.logging.config.file"
+                value="${config.dir}/logging.properties"/>
+
+<!--             <arg line="omr.graph.GraphTest"/>  -->
+<!--             <arg line="omr.math.LineTest"/>  -->
+<!--             <arg line="omr.math.PopulationTest"/>  -->
+        </java>
+	
+    </target>
+    
+    <!-- ======= -->
+    <!--  U M L  -->
+    <!-- ======= -->
+    <target name="uml"
+            depends="-init"
+            description="Generate UML views with UMLGraph">
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr"/>
+ 	</antcall>
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr/check"/>
+ 	</antcall>
+	
+	<antcall target="-uml-package">
+	    <param name="package" value="omr/constant"/>
+	</antcall>
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr/glyph"/>
+ 	</antcall>
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr/glyph/ui"/>
+ 	</antcall>
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr/graph"/>
+ 	</antcall>
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr/lag"/>
+ 	</antcall>
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr/math"/>
+ 	</antcall>
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr/score"/>
+ 	</antcall>
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr/sheet"/>
+ 	</antcall>
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr/stick"/>
+ 	</antcall>
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr/ui"/>
+ 	</antcall>
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr/ui/treetable"/>
+ 	</antcall>
+	
+ 	<antcall target="-uml-package">
+ 	    <param name="package" value="omr/util"/>
+ 	</antcall>
+
+    </target>
+    
+    <!-- ============= -->
+    <!--  U P L O A D  -->
+    <!-- ============= -->
+    <target name="upload"
+            depends="save"
+            description="Upload backup to personal pages on an FTP server">
+
+	<echo message="Uploading backup file ..." />
+	<copy
+	    verbose="${verbose}"
+	    todir="${netbackup.dir}/${ant.project.name}">
+	    <fileset dir="${backup.dir}/${ant.project.name}">
+		<include name="**/${DSTAMP}-${machine.name}-*.zip"/>
+	    </fileset>
+	</copy>
+
+<!--          <ftp action="put" -->
+<!--               password="${ftp.password}" -->
+<!--               remotedir="/backup/${ant.project.name}" -->
+<!--               server="${ftp.server}" -->
+<!--               userid="${ftp.login}" -->
+<!--               verbose="${verbose}"> -->
+<!--              <fileset dir="${backup.dir}/${ant.project.name}"> -->
+<!--                  <include name="**/${DSTAMP}-${machine.name}-*.zip"/> -->
+<!--              </fileset> -->
+<!--          </ftp> -->
+	
+    </target>
+
+</project>
