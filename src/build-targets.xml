@@ -1,0 +1,197 @@
+<!-- +================================================================+ -->
+<!-- |                                                                | -->
+<!-- |                 b u i l d - t a r g e t s . x m l              | -->
+<!-- |                                                                | -->
+<!-- | abstract: ant build for Audiveris application                  | -->
+<!-- | author:   herve.bitteur@laposte.net                            | -->
+<!-- |                                                                | -->
+<!-- +================================================================+ -->
+
+<project name="audiveris-targets" basedir="..">
+
+    <!-- =========== -->
+    <!--  - B I N D  -->
+    <!-- =========== -->
+    
+    <!-- JiBX binding compiler task definition -->
+    <taskdef name="bind"
+             classname="org.jibx.binding.ant.CompileTask"
+             classpath="${jibx.dir}/jibx-bind.jar" />
+
+    <target name="-bind"
+            description="Generate some class binding, using JiBX" >
+
+<!--         <echo>DEBUG build-targets -bind</echo> -->
+
+        <bind verbose="false"
+              load="false">
+            <bindingfileset dir="${dev.dir}">
+                <include name="**/jibx-*-mapping.xml"/>
+            </bindingfileset>
+            <classpathset dir="${build.classes.dir}"/>
+        </bind>
+        
+    </target>
+
+    <!-- ================= -->
+    <!--  - P R E - J A R  -->
+    <!-- ================= -->
+    <target name="-pre-jar">
+
+<!--         <echo>DEBUG build-targets -pre-jar</echo> -->
+
+        <!-- Prepare a (half) manifest -->
+        <tstamp/>
+	<property name="manifest.file" value="manifest.mf" />
+        <echo file="${manifest.file}" append="false">Manifest-Version: 1.0
+Built-By: ${build.owner}
+Specification-Title: ${spec.title}
+Specification-Version: ${spec.version}
+Implementation-Version: ${impl.version} ${DSTAMP}
+</echo> 
+        
+        <!-- Make a separate archive for icons -->
+        <jar basedir="${top.dir}"
+	     destfile="${icons.dir}/music_icons.jar"
+	     includes="icons/*.xml"
+	     compress="true"
+	     />
+
+    </target>
+    
+    <!-- ============================= -->
+    <!--  - J A V A D O C - B U I L D  -->
+    <!-- ============================= -->
+    <target name="-javadoc-build">
+        <!--         description="Generate project documentation" -->
+        
+<!--         <echo>DEBUG build-targets -javadoc-build</echo> -->
+
+        <!-- Get rid of existing html files -->
+        <!-- without deleting the directory (to keep CVS admin files) -->
+        <mkdir dir="${dist.javadoc.dir}" />
+        <delete verbose="${verbose}">
+            <fileset dir="${dist.javadoc.dir}" 
+                     includes="**/*.html" 
+                     />
+        </delete>
+
+        <!-- Just in case these properties are not already set -->
+        <property name="javadoc.additionalparam" value="" />
+        <property name="javadoc.author"          value="true" />
+        <property name="javadoc.noindex"         value="false" />
+        <property name="javadoc.nonavbar"        value="false" />
+        <property name="javadoc.notree"          value="false" />
+        <property name="javadoc.private"         value="false" />
+        <property name="javadoc.splitindex"      value="true" />
+        <property name="javadoc.use"             value="true" />
+        <property name="javadoc.version"         value="true" />
+        <property name="javadoc.windowtitle"     value="Titre de la window" />
+        
+        <javadoc
+            additionalparam ="${javadoc.additionalparam}"
+            author          ="${javadoc.author}"
+            bottom          ="${copyright.message}"
+            destdir         ="${dist.javadoc.dir}"
+            doctitle        ="${Name} ${spec.version} API"
+            encoding        ="${build.encoding}"
+            failonerror     ="true"
+            noindex         ="${javadoc.noindex}"
+            nonavbar        ="${javadoc.nonavbar}"
+            notree          ="${javadoc.notree}"
+            overview        ="${javadoc.overview}"
+            package         ="yes"
+            packagenames    ="${javadoc.packages}"
+            private         ="${javadoc.private}"
+            source          ="${javac.source}"
+            sourcepath      ="${src.dir}"
+            splitindex      ="${javadoc.splitindex}"
+            use             ="${javadoc.use}"
+            useexternalfile ="true"
+            version         ="${javadoc.version}"
+            windowtitle     ="${javadoc.windowtitle}"
+            >
+            
+            <classpath>
+                <path path="${javac.classpath}"/>
+            </classpath>
+            <sourcepath>
+                <pathelement location="${src.dir}"/>
+            </sourcepath>
+
+            <!-- Which Java files to process -->
+            <source file="${src.dir}/Audiveris.java"/>
+            <packageset dir="${src.dir}" includes="*/**"/>
+
+            <!-- Define a logical grouping of packages -->
+             <group packages="omr:omr.sheet:omr.score:omr.glyph"
+                 title="Driving Packages"/>
+             <group packages="omr.ui:omr.ui.*:omr.glyph.ui"
+                 title="User interface Packages"/>
+             <group packages="omr.graph:omr.lag*:omr.stick*"
+                 title="Geometry Packages"/>
+             <group packages="omr.check:omr.constant:omr.math:omr.util"
+                 title="Utility Packages"/>
+        </javadoc>
+
+    </target>
+
+    <!-- ===================== -->
+    <!--  P R O P E R T I E S  -->
+    <!-- ===================== -->
+    <target name="properties"
+        description="Print out all properties for the build file">
+        <echoproperties/>
+    </target>
+    
+
+    <!-- =========================== -->
+    <!--  - P O S T - J A V A D O C  -->
+    <!-- =========================== -->
+    <target name="-post-javadoc">
+
+        <!-- Remove time stamp in javadoc files, to ease CVS handling -->
+        <echo message="Removing time stamps ..." />
+        <replaceregexp replace="-- Generated by javadoc --"
+                       match="-- Generated by javadoc .*--" >
+            <fileset dir="${dist.javadoc.dir}" 
+                     includes="**/*.html" 
+                     />
+        </replaceregexp>
+        
+        <!-- Slightly modify java CVS tag, so as not to be used as html CVS tag -->
+        <!-- Nota: We cannot directly use a litteral regexp, since
+             this very file is also handled by CVS, hence the dynamic
+             value building of the regexp as property m.all !!!  -->
+        <echo message="Trimming Java CVS tags ..." />
+        <property name="m.dollar" value="\$"/>
+        <property name="m.id" value="Id:"/>
+        <property name="m.all" value="${m.dollar}${m.id} (.*) ${m.dollar}"/>
+        <replaceregexp replace="\1"
+                       match="${m.all}" >
+            <fileset dir="${dist.javadoc.dir}" 
+                     includes="**/*.html" 
+                     />
+        </replaceregexp>
+        
+    </target>
+
+    <!-- ===================================== -->
+    <!--  - P O S T - P O S T - J A V A D O C  -->
+    <!-- ===================================== -->
+    <target name="-post-post-javadoc">
+        <!-- Copy all doc files where NetBeans expects them to be -->
+
+        <mkdir dir="${nb.javadoc.dir}"/>
+        
+        <copy
+            verbose="${verbose}"
+            todir="${nb.javadoc.dir}">
+            <fileset dir="${dist.javadoc.dir}"  
+                     excludes="**/CVS/*"/>
+        </copy>
+        
+    </target>
+
+</project>
+
