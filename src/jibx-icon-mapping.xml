@@ -30,6 +30,11 @@
 	    <value name="x" field="x" />
 	    <value name="y" field="y" />
          </structure>
+        
+	<structure name="ref-point" field="refPoint" usage="optional">
+	    <value name="x" field="x" />
+	    <value name="y" field="y" />
+         </structure>
 
 	<collection name="bitmap" value-style="element"
 		    get-method="getBitmap"
