@@ -15,6 +15,7 @@ import omr.ui.view.Zoom;
 
 import java.awt.*;
 import java.util.List;
+import omr.util.Logger;
 
 /**
  * Class <code>StaffInfo</code> handles the physical details of a staff
@@ -26,6 +27,10 @@ import java.util.List;
 public class StaffInfo
     implements java.io.Serializable
 {
+    //~ Static variables/initializers -------------------------------------
+
+    private static final Logger logger = Logger.getLogger(StaffInfo.class);
+
     //~ Instance variables ------------------------------------------------
 
     // For debug only
@@ -46,9 +51,9 @@ public class StaffInfo
     // Bottom of staff related area
     private int areaBottom = -1;
 
-    // Scale specific to this staff, since various scales in a page may
-    // exhibit different scales.
-    private Scale scale;
+    // Scale specific to this staff, since staves in a page may exhibit
+    // different scales.
+    private Scale specificScale;
 
     //~ Constructors ------------------------------------------------------
 
@@ -60,17 +65,17 @@ public class StaffInfo
      *
      * @param left abscissa of the left side
      * @param right abscissa of the right side
-     * @param scale scale detected for this staff
+     * @param specificScale specific scale detected for this staff
      * @param lines the collection of contained staff lines
      */
     public StaffInfo (int left,
                       int right,
-                      Scale scale,
+                      Scale specificScale,
                       List<LineInfo> lines)
     {
         this.left = left;
         this.right = right;
-        this.scale = scale;
+        this.specificScale = specificScale;
         this.lines = lines;
     }
 
@@ -151,7 +156,7 @@ public class StaffInfo
      */
     public int getHeight ()
     {
-        return getScale().interline() * 4;
+        return getSpecificScale().interline() * 4;
     }
 
     //-------------//
@@ -206,18 +211,25 @@ public class StaffInfo
         return right;
     }
 
-    //----------//
-    // getScale //
-    //----------//
+    //------------------//
+    // getSpecificScale //
+    //------------------//
     /**
-     * Report the specific staff scale, which may have a different
+     * Report the <b>specific</b> staff scale, which may have a different
      * interline value than the page average.
      *
      * @return the staff scale
      */
-    public Scale getScale ()
+    public Scale getSpecificScale ()
     {
-        return scale;
+        if (specificScale != null) {
+            // Return the specific scale of this staff
+            return specificScale;
+        } else {
+            // Return the scale of the sheet
+            logger.warning("No specific scale available");
+            return null;
+        }
     }
 
     //---------//
@@ -315,7 +327,17 @@ public class StaffInfo
     @Override
     public String toString ()
     {
-        return "{Staff id=" + id + " left=" + left + " right=" + right
-               + " scale=" + scale.interline() + "}";
+        StringBuilder sb = new StringBuilder();
+        sb
+            .append("{StaffInfo")
+            .append(" id=").append(id)
+            .append(" left=").append(left)
+            .append(" right=").append(right);
+        if (specificScale != null) {
+            sb.append(" specificScale=").append(specificScale.interline());
+        }
+        sb.append("}");
+
+        return sb.toString();
     }
 }
