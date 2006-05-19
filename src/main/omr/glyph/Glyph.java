@@ -90,8 +90,9 @@ public class Glyph
     /** Number of stems it is connected to (0, 1, 2) */
     protected int stemNumber;
 
-    /** Position with respect to nearest staff */
-    protected double stepLine;
+    /** Position with respect to nearest staff. Key references are : 0 for
+        middle line (B), -2 for top line (F) and +2 for bottom line (E)  */
+    protected double pitchPosition;
 
     /** Computed moments of this glyph */
     protected Moments moments;
@@ -183,7 +184,7 @@ public class Glyph
     public int compareTo (Glyph other)
     {
         // Are x values different?
-        int dx = centroid.x - other.centroid.x;
+        int dx = getCentroid().x - other.getCentroid().x;
 
         if (dx != 0) {
             return dx;
@@ -485,17 +486,18 @@ public class Glyph
         return shape;
     }
 
-    //-------------//
-    // getStepLine //
-    //-------------//
+    //------------------//
+    // getPitchPosition //
+    //------------------//
     /**
-     * Report the stepLine feature (position relative to the staff)
-     *
-     * @return the stepLine value
+     * Report the pitchPosition feature (position relative to the staff)
+     * 
+     * 
+     * @return the pitchPosition value
      */
-    public double getStepLine ()
+    public double getPitchPosition ()
     {
-        return stepLine;
+        return pitchPosition;
     }
 
     //-----------------//
@@ -829,18 +831,19 @@ public class Glyph
         this.shape = shape;
     }
 
-    //-------------//
-    // setStepLine //
-    //-------------//
+    //------------------//
+    // setPitchPosition //
+    //------------------//
     /**
-     * Setter for the step line position, with respect to the containing
+     * Setter for the pitch position, with respect to the containing
      * staff
-     *
-     * @param stepLine the relative step line
+     * 
+     * 
+     * @param pitchPosition the relative step line
      */
-    public void setStepLine (double stepLine)
+    public void setPitchPosition (double stepLine)
     {
-        this.stepLine = stepLine;
+        this.pitchPosition = stepLine;
     }
 
     //----------------//
@@ -880,7 +883,7 @@ public class Glyph
         }
 
         if (centroid != null) {
-            sb.append(" center=[").append(centroid.x).append(",");
+            sb.append(" centroid=[").append(centroid.x).append(",");
             sb.append(centroid.y).append("]");
         }
 
