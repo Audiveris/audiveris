@@ -716,6 +716,20 @@ public enum Shape
         {
             return shapes;
         }
+        
+        //----------//
+        // contains //
+        //----------//
+        /**
+         * Convenient method to check if encapsulated shapes set does contain
+         * the provided object
+         *
+         * @return true if contained, false otherwise
+         */
+        public boolean contains (Object obj)
+        {
+            return shapes.contains(obj);
+        }
 
         //----------//
         // getColor //
