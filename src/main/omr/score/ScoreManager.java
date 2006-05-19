@@ -250,7 +250,7 @@ public class ScoreManager
         if (logger.isFineEnabled()) {
             logger.fine("linkAllScores");
         }
-
+        
         for (Score score : instances) {
             score.linkWithSheet();
         }
