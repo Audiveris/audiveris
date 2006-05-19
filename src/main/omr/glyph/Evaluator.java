@@ -176,7 +176,7 @@ public abstract class Evaluator
         /* 10 */ ins[i++] = boolAsDouble(glyph.isWithinSystem());
         /* 11 */ ins[i++] = boolAsDouble(glyph.hasLedger());
         /* 12 */ ins[i++] = glyph.getStemNumber();
-        /* 13 */ ins[i++] = glyph.getStepLine();
+        /* 13 */ ins[i++] = glyph.getPitchPosition();
 
         // We skip moments 17 & 18 (xMean and yMean) ???
 
