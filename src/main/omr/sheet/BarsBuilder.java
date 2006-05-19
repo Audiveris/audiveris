@@ -440,7 +440,6 @@ public class BarsBuilder
      */
     private void removeStartingBar (omr.score.System system)
     {
-        Dumper.dump(system, "Checking starting Bar");
         int minWidth = scale.fracToPixels(constants.minMeasureWidth);
         Barline firstBarline = 
                 system.getFirstStaff().getFirstMeasure().getBarline();
