@@ -490,21 +490,21 @@ public class Score
         ScoreTree.makeFrame(getRadix(), this);
     }
 
-    //---------------//
-    // xLocateSystem //
-    //---------------//
+    //-------------------//
+    // scoreLocateSystem //
+    //-------------------//
     /**
-     * Retrieve the system 'x' is pointing to, knowing that Systems in the
+     * Retrieve the system 'scrPt' is pointing to, knowing that Systems in the
      * <b>SCORE</b> display, are arranged horizontally one after the other,
      * while they were arranged vertically in the related Sheet.
      *
-     * @param x the point pixel abscissa, unzoomed, in the SCORE horizontal
-     * display
+     * @param scrPt the point in the SCORE horizontal display
      *
      * @return the nearest system
      */
-    public System xLocateSystem (int x)
+    public System scoreLocateSystem (ScorePoint scrPt)
     {
+        int x = scrPt.x;
         if (recentSystem != null) {
             // Check first with most recent system (loosely)
             switch (recentSystem.xLocate(x)) {
@@ -560,19 +560,19 @@ public class Score
         return recentSystem = system;
     }
 
-    //---------------//
-    // yLocateSystem //
-    //---------------//
+    //------------------//
+    // pageLocateSystem //
+    //------------------//
     /**
-     * Retrieve the system 'y' is pointing to.
+     * Retrieve the system 'pagPt' is pointing to.
      *
-     * @param y the point ordinate, unzoomed, in score units, in the
-     *          <b>SHEET</b> display
+     * @param pagPt the point, in score units, in the <b>SHEET</b> display
      *
      * @return the nearest system.
      */
-    public System yLocateSystem (int y)
+    public System pageLocateSystem (PagePoint pagPt)
     {
+        int y = pagPt.y;
         if (recentSystem != null) {
             // Check first with most recent system (loosely)
             switch (recentSystem.yLocate(y)) {
