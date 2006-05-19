@@ -12,7 +12,6 @@ package omr.score;
 
 import omr.glyph.Shape;
 import omr.lag.Lag;
-import omr.sheet.BarInfo;
 import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
 import omr.util.Dumper;
@@ -22,6 +21,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
+import omr.util.TreeNode;
 
 /**
  * Class <code>Measure</code> handles a measure of a staff.
@@ -38,16 +38,23 @@ public class Measure
 
     //~ Instance variables ------------------------------------------------
 
-    // Related infos from sheet analysis
-    private List<BarInfo> infos = new ArrayList<BarInfo>(2);
+    // Ending bar line
+    private Barline barline;
 
-    // Attributes
-    private Shape linetype;
-    private int leftlinex;
-    private int rightlinex;
+    // For measure with no physical ending bar line
     private boolean lineinvented;
-    private int id = 0; // Measure Id
-    private int leftX; // X of start of this measure (wrt staff)
+
+    // Measure Id
+    private int id = 0;
+
+    // Left abscissa (in units) of this measure
+    private Integer leftX;
+
+    // Specific children
+    private ClefList clefs;
+//     private KeysigList keysigs;
+//     private ChordList chords;
+
 
     //~ Constructors ------------------------------------------------------
 
@@ -60,6 +67,7 @@ public class Measure
     public Measure ()
     {
         super(null, null);
+        allocateChildren();
     }
 
     //---------//
@@ -68,27 +76,21 @@ public class Measure
     /**
      * Create a measure with the specified parameters
      *
-     * @param info         physical description of the ending bar line
+     *
      * @param staff        the containing staff
-     * @param linetype     the kind of ending bar line
-     * @param leftlinex    abscissa of the left part of the ending bar line
-     * @param rightlinex   abscissa of the right part of the ending bar line
+     * @param barline the ending bar line
      * @param lineinvented flag an artificial ending bar line if none existed
      */
-    public Measure (BarInfo info,
-                    Staff staff,
-                    Shape linetype,
-                    int leftlinex,
-                    int rightlinex,
+    public Measure (Staff   staff,
+                    Barline barline,
                     boolean lineinvented)
     {
         super(staff, staff);
 
-        this.infos.add(info);
-        this.linetype = linetype;
-        this.leftlinex = leftlinex;
-        this.rightlinex = rightlinex;
+        this.barline = barline;
         this.lineinvented = lineinvented;
+
+        allocateChildren();
 
         if (logger.isFineEnabled()) {
             Dumper.dump(this, "Constructed");
@@ -97,121 +99,57 @@ public class Measure
 
     //~ Methods -----------------------------------------------------------
 
-    //----------//
-    // getInfos //
-    //----------//
+    //-------//
+    // reset //
+    //-------//
     /**
-     * Report the BarInfo list related to the ending bar line(s)
-     *
-     * @return the BarInfo list
+     * Reset the coordinates of the measure, they will be lazily recomputed
+     * when needed
      */
-    public List<BarInfo> getInfos ()
+    public void reset()
     {
-        return infos;
+        leftX = null;
+        barline.reset();
     }
 
-    //--------------//
-    // setLeftlinex //
-    //--------------//
+    //------------//
+    // getBarline //
+    //------------//
     /**
-     * Set the abscissa of the left part of the ending bar line
+     * Report the ending bar line
      *
-     * @param leftlinex the abscissa (in units)
+     * @return the ending bar line
      */
-    public void setLeftlinex (int leftlinex)
+    public Barline getBarline ()
     {
-        this.leftlinex = leftlinex;
+        return barline;
     }
 
-    //--------------//
-    // getLeftlinex //
-    //--------------//
+    //------------//
+    // setBarline //
+    //------------//
     /**
-     * Report the abscissa of the left part of the ending bar line
+     * Set the ending bar line
      *
-     * @return the abscissa (in units)
-     */
-    public int getLeftlinex ()
-    {
-        return leftlinex;
-    }
-
-    //-------------//
-    // setLinetype //
-    //-------------//
-    /**
-     * Set the line type of the ending bar line
      *
-     * @param linetype the line type, as the proper enumerated type
+     * @param barline the ending bar line
      */
-    public void setLinetype (Shape linetype)
+    public void setBarline (Barline barline)
     {
-        this.linetype = linetype;
-    }
-
-    //-------------//
-    // setLinetype //
-    //-------------//
-    /**
-     * Set the line type of the ending bar line
-     *
-     * @param linetype the line type, as a string
-     */
-    public void setLinetype (String linetype)
-    {
-        setLinetype(Shape.valueOf(linetype));
-    }
-
-    //-------------//
-    // getLinetype //
-    //-------------//
-    /**
-     * Report the type of the ending bar line
-     *
-     * @return the enumerated line type
-     */
-    public String getLinetype ()
-    {
-        return linetype.toString();
-    }
-
-    //---------------//
-    // setRightlinex //
-    //---------------//
-    /**
-     * Set the abscissa of the right part of the ending bar line
-     *
-     * @param rightlinex the abscissa (in units)
-     */
-    public void setRightlinex (int rightlinex)
-    {
-        this.rightlinex = rightlinex;
-    }
-
-    //---------------//
-    // getRightlinex //
-    //---------------//
-    /**
-     * Report the abscissa of the right part of the ending bar line
-     *
-     * @return the abscissa (in units)
-     */
-    public int getRightlinex ()
-    {
-        return rightlinex;
+        this.barline = barline;
     }
 
     //----------//
-    // addInfos //
+    // getClefs //
     //----------//
     /**
-     * Merge the provided barinfos with existing one
+     * Report the collection of clefs
      *
-     * @param list list of bar info objects
+     * @return the list of clefs
      */
-    public void addInfos (List<BarInfo> list)
+    public List<TreeNode> getClefs ()
     {
-        this.infos.addAll(list);
+        return clefs.getChildren();
     }
 
     //--------------//
@@ -231,10 +169,8 @@ public class Measure
                                     int viewIndex,
                                     Color color)
     {
-        // Set color for the sections of the ending bars
-        for (BarInfo bar : infos) {
-            bar.colorize(lag, viewIndex, color);
-        }
+        // Set color for the sections of the ending bar lines
+        barline.colorize(lag, viewIndex, color);
 
         return true;
     }
@@ -260,15 +196,6 @@ public class Measure
         staff.incrementLastMeasureId();
         id = staff.getLastMeasureId();
 
-        // Start of the measure
-        Measure prevMeasure = (Measure) getPreviousSibling();
-
-        if (prevMeasure == null) { // Very first measure in the staff
-            leftX = 0;
-        } else {
-            leftX = prevMeasure.rightlinex;
-        }
-
         return true;
     }
 
@@ -276,30 +203,20 @@ public class Measure
     // paintNode //
     //-----------//
     @Override
-        protected boolean paintNode (Graphics g,
-                                     Zoom zoom,
+        protected boolean paintNode (Graphics  g,
+                                     Zoom      zoom,
                                      Component comp)
     {
         Point origin = getOrigin();
 
         // Draw the bar line symbol at the end of the measure
-        SymbolIcon icon = (SymbolIcon) linetype.getIcon();
-        if (icon == null) {
-            logger.warning("Need icon for " + linetype);
-        } else {
-            icon.paintIcon
-                (comp,
-                 g,
-                 zoom.scaled(origin.x + (leftlinex + rightlinex) / 2)
-                 - icon.getActualWidth()/2,
-                 zoom.scaled(origin.y));
-        }
+        barline.paintItem(g, zoom, comp);
 
         // Draw the measure id, if on the first staff only
         if (staff.getStafflink() == 0) {
             g.setColor(Color.lightGray);
             g.drawString(Integer.toString(id),
-                         zoom.scaled(origin.x + leftX) - 5,
+                         zoom.scaled(origin.x + getLeftX()) - 5,
                          zoom.scaled(origin.y) - 15);
         }
 
@@ -321,10 +238,71 @@ public class Measure
     protected boolean renderNode (Graphics g,
                                   Zoom z)
     {
-        for (BarInfo bar : infos) {
-            bar.render(g, z);
-        }
+        barline.render(g, z);
 
         return true;
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Report a readable description
+     *
+     * @return a string based on main members
+     */
+    @Override
+    public String toString ()
+    {
+        return "{Measure id=" + id + " bar=" + barline + "}";
+    }
+
+    //~ Methods private ---------------------------------------------------
+
+    //----------//
+    // getLeftX //
+    //----------//
+    private int getLeftX()
+    {
+        if (leftX == null) {
+
+            // Start of the measure
+            Measure prevMeasure = (Measure) getPreviousSibling();
+
+            if (prevMeasure == null) { // Very first measure in the staff
+                leftX = 0;
+            } else {
+                leftX = prevMeasure.getBarline().getCenter().x;
+            }
+        }
+
+        return leftX;
+
+    }
+
+    //------------------//
+    // allocateChildren //
+    //------------------//
+    private void allocateChildren ()
+    {
+        // Allocate specific children lists
+        clefs = new ClefList(this, staff);
+//         chords = new ChordList(this, staff);
+//         keysigs = new KeysigList(this, staff);
+    }
+
+    //~ Classes -----------------------------------------------------------
+
+    //----------//
+    // ClefList //
+    //----------//
+    private static class ClefList
+        extends StaffNode
+    {
+        ClefList (StaffNode container,
+                Staff staff)
+        {
+            super(container, staff);
+        }
     }
 }
