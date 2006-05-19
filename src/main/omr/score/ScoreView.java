@@ -17,6 +17,7 @@ import omr.ui.view.Rubber;
 import omr.ui.view.RubberZoomedPanel;
 import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
+import omr.ui.util.Panel;
 import omr.util.Logger;
 
 import static omr.score.ScoreConstants.*;
@@ -56,16 +57,14 @@ public class ScoreView
     // The displayed panel
     private final MyPanel panel = new MyPanel(zoom, rubber);
 
+    // The scroll pane + info zone
+    private final Panel compound = new Panel();
+
     // The scroll pane
     private final ScrollView pane = new ScrollView(panel);
 
-    // Meant for Point computation, w/o continuous allocations
-    //
-    // Point in score display in units  (not zoomed)
-    private ScorePoint scrPt = new ScorePoint();
-
-    // Point in virtual sheet display in units  (not zoomed, not skewed)
-    private PagePoint pagPt = new PagePoint();
+    // The info zone
+    private final JLabel info = new JLabel("Score");
 
     // To avoid circular updating
     private volatile transient boolean localSelfUpdating;
@@ -86,6 +85,11 @@ public class ScoreView
             logger.fine("new ScoreView on " + score);
         }
 
+        info.setHorizontalAlignment(SwingConstants.LEFT);
+        compound.setLayout(new BorderLayout());
+        compound.add(pane.getComponent(), BorderLayout.CENTER);
+        compound.add(info, BorderLayout.SOUTH);
+
         // Cross referencing between score and its view
         this.score = score;
         score.setView(this);
@@ -96,10 +100,18 @@ public class ScoreView
 
     //~ Methods -----------------------------------------------------------
 
-    //---------//
-    // getPane //
-    //---------//
-    public ScrollView getPane()
+    //--------------//
+    // getComponent //
+    //--------------//
+    public Component getComponent()
+    {
+        return compound;
+    }
+
+    //---------------//
+    // getScrollPane //
+    //---------------//
+    public ScrollView getScrollPane()
     {
         return pane;
     }
@@ -120,19 +132,16 @@ public class ScoreView
         }
 
          if (pagPt != null) {
-             tellPoint(pagPt);
-
+             ScorePoint scrPt = null;
              // Which system ?
-             final System system = score.yLocateSystem(pagPt.y);
-
-             if (system != null) {
-                if (!localSelfUpdating) {
-                   system.sheetToScore(pagPt, scrPt);
-                   localSelfUpdating = true;
-                   panel.setFocusPoint(scrPt);
-                   localSelfUpdating = false;
-                }
+             final System system = score.pageLocateSystem(pagPt);
+             if (system != null && !localSelfUpdating) {
+                 scrPt = system.sheetToScore(pagPt, null);
+                 localSelfUpdating = true;
+                 panel.setFocusPoint(scrPt);
+                 localSelfUpdating = false;
              }
+             tellPoint(scrPt, pagPt);
          }
     }
 
@@ -150,7 +159,7 @@ public class ScoreView
 //             scrPt = mark.getLocation();
 
 //             // The enclosing system
-//             System system = score.xLocateSystem(scrPt.x);
+//             System system = score.scoreLocateSystem(scrPt.x);
 
 //             if (system != null) {
 //                 system.scoreToSheet(scrPt, pagPt); // Point in the sheet
@@ -245,9 +254,39 @@ public class ScoreView
     //-----------//
     // tellPoint //
     //-----------//
-    private void tellPoint (PagePoint pagPt)
+    private void tellPoint(ScorePoint scrPt)
     {
-        ////info.setText("PagePoint X:" + pagPt.x + " Y:" + pagPt.y);
+        tellPoint(scrPt, null);
+    }
+
+    //-----------//
+    // tellPoint //
+    //-----------//
+    private void tellPoint(PagePoint  pagPt)
+    {
+        tellPoint(null, pagPt);
+    }
+
+    //-----------//
+    // tellPoint //
+    //-----------//
+    private void tellPoint(ScorePoint scrPt,
+                           PagePoint  pagPt)
+    {
+        StringBuilder sb = new StringBuilder();
+        if (scrPt != null) {
+            sb.append("ScorePoint")
+                .append(" X:").append(scrPt.x)
+                .append(" Y:").append(scrPt.y)
+                .append(" ");
+        }
+        if (pagPt != null) {
+            sb.append("PagePoint")
+                .append(" X:").append(pagPt.x)
+                .append(" Y:").append(pagPt.y)
+                .append(" ");
+        }
+        info.setText(sb.toString());
     }
 
     //~ Classes -----------------------------------------------------------
@@ -270,7 +309,7 @@ public class ScoreView
             rubber.setMouseMonitor(this);
 
             // Initialize drawing colors, border, opacity.
-            setBackground(new Color(255, 255, 220)); // (Color.white);
+            setBackground(new Color(255, 255, 220));
             setForeground(Color.black);
         }
 
@@ -292,19 +331,22 @@ public class ScoreView
         // setFocusPoint //
         //---------------//
         @Override
-            public void setFocusPoint (Point scrPt)
+            public void setFocusPoint (Point pt)
         {
+            // We forge a ScorePoint from the display point
+            ScorePoint scrPt = new ScorePoint(pt.x, pt.y);
+            
             // Display the point in score view
             super.setFocusPoint(scrPt);
 
             // The enclosing system
-            final System system = score.xLocateSystem(scrPt.x);
+            System system = score.scoreLocateSystem(scrPt);
 
             if (system != null) {
-                ScorePoint sp = new ScorePoint();
-                sp.setLocation (scrPt);
-                system.scoreToSheet(sp, pagPt); // Point in the sheet
-                tellPoint(pagPt); // Update score panel
+                PagePoint pagPt = system.scoreToSheet(scrPt, null);
+
+                // Update score panel
+                tellPoint(scrPt, pagPt); 
 
                 // Focus on that point in the related sheet
                 Sheet sheet = score.getSheet();
@@ -320,6 +362,7 @@ public class ScoreView
         //-------------------//
         // setFocusRectangle //
         //-------------------//
+        @Override
         public void setFocusRectangle (Rectangle rect)
         {
             super.setFocusRectangle(rect);
