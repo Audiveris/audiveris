@@ -27,4 +27,19 @@ import java.awt.*;
 public class ScorePoint
     extends Point
 {
+    //------------//
+    // ScorePoint //
+    //------------//
+    public ScorePoint ()
+    {
+    }
+
+    //------------//
+    // ScorePoint //
+    //------------//
+    public ScorePoint (int x,
+                       int y)
+    {
+        super(x, y);
+    }
 }
