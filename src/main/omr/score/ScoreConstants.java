@@ -41,7 +41,8 @@ public class ScoreConstants
     /** Horizontal gutter in pixels between two systems */
     public static final int INTER_SYSTEM = constants.interSystem.getValue();
 
-    /** Vertical distance in pixels between two lines of a standard staff : {@value} */
+    /** Vertical distance in pixels between two lines of a standard staff :
+        {@value} */
     public static final int INTER_LINE = 16;
 
     /** Horizontal gutter in pixels between two pages */
@@ -53,13 +54,14 @@ public class ScoreConstants
     /** Height in pixels of one staff */
     public static final int STAFF_HEIGHT = (LINE_NB - 1) * INTER_LINE;
 
-    /** Used to code fractions with an integer value, with a resolution of 1/{@value} */
+    /** Used to code fractions with an integer value, with a resolution of
+        1/{@value} */
     public static final int BASE = 1024;
 
     //~ Constructors ------------------------------------------------------
 
     //----------------//
-    // ScoreConstants // Not to be instantiated
+    // ScoreConstants // Not meant to be instantiated
     //----------------//
     private ScoreConstants ()
     {
@@ -82,7 +84,7 @@ public class ScoreConstants
                  "Height in pixels above/under a staff display : ");
 
         Constant.Integer scoreInitX = new Constant.Integer
-                (200,
+                (100,
                  "Horizontal offset in pixels of the score origin");
 
         Constant.Integer scoreInitY = new Constant.Integer
