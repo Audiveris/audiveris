@@ -11,8 +11,8 @@
 package omr.score;
 
 import omr.lag.Lag;
-import omr.sheet.BarInfo;
 import omr.sheet.StaffInfo;
+import omr.stick.Stick;
 import omr.ui.view.Zoom;
 import omr.util.Dumper;
 import omr.util.Logger;
@@ -65,10 +65,10 @@ public class Staff
     private DynamicList dynamics;
 
     // Starting bar line (the others are linked to measures)
-    private BarInfo startingBar;
+    private Barline startingBarline;
 
     // Actual cached display origin
-    private Point origin;
+    private ScorePoint origin;
 
     // First, and last measure ids
     private int firstMeasureId;
@@ -236,6 +236,12 @@ public class Staff
     public void setTopLeft (PagePoint topLeft)
     {
         this.topLeft = topLeft;
+
+        // Invalidate the coordinates of all contained staff-based nodes
+        for (TreeNode treeNode : children) {
+            StaffNode node = (StaffNode) treeNode;
+            node.setStaff(this);
+        }
     }
 
     //------------//
@@ -278,11 +284,12 @@ public class Staff
         return lyriclines.getChildren();
     }
 
-    //--------------//
-    // getMeasureAt //
-    //--------------//
+    //---------------//
+    // barlineExists //
+    //---------------//
     /**
-     * Return measure with leftlinex = x (within dx error). This is used in
+     * Check whether there is a  measure with leftlinex = x (within dx error).
+     * This is used in
      * Bars retrieval, to check that the bar candidate is actually a bar,
      * since there is a measure starting at this abscissa in each staff of
      * the system (this test is relevant only for systems with more than
@@ -291,20 +298,25 @@ public class Staff
      * @param x  starting abscissa of the desired measure
      * @param dx tolerance in abscissa
      *
-     * @return the measure found within tolerance, or null otherwise
+     * @return true if bar line found within tolerance, false otherwise
      */
-    public Measure getMeasureAt (int x,
+    public boolean barlineExists(int x,
                                  int dx)
     {
+        logger.fine("x=" + x + " dx=" + dx);
         for (TreeNode node : getMeasures()) {
             Measure measure = (Measure) node;
 
-            if (Math.abs(measure.getLeftlinex() - x) <= dx) {
-                return measure;
+            logger.fine("center.x =" + measure.getBarline().getCenter().x);
+
+            if (Math.abs(measure.getBarline().getCenter().x - x) <= dx) {
+                logger.fine("found");
+                return true;
             }
         }
 
-        return null; // Not found
+        logger.fine("noLine");
+        return false; // Not found
     }
 
     //-------------//
@@ -344,7 +356,7 @@ public class Staff
      *
      * @return the origin
      */
-    public Point getOrigin ()
+    public ScorePoint getOrigin ()
     {
         return origin;
     }
@@ -376,16 +388,29 @@ public class Staff
     }
 
     //----------------//
+    // getStartingBar //
+    //----------------//
+    /**
+     * Get the bar line that starts the staff
+     *
+     * @return barline the starting bar line (which may be null)
+     */
+    public Barline getStartingBar()
+    {
+        return startingBarline;
+    }
+
+    //----------------//
     // setStartingBar //
     //----------------//
     /**
      * Set the bar line that starts the staff
      *
-     * @param bar the related bar info
+     * @param startingBarline the starting bar line
      */
-    public void setStartingBar (BarInfo bar)
+    public void setStartingBar (Barline startingBarline)
     {
-        startingBar = bar;
+        this.startingBarline = startingBarline;
     }
 
     //--------------//
@@ -538,8 +563,8 @@ public class Staff
                                     Color color)
     {
         // Set color for the starting bar line, if any
-        if (startingBar != null) {
-            startingBar.colorize(lag, viewIndex, color);
+        if (startingBarline != null) {
+            startingBarline.colorize(lag, viewIndex, color);
         }
 
         return true;
@@ -561,8 +586,10 @@ public class Staff
         Point sysorg = getSystem().getOrigin();
 
         // Display origin for the staff
-        origin = new Point(sysorg.x + (topLeft.x - getSystem().getTopLeft().x),
-                           sysorg.y + (topLeft.y - getSystem().getTopLeft().y));
+        origin = new ScorePoint
+            (//sysorg.x + (topLeft.x - getSystem().getTopLeft().x),
+                sysorg.x,
+             sysorg.y + (topLeft.y - getSystem().getTopLeft().y));
 
         // First/Last measure ids
         firstMeasureId = lastMeasureId = getSystem().getFirstMeasureId();
@@ -574,8 +601,8 @@ public class Staff
     // paintNode //
     //-----------//
     @Override
-        protected boolean paintNode (Graphics g,
-                                     Zoom zoom,
+        protected boolean paintNode (Graphics  g,
+                                     Zoom      zoom,
                                      Component comp)
     {
         g.setColor(Color.black);
@@ -586,6 +613,13 @@ public class Staff
             int y = zoom.scaled(origin.y + (i * INTER_LINE));
             g.drawLine(zoom.scaled(origin.x), y,
                        zoom.scaled(origin.x + width), y);
+        }
+        
+        // Draw the starting bar line, if any
+        if (startingBarline != null) {
+            startingBarline.paintItem(g, zoom, comp);
+        } else {
+            logger.warning("No starting bar line for " + this);
         }
 
         return true; // Meaning : we've drawn something
@@ -610,8 +644,8 @@ public class Staff
         if (info != null) {
             info.render(g, z);
 
-            if (startingBar != null) {
-                startingBar.render(g, z);
+            if (startingBarline != null) {
+                startingBarline.render(g, z);
             }
 
             return true;
@@ -632,17 +666,56 @@ public class Staff
         dynamics = new DynamicList(this);
     }
 
+    //--------------//
+    // getMeasureAt //
+    //--------------//
+    /**
+     * Report the measure that contains a given point (assumed to be in the
+     * containing staff)
+     *
+     * @param staffPoint staff-based coordinates of the given point
+     * @return the containing measure
+     */
+    Measure getMeasureAt (StaffPoint staffPoint)
+    {
+        Measure measure = null;
+        for (TreeNode node : getMeasures()) {
+            measure = (Measure) node;
+            if (staffPoint.x <= measure.getBarline().getRightX()) {
+                return measure;
+            }
+        }
+
+        return measure;
+    }
+
+    //--------------//
+    // toStaffPoint //
+    //--------------//
+    /**
+     * Report the staff-based coordinates (wrt staff top left corner) of a
+     * point with page-based coordinates
+     *
+     * @param pagePoint the coordinates within page
+     * @return coordinates within the containing staff
+     */
+    StaffPoint toStaffPoint (PagePoint pagePoint)
+    {
+        return new StaffPoint(pagePoint.x - topLeft.x,
+                              pagePoint.y - topLeft.y);
+    }
+
     //~ Classes -----------------------------------------------------------
 
     //-------------//
     // MeasureList //
     //-------------//
     private static class MeasureList
-        extends MusicNode
+        extends StaffNode
     {
-        MeasureList (MusicNode container)
+        MeasureList (Staff staff)
         {
-            super(container);
+            super(staff, staff);
         }
     }
 
@@ -650,11 +723,11 @@ public class Staff
     // LyricList //
     //-----------//
     private static class LyricList
-        extends MusicNode
+        extends StaffNode
     {
-        LyricList (MusicNode container)
+        LyricList (Staff staff)
         {
-            super(container);
+            super(staff, staff);
         }
     }
 
@@ -662,11 +735,11 @@ public class Staff
     // TextList //
     //----------//
     private static class TextList
-        extends MusicNode
+        extends StaffNode
     {
-        TextList (MusicNode container)
+        TextList (Staff staff)
         {
-            super(container);
+            super(staff, staff);
         }
     }
 
@@ -674,11 +747,11 @@ public class Staff
     // DynamicList //
     //-------------//
     private static class DynamicList
-        extends MusicNode
+        extends StaffNode
     {
-        DynamicList (MusicNode container)
+        DynamicList (Staff staff)
         {
-            super(container);
+            super(staff, staff);
         }
     }
 }
