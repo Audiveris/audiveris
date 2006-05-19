@@ -38,6 +38,9 @@ public class SymbolIcon
     // Mass center
     private Point centroid;
 
+    // Reference point, if any
+    private Point refPoint;
+
     //~ Constructors ------------------------------------------------------
 
     //------------//
@@ -248,5 +251,30 @@ public class SymbolIcon
     {
         this.name = name;
     }
-}
 
+    //-------------//
+    // getRefPoint //
+    //-------------//
+    /**
+     * Report the assigned reference point
+     *
+     * @return the ref point, which may be null
+     */
+    public Point getRefPoint()
+    {
+        return refPoint;
+    }
+
+    //-------------//
+    // setRefPoint //
+    //-------------//
+    /**
+     * Assign a reference point to the symbol
+     *
+     * @param refPoint the reference point
+     */
+    public void setRefPoint(Point refPoint)
+    {
+        this.refPoint = refPoint;
+    }
+}
