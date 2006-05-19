@@ -41,7 +41,7 @@ public class Clef
     // Step line of the clef : -4 for top line (Baritone), -2 for Bass, 0
     // for Alto, +2 for Treble and Mezzo-Soprano, +4 for bottom line
     // (Soprano).
-    private int stepLine;
+    private int pitchPosition;
 
     //~ Constructors ------------------------------------------------------
 
@@ -50,23 +50,23 @@ public class Clef
     //------//
     /**
      * Create a Clef instance
-     *
+     * 
      * @param container the container (the measure clef list)
      * @param staff containing staff
      * @param shape precise clef shape
      * @param center center wrt staff (in units)
-     * @param stepLine pitch position
+     * @param pitchPosition pitch position
      */
     public Clef (MusicNode  container,
                  Staff      staff,
                  Shape      shape,
                  StaffPoint center,
-                 int        stepLine)
+                 int        pitchPosition)
     {
         super(container, staff);
         this.shape    = shape;
         this.center   = center;
-        this.stepLine = stepLine;
+        this.pitchPosition = pitchPosition;
     }
 
     //~ Methods -----------------------------------------------------------
@@ -83,7 +83,7 @@ public class Clef
         paintSymbol(g, zoom, comp,
                     (SymbolIcon) shape.getIcon(),
                     center,
-                    stepLine);
+                    pitchPosition);
 
         return true;
     }
