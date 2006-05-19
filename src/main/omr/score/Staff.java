@@ -618,8 +618,6 @@ public class Staff
         // Draw the starting bar line, if any
         if (startingBarline != null) {
             startingBarline.paintItem(g, zoom, comp);
-        } else {
-            logger.warning("No starting bar line for " + this);
         }
 
         return true; // Meaning : we've drawn something
