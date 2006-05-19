@@ -2,6 +2,7 @@
 <icon name="G_CLEF_OTTAVA_BASSA">
     <dimension width="21" height="66"/>
     <centroid x="10" y="31"/>
+    <ref-point x="0" y="35"/>
     <bitmap>
         <row>-------------o#o-----</row>
         <row>------------o###.----</row>

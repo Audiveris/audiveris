@@ -2,6 +2,7 @@
 <icon name="G_CLEF">
     <dimension width="22" height="59"/>
     <centroid x="11" y="29"/>
+    <ref-point x="0" y="36"/>
     <bitmap>
         <row>-------------.$$------</row>
         <row>-------------###*-----</row>
