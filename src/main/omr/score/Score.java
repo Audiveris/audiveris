@@ -347,16 +347,22 @@ public class Score
      */
     public void linkWithSheet ()
     {
+        if (getSheet() != null) {
+            return;
+        }
+        
         for (Sheet sheet : SheetManager.getInstance().getSheets()) {
             if (sheet.getPath().equals(getImagePath())) {
-                this.setSheet(sheet);
-                sheet.setScore(this);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(this + " linked to " + sheet);
+                if (sheet != getSheet()) {
+                    this.setSheet(sheet);
+                    sheet.setScore(this);
+                    
+                    if (logger.isFineEnabled()) {
+                        logger.fine(this + " linked to " + sheet);
+                    }
+                    
+                    return;
                 }
-
-                return;
             }
         }
 
