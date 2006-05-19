@@ -43,9 +43,9 @@ public class ScoreViewTest
         Score score = ScoreManager.getInstance().load(new File(fileName));
 
         view = new ScoreView(score);
-        view.getPane().getView().getZoom().fireStateChanged();
+        view.getScrollPane().getView().getZoom().fireStateChanged();
         frame = new JFrame(getClass().getName() + " - " + fileName);
-        frame.getContentPane().add(view.getPane().getComponent());
+        frame.getContentPane().add(view.getComponent());
 
         frame.pack();
         frame.setBounds(new Rectangle(20, 20, 800, 200));
