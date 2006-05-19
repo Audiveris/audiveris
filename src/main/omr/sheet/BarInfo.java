@@ -44,10 +44,10 @@ public class BarInfo
      * @param botIdx the index of the staff at bottom of bar line
      */
     public BarInfo (Stick stick,
-                    int topIdx,
-                    int botIdx)
+                    int   topIdx,
+                    int   botIdx)
     {
-        this.stick = stick;
+        this.stick  = stick;
         this.topIdx = topIdx;
         this.botIdx = botIdx;
     }
