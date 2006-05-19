@@ -296,14 +296,15 @@ public class Sheet
      * Step to retrieve all bar lines. This allocates and links the sheet
      * related score.
      */
-    public final InstanceStep<List<BarInfo>> BARS
-            = new InstanceStep<List<BarInfo>>("Detect vertical Bar lines")
+    public final InstanceStep<Boolean> BARS
+            = new InstanceStep<Boolean>("Detect vertical Bar lines")
             {
                 public void doit ()
                         throws ProcessingException
                 {
                     barsBuilder = new BarsBuilder(Sheet.this);
-                    result = barsBuilder.buildInfo();
+                    barsBuilder.buildInfo();
+                    result = Boolean.valueOf (true);
 
                     // Display the resulting score, if sheet is currently
                     // displayed
@@ -931,25 +932,6 @@ public class Sheet
         return steps;
     }
 
-    //---------//
-    // getBars //
-    //---------//
-    /**
-     * Report the results of bar line processing (special kinds of vertical
-     * sticks in the sheet).
-     *
-     * @return the whole list of bars information
-     */
-    public List<BarInfo> getBars ()
-    {
-        try {
-            return BARS.getResult();
-        } catch (ProcessingException ex) {
-            logger.severe("Bars not yet processed");
-            return null;
-        }
-    }
-
     //------------------//
     // getFirstSymbolId //
     //------------------//
@@ -1427,11 +1409,12 @@ public class Sheet
     private Glyph lookupSystemGlyph (SystemInfo system,
                                      Point      source)
     {
-        for (BarInfo bar : system.getBars()) {
-            for (GlyphSection section : bar.getStick().getMembers()) {
+        /// Check this loop is really needed TBD TBD
+        for (Stick bar : system.getBars()) {
+            for (GlyphSection section : bar.getMembers()) {
                 // Swap of x & y, since this is a vertical lag
                 if (section.contains(source.y, source.x)) {
-                    return bar.getStick();
+                    return bar;
                 }
             }
         }
@@ -1591,8 +1574,8 @@ public class Sheet
                     }
 
                     // Bar lines
-                    for (BarInfo bar : system.getBars()) {
-                        bar.render(g, z);
+                    for (Stick bar : system.getBars()) {
+                        bar.renderLine(g, z);
                     }
 
                     g.setColor(Color.black);
