@@ -281,7 +281,7 @@ public class GlyphInspector
 
             // Use a widened contour box
             StaffInfo staff = system.getStaffAtY(glyph.getContourBox().y);
-            int dxy = staff.getScale().fracToPixels(constants.boxWiden);
+            int dxy = sheet.getScale().fracToPixels(constants.boxWiden);
             Rectangle box = compoundBox(glyph.getContourBox(), dxy);
 
             // Consider neighboring glyphs, which are glyphs whose contour

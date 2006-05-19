@@ -329,7 +329,7 @@ public class GlyphBuilder
      * @param system the system area which contains the glyph
      * @param glyph the glyph at hand
      */
-    private static void computeGlyphFeatures (SystemInfo system,
+    private void computeGlyphFeatures (SystemInfo system,
                                               Glyph      glyph)
     {
         // Ordinate (approximate value)
@@ -338,10 +338,9 @@ public class GlyphBuilder
 
         // Nearest/containing staff
         StaffInfo staff = system.getStaffAtY(y);
-        Scale scale = staff.getScale();
 
         // Staff interline value
-        glyph.setInterline(scale.interline());
+        glyph.setInterline(sheet.getScale().interline());
 
         // Mass center (which makes sure moments are available)
         Point centroid = glyph.getCentroid();
@@ -355,14 +354,12 @@ public class GlyphBuilder
         if (checkStemIntersect(system.getGlyphs(),
                                system.getMaxGlyphWidth(),
                                glyph,
-                               scale,
                                /* onLeft => */ true)) {
             stemNb++;
         }
         if (checkStemIntersect(system.getGlyphs(),
                                system.getMaxGlyphWidth(),
                                glyph,
-                               scale,
                                /* onLeft => */ false)) {
             stemNb++;
         }
@@ -371,22 +368,21 @@ public class GlyphBuilder
         // Has a related ledger ?
         glyph.setHasLedger(checkDashIntersect(system.getLedgers(),
                                               system.getMaxLedgerWidth(),
-                                              ledgerBox(box, scale)));
+                                              ledgerBox(box)));
 
         // Vertical position wrt staff
         final int top = staff.getFirstLine().getLine().yAt(centroid.x);
         final int bottom = staff.getLastLine().getLine().yAt(centroid.x);
-        glyph.setStepLine(4*(double) (2* centroid.y - bottom - top)
+        glyph.setPitchPosition(4*(double) (2* centroid.y - bottom - top)
                           / (double)(bottom - top));
     }
 
     //-------------//
     // leftStemBox //
     //-------------//
-    private static Rectangle leftStemBox (Rectangle rect,
-                                          Scale     scale)
+    private Rectangle leftStemBox (Rectangle rect)
     {
-        int dx = scale.fracToPixels(constants.stemWiden);
+        int dx = sheet.getScale().fracToPixels(constants.stemWiden);
         return new Rectangle (rect.x - dx,
                               rect.y,
                               2*dx,
@@ -396,10 +392,9 @@ public class GlyphBuilder
     //--------------//
     // rightStemBox //
     //--------------//
-    private static Rectangle rightStemBox (Rectangle rect,
-                                           Scale     scale)
+    private Rectangle rightStemBox (Rectangle rect)
     {
-        int dx = scale.fracToPixels(constants.stemWiden);
+        int dx = sheet.getScale().fracToPixels(constants.stemWiden);
         return new Rectangle (rect.x + rect.width - dx,
                               rect.y,
                               2*dx,
@@ -409,10 +404,9 @@ public class GlyphBuilder
     //-----------//
     // ledgerBox //
     //-----------//
-    private static Rectangle ledgerBox (Rectangle rect,
-                                        Scale     scale)
+    private Rectangle ledgerBox (Rectangle rect)
     {
-        int dy = scale.fracToPixels(constants.ledgerHeighten);
+        int dy = sheet.getScale().fracToPixels(constants.ledgerHeighten);
         return new Rectangle (rect.x,
                               rect.y - dy,
                               rect.width,
@@ -422,18 +416,17 @@ public class GlyphBuilder
     //--------------------//
     // checkStemIntersect //
     //--------------------//
-    private static boolean checkStemIntersect (List<Glyph> glyphs,
+    private boolean checkStemIntersect (List<Glyph> glyphs,
                                                int         maxItemWidth,
                                                Glyph       glyph,
-                                               Scale       scale,
                                                boolean     onLeft)
     {
         // Box for searching for a stem
         Rectangle   box;
         if (onLeft) {
-            box = leftStemBox(glyph.getContourBox(), scale);
+            box = leftStemBox(glyph.getContourBox());
         } else {
-            box = rightStemBox(glyph.getContourBox(), scale);
+            box = rightStemBox(glyph.getContourBox());
         }
 
         int startIdx = Glyph.getGlyphIndexAtX
