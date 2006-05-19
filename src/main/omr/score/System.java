@@ -306,6 +306,27 @@ public class System
         return slurs.getChildren();
     }
 
+    //------------//
+    // getStaffAt //
+    //------------//
+    public Staff getStaffAt (PagePoint point)
+    {
+        int minDy = Integer.MAX_VALUE;
+        Staff best = null;
+
+        for (TreeNode node : getStaves()) {
+            Staff staff = (Staff) node;
+            int midY = staff.getTopLeft().y + staff.getSize() /2;
+            int dy = Math.abs(point.y - midY);
+            if (dy < minDy) {
+                minDy = dy;
+                best = staff;
+            }
+        }
+
+        return best;
+    }
+
     //-----------//
     // setStaves //
     //-----------//
@@ -373,15 +394,21 @@ public class System
      * display, while they are located one under the other in a sheet.
      *
      * @param pagPt the point in the sheet
-     * @param scrPt the corresponding point in score display
+     * @param scrPt the corresponding point in score display, or null
+     * @return the score point
      *
      * @see #scoreToSheet
      */
-    public void sheetToScore (PagePoint  pagPt,
+    public ScorePoint sheetToScore (PagePoint  pagPt,
                               ScorePoint scrPt)
     {
+        if (scrPt == null) {
+            scrPt = new ScorePoint();
+        }
         scrPt.x = (origin.x + pagPt.x) - topLeft.x;
         scrPt.y = (origin.y + pagPt.y) - topLeft.y;
+        
+        return scrPt;
     }
 
     //--------------//
@@ -392,15 +419,21 @@ public class System
      * the score display
      *
      * @param scrPt the point in the score display
-     * @param pagPt the corresponding sheet point
+     * @param pagPt the corresponding sheet point, or null
+     * @return the page point
      *
      * @see #sheetToScore
      */
-    public void scoreToSheet (ScorePoint scrPt,
+    public PagePoint scoreToSheet (ScorePoint scrPt,
                               PagePoint pagPt)
     {
+        if (pagPt == null) {
+            pagPt = new PagePoint();
+        }
         pagPt.x = (topLeft.x + scrPt.x) - origin.x;
         pagPt.y = (topLeft.y + scrPt.y) - origin.y;
+        
+        return pagPt;
     }
 
     //----------//
@@ -522,38 +555,38 @@ public class System
                                      Zoom zoom,
                                      Component comp)
     {
-        // What is the clipping region
+        // What is the clipping region (to check whether our system is
+        // impacted)
         Rectangle clip = g.getClipBounds();
-
-        // Check that our system is impacted
-        if (xIntersect(zoom.unscaled(clip.x),
-                       zoom.unscaled(clip.x + clip.width))) {
-            g.setColor(Color.lightGray);
-
-            // Draw the system left edge
-            g.drawLine(zoom.scaled(origin.x),
-                       zoom.scaled(origin.y),
-                       zoom.scaled(origin.x),
-                       zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
-
-            // Draw the system right edge
-            g.drawLine(zoom.scaled(origin.x + dimension.width),
-                       zoom.scaled(origin.y),
-                       zoom.scaled(origin.x + dimension.width),
-                       zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
-
-            return true;
-        } else {
+        if (!xIntersect(zoom.unscaled(clip.x),
+                        zoom.unscaled(clip.x + clip.width))) {
             return false;
         }
+
+        g.setColor(Color.lightGray);
+
+        // Draw the system left edge
+        g.drawLine(zoom.scaled(origin.x),
+                   zoom.scaled(origin.y),
+                   zoom.scaled(origin.x),
+                   zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
+
+        // Draw the system right edge
+        g.drawLine(zoom.scaled(origin.x + dimension.width),
+                   zoom.scaled(origin.y),
+                   zoom.scaled(origin.x + dimension.width),
+                   zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
+
+        return true;
     }
 
     //------------//
     // xIntersect //
     //------------//
     /**
-     * Check for intersection of a given stick determined by (left, right)
-     * with the system abscissa range
+     * Check for intersection of a given clip determined by (left, right)
+     * with the system abscissa range. TBD : add some margin on left and
+     * right so that symbols on a system border get correctly drawn.
      *
      * @param left  min abscissa
      * @param right max abscissa
