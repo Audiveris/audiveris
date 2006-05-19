@@ -10,13 +10,17 @@
 
 package omr.score;
 
-import java.util.logging.Level;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.sheet.Sheet;
+import omr.sheet.PixelPoint;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 import omr.util.Logger;
+
+import static omr.glyph.Shape.*;
+
+import java.awt.Rectangle;
 
 /**
  * Class <code>ScoreBuilder</code> is in charge of translating each
@@ -60,23 +64,36 @@ public class ScoreBuilder
     //-----------//
     public void buildInfo()
     {
-        logger.setLevel (Level.FINE);
+        //logger.setLevel (Level.FINE);
 
         // Browse each system info of the sheet
         for (SystemInfo systemInfo : sheet.getSystems()) {
             System system = systemInfo.getScoreSystem();
             logger.fine("System " + systemInfo);
-            for (Glyph glyph : systemInfo.getGlyphs ()) {
-                if (glyph.isWellKnown () &&
-                        glyph.getShape () != Shape.CLUTTER) {
-                    logger.fine(glyph.toString ());
-                    int y = glyph.getCentroid ().y;
-                    int si = sheet.getStaffIndexAtY (y);
-                    StaffInfo staffInfo = sheet.getStaves ().get(si);
-                    int uY = staffInfo.getScale ().pixelsToUnits(y);
-                    ///Staff staff = system.getStaffAtY(uY);
+            for (Glyph glyph : systemInfo.getGlyphs()) {
+                Shape shape = glyph.getShape();
+                if (glyph.isWellKnown() && shape != CLUTTER) {
+                    logger.fine(glyph.toString());
+
+                    Rectangle box = glyph.getContourBox();
+                    PixelPoint pp = new PixelPoint(box.x + box.width/2,
+                            box.y + box.height/2);
+                    PagePoint p = sheet.getScale().pixelsToUnits(pp);
+                    Staff staff = system.getStaffAt(p);
+
+                    StaffPoint staffPoint = staff.toStaffPoint(p);
+
+                    Measure measure = staff.getMeasureAt(staffPoint);
+
+                    if (Shape.Clefs.contains(shape)) {
+                        Clef clef = new Clef
+                                (measure, staff, shape, staffPoint, 2);
+                        measure.getClefs().add(clef);
+                    }
                 }
             }
         }
+
+        score.getView().getScrollPane().getComponent().repaint();
     }
 }
