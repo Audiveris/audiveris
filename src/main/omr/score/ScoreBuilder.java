@@ -85,10 +85,22 @@ public class ScoreBuilder
 
                     Measure measure = staff.getMeasureAt(staffPoint);
 
-                    if (Shape.Clefs.contains(shape)) {
-                        Clef clef = new Clef
-                                (measure, staff, shape, staffPoint, 2);
-                        measure.getClefs().add(clef);
+                    // Processing based on shape
+                    switch (shape) {
+                    case G_CLEF:
+                    case G_CLEF_OTTAVA_ALTA :
+                    case G_CLEF_OTTAVA_BASSA:
+                        measure.getClefs().add
+                            (new Clef(measure, staff, shape, staffPoint, 2));
+                        break;
+
+                    case F_CLEF:
+                    case F_CLEF_OTTAVA_ALTA:
+                    case F_CLEF_OTTAVA_BASSA:
+                        measure.getClefs().add
+                            (new Clef(measure, staff, shape, staffPoint, -2));
+                        break;
+
                     }
                 }
             }
