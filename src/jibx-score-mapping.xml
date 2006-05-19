@@ -122,14 +122,30 @@
     <mapping name="measure"
              class="omr.score.Measure"
              value-style="attribute">
-        <value name="linetype"       field="linetype"
+	
+        <structure field="barline" />
+        
+        <!-- Chords -->
+
+    </mapping>
+    
+
+    <!--         -->
+    <!-- Barline -->
+    <!--         -->
+    <mapping name="barline"
+             class="omr.score.Barline"
+             value-style="attribute">
+        
+        <value name="shape"       field="shape"
 	       deserializer="omr.glyph.Shape.valueOf"
 	       />
-        <value name="leftlinex"      field="leftlinex" />
-        <value name="rightlinex"     field="rightlinex" />
-        <value name="lineinvented"   field="lineinvented" />
-	
-        <!-- Chords -->
+        
+        <structure name="center" field="center">
+            <value name="x" field="x" />
+            <value name="y" field="y" />
+        </structure>
+        
 
     </mapping>
     
