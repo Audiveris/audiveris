@@ -70,8 +70,8 @@ public class SymbolGlyphBoard
         (false, "w/iSyst", "Is glyph within the horizontal system boundaries");
     private LField ledger       = new LField
         (false, "Ledger", "Does this glyph intersect a legder");
-    private LIntegerField stepLine  = new LIntegerField
-        (false, "SLine", "Logical step position");
+    private LIntegerField pitchPosition  = new LIntegerField
+        (false, "Pitch", "Logical pitch position");
     private LIntegerField stems     = new LIntegerField
         (false, "Stems", "Number of stems connected to this glyph");
 
@@ -164,8 +164,8 @@ public class SymbolGlyphBoard
         builder.add(ledger.getLabel(),  cst.xy (5,  r));
         builder.add(ledger.getField(),  cst.xy (7,  r));
 
-        builder.add(stepLine.getLabel(), cst.xy (9,  r));
-        builder.add(stepLine.getField(), cst.xy (11, r));
+        builder.add(pitchPosition.getLabel(), cst.xy (9,  r));
+        builder.add(pitchPosition.getField(), cst.xy (11, r));
 
         r += 2;                         // --------------------------------
         builder.add(stems.getLabel(),   cst.xy (5,  r));
@@ -343,13 +343,13 @@ public class SymbolGlyphBoard
 
         // Fill characteristics
         if (glyph != null) {
-            stepLine.setValue((int) Math.rint(glyph.getStepLine()));
+            pitchPosition.setValue((int) Math.rint(glyph.getPitchPosition()));
             ledger.setText(Boolean.toString(glyph.hasLedger()));
             stems.setValue(glyph.getStemNumber());
             withinSystem.setText(Boolean.toString(glyph.isWithinSystem()));
         } else {
             ledger.setText("");
-            stepLine.setText("");
+            pitchPosition.setText("");
             stems.setText("");
             withinSystem.setText("");
         }
