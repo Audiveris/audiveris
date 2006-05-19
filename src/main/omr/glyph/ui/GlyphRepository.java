@@ -333,7 +333,7 @@ public class GlyphRepository
 
                         int y = glyph.getMembers().get(0).getStart();
                         glyph.setInterline
-                            (system.getStaffAtY(y).getScale().interline());
+                            (sheet.getScale().interline());
 
                         // Build the proper glyph file
                         StringBuffer sb = new StringBuffer();
