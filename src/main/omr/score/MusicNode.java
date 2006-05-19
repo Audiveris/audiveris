@@ -28,6 +28,10 @@ import java.awt.*;
  *                                 O                                      |
  *                                 |                                      |
  *                                 |                                      |
+ *                               Page                                     |
+ *                                 O                                      |
+ *                                 |                                      |
+ *                                 |                                      |
  *                              System                                    |
  *                                 O                                      |
  *                                 |                                      |
@@ -41,14 +45,14 @@ import java.awt.*;
  *                             |                                          |
  *        _____________________________________________                   |
  *       {LyricList, TextList, DynamicList, MeasureList}          Dummy   |
- *             O         O            O            O                      |
- *             |         |            |            |                      |
- *             |         |            |            |                      |
- *           Lyric     Text        Dynamic      Measure                   |
- *             O                                   O                      |
- *             |                                   |                      |
- *             |                _______________________________           |
- *          Syllable           {ClefList, KeysigList, ChordList}  Dummy   |
+ *          O            O            O            O                      |
+ *          |            |            |            |                      |
+ *          |            |            |            |                      |
+ *        Lyric        Text        Dynamic      Measure                   |
+ *          O                                      O                      |
+ *          |                                      |                      |
+ *          |                   _______________________________           |
+ *       Syllable              {ClefList, KeysigList, ChordList}  Dummy   |
  *                                  O           O          O              |
  *                                  |           |          |              |
  *                                  |           |          |              |
