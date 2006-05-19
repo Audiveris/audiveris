@@ -84,7 +84,7 @@ public class SystemInfo
     private int areaTop = -1;
 
     // Retrieved bar lines in this system
-    private List<BarInfo> bars = new ArrayList<BarInfo>();
+    private List<Stick> bars = new ArrayList<Stick>();
 
     // Width of widest glyph in this system
     private int maxGlyphWidth = -1;
@@ -236,7 +236,7 @@ public class SystemInfo
      *
      * @return the (abscissa ordered) collection of bar lines
      */
-    public List<BarInfo> getBars ()
+    public List<Stick> getBars ()
     {
         return bars;
     }

@@ -65,33 +65,31 @@ public class SystemSplit
     // splitBars //
     //-----------//
     /**
-     * Split the various BarInfo entities
+     * Split the various bar  entities
      *
      * @param sheet the containing sheet
      * @param bars the whole collection of bars to split
      */
     public static void splitBars (Sheet sheet,
-                                  Collection<BarInfo> bars)
+                                  Collection<Stick> bars)
     {
         process(sheet,
                 bars,
-                new Adapter<BarInfo>()
+                new Adapter<Stick>()
                 {
-                    public List<BarInfo> getTarget (SystemInfo info)
+                    public List<Stick> getTarget (SystemInfo info)
                     {
                         return info.getBars();
                     }
 
-                    public int getXMin (BarInfo bar)
+                    public int getXMin (Stick bar)
                     {
-                        Rectangle box = bar.getStick().getContourBox();
-                        return box.x;
+                        return bar.getContourBox().x;
                     }
 
-                    public int getYMin (BarInfo bar)
+                    public int getYMin(Stick bar)
                     {
-                        Rectangle box = bar.getStick().getContourBox();
-                        return box.y;
+                        return bar.getContourBox().y;
                     }
                 });
     }
