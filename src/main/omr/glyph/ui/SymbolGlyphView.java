@@ -110,6 +110,7 @@ public class SymbolGlyphView
 
         if (e == null) {
             // Not an interactive selection, so let's get out now
+            contextSelected = false;
             return;
         }
 
@@ -141,26 +142,32 @@ public class SymbolGlyphView
         protected void glyphSelected (Glyph glyph,
                                       Point pt)
     {
-        ///logger.info(getClass() + " glyphSelected " + glyph);
+        if (logger.isFineEnabled()) {
+            logger.fine("SymbolGlyphView glyphSelected");
+        }
 
         // Process the selected glyph
         List<Glyph> glyphs = pane.getCurrentGlyphs();
-        if (!contextSelected) {
+        if (additionning) {
+            // Adding glyphs, nothing to be done here
+            // This will be performed through glyphAdded()
+        } else if (contextSelected) {
+            // Single contextual glyph selection
+            if (glyphs.size() == 0) {
+                if (glyph != null) {
+                    glyphs.add(glyph);
+                }
+            }
+        } else {
+            // Simple selection
             if (glyphs.size() > 0) {
                 glyphs.clear();
             }
             if (glyph != null) {
                 glyphs.add(glyph);
             }
-            pane.getEvaluatorsPanel().evaluate(glyph);
-        } else {
-            if (glyphs.size() == 0) {
-                if (glyph != null) {
-                    glyphs.add(glyph);
-                }
-                pane.getEvaluatorsPanel().evaluate(glyph);
-             }
         }
+        pane.getEvaluatorsPanel().evaluate(glyph);
     }
 
     //------------//

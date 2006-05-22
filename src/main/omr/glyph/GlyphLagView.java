@@ -54,6 +54,9 @@ public class GlyphLagView
     /** Subject for glyph observers if any */
     protected final transient DefaultGlyphSubject glyphSubject 
             = new DefaultGlyphSubject();
+    
+    /** Flag indicating that point is being added */
+    protected transient volatile boolean additionning = false;
 
     //~ Constructors -----------------------------------------------------
 
@@ -243,9 +246,11 @@ public class GlyphLagView
         if (logger.isFineEnabled()) {
             logger.fine("GlyphLagView pointAdded");
         }
+        
+        additionning = true;
 
         // First, provide info related to designated point
-        super.pointSelected(e, pt);
+        pointSelected(e, pt);
 
         // Then, look for a glyph selection
         Glyph glyph = null;
@@ -256,6 +261,8 @@ public class GlyphLagView
         }
 
         glyphAdded(glyph, pt);
+
+        additionning = false;
     }
 
     //---------------//
