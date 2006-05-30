@@ -10,17 +10,14 @@
 
 package omr.score;
 
-import omr.glyph.Shape;
 import omr.lag.Lag;
-import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
 import omr.util.Dumper;
 import omr.util.Logger;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import javax.swing.Icon;
 import omr.util.TreeNode;
 
 /**
@@ -55,6 +52,9 @@ public class Measure
 //     private KeysigList keysigs;
 //     private ChordList chords;
 
+    // Potential time signature
+    private TimeSignature timeSignature;
+
 
     //~ Constructors ------------------------------------------------------
 
@@ -67,7 +67,7 @@ public class Measure
     public Measure ()
     {
         super(null, null);
-        allocateChildren();
+        cleanupNode();
     }
 
     //---------//
@@ -78,19 +78,16 @@ public class Measure
      *
      *
      * @param staff        the containing staff
-     * @param barline the ending bar line
      * @param lineinvented flag an artificial ending bar line if none existed
      */
     public Measure (Staff   staff,
-                    Barline barline,
                     boolean lineinvented)
     {
         super(staff, staff);
 
-        this.barline = barline;
         this.lineinvented = lineinvented;
 
-        allocateChildren();
+        cleanupNode();
 
         if (logger.isFineEnabled()) {
             Dumper.dump(this, "Constructed");
@@ -152,6 +149,33 @@ public class Measure
         return clefs.getChildren();
     }
 
+    //------------------//
+    // setTimeSignature //
+    //------------------//
+    /**
+     * Assign a time signature to this measure
+     *
+     * @param timeSignature the time signature
+     */
+    public void setTimeSignature (TimeSignature timeSignature)
+    {
+        this.timeSignature = timeSignature;
+
+    }
+
+    //------------------//
+    // getTimeSignature //
+    //------------------//
+    /**
+     * Report the potential time signature of this measure
+     *
+     * @return the related time signature, or null if none
+     */
+    public TimeSignature getTimeSignature()
+    {
+        return timeSignature;
+    }
+
     //--------------//
     // colorizeNode //
     //--------------//
@@ -178,12 +202,6 @@ public class Measure
     //-------------//
     // computeNode //
     //-------------//
-    /**
-     * Overriding definition, so that computations specific to a measure
-     * are performed
-     *
-     * @return true, so that processing continues
-     */
     @Override
         protected boolean computeNode ()
     {
@@ -199,18 +217,39 @@ public class Measure
         return true;
     }
 
+    //-------------//
+    // cleanupNode //
+    //-------------//
+    @Override
+        protected boolean cleanupNode()
+    {
+        // Remove all direct children except barlines
+        for (Iterator it = children.iterator(); it.hasNext();) {
+            MusicNode node = (MusicNode) it.next();
+            if (!(node instanceof Barline)) {
+                it.remove();
+            }
+        }
+
+        // Invalidate data
+        timeSignature = null;
+
+        // (Re)Allocate specific children lists
+        clefs = new ClefList(this, staff);
+//         chords = new ChordList(this, staff);
+//         keysigs = new KeysigList(this, staff);
+
+        return false;
+    }
+
     //-----------//
     // paintNode //
     //-----------//
     @Override
         protected boolean paintNode (Graphics  g,
-                                     Zoom      zoom,
-                                     Component comp)
+                                     Zoom      zoom)
     {
         Point origin = getOrigin();
-
-        // Draw the bar line symbol at the end of the measure
-        barline.paintItem(g, zoom, comp);
 
         // Draw the measure id, if on the first staff only
         if (staff.getStafflink() == 0) {
@@ -226,14 +265,6 @@ public class Measure
     //------------//
     // renderNode //
     //------------//
-    /**
-     * Render the physical information of this measure
-     *
-     * @param g the graphics context
-     * @param z the display zoom
-     *
-     * @return true if rendered
-     */
     @Override
     protected boolean renderNode (Graphics g,
                                   Zoom z)
@@ -257,12 +288,48 @@ public class Measure
         return "{Measure id=" + id + " bar=" + barline + "}";
     }
 
+    //----------//
+    // addChild //
+    //----------//
+    /**
+     * Override normal behavior, so that a given child is stored in its
+     * proper type collection (clef to clef list, etc...)
+     *
+     * @param node the child to insert in the staff
+     */
+    @Override
+        public void addChild (TreeNode node)
+    {
+        if (node instanceof Clef) {
+            clefs.addChild(node);
+            node.setContainer(clefs);
+
+            //      } else if (node instanceof Lyricline) {
+            //          lyriclines.addChild (node);
+            //          node.setContainer (lyriclines);
+            //      } else if (node instanceof Text) {
+            //          texts.addChild (node);
+            //          node.setContainer (texts);
+            //      } else if (node instanceof Dynamic) {
+            //          dynamics.addChild (node);
+            //          node.setContainer (dynamics);
+        } else if (node instanceof TreeNode) {
+            // Meant for the 4 lists
+            children.add(node);
+            node.setContainer(this);
+        } else {
+            // Programming error
+            Dumper.dump(node);
+            logger.severe("Staff node not known");
+        }
+    }
+
     //~ Methods private ---------------------------------------------------
 
     //----------//
     // getLeftX //
     //----------//
-    private int getLeftX()
+    public int getLeftX()
     {
         if (leftX == null) {
 
@@ -278,17 +345,6 @@ public class Measure
 
         return leftX;
 
-    }
-
-    //------------------//
-    // allocateChildren //
-    //------------------//
-    private void allocateChildren ()
-    {
-        // Allocate specific children lists
-        clefs = new ClefList(this, staff);
-//         chords = new ChordList(this, staff);
-//         keysigs = new KeysigList(this, staff);
     }
 
     //~ Classes -----------------------------------------------------------
