@@ -187,6 +187,39 @@ public class Scale
         return (int) Math.rint(val * val);
     }
 
+    //-------------//
+    // fracToUnits //
+    //-------------//
+    /**
+     * Compute the number of units that corresponds to the fraction of
+     * interline provided, according to the scale.
+     *
+     * @param frac a measure based on interline (1 = one interline)
+     *
+     * @return the actual number of units with the current scale
+     */
+    public int fracToUnits (Fraction frac)
+    {
+        return (int) Math.rint(fracToUnitsDouble(frac));
+    }
+
+    //-------------------//
+    // fracToUnitsDouble //
+    //-------------------//
+    /**
+     * Same as fracToUnits, but the result is a double instead of a
+     * rounded int.
+     *
+     * @param frac the interline fraction
+     *
+     * @return the equivalent in number of units
+     * @see #fracToUnits
+     */
+    public double fracToUnitsDouble (Fraction frac)
+    {
+        return INTER_LINE * frac.getValue();
+    }
+
     //-----------//
     // interline //
     //-----------//
