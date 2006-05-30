@@ -324,7 +324,7 @@ public class ScoreView
             Graphics2D g2 = (Graphics2D) g;
 
             // All nodes information
-            score.paintChildren(g2, zoom, this);
+            score.paintChildren(g2, zoom);
         }
 
         //---------------//

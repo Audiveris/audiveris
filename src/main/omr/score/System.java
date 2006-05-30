@@ -544,7 +544,7 @@ public class System
      * right sides are drawn
      *
      * @param g the graphic context
-     * @param comp the containing component
+     * @param zoom the display zoom ratio
      *
      * @return true if painted was actually done, so that depending
      *         entities (staff, slurs) are also rendered, false otherwise
@@ -552,8 +552,7 @@ public class System
      */
     @Override
         protected boolean paintNode (Graphics g,
-                                     Zoom zoom,
-                                     Component comp)
+                                     Zoom zoom)
     {
         // What is the clipping region (to check whether our system is
         // impacted)

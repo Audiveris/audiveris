@@ -206,8 +206,7 @@ public class Slur
     //-----------//
     @Override
         protected boolean paintNode (Graphics g,
-                                     Zoom zoom,
-                                     Component comp)
+                                     Zoom zoom)
     {
         // Compute data needed for drawing
         if (arc == null) {
