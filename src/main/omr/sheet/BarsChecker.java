@@ -504,9 +504,10 @@ public class BarsChecker
                     if (logger.isFineEnabled()) {
                         logger.fine("Creating measure for bar-line " + bar);
                     }
-                    Barline barline = new Barline(scale, staff);
+                    Measure measure = new Measure(staff, false); // invented ?
+                    Barline barline = new Barline(measure, staff, scale);
                     barline.addStick(bar);
-                    new Measure(staff, barline, false); // invented ?
+                    measure.setBarline(barline);
                 }
             }
         }
@@ -964,6 +965,7 @@ public class BarsChecker
 
             if (logger.isFineEnabled()) {
                 dump();
+
             }
         }
     }
