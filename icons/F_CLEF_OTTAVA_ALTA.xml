@@ -2,6 +2,7 @@
 <icon name="F_CLEF_OTTAVA_ALTA">
     <dimension width="23" height="37"/>
     <centroid x="11" y="18"/>
+    <ref-point x="0" y="19"/>
     <bitmap>
         <row>-------+$*$.-----------</row>
         <row>------.#.-.#-----------</row>

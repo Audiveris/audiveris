@@ -2,6 +2,7 @@
 <icon name="TIME_TWO_FOUR">
     <dimension width="13" height="33"/>
     <centroid x="6" y="15"/>
+    <ref-point x="0" y="16"/>
     <bitmap>
         <row>---o**##$0---</row>
         <row>-.$0---$###+-</row>
