@@ -11,6 +11,7 @@
 package omr.score;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 
 /**
  * Class <code>StaffPoint</code> is a simple Point that is meant to
@@ -26,6 +27,8 @@ import java.awt.*;
 public class StaffPoint
     extends Point
 {
+    //~ Constructors ------------------------------------------------------
+
     //------------//
     // StaffPoint //
     //------------//
@@ -37,8 +40,24 @@ public class StaffPoint
     // StaffPoint //
     //------------//
     public StaffPoint (int x,
-		       int y)
+                       int y)
     {
         super(x, y);
+    }
+
+    //~ Methods -----------------------------------------------------------
+
+    //----------//
+    // distance //
+    //----------//
+    @Override
+        public double distance(Point2D pt)
+    {
+        if (!(pt instanceof StaffPoint)) {
+            throw new RuntimeException
+                ("Trying to compute distance between heterogeneous points");
+        }
+
+        return super.distance(pt);
     }
 }
