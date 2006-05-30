@@ -76,11 +76,10 @@ public class Clef
     //-----------//
     @Override
         protected boolean paintNode (Graphics  g,
-                                     Zoom      zoom,
-                                     Component comp)
+                                     Zoom      zoom)
     {
         // Draw the clef symbol
-        paintSymbol(g, zoom, comp,
+        staff.paintSymbol(g, zoom,
                     (SymbolIcon) shape.getIcon(),
                     center,
                     pitchPosition);

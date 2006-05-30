@@ -36,6 +36,7 @@ import omr.ui.icon.SymbolIcon;
  * @version $Id$
  */
 public class Barline
+    extends StaffNode
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -48,9 +49,6 @@ public class Barline
 
     // Sheet global scale
     private Scale scale;
-
-    // Containing staff
-    private Staff staff;
 
     // Related physical sticks (bar sticks and dots), which is kept sorted on
     // stick abscissa
@@ -71,10 +69,11 @@ public class Barline
     // Barline //
     //---------//
     /**
-     * Default constructor, needed for XML binding
+     * Needed for XML binding
      */
-    private Barline ()
+    public Barline()
     {
+        super(null, null);
     }
 
     //---------//
@@ -86,11 +85,12 @@ public class Barline
      * @param scale the sheet global scale
      * @param staff the containing staff
      */
-    public Barline (Scale scale,
-                    Staff staff)
+    public Barline(MusicNode container,
+                   Staff staff,
+                   Scale scale)
     {
+        super(container, staff);
         this.scale = scale;
-        this.staff = staff;
     }
 
     //~ Methods -----------------------------------------------------------
@@ -115,11 +115,11 @@ public class Barline
     /**
      * Normally, shape should be inferred from the signature of stick
      * combination that compose the bar line, so this method is provided
-     * only when we want to force the bar line shape.
+     * only for the (rare) cases when we want to force the bar line shape.
      *
      * @param shape the forced shape
      */
-    public void forceShape (Shape shape)
+    public void forceShape(Shape shape)
     {
         this.shape = shape;
     }
@@ -153,7 +153,7 @@ public class Barline
     public StaffPoint getCenter()
     {
         if (center == null) {
-            center = computeCenter();
+            center = staff.computeGlyphsCenter(sticks, scale);
         }
 
         return center;
@@ -229,7 +229,7 @@ public class Barline
      *
      * @param other the other (merged) stick
      */
-    public void mergeWith (Barline other)
+    public void mergeWith(Barline other)
     {
         for (Stick stick : other.sticks) {
             addStick(stick);
@@ -246,7 +246,7 @@ public class Barline
      *
      * @param stick the bar stick to include
      */
-    public void addStick (Stick stick)
+    public void addStick(Stick stick)
     {
         sticks.add(stick);
 
@@ -264,9 +264,9 @@ public class Barline
      * @param viewIndex index of the display
      * @param color     color to be used for display
      */
-    public void colorize (Lag lag,
-                          int viewIndex,
-                          Color color)
+    public void colorize(Lag lag,
+                         int viewIndex,
+                         Color color)
     {
         for (Stick stick : sticks) {
             stick.colorize(lag, viewIndex, color);
@@ -274,28 +274,24 @@ public class Barline
     }
 
     //-----------//
-    // paintItem //
+    // paintNode //
     //-----------//
-    public void paintItem (Graphics  g,
-                           Zoom      zoom,
-                           Component comp)
+    @Override
+        protected boolean paintNode (Graphics  g,
+                                     Zoom      zoom)
     {
         Shape shape =  getShape();
         if (shape != null) {
-            SymbolIcon icon = (SymbolIcon) shape.getIcon();
-            if (icon == null) {
-                logger.warning("Need icon for " + shape);
-            } else {
-                icon.paintIcon
-                    (comp,
-                     g,
-                     zoom.scaled(staff.getOrigin().x + getCenter().x)
-                     - (icon.getActualWidth()+1)/2,
-                     zoom.scaled(staff.getOrigin().y));
-            }
+            // Draw the barline symbol
+            staff.paintSymbol(g, zoom,
+                              (SymbolIcon) shape.getIcon(),
+                              getCenter(),
+                              0);
         } else {
             logger.warning("No shape for barline " + this);
         }
+
+        return true;
     }
 
     //--------//
@@ -307,8 +303,8 @@ public class Barline
      * @param g the graphics context
      * @param z the display zoom
      */
-    public void render (Graphics g,
-                        Zoom z)
+    public void render(Graphics g,
+                       Zoom     z)
     {
         for (Stick stick : sticks) {
             stick.renderLine(g, z);
@@ -324,7 +320,7 @@ public class Barline
      * @return a string based on main members
      */
     @Override
-    public String toString ()
+        public String toString()
     {
         StringBuilder sb = new StringBuilder();
         sb
@@ -338,40 +334,17 @@ public class Barline
             sb.append("#").append(stick.getId());
         }
         sb.append("]");
-
         sb.append("}");
 
         return sb.toString();
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //---------------//
-    // computeCenter //
-    //---------------//
-    private StaffPoint computeCenter()
-    {
-        // We compute the bounding center of all related sticks
-        Rectangle rect = null;
-        for (Stick stick : sticks) {
-            if (rect == null) {
-                rect = new Rectangle(stick.getContourBox());
-            } else {
-                rect = rect.union(stick.getContourBox());
-            }
-        }
-
-        StaffPoint p = new StaffPoint
-            (scale.pixelsToUnits(rect.x + rect.width/2)  - staff.getTopLeft().x,
-             scale.pixelsToUnits(rect.y + rect.height/2) - staff.getTopLeft().y);
-
-        return p;
-    }
+    //~ Methods private ---------------------------------------------------
 
     //-----------//
     // getLetter //
     //-----------//
-    private String getLetter (Shape shape)
+    private String getLetter(Shape shape)
     {
         switch (shape) {
         case THICK_BAR_LINE : return "K";
