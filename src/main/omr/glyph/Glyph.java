@@ -491,8 +491,8 @@ public class Glyph
     //------------------//
     /**
      * Report the pitchPosition feature (position relative to the staff)
-     * 
-     * 
+     *
+     *
      * @return the pitchPosition value
      */
     public double getPitchPosition ()
@@ -837,13 +837,13 @@ public class Glyph
     /**
      * Setter for the pitch position, with respect to the containing
      * staff
-     * 
-     * 
+     *
+     *
      * @param pitchPosition the relative step line
      */
-    public void setPitchPosition (double stepLine)
+    public void setPitchPosition (double pitchPosition)
     {
-        this.pitchPosition = stepLine;
+        this.pitchPosition = pitchPosition;
     }
 
     //----------------//
