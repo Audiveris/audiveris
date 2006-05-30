@@ -168,6 +168,36 @@ public class MusicNode
     }
 
     //-------------//
+    // cleanupNode //
+    //-------------//
+    /**
+     * Placeholder for specific cleanup on this node
+     *
+     * @return true if processing must continue
+     */
+    protected boolean cleanupNode ()
+    {
+        return true;
+    }
+
+    //-----------------//
+    // cleanupChildren //
+    //-----------------//
+    /**
+     * Pattern to launch cleanup recursively on all children of this
+     * node
+     */
+    public void cleanupChildren ()
+    {
+        for (TreeNode node : children) {
+            MusicNode child = (MusicNode) node;
+            if (child.cleanupNode()) {
+                child.cleanupChildren();
+            }
+        }
+    }
+
+    //-------------//
     // computeNode //
     //-------------//
     /**
@@ -201,20 +231,18 @@ public class MusicNode
     // paintNode //
     //-----------//
     /**
-     * Placeholder for painting in the Score display the node at hand, and
-     * returning true is the rendering has been made, so that (contained)
-     * children will be painted only if their container has been painted, at
-     * least partially.
+     * Painting in the <b>Score</b> display the node at hand, and returning
+     * true is the rendering has been made, so that (contained) children
+     * will be painted only if their container has been painted, at least
+     * partially.
      *
      * @param g the graphics context
      * @param z the zooming factor
-     * @param comp the containing component -TO BE REMOVED-
      *
      * @return true if wholy or partly painted
      */
     protected boolean paintNode (Graphics g,
-                                 Zoom     z,
-                                 Component comp)
+                                 Zoom     z)
     {
         return true;
     }
@@ -228,16 +256,14 @@ public class MusicNode
      *
      * @param g the graphics context
      * @param z the zooming factor
-     * @param comp the containing component -TO BE REMOVED-
      */
     public void paintChildren (Graphics g,
-                               Zoom     z,
-                               Component comp)
+                               Zoom     z)
     {
         for (TreeNode node : children) {
             MusicNode child = (MusicNode) node;
-            if (child.paintNode(g, z, comp)) {
-                child.paintChildren(g, z, comp);
+            if (child.paintNode(g, z)) {
+                child.paintChildren(g, z);
             }
         }
     }
@@ -246,10 +272,10 @@ public class MusicNode
     // renderNode //
     //------------//
     /**
-     * Placeholder for rendering in the Sheet display the node at hand, and
+     * Rendering in the <b>Sheet</b> display the node at hand, and
      * returning true is the rendering has been made, so that (contained)
-     * children will be rendered only if their container has been rendered, at
-     * least partially.
+     * children will be rendered only if their container has been rendered,
+     * at least partially.
      *
      * @param g the graphics context
      * @param z the display zoom
