@@ -52,7 +52,7 @@ import omr.util.TreeNode;
 /**
  * Class <code>BarsBuilder</code> handles the vertical lines that are
  * recognized as bar lines. This class uses a dedicated companion named
- * {@link omr.sheet.BarsChecked} which handles physical checks.
+ * {@link omr.sheet.BarsChecker} which handles physical checks.
  *
  * <p> Input is provided by the list of vertical sticks retrieved by the
  * preceding step.
@@ -436,12 +436,12 @@ public class BarsBuilder
      * remove the measure that we first had associated with it.
      *
      * @param system the system whose staves starting measure has to be
-     *               checked 
+     *               checked
      */
     private void removeStartingBar (omr.score.System system)
     {
         int minWidth = scale.fracToPixels(constants.minMeasureWidth);
-        Barline firstBarline = 
+        Barline firstBarline =
                 system.getFirstStaff().getFirstMeasure().getBarline();
         int firstX = firstBarline.getLeftX();
 
@@ -460,7 +460,7 @@ public class BarsBuilder
             // Remove this false "measure" in all staves of the system
             for (TreeNode node : system.getStaves()) {
                 Staff staff = (Staff) node;
-                
+
                 // Set the bar as starting bar for the staff
                 Measure measure = (Measure) staff.getMeasures().get(0);
                 staff.setStartingBar(measure.getBarline());
@@ -471,7 +471,7 @@ public class BarsBuilder
                 // Update abscissa of top-left corner of the staff
                 staff.getTopLeft().translate
                         (staff.getStartingBar().getLeftX(), 0);
-                
+
                 // Update other bar lines abscissae accordingly
                 for (TreeNode mNode : staff.getMeasures()) {
                     Measure meas = (Measure) mNode;
