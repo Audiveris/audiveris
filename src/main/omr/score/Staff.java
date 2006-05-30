@@ -12,7 +12,6 @@ package omr.score;
 
 import omr.lag.Lag;
 import omr.sheet.StaffInfo;
-import omr.stick.Stick;
 import omr.ui.view.Zoom;
 import omr.util.Dumper;
 import omr.util.Logger;
@@ -21,7 +20,12 @@ import omr.util.TreeNode;
 import static omr.score.ScoreConstants.*;
 
 import java.awt.*;
+import java.util.Collection;
 import java.util.List;
+import omr.glyph.Glyph;
+import omr.sheet.Scale;
+import omr.stick.Stick;
+import omr.ui.icon.SymbolIcon;
 
 /**
  * Class <code>Staff</code> handles a staff in a system.
@@ -602,8 +606,7 @@ public class Staff
     //-----------//
     @Override
         protected boolean paintNode (Graphics  g,
-                                     Zoom      zoom,
-                                     Component comp)
+                                     Zoom      zoom)
     {
         g.setColor(Color.black);
 
@@ -614,10 +617,10 @@ public class Staff
             g.drawLine(zoom.scaled(origin.x), y,
                        zoom.scaled(origin.x + width), y);
         }
-        
+
         // Draw the starting bar line, if any
         if (startingBarline != null) {
-            startingBarline.paintItem(g, zoom, comp);
+            startingBarline.paintNode(g, zoom);
         }
 
         return true; // Meaning : we've drawn something
@@ -658,10 +661,10 @@ public class Staff
     private void allocateChildren ()
     {
         // Allocate specific children lists
-        measures = new MeasureList(this);
+        measures   = new MeasureList(this);
         lyriclines = new LyricList(this);
-        texts = new TextList(this);
-        dynamics = new DynamicList(this);
+        texts      = new TextList(this);
+        dynamics   = new DynamicList(this);
     }
 
     //--------------//
@@ -701,6 +704,164 @@ public class Staff
     {
         return new StaffPoint(pagePoint.x - topLeft.x,
                               pagePoint.y - topLeft.y);
+    }
+
+    //-------------//
+    // pitchToUnit //
+    //-------------//
+    /**
+     * Compute the ordinate Y (counted in units and measured from staff
+     * origin) that corresponds to a given step line
+     *
+     * @param pitchPosition the pitch position (-4 for top line, +4 for
+     *                      bottom line)
+     * @return the ordinate in pixels, counted from staff origin (upper
+     * line), so top line is 0px and bottom line is 64px (with an inter
+     * line of 16).
+     */
+    public static int pitchToUnit (int pitchPosition)
+    {
+        return (pitchPosition + 4) * INTER_LINE /2;
+    }
+
+    //-------------//
+    // unitToPitch //
+    //-------------//
+    /**
+     * Compute the pitch position of a given ordinate Y (counted in units
+     * and measured from staff origin)
+     *
+     * @param unit the ordinate in pixel units, counted from staff origin
+     * (upper line), so top line is 0px and bottom line is 64px (with an
+     * inter line of 16).
+     * @return the pitch position (-4 for top line, +4 for bottom line)
+     */
+    public static int unitToPitch (int unit)
+    {
+        return (int) Math.rint((2D * unit - 4D * INTER_LINE) / INTER_LINE);
+    }
+
+    //---------------------//
+    // computeGlyphsCenter //
+    //---------------------//
+    /**
+     * Compute the bounding center of a collection of glyphs
+     *
+     * @param glyphs the collection of glyph components
+     *
+     * @return the area center
+     */
+    public StaffPoint computeGlyphsCenter(Collection<? extends Glyph> glyphs,
+                                          Scale                       scale)
+    {
+        // We compute the bounding center of all glyphs
+        Rectangle rect = null;
+        for (Glyph glyph : glyphs) {
+            if (rect == null) {
+                rect = new Rectangle(glyph.getContourBox());
+            } else {
+                rect = rect.union(glyph.getContourBox());
+            }
+        }
+
+        StaffPoint p = new StaffPoint
+            (scale.pixelsToUnits(rect.x + rect.width/2)  - getTopLeft().x,
+             scale.pixelsToUnits(rect.y + rect.height/2) - getTopLeft().y);
+
+        return p;
+    }
+
+    //--------------------//
+    // computeGlyphCenter //
+    //--------------------//
+    /**
+     * Compute the bounding center of a glyph
+     *
+     * @param glyph the glyph
+     *
+     * @return the glyph center
+     */
+    public StaffPoint computeGlyphCenter(Glyph glyph,
+                                         Scale scale)
+    {
+        // We compute the bounding center of all glyphs
+        Rectangle rect = new Rectangle(glyph.getContourBox());
+
+        StaffPoint p = new StaffPoint
+            (scale.pixelsToUnits(rect.x + rect.width/2)  - getTopLeft().x,
+             scale.pixelsToUnits(rect.y + rect.height/2) - getTopLeft().y);
+
+        return p;
+    }
+
+    //-------------//
+    // paintSymbol //
+    //-------------//
+    /**
+     * Paint a symbol using its pitch position for ordinate in the
+     * containing staff
+     *
+     *
+     * @param g graphical context
+     * @param zoom display zoom
+     * @param icon the symbol icon to paint
+     * @param center staff-based coordinates of bounding center in units
+     *               (only abscissa is actually used)
+     * @param pitchPosition staff-based ordinate in step lines
+     */
+    public void paintSymbol (Graphics   g,
+                             Zoom       zoom,
+                             SymbolIcon icon,
+                             StaffPoint center,
+                             int        pitchPosition)
+    {
+        if (icon == null) {
+            logger.warning("No icon to paint");
+        } else if (center == null) {
+            logger.warning("Need bounding center for " + icon.getName());
+        } else {
+            ScorePoint origin = getOrigin();
+            int dy = pitchToUnit(pitchPosition);
+            Point refPoint = icon.getRefPoint();
+            int refY = (refPoint == null) ? icon.getCentroid().y : refPoint.y;
+
+            g.drawImage
+                (icon.getImage(),
+                 zoom.scaled(origin.x + center.x) - icon.getActualWidth()/2,
+                 zoom.scaled(origin.y + dy)       - refY,
+                 null);
+        }
+    }
+
+    //-------------//
+    // paintSymbol //
+    //-------------//
+    /**
+     * Paint a symbol icon using the coordinates in units of its bounding
+     * center within the containing staff
+     *
+     * @param g graphical context
+     * @param zoom display zoom
+     * @param icon the symbol icon to paint
+     * @param center staff-based bounding center in units
+     */
+    public void paintSymbol (Graphics   g,
+                             Zoom       zoom,
+                             SymbolIcon icon,
+                             StaffPoint center)
+    {
+        if (icon == null) {
+            logger.warning("No icon to paint");
+        } else if (center == null) {
+            logger.warning("Need area center for " + icon.getName());
+        } else {
+            ScorePoint origin = getOrigin();
+            g.drawImage
+                    (icon.getImage(),
+                    zoom.scaled(origin.x + center.x) - icon.getActualWidth()/2,
+                    zoom.scaled(origin.y + center.y) - icon.getIconHeight()/2,
+                    null);
+        }
     }
 
     //~ Classes -----------------------------------------------------------
