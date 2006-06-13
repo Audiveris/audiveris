@@ -340,4 +340,23 @@ public class StaffInfo
 
         return sb.toString();
     }
+
+    //-----------------//
+    // pitchPositionOf //
+    //-----------------//
+    /**
+     * Compute the pitch position of a pixel point
+     *
+     * @param pt the pixel point
+     * @return the pitch position
+     */
+    public double pitchPositionOf (PixelPoint pt)
+    {
+        int top   = getFirstLine().getLine().yAt(pt.x);
+        int bottom = getLastLine().getLine().yAt(pt.x);
+
+        return
+            4.0d*(2*pt.y - bottom - top)
+            / (bottom - top);
+    }
 }
