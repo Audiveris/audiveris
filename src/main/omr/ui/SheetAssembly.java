@@ -188,11 +188,11 @@ public class SheetAssembly
 
         // Needed to make the scroll bars visible
         scoreView.getScrollPane().getView().getZoom().fireStateChanged();
-        
+
         component.invalidate();
         component.validate();
         component.repaint();
-        
+
         this.scoreView = scoreView;
 
         // Pre-position vertical scroll bar to its middle (50 for 0 - 100)
@@ -373,7 +373,7 @@ public class SheetAssembly
         if (!sheetBarred) {
             ScrollView sv = getSelectedView();
             if (sv != null) {
-                Point pt = sheet.getScale().unitsToPixels(point, null);
+                PixelPoint pt = sheet.getScale().toPixelPoint(point, null);
                 scoreBarred = true;
                 sv.getView().setFocusPoint(pt);
                 scoreBarred = false;
@@ -392,7 +392,7 @@ public class SheetAssembly
     {
         ScrollView sv = getSelectedView();
         if (sv != null) {
-            Rectangle r = sheet.getScale().unitsToPixels(rect, null);
+            Rectangle r = sheet.getScale().toPixels(rect, null);
             scoreBarred = true;
             sv.getView().setFocusRectangle(r);
             scoreBarred = false;
@@ -474,7 +474,7 @@ public class SheetAssembly
         if (scoreView != null && !scoreBarred) {
             sheetBarred = true;
             scoreView.setFocus
-                (sheet.getScale().pixelsToUnits(ul, null));
+                (sheet.getScale().toPagePoint(ul, null));
             sheetBarred = false;
         }
     }
@@ -495,7 +495,7 @@ public class SheetAssembly
         if (scoreView != null && !scoreBarred) {
             sheetBarred = true;
             scoreView.setFocus
-                (sheet.getScale().pixelsToUnits(ul, null));
+                (sheet.getScale().toPagePoint(ul, null));
             sheetBarred = false;
         }
     }
@@ -516,7 +516,7 @@ public class SheetAssembly
                 Point pt = new Point(rect.x + rect.width/2,
                                      rect.y + rect.height/2);
                 scoreView.setFocus
-                    (sheet.getScale().pixelsToUnits(new PixelPoint(pt.x,
+                    (sheet.getScale().toPagePoint(new PixelPoint(pt.x,
                                                                    pt.y)));
             } else {
                 scoreView.setFocus(null);
