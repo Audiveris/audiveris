@@ -10,25 +10,24 @@
 
 package omr.glyph;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.glyph.ui.SymbolGlyphBoard;
+import omr.score.Measure;
+import omr.score.PagePoint;
+import omr.score.Staff;
+import omr.score.StaffPoint;
 import omr.sheet.Dash;
+import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemSplit;
 import omr.stick.Stick;
-import omr.stick.StickSection;
 import omr.util.Logger;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -343,11 +342,18 @@ public class GlyphBuilder
         glyph.setInterline(sheet.getScale().interline());
 
         // Mass center (which makes sure moments are available)
-        Point centroid = glyph.getCentroid();
+        PixelPoint centroid = glyph.getCentroid();
+        Scale scale = sheet.getScale();
+        PagePoint pgCentroid = scale.toPagePoint(centroid);
+        Staff s = system.getScoreSystem().getStaffAt(pgCentroid);
+        StaffPoint stCentroid = s.toStaffPoint(pgCentroid);
 
-        // Within system abscissa range ?
-        glyph.setIsWithinSystem(centroid.x >= system.getLeft() &&
-                                centroid.x <= system.getRight());
+        // Left and right margins within measure
+        Measure measure = s.getMeasureAt(s.toStaffPoint(pgCentroid));
+        glyph.setLeftMargin
+                (scale.unitsToFrac(measure.leftMarginOf(stCentroid)));
+        glyph.setRightMargin
+                (scale.unitsToFrac(measure.rightMarginOf(stCentroid)));
 
         // Number of connected stems
         int stemNb = 0;
@@ -371,10 +377,7 @@ public class GlyphBuilder
                                               ledgerBox(box)));
 
         // Vertical position wrt staff
-        final int top = staff.getFirstLine().getLine().yAt(centroid.x);
-        final int bottom = staff.getLastLine().getLine().yAt(centroid.x);
-        glyph.setPitchPosition(4*(double) (2* centroid.y - bottom - top)
-                          / (double)(bottom - top));
+        glyph.setPitchPosition(staff.pitchPositionOf(centroid));
     }
 
     //-------------//
@@ -382,7 +385,7 @@ public class GlyphBuilder
     //-------------//
     private Rectangle leftStemBox (Rectangle rect)
     {
-        int dx = sheet.getScale().fracToPixels(constants.stemWiden);
+        int dx = sheet.getScale().toPixels(constants.stemWiden);
         return new Rectangle (rect.x - dx,
                               rect.y,
                               2*dx,
@@ -394,7 +397,7 @@ public class GlyphBuilder
     //--------------//
     private Rectangle rightStemBox (Rectangle rect)
     {
-        int dx = sheet.getScale().fracToPixels(constants.stemWiden);
+        int dx = sheet.getScale().toPixels(constants.stemWiden);
         return new Rectangle (rect.x + rect.width - dx,
                               rect.y,
                               2*dx,
@@ -406,7 +409,7 @@ public class GlyphBuilder
     //-----------//
     private Rectangle ledgerBox (Rectangle rect)
     {
-        int dy = sheet.getScale().fracToPixels(constants.ledgerHeighten);
+        int dy = sheet.getScale().toPixels(constants.ledgerHeighten);
         return new Rectangle (rect.x,
                               rect.y - dy,
                               rect.width,
