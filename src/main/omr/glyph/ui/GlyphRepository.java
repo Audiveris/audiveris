@@ -16,6 +16,7 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.ui.icon.SymbolIcon;
 import omr.util.FileUtil;
 import omr.util.Logger;
 import omr.util.XmlMapper;
@@ -27,7 +28,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Collection;
 import java.io.IOException;
-import omr.glyph.ui.GlyphRepository.Monitor;
 
 /**
  * Class <code>GlyphRepository</code> handles the store of known glyphs,
@@ -53,8 +53,9 @@ public class GlyphRepository
 
     private static final Logger logger = Logger.getLogger(GlyphRepository.class);
 
-    // Specific glyph XML mapper
-    private static XmlMapper xmlMapper;
+    // Specific glyph and icon XML mappers
+    private static XmlMapper glyphXmlMapper;
+    private static XmlMapper iconXmlMapper;
 
     // The single instance of this class
     private static GlyphRepository INSTANCE;
@@ -70,6 +71,7 @@ public class GlyphRepository
                                                       "sheets");
     private static final File coreFolder   = new File(Main.getTrainFolder(),
                                                       "core");
+    private static final File iconsFolder  = Main.getIconsFolder();
 
     //~ Instance variables ------------------------------------------------
 
@@ -109,15 +111,26 @@ public class GlyphRepository
         return INSTANCE;
     }
 
-    //--------------//
-    // getXmlMapper //
-    //--------------//
-    private XmlMapper getXmlMapper()
+    //-------------------//
+    // getGlyphXmlMapper //
+    //-------------------//
+    private XmlMapper getGlyphXmlMapper()
     {
-        if (xmlMapper == null) {
-            xmlMapper = new XmlMapper(Glyph.class);
+        if (glyphXmlMapper == null) {
+            glyphXmlMapper = new XmlMapper(Glyph.class);
         }
-        return xmlMapper;
+        return glyphXmlMapper;
+    }
+
+    //------------------//
+    // getIconXmlMapper //
+    //------------------//
+    private XmlMapper getIconXmlMapper()
+    {
+        if (iconXmlMapper == null) {
+            iconXmlMapper = new XmlMapper(SymbolIcon.class);
+        }
+        return iconXmlMapper;
     }
 
     //-------------//
@@ -169,28 +182,53 @@ public class GlyphRepository
         Glyph glyph = glyphsMap.get(gName);
 
         // If failed, actually load the glyph from XML backup file
-        if (glyph == null) {
+        if (glyph != null) {
+            return glyph;
+        } else {
             // We try to load from the core repository first, then from the
-            // sheets repository
-            File file;
-            file = new File(getCoreFolder(), gName);
+            // builtin icons, finally from the sheets repository
+            boolean isIcon = false;
+            File file = new File(getCoreFolder(), gName);
             if (!file.exists()) {
-                file = new File(getSheetsFolder(), gName);
-                if (!file.exists()) {
-                    logger.warning("Unable to find file for glyph " + gName);
-                    return null;
+                file = new File(iconsFolder.getParentFile(), gName);
+                if (file.exists()) {
+                    isIcon = true;
+                } else {
+                    file = new File(getSheetsFolder(), gName);
+                    if (!file.exists()) {
+                        logger.warning("Unable to find file for glyph "
+                                       + gName);
+                        return null;
+                    }
                 }
             }
+            return loadGlyph(gName, file, isIcon);
+        }
+    }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Reading " + file);
-            }
-            try {
-                glyph = (Glyph) getXmlMapper().load(file);
+    //-----------//
+    // loadGlyph //
+    //-----------//
+    private Glyph loadGlyph (String  gName,
+                             File    file,
+                             boolean isIcon)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Reading " + file);
+        }
+        Glyph glyph = null;
+        try {
+            if (isIcon) {
+                SymbolIcon icon = (SymbolIcon) getIconXmlMapper().load(file);
+                if (icon != null) {
+                    glyph = createIconGlyph(icon);
+                }
+            } else {
+                glyph = (Glyph) getGlyphXmlMapper().load(file);
                 glyphsMap.put(gName, glyph);
-            } catch (Exception ex) {
-                // User already informed
             }
+        } catch (Exception ex) {
+            // User already informed
         }
 
         return glyph;
@@ -350,7 +388,7 @@ public class GlyphRepository
                         }
 
                         // Store the glyph
-                        getXmlMapper().store(glyph, glyphFile);
+                        getGlyphXmlMapper().store(glyph, glyphFile);
                         glyphNb++;
                     }
                 }
@@ -451,6 +489,7 @@ public class GlyphRepository
         logger.info(coreBase.size() +
                     " glyphs copied as core training material");
     }
+
     //~ Methods Private ---------------------------------------------------
 
     //----------------//
@@ -486,19 +525,21 @@ public class GlyphRepository
     // loadBase //
     //----------//
     /**
-     * Build the map and return the collection of glyphs names in a given
-     * directory
+     * Build the map and return the collection of glyphs names in a collection
+     * of directories
      *
-     * @param path the path of the directory to load
+     * @param paths the array of paths to the directories to load
      * @param monitor the observing entity if any
      * @return the collection of loaded glyphs names
      */
-    private synchronized Collection<String> loadBase (File    path,
+    private synchronized Collection<String> loadBase (File[]    paths,
                                                       Monitor monitor)
     {
         // Files in the provided directory & its subdirectories
-        List<File> files = new ArrayList<File>(1000);
-        loadDirectory(path, files);
+        List<File> files = new ArrayList<File>(4000);
+        for (File path : paths) {
+            loadDirectory(path, files);
+        }
         if (monitor != null) {
             monitor.setTotalGlyphs(files.size());
         }
@@ -534,11 +575,9 @@ public class GlyphRepository
             if (file.isDirectory()) {
                 // Recurse through it
                 loadDirectory(file, all);
-            } else {
-                if (FileUtil.getExtension(file).equals(FILE_EXTENSION)) {
-                    logger.fine("Adding " + file);
-                    all.add(file);
-                }
+            } else if (FileUtil.getExtension(file).equals(FILE_EXTENSION)) {
+                logger.fine("Adding " + file);
+                all.add(file);
             }
         }
     }
@@ -553,20 +592,21 @@ public class GlyphRepository
      */
     private Collection<String> loadCoreBase (Monitor monitor)
     {
-        return loadBase(getCoreFolder(), monitor);
+        return loadBase(new File[] {getCoreFolder()}, monitor);
     }
 
     //---------------//
     // loadWholeBase //
     //---------------//
     /**
-     * Build the complete map of all glyphs recorded so far
+     * Build the complete map of all glyphs recorded so far, beginning by the
+     * builtin icon glyphs, then the recorded glyphs.
      *
      * @return a collection of (known) glyphs names
      */
     private Collection<String> loadWholeBase (Monitor monitor)
     {
-        return loadBase(getSheetsFolder(), monitor);
+        return loadBase(new File[] {iconsFolder, getSheetsFolder()}, monitor);
     }
 
     //---------//
@@ -581,7 +621,8 @@ public class GlyphRepository
     private Shape shapeOf (File file)
     {
         try {
-            // ex: THIRTY_SECOND_REST.0105.xml
+            // ex: THIRTY_SECOND_REST.0105.xml (for real glyphs)
+            // ex: CODA.xml (for glyphs derived from icons)
             String name = FileUtil.getNameSansExtension(file);
             int dot = name.indexOf(".");
             if (dot != -1) {
