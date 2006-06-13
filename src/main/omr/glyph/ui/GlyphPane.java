@@ -199,7 +199,7 @@ public class GlyphPane
                     int noiseNb = 0;
                     for (Glyph glyph : currentGlyphs) {
                         if (glyph.getShape() != Shape.NOISE) {
-                            setShape(glyph, shape, /* updateUI => */ false);
+                            setShape(glyph, shape, /* updateUI => */ true);
                         } else {
                             noiseNb ++;
                         }
@@ -349,7 +349,7 @@ public class GlyphPane
      * @param shape  the assigned shape
      * @param updateUI should the user interface be updated ?
      */
-    void setShape(Glyph glyph,
+    public void setShape(Glyph glyph,
                   Shape shape,
                   boolean updateUI)
     {
