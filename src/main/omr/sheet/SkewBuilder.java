@@ -134,7 +134,7 @@ public class SkewBuilder
         Scale scale = sheet.getScale();
 
         // Parameters
-        minSectionLength = scale.fracToPixels(constants.minSectionLength);
+        minSectionLength = scale.toPixels(constants.minSectionLength);
 
         // Retrieve the horizontal lag of runs
         hLag = new GlyphLag(new HorizontalOrientation());
@@ -142,7 +142,7 @@ public class SkewBuilder
         new LagBuilder<GlyphLag, GlyphSection>().rip
                 (hLag,
                  picture,
-                 scale.fracToPixels(constants.minRunLength), // minRunLength
+                 scale.toPixels(constants.minRunLength), // minRunLength
                  new JunctionRatioPolicy(constants.maxHeightRatio.getValue())); // maxHeightRatio
 
         // Detect long sticks

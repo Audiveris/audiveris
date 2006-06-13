@@ -163,7 +163,7 @@ public class BarsBuilder
 
         // Retrieve (vertical) sticks
         barsArea = new VerticalArea(sheet, vLag,
-                                    scale.fracToPixels(constants.maxBarThickness));
+                                    scale.toPixels(constants.maxBarThickness));
         clutter = new ArrayList<Stick>(barsArea.getSticks());
 
         // Allocate score
@@ -337,7 +337,7 @@ public class BarsBuilder
     private void checkBarAlignments (omr.score.System system)
     {
         if (system.getStaves().size() > 1) {
-            int maxShiftDx = scale.fracToPixels(constants.maxAlignShiftDx);
+            int maxShiftDx = scale.toPixels(constants.maxAlignShiftDx);
 
             for (Iterator sit = system.getStaves().iterator(); sit.hasNext();) {
                 Staff staff = (Staff) sit.next();
@@ -395,7 +395,7 @@ public class BarsBuilder
      */
     private void mergeBarlines (omr.score.System system)
     {
-        int maxDoubleDx = scale.fracToPixels(constants.maxDoubleBarDx);
+        int maxDoubleDx = scale.toPixels(constants.maxDoubleBarDx);
 
         for (Iterator sit = system.getStaves().iterator(); sit.hasNext();) {
             Staff staff = (Staff) sit.next();
@@ -440,7 +440,7 @@ public class BarsBuilder
      */
     private void removeStartingBar (omr.score.System system)
     {
-        int minWidth = scale.fracToPixels(constants.minMeasureWidth);
+        int minWidth = scale.toPixels(constants.minMeasureWidth);
         Barline firstBarline =
                 system.getFirstStaff().getFirstMeasure().getBarline();
         int firstX = firstBarline.getLeftX();
@@ -496,7 +496,7 @@ public class BarsBuilder
         Measure measure = staff.getLastMeasure();
         Barline barline = measure.getBarline();
         int lastX = barline.getRightX();
-        int minWidth = scale.fracToPixels(constants.minMeasureWidth);
+        int minWidth = scale.toPixels(constants.minMeasureWidth);
 
         if ((staff.getWidth() - lastX) < minWidth) {
             if (logger.isFineEnabled()) {
@@ -528,7 +528,7 @@ public class BarsBuilder
         }
 
         score = new Score
-            (scale.pixelsToUnits(new PixelDimension(sheet.getWidth(),
+            (scale.toUnits(new PixelDimension(sheet.getWidth(),
                                                     sheet.getHeight())),
              (int) Math.rint(sheet.getSkew().angle() * ScoreConstants.BASE),
              scale.spacing(),

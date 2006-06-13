@@ -243,7 +243,7 @@ public class BarsChecker
     boolean isThickBar (Stick stick)
     {
         // Max width of a thin bar line, otherwise this must be a thick bar
-        final int maxThinWidth = scale.fracToPixels(constants.maxThinWidth);
+        final int maxThinWidth = scale.toPixels(constants.maxThinWidth);
 
         // Average width of the stick
         final int meanWidth = (int) Math.rint((double) stick.getWeight() /
@@ -411,9 +411,9 @@ public class BarsChecker
             omr.score.System system =
                 new omr.score.System
                 (info, score,
-                 scale.pixelsToUnits(new PixelPoint(info.getLeft(),
+                 scale.toPagePoint(new PixelPoint(info.getLeft(),
                                                     info.getTop())),
-                 scale.pixelsToUnits(new PixelDimension(info.getWidth(),
+                 scale.toUnits(new PixelDimension(info.getWidth(),
                                                         info.getDeltaY())));
 
             // Set the link SystemInfo -> System
@@ -426,7 +426,7 @@ public class BarsChecker
                 LineInfo line = set.getFirstLine();
                 new Staff
                     (set, system,
-                     scale.pixelsToUnits
+                     scale.toPagePoint
                      (new PixelPoint(set.getLeft(),
                                     line.getLine().yAt(line.getLeft()))),
                      scale.pixelsToUnits(set.getRight() - set.getLeft()),
@@ -446,7 +446,7 @@ public class BarsChecker
      */
     private void buildMeasures ()
     {
-        final int maxDy = scale.fracToPixels(constants.maxBarOffset);
+        final int maxDy = scale.toPixels(constants.maxBarOffset);
 
         // Sort bar lines by increasing abscissa
         Collections.sort(bars,
@@ -783,8 +783,8 @@ public class BarsChecker
             // Adjust chunk window according to system scale (problem, we
             // have sheet scale and staff scale, not system scale...)
             Scale scale = sheet.getScale();
-            nWidth = scale.fracToPixels(constants.chunkWidth);
-            nHeight = scale.fracToPixels(constants.chunkHeight);
+            nWidth = scale.toPixels(constants.chunkWidth);
+            nHeight = scale.toPixels(constants.chunkHeight);
 
             int area = 4 * nWidth * nHeight;
             setLowHigh(area * constants.chunkRatioLow.getValue(),
@@ -830,8 +830,8 @@ public class BarsChecker
             // Adjust chunk window according to system scale (problem, we
             // have sheet scale and staff scale, not system scale...)
             Scale scale = sheet.getScale();
-            nWidth = scale.fracToPixels(constants.chunkWidth);
-            nHeight = scale.fracToPixels(constants.chunkHeight);
+            nWidth = scale.toPixels(constants.chunkWidth);
+            nHeight = scale.toPixels(constants.chunkHeight);
 
             int area = 4 * nWidth * nHeight;
             setLowHigh(area * constants.chunkRatioLow.getValue(),

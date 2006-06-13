@@ -160,7 +160,7 @@ public class HorizontalsBuilder
 
         // Retrieve (horizontal) sticks
         horizontalsArea = new HorizontalArea(sheet, lag,
-                                             scale.fracToPixels(constants.maxThicknessHigh) - 1);
+                                             scale.toPixels(constants.maxThicknessHigh) - 1);
 
         // Recognize horizontals -> ledgers, endings
         retrieveHorizontals();
@@ -656,8 +656,8 @@ public class HorizontalsBuilder
             // Adjust chunk window according to system scale (problem, we
             // have sheet scale and staff scale, not system scale...)
             Scale scale = sheet.getScale();
-            nWidth = scale.fracToPixels(constants.chunkWidth);
-            nHeight = scale.fracToPixels(constants.chunkHeight);
+            nWidth = scale.toPixels(constants.chunkWidth);
+            nHeight = scale.toPixels(constants.chunkHeight);
 
             int area = 4 * nWidth * nHeight;
             setLowHigh(area * constants.chunkRatioLow.getValue(),

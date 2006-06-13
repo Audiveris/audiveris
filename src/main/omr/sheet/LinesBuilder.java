@@ -303,11 +303,11 @@ public class LinesBuilder
         ListIterator<GlyphSection> vi = vertices.listIterator();
 
         // Maximum deviation accepted in the series of peaks in a staff
-        final double maxDeviation = scale.fracToPixelsDouble(constants.maxInterlineDeviation);
+        final double maxDeviation = scale.toPixelsDouble(constants.maxInterlineDeviation);
 
         // Maximum difference in interval between a 6th line and the
         // average interval in the previous 5 lines
-        final double maxDiff = scale.fracToPixelsDouble(constants.maxInterlineDiffFrac);
+        final double maxDiff = scale.toPixelsDouble(constants.maxInterlineDiffFrac);
 
         // Desired length of series (TBD)
         final int interlineNb = 4;

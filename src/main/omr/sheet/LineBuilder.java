@@ -111,7 +111,7 @@ public class LineBuilder
         this.hLag = hLag;
 
         // source for adequate sections
-        int yMargin = staffScale.fracToPixels(constants.yMargin);
+        int yMargin = staffScale.toPixels(constants.yMargin);
         source = new LineSource(yTop - yMargin, yBottom + yMargin, vi);
     }
 
@@ -135,14 +135,14 @@ public class LineBuilder
             logger.fine("Building LineBuilder #" + id + " ...");
         }
 
-        maxThickness = staffScale.fracToPixels(constants.maxThickness);
+        maxThickness = staffScale.toPixels(constants.maxThickness);
 
         // Initialize the line area
         initialize
             (hLag,
              null, // No pre-candidates
              source, // Source for sections
-             sheet.getScale().fracToPixels(constants.coreSectionLength), // minCoreLength
+             sheet.getScale().toPixels(constants.coreSectionLength), // minCoreLength
              constants.maxAdjacency.getValue(), // maxAdjacency
              maxThickness,
              constants.maxSlope.getValue(), // max stick slope
@@ -252,7 +252,7 @@ public class LineBuilder
         // First compute the line equation with the known sticks
         computeLine();
 
-        final int yMargin = staffScale.fracToPixels(constants.yHoleMargin);
+        final int yMargin = staffScale.toPixels(constants.yHoleMargin);
 
         ListIterator<Stick> si = sticks.listIterator();
         Stick leftStick = si.next();
@@ -299,7 +299,7 @@ public class LineBuilder
             }
         }
 
-        final int maxGapWidth = staffScale.fracToPixels(constants.maxGapWidth);
+        final int maxGapWidth = staffScale.toPixels(constants.maxGapWidth);
 
         si = sticks.listIterator();
         leftStick = si.next();
@@ -481,12 +481,12 @@ public class LineBuilder
         List<GlyphSection> holeCandidates = null;
 
         // Determine the abscissa limits
-        final int xMargin = staffScale.fracToPixels(constants.xHoleMargin);
+        final int xMargin = staffScale.toPixels(constants.xHoleMargin);
         xMin -= xMargin;
         xMax += xMargin;
 
         // Determine the ordinate limits
-        final int yMargin = staffScale.fracToPixels(constants.yHoleMargin);
+        final int yMargin = staffScale.toPixels(constants.yHoleMargin);
         final int yMin = (int) Math.rint(Math.min(yLeft, yRight) - yMargin);
         final int yMax = (int) Math.rint(Math.max(yLeft, yRight) + yMargin);
 

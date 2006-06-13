@@ -136,9 +136,9 @@ public class Scale
         }
     }
 
-    //--------------//
-    // fracToPixels //
-    //--------------//
+    //----------//
+    // toPixels //
+    //----------//
     /**
      * Compute the number of pixels that corresponds to the fraction of
      * interline provided, according to the scale.
@@ -147,31 +147,31 @@ public class Scale
      *
      * @return the actual number of pixels with the current scale
      */
-    public int fracToPixels (Fraction frac)
+    public int toPixels (Fraction frac)
     {
-        return (int) Math.rint(fracToPixelsDouble(frac));
+        return (int) Math.rint(toPixelsDouble(frac));
     }
 
-    //--------------------//
-    // fracToPixelsDouble //
-    //--------------------//
+    //----------------//
+    // toPixelsDouble //
+    //----------------//
     /**
-     * Same as fracToPixels, but the result is a double instead of a
+     * Same as toPixels, but the result is a double instead of a
      * rounded int.
      *
-     * @param frac the interline fraction
      *
+     * @param frac the interline fraction
      * @return the equivalent in number of pixels
-     * @see #fracToPixels
+     * @see #toPixels
      */
-    public double fracToPixelsDouble (Fraction frac)
+    public double toPixelsDouble (Fraction frac)
     {
         return (double) interline * frac.getValue();
     }
 
-    //--------------------//
-    // fracToSquarePixels //
-    //-------------------//
+    //----------------//
+    // toSquarePixels //
+    //----------------//
     /**
      * Compute the squared-normalized number of pixels, according to the
      * scale.
@@ -180,16 +180,16 @@ public class Scale
      *
      * @return the actual squared number of pixels with the current scale
      */
-    public int fracToSquarePixels (Fraction frac)
+    public int toSquarePixels (Fraction frac)
     {
-        double val = fracToPixelsDouble(frac);
+        double val = toPixelsDouble(frac);
 
         return (int) Math.rint(val * val);
     }
 
-    //-------------//
-    // fracToUnits //
-    //-------------//
+    //---------//
+    // toUnits //
+    //---------//
     /**
      * Compute the number of units that corresponds to the fraction of
      * interline provided, according to the scale.
@@ -198,24 +198,38 @@ public class Scale
      *
      * @return the actual number of units with the current scale
      */
-    public int fracToUnits (Fraction frac)
+    public int toUnits (Fraction frac)
     {
-        return (int) Math.rint(fracToUnitsDouble(frac));
+        return (int) Math.rint(toUnitsDouble(frac));
     }
 
-    //-------------------//
-    // fracToUnitsDouble //
-    //-------------------//
+    //-------------//
+    // unitsToFrac //
+    //-------------//
     /**
-     * Same as fracToUnits, but the result is a double instead of a
+     * Transtale a number of units to an interline fraction
+     *
+     * @param d the number of units
+     * @return the corresponding interline fraction
+     */
+    public double unitsToFrac (double d)
+    {
+        return d / INTER_LINE;
+    }
+
+    //---------------//
+    // toUnitsDouble //
+    //---------------//
+    /**
+     * Same as toUnits, but the result is a double instead of a
      * rounded int.
      *
-     * @param frac the interline fraction
      *
+     * @param frac the interline fraction
      * @return the equivalent in number of units
-     * @see #fracToUnits
+     * @see #toUnits
      */
-    public double fracToUnitsDouble (Fraction frac)
+    public double toUnitsDouble (Fraction frac)
     {
         return INTER_LINE * frac.getValue();
     }
@@ -267,19 +281,19 @@ public class Scale
      * Compute the interline fraction that corresponds to the given number
      * of pixels.
      *
-     * @param pixels the equivalent in number of pixels
      *
+     * @param pixels the equivalent in number of pixels
      * @return the interline fraction
-     * @see #fracToPixels
+     * @see #toPixels
      */
     public double pixelsToFrac (int pixels)
     {
         return (double) pixels / (double) interline;
     }
 
-    //---------------//
-    // pixelsToUnits //
-    //---------------//
+    //-------------//
+    // toPagePoint //
+    //-------------//
     /**
      * Convert a point whose coordinates are in pixels to a point whose
      * coordinates are in units.
@@ -288,14 +302,14 @@ public class Scale
      *
      * @return the result in units
      */
-    public PagePoint pixelsToUnits (PixelPoint pixPt)
+    public PagePoint toPagePoint (PixelPoint pixPt)
     {
-        return pixelsToUnits(pixPt, null);
+        return toPagePoint(pixPt, null);
     }
 
-    //---------------//
-    // pixelsToUnits //
-    //---------------//
+    //-------------//
+    // toPagePoint //
+    //-------------//
     /**
      * Convert a point whose coordinates are in pixels to a point whose
      * coordinates are in units.
@@ -306,8 +320,8 @@ public class Scale
      *
      * @return the result in units
      */
-    public PagePoint pixelsToUnits (PixelPoint pixPt,
-                                    PagePoint pagPt)
+    public PagePoint toPagePoint (PixelPoint pixPt,
+                                  PagePoint pagPt)
     {
         if (pagPt == null) {
             pagPt = new PagePoint();
@@ -319,9 +333,9 @@ public class Scale
         return pagPt;
     }
 
-    //---------------//
-    // pixelsToUnits //
-    //---------------//
+    //---------//
+    // toUnits //
+    //---------//
     /**
      * Convert a dimension whose compoents are in pixels to a dimension
      * whose components are in units.
@@ -330,14 +344,14 @@ public class Scale
      *
      * @return the result in units
      */
-    public UnitDimension pixelsToUnits (PixelDimension pixelDim)
+    public UnitDimension toUnits (PixelDimension pixelDim)
     {
-        return pixelsToUnits(pixelDim, null);
+        return toUnits(pixelDim, null);
     }
 
-    //---------------//
-    // pixelsToUnits //
-    //---------------//
+    //---------//
+    // toUnits //
+    //---------//
     /**
      * Convert a dimension whose compoents are in pixels to a dimension
      * whose components are in units.
@@ -348,8 +362,8 @@ public class Scale
      *
      * @return the result in units
      */
-    public UnitDimension pixelsToUnits (PixelDimension pixelDim,
-                                        UnitDimension  unitDim)
+    public UnitDimension toUnits (PixelDimension pixelDim,
+                                  UnitDimension  unitDim)
     {
         if (unitDim == null) {
             unitDim = new UnitDimension();
@@ -408,9 +422,9 @@ public class Scale
         return interline * BASE;
     }
 
-    //---------------//
-    // unitsToPixels //
-    //---------------//
+    //--------------//
+    // toPixelPoint //
+    //--------------//
     /**
      * Convert a point with coordinates in units into its equivalent with
      * coordinates in pixels. Reverse function of pixelsToUnits
@@ -419,14 +433,14 @@ public class Scale
      *
      * @return the computed point in pixels
      */
-    public PixelPoint unitsToPixels (PagePoint pagPt)
+    public PixelPoint toPixelPoint (PagePoint pagPt)
     {
-        return unitsToPixels(pagPt, null);
+        return toPixelPoint(pagPt, null);
     }
 
-    //---------------//
-    // unitsToPixels //
-    //---------------//
+    //--------------//
+    // toPixelPoint //
+    //--------------//
     /**
      * Convert a point with coordinates in units into its equivalent with
      * coordinates in pixels. Reverse function of pixelsToUnits
@@ -436,10 +450,9 @@ public class Scale
      *              the routine
      *
      * @return the computed point in pixels
-     * @see #pixelsToUnits
      */
-    public PixelPoint unitsToPixels (PagePoint pagPt,
-                                     PixelPoint pixPt)
+    public PixelPoint toPixelPoint (PagePoint pagPt,
+                                    PixelPoint pixPt)
     {
         if (pixPt == null) {
             pixPt = new PixelPoint();
@@ -451,9 +464,9 @@ public class Scale
         return pixPt;
     }
 
-    //---------------//
-    // unitsToPixels //
-    //---------------//
+    //----------//
+    // toPixels //
+    //----------//
     /**
      * Convert a dimension with components in units into its equivalent with
      * components in pixels. Reverse function of pixelsToUnits
@@ -464,8 +477,8 @@ public class Scale
      *
      * @return the computed point in pixels
      */
-    public PixelDimension unitsToPixels (UnitDimension  unitDim,
-                                         PixelDimension pixelDim)
+    public PixelDimension toPixels (UnitDimension  unitDim,
+                                    PixelDimension pixelDim)
     {
         if (pixelDim == null) {
             pixelDim = new PixelDimension();
@@ -477,9 +490,9 @@ public class Scale
         return pixelDim;
     }
 
-    //---------------//
-    // unitsToPixels //
-    //---------------//
+    //----------//
+    // toPixels //
+    //----------//
     /**
      * Convert a dimension with components in units into its equivalent with
      * components in pixels. Reverse function of pixelsToUnits
@@ -488,14 +501,14 @@ public class Scale
      *
      * @return the computed point in pixels
      */
-    public PixelDimension unitsToPixels (UnitDimension  unitDim)
+    public PixelDimension toPixels (UnitDimension  unitDim)
     {
-        return unitsToPixels(unitDim, null);
+        return toPixels(unitDim, null);
     }
 
-    //---------------//
-    // unitsToPixels //
-    //---------------//
+    //----------//
+    // toPixels //
+    //----------//
     /**
      * Convert a rectangle with coordinates in units into its equivalent with
      * coordinates in pixels. Reverse function of pixelsToUnits
@@ -504,14 +517,14 @@ public class Scale
      *
      * @return the computed rectangle in pixels
      */
-    public Rectangle unitsToPixels (Rectangle pagRect)
+    public Rectangle toPixels (Rectangle pagRect)
     {
-        return unitsToPixels(pagRect, null);
+        return toPixels(pagRect, null);
     }
 
-    //---------------//
-    // unitsToPixels //
-    //---------------//
+    //----------//
+    // toPixels //
+    //----------//
     /**
      * Convert a rectangle with coordinates in units into its equivalent with
      * coordinates in pixels. Reverse function of pixelsToUnits
@@ -522,8 +535,8 @@ public class Scale
      *
      * @return the computed rectangle in pixels
      */
-    public Rectangle unitsToPixels (Rectangle pagRect,
-                                    Rectangle pixRect)
+    public Rectangle toPixels (Rectangle pagRect,
+                               Rectangle pixRect)
     {
         if (pixRect == null) {
             pixRect = new Rectangle();

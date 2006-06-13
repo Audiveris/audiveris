@@ -110,7 +110,7 @@ public class VerticalsBuilder
             (sheet,
              vLag,
              new MySectionPredicate(),
-             scale.fracToPixels(constants.maxStemThickness));
+             scale.toPixels(constants.maxStemThickness));
 
         // Split these candidates per system
         SystemSplit.splitVerticalSticks(sheet, verticalsArea.getSticks());
@@ -277,8 +277,8 @@ public class VerticalsBuilder
             sheet.render(g, z);
 
             Scale scale = sheet.getScale();
-            int nWidth = scale.fracToPixels(constants.chunkWidth);
-            int nHeight = scale.fracToPixels(constants.chunkHeight);
+            int nWidth = scale.toPixels(constants.chunkWidth);
+            int nHeight = scale.toPixels(constants.chunkHeight);
 
             // Render the contour of the verticals
             for (SystemInfo system : sheet.getSystems()) {

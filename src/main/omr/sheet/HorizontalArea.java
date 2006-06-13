@@ -71,15 +71,15 @@ public class HorizontalArea
         initialize(hLag,
                    null,
                    new Source(hLag.getVertices()), // source for adequate sections
-                   scale.fracToPixels(constants.coreSectionLength), // minCoreLength
+                   scale.toPixels(constants.coreSectionLength), // minCoreLength
                    constants.maxAdjacency.getValue(), // maxAdjacency
                    maxThickness, // maxThickness
                    constants.maxSlope.getValue(), // maxSlope
                    false); // longAlignment
 
         // Merge aligned horizontals
-        merge(scale.fracToPixels(constants.maxDeltaCoord),
-              scale.fracToPixels(constants.maxDeltaPos),
+        merge(scale.toPixels(constants.maxDeltaCoord),
+              scale.toPixels(constants.maxDeltaPos),
               constants.maxDeltaSlope.getValue());
 
         // Sort sticks found
