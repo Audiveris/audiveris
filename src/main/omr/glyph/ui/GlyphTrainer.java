@@ -32,31 +32,21 @@ import com.jgoodies.forms.layout.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.*;
-import javax.swing.border.*;
 
 /**
  * Class <code>GlyphTrainer</code> handles a User Interface dedicated to
- * the training and testing of two different evaluators
+ * the training and testing of a glyph evaluator. This class can be launched
+ * as a stand-alone program.
  *
- * <p>The frame is divided vertically in 3 parts:
+ * <p>The frame is divided vertically in 2 parts:
  * <ol>
  * <li>The repository of known glyphs ({@link GlyphRepository})
  * <li>The neural network evaluator ({@link GlyphNetwork})
- * <li>The regression evaluator ({@link GlyphRegression})
  * </ol>
  *
  * @author Herv&eacute; Bitteur
@@ -86,9 +76,8 @@ public class GlyphTrainer
     // Related frame
     private final JFrame frame;
 
-    // The evaluators
+    // The Neural Network evaluator
     private GlyphNetwork network = GlyphNetwork.getInstance();
-    private GlyphRegression regression = GlyphRegression.getInstance();
 
     // Repository of known glyphs
     private final GlyphRepository repository = GlyphRepository.getInstance();
@@ -96,7 +85,6 @@ public class GlyphTrainer
     // The various panels
     private final RepositoryPanel repositoryPanel;
     private final NetworkPanel    networkPanel;
-    private final RegressionPanel regressionPanel;
 
     // Counter on loaded glyphs
     private int nbLoaded;
@@ -125,7 +113,6 @@ public class GlyphTrainer
 
         repositoryPanel = new RepositoryPanel();
         networkPanel = new NetworkPanel(network);
-        regressionPanel = new RegressionPanel(regression);
 
         frame.add(createGlobalPanel());
 
@@ -144,67 +131,26 @@ public class GlyphTrainer
         }
 
         // Differ realization
-        EventQueue.invokeLater(new FrameShower(frame));
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                frame.pack();
+                frame.setVisible(true);
+            }
+        });
     }
 
     //~ Methods -----------------------------------------------------------
 
-    //-------------//
-    // FrameShower //
-    //-------------//
-    private static class FrameShower
-        implements Runnable
-    {
-        final Frame frame;
-
-        public FrameShower(Frame frame)
-        {
-            this.frame = frame;
-        }
-
-        public void run()
-        {
-            frame.pack();
-            frame.setVisible(true);
-        }
-    }
-
-    //----------//
-    // getFrame //
-    //----------//
+    //--------//
+    // launch //
+    //--------//
     /**
-     * Report the UI frame of glyph trainer
-     *
-     * @return the related frame
+     * (Re)activate the trainer tool
      */
-    public JFrame getFrame()
+    public static void launch()
     {
-        return frame;
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class, after creating it if
-     * needed
-     *
-     * @return the single instance
-     */
-    public static GlyphTrainer getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GlyphTrainer();
-        }
-        return INSTANCE;
-    }
-
-    //---------------//
-    // setFrameTitle //
-    //---------------//
-    private void setFrameTitle (double error)
-    {
-        frame.setTitle(String.format("%.5f - %s", error, frameTitle));
+        getInstance().frame.setVisible(true);
+        getInstance().frame.toFront();
     }
 
     //------//
@@ -218,7 +164,28 @@ public class GlyphTrainer
     public static void main (String... args)
     {
         standAlone = true;
-        new GlyphTrainer();
+        getInstance();
+    }
+
+    //~ Methods private ---------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    private static GlyphTrainer getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new GlyphTrainer();
+        }
+        return INSTANCE;
+    }
+
+    //---------------//
+    // setFrameTitle //
+    //---------------//
+    private void setFrameTitle (double error)
+    {
+        frame.setTitle(String.format("%.5f - %s", error, frameTitle));
     }
 
     //-------------------//
@@ -353,19 +320,29 @@ public class GlyphTrainer
             inputParams();              // What for ? TBD
 
             // Train regression on them
-            regressionPanel.trainAction.train(/* whole => */ true);
+            GlyphRegression regression = GlyphRegression.getInstance();
+            Collection<String> gNames = getBase(/* whole => */ true);
+            List<Glyph> glyphs = new ArrayList<Glyph>();
+            for (String gName : gNames) {
+                Glyph glyph = repository.getGlyph(gName);
+                if (glyph != null) {
+                    glyphs.add(glyph);
+                }
+            }
+            regression.train(glyphs, null, Evaluator.StartingMode.SCRATCH);
 
             // Measure every glyph
-            Collection<String> gNames = getBase(/* whole => */ true);
             List<NotedGlyph> palmares =
                 new ArrayList<NotedGlyph>(gNames.size());
             for (String gName : gNames){
                 NotedGlyph ng = new NotedGlyph();
                 ng.gName = gName;
                 ng.glyph = repository.getGlyph(gName);
-                ng.grade = regression.measureDistance(ng.glyph,
-                                                      ng.glyph.getShape());
-                palmares.add(ng);
+                if (ng.glyph != null) {
+                    ng.grade = regression.measureDistance(ng.glyph,
+                                                          ng.glyph.getShape());
+                    palmares.add(ng);
+                }
             }
 
             // Sort the palmares, shape by shape, by decreasing grade, so
@@ -437,7 +414,7 @@ public class GlyphTrainer
 
         public void enableSelect()
         {
-            if (networkPanel.onTraining || regressionPanel.onTraining) {
+            if (networkPanel.onTraining) {
                 selectAction.setEnabled(false);
             } else {
                 selectAction.setEnabled(true);
@@ -500,7 +477,6 @@ public class GlyphTrainer
                         {
                             // Disable some actions
                             networkPanel.enableTraining(false);
-                            regressionPanel.enableTraining(false);
                             selectAction.setEnabled(false);
 
                             // Define Core from Whole
@@ -509,7 +485,6 @@ public class GlyphTrainer
 
                             // Enable some actions
                             networkPanel.enableTraining(true);
-                            regressionPanel.enableTraining(true);
                             enableSelect();
                         }
                     });
@@ -598,7 +573,7 @@ public class GlyphTrainer
         {
             // Evaluator Title & Progress Bar
             int r = 1;                      // ----------------------------
-            builder.addSeparator(evaluator.getName(),   cst.xyw(1, r, 7));
+            builder.addSeparator(evaluator.getName(), cst.xyw(1, r, 7));
             builder.add(progressBar,                    cst.xyw(9, r, 7));
 
             r += 2;                         // ----------------------------
@@ -609,7 +584,7 @@ public class GlyphTrainer
 
             // Validation part
             r = validationRow;
-            builder.addSeparator("Validation",          cst.xyw(3, r, 13));
+            builder.addSeparator("Validation",         cst.xyw(3, r, 13));
 
             r += 2;                         // ----------------------------
             JButton validateButton = new JButton(validateAction);
@@ -617,12 +592,12 @@ public class GlyphTrainer
                 ("Validate the evaluator on current base of glyphs");
 
             builder.add(validateButton,                 cst.xy(3,  r));
-            builder.add(positiveValue.getLabel(),       cst.xy(5,  r));
-            builder.add(positiveValue.getField(),       cst.xy(7,  r));
-            builder.add(negativeValue.getLabel(),       cst.xy(9,  r));
-            builder.add(negativeValue.getField(),       cst.xy(11, r));
-            builder.add(falsePositiveValue.getLabel(),  cst.xy(13, r));
-            builder.add(falsePositiveValue.getField(),  cst.xy(15, r));
+            builder.add(positiveValue.getLabel(),      cst.xy(5,  r));
+            builder.add(positiveValue.getField(),      cst.xy(7,  r));
+            builder.add(negativeValue.getLabel(),      cst.xy(9,  r));
+            builder.add(negativeValue.getField(),      cst.xy(11, r));
+            builder.add(falsePositiveValue.getLabel(), cst.xy(13, r));
+            builder.add(falsePositiveValue.getField(), cst.xy(15, r));
 
             r += 2;                         // ----------------------------
             JButton negativeButton = new JButton(negativeAction);
@@ -635,8 +610,8 @@ public class GlyphTrainer
 
             builder.add(pcValue.getLabel(),     cst.xy(5,  r));
             builder.add(pcValue.getField(),     cst.xy(7,  r));
-            builder.add(negativeButton,         cst.xy(11, r));
-            builder.add(falsePositiveButton,    cst.xy(15, r));
+            builder.add(negativeButton,          cst.xy(11, r));
+            builder.add(falsePositiveButton,     cst.xy(15, r));
         }
 
         //---------------//
@@ -771,7 +746,7 @@ public class GlyphTrainer
                 {
                     public void run()
                     {
-                        train(useWhole);
+                        train();
                     }
                 }
 
@@ -788,7 +763,7 @@ public class GlyphTrainer
             {
             }
 
-            public void train (boolean useWhole)
+            public void train()
             {
                 onTraining = true;
                 repositoryPanel.enableSelect();
@@ -888,69 +863,13 @@ public class GlyphTrainer
 
     //~ Class -------------------------------------------------------------
 
-    //-----------------//
-    // RegressionPanel //
-    //-----------------//
-    private class RegressionPanel
-        extends EvaluatorPanel
-    {
-        protected LIntegerField trainIndex = new LIntegerField
-            (false, "Index", "Index of last shape used for training");
-
-        //~ Constructors --------------------------------------------------
-
-        public RegressionPanel(Evaluator evaluator)
-        {
-            super(evaluator, 5, 5);
-
-            trainAction = new TrainAction("Re-Train");
-            enableTraining(true);
-
-            defineSpecificLayout();
-        }
-
-        //~ Methods -------------------------------------------------------
-
-        private void defineSpecificLayout()
-        {
-            int r = 3;
-
-            JButton dumpButton = new JButton(new DumpAction());
-            dumpButton.setToolTipText("Dump the evaluator internals");
-
-            JButton trainButton = new JButton(trainAction);
-            trainButton.setToolTipText("Re-Train the evaluator from scratch");
-
-            builder.add(dumpButton,             cst.xy( 3, r));
-            builder.add(trainButton,            cst.xy( 5, r));
-            builder.add(trainIndex.getLabel(),  cst.xy(13, r));
-            builder.add(trainIndex.getField(),  cst.xy(15, r));
-        }
-
-        @Override
-        public void glyphProcessed (final Glyph glyph)
-        {
-            SwingUtilities.invokeLater(new Runnable()
-                {
-                    public void run ()
-                    {
-                        trainIndex.setValue(++glyphNb);
-                        progressBar.setValue(glyphNb);
-                        repaint();
-                    }
-                });
-        }
-    }
-
-    //~ Class -------------------------------------------------------------
-
     //--------------//
     // NetworkPanel //
     //--------------//
     private class NetworkPanel
         extends EvaluatorPanel
     {
-        IncrementalTrainAction incrementalTrainAction;
+        NetworkTrainAction incrementalTrainAction;
 
         LField eta = new LField("ETA", "Estimated time for end of training");
         LDoubleField momentum = new LDoubleField
@@ -999,8 +918,15 @@ public class GlyphTrainer
             getActionMap().put("readParams",
                                new ParamAction());
 
-            trainAction = new TrainAction("Re-Train");
-            incrementalTrainAction = new IncrementalTrainAction("Inc-Train");
+            trainAction = new NetworkTrainAction
+                ("Re-Train",
+                 Evaluator.StartingMode.SCRATCH,
+                 /* confirmationRequired => */ true);
+            incrementalTrainAction = new NetworkTrainAction
+                ("Inc-Train",
+                 Evaluator.StartingMode.INCREMENTAL,
+                 /* confirmationRequired => */ false);
+
             stopAction.setEnabled(false);
             lastAction.setEnabled(false);
             snapAction.setEnabled(false);
@@ -1197,14 +1123,17 @@ public class GlyphTrainer
             }
         }
 
-        protected class IncrementalTrainAction
+        protected class NetworkTrainAction
             extends EvaluatorPanel.TrainAction
         {
-            public IncrementalTrainAction (String title)
+            public NetworkTrainAction (String title,
+                                       Evaluator.StartingMode mode,
+                                       boolean confirmationRequired)
             {
                 super(title);
-                mode = Evaluator.StartingMode.INCREMENTAL;
-                confirmationRequired = false;
+
+                this.mode = mode;
+                this.confirmationRequired = confirmationRequired;
             }
 
             @Override
@@ -1228,28 +1157,8 @@ public class GlyphTrainer
 
                 // By default, use snap stuff
                 if (bestMse <= lastMse) {
-                    ///System.out.println("snapAction best=" + bestMse + " lastMse=" + lastMse);
                     snapAction.actionPerformed(null);
                 }
-            }
-        }
-
-        protected class TrainAction
-            extends IncrementalTrainAction
-        {
-            public TrainAction (String title)
-            {
-                super(title);
-                mode = Evaluator.StartingMode.SCRATCH;
-                confirmationRequired = true;
-            }
-
-            @Override
-            protected void prologue()
-            {
-                super.prologue();
-
-                bestMse = Double.MAX_VALUE;
             }
         }
 
@@ -1323,7 +1232,8 @@ public class GlyphTrainer
 
         Constant.Integer maxSimilar = new Constant.Integer
                 (20,
-                 "Absolute maximum number of instances for the same shape used in training");
+                 "Absolute maximum number of instances for the same shape" +
+                 " used in training");
 
         Constant.Double maxSnapError = new Constant.Double
                 (0.3,
