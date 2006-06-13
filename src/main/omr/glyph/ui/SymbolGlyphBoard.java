@@ -17,15 +17,11 @@ import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
 import omr.ui.field.SpinnerUtilities;
 import omr.util.Logger;
-
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
-
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.*;
+import omr.ui.field.LDoubleField;
 
 /**
  * Class <code>SymbolGlyphBoard</code> defines an extended glyph board,
@@ -66,8 +62,10 @@ public class SymbolGlyphBoard
     private List<Integer> knownIds  = new ArrayList<Integer>();
 
     // Glyph characteristics
-    private LField withinSystem = new LField
-        (false, "w/iSyst", "Is glyph within the horizontal system boundaries");
+    private LDoubleField leftMargin = new LDoubleField
+        (false, "LeftMg", "Left margin (in interline fraction) within measure");
+    private LDoubleField rightMargin = new LDoubleField
+        (false, "RightMg", "Right margin (in interline fraction) within measure");
     private LField ledger       = new LField
         (false, "Ledger", "Does this glyph intersect a legder");
     private LIntegerField pitchPosition  = new LIntegerField
@@ -158,18 +156,21 @@ public class SymbolGlyphBoard
 
         // For glyph characteristics
         r += 2;                         // --------------------------------
-        builder.add(withinSystem.getLabel(), cst.xy (1,  r));
-        builder.add(withinSystem.getField(), cst.xy (3,  r));
+        builder.add(leftMargin.getLabel(), cst.xy (1,  r));
+        builder.add(leftMargin.getField(), cst.xy (3,  r));
 
+        builder.add(pitchPosition.getLabel(), cst.xy (5, r));
+        builder.add(pitchPosition.getField(), cst.xy (7, r));
+
+        builder.add(rightMargin.getLabel(), cst.xy (9,  r));
+        builder.add(rightMargin.getField(), cst.xy (11, r));
+
+        r += 2;                         // --------------------------------
         builder.add(ledger.getLabel(),  cst.xy (5,  r));
         builder.add(ledger.getField(),  cst.xy (7,  r));
 
-        builder.add(pitchPosition.getLabel(), cst.xy (9,  r));
-        builder.add(pitchPosition.getField(), cst.xy (11, r));
-
-        r += 2;                         // --------------------------------
-        builder.add(stems.getLabel(),   cst.xy (5,  r));
-        builder.add(stems.getField(),   cst.xy (7,  r));
+        builder.add(stems.getLabel(),   cst.xy (9,  r));
+        builder.add(stems.getField(),   cst.xy (11, r));
     }
 
     //-------------//
@@ -346,12 +347,14 @@ public class SymbolGlyphBoard
             pitchPosition.setValue((int) Math.rint(glyph.getPitchPosition()));
             ledger.setText(Boolean.toString(glyph.hasLedger()));
             stems.setValue(glyph.getStemNumber());
-            withinSystem.setText(Boolean.toString(glyph.isWithinSystem()));
+            leftMargin.setValue(glyph.getLeftMargin(),   "%.2f");
+            rightMargin.setValue(glyph.getRightMargin(), "%.2f");
         } else {
             ledger.setText("");
             pitchPosition.setText("");
             stems.setText("");
-            withinSystem.setText("");
+            leftMargin.setText("");
+            rightMargin.setText("");
         }
 
         focusWanted = true;
