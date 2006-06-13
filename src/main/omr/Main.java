@@ -215,7 +215,12 @@ public class Main
      */
     public static Jui getJui ()
     {
-        return INSTANCE.jui;
+        if (INSTANCE == null) {
+            return null;
+
+        } else {
+            return INSTANCE.jui;
+        }
     }
 
     //-------------//
