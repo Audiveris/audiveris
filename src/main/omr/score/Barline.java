@@ -173,7 +173,7 @@ public class Barline
             if (stick.getShape() == Shape.THICK_BAR_LINE ||
                 stick.getShape() == Shape.THIN_BAR_LINE) {
                 // Beware : Vertical sticks using Horizontal line equation
-                int x = stick.getLine().yAt(scale.unitsToPixels(staff.getTopLeft()).y);
+                int x = stick.getLine().yAt(scale.toPixelPoint(staff.getTopLeft()).y);
                 return scale.pixelsToUnits(x) - staff.getTopLeft().x;
             }
         }
@@ -198,7 +198,7 @@ public class Barline
             if (stick.getShape() == Shape.THICK_BAR_LINE ||
                 stick.getShape() == Shape.THIN_BAR_LINE) {
                 // Beware : Vertical sticks using Horizontal line equation
-                int x = stick.getLine().yAt(scale.unitsToPixels(staff.getTopLeft()).y);
+                int x = stick.getLine().yAt(scale.toPixelPoint(staff.getTopLeft()).y);
                 if (x > right) {
                     right = x;
                 }
