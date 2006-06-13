@@ -18,16 +18,11 @@ import omr.math.NeuralNetwork;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.util.Logger;
-
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
+import omr.score.ScoreConstants;
+import omr.sheet.Scale;
 
 /**
  * Class <code>Evaluator</code> is an abstract class that gathers data and
@@ -65,9 +60,9 @@ public abstract class Evaluator
 
     /**
      * Number of useful input parameters : 10 moments +
-     * isWithinSystem, stemNumber, hasLedger, stepLine
+     * leftMargin, rightMargin, stemNumber, hasLedger, pitchPosition
      */
-    public static final int inSize = inMoments + 4;
+    public static final int inSize = inMoments + 5;
 
     /**
      * Number of shapes to differentiate
@@ -173,10 +168,11 @@ public abstract class Evaluator
 
         // We append flags and step position
         int i = inMoments;
-        /* 10 */ ins[i++] = boolAsDouble(glyph.isWithinSystem());
-        /* 11 */ ins[i++] = boolAsDouble(glyph.hasLedger());
-        /* 12 */ ins[i++] = glyph.getStemNumber();
-        /* 13 */ ins[i++] = glyph.getPitchPosition();
+        /* 10 */ ins[i++] = glyph.getLeftMargin();
+        /* 11 */ ins[i++] = glyph.getRightMargin();
+        /* 12 */ ins[i++] = boolAsDouble(glyph.hasLedger());
+        /* 13 */ ins[i++] = glyph.getStemNumber();
+        /* 14 */ ins[i++] = glyph.getPitchPosition();
 
         // We skip moments 17 & 18 (xMean and yMean) ???
 
@@ -196,10 +192,11 @@ public abstract class Evaluator
 
             // We append flags and step position
             int i = inMoments;
-            /* 10 */ labels[i++] = "w/iSyst";
-            /* 11 */ labels[i++] = "ledger";
-            /* 12 */ labels[i++] = "stemNb";
-            /* 13 */ labels[i++] = "sLine";
+            /* 10 */ labels[i++] = "leftMg";
+            /* 11 */ labels[i++] = "rightMg";
+            /* 12 */ labels[i++] = "ledger";
+            /* 13 */ labels[i++] = "stemNb";
+            /* 14 */ labels[i++] = "pitch";
         }
 
         return labels;

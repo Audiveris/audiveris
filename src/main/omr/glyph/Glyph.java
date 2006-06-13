@@ -12,7 +12,6 @@ package omr.glyph;
 
 import omr.check.Checkable;
 import omr.check.Result;
-import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionView;
 import omr.math.Moments;
@@ -23,9 +22,9 @@ import omr.ui.view.Zoom;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import omr.sheet.PixelPoint;
 
 /**
  * Class <code>Glyph</code> represents any glyph found, such as stem,
@@ -54,8 +53,8 @@ public class Glyph
     /** Unique instance identifier (in the containing GlyphLag) */
     protected int id;
 
-    /**  Centroid coordinates (within the system, in units?) */
-    protected Point centroid;
+    /**  Centroid coordinates */
+    protected PixelPoint centroid;
 
     /** Sections that compose this glyph */
     protected List<GlyphSection> members = new ArrayList<GlyphSection>();
@@ -81,8 +80,11 @@ public class Glyph
     /** Interline of the containing staff (or sheet) */
     protected int interline;
 
-    /** Within system width ? */
-    protected boolean isWithinSystem;
+    /** Measure margin on left side (in interline fraction) */
+    protected double leftMargin;
+
+    /** Measure margin on right side (in interline fraction) */
+    protected double rightMargin;
 
     /** Has a ledger nearby ? */
     protected boolean hasLedger;
@@ -325,7 +327,7 @@ public class Glyph
      *
      * @return the mass center point
      */
-    public Point getCentroid()
+    public PixelPoint getCentroid()
     {
         if (centroid == null) {
             centroid = getMoments().getCentroid();
@@ -652,20 +654,6 @@ public class Glyph
         return shape == Shape.COMBINING_STEM;
     }
 
-    //----------------//
-    // isWithinSystem //
-    //----------------//
-    /**
-     * Checks whether the glyph if within the horizontal limits of the
-     * containing staff (this is usually wrong fro braces)
-     *
-     * @return the test result
-     */
-    public boolean isWithinSystem ()
-    {
-        return isWithinSystem;
-    }
-
     //------------//
     // recolorize //
     //------------//
@@ -792,17 +780,56 @@ public class Glyph
         this.interline = interline;
     }
 
-    //-------------------//
-    // setIsWithinSystem //
-    //-------------------//
+    //---------------//
+    // setLeftMargin //
+    //---------------//
     /**
-     * Setter for withinSystem flag
+     * Set the left margin within the measure
      *
-     * @param isWithinSystem treu if within the horizontal system limits
+     * @param leftMargin measure left margin in interline fraction
      */
-    public void setIsWithinSystem (boolean isWithinSystem)
+    public void setLeftMargin (double leftMargin)
     {
-        this.isWithinSystem = isWithinSystem;
+        this.leftMargin = leftMargin;
+    }
+
+    //---------------//
+    // getLeftMargin //
+    //---------------//
+    /**
+     * Report the measure left margin (in interline fraction) before the glyph
+     *
+     * @return the left margin
+     */
+    public double getLeftMargin()
+    {
+        return leftMargin;
+    }
+
+    //----------------//
+    // setRightMargin //
+    //----------------//
+    /**
+     * Set the right margin within the measure
+     *
+     * @param rightMargin measure right margin in interline fraction
+     */
+    public void setRightMargin (double rightMargin)
+    {
+        this.rightMargin = rightMargin;
+    }
+
+    //----------------//
+    // getRightMargin //
+    //----------------//
+    /**
+     * Report the measure right margin (in interline fraction) after the glyph
+     *
+     * @return the right margin
+     */
+    public double getRightMargin()
+    {
+        return rightMargin;
     }
 
     //-----------//
@@ -838,8 +865,7 @@ public class Glyph
      * Setter for the pitch position, with respect to the containing
      * staff
      *
-     *
-     * @param pitchPosition the relative step line
+     * @param pitchPosition the pitch position wrt the staff
      */
     public void setPitchPosition (double pitchPosition)
     {
@@ -961,9 +987,9 @@ public class Glyph
     //-----------------//
     private void invalidateCache ()
     {
-        centroid = null;
-        moments = null;
-        bounds = null;
+        centroid   = null;
+        moments    = null;
+        bounds     = null;
         contourBox = null;
     }
 
