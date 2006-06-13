@@ -324,7 +324,35 @@ public class Measure
         }
     }
 
-    //~ Methods private ---------------------------------------------------
+    //--------------//
+    // leftMarginOf //
+    //--------------//
+    /**
+     * Report the horizontal margin (in units) between left side of the
+     * measure and the given point
+     *
+     * @param pt the given StaffPoint
+     * @return the left margin
+     */
+    public int leftMarginOf (StaffPoint pt)
+    {
+        return pt.x - getLeftX();
+    }
+
+    //---------------//
+    // rightMarginOf //
+    //---------------//
+    /**
+     * Report the horizontal margin (in units) between the given point and
+     * the right side of the measure
+     *
+     * @param pt the given StaffPoint
+     * @return the right margin
+     */
+    public int rightMarginOf (StaffPoint pt)
+    {
+        return barline.getLeftX() - pt.x;
+    }
 
     //----------//
     // getLeftX //
