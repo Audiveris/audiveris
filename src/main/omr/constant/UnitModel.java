@@ -386,7 +386,7 @@ public class UnitModel
                             Scale scale = sheet.getScale();
                             Scale.Fraction fraction = (Scale.Fraction) constant;
 
-                            return new Integer(scale.fracToPixels(fraction));
+                            return new Integer(scale.toPixels(fraction));
                         } else {
                             return "?"; // Cannot compute the value
                         }
