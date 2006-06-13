@@ -85,7 +85,7 @@ public class GlyphNetwork
                 network = NeuralNetwork.deserialize
                     (new FileInputStream(defaultFile));
             } catch (FileNotFoundException ex) {
-                logger.severe("Cannot find default backup" + defaultFile);
+                logger.severe("Cannot find default backup " + defaultFile);
             }
         }
 
