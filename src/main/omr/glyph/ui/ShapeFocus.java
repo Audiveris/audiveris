@@ -116,6 +116,7 @@ public class ShapeFocus
         filterButton.setToolTipText("Toggle display of all/known/unknown" +
                                     " glyphs");
         selectButton.setToolTipText("Select candidate shape");
+        selectButton.setHorizontalAlignment(SwingConstants.LEFT);
         confirmAllButton.setToolTipText("Confirm all proposed glyphs as "
                                        + current);
         confirmButton.setToolTipText("Confirm this glyph as " + current);
@@ -214,8 +215,10 @@ public class ShapeFocus
         this.current = current;
         if (current != null) {
             selectButton.setText(current.toString());
+            selectButton.setIcon(current.getIcon());
         } else {
             selectButton.setText("No Focus");
+            selectButton.setIcon(null);
             assignedCounter.val.setText("");
             candidateCounter.val.setText("");
         }
