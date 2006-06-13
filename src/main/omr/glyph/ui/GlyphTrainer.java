@@ -23,6 +23,7 @@ import omr.ui.field.LDoubleField;
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
+import omr.ui.util.UILookAndFeel;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
@@ -113,8 +114,13 @@ public class GlyphTrainer
      */
     private GlyphTrainer()
     {
-        frame = new JFrame();
+        if (standAlone) {
+            // UI Look and Feel
+            UILookAndFeel.setUI(null);
+            JFrame.setDefaultLookAndFeelDecorated(true);
+        }
 
+        frame = new JFrame();
         frame.setTitle(frameTitle);
 
         repositoryPanel = new RepositoryPanel();
@@ -122,8 +128,6 @@ public class GlyphTrainer
         regressionPanel = new RegressionPanel(regression);
 
         frame.add(createGlobalPanel());
-        frame.pack();
-        frame.setVisible(true);
 
         if (standAlone) {
             frame.addWindowListener(new WindowAdapter()
@@ -138,9 +142,32 @@ public class GlyphTrainer
                     }
                 });
         }
+
+        // Differ realization
+        EventQueue.invokeLater(new FrameShower(frame));
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //-------------//
+    // FrameShower //
+    //-------------//
+    private static class FrameShower
+        implements Runnable
+    {
+        final Frame frame;
+
+        public FrameShower(Frame frame)
+        {
+            this.frame = frame;
+        }
+
+        public void run()
+        {
+            frame.pack();
+            frame.setVisible(true);
+        }
+    }
 
     //----------//
     // getFrame //
@@ -1201,7 +1228,7 @@ public class GlyphTrainer
 
                 // By default, use snap stuff
                 if (bestMse <= lastMse) {
-                    System.out.println("snapAction best=" + bestMse + " lastMse=" + lastMse);
+                    ///System.out.println("snapAction best=" + bestMse + " lastMse=" + lastMse);
                     snapAction.actionPerformed(null);
                 }
             }
