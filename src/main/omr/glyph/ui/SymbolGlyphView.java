@@ -148,7 +148,7 @@ public class SymbolGlyphView
 
         // Process the selected glyph
         List<Glyph> glyphs = pane.getCurrentGlyphs();
-        if (additionning) {
+        if (addingGlyph) {
             // Adding glyphs, nothing to be done here
             // This will be performed through glyphAdded()
         } else if (contextSelected) {
@@ -207,12 +207,18 @@ public class SymbolGlyphView
         public void setFocusRectangle (Rectangle rect)
     {
         ///logger.info(getClass() + " setFocusRectangle " + rect);
+        new Throwable("Stack").printStackTrace();
 
         // Notify observers about rectangle information
         super.setFocusRectangle(rect);
 
         // Retrieve glyphs for this rectangle
+        // Beware : this empties the current glyphs list !!! TBD
+        logger.info("current glyphs before : " + pane.getCurrentGlyphs().size());
+//        if (pane.getCurrentGlyphs().size() == 0) {
         pane.setCurrentGlyphs(sheet.lookupGlyphs(rect));
+//        }
+        logger.info("current glyphs *after*: " + pane.getCurrentGlyphs().size());
     }
 
     //---------------//
