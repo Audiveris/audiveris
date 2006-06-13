@@ -90,7 +90,7 @@ public class ScoreBuilder
                     Rectangle box = glyph.getContourBox();
                     PixelPoint pp = new PixelPoint(box.x + box.width/2,
                                                    box.y + box.height/2);
-                    PagePoint p = scale.pixelsToUnits(pp);
+                    PagePoint p = scale.toPagePoint(pp);
                     staff = system.getStaffAt(p);
                     staffPoint = staff.toStaffPoint(p);
                     measure = staff.getMeasureAt(staffPoint);
@@ -153,7 +153,7 @@ public class ScoreBuilder
         // Horizontal distance since beginning of measure
         StaffPoint center = staff.computeGlyphCenter(glyph, scale);
         int unitDx = center.x - measure.getLeftX();
-        if (unitDx < scale.fracToUnits(constants.minTimeOffset)) {
+        if (unitDx < scale.toUnits(constants.minTimeOffset)) {
             if (logger.isFineEnabled()) {
                 logger.fine("Too small offset for time signature" +
                         " (glyph#" + glyph.getId() + ")");
@@ -181,7 +181,7 @@ public class ScoreBuilder
             StaffPoint center = staff.computeGlyphCenter
                 (glyph, scale);
             double unitDist = center.distance(ts.getCenter());
-            double unitMax = scale.fracToUnitsDouble
+            double unitMax = scale.toUnitsDouble
                 (constants.maxTimeDistance);
             if (unitDist <= unitMax) {
                 ts.addGlyph(glyph);

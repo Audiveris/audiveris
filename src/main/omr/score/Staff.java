@@ -23,8 +23,8 @@ import java.awt.*;
 import java.util.Collection;
 import java.util.List;
 import omr.glyph.Glyph;
+import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
-import omr.stick.Stick;
 import omr.ui.icon.SymbolIcon;
 
 /**
@@ -677,7 +677,7 @@ public class Staff
      * @param staffPoint staff-based coordinates of the given point
      * @return the containing measure
      */
-    Measure getMeasureAt (StaffPoint staffPoint)
+    public Measure getMeasureAt (StaffPoint staffPoint)
     {
         Measure measure = null;
         for (TreeNode node : getMeasures()) {
@@ -700,7 +700,7 @@ public class Staff
      * @param pagePoint the coordinates within page
      * @return coordinates within the containing staff
      */
-    StaffPoint toStaffPoint (PagePoint pagePoint)
+    public StaffPoint toStaffPoint (PagePoint pagePoint)
     {
         return new StaffPoint(pagePoint.x - topLeft.x,
                               pagePoint.y - topLeft.y);
@@ -862,6 +862,20 @@ public class Staff
                     zoom.scaled(origin.y + center.y) - icon.getIconHeight()/2,
                     null);
         }
+    }
+
+    //-----------------//
+    // pitchPositionOf //
+    //-----------------//
+    /**
+     * Compute the pitch position of a pixel point
+     *
+     * @param pt the pixel point
+     * @return the pitch position
+     */
+    public double pitchPositionOf (PixelPoint pt)
+    {
+        return info.pitchPositionOf(pt);
     }
 
     //~ Classes -----------------------------------------------------------
