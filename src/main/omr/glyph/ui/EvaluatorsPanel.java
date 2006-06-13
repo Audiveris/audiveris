@@ -328,6 +328,7 @@ public class EvaluatorsPanel
                     button = new JButton();
                     button.addActionListener(this);
                     button.setToolTipText("Assignable shape");
+                    button.setHorizontalAlignment(SwingConstants.LEFT);
                 } else {
                     field = new JTextField();
                     field.setHorizontalAlignment(JTextField.CENTER);
@@ -347,6 +348,7 @@ public class EvaluatorsPanel
                 if (eval != null) {
                     if (pane != null) {
                         button.setText(eval.shape.toString());
+                        button.setIcon(eval.shape.getIcon());
                     } else {
                         field.setText(eval.shape.toString());
                     }

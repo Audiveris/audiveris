@@ -211,7 +211,10 @@ public class GlyphBoard
 
         builder.add(deassignButton,     cst.xyw(1, r, 3));
         builder.add(shape,              cst.xyw(5, r, 7));
-    }
+        
+        deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
+        deassignButton.setHorizontalAlignment(SwingConstants.RIGHT);
+}
 
     //---------------//
     // setGlyphFocus //
@@ -249,8 +252,10 @@ public class GlyphBoard
 
             if (glyph.getShape() != null) {
                 shape.setText(glyph.getShape().toString());
+                deassignButton.setIcon(glyph.getShape().getIcon());
             } else {
                 shape.setText("");
+                deassignButton.setIcon(null);
             }
 
             // Set known field if shape is one of the desired ones
@@ -273,6 +278,7 @@ public class GlyphBoard
             }
 
             shape.setText("");
+            deassignButton.setIcon(null);
         }
 
         focusWanted = true;
