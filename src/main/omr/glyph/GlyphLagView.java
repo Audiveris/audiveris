@@ -56,7 +56,7 @@ public class GlyphLagView
             = new DefaultGlyphSubject();
     
     /** Flag indicating that point is being added */
-    protected transient volatile boolean additionning = false;
+    protected transient volatile boolean addingGlyph = false;
 
     //~ Constructors -----------------------------------------------------
 
@@ -247,7 +247,7 @@ public class GlyphLagView
             logger.fine("GlyphLagView pointAdded");
         }
         
-        additionning = true;
+        addingGlyph = true;
 
         // First, provide info related to designated point
         pointSelected(e, pt);
@@ -262,7 +262,7 @@ public class GlyphLagView
 
         glyphAdded(glyph, pt);
 
-        additionning = false;
+        addingGlyph = false;
     }
 
     //---------------//
