@@ -10,7 +10,7 @@
 
 package omr.math;
 
-import java.awt.Point;
+import omr.sheet.PixelPoint;
 
 /**
  * Class <code>Moments</code> encapsulates the set of all moments that
@@ -266,10 +266,10 @@ public class Moments
      *
      * @return the centroid
      */
-    public Point getCentroid()
+    public PixelPoint getCentroid()
     {
-        return new Point((int) Math.rint(k[17]),
-                         (int) Math.rint(k[18]));
+        return new PixelPoint((int) Math.rint(k[17]),
+                              (int) Math.rint(k[18]));
     }
 
     //-----------//
