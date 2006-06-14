@@ -584,9 +584,7 @@ public class Jui
 
         public void actionPerformed (ActionEvent e)
         {
-            GlyphTrainer glyphTrainer = GlyphTrainer.getInstance();
-            glyphTrainer.getFrame().setVisible(true);
-            glyphTrainer.getFrame().toFront();
+            GlyphTrainer.launch();
         }
     }
 
