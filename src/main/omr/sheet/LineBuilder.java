@@ -507,7 +507,7 @@ public class LineBuilder
             }
 
             // Available ?
-            if (!section.isMember() // Not too thick ?
+            if (!section.isGlyphMember() // Not too thick ?
                 && (section.getRunNb() <= maxThickness)) {
                 // Within the limits ?
                 if (holeRect.contains(section.getBounds())) {
