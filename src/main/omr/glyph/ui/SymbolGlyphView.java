@@ -207,18 +207,18 @@ public class SymbolGlyphView
         public void setFocusRectangle (Rectangle rect)
     {
         ///logger.info(getClass() + " setFocusRectangle " + rect);
-        new Throwable("Stack").printStackTrace();
+        /////new Throwable("Stack").printStackTrace();
 
         // Notify observers about rectangle information
         super.setFocusRectangle(rect);
 
         // Retrieve glyphs for this rectangle
         // Beware : this empties the current glyphs list !!! TBD
-        logger.info("current glyphs before : " + pane.getCurrentGlyphs().size());
+        /////logger.info("current glyphs before : " + pane.getCurrentGlyphs().size());
 //        if (pane.getCurrentGlyphs().size() == 0) {
         pane.setCurrentGlyphs(sheet.lookupGlyphs(rect));
 //        }
-        logger.info("current glyphs *after*: " + pane.getCurrentGlyphs().size());
+        /////logger.info("current glyphs *after*: " + pane.getCurrentGlyphs().size());
     }
 
     //---------------//
