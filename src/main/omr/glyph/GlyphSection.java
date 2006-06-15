@@ -21,11 +21,16 @@ import omr.lag.Section;
  * Class <code>GlyphSection</code> implements a specific class of section,
  * meant for easy glyph elaboration.
  *
+ * Such sections are defined as naturally ordered, first on their position
+ * (abscissa for vertical sections), then on their coordinate (ordinate for
+ * vertical sections).
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class GlyphSection
     extends Section<GlyphLag, GlyphSection>
+    implements Comparable<GlyphSection>
 {
     //~ Instance variables ------------------------------------------------
 
@@ -47,6 +52,29 @@ public class GlyphSection
     }
 
     //~ Methods --------------------------------------------------------------
+
+    //-----------//
+    // compareTo //
+    //-----------//
+    /**
+     * Needed to implement Comparable, sorting sections first by position,
+     * then by coordinate.
+     *
+     * @param other the other section to compare to
+     * @return the result of ordering
+     */
+    public int compareTo (GlyphSection other)
+    {
+        // Are pos values different?
+        int dPos = getCentroid().y - other.getCentroid().y;
+
+        if (dPos != 0) {
+            return dPos;
+        }
+
+        // Use coordinates
+        return getCentroid().x - other.getCentroid().x;
+    }
 
     //----------//
     // getGlyph //
@@ -83,16 +111,16 @@ public class GlyphSection
         return "GS";
     }
 
-    //----------//
-    // isMember //
-    //----------//
+    //---------------//
+    // isGlyphMember //
+    //---------------//
     /**
      * Checks whether the section is already a member of a glyph, whether this
      * glyph has been successfully recognized or not.
      *
      * @return the result of the test
      */
-    public boolean isMember ()
+    public boolean isGlyphMember ()
     {
         return glyph != null;
     }
@@ -109,7 +137,7 @@ public class GlyphSection
     public boolean isKnown ()
     {
         return
-            isMember()
+            isGlyphMember()
             && ((glyph.getResult() != null
                  && glyph.getResult() instanceof SuccessResult)
                 || glyph.isWellKnown())
