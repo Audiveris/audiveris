@@ -369,7 +369,6 @@ public class GlyphRepository
                             logger.fine("Storing " + glyph);
                         }
 
-                        int y = glyph.getMembers().get(0).getStart();
                         glyph.setInterline
                             (sheet.getScale().interline());
 
@@ -634,6 +633,22 @@ public class GlyphRepository
             // Not recognized
             return null;
         }
+    }
+
+    //-----------------//
+    // createIconGlyph //
+    //-----------------//
+    /**
+     * Build an (artificial) glyph out of a symbol icon. This construction
+     * is meant to populate and train on glyph shapes for which we have no
+     * real instance yet.
+     *
+     * @param icon the appearance of the glyph
+     * @return the resulting glyph
+     */
+    private Glyph createIconGlyph (SymbolIcon icon)
+    {
+        return null;
     }
 
     //~ Classes -----------------------------------------------------------
