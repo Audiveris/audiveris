@@ -105,16 +105,8 @@ public class LagBuilder <L extends Lag     <L, S>,
 
         // Populate the runs. To optimize access to pixels, we use a
         // dedicated adapter, depending on the lag orientation
-        // Original code was :
         Run.readRuns(new LagReader
                      (lag, runs, picture, minRunLength), rect);
-//         if (lag.isVertical()) {
-//             Run.readRuns(new VerticalLagReader
-//                          (lag, runs, picture, minRunLength), rect);
-//         } else {
-//             Run.readRuns(new HorizontalLagReader
-//                          (lag, runs, picture, minRunLength), rect);
-//         }
 
         // Organize the runs into sections
         buildLag();
