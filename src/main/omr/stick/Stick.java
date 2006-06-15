@@ -21,6 +21,7 @@ import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.*;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -320,7 +321,7 @@ public class Stick
 
         for (GlyphSection section : members) {
             for (GlyphSection sct : section.getSources()) {
-                if (!sct.isMember() || (sct.getGlyph() != this)) {
+                if (!sct.isGlyphMember() || (sct.getGlyph() != this)) {
                     stuck += sct.getLastRun().getLength();
                 }
             }
@@ -357,7 +358,7 @@ public class Stick
 
         for (GlyphSection section : members) {
             for (GlyphSection sct : section.getTargets()) {
-                if (!sct.isMember() || (sct.getGlyph() != this)) {
+                if (!sct.isGlyphMember() || (sct.getGlyph() != this)) {
                     stuck += sct.getFirstRun().getLength();
                 }
             }
@@ -527,14 +528,14 @@ public class Stick
      * Set the display color of all sections gathered by the provided list
      *
      * @param viewIndex the proper view index
-     * @param list      the collection of sections
+     * @param sections  the collection of sections
      * @param color     the display color
      */
     public void colorize (int viewIndex,
-                          List<GlyphSection> list,
+                          Collection<GlyphSection> sections,
                           Color color)
     {
-        for (GlyphSection section : list) {
+        for (GlyphSection section : sections) {
             SectionView view = (SectionView) section.getViews().get(viewIndex);
             view.setColor(color);
         }
