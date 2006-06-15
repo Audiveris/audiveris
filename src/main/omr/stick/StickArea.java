@@ -378,7 +378,7 @@ public class StickArea
      *
      * @return true if OK
      */
-    private boolean isClose (List<GlyphSection> members,
+    private boolean isClose (Collection<GlyphSection> members,
                              GlyphSection section,
                              int maxThickness)
     {

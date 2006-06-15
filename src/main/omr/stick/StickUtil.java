@@ -17,16 +17,14 @@ import omr.glyph.GlyphLag;
 import omr.glyph.GlyphLagView;
 import omr.glyph.GlyphSection;
 import omr.graph.DigraphView;
-import omr.lag.Lag;
-import omr.lag.LagView;
 import omr.lag.Run;
 import omr.math.BasicLine;
 import omr.math.Line;
 import omr.sheet.Picture;
 import omr.util.Logger;
-import omr.ui.view.Zoom;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import omr.lag.Section;
 
@@ -118,7 +116,7 @@ public class StickUtil
                          + ", lag=" + lag
                          + ", minPointNb=" + minPointNb);
         }
-        List<GlyphSection> members = stick.getMembers();
+        Collection<GlyphSection> members = stick.getMembers();
         List<GlyphSection> borders = new ArrayList<GlyphSection>();
         List<GlyphSection> patches = new ArrayList<GlyphSection>();
 
@@ -221,7 +219,7 @@ public class StickUtil
 
         // We are interested in non-stick vertices, and also in failed
         // sticks
-        if (sct.isMember()) {
+        if (sct.isGlyphMember()) {
             if (!(sct.getGlyph().getResult() instanceof FailureResult)) {
                 if (logger.isFineEnabled()) {
                     logger.fine("Member of successful stick");
@@ -480,11 +478,11 @@ public class StickUtil
     //-------//
     // write //
     //-------//
-    private static void write (List<GlyphSection> list,
+    private static void write (Collection<GlyphSection> sections,
                                Picture picture,
                                int pixel)
     {
-        for (GlyphSection section : list) {
+        for (GlyphSection section : sections) {
             section.write(picture, pixel);
         }
     }
