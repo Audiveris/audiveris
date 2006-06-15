@@ -16,15 +16,17 @@ import omr.lag.Section;
 import omr.lag.SectionView;
 import omr.math.Moments;
 import omr.sheet.Picture;
+import omr.sheet.PixelPoint;
+import omr.ui.view.Zoom;
 import omr.util.Logger;
 import omr.util.Predicate;
-import omr.ui.view.Zoom;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import omr.sheet.PixelPoint;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>Glyph</code> represents any glyph found, such as stem,
@@ -41,8 +43,8 @@ import omr.sheet.PixelPoint;
  */
 public class Glyph
     implements Comparable<Glyph>,
-                   Checkable,
-                   java.io.Serializable
+               Checkable,
+               java.io.Serializable
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -56,16 +58,20 @@ public class Glyph
     /**  Centroid coordinates */
     protected PixelPoint centroid;
 
-    /** Sections that compose this glyph */
-    protected List<GlyphSection> members = new ArrayList<GlyphSection>();
+    /** Sections that compose this glyph. The collection is kept sorted on
+        centroid abscissa then ordinate*/
+    protected SortedSet<GlyphSection> members = new TreeSet<GlyphSection>();
 
     /** The containing lag */
     protected GlyphLag lag;
 
-    /** Bounding rectangle */
+    /** Bounding rectangle, defined as union of all member section bounds
+        so this implies that it has the same orientation as the sections */
     protected Rectangle bounds;
 
-    /** Display box (properly oriented) */
+    /** Display box (always properly oriented), so that rectangle width is
+        aligned with display horizontal and rectangle height with display
+        vertical */
     protected Rectangle contourBox;
 
     /** Result of analysis wrt this glyph */
@@ -440,7 +446,7 @@ public class Glyph
      *
      * @return member sections
      */
-    public List<GlyphSection> getMembers ()
+    public Collection<GlyphSection> getMembers ()
     {
         return members;
     }
@@ -518,7 +524,7 @@ public class Glyph
     {
         for (GlyphSection section : members) {
             for (GlyphSection sct : section.getTargets()) {
-                if (sct.isMember()) {
+                if (sct.isGlyphMember()) {
                     Glyph glyph = sct.getGlyph();
                     if (glyph != this) {
                         if (predicate.check(glyph)) {
@@ -548,7 +554,7 @@ public class Glyph
     {
         for (GlyphSection section : members) {
             for (GlyphSection sct : section.getSources()) {
-                if (sct.isMember()) {
+                if (sct.isGlyphMember()) {
                     Glyph glyph = sct.getGlyph();
                     if (glyph != this) {
                         if (predicate.check(glyph)) {
