@@ -111,6 +111,10 @@ public class SymbolIcon
     public void setImage(Image image)
     {
         super.setImage(image);
+        
+        // Invalidate cached data
+        dimension = null;
+        centroid  = null;
 
         // Gradually update the common standard width
         if (getActualWidth() > getIconWidth()) {
