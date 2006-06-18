@@ -20,14 +20,17 @@ import java.awt.image.BufferedImage;
  * presentation in menus.
  */
 public class SymbolIcon
-    extends ImageIcon
+    implements Icon
 {
     //~ Static variables/initializers -------------------------------------
 
     // The same width for all such icons (to be improved)
-    private static int standardWidth = 0;
+    private static int standardWidth = -1;
 
     //~ Instance variables ------------------------------------------------
+
+    // Related image
+    private BufferedImage image;
 
     // Related name
     private String name;
@@ -61,7 +64,7 @@ public class SymbolIcon
      *
      * @param image the icon image
      */
-    public SymbolIcon (Image image)
+    public SymbolIcon (BufferedImage image)
     {
         setImage(image);
     }
@@ -79,7 +82,7 @@ public class SymbolIcon
     public int getActualWidth()
     {
         if (getImage() != null) {
-            return getImage().getWidth(null);
+            return getImage().getWidth();
         } else {
             return 0;
         }
@@ -93,25 +96,54 @@ public class SymbolIcon
      *
      * @return the standard width in pixels
      */
-    @Override
     public int getIconWidth()
     {
         return standardWidth;
+    }
+
+    //---------------//
+    // getIconHeight //
+    //---------------//
+    public int getIconHeight()
+    {
+        if (getImage() != null) {
+            return getImage().getHeight();
+        } else {
+            return -1;
+        }
+    }
+
+    //-----------//
+    // paintIcon //
+    //-----------//
+    public void paintIcon(Component c,
+                          Graphics  g,
+                          int       x,
+                          int       y)
+    {
+        g.drawImage(image, x, y, c);
+    }
+
+    //----------//
+    // getImage //
+    //----------//
+    public BufferedImage getImage()
+    {
+        return image;
     }
 
     //----------//
     // setImage //
     //----------//
     /**
-     * Overridden to allow computation of largest width
+     * Assign the image
      *
      * @param image the icon image
      */
-    @Override
-    public void setImage(Image image)
+    public void setImage(BufferedImage image)
     {
-        super.setImage(image);
-        
+        this.image = image;
+
         // Invalidate cached data
         dimension = null;
         centroid  = null;
@@ -135,11 +167,10 @@ public class SymbolIcon
             if (getImage() == null) {
                 return null;
             }
-            BufferedImage bi = IconManager.toBufferedImage(getImage());
             final int width  = getDimension().width;
             final int height = getDimension().height;
             int[] argbs = new int[width * height];
-            bi.getRGB(0,0,width,height,argbs,0,width);
+            image.getRGB(0,0,width,height,argbs,0,width);
 
             int sw = 0;           // Total weight of non transparent points
             int sx = 0;           // x moment
@@ -175,11 +206,11 @@ public class SymbolIcon
     public Dimension getDimension ()
     {
         if (dimension == null) {
-            if (getImage() != null &&
-                getImage().getWidth(null) != 0 &&
-                getImage().getHeight(null) != 0 ) {
-                dimension = new Dimension(getImage().getWidth(null),
-                                          getImage().getHeight(null));
+            if (image != null &&
+                image.getWidth() != 0 &&
+                image.getHeight() != 0 ) {
+                dimension = new Dimension(image.getWidth(),
+                                          image.getHeight());
             }
         }
 
