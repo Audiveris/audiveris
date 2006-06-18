@@ -214,8 +214,8 @@ public class Section <L extends Lag,
                 y++;
             }
 
-            centroid.x /= (2 * weight);
-            centroid.y /= (2 * weight);
+            centroid.x /= (2 * getWeight());
+            centroid.y /= (2 * getWeight());
 
             if (logger.isFineEnabled()) {
                 logger.fine("Centroid of " + this + " is " + centroid);
@@ -369,36 +369,6 @@ public class Section <L extends Lag,
     public int getForeWeight ()
     {
         return foreWeight;
-    }
-
-    //---------//
-    // getInfo //
-    //---------//
-    /**
-     * Report a rather detailed description of the provided vertex
-     *
-     * @return a string ready for display
-     */
-    public String getInfo ()
-    {
-        StringBuffer sb = new StringBuffer(512);
-
-        sb.append(toString());
-
-        // Section density
-        Rectangle rect = getBounds();
-        int area = ((rect.width + 1) * (rect.height + 1));
-        sb.append(" d").append((100 * weight) / area);
-
-        // Section first adjacency
-        sb.append(" fa")
-            .append(Integer.toString((int) Math.rint(100 * getFirstAdjacency())));
-
-        // Section last adjacency
-        sb.append(" la")
-            .append(Integer.toString((int) Math.rint(100 * getLastAdjacency())));
-
-        return sb.toString();
     }
 
     //------------------//
