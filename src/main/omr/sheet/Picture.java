@@ -16,8 +16,8 @@ import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -79,7 +79,8 @@ public class Picture
                               1d);
 
     // Current image
-    private RenderedOp image;
+    ////private RenderedOp image;
+    private PlanarImage image;
     private Dimension dimension;
     private int dimensionWidth;         // To speedup ...
     private DataBuffer dataBuffer;
@@ -88,6 +89,20 @@ public class Picture
     private boolean rotated = false;
 
     //~ Constructors ------------------------------------------------------
+
+    //---------//
+    // Picture //
+    //---------//
+    /**
+     * Build a picture instance, using a given image.
+     *
+     * @param image the image provided
+     */
+    public Picture (RenderedImage image)
+        throws ImageFormatException
+    {
+        setImage(image);
+    }
 
     //---------//
     // Picture //
@@ -108,26 +123,7 @@ public class Picture
     {
         // Try to read the image file
         logger.info("Loading image from " + imgFile + " ...");
-        image = JAI.create("fileload", imgFile.getPath());
-
-        // Check that the whole image has been loaded
-        if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
-            throw new IOException("Could not load image file "
-                                  + imgFile.getPath());
-        } else {
-            // Check image format, and convert to gray if needed. This may
-            // throw ImageFormatException
-            checkImageFormat();
-
-            // Cache dimensions
-            updateParams();
-
-            // Remember original dimension
-            originalDimension = getDimension();
-
-            logger.info("Image loaded "
-                        + image.getWidth() + " x " + image.getHeight());
-        }
+        setImage(JAI.create("fileload", imgFile.getPath()));
     }
 
     //---------//
@@ -135,7 +131,9 @@ public class Picture
     //---------//
     /**
      * Create a picture as a mosaic or other images, which are to be
-     * composed one above the following one
+     * composed one above the following one.
+     *
+     * This method is not currently used
      *
      * @param files  ordered array of image files,
      * @param thetas array parallel to files, that specifies the needed
@@ -156,17 +154,17 @@ public class Picture
         int narrowestWidth = Integer.MAX_VALUE;// Width of narrowest image
 
         // Array of images and related shifts
-        RenderedOp[] images = new RenderedOp[files.length];
+        PlanarImage[] images = new PlanarImage[files.length];
 
         for (int i = 0; i < files.length; i++) {
             // Load from file
-            RenderedOp img0 = JAI.create("fileload", files[i].getPath());
+            PlanarImage img0 = JAI.create("fileload", files[i].getPath());
             System.out.println("i=" + i + " file=" + files[i]);
             System.out.println("img0 width=" + img0.getWidth() +
                                ", height=" + img0.getHeight());
 
             // Rotation
-            RenderedOp img1;
+            PlanarImage img1;
             if (thetas[i] != 0) {
                 img1 = invert(JAI.create("Rotate",
                                          (new ParameterBlock())
@@ -232,7 +230,6 @@ public class Picture
         logger.info("Mosaic " + " "
                     + image.getWidth() + " x " + image.getHeight());
     }
-    //~ Methods -----------------------------------------------------------
 
     //--------------//
     // getDimension //
@@ -475,7 +472,7 @@ public class Picture
     public void rotate (double theta)
     {
         // Invert
-        RenderedOp img = invert(image);
+        PlanarImage img = invert(image);
 
         // Rotate
         image = JAI.create
@@ -537,7 +534,7 @@ public class Picture
     //--------//
     // invert //
     //--------//
-    private static RenderedOp invert (RenderedOp image)
+    private static PlanarImage invert (PlanarImage image)
     {
         return JAI.create("Invert",
                           new ParameterBlock()
@@ -553,9 +550,9 @@ public class Picture
     //-------------//
     // colorToGray //
     //-------------//
-    private static RenderedOp colorToGray (RenderedOp image)
+    private static PlanarImage colorToGray (PlanarImage image)
     {
-        logger.info("Converting color image to gray ...");
+        logger.fine("Converting color image to gray ...");
 
         double[][] matrix = { {0.114d, 0.587d, 0.299d, 0.0d} };
 
@@ -569,7 +566,7 @@ public class Picture
     //---------------//
     // grayToGray256 //
     //---------------//
-    private static RenderedOp grayToGray256 (RenderedOp image)
+    private static PlanarImage grayToGray256 (PlanarImage image)
     {
         logger.info("Converting gray image to gray-256 ...");
 
@@ -596,5 +593,33 @@ public class Picture
 
         // Point to the image data buffer
         dataBuffer = image.getData().getDataBuffer();
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    private void setImage (RenderedImage renderedImage)
+        throws ImageFormatException
+    {
+        image = PlanarImage.wrapRenderedImage(renderedImage);
+
+        // Check that the whole image has been loaded
+        if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
+            throw new RuntimeException("Unusable image for Picture");
+        } else {
+            // Check image format, and convert to gray if needed. This may
+            // throw ImageFormatException
+            checkImageFormat();
+
+            // Cache dimensions
+            updateParams();
+
+            // Remember original dimension
+            originalDimension = getDimension();
+
+            logger.info("Image loaded "
+                    + image.getWidth() + " x "
+                    + image.getHeight());
+        }
     }
 }
