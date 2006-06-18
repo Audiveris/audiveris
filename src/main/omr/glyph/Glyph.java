@@ -22,11 +22,10 @@ import omr.util.Logger;
 import omr.util.Predicate;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Class <code>Glyph</code> represents any glyph found, such as stem,
@@ -58,9 +57,9 @@ public class Glyph
     /**  Centroid coordinates */
     protected PixelPoint centroid;
 
-    /** Sections that compose this glyph. The collection is kept sorted on
-        centroid abscissa then ordinate*/
-    protected SortedSet<GlyphSection> members = new TreeSet<GlyphSection>();
+    /** Sections that compose this glyph. The collection should be kept
+        sorted on centroid abscissa then ordinate*/
+    protected List<GlyphSection> members = new ArrayList<GlyphSection>();
 
     /** The containing lag */
     protected GlyphLag lag;
