@@ -30,7 +30,7 @@ import javax.swing.*;
  * storing. It thus handles the location where icon definition files are
  * kept, as well as the marshalling and unmarshalling to and from these
  * files. The binding is implemented by means of JiBX.
- *
+ * 
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
