@@ -11,6 +11,7 @@
 package omr.math;
 
 import omr.sheet.PixelPoint;
+import omr.util.Logger;
 
 /**
  * Class <code>Moments</code> encapsulates the set of all moments that
@@ -23,6 +24,8 @@ public class Moments
     implements java.io.Serializable
 {
     //~ Static variables/initializers -------------------------------------
+
+    private static final Logger logger = Logger.getLogger(Moments.class);
 
     /**  Number of moments handled : {@value}*/
     public static final int size = 19;
@@ -89,6 +92,12 @@ public class Moments
                     int dim,
                     int unit)
     {
+        // Safety check
+        if (unit == 0) {
+            logger.warning("Cannot compute moments with unit set to 0");
+            throw new RuntimeException("Zero-valued unit");
+        }
+
         int xMin = Integer.MAX_VALUE;
         int xMax = Integer.MIN_VALUE;
         int yMin = Integer.MAX_VALUE;
