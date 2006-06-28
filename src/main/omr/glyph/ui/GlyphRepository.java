@@ -8,7 +8,6 @@
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
 
-
 package omr.glyph.ui;
 
 import omr.Main;
@@ -20,14 +19,9 @@ import omr.ui.icon.SymbolIcon;
 import omr.util.FileUtil;
 import omr.util.Logger;
 import omr.util.XmlMapper;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.Collection;
-import java.io.IOException;
+import java.io.*;
+import java.util.*;
+import omr.glyph.IconGlyph;
 
 /**
  * Class <code>GlyphRepository</code> handles the store of known glyphs,
@@ -72,6 +66,12 @@ public class GlyphRepository
     private static final File coreFolder   = new File(Main.getTrainFolder(),
                                                       "core");
     private static final File iconsFolder  = Main.getIconsFolder();
+
+    // name of the file where glyph blacklist is kept. These glyphs must be
+    // ignored when training the evaluator, they are used only as UI icons
+    // in menus and buttons. The scope of this blacklist is the directory
+    // that contains the blacklist file.
+    private static final String BLACK_LIST_NAME = ".glyphignore";
 
     //~ Instance variables ------------------------------------------------
 
@@ -187,13 +187,10 @@ public class GlyphRepository
         } else {
             // We try to load from the core repository first, then from the
             // builtin icons, finally from the sheets repository
-            boolean isIcon = false;
             File file = new File(getCoreFolder(), gName);
             if (!file.exists()) {
                 file = new File(iconsFolder.getParentFile(), gName);
-                if (file.exists()) {
-                    isIcon = true;
-                } else {
+                if (!file.exists()) {
                     file = new File(getSheetsFolder(), gName);
                     if (!file.exists()) {
                         logger.warning("Unable to find file for glyph "
@@ -202,7 +199,7 @@ public class GlyphRepository
                     }
                 }
             }
-            return loadGlyph(gName, file, isIcon);
+            return loadGlyph(gName, file);
         }
     }
 
@@ -210,25 +207,28 @@ public class GlyphRepository
     // loadGlyph //
     //-----------//
     private Glyph loadGlyph (String  gName,
-                             File    file,
-                             boolean isIcon)
+                             File    file)
     {
+        final boolean isIcon = isIcon(gName);
         if (logger.isFineEnabled()) {
-            logger.fine("Reading " + file);
+            logger.fine("Loading " + (isIcon ? "icon " : "glyph ") + file);
         }
         Glyph glyph = null;
         try {
             if (isIcon) {
                 SymbolIcon icon = (SymbolIcon) getIconXmlMapper().load(file);
                 if (icon != null) {
-                    glyph = createIconGlyph(icon);
+                    glyph = new IconGlyph(icon, shapeOf(gName));
                 }
             } else {
                 glyph = (Glyph) getGlyphXmlMapper().load(file);
-                glyphsMap.put(gName, glyph);
             }
         } catch (Exception ex) {
             // User already informed
+        }
+
+        if (glyph != null) {
+            glyphsMap.put(gName, glyph);
         }
 
         return glyph;
@@ -276,7 +276,9 @@ public class GlyphRepository
 
         for (File file : files) {
             if (FileUtil.getExtension(file).equals(FILE_EXTENSION)) {
-                logger.fine("Adding " + file);
+                if (logger.isFineEnabled()) {
+                    logger.fine("Adding " + file);
+                }
                 glyphFiles.add(file);
             }
         }
@@ -467,15 +469,21 @@ public class GlyphRepository
         // Empty the directory
         FileUtil.deleteAll(coreDir.listFiles());
 
-        // Copy the glyph files into the core directory
+        // Copy the glyph and icon files into the core directory
         for (String gName : coreBase) {
-            File source = new File(getSheetsFolder(), gName);
+            File source;
+            final boolean isIcon = isIcon(gName);
+            if (isIcon) {
+                source = new File(Main.getIconsFolder().getParentFile(), gName);
+            } else {
+                source = new File(getSheetsFolder(), gName);
+            }
             File targetDir = new File(coreDir,
                                       source.getParentFile().getName());
             targetDir.mkdirs();
             File target = new File(targetDir, source.getName());
             if (logger.isFineEnabled()) {
-                logger.fine("Storing " + gName + " as core");
+                logger.fine("Storing " + target + " as core");
             }
 
             try {
@@ -563,22 +571,71 @@ public class GlyphRepository
     private void loadDirectory (File dir,
                                 List<File> all)
     {
-        logger.fine("Recursing through " + dir);
+        if (logger.isFineEnabled()) {
+            logger.fine("Recursing through directory " + dir);
+        }
+
+        // Is there a black list in this directory ?
+        Set<String> blackList = getBlackList(dir);
+
         File[] files = dir.listFiles();
         if (files == null) {
-            logger.warning("Directory " + dir + " not found");
+            logger.warning("Directory " + dir + " is empty");
             return;
         }
 
         for (File file : files) {
-            if (file.isDirectory()) {
-                // Recurse through it
-                loadDirectory(file, all);
-            } else if (FileUtil.getExtension(file).equals(FILE_EXTENSION)) {
-                logger.fine("Adding " + file);
-                all.add(file);
+            // Black listed ?
+            if (blackList.contains(file.getName())) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Skipping black listed file : " + file.getName());
+                }
+            } else {
+                if (file.isDirectory()) {
+                    // Recurse through it
+                    loadDirectory(file, all);
+                } else if (FileUtil.getExtension(file).equals(FILE_EXTENSION)) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Adding " + file);
+                    }
+                    all.add(file);
+                }
             }
         }
+    }
+
+    //--------------//
+    // getBlackList //
+    //--------------//
+    private Set<String> getBlackList (File dir)
+    {
+        Set<String> bl = new HashSet<String>();
+
+        File file = new File(dir, BLACK_LIST_NAME);
+        if (file.exists()) {
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                String fileName;
+
+                try {
+                    // Expect one file name per line
+                    while ((fileName = br.readLine()) != null) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Black listing : " + fileName);
+                        }
+                        bl.add(fileName.trim());
+                    }
+
+                    br.close();
+                } catch (IOException ex) {
+                    logger.warning("IO error while reading file '" + file + "'");
+                }
+            } catch (FileNotFoundException ex) {
+                logger.warning("Cannot find file '" + file + "'");
+            }
+        }
+
+        return bl;
     }
 
     //--------------//
@@ -635,20 +692,21 @@ public class GlyphRepository
         }
     }
 
-    //-----------------//
-    // createIconGlyph //
-    //-----------------//
-    /**
-     * Build an (artificial) glyph out of a symbol icon. This construction
-     * is meant to populate and train on glyph shapes for which we have no
-     * real instance yet.
-     *
-     * @param icon the appearance of the glyph
-     * @return the resulting glyph
-     */
-    private Glyph createIconGlyph (SymbolIcon icon)
+    //--------//
+    // isIcon //
+    //--------//
+    private boolean isIcon (String gName)
     {
-        return null;
+        return isIcon(new File(gName));
+    }
+
+    //--------//
+    // isIcon //
+    //--------//
+    private boolean isIcon (File file)
+    {
+        String folder = file.getParentFile().getName();
+        return folder.equals(Main.ICONS_NAME);
     }
 
     //~ Classes -----------------------------------------------------------
