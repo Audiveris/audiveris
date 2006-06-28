@@ -176,8 +176,12 @@ public class GlyphRegression
                 monitor.glyphProcessed(glyph);
             }
 
+            try {
             ShapeDesc desc = shapeDescs[glyph.getShape().ordinal()];
             desc.include(feedInput(glyph, ins));
+            } catch (Exception ex) {
+                logger.warning("Weird shape : " + glyph.getShape());
+            }
         }
 
         // Determine means & weights
