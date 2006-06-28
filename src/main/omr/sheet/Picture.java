@@ -97,11 +97,42 @@ public class Picture
      * Build a picture instance, using a given image.
      *
      * @param image the image provided
+     * @exception ImageFormatException
      */
     public Picture (RenderedImage image)
         throws ImageFormatException
     {
-        setImage(image);
+        this(image, 1f);
+    }
+
+    //---------//
+    // Picture //
+    //---------//
+    /**
+     * Build a picture instance, using a given image, and the scaling to
+     * apply on the image
+     *
+     * @param image the image provided
+     * @param scaling the scaling to apply (1.0 means no scaling)
+     * @exception ImageFormatException
+     */
+    public Picture (RenderedImage image,
+                    float scaling)
+        throws ImageFormatException
+    {
+        RenderedImage src = image;
+        if (scaling != 1.0d) {
+            ParameterBlock pb = new ParameterBlock()
+                .addSource(image)
+                .add(scaling)
+                .add(scaling)
+                .add(0f)
+                .add(0f)
+                .add(new InterpolationNearest());
+            src = JAI.create("scale", pb);
+        }
+
+        setImage(src);
     }
 
     //---------//
@@ -124,7 +155,11 @@ public class Picture
         // Try to read the image file
         logger.info("Loading image from " + imgFile + " ...");
         setImage(JAI.create("fileload", imgFile.getPath()));
-    }
+        
+        logger.info("Image loaded "
+                + image.getWidth() + " x "
+                + image.getHeight());
+}
 
     //---------//
     // Picture //
@@ -301,7 +336,9 @@ public class Picture
         int numBands = image.getSampleModel().getNumBands();
         if (numBands != 1) {
             if (numBands == 3) {
-                image = colorToGray(image);
+                image = RGBToGray(image);
+            } else if (numBands == 4) {
+                image = RGBAToGray(image);
             } else {
                 throw new ImageFormatException
                     ("Unsupported sample model" +
@@ -310,11 +347,13 @@ public class Picture
         }
 
         // Check pixel size
-        ColorModel colorModel = image.getColorModel();
-        int pixelSize = colorModel.getPixelSize();
-        if (pixelSize != 8) {
-            image = grayToGray256(image);
-        }
+//        ColorModel colorModel = image.getColorModel();
+//        int pixelSize = colorModel.getPixelSize();
+//        if (pixelSize != 8) {
+//            logger.info("pixelSize=" + pixelSize +
+//                    " colorModel=" + colorModel);
+//            image = grayToGray256(image);
+//        }
     }
 
     //----------//
@@ -547,12 +586,12 @@ public class Picture
                           null);
     }
 
-    //-------------//
-    // colorToGray //
-    //-------------//
-    private static PlanarImage colorToGray (PlanarImage image)
+    //-----------//
+    // RGBToGray //
+    //-----------//
+    private static PlanarImage RGBToGray (PlanarImage image)
     {
-        logger.fine("Converting color image to gray ...");
+        logger.fine("Converting RGB image to gray ...");
 
         double[][] matrix = { {0.114d, 0.587d, 0.299d, 0.0d} };
 
@@ -561,6 +600,18 @@ public class Picture
                           .addSource(image)
                           .add(matrix),
                           null);
+    }
+
+    //------------//
+    // RGBAToGray //
+    //------------//
+    private static PlanarImage RGBAToGray (PlanarImage image)
+    {
+        logger.fine("Discarding alpha band ...");
+
+        PlanarImage pi = JAI.create("bandselect", image, new int[] {0, 1, 2});
+
+        return RGBToGray(pi);
     }
 
     //---------------//
@@ -572,12 +623,6 @@ public class Picture
 
         ColorSpace colorSpace = ColorSpace.getInstance
             (java.awt.color.ColorSpace.CS_GRAY);
-
-//        int[] bits = new int[]{8};
-//        int opaque = Transparency.OPAQUE;
-//        int dataType = DataBuffer.TYPE_BYTE;
-//        ColorModel colorModel = new ComponentColorModel
-//            (colorSpace, bits, false, false, opaque, dataType);
 
         return JAI.create("colorConvert", image, colorSpace, null);
     }
@@ -616,10 +661,6 @@ public class Picture
 
             // Remember original dimension
             originalDimension = getDimension();
-
-            logger.info("Image loaded "
-                    + image.getWidth() + " x "
-                    + image.getHeight());
         }
     }
 }
