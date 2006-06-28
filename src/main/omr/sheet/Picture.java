@@ -15,38 +15,42 @@ import omr.util.Logger;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
-import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import javax.media.jai.*;
+import javax.media.jai.InterpolationBilinear;
+import javax.media.jai.InterpolationNearest;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.MosaicDescriptor;
 
 /**
  * Class <code>Picture</code> encapsulates an image, allowing modifications
  * and rendering. Its current implementation is based on JAI (Java Advanced
  * Imaging). JAI is not used outside of this class.
- *
+ * 
  * <p> Operations allow : <ul>
- *
+ * 
  * <li> To <b>load</b> the original image from a file </li>
- *
+ * 
  * <li> To <b>store</b> the current image to a file </li>
- *
+ * 
  * <li> To <b>render</b> the (original) image in a graphic context </li>
- *
+ * 
  * <li> To report current image <b>dimension</b> parameters </li>
- *
+ * 
  * <li> To <b>rotate</b> the image </li>
- *
+ * 
  * <li> To <b>read</b> or to <b>write</b> a pixel knowing its location in
  * the current image </li>
- *
+ * 
  * </ul> </p>
- *
+ * 
+ * 
+ * 
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
