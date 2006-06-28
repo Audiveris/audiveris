@@ -120,6 +120,7 @@ public class GlyphInspector
             Glyph glyph = vLag.getGlyph(id);
             if (glyph != null) {
                 if (glyph.getShape() == null) {
+                    glyph.setInterline(sheet.getScale().interline());
                     // Get vote
                     Shape vote = evaluator.vote(glyph, maxGrade);
                     if (vote != null) {
