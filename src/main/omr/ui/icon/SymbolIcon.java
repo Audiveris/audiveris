@@ -11,8 +11,8 @@
 package omr.ui.icon;
 
 import java.awt.*;
+import java.awt.image.*;
 import javax.swing.*;
-import java.awt.image.BufferedImage;
 
 /**
  * Class <code>SymbolIcon</code> is an icon, built from a provided image,
