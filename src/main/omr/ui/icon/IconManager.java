@@ -62,8 +62,6 @@ public class IconManager
         WHITE // 7
     };
 
-    //~ Instance variables ------------------------------------------------
-
     //~ Constructors ------------------------------------------------------
 
     // Not meant to be instantiated
@@ -220,7 +218,7 @@ public class IconManager
      */
     public static String[] encodeImage (SymbolIcon icon)
     {
-        BufferedImage image = toBufferedImage(icon.getImage());
+        BufferedImage image = icon.getImage();
 
         // Retrieve proper image width & height values
         final int width  = image.getWidth();
@@ -237,7 +235,7 @@ public class IconManager
             sb.delete(0, sb.length());
             for (int x = 0; x < width; x++) {
                 int argb = argbs[x + y*width];
-                sb.append(encodeARGB(argb));
+                sb.append(ARGBtoChar(argb));
             }
             rows[y] = sb.toString();
         }
@@ -255,55 +253,36 @@ public class IconManager
      * @param rows the lines of characters
      * @return the decoded image
      */
-    public static Image decodeImage (String[] rows)
+    public static BufferedImage decodeImage (String[] rows)
     {
+        // Create the DataBuffer to hold the pixel samples
         final int width = rows[0].length();
         final int height = rows.length;
-        int[] pix = new int[width * height];
+
+        // Create Raster
+        Raster raster = Raster.createPackedRaster
+            (DataBuffer.TYPE_INT, width, height,
+             new int[] {0x00ff0000,
+                        0x0000ff00,
+                        0x000000ff,
+                        0xff000000},// bandMasks RGBA
+             null);
+
+        // Populate the data buffer
+        DataBuffer dataBuffer = raster.getDataBuffer();
         int index = 0;
         for (String row : rows) {
-            if (logger.isFineEnabled ()) {
-                logger.finest ("Row='" + row + "'");
-            }
             for (int x = 0; x < width; x++) {
-                pix[index++] = decodeARGB (row.charAt (x));
+                dataBuffer.setElem(index++, toARGB(row.charAt(x)));
             }
         }
 
-        // Create the proper image icon
-        Toolkit tk = Toolkit.getDefaultToolkit ();
-        return tk.createImage
-                (new MemoryImageSource (width, height, pix, 0, width));
-    }
+        // Create the image
+        BufferedImage bufferedImage = new BufferedImage
+                (width, height, BufferedImage.TYPE_INT_ARGB);
+        bufferedImage.setData(raster);
 
-    //-----------------//
-    // toBufferedImage //
-    //-----------------//
-    /**
-     * Make sure we have a BufferedImage
-     *
-     * @param image the Image
-     * @return a true BufferedImage
-     */
-    public static BufferedImage toBufferedImage (Image image)
-    {
-        if (image instanceof BufferedImage) {
-            return (BufferedImage) image;
-        } else {
-            // Make sure image is fully loaded
-            image = new ImageIcon(image).getImage();
-
-            // Generate new image
-            BufferedImage bufferedImage
-                = new BufferedImage(image.getWidth(null),
-                                    image.getHeight(null),
-                                    BufferedImage.TYPE_INT_ARGB);
-            Graphics g = bufferedImage.createGraphics();
-            g.drawImage(image,0,0,null);
-            g.dispose();
-
-            return bufferedImage;
-        }
+        return bufferedImage;
     }
 
     //~ Methods private ---------------------------------------------------
@@ -319,39 +298,59 @@ public class IconManager
         return xmlMapper;
     }
 
-    //------------//
-    // decodeARGB //
-    //------------//
+    //--------//
+    // toGray //
+    //--------//
     /**
      * Compute the pixel gray level that corresponds to the given char
      *
      * @param c the char
-     * @return the corresponding pixel value (ARGB format)
+     * @return the corresponding pixel value ( 0 .. 255)
      */
-    private static int decodeARGB (char c)
+    private static int toGray(char c)
     {
         // Check the char
         if (c == WHITE) {
-            return 0;
+            return  255;
         } else {
             for (int i = charTable.length -1; i >= 0; i--) {
                 if (charTable[i] == c) {
                     int level = 3 + i * 36; // Range 3 .. 255 (not too bad)
-                    return
-                        255   << 24 |      // Alpha (opaque)
-                        level << 16 |      // R
-                        level <<  8 |      // G
-                        level;             // B
+                    return level;
                 }
             }
         }
 
+        // Unknown -> white
         logger.warning("Invalid pixel encoding char : '" + c + "'");
-        return 0;
+        return 255;
+    }
+
+    //--------//
+    // toARGB //
+    //--------//
+    /**
+     * Compute the ARGB pixel that corresponds to the given char
+     *
+     * @param c the char
+     * @return the corresponding pixel value (ARGB format)
+     */
+    private static int toARGB (char c)
+    {
+        final int level = toGray(c);
+        if (level == 255) {
+            return 0x00ffffff;      // Totally transparent / white
+        } else {
+            return
+                255   << 24 |      // Alpha (opaque)
+                level << 16 |      // R
+                level <<  8 |      // G
+                level;             // B
+        }
     }
 
     //------------//
-    // encodeARGB //
+    // ARGBtoChar //
     //------------//
     /**
      * Encode a pixel value using a table of 8 different chars for
@@ -360,7 +359,7 @@ public class IconManager
      * @param argb the pixel value, in the ARGB format
      * @return the proper char
      */
-    private static char encodeARGB (int argb)
+    private static char ARGBtoChar (int argb)
     {
         int a = (argb & 0xff000000) >>> 24; // Alpha
         if (a == 0) {
