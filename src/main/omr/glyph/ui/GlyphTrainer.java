@@ -26,6 +26,8 @@ import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
 import omr.util.Logger;
 
+import static omr.glyph.Shape.*;
+
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
@@ -37,6 +39,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.*;
+import omr.glyph.Shape.Range;
 
 /**
  * Class <code>GlyphTrainer</code> handles a User Interface dedicated to
@@ -614,6 +617,37 @@ public class GlyphTrainer
             builder.add(falsePositiveButton,     cst.xy(15, r));
         }
 
+        //-----------------//
+        // checkPopulation //
+        //-----------------//
+        private void checkPopulation (List<Glyph> glyphs)
+        {
+            // Check that all trainable shapes are present in the training
+            // population and that only legal shapes are present. If
+            // illegal (non trainable) shapes are found, they are removed
+            // from the population.
+            boolean[] present = new boolean[LastPhysicalShape.ordinal()+1];
+            Arrays.fill(present, false);
+
+            for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
+                Glyph glyph = it.next();
+                int index = glyph.getShape().ordinal();
+                if (index >= present.length) {
+                    logger.warning("Removing not trainable shape:" +
+                                   glyph.getShape());
+                    it.remove();
+                } else {
+                    present[index] = true;
+                }
+            }
+
+            for (int i = 0; i < present.length; i++) {
+                if (!present[i]) {
+                    logger.warning("Missing shape: " + Shape.values()[i]);
+                }
+            }
+        }
+
         //---------------//
         // runValidation //
         //---------------//
@@ -774,12 +808,16 @@ public class GlyphTrainer
 
                 Collection<String> gNames = repositoryPanel.getBase(useWhole);
                 progressBar.setValue(0);
-                progressBar.setMaximum(gNames.size());
+                progressBar.setMaximum(network.getListEpochs());
 
                 List<Glyph> glyphs = new ArrayList<Glyph>();
                 for (String gName : gNames) {
                     glyphs.add(repository.getGlyph(gName));
                 }
+
+                // Check that all trainable shapes (and only those ones)
+                // are present in the training population
+                checkPopulation(glyphs);
 
                 evaluator.train(glyphs, EvaluatorPanel.this, mode);
 
