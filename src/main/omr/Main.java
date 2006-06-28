@@ -89,6 +89,9 @@ public class Main
     // Singleton
     private static Main INSTANCE;
 
+    /** Specific forlder name for icons */
+    public static final String ICONS_NAME = "icons";
+
     //~ Instance variables ------------------------------------------------
 
     // Name of the application as displayed to the user
@@ -370,7 +373,7 @@ public class Main
      */
     public static File getIconsFolder()
     {
-        return new File(getHomeFolder(), "icons");
+        return new File(getHomeFolder(), ICONS_NAME);
     }
 
     //-----------------//
