@@ -62,10 +62,6 @@ public class SymbolGlyphBoard
     private List<Integer> knownIds  = new ArrayList<Integer>();
 
     // Glyph characteristics
-    private LDoubleField leftMargin = new LDoubleField
-        (false, "LeftMg", "Left margin (in interline fraction) within measure");
-    private LDoubleField rightMargin = new LDoubleField
-        (false, "RightMg", "Right margin (in interline fraction) within measure");
     private LField ledger       = new LField
         (false, "Ledger", "Does this glyph intersect a legder");
     private LIntegerField pitchPosition  = new LIntegerField
@@ -156,14 +152,14 @@ public class SymbolGlyphBoard
 
         // For glyph characteristics
         r += 2;                         // --------------------------------
-        builder.add(leftMargin.getLabel(), cst.xy (1,  r));
-        builder.add(leftMargin.getField(), cst.xy (3,  r));
+        //builder.add(leftMargin.getLabel(), cst.xy (1,  r));
+        //builder.add(leftMargin.getField(), cst.xy (3,  r));
 
         builder.add(pitchPosition.getLabel(), cst.xy (5, r));
         builder.add(pitchPosition.getField(), cst.xy (7, r));
 
-        builder.add(rightMargin.getLabel(), cst.xy (9,  r));
-        builder.add(rightMargin.getField(), cst.xy (11, r));
+        //builder.add(rightMargin.getLabel(), cst.xy (9,  r));
+        //builder.add(rightMargin.getField(), cst.xy (11, r));
 
         r += 2;                         // --------------------------------
         builder.add(ledger.getLabel(),  cst.xy (5,  r));
@@ -347,14 +343,10 @@ public class SymbolGlyphBoard
             pitchPosition.setValue((int) Math.rint(glyph.getPitchPosition()));
             ledger.setText(Boolean.toString(glyph.hasLedger()));
             stems.setValue(glyph.getStemNumber());
-            leftMargin.setValue(glyph.getLeftMargin(),   "%.2f");
-            rightMargin.setValue(glyph.getRightMargin(), "%.2f");
         } else {
             ledger.setText("");
             pitchPosition.setText("");
             stems.setText("");
-            leftMargin.setText("");
-            rightMargin.setText("");
         }
 
         focusWanted = true;
