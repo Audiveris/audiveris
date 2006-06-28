@@ -18,6 +18,10 @@ import java.awt.image.BufferedImage;
  * Class <code>SymbolIcon</code> is an icon, built from a provided image,
  * with consistent width among all defined symbol icons to ease their
  * presentation in menus.
+ * 
+ * 
+ * @author Herv&eacute; Bitteur
+ * @version $Id$
  */
 public class SymbolIcon
     implements Icon
@@ -43,6 +47,15 @@ public class SymbolIcon
 
     // Reference point, if any
     private Point refPoint;
+
+    // Pitch position within staff lines
+    private Double pitchPosition;
+
+    // Connected to Ledger ?
+    private Boolean hasLedger;
+
+    // How many stems is it connected to ?
+    private Integer stemNumber;
 
     //~ Constructors ------------------------------------------------------
 
@@ -311,5 +324,83 @@ public class SymbolIcon
     public void setRefPoint(Point refPoint)
     {
         this.refPoint = refPoint;
+    }
+
+    //------------------//
+    // getPitchPosition //
+    //------------------//
+    /**
+     * Report the pitch position within the staff lines
+     *
+     * @return the pitch position
+     */
+    public Double getPitchPosition()
+    {
+        return pitchPosition;
+    }
+
+    //------------------//
+    // setPitchPosition //
+    //------------------//
+    /**
+     * Assign the pitch position within staff lines
+     *
+     * @param pitchPosition the position relative to the staff lines
+     */
+    public void setPitchPosition(Double pitchPosition)
+    {
+        this.pitchPosition = pitchPosition;
+    }
+
+    //-----------//
+    // hasLedger //
+    //-----------//
+    /**
+     * Is this entity connected to a ledger
+     *
+     * @return true if ther is at least one ledger
+     */
+    public boolean hasLedger()
+    {
+        return hasLedger;
+    }
+
+    //--------------//
+    // setHasLedger //
+    //--------------//
+    /**
+     * Assign the connection to a ledger
+     *
+     * @param hasLedger true if there is a connected ledger
+     */
+    public void setHasLedger(boolean hasLedger)
+    {
+        this.hasLedger = hasLedger;
+    }
+
+    //---------------//
+    // getStemNumber //
+    //---------------//
+    /**
+     * Report the number of stems this entity is connected to
+     *
+     * @return the number of stems
+     */
+    public int getStemNumber()
+    {
+        return stemNumber;
+    }
+
+    //---------------//
+    // setStemNumber //
+    //---------------//
+    /**
+     * Report the number of stems that are connected to this entity
+     *
+     * @param stemNumber the number of stems
+     */
+    public void setStemNumber(int stemNumber)
+    {
+        this.stemNumber = stemNumber;
     }
 }
