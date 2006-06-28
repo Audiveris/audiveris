@@ -26,7 +26,7 @@ import java.util.*;
 /**
  * Class <code>TimeSignature</code> encapsulates a time signature, which
  * may be composed of one or several sticks.
- *
+ * 
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
