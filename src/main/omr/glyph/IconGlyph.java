@@ -111,4 +111,12 @@ public class IconGlyph
     }
 
     //~ Methods -----------------------------------------------------------
+
+    public SymbolIcon getIcon() {
+        return icon;
+    }
+
+    public void setIcon(SymbolIcon val) {
+        this.icon = val;
+    }
 }
