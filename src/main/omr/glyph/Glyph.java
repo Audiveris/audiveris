@@ -85,12 +85,6 @@ public class Glyph
     /** Interline of the containing staff (or sheet) */
     protected int interline;
 
-    /** Measure margin on left side (in interline fraction) */
-    protected double leftMargin;
-
-    /** Measure margin on right side (in interline fraction) */
-    protected double rightMargin;
-
     /** Has a ledger nearby ? */
     protected boolean hasLedger;
 
@@ -783,58 +777,6 @@ public class Glyph
     public void setInterline (int interline)
     {
         this.interline = interline;
-    }
-
-    //---------------//
-    // setLeftMargin //
-    //---------------//
-    /**
-     * Set the left margin within the measure
-     *
-     * @param leftMargin measure left margin in interline fraction
-     */
-    public void setLeftMargin (double leftMargin)
-    {
-        this.leftMargin = leftMargin;
-    }
-
-    //---------------//
-    // getLeftMargin //
-    //---------------//
-    /**
-     * Report the measure left margin (in interline fraction) before the glyph
-     *
-     * @return the left margin
-     */
-    public double getLeftMargin()
-    {
-        return leftMargin;
-    }
-
-    //----------------//
-    // setRightMargin //
-    //----------------//
-    /**
-     * Set the right margin within the measure
-     *
-     * @param rightMargin measure right margin in interline fraction
-     */
-    public void setRightMargin (double rightMargin)
-    {
-        this.rightMargin = rightMargin;
-    }
-
-    //----------------//
-    // getRightMargin //
-    //----------------//
-    /**
-     * Report the measure right margin (in interline fraction) after the glyph
-     *
-     * @return the right margin
-     */
-    public double getRightMargin()
-    {
-        return rightMargin;
     }
 
     //-----------//

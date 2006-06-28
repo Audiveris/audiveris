@@ -350,10 +350,6 @@ public class GlyphBuilder
 
         // Left and right margins within measure
         Measure measure = s.getMeasureAt(s.toStaffPoint(pgCentroid));
-        glyph.setLeftMargin
-                (scale.unitsToFrac(measure.leftMarginOf(stCentroid)));
-        glyph.setRightMargin
-                (scale.unitsToFrac(measure.rightMarginOf(stCentroid)));
 
         // Number of connected stems
         int stemNb = 0;

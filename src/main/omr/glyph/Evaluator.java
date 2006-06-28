@@ -60,9 +60,9 @@ public abstract class Evaluator
 
     /**
      * Number of useful input parameters : 10 moments +
-     * leftMargin, rightMargin, stemNumber, hasLedger, pitchPosition
+     * stemNumber, hasLedger, pitchPosition
      */
-    public static final int inSize = inMoments + 5;
+    public static final int inSize = inMoments + 3;
 
     /**
      * Number of shapes to differentiate
@@ -78,7 +78,7 @@ public abstract class Evaluator
     };
 
     /**
-     * An Evaluation comparator in increasing order, where smaller grave
+     * An Evaluation comparator in increasing order, where smaller grade
      * value means better interpretation
      */
     protected static final Comparator<Evaluation> comparator
@@ -168,11 +168,9 @@ public abstract class Evaluator
 
         // We append flags and step position
         int i = inMoments;
-        /* 10 */ ins[i++] = glyph.getLeftMargin();
-        /* 11 */ ins[i++] = glyph.getRightMargin();
-        /* 12 */ ins[i++] = boolAsDouble(glyph.hasLedger());
-        /* 13 */ ins[i++] = glyph.getStemNumber();
-        /* 14 */ ins[i++] = glyph.getPitchPosition();
+        /* 10 */ ins[i++] = boolAsDouble(glyph.hasLedger());
+        /* 11 */ ins[i++] = glyph.getStemNumber();
+        /* 12 */ ins[i++] = glyph.getPitchPosition();
 
         // We skip moments 17 & 18 (xMean and yMean) ???
 
