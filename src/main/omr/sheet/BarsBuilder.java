@@ -178,6 +178,7 @@ public class BarsBuilder
             stick.setShape(checker.isThickBar(stick) ?
                            Shape.THICK_BAR_LINE :
                            Shape.THIN_BAR_LINE);
+            stick.setInterline(sheet.getScale().interline());
         }
 
         // Check Measures using only score parameters
