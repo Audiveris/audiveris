@@ -48,7 +48,7 @@ public class DefaultSubject<S extends Subject  <S, O, E>,
     /**
      * Register a new observer for the subject
      *
-     * @param observer the obserbing entity
+     * @param observer the observing entity
      */
     public void addObserver (O observer)
     {
