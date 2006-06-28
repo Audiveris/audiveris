@@ -162,7 +162,7 @@ public class ScoreBuilder
         }
 
         // Then, processing depends on single/multi time signature
-        if (TimeSignature.SingleTimes.contains(shape)) {
+        if (SingleTimes.contains(shape)) {
             return processSingleTime(shape, glyph);
         } else {
             return processMultiTime(shape, glyph);

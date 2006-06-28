@@ -37,12 +37,6 @@ public class TimeSignature
 
     private static final Logger logger = Logger.getLogger(TimeSignature.class);
 
-    // Specific sub-ranges for time signature
-    public static final Range SingleTimes = new Range
-        (EnumSet.range(TIME_ZERO, TIME_SIXTEEN));
-    public static final Range MultiTimes  = new Range
-        (EnumSet.range(TIME_FOUR_FOUR, CUT_TIME));
-
     //~ Instance variables ------------------------------------------------
 
     // Sheet global scale
