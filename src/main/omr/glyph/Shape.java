@@ -371,7 +371,8 @@ public enum Shape
      * on their physical characteristics. For example a DOT is a DOT. Also,
      * a DOT plus a FERMATA_BEND together can compose a FERMATA.
      */
-    public static final Shape LastPhysicalShape = PEDAL_UP_MARK;
+    public static final Shape FirstPhysicalShape = NOISE;
+    public static final Shape LastPhysicalShape  = PEDAL_UP_MARK;
 
     /**
      * First logical shape, that are more precisely assigned.
@@ -441,7 +442,7 @@ public enum Shape
     // isWellKnown //
     //-------------//
     /**
-     * Report whether this shape is well knwon, that is a symbol not part
+     * Report whether this shape is well known, that is a symbol not part
      * of the Garbage range
      *
      * @return true if not part of garbage range, false otherwise
@@ -485,7 +486,7 @@ public enum Shape
     //----------//
     /**
      * Assign a color for current display. This is the specific shape color
-     * if any, othewise it is the default color of the containing range.
+     * if any, otherwise it is the default color of the containing range.
      *
      * @param color the display color
      */
@@ -671,7 +672,9 @@ public enum Shape
     /**
      * Class <code>Range</code> defines a range of related shapes, for
      * example the "Rests" range gathers all rest shapes from MULTI_REST
-     * down to ONE_HUNDRED_TWENTY_EIGHTH_REST.
+     * down to ONE_HUNDRED_TWENTY_EIGHTH_REST. 
+     * It handles additional properties over a simple EnumSet, especially 
+     * assigned colors and its automatic insertion in shape menu hierarchy.
      */
     public static class Range
     {
@@ -907,9 +910,7 @@ public enum Shape
 
     }
 
-    /**
-     * Symbols that can be attached to a stem
-     */
+    /** Symbols that can be attached to a stem */
     public static final EnumSet<Shape> stemSymbols = EnumSet.noneOf(Shape.class);
     static
     {
@@ -919,4 +920,8 @@ public enum Shape
         stemSymbols.addAll(NoteHeads.getShapes());
         stemSymbols.addAll(Flags.getShapes());
     }
+
+    /** Specific symbols for time signature */
+    public static final EnumSet<Shape> SingleTimes = EnumSet.range(TIME_ZERO, TIME_SIXTEEN);
+    public static final EnumSet<Shape> MultiTimes  = EnumSet.range(TIME_FOUR_FOUR, CUT_TIME);
 }
