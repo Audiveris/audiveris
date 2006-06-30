@@ -202,7 +202,8 @@ public class PictureView
             super.setFocusPoint(pt);
 
             // We use a specific version which displays the pixel level
-            notifyObservers(new PixelPoint(pt.x, pt.y), getPixel(pt));
+    //        notifyObservers(new PixelPoint(pt.x, pt.y), getPixel(pt));
+            getView().getPixelSubject().notifyObservers(new PixelPoint(pt.x, pt.y));
         }
     }
 }
