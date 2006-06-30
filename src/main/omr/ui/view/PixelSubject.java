@@ -25,21 +25,4 @@ import java.awt.Rectangle;
 public interface PixelSubject
     extends Subject<PixelSubject, PixelObserver, PixelPoint>
 {
-    /**
-     * Special addition to notify observers about pixel point and pixel
-     * level
-     *
-     * @param ul Point at the upper left corner
-     * @param level pixel level (-1 means no level is provided)
-     */
-    void notifyObservers (PixelPoint ul,
-                          int level);
-
-
-    /**
-     * Special addition to notify observers about a Rectangle entity
-     *
-     * @param rect the Rectangle entity to be passed around
-     */
-    void notifyObservers (Rectangle rect);
 }

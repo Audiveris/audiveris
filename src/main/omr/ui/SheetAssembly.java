@@ -25,6 +25,7 @@ import omr.sheet.Sheet;
 import omr.ui.util.Panel;
 import omr.ui.view.LogSlider;
 import omr.ui.view.PixelObserver;
+import omr.ui.view.RectangleObserver;
 import omr.ui.view.Rubber;
 import omr.ui.view.RubberZoomedPanel;
 import omr.ui.view.ScrollView;
@@ -104,6 +105,15 @@ public class SheetAssembly
     // Previously selected view
     private JScrollPane previousScrollView;
 
+    // Specific Observer for pixel rectangle
+    private RectangleObserver rectangleObserver = new RectangleObserver()
+        {
+            public void update (Rectangle rectangle)
+            {
+                SheetAssembly.this.update(rectangle);
+            }
+        };
+
     // To avoid cycles in forwarding between score and sheet views
     private transient volatile boolean sheetBarred = false;
     private transient volatile boolean scoreBarred = false;
@@ -155,6 +165,14 @@ public class SheetAssembly
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //----------------------//
+    // getRectangleObserver //
+    //----------------------//
+    public RectangleObserver getRectangleObserver()
+    {
+        return rectangleObserver;
+    }
 
     //--------------//
     // getComponent //
@@ -278,7 +296,8 @@ public class SheetAssembly
 
         // Connect the assembly as a pixel observer of the view, in order to
         // forward such events to the scoreView if relevant.
-        sv.getView().addObserver(this);
+        sv.getView().getPixelSubject().addObserver(this);
+        sv.getView().getRectangleSubject().addObserver(rectangleObserver);
 
         // Insert the scrollView as a new tab
         viewMap.put(sv.getComponent(), sv);

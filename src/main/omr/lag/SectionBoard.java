@@ -51,6 +51,15 @@ public class SectionBoard
     private final LIntegerField rLevel = new LIntegerField
         (false, "Level", "Average pixel level on this run");
 
+    // Specific Observer for Run subject
+    private RunObserver runObserver = new RunObserver()
+        {
+            public void update (Run run)
+            {
+                SectionBoard.this.update(run);
+            }
+        };
+
     // Section
     private Section section = null;
     private JPanel sectionPanel;
@@ -157,6 +166,14 @@ public class SectionBoard
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //----------------//
+    // getRunObserver //
+    //----------------//
+    public RunObserver getRunObserver()
+    {
+        return runObserver;
+    }
 
     //--------------//
     // defineLayout //

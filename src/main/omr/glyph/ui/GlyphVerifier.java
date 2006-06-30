@@ -800,7 +800,7 @@ public class GlyphVerifier
                 zoom = new Zoom(slider, 1);     // Default ratio set to 1
                 rubber = new Rubber(view, zoom);
                 rubber.setMouseMonitor(view);
-                view.addObserver(board);
+                view.getGlyphSubject().addObserver(board);
                 board.setGlyphFocus(view);
                 view.setRubber(rubber);
                 view.setZoom(zoom);

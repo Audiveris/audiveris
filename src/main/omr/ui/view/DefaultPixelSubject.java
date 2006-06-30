@@ -14,8 +14,6 @@ import omr.util.DefaultSubject;
 import omr.util.Subject;
 import omr.sheet.PixelPoint;
 
-import java.awt.Rectangle;
-
 /**
  * Class <code>DefaultPixelSubject</code> is an implementation of the
  * specific {@link Subject} meant for {@link PixelObserver} observers
@@ -26,24 +24,4 @@ import java.awt.Rectangle;
 public class DefaultPixelSubject
     extends DefaultSubject<PixelSubject, PixelObserver, PixelPoint>
 {
-    //-----------------//
-    // notifyObservers //
-    //-----------------//
-    public void notifyObservers (PixelPoint ul,
-                                 int level)
-    {
-        for (PixelObserver observer : observers) {
-            observer.update(ul, level);
-        }
-    }
-
-    //-----------------//
-    // notifyObservers //
-    //-----------------//
-    public void notifyObservers (Rectangle rect)
-    {
-        for (PixelObserver observer : observers) {
-            observer.update(rect);
-        }
-    }
 }

@@ -11,7 +11,6 @@
 package omr.lag;
 
 import omr.util.DefaultSubject;
-import omr.util.Subject;
 
 /**
  * Class <code>DefaultSectionSubject</code> is an implementation of the
@@ -23,18 +22,4 @@ import omr.util.Subject;
 public class DefaultSectionSubject
     extends DefaultSubject<SectionSubject, SectionObserver, Section>
 {
-    //-----------------//
-    // notifyObservers //
-    //-----------------//
-    /**
-     * Push the Run information to registered observers
-     *
-     * @param run the Run info to be pushed
-     */
-    public void notifyObservers (Run run)
-    {
-        for (SectionObserver observer : observers) {
-            observer.update(run);
-        }
-    }
 }

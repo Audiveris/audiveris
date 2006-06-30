@@ -43,18 +43,10 @@ import javax.swing.event.ChangeListener;
  * <p>Via the {@link MouseMonitor} interface, this panel traps the various
  * mouse actions.
  *
- * <p> This class cannot directly declare that it implements the interface
- * {@link PixelSubject}, because there are several informations to be
- * pushed. However, the PixelSubject methods (such as addObserver, etc) are
- * indeed provided, to allow a registered {@link PixelObserver} to be
- * notified of any modification in the pixel information (point and/or
- * rectangle).
- *
- * @see RubberZoomedPanel
- *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+
 public class ZoomedPanel
     extends JPanel
     implements ChangeListener,
@@ -77,6 +69,10 @@ public class ZoomedPanel
     /** Subject for pixel observers if any */
     protected DefaultPixelSubject pixelSubject
         = new DefaultPixelSubject();
+
+    /** Subject for rectangle observers if any */
+    protected DefaultRectangleSubject rectangleSubject
+        = new DefaultRectangleSubject();
 
     /** To avoid circular updating */
     protected volatile transient boolean selfUpdating;
@@ -125,6 +121,32 @@ public class ZoomedPanel
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //-----------------//
+    // getPixelSubject //
+    //-----------------//
+    /**
+     * Export the pixel point subject
+     *
+     * @return pixel point subject
+     */
+    public DefaultPixelSubject getPixelSubject()
+    {
+        return pixelSubject;
+    }
+
+    //---------------------//
+    // getRectangleSubject //
+    //---------------------//
+    /**
+     * Export the pixel rectangle subject
+     *
+     * @return pixel rectangle subject
+     */
+    public DefaultRectangleSubject getRectangleSubject()
+    {
+        return rectangleSubject;
+    }
 
     //----------------//
     // getPanelCenter //
@@ -271,7 +293,7 @@ public class ZoomedPanel
             scrollRectToVisible(vr);
         }
 
-        notifyObservers(new PixelPoint(pt.x, pt.y));
+        pixelSubject.notifyObservers(new PixelPoint(pt.x, pt.y));
         repaint();
     }
 
@@ -296,76 +318,8 @@ public class ZoomedPanel
             }
         }
 
-        notifyObservers(rect);
+        rectangleSubject.notifyObservers(rect);
         repaint();
-    }
-
-    //-------------//
-    // addObserver //
-    //-------------//
-    /**
-     * Register an observing entity for both point and rectangle
-     *
-     * @param observer the entity to register
-     */
-    public void addObserver (PixelObserver observer)
-    {
-        pixelSubject.addObserver(observer);
-    }
-
-    //----------------//
-    // removeObserver //
-    //----------------//
-    /**
-     * Unregister an observer
-     *
-     * @param observer the observer to remove
-     */
-    public void removeObserver (PixelObserver observer)
-    {
-        pixelSubject.removeObserver(observer);
-    }
-
-    //-----------------//
-    // notifyObservers //
-    //-----------------//
-    /**
-     * Push the point information to registered observers
-     *
-     * @param ul the point information
-     */
-    public void notifyObservers (PixelPoint ul)
-    {
-        pixelSubject.notifyObservers(ul);
-    }
-
-    //-----------------//
-    // notifyObservers //
-    //-----------------//
-    /**
-     * Push the point information and the grey level to registered
-     * observers
-     *
-     * @param ul the point information
-     * @param level the grey level of the pixel
-     */
-    public void notifyObservers (PixelPoint ul,
-                                 int level)
-    {
-        pixelSubject.notifyObservers(ul, level);
-    }
-
-    //-----------------//
-    // notifyObservers //
-    //-----------------//
-    /**
-     * Push the rectangle information to registered observers
-     *
-     * @param rect the rectangle information
-     */
-    public void notifyObservers (Rectangle rect)
-    {
-        pixelSubject.notifyObservers(rect);
     }
 
     //---------//
@@ -440,6 +394,14 @@ public class ZoomedPanel
         setPreferredSize(zoom.scaled(getModelSize()));
         revalidate();
     }
+
+    public boolean getSelfUpdating() {
+        return selfUpdating;
+    }
+    public void setSelfUpdating(boolean val) {
+        this.selfUpdating = val;
+    }
+
 
     //~ Classes -----------------------------------------------------------
 

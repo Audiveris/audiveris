@@ -27,6 +27,7 @@ import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 import javax.swing.*;
 import omr.sheet.PixelPoint;
+import omr.constant.*;
 
 /**
  * Class <code>BoardsPane</code> defines a comprehensive user board, where
@@ -102,7 +103,9 @@ public class BoardsPane
             case PIXEL :
                 PixelBoard pixelBoard = (PixelBoard) board;
                 pixelBoard.setPixelFocus(view);
-                view.addObserver(pixelBoard);
+                view.getPixelSubject().addObserver(pixelBoard);
+                view.getRectangleSubject().addObserver
+                        (pixelBoard.getRectangleObserver());
                 pixelBoard.update((PixelPoint) null);
                 break;
 
@@ -110,7 +113,8 @@ public class BoardsPane
                 SectionBoard sectionBoard = (SectionBoard) board;
                 LagView lagView = (LagView) view;
                 sectionBoard.setSectionFocus(lagView);
-                lagView.addObserver(sectionBoard);
+                lagView.getSectionSubject().addObserver(sectionBoard);
+                lagView.getRunSubject().addObserver(sectionBoard.getRunObserver());
                 sectionBoard.update((Section) null);
                 sectionBoard.update((Run) null);
                 break;
@@ -120,7 +124,7 @@ public class BoardsPane
                 if (view instanceof GlyphLagView) {
                     GlyphLagView glyphView = (GlyphLagView) view;
                     glyphBoard.setGlyphFocus(glyphView);
-                    glyphView.addObserver(glyphBoard);
+                    glyphView.getGlyphSubject().addObserver(glyphBoard);
                 }
                 glyphBoard.update((Glyph) null);
                 break;

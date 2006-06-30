@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------//
 //                                                                       //
-//                     S e c t i o n O b s e r v e r                     //
+//                       P i x e l O b s e r v e r                       //
 //                                                                       //
 //  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
 //  This software is released under the terms of the GNU General Public  //
@@ -13,11 +13,9 @@ package omr.ui.view;
 import omr.sheet.PixelPoint;
 import omr.util.Observer;
 
-import java.awt.Rectangle;
-
 /**
  * Interface <code>PixelObserver</code> defines an {@link Observer} for
- * pixel information (Point or Rectangle).
+ * pixel Point information.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -25,25 +23,4 @@ import java.awt.Rectangle;
 public interface PixelObserver
     extends Observer<PixelPoint>
 {
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Added entry for Point + pixel level entity
-     *
-     * @param ul upper left point
-     * @param level pixel level. A -1 value means no value is provided
-     */
-    void update (PixelPoint ul,
-                 int   level);
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Added entry for Rectangle entity
-     *
-     * @param rect the Rectangle entity to be used
-     */
-    void update (Rectangle rect);
 }

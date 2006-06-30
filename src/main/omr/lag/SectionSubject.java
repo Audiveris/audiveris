@@ -22,10 +22,4 @@ import omr.util.Subject;
 public interface SectionSubject
     extends Subject<SectionSubject, SectionObserver, Section>
 {
-    /**
-     * Special addition to notify observers about a Run entity
-     *
-     * @param run the Run entity to be passed around
-     */
-    void notifyObservers (Run run);
 }

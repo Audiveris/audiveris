@@ -81,9 +81,13 @@ public class LagView <L extends Lag     <L, S>,
     /** Global size of displayed image */
     protected Rectangle rectangle = new Rectangle();
 
-    /** Subject for section/run observers if any */
+    /** Subject for section observers if any */
     protected transient DefaultSectionSubject sectionSubject
         = new DefaultSectionSubject();
+
+    /** Subject for run observers if any */
+    protected transient DefaultRunSubject runSubject
+        = new DefaultRunSubject();
 
     /** Trick to cache the result of previous lookupSection */
     protected S previouslyFound;
@@ -136,6 +140,32 @@ public class LagView <L extends Lag     <L, S>,
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //-------------------//
+    // getSectionSubject //
+    //-------------------//
+    /**
+     * Export the Section subject
+     *
+     * @return section subject
+     */
+    public DefaultSectionSubject getSectionSubject()
+    {
+        return sectionSubject;
+    }
+
+    //---------------//
+    // getRunSubject //
+    //---------------//
+    /**
+     * Export the Run subject
+     *
+     * @return the run subject
+     */
+    public DefaultRunSubject getRunSubject()
+    {
+        return runSubject;
+    }
 
     //----------------//
     // addSectionView //
@@ -304,7 +334,7 @@ public class LagView <L extends Lag     <L, S>,
         // Update pixel board if any
         super.setFocusPoint(pt);
 
-        if (countObservers() > 0) {
+        if (sectionSubject.countObservers() > 0) {
 
             // Section information?
             Section section = lookupSection(pt);
@@ -318,8 +348,8 @@ public class LagView <L extends Lag     <L, S>,
                 run = section.getRunAt(apt.y);
             }
 
-            notifyObservers(section);
-            notifyObservers(run);
+            sectionSubject.notifyObservers(section);
+            runSubject.notifyObservers(run);
         }
     }
 
@@ -359,7 +389,7 @@ public class LagView <L extends Lag     <L, S>,
             setFocusRectangle(rect);
 
             // Update section info
-            notifyObservers(section);
+            sectionSubject.notifyObservers(section);
         } else {
             logger.warning ("setFocusSection. Section is null");
         }
@@ -376,71 +406,6 @@ public class LagView <L extends Lag     <L, S>,
         } else {
             logger.warning ("Section " + id + " not found.");
         }
-    }
-
-    //-------------//
-    // addObserver //
-    //-------------//
-    /**
-     * register an observer on section info
-     *
-     * @param observer the observing entity
-     */
-    public void addObserver (SectionObserver observer)
-    {
-        sectionSubject.addObserver(observer);
-    }
-
-    //----------------//
-    // removeObserver //
-    //----------------//
-    /**
-     * Remove an observing entity
-     *
-     * @param observer the entity to unregister
-     */
-    public void removeObserver (SectionObserver observer)
-    {
-        sectionSubject.removeObserver(observer);
-    }
-
-    //-----------------//
-    // notifyObservers //
-    //-----------------//
-    /**
-     * Push the section info to registered observers
-     *
-     * @param section the new section info
-     */
-    public void notifyObservers (Section section)
-    {
-        sectionSubject.notifyObservers(section);
-    }
-
-    //-----------------//
-    // notifyObservers //
-    //-----------------//
-    /**
-     * Push the run info to registered observers
-     *
-     * @param run the new run info
-     */
-    public void notifyObservers (Run run)
-    {
-        sectionSubject.notifyObservers(run);
-    }
-
-    //----------------//
-    // countObservers //
-    //----------------//
-    /**
-     * Report the number of registered observers
-     *
-     * @return the observers number
-     */
-    public int countObservers()
-    {
-        return sectionSubject.countObservers();
     }
 
     //---------//

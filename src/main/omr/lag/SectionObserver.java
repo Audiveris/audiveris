@@ -23,13 +23,4 @@ import omr.util.Observer;
 public interface SectionObserver
     extends Observer<Section>
 {
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Added entry for Run entity
-     *
-     * @param run the Run entity to be used
-     */
-    void update (Run run);
 }

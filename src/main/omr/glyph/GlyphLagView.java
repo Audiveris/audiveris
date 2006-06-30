@@ -39,8 +39,7 @@ import java.util.Collection;
  */
 public class GlyphLagView
     extends LagView<GlyphLag, GlyphSection>
-    implements GlyphFocus,
-               GlyphSubject
+    implements GlyphFocus
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -52,9 +51,9 @@ public class GlyphLagView
     protected final transient GlyphDirectory directory;
 
     /** Subject for glyph observers if any */
-    protected final transient DefaultGlyphSubject glyphSubject 
+    protected final transient DefaultGlyphSubject glyphSubject
             = new DefaultGlyphSubject();
-    
+
     /** Flag indicating that point is being added */
     protected transient volatile boolean addingGlyph = false;
 
@@ -79,6 +78,19 @@ public class GlyphLagView
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //-----------------//
+    // getGlyphSubject //
+    //-----------------//
+    /**
+     * Export the subject dedicated to glyph information
+     *
+     * @return the glyph subject
+     */
+    public DefaultGlyphSubject getGlyphSubject()
+    {
+        return glyphSubject;
+    }
 
     //---------------//
     // colorizeGlyph //
@@ -113,36 +125,6 @@ public class GlyphLagView
         }
     }
 
-    //-------------//
-    // addObserver //
-    //-------------//
-    /**
-     * Connect a GlyphObserver to this view, in order to display related
-     * glyph information
-     *
-     * @param glyphObserver the observer to connect
-     */
-    public void addObserver (GlyphObserver glyphObserver)
-    {
-        glyphSubject.addObserver(glyphObserver);
-    }
-
-    //----------------//
-    // removeObserver //
-    //----------------//
-    public void removeObserver (GlyphObserver glyphObserver)
-    {
-        glyphSubject.removeObserver(glyphObserver);
-    }
-
-    //-----------------//
-    // notifyObservers //
-    //-----------------//
-    public void notifyObservers (Glyph glyph)
-    {
-        glyphSubject.notifyObservers(glyph);
-    }
-
     //---------------//
     // setFocusGlyph //
     //---------------//
@@ -158,10 +140,10 @@ public class GlyphLagView
 
         setFocusRectangle(rect);
 
-        notifyObservers(glyph);
+        glyphSubject.notifyObservers(glyph);
 
         // Empty section info
-        notifyObservers((Section) null);
+        sectionSubject.notifyObservers(null);
     }
 
     //---------------//
@@ -184,7 +166,7 @@ public class GlyphLagView
     {
         super.setFocusSection(section);
         if (section != null) {
-            notifyObservers(section.getGlyph());
+            glyphSubject.notifyObservers(section.getGlyph());
         }
     }
 
@@ -233,7 +215,7 @@ public class GlyphLagView
         }
 
         glyphSelected(glyph, pt);       // glyph may be null
-        notifyObservers(glyph);
+        glyphSubject.notifyObservers(glyph);
     }
 
     //------------//
@@ -246,7 +228,7 @@ public class GlyphLagView
         if (logger.isFineEnabled()) {
             logger.fine("GlyphLagView pointAdded");
         }
-        
+
         addingGlyph = true;
 
         // First, provide info related to designated point

@@ -15,6 +15,7 @@ import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 import omr.ui.view.PixelFocus;
 import omr.ui.view.PixelObserver;
+import omr.ui.view.RectangleObserver;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -55,6 +56,15 @@ public class PixelBoard
     // Pixel Focus if any
     private PixelFocus pixelFocus;
 
+    // Specific Observer for pixel rectangle
+    private RectangleObserver rectangleObserver = new RectangleObserver()
+        {
+            public void update (Rectangle rectangle)
+            {
+                PixelBoard.this.update(rectangle);
+            }
+        };
+
     // To avoid circular updates
     private volatile transient boolean selfUpdating = false;
 
@@ -80,6 +90,14 @@ public class PixelBoard
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //----------------------//
+    // getRectangleObserver //
+    //----------------------//
+    public RectangleObserver getRectangleObserver()
+    {
+        return rectangleObserver;
+    }
 
     //--------------//
     // defineLayout //
