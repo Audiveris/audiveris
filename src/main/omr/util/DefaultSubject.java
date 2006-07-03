@@ -91,7 +91,7 @@ public class DefaultSubject<S extends Subject  <S, O, E>,
     // countObservers //
     //----------------//
     /**
-     * Report the current number of registered ibservers
+     * Report the current number of registered observers
      *
      * @return the number of observers
      */
