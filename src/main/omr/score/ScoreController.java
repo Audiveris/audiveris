@@ -14,18 +14,17 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.sheet.Sheet;
+import omr.sheet.SheetManager;
 import omr.ui.Jui;
 import omr.ui.icon.IconManager;
 import omr.ui.util.FileFilter;
 import omr.ui.util.SwingWorker;
-import omr.ui.util.UIUtilities;
 import omr.util.Logger;
 import omr.util.NameSet;
 
 import static omr.ui.util.UIUtilities.*;
 import static omr.score.ScoreFormat.*;
 
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -34,8 +33,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>ScoreController</code> encapsulates a set of user interface
@@ -131,28 +128,8 @@ public class ScoreController
      */
     public void setScoreView (Score score)
     {
-        setScoreView(score, null);
-    }
-
-    //--------------//
-    // setScoreView //
-    //--------------//
-    /**
-     * Set the various parameters of a view on given score. This may start
-     * by allocating a new ScoreView if needed. A focus point may be
-     * defined. If no focus point is provided, then the current view focus
-     * is used if some exists, otherwise the counterpart of the sheet focus
-     * is used if any. If no focus info can be retrieved, then none is
-     * used.
-     *
-     * @param score the score
-     * @param pagPt a potential focus point requested, null otherwise.
-     */
-    public void setScoreView (Score score,
-                              PagePoint pagPt)
-    {
         if (logger.isFineEnabled()) {
-            logger.fine("setScoreView score=" + score + " pagPt=" + pagPt);
+            logger.fine("setScoreView score=" + score );
         }
 
         if (score != null) {
@@ -174,29 +151,6 @@ public class ScoreController
                 if (sheet != null) {
                     sheet.getAssembly().setScoreView(view);
                 }
-            }
-
-            // Focus info
-//            if (pagPt == null) {
-//                if (logger.isFineEnabled()) {
-//                    logger.fine("No focus specified on Score side");
-//                }
-//
-//                // Does the sheet view has a defined focus ?
-//                Sheet sheet = score.getSheet();
-//
-//                if (sheet != null) {
-//                     SheetView sheetView = sheet.getView();
-
-//                     if (sheetView != null) {
-//                         pagPt = sheetView.getFocus();
-//                     }
-//                }
-//            }
-
-            if (pagPt != null) {
-                // Use this focus information
-                view.setFocus(pagPt);
             }
         }
         enableActions(scoreDependentActions, score != null);
@@ -245,39 +199,6 @@ public class ScoreController
     {
         return synchroWanted;
     }
-
-//     //-------------//
-//     // viewUpdated //
-//     //-------------//
-//     /**
-//      * Set the state (enabled or disabled) of all menu items that depend on
-//      * status of current score. UI frame title is updated accordingly.
-//      */
-//     private void viewUpdated ()
-//     {
-//         // The currently selected score, which may be null, if none is left
-//         Score score = getCurrentScore();
-
-//         if (logger.isFineEnabled()) {
-//             logger.debug("viewUpdated for " + score);
-//         }
-
-//         // New targeted context
-//         Main.getJui().setTarget(score);
-
-//         // Enable actions ?
-//         Jui.enableActions(scoreDependentActions, score != null);
-
-//         // Synchronize the sheet side ?
-//         int index = component.getSelectedIndex();
-//         if (index != -1 && isSynchroWanted()) {
-//             ScoreView view = views.get(index);
-//             view.showRelatedSheet();
-//         }
-
-//         // Make UI frame title consistent
-//         Main.getJui().updateTitle();
-//     }
 
     //-----------//
     // loadScore //
@@ -331,12 +252,9 @@ public class ScoreController
     //-----------------//
     public Score getCurrentScore()
     {
-        Jui jui = Main.getJui();
-        if (jui != null) {
-            Sheet sheet = Main.getJui().sheetPane.getCurrentSheet();
-            if (sheet != null) {
-                return sheet.getScore();
-            }
+        Sheet sheet = (Sheet) SheetManager.getSelectedSheet();
+        if (sheet != null) {
+            return sheet.getScore();
         }
 
         return null;
