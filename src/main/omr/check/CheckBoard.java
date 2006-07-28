@@ -15,9 +15,6 @@ import omr.ui.Board;
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
-
 /**
  * Class <code>CheckBoard</code> defines a board dedicated to the display
  * of check result information.
@@ -46,9 +43,10 @@ public class CheckBoard <C extends Checkable>
      *
      * @param suite the check suite to be used
      */
-    public CheckBoard (CheckSuite<C> suite)
+    public CheckBoard (CheckSuite<C> suite,
+                       String name)
     {
-        super(Board.Tag.CHECK);
+        super(Board.Tag.CHECK, name);
         checkPane = new CheckPanel<C>(suite);
         defineLayout(suite.getName());
 
