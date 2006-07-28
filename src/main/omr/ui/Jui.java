@@ -14,40 +14,41 @@ import omr.Main;
 import omr.Step;
 import omr.StepMenu;
 import omr.constant.*;
-import omr.glyph.Shape;
 import omr.glyph.ui.GlyphTrainer;
-import omr.glyph.ui.ShapeColorChooser;
 import omr.glyph.ui.GlyphVerifier;
+import omr.glyph.ui.ShapeColorChooser;
 import omr.score.ScoreController;
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
+import omr.selection.SelectionObserver;
 import omr.sheet.Sheet;
 import omr.sheet.SheetController;
+import omr.sheet.SheetManager;
 import omr.ui.icon.IconManager;
-import omr.ui.util.Panel;
 import omr.ui.treetable.JTreeTable;
 import omr.ui.util.MemoryMeter;
+import omr.ui.util.Panel;
 import omr.util.Logger;
 import omr.util.Memory;
 
 import static omr.ui.util.UIUtilities.*;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.Collection;
-import java.util.Iterator;
+import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.border.Border;
 
 /**
  * Class <code>Jui</code> is the Java User Interface, the main class for
  * displaying a score, the related sheet, the message log and the various
  * tools.
  *
+ *
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Jui
+        implements SelectionObserver
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -129,6 +130,11 @@ public class Jui
         // Score actions
         toolBar.addSeparator();
         scoreController = new ScoreController(toolBar);
+
+        // Test actions
+        toolBar.addSeparator();
+        new TestAction();
+        new FineAction();
 
         // Frame title
         updateTitle();
@@ -223,6 +229,9 @@ public class Jui
         frame.getContentPane().add(toolKeyPanel, BorderLayout.NORTH);
         frame.getContentPane().add(bigSplitPane, BorderLayout.CENTER);
 
+        // Stay informed on sheet selection
+        SheetManager.getSelection().addObserver(this);
+
         // Differ realization
         EventQueue.invokeLater(new FrameShower(frame));
     }
@@ -253,6 +262,20 @@ public class Jui
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //--------//
+    // update //
+    //--------//
+    public void update(Selection selection,
+                       SelectionHint hint)
+    {
+        switch (selection.getTag()) {
+        case SHEET :
+            updateTitle();
+            break;
+        default:
+        }
+    }
 
     //----------//
     // getFrame //
@@ -313,8 +336,9 @@ public class Jui
      */
     public void addBoardsPane (BoardsPane boards)
     {
-        boards.getComponent().setVisible(false);
         boardsHolder.add(boards.getComponent());
+        boardsHolder.revalidate();
+        boardsHolder.repaint();
     }
 
     //----------------//
@@ -429,14 +453,10 @@ public class Jui
      */
     public void updateTitle ()
     {
-        final String toolInfo = Main.getToolName() +
-                " " + Main.getToolVersion();
-
-        // Look for sheet first
-        Sheet sheet = sheetPane.getCurrentSheet();
+        StringBuilder sb = new StringBuilder();
+        Sheet sheet = SheetManager.getSelectedSheet();
 
         if (sheet != null) {
-            StringBuffer sb = new StringBuffer();
             sb.append(sheet.getRadix());
 
             Step step = sheet.currentStep();
@@ -444,19 +464,14 @@ public class Jui
                 sb.append(" - ").append(step);
             }
 
-            sb.append(" - ").append(toolInfo);
-
-            frame.setTitle(sb.toString());
-        } else {
-            // Look for score second
-            omr.score.Score score = scoreController.getCurrentScore();
-
-            if (score != null) {
-                frame.setTitle(score.getRadix() + " - " + toolInfo);
-            } else {
-                frame.setTitle(toolInfo);
-            }
+            sb.append(" - ");
         }
+
+        sb
+            .append(Main.getToolName())
+            .append(" ").append(Main.getToolVersion());
+
+        frame.setTitle(sb.toString());
     }
 
     //-----------------//
@@ -506,7 +521,15 @@ public class Jui
         ConstantManager.storeResource();
 
         // That's all folks !
-        System.exit(0);
+        java.lang.System.exit(0);
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    public String getName()
+    {
+        return "JUI";
     }
 
     //~ Classes -----------------------------------------------------------
@@ -536,6 +559,60 @@ public class Jui
         public void actionPerformed (ActionEvent e)
         {
             exit();
+        }
+    }
+
+    //------------//
+    // TestAction //
+    //------------//
+    private class TestAction
+        extends AbstractAction
+    {
+        //~ Constructors --------------------------------------------------
+
+        public TestAction ()
+        {
+            super("Test", IconManager.buttonIconOf("general/TipOfTheDay"));
+
+            final String tiptext = "Generic Test Action";
+
+            final JButton button = toolBar.add(this);
+            button.setBorder(getToolBorder());
+            button.setToolTipText(tiptext);
+        }
+
+        //~ Methods -------------------------------------------------------
+
+        public void actionPerformed (ActionEvent e)
+        {
+            UITest.test();
+        }
+    }
+
+    //------------//
+    // FineAction //
+    //------------//
+    private class FineAction
+        extends AbstractAction
+    {
+        //~ Constructors --------------------------------------------------
+
+        public FineAction ()
+        {
+            super("Fine", IconManager.buttonIconOf("general/Find"));
+
+            final String tiptext = "Generic Fine Action";
+
+            final JButton button = toolBar.add(this);
+            button.setBorder(getToolBorder());
+            button.setToolTipText(tiptext);
+        }
+
+        //~ Methods -------------------------------------------------------
+
+        public void actionPerformed (ActionEvent e)
+        {
+            Logger.getLogger(omr.selection.Selection.class).setLevel("FINE");
         }
     }
 

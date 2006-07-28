@@ -10,13 +10,9 @@
 
 package omr.ui;
 
-import omr.glyph.Glyph;
-import omr.glyph.GlyphLagView;
 import omr.glyph.ui.GlyphBoard;
-import omr.lag.LagView;
-import omr.lag.Run;
-import omr.lag.Section;
-import omr.lag.SectionBoard;
+import omr.selection.SelectionTag;
+import omr.sheet.Sheet;
 import omr.ui.util.Panel;
 import omr.ui.view.RubberZoomedPanel;
 import omr.util.Logger;
@@ -25,9 +21,8 @@ import static omr.ui.Board.Tag.*;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
+
 import javax.swing.*;
-import omr.sheet.PixelPoint;
-import omr.constant.*;
 
 /**
  * Class <code>BoardsPane</code> defines a comprehensive user board, where
@@ -35,7 +30,8 @@ import omr.constant.*;
  * in dedicated boards, as well as a general-purpose Filter board and a
  * custom board.
  *
- * <p>One BoardsPane is dedicated to one view of one sheet.
+ * <p>There is now one single BoardsPane for all views of the same sheet,
+ * while the visibility of some of its boards may vary with the view at hand.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -54,21 +50,28 @@ public class BoardsPane
     // Unique (application-wide) name for this pane.
     private String name;
 
+    // Collection of boards
+    private Board[] boards;
+
     //~ Constructors ------------------------------------------------------
 
     /**
      * Create a BoardsPane, with selected boards
      *
+     * @param sheet the related sheet
      * @param view the related view
      * @param boards a varying number of boards
      */
-    public BoardsPane (RubberZoomedPanel view,
+    public BoardsPane (Sheet             sheet,
+                       RubberZoomedPanel view,
                        Board...          boards)
     {
         // View
         if (view == null) {
             logger.severe("BoardsPane needs a non-null view");
         }
+
+        this.boards = boards;
 
         component = new Panel();
         component.setNoInsets();
@@ -102,31 +105,18 @@ public class BoardsPane
             switch(board.getTag()) {
             case PIXEL :
                 PixelBoard pixelBoard = (PixelBoard) board;
-                pixelBoard.setPixelFocus(view);
-                view.getPixelSubject().addObserver(pixelBoard);
-                view.getRectangleSubject().addObserver
-                        (pixelBoard.getRectangleObserver());
-                pixelBoard.update((PixelPoint) null);
+                pixelBoard.setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
+                pixelBoard.setLevelSelection(sheet.getSelection(SelectionTag.LEVEL));
                 break;
 
+            case RUN :
             case SECTION :
-                SectionBoard sectionBoard = (SectionBoard) board;
-                LagView lagView = (LagView) view;
-                sectionBoard.setSectionFocus(lagView);
-                lagView.getSectionSubject().addObserver(sectionBoard);
-                lagView.getRunSubject().addObserver(sectionBoard.getRunObserver());
-                sectionBoard.update((Section) null);
-                sectionBoard.update((Run) null);
+                // Connections done by constructor, since they depend on Lag
                 break;
 
             case GLYPH :
                 GlyphBoard glyphBoard = (GlyphBoard) board;
-                if (view instanceof GlyphLagView) {
-                    GlyphLagView glyphView = (GlyphLagView) view;
-                    glyphBoard.setGlyphFocus(glyphView);
-                    glyphView.getGlyphSubject().addObserver(glyphBoard);
-                }
-                glyphBoard.update((Glyph) null);
+                glyphBoard.setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
                 break;
 
             case CHECK :
@@ -134,6 +124,9 @@ public class BoardsPane
 
             case CUSTOM :
                 break;
+
+            default :
+                logger.severe ("Unexpected Board Tag : " + board.getTag());
             }
             r += 2;
         }
@@ -189,5 +182,33 @@ public class BoardsPane
         public String toString()
     {
         return "{BoardsPane " + name + "}";
+    }
+
+    //-------//
+    // shown //
+    //-------//
+    /**
+     * Invoked when the boardsPane has been selected
+     */
+    public void shown()
+    {
+        ///logger.info("+BoardPane " + name + " Shown");
+        for (Board board : boards) {
+            board.boardShown();
+        }
+    }
+
+    //--------//
+    // hidden //
+    //--------//
+    /**
+     * Invoked when the boardsPane has been made deselected
+     */
+    public void hidden()
+    {
+        ///logger.info("-BoardPane " + name + " Hidden");
+        for (Board board : boards) {
+            board.boardHidden();
+        }
     }
 }

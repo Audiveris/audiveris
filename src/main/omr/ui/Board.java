@@ -10,24 +10,27 @@
 
 package omr.ui;
 
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
+import omr.selection.SelectionObserver;
 import omr.ui.util.Panel;
 import omr.util.Logger;
 
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
-
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.border.*;
 
 /**
  * Class <code>Board</code> defines the common properties of any user board
- * such as PixelBoard, SectionBoard, and the like
+ * such as PixelBoard, SectionBoard, and the like.
+ *
+ * This is still an abstract class, since the update() method must be
+ * provided by every subclass.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class Board
+public abstract class Board
+    implements SelectionObserver
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -39,10 +42,19 @@ public class Board
     //~ Instance variables ------------------------------------------------
 
     // Concrete UI panel
-    private final Panel component;
+    protected final Panel component;
 
     // Board Tag
-    private Tag tag;
+    protected Tag tag;
+
+    // Board instance name
+    protected String name;
+
+    // Input selection
+    protected Selection inputSelection;
+
+    // Output selection (if any)
+    protected Selection outputSelection;
 
     //~ Constructors ------------------------------------------------------
 
@@ -54,14 +66,47 @@ public class Board
      *
      * @param tag the tag to wrap the board
      */
-    public Board (Tag tag)
+    public Board (Tag tag,
+            String name)
     {
         this.tag = tag;
+        this.name = name;
+
         component = new Panel();
         component.setNoInsets();
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //-------------------//
+    // setInputSelection //
+    //-------------------//
+    /**
+     * Inject the selection object where input is to be read from
+     *
+     * @param inputSelection the proper input selection object
+     */
+    public void setInputSelection (Selection inputSelection)
+    {
+        if (this.inputSelection != null) {
+            this.inputSelection.deleteObserver(this);
+        }
+
+        this.inputSelection = inputSelection;
+    }
+
+    //-------------------//
+    // setOutputSelection //
+    //-------------------//
+    /**
+     * Inject the selection object where output is to be written to
+     *
+     * @param outputSelection the proper output selection object
+     */
+    public void setOutputSelection (Selection outputSelection)
+    {
+        this.outputSelection = outputSelection;
+    }
 
     //--------------//
     // getComponent //
@@ -89,6 +134,14 @@ public class Board
         return tag;
     }
 
+    //---------//
+    // getName //
+    //---------//
+    public String getName()
+    {
+        return name;
+    }
+
     //-------------//
     // emptyFields //
     //-------------//
@@ -106,6 +159,49 @@ public class Board
         }
     }
 
+    //------------//
+    // boardShown //
+    //------------//
+    /**
+     * Invoked when the board has been made visible.
+     */
+    public void boardShown()
+    {
+        ///logger.info("+Board " + tag + " Shown");
+        if (inputSelection != null) {
+            inputSelection.addObserver(this);
+        }
+    }
+
+    //-------------//
+    // boardHidden //
+    //-------------//
+    /**
+     * Invoked when the board has been made invisible.
+     */
+    public void boardHidden()
+    {
+        ///logger.info("-Board " + tag + " Hidden");
+        if (inputSelection != null) {
+            inputSelection.deleteObserver(this);
+        }
+    }
+
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Just a placeholder
+     *
+     * @param selection the Selection which emits this notification
+     * @param hint potential notification hint
+     */
+    public void update (Selection selection,
+                        SelectionHint hint)
+    {
+        logger.info("Board default update. selection=" + selection);
+    }
+
     //~ Classes -----------------------------------------------------------
 
     //-----//
@@ -118,6 +214,9 @@ public class Board
     {
             /** Board for pixel info (coordinates, pixel grey level) */
             PIXEL   ("Pixel"),
+
+            /** Board for run info */
+            RUN     ("Run"),
 
             /** Board for section info */
             SECTION ("Section"),

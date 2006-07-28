@@ -10,12 +10,11 @@
 
 package omr.ui;
 
-import omr.sheet.PixelPoint;
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
-import omr.ui.view.PixelFocus;
-import omr.ui.view.PixelObserver;
-import omr.ui.view.RectangleObserver;
+import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -30,13 +29,27 @@ import javax.swing.*;
  * by a user to directly specify pixel coordinate values by entering
  * numerical values in the fields (input side).
  *
+ * <dl>
+ * <dt><b>Selection Inputs:</b></dt><ul>
+ * <li>PIXEL
+ * <li>LEVEL
+ * </ul>
+ *
+ * <dt><b>Selection Outputs:</b></dt><ul>
+ * <li>PIXEL Location (flagged with PIXEL_INIT hint)
+ * </ul>
+ * </dl>
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class PixelBoard
     extends Board
-    implements PixelObserver
 {
+    //~ Static variables/initializers -------------------------------------
+
+    private static final Logger logger = Logger.getLogger(PixelBoard.class);
+
     //~ Instance variables ------------------------------------------------
 
     // Upper Left point
@@ -53,20 +66,8 @@ public class PixelBoard
     private final LIntegerField height = new LIntegerField
         ("Height", "Height of rectangle");
 
-    // Pixel Focus if any
-    private PixelFocus pixelFocus;
-
-    // Specific Observer for pixel rectangle
-    private RectangleObserver rectangleObserver = new RectangleObserver()
-        {
-            public void update (Rectangle rectangle)
-            {
-                PixelBoard.this.update(rectangle);
-            }
-        };
-
-    // To avoid circular updates
-    private volatile transient boolean selfUpdating = false;
+    // Additional selection to be observed
+    private Selection levelSelection;
 
     //~ Constructors ------------------------------------------------------
 
@@ -76,10 +77,11 @@ public class PixelBoard
     /**
      * Create a PixelBoard
      */
-    public PixelBoard ()
+    public PixelBoard (String name)
     {
-        super(Board.Tag.PIXEL);
+        super(Board.Tag.PIXEL, name);
 
+        // Needed to process user input when RETURN/ENTER is pressed
         getComponent().getInputMap
             (JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put
             (KeyStroke.getKeyStroke("ENTER"),
@@ -91,12 +93,16 @@ public class PixelBoard
 
     //~ Methods -----------------------------------------------------------
 
-    //----------------------//
-    // getRectangleObserver //
-    //----------------------//
-    public RectangleObserver getRectangleObserver()
+    //-------------------//
+    // setLevelSelection //
+    //-------------------//
+    public void setLevelSelection (Selection levelSelection)
     {
-        return rectangleObserver;
+        if (this.levelSelection != null) {
+            this.levelSelection.deleteObserver(this);
+        }
+
+        this.levelSelection = levelSelection;
     }
 
     //--------------//
@@ -136,41 +142,47 @@ public class PixelBoard
         builder.add(height.getField(),  cst.xy (7,  r));
     }
 
-    //---------------//
-    // setPixelFocus //
-    //---------------//
+    //----------------------//
+    // setLocationSelection //
+    //----------------------//
     /**
-     * Connect an entity to be later notified of pixel focus, as input by a
-     * user (when the ENTER key is pressed)
+     * Allow to inject a dependency on a location Selection object
      *
-     * @param pixelFocus
+     * @param locationSelection the proper location Selection to be updated
      */
-    public void setPixelFocus (PixelFocus pixelFocus)
+    public void setLocationSelection (Selection locationSelection)
     {
-        this.pixelFocus = pixelFocus;
+        setInputSelection (locationSelection);
+        setOutputSelection(locationSelection);
     }
 
-    //--------//
-    // update //
-    //--------//
+    //------------//
+    // boardShown //
+    //------------//
     /**
-     * Inform about the new pixel coordinates of a display rectangle
-     *
-     * @param rect the (rubber) rectangle
+     * Invoked when the board has been made visible.
      */
-    public void update (Rectangle rect)
+    @Override
+    public void boardShown()
     {
-        level.setText("");
-        if (rect != null) {
-            x.setValue(rect.x);
-            y.setValue(rect.y);
-            width.setValue(rect.width);
-            height.setValue(rect.height);
-        } else {
-            x.setText("");
-            y.setText("");
-            width.setText("");
-            height.setText("");
+        super.boardShown();
+        if (levelSelection != null) {
+            levelSelection.addObserver(this);
+        }
+    }
+
+    //-------------//
+    // boardHidden //
+    //-------------//
+    /**
+     * Invoked when the board has been made invisible.
+     */
+    @Override
+    public void boardHidden()
+    {
+        super.boardHidden();
+        if (levelSelection != null) {
+            levelSelection.deleteObserver(this);
         }
     }
 
@@ -178,46 +190,46 @@ public class PixelBoard
     // update //
     //--------//
     /**
-     * Inform about the point (coordinates and grey level) where the mouse
-     * was clicked
+     * Call-back triggered when Location Selection has been modified
      *
-     * @param ul coordinates of the upper left corner
-     * @param lVal grey level (-1 means no value)
+     * @param selection the notified Selection
+     * @param hint potential notification hint
      */
-    public void update (PixelPoint ul,
-                        int lVal)
+    public void update(Selection selection,
+                       SelectionHint hint)
     {
-        if (ul != null) {
-            x.setValue(ul.x);
-            y.setValue(ul.y);
-
-            if (lVal != -1) {
-                level.setValue(lVal);
-            } else {
-                level.setText("");
-            }
-        } else {
-            x.setText("");
-            y.setText("");
-            level.setText("");
+        Object entity = selection.getEntity();
+        if (logger.isFineEnabled()){
+            logger.fine("PixelBoard " + selection.getTag() + ": " + entity);
         }
+        switch (selection.getTag()) {
+            case PIXEL:                 // Display rectangle characteristics
+                Rectangle rect = (Rectangle) entity;
+                if (rect != null) {
+                    x.setValue(rect.x);
+                    y.setValue(rect.y);
+                    width.setValue(rect.width);
+                    height.setValue(rect.height);
+                } else {
+                    x.setText("");
+                    y.setText("");
+                    width.setText("");
+                    height.setText("");
+                }
+                break;
 
-        // Hide the lower right part
-        width.setText("");
-        height.setText("");
-    }
+            case LEVEL:                 // Display pixel grey level
+                Integer val = (Integer) entity;
+                if (val != null && val != -1) {
+                    level.setValue(val);
+                } else {
+                    level.setText("");
+                }
+                break;
 
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Inform about the point (coordinates) where the mouse was clicked
-     *
-     * @param ul coordinates of the upper left corner
-     */
-    public void update (PixelPoint ul)
-    {
-        update(ul, -1);
+            default:
+                logger.severe("Unexpected selection event from " + selection);
+        }
     }
 
     //~ Classes -----------------------------------------------------------
@@ -232,19 +244,13 @@ public class PixelBoard
         // parameter fields
         public void actionPerformed (ActionEvent e)
         {
-            if (pixelFocus != null && !selfUpdating) {
-                selfUpdating = true;
+            // Remember & forward the new pixel selection
+            if (outputSelection != null) {
                 // A rectangle (which can be degenerated to a point)
-                if (width.getValue() != 0 || height.getValue() != 0) {
-                    pixelFocus.setFocusRectangle
-                        (new Rectangle
-                         (x.getValue(), y.getValue(),
-                          width.getValue(), height.getValue()));
-                } else {
-                    pixelFocus.setFocusPoint
-                        (new Point(x.getValue(), y.getValue()));
-                }
-                selfUpdating = false;
+                outputSelection.setEntity
+                    (new Rectangle(x.getValue(), y.getValue(),
+                                   width.getValue(), height.getValue()),
+                     SelectionHint.PIXEL_INIT);
             }
         }
     }

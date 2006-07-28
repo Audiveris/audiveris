@@ -11,21 +11,12 @@
 package omr.ui;
 
 import omr.Main;
-import omr.glyph.Glyph;
-import omr.glyph.GlyphFocus;
-import omr.glyph.GlyphSection;
-import omr.lag.LagView;
-import omr.lag.Run;
-import omr.lag.Section;
-import omr.score.PagePoint;
 import omr.score.ScoreView;
-import omr.sheet.PixelPoint;
-import omr.sheet.Scale;
+import omr.selection.Selection;
+import omr.selection.SelectionTag;
 import omr.sheet.Sheet;
 import omr.ui.util.Panel;
 import omr.ui.view.LogSlider;
-import omr.ui.view.PixelObserver;
-import omr.ui.view.RectangleObserver;
 import omr.ui.view.Rubber;
 import omr.ui.view.RubberZoomedPanel;
 import omr.ui.view.ScrollView;
@@ -36,7 +27,6 @@ import java.awt.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import java.awt.event.MouseEvent;
 
 /**
  * Class <code>SheetAssembly</code> is a UI assembly dedicated to the
@@ -59,8 +49,7 @@ import java.awt.event.MouseEvent;
  * @version $Id$
  */
 public class SheetAssembly
-    implements ChangeListener,
-               PixelObserver
+    implements ChangeListener       // -> stateChanged() on tab selection
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -91,32 +80,15 @@ public class SheetAssembly
     // Related Score view
     private ScoreView scoreView;
 
+    // Selection of pixel location
+    private Selection locationSelection;
+
     // Tabbed container for all views of the sheet
     private final JTabbedPane tabbedPane = new JTabbedPane();
 
-    // Map tab title -> BoardsPane
-    private final HashMap<String,BoardsPane> paneMap
-        = new HashMap<String,BoardsPane>();
-
-    // Map tab component -> ScrollView
-    private final HashMap<JScrollPane,ScrollView> viewMap
-        = new HashMap<JScrollPane,ScrollView>();
-
-    // Previously selected view
-    private JScrollPane previousScrollView;
-
-    // Specific Observer for pixel rectangle
-    private RectangleObserver rectangleObserver = new RectangleObserver()
-        {
-            public void update (Rectangle rectangle)
-            {
-                SheetAssembly.this.update(rectangle);
-            }
-        };
-
-    // To avoid cycles in forwarding between score and sheet views
-    private transient volatile boolean sheetBarred = false;
-    private transient volatile boolean scoreBarred = false;
+    // My parallel list of Tab
+    private final ArrayList<Tab> tabs = new ArrayList<Tab>();
+    private int previousIndex = -1;
 
     //~ Constructors ------------------------------------------------------
 
@@ -140,6 +112,8 @@ public class SheetAssembly
         // Cross links between sheet and its assembly
         this.sheet = sheet;
         sheet.setAssembly(this);
+
+        locationSelection = sheet.getSelection(SelectionTag.PIXEL);
 
         // GUI stuff
         slider.setToolTipText("Adjust Zoom Ratio");
@@ -165,14 +139,6 @@ public class SheetAssembly
     }
 
     //~ Methods -----------------------------------------------------------
-
-    //----------------------//
-    // getRectangleObserver //
-    //----------------------//
-    public RectangleObserver getRectangleObserver()
-    {
-        return rectangleObserver;
-    }
 
     //--------------//
     // getComponent //
@@ -247,11 +213,31 @@ public class SheetAssembly
      * when the tab of another sheet is selected.
      */
     public void assemblySelected()
-    {
-        logger.fine("assemblySelected");
+{
+        ///logger.info("assemblySelected");
 
         // Display current context
         displayContext();
+    }
+
+
+    //--------------------//
+    // assemblyDeselected //
+    //--------------------//
+    /**
+     * Method called when this sheet assembly is no longer selected.
+     */
+    public void assemblyDeselected()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("assemblyDeselected");
+        }
+
+        // Disconnect the current tab
+        int index = tabbedPane.getSelectedIndex();
+        if (index != -1) {
+            tabs.get(index).boardsPane.hidden();
+        }
     }
 
     //------------//
@@ -273,9 +259,6 @@ public class SheetAssembly
                          " boardsPane=" + boardsPane);
         }
 
-        // Remember the association between tab and boardsPane
-        paneMap.put(title, boardsPane);
-
         // Make the new view reuse the common zoom and rubber instances
         sv.getView().setZoom(zoom);
         sv.getView().setRubber(rubber);
@@ -291,18 +274,15 @@ public class SheetAssembly
         // Force scroll bar computations
         zoom.fireStateChanged();
 
-        // Add the boardsPane to Jui
-        Main.getJui().addBoardsPane(boardsPane);
+        // Own tab structure
+        tabs.add(new Tab(title, boardsPane, sv));
 
-        // Connect the assembly as a pixel observer of the view, in order to
-        // forward such events to the scoreView if relevant.
-        sv.getView().getPixelSubject().addObserver(this);
-        sv.getView().getRectangleSubject().addObserver(rectangleObserver);
-
-        // Insert the scrollView as a new tab
-        viewMap.put(sv.getComponent(), sv);
+        // Actually insert a Swing tab
         tabbedPane.addTab(title, sv.getComponent());
         tabbedPane.setSelectedComponent(sv.getComponent());
+
+        // Add the boardsPane to Jui
+        Main.getJui().addBoardsPane(boardsPane);
     }
 
     //-----------------//
@@ -315,8 +295,12 @@ public class SheetAssembly
      */
     public ScrollView getSelectedView()
     {
-        JScrollPane pane = (JScrollPane) tabbedPane.getSelectedComponent();
-        return viewMap.get(pane);
+        int index = tabbedPane.getSelectedIndex();
+        if (index != -1) {
+            return tabs.get(index).scrollView;
+        } else {
+            return null;
+        }
     }
 
     //----------//
@@ -347,7 +331,8 @@ public class SheetAssembly
 
         // Disconnect all keyboard bindings from PixelBoard's (as a
         // workaround for a Swing memory leak)
-        for (BoardsPane pane : paneMap.values()) {
+        for (Tab tab : tabs) {
+            BoardsPane pane = tab.boardsPane;
             for (Component topComp : pane.getComponent().getComponents()) {
                 for (Component comp : ((Container) topComp).getComponents()) {
                     if (comp instanceof JComponent) {
@@ -358,13 +343,11 @@ public class SheetAssembly
         }
 
         // Disconnect all boards panes for this assembly
-        for (int i = tabbedPane.getTabCount() -1; i >= 0; i--) {
-            String title = tabbedPane.getTitleAt(i);
-            jui.removeBoardsPane(paneMap.get(title));
-            JScrollPane pane = (JScrollPane) tabbedPane.getComponentAt(i);
-            viewMap.remove(pane);
-            paneMap.remove(title);
+        for (Tab tab : tabs) {
+            jui.removeBoardsPane(tab.boardsPane);
         }
+
+        tabs.clear();   // Useful ???
     }
 
     //--------------//
@@ -380,49 +363,13 @@ public class SheetAssembly
         zoom.setRatio(ratio);
     }
 
-    //--------------------//
-    // setSheetFocusPoint //
-    //--------------------//
-    /**
-     * Called from score view, to forward pixel info to the sheet part
-     * @param point The point to focus upon
-     */
-    public void setSheetFocusPoint (PagePoint point)
-    {
-        if (!sheetBarred) {
-            ScrollView sv = getSelectedView();
-            if (sv != null) {
-                PixelPoint pt = sheet.getScale().toPixelPoint(point, null);
-                scoreBarred = true;
-                sv.getView().setFocusPoint(pt);
-                scoreBarred = false;
-            }
-        }
-    }
-
-    //------------------------//
-    // setSheetFocusRectangle //
-    //------------------------//
-    /**
-     * Called from the score view, to forward rectangle info to the sheet part
-     * @param rect the rectangle to focus upon
-     */
-    public void setSheetFocusRectangle (Rectangle rect)
-    {
-        ScrollView sv = getSelectedView();
-        if (sv != null) {
-            Rectangle r = sheet.getScale().toPixels(rect, null);
-            scoreBarred = true;
-            sv.getView().setFocusRectangle(r);
-            scoreBarred = false;
-        }
-    }
-
     //----------------//
     // displayContext //
     //----------------//
     private void displayContext()
     {
+        ///logger.info("displayContext");
+
         // Make sure the tab is ready
         int index = tabbedPane.getSelectedIndex();
         if (index == -1) {
@@ -430,20 +377,13 @@ public class SheetAssembly
         }
 
         // Display the proper boards pane
-        BoardsPane boardsPane = paneMap.get
-            (tabbedPane.getTitleAt(index));
+        BoardsPane boardsPane = tabs.get(index).boardsPane;
         if (logger.isFineEnabled()) {
             logger.fine("displaying " + boardsPane);
         }
-        Main.getJui().showBoardsPane(boardsPane);
+        boardsPane.shown();
 
-        // Display proper view selection if any
-        Rectangle rect = rubber.getRectangle();
-        if (rect != null) {
-            ScrollView scrollView = getSelectedView();
-            RubberZoomedPanel view = scrollView.getView();
-            view.setFocusRectangle(rect);
-        }
+        Main.getJui().showBoardsPane(boardsPane);
     }
 
     //--------------//
@@ -453,10 +393,30 @@ public class SheetAssembly
      * This method is called whenever a view tab is selected in the Sheet
      * Assembly.
      *
-     * @param e the originating change event
+     * @param e the originating change event (not used actually)
      */
     public void stateChanged (ChangeEvent e)
     {
+        if (previousIndex != -1) {
+            tabDeselected (previousIndex);
+        }
+
+        final int index = tabbedPane.getSelectedIndex();
+        if (index != -1) {
+            tabSelected (index);
+        }
+
+        previousIndex = index;
+    }
+
+    //-------------//
+    // tabSelected //
+    //-------------//
+    private void tabSelected (int index)
+    {
+        ///logger.info("tabSelected for " + tabs.get(index).title);
+        final Tab tab = tabs.get(index);
+
         ScrollView scrollView = getSelectedView();
         RubberZoomedPanel view = scrollView.getView();
 
@@ -465,82 +425,59 @@ public class SheetAssembly
         rubber.setMouseMonitor(view);
 
         // Keep previous scroll bar positions
-        if (previousScrollView != null) {
+        if (previousIndex != -1) {
+            JScrollPane prev = tabs.get(previousIndex).scrollView.getComponent();
             scrollView.getComponent().getVerticalScrollBar().setValue
-                (previousScrollView.getVerticalScrollBar().getValue());
+                (prev.getVerticalScrollBar().getValue());
             scrollView.getComponent().getHorizontalScrollBar().setValue
-                (previousScrollView.getHorizontalScrollBar().getValue());
+                (prev.getHorizontalScrollBar().getValue());
         }
+
+        // Handle connection to location selection
+        locationSelection.addObserver(scrollView.getView());
 
         // Restore display of proper context
         displayContext();
 
-        previousScrollView = scrollView.getComponent();
+        // Force update
+        locationSelection.refresh(null);
     }
 
-    //~ Methods for PixelObserver interface --------------------------------
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Triggered from sheet pixel subject, to notify the new upper left point
-     * @param ul The upper left point
-     */
-    public void update (PixelPoint ul)
+    //---------------//
+    // tabDeselected //
+    //---------------//
+    private void tabDeselected (int previousIndex)
     {
-        // Forward to the score view
-        if (scoreView != null && !scoreBarred) {
-            sheetBarred = true;
-            scoreView.setFocus
-                (sheet.getScale().toPagePoint(ul, null));
-            sheetBarred = false;
-        }
+        ///logger.info("tabDeselected for " + tabs.get(previousIndex).title);
+        final Tab tab = tabs.get(previousIndex);
+
+        // Disconnection of related view
+        locationSelection.deleteObserver(tab.scrollView.getView());
+
+        // Disconnection of related boards
+        tab.boardsPane.hidden();
     }
 
-    //--------//
-    // update //
-    //--------//
     /**
-     * Triggered from sheet pixel subject, to notify new values for point
-     * position an pixel level
-     * @param ul new value for point
-     * @param level new value for pixel level
+     * A simple structure to gather the various aspects of a tab.  All
+     * instances are kept in an ordered list parallel to JTabbedPane index.
      */
-    public void update (PixelPoint ul,
-                        int   level)
+    //-----//
+    // Tab //
+    //-----//
+    private static class Tab
     {
-        // Forward to the score view
-        if (scoreView != null && !scoreBarred) {
-            sheetBarred = true;
-            scoreView.setFocus
-                (sheet.getScale().toPagePoint(ul, null));
-            sheetBarred = false;
-        }
-    }
+        String     title;           // Title used for the tab
+        BoardsPane boardsPane;      // Related boards pane
+        ScrollView scrollView;      // Component in the JTabbedPane
 
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Triggered from sheet pixel subject, to notify new rectangle focus
-     * @param rect the new rectangle focus
-     */
-    public void update (Rectangle rect)
-    {
-        // Forward to the score view
-        if (scoreView != null && !scoreBarred) {
-            sheetBarred = true;
-            if (rect != null) {
-                Point pt = new Point(rect.x + rect.width/2,
-                                     rect.y + rect.height/2);
-                scoreView.setFocus
-                    (sheet.getScale().toPagePoint(new PixelPoint(pt.x,
-                                                                   pt.y)));
-            } else {
-                scoreView.setFocus(null);
-            }
-            sheetBarred = false;
+        public Tab (String title,
+                    BoardsPane boardsPane,
+                    ScrollView scrollView)
+        {
+            this.title = title;
+            this.boardsPane = boardsPane;
+            this.scrollView = scrollView;
         }
     }
 }
