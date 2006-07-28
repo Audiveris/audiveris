@@ -11,19 +11,14 @@
 package omr.lag;
 
 import omr.graph.DigraphView;
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
 import omr.ui.view.RubberZoomedPanel;
 import omr.ui.view.Zoom;
 import omr.util.Logger;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.awt.*;
+import java.util.*;
 
 /**
  * Class <code>LagView</code> derives {@link omr.ui.view.RubberZoomedPanel}
@@ -34,30 +29,34 @@ import java.util.Collection;
  * sections, provided in the constructor. These sections are supposed not
  * part (no longer part perhaps) of the lag sections which allows for a
  * special handling: depending on the current value of the boolean
- * <code>showSpecifics</code>, these specific sections are displayed or not
+ * <code>showingSpecifics</code>, these specific sections are displayed or not
  * (and can be lookedup or not).
  *
  * <p><b>Nota</b>: For the time being, we've chosen to not draw the
  * edges/junctions but just the vertices/sections.
  *
- * <p>A LagView implements the {@link SectionFocus} interface, meaning that
- * it is possible to ask this LagView to focus on a given section
+ * <dl>
+ * <dt><b>Selection Inputs:</b></dt><ul>
+ * <li>PIXEL Location (if PIXEL_INIT & specifics)
+ * <li>*_SECTION_ID (if specifics)
+ * </ul>
  *
- * <p> Instances of interface {@link SectionObserver} can be connected to
- * this LagView, for example to display detailed info related to a given
- * section
- *
- * @param <L> the type of lag this view displays
- * @param <S> the type of section the related lag handles
+ * <dt><b>Selection Outputs:</b></dt><ul>
+ * <li>*_RUN
+ * <li>*_SECTION
+ * </ul>
+ * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
+ *
+ * @param <L> the type of lag this view displays
+ * @param <S> the type of section the related lag handles
  */
 public class LagView <L extends Lag     <L, S>,
                       S extends Section <L, S>>
     extends RubberZoomedPanel
-    implements DigraphView,
-               SectionFocus<S>
+    implements DigraphView
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -71,30 +70,24 @@ public class LagView <L extends Lag     <L, S>,
     /** Related lag model */
     protected final L lag;
 
-    /** Specific sections for display */
+    /** Specific sections for display & lookup */
     protected final Collection<S> specifics;
 
-    /** Boolean used to trigger display of the collection of specific
-        sections */
-    protected boolean showSpecifics = false;
+    /** Boolean used to trigger handling of specific sections */
+    protected boolean showingSpecifics = false;
 
     /** Global size of displayed image */
-    protected Rectangle rectangle = new Rectangle();
-
-    /** Subject for section observers if any */
-    protected transient DefaultSectionSubject sectionSubject
-        = new DefaultSectionSubject();
-
-    /** Subject for run observers if any */
-    protected transient DefaultRunSubject runSubject
-        = new DefaultRunSubject();
-
-    /** Trick to cache the result of previous lookupSection */
-    protected S previouslyFound;
+    protected Rectangle lagContour = new Rectangle();
 
     /** Index of this view in the ordered list of views of the related
         lag */
     protected final transient int viewIndex;
+
+    /** Output selection for specific section if any */
+    protected Selection sectionSelection;
+
+    /** Output selection for specific run if any */
+    protected Selection runSelection;
 
     //~ Constructors ------------------------------------------------------
 
@@ -141,30 +134,21 @@ public class LagView <L extends Lag     <L, S>,
 
     //~ Methods -----------------------------------------------------------
 
-    //-------------------//
-    // getSectionSubject //
-    //-------------------//
+    //-----------------------//
+    // setSpecificSelections //
+    //-----------------------//
     /**
-     * Export the Section subject
+     * Inject dependency on where this lag view should write Run and
+     * Section information regarding specific sections.
      *
-     * @return section subject
+     * @param runSelection the Run selection
+     * @param sectionSelection the Section selection
      */
-    public DefaultSectionSubject getSectionSubject()
+    public void setSpecificSelections (Selection runSelection,
+                                       Selection sectionSelection)
     {
-        return sectionSubject;
-    }
-
-    //---------------//
-    // getRunSubject //
-    //---------------//
-    /**
-     * Export the Run subject
-     *
-     * @return the run subject
-     */
-    public DefaultRunSubject getRunSubject()
-    {
-        return runSubject;
+        this.runSelection     = runSelection;
+        this.sectionSelection = sectionSelection;
     }
 
     //----------------//
@@ -200,7 +184,7 @@ public class LagView <L extends Lag     <L, S>,
         section.addView(sectionView);
 
         // Extend the lag bounding rectangle
-        rectangle.add(sectionView.getRectangle());
+        lagContour.add(sectionView.getRectangle());
 
         return sectionView;
     }
@@ -252,7 +236,7 @@ public class LagView <L extends Lag     <L, S>,
      */
     public Section getSectionById (int id)
     {
-        if (showSpecifics) {
+        if (showingSpecifics) {
             // Look up in specifics first
             for (S section : specifics) {
                 if (section.getId() == id) {
@@ -279,16 +263,24 @@ public class LagView <L extends Lag     <L, S>,
      */
     public S lookupSection (Point pt)
     {
-        if (showSpecifics) {
+        if (showingSpecifics) {
             // Look up in specifics first
-            S section = lookupSection(specifics, pt);
+            S section = lag.lookupSection(specifics, pt);
 
             if (section != null) {
                 return section;
             }
         }
 
-        return lookupSection(lag.getVertices(), pt);
+        return lag.lookupSection(lag.getVertices(), pt);
+    }
+
+    //-----------------------//
+    // lookupSpecificSection //
+    //-----------------------//
+    public S lookupSpecificSection (Point pt)
+    {
+        return lag.lookupSection(specifics, pt);
     }
 
     //---------------//
@@ -305,7 +297,7 @@ public class LagView <L extends Lag     <L, S>,
      */
     public S lookupSection (Rectangle rect)
     {
-        if (showSpecifics) {
+        if (showingSpecifics) {
             // Look up in specifics first
             S section = lookupSection(specifics, rect);
 
@@ -315,42 +307,6 @@ public class LagView <L extends Lag     <L, S>,
         }
 
         return lookupSection(lag.getVertices(), rect);
-    }
-
-    //---------------//
-    // setFocusPoint //
-    //---------------//
-    /**
-     * Selection of a Section and a Run by point designation. Registered
-     * observers are notified of the Section and Run informations.
-     *
-     * @param pt the selected point in model pixel coordinates
-     */
-    @Override
-        public void setFocusPoint (Point pt)
-    {
-        ///logger.info(getClass() + " setFocusPoint " + pt);
-
-        // Update pixel board if any
-        super.setFocusPoint(pt);
-
-        if (sectionSubject.countObservers() > 0) {
-
-            // Section information?
-            Section section = lookupSection(pt);
-
-            // Run information?
-            Run run = null;
-            if (section != null) {
-                // Switch to point oriented according to the lag
-                // orientation
-                Point apt = getLag().switchRef(pt, null);
-                run = section.getRunAt(apt.y);
-            }
-
-            sectionSubject.notifyObservers(section);
-            runSubject.notifyObservers(run);
-        }
     }
 
     //--------//
@@ -371,41 +327,12 @@ public class LagView <L extends Lag     <L, S>,
         renderCollection(g, lag.getVertices(), viewIndex);
 
         // Render also all specific sections ?
-        if (showSpecifics) {
+        if (showingSpecifics) {
             renderCollection(g, specifics, viewIndex);
         }
 
         // Paint additional items, such as recognized items, etc...
         renderItems(g);
-    }
-
-    //-----------------//
-    // setFocusSection //
-    //-----------------//
-    public void setFocusSection (Section section)
-    {
-        if (section != null) {
-            Rectangle rect = section.getContourBox();
-            setFocusRectangle(rect);
-
-            // Update section info
-            sectionSubject.notifyObservers(section);
-        } else {
-            logger.warning ("setFocusSection. Section is null");
-        }
-    }
-
-    //-----------------//
-    // setFocusSection //
-    //-----------------//
-    public void setFocusSection (int id)
-    {
-        Section section = getSectionById(id);
-        if (section != null) {
-            setFocusSection(section);
-        } else {
-            logger.warning ("Section " + id + " not found.");
-        }
     }
 
     //---------//
@@ -429,35 +356,99 @@ public class LagView <L extends Lag     <L, S>,
         super.setZoom(zoom);
     }
 
-    //---------------//
-    // showSpecifics //
-    //---------------//
+    //------------------//
+    // showingSpecifics //
+    //------------------//
     /**
-     * Selector on showSpecifics
+     * Are we showing specifics ?
      *
      * @return true is specifics are being shown, false otherwise
      */
-    public boolean showSpecifics ()
+    public boolean showingSpecifics ()
     {
-        return showSpecifics;
+        return showingSpecifics;
     }
 
     //--------//
     // toggle //
     //--------//
     /**
-     * This method is used to toggle the boolean <code>showSpecifics</code>
+     * This method is used to toggle the boolean <code>showingSpecifics</code>
      *
-     * @see #showSpecifics
+     *
+     * @see #showingSpecifics
      */
     public void toggle ()
     {
-        showSpecifics = !showSpecifics;
+        showingSpecifics = !showingSpecifics;
 
         // Since search rules are modified, invalidate cache
-        previouslyFound = null;
+        lag.invalidateLookupCache();
+
+        // Force update
+        locationSelection.refresh(null);
 
         repaint();
+    }
+
+    //---------//
+    // update  //
+    //---------//
+    /**
+     * Call-back triggered by selection notification. Besides PIXEL
+     * location selection, this class reacts to section ids.
+     *
+     * @param selection the notified selection
+     * @param hint potential notification hint
+     */
+    @Override
+        public void update(Selection selection,
+                           SelectionHint hint)
+    {
+        ///logger.info("LagView. selection=" + selection + " hint=" + hint);
+
+        // Default behavior : making point visible & drawing the markers
+        super.update(selection, hint);
+
+        // Check for specific section if any
+        if (showingSpecifics &&
+            sectionSelection != null) {
+            switch (selection.getTag()) {
+            case PIXEL :
+                if (hint == SelectionHint.PIXEL_INIT) {
+                    Rectangle rect = (Rectangle) selection.getEntity();
+                    if (rect != null) {
+                        Point pt = rect.getLocation();
+                        lag.invalidateLookupCache();
+                        S section = lookupSpecificSection(pt);
+                        if (section != null) {
+                            sectionSelection.setEntity(section, hint);
+                            Point apt = lag.switchRef(pt, null);
+                            runSelection.setEntity(section.getRunAt(apt.y),
+                                                   hint);
+                        }
+                    }
+                }
+                break;
+
+            case SKEW_SECTION_ID :
+            case HORIZONTAL_SECTION_ID :
+            case VERTICAL_SECTION_ID :
+                // Lookup a specific section with proper ID
+                int id = (Integer) selection.getEntity();
+                for (S section : specifics) {
+                    if (section.getId() == id) {
+                        sectionSelection.setEntity(section, hint);
+                        runSelection.setEntity(null, hint);
+                        break;
+                    }
+                }
+                break;
+
+            default :
+                ///logger.warning("Unexpected selection event from " + selection);
+            }
+        }
     }
 
     //~ Methods Protected -------------------------------------------------
@@ -476,7 +467,7 @@ public class LagView <L extends Lag     <L, S>,
         if (super.getModelSize() != null)
             return super.getModelSize();
         else
-            return rectangle.getSize();
+            return lagContour.getSize();
     }
 
     //-------------//
@@ -525,41 +516,6 @@ public class LagView <L extends Lag     <L, S>,
     // lookupSection //
     //---------------//
     /**
-     * Given an absolute point, retrieve a containing section if any, using
-     * the provided collection of sections
-     *
-     * @param collection the desired collection of sections
-     * @param pt         coordinates of the given point
-     *
-     * @return the (first) section found, or null otherwise
-     */
-    private S lookupSection (Collection<S> collection,
-                             Point   pt)
-    {
-        Point target = lag.switchRef(pt, null); // Involutive!
-
-        // Just in case...
-        if ((previouslyFound != null)
-            && previouslyFound.contains(target.x, target.y)) {
-            return previouslyFound;
-        }
-
-        // Too bad, let's browse the whole stuff
-        for (S section : collection) {
-            if (section.contains(target.x, target.y)) {
-                previouslyFound = section;
-
-                return section;
-            }
-        }
-
-        return null;
-    }
-
-    //---------------//
-    // lookupSection //
-    //---------------//
-    /**
      * Given an absolute rectangle, retrieve the first contained section if
      * any, using the provided collection of sections
      *
@@ -575,7 +531,6 @@ public class LagView <L extends Lag     <L, S>,
 
         for (S section : collection) {
             if (target.contains(section.getContourBox())) {
-                previouslyFound = section;
                 return section;
             }
         }

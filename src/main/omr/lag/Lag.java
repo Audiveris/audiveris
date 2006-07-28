@@ -11,13 +11,14 @@
 package omr.lag;
 
 import omr.graph.Digraph;
-import omr.graph.DigraphView;
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
+import omr.selection.SelectionObserver;
 import omr.util.Logger;
 import omr.util.Predicate;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -26,6 +27,24 @@ import java.util.List;
  * is no more contiguous run or when the compatibility is no longer met.
  * Sections are thus vertices of the graph, while junctions are directed
  * edges between sections.
+ *
+ * <dl>
+ * <dt><b>Selection Inputs:</b></dt><ul>
+ * <li>PIXEL Location (if PIXEL_INIT)
+ * <li>*_SECTION (if SECTION_INIT)
+ * <li>*_SECTION_ID
+ * </ul>
+ *
+ * <dt><b>Selection Outputs:</b></dt><ul>
+ * <li>PIXEL Contour
+ * <li>*_RUN
+ * <li>*_SECTION
+ * </ul>
+ * </dl>
+ *
+ * @see #setRunSelection
+ * @see #setSectionSelection
+ * @see #setLocationSelection
  *
  * @param <L> precise lag (sub)type
  * @param <S> precise section (sub)type
@@ -36,7 +55,8 @@ import java.util.List;
 public class Lag <L extends Lag <L, S>,
                   S extends Section>
     extends Digraph<L, S>
-    implements Oriented
+    implements Oriented,
+               SelectionObserver
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -52,6 +72,15 @@ public class Lag <L extends Lag <L, S>,
      * Runs.  It will be allocated in the adapter
      */
     protected List<List<Run>> runs;
+
+    /** Selection object where selected Run is to be written */
+    protected Selection runSelection;
+
+    /** Selection object where selected Section is to be written */
+    protected Selection sectionSelection;
+
+    /** Selection object where selected pixel location is to be written */
+    protected Selection locationSelection;
 
     //~ Constructors ------------------------------------------------------
 
@@ -286,6 +315,140 @@ public class Lag <L extends Lag <L, S>,
         });
     }
 
+    //-----------------//
+    // setRunSelection //
+    //-----------------//
+    /**
+     * Inject the selection object where run must be written to, when
+     * triggered through the update method.
+     *
+     * @param runSelection the output selection object
+     */
+    public void setRunSelection (Selection runSelection)
+    {
+        this.runSelection = runSelection;
+    }
+
+    //---------------------//
+    // setSectionSelection //
+    //---------------------//
+    /**
+     * Inject the selection object where section must be written to, when
+     * triggered through the update method.
+     *
+     * @param sectionSelection the output selection object
+     */
+    public void setSectionSelection (Selection sectionSelection)
+    {
+        this.sectionSelection = sectionSelection;
+    }
+
+    //----------------------//
+    // setLocationSelection //
+    //----------------------//
+    /**
+     * Inject the selection object where location must be written to, when
+     * triggered through the update method.
+     *
+     * @param locationSelection the output selection object
+     */
+    public void setLocationSelection (Selection locationSelection)
+    {
+        this.locationSelection = locationSelection;
+    }
+
+    //-----------------------//
+    // invalidateLookupCache //
+    //-----------------------//
+    /**
+     * Forget the last reference to selected Section, since context
+     * conditions have changed (typically, the toggle about "specific"
+     * sections in a related lag view).
+     */
+    public void invalidateLookupCache()
+    {
+        sectionSelection.setEntity(null,
+                                   /* hint => */ null,
+                                   /* notify => */ false);
+    }
+
+    //---------------//
+    // lookupSection //
+    //---------------//
+    /**
+     * Given an absolute point, retrieve a containing section if any, using
+     * the provided collection of sections
+     *
+     * @param collection the desired collection of sections
+     * @param pt         coordinates of the given point
+     *
+     * @return the (first) section found, or null otherwise
+     */
+    public S lookupSection (Collection<S> collection,
+                            Point         pt)
+    {
+        Point target = switchRef(pt, null); // Involutive!
+
+        // Just in case...
+        S foundSection = (S) sectionSelection.getEntity();
+        if ((foundSection != null)
+            && foundSection.contains(target.x, target.y)) {
+            return foundSection;
+        }
+
+        // Too bad, let's browse the whole stuff
+        foundSection = null;
+        for (S section : collection) {
+            if (section.contains(target.x, target.y)) {
+                foundSection = section;
+                break;
+            }
+        }
+
+        sectionSelection.setEntity(foundSection,
+                                   /* hint => */ null,
+                                   /* notify => */ false);
+        return foundSection;
+    }
+
+    //---------------//
+    // lookupSection //
+    //---------------//
+    /**
+     * Given an absolute rectangle, retrieve the first contained section if
+     * any, using the provided collection of sections
+     *
+     * @param collection the desired collection of sections
+     * @param rect       the given rectangle
+     *
+     * @return the (first) section found, or null otherwise
+     */
+    public S lookupSection (Collection<S>  collection,
+                            Rectangle      rect)
+    {
+        Rectangle target = switchRef(rect, null); // Involutive!
+
+        // Just in case...
+        S foundSection = (S) sectionSelection.getEntity();
+        if ((foundSection != null) &&
+            target.contains(foundSection.getContourBox())) {
+            return foundSection;
+        }
+
+        foundSection = null;
+        for (S section : collection) {
+            if (target.contains(section.getContourBox())) {
+                foundSection = section;
+                break;
+            }
+        }
+
+        sectionSelection.setEntity(foundSection,
+                                   /* hint => */ null,
+                                   /* notify => */ false);
+        return foundSection;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -321,5 +484,74 @@ public class Lag <L extends Lag <L, S>,
         protected String getPrefix ()
     {
         return "Lag";
+    }
+
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Call-back triggered when location Selection, or section id, has been
+     * modified.  We forward the related run and section informations.
+     *
+     * @param selection the notified Selection
+     * @param hint potential notification hint
+     */
+    public void update(Selection selection,
+                       SelectionHint hint)
+    {
+        switch (selection.getTag()) {
+        case PIXEL :
+            // Lookup for Run/Section pointed by this pixel location
+            if (hint == SelectionHint.PIXEL_INIT) {
+                // Search and forward run & section info
+                // Optimization : do the lookup only if observers other
+                // than this lag are present
+                if ((runSelection != null &&
+                     runSelection.countObservers() > 0) ||
+                    (sectionSelection != null &&
+                     sectionSelection.countObservers() > 1)) { // Lag itself !
+                    Run run = null;
+                    S section = null;
+                    Rectangle rect = (Rectangle) selection.getEntity();
+
+                    if (rect != null) {
+                        Point pt = rect.getLocation();
+                        section = lookupSection(getVertices(),pt);
+                        if (section != null) {
+                            Point apt = switchRef(pt, null);
+                            run = section.getRunAt(apt.y);
+                        }
+                    }
+                    runSelection.setEntity(run, hint);
+                    sectionSelection.setEntity(section, hint);
+                }
+            }
+            break;
+
+        case SKEW_SECTION :
+        case HORIZONTAL_SECTION :
+        case VERTICAL_SECTION :
+            if (hint == SelectionHint.SECTION_INIT) {
+                // Display section contour
+                S section = (S) selection.getEntity();
+                locationSelection.setEntity
+                    (section != null ? section.getContourBox() : null,
+                     hint);
+            }
+            break;
+
+        case SKEW_SECTION_ID :
+        case HORIZONTAL_SECTION_ID :
+        case VERTICAL_SECTION_ID :
+            // Lookup a section with proper ID
+            if (sectionSelection != null) {
+                Integer id = (Integer) selection.getEntity();
+                runSelection.setEntity(null, hint);
+                sectionSelection.setEntity(getVertexById(id), hint);
+            }
+            break;
+
+        default :
+        }
     }
 }
