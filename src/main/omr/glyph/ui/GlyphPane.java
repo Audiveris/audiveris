@@ -10,8 +10,6 @@
 
 package omr.glyph.ui;
 
-import omr.ProcessingException;
-import omr.Step;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphBuilder;
 import omr.glyph.GlyphDirectory;
@@ -19,36 +17,38 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
-import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
-import omr.stick.Stick;
-import omr.ui.Board;
-import omr.ui.BoardsPane;
-import omr.ui.util.Panel;
-import omr.ui.PixelBoard;
+import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
+import omr.selection.SelectionHint;
+import omr.selection.SelectionTag;
+import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
+import omr.ui.Board;
+import omr.ui.BoardsPane;
+import omr.ui.PixelBoard;
+import omr.ui.util.Panel;
 import omr.ui.util.SwingWorker;
-import omr.util.Dumper;
 import omr.util.Logger;
+
+import static omr.selection.SelectionTag.*;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
-import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.swing.*;
-import javax.swing.border.*;
 
 /**
  * Class <code>GlyphPane</code> defines a UI pane from which all glyph
  * processing actions can be launched and checked.
+ *
+ * <dl>
+ * <dt><b>Selection Outputs:</b></dt><ul>
+ * <li>VERTICAL_GLYPH (flagged with GLYPH_INIT hint)
+ * </ul>
+ * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -124,21 +124,32 @@ public class GlyphPane
         // Allocation of components
         evaluatorsPanel = new EvaluatorsPanel(sheet, this);
         view = new SymbolGlyphView(sheet, vLag, this);
+        view.setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
+
         evaluatorsPanel.setView(view);
         focus = new ShapeFocus(sheet, view, this);
         popup = new GlyphMenu(this, focus);
 
         // The UI combo
-        customBoard = new CustomBoard();
+        customBoard = new CustomBoard("GlyphPane Custom Board");
         customBoard.getComponent().setVisible(true);
 
         glyphBoard = new SymbolGlyphBoard(this,
                                         sheet.getFirstSymbolId(),
                                         vLag);
+        glyphBoard.setInputSelection(sheet.getSelection(VERTICAL_GLYPH));
+        glyphBoard.setOutputSelection(sheet.getSelection(VERTICAL_GLYPH_ID));
+
+
         BoardsPane boardsPane = new BoardsPane
-            (view,
-             new PixelBoard(),
-             new SectionBoard(vLag.getLastVertexId()),
+            (sheet, view,
+             new PixelBoard("GlyphPane-PixelBoard"),
+             new RunBoard(sheet.getSelection(VERTICAL_RUN),
+                          "GlyphPane-RunBoard"),
+             new SectionBoard(sheet.getSelection(VERTICAL_SECTION),
+                              sheet.getSelection(VERTICAL_SECTION_ID),
+                              sheet.getSelection(PIXEL),
+                              vLag.getLastVertexId(), "GlyphPane-SectionBoard"),
              glyphBoard,
              customBoard);
 
@@ -350,8 +361,8 @@ public class GlyphPane
      * @param updateUI should the user interface be updated ?
      */
     public void setShape(Glyph glyph,
-                  Shape shape,
-                  boolean updateUI)
+                         Shape shape,
+                         boolean updateUI)
     {
         glyph.setShape(shape);
 
@@ -370,7 +381,9 @@ public class GlyphPane
 
         if (updateUI) {
             // Update immediately the glyph info as displayed
-            glyphBoard.update(glyph);
+            sheet.getSelection(VERTICAL_GLYPH).setEntity
+                    (glyph,
+                    SelectionHint.GLYPH_INIT);
 
             // And the color of the glyph as well
             if (shape != null) {
@@ -519,9 +532,9 @@ public class GlyphPane
     private class CustomBoard
         extends Board
     {
-        public CustomBoard()
+        public CustomBoard(String name)
         {
-            super(Board.Tag.CUSTOM);
+            super(Board.Tag.CUSTOM, name);
 
             FormLayout layout = new FormLayout
                 ("pref",
@@ -541,7 +554,6 @@ public class GlyphPane
             r += 2;                     // --------------------------------
             builder.add(evaluatorsPanel.getComponent(), cst.xy (1, r));
         }
-
     }
 
     //---------------//

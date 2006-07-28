@@ -11,9 +11,8 @@
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
-import omr.glyph.GlyphFocus;
-import omr.glyph.GlyphObserver;
-import omr.glyph.Shape;
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
 import omr.ui.Board;
 import omr.ui.util.Panel;
 import omr.ui.field.SField;
@@ -23,12 +22,10 @@ import omr.util.Logger;
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
-import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.event.*;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Class <code>GlyphBoard</code> defines a board dedicated to the display
@@ -49,22 +46,28 @@ import java.util.ArrayList;
  * <p> Any spinner can also be used to select a glyph by directly entering
  * the glyph id value into the spinner field
  *
+ * <dl>
+ * <dt><b>Selection Inputs:</b></dt><ul>
+ * <li>*_GLYPH
+ * </ul>
+ *
+ * <dt><b>Selection Outputs:</b></dt><ul>
+ * <li>*_GLYPH_ID (flagged with GLYPH_INIT hint)
+ * </ul>
+ * </dl>
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class GlyphBoard
     extends Board
-    implements GlyphObserver,
-               ChangeListener
+    implements ChangeListener   // For all spinners
 {
     //~ Static variables/initializers -------------------------------------
 
     private static Logger logger = Logger.getLogger(GlyphBoard.class);
 
     //~ Instance variables ------------------------------------------------
-
-    /** The glyph displayed */
-    protected Glyph glyph = null;
 
     /** A dump action */
     protected final JButton dump = new JButton("Dump");
@@ -83,24 +86,21 @@ public class GlyphBoard
     protected final JTextField shape = new SField
         (false, "Assigned shape for this glyph");
 
-    /** Glyph Focus if any */
-    protected GlyphFocus glyphFocus;
-
-    /**
-     * To differentiate between an id as selected from the id spinner
-     * (which triggers a focus on related glyph), and the simple display of
-     * glyph info (with no explicit glyph focus)
-     */
-    protected volatile boolean focusWanted = true;
-
     /** The JGoodies/Form layout to be used by all subclasses  */
-    protected FormLayout layout = Panel.makeFormLayout(5, 3);
+    protected FormLayout layout = Panel.makeFormLayout(4, 3);
 
     /** The JGoodies/Form builder to be used by all subclasses  */
     protected PanelBuilder builder;
 
     /** The JGoodies/Form constraints to be used by all subclasses  */
     protected CellConstraints cst = new CellConstraints();
+
+    // Location selection, used as output with glyph pixel contour
+    private Selection locationSelection;
+
+    // To avoid loop, indicate that update() method is being processed
+    protected boolean updating = false;
+    protected boolean idSelecting = false;
 
     //~ Constructors ------------------------------------------------------
 
@@ -111,12 +111,18 @@ public class GlyphBoard
      * Create a Glyph Board
      *
      * @param maxGlyphId the upper bound for glyph id
-     * @param knownIds the extended list of ids for known glyphs
+     * @param knownIds   the extended list of ids for known glyphs
+     * @param name       the name assigned to this board instance
+     * @param glyphSelection input glyph selection
+     * @param glyphIdSelection output glyph Id selection
      */
     public GlyphBoard (int           maxGlyphId,
-                       List<Integer> knownIds)
+                       List<Integer> knownIds,
+                       String        name,
+                       Selection     glyphSelection,
+                       Selection     glyphIdSelection)
     {
-        this(maxGlyphId);
+        this(maxGlyphId, name);
 
         if (logger.isFineEnabled()) {
             logger.fine("knownIds=" + knownIds);
@@ -124,7 +130,10 @@ public class GlyphBoard
 
         known.setModel(new SpinnerListModel(knownIds));
         SpinnerUtilities.setRightAlignment(known);
-        SpinnerUtilities.fixIntegerList(known); // Waiting for swing bug fix
+        SpinnerUtilities.fixIntegerList(known); // Waiting for swing bug
+                                                // fix
+        setInputSelection(glyphSelection);
+        setOutputSelection(glyphIdSelection);
     }
 
     //------------//
@@ -134,10 +143,12 @@ public class GlyphBoard
      * Create a Glyph Board
      *
      * @param maxGlyphId the upper bound for glyph id
+     * @param name the name assigned to this board instance
      */
-    protected GlyphBoard (int maxGlyphId)
+    protected GlyphBoard (int           maxGlyphId,
+                          String        name)
     {
-        this();
+        this(name);
 
         // Model for id spinner
         gid = new JSpinner();
@@ -164,10 +175,12 @@ public class GlyphBoard
     //------------//
     /**
      * Basic constructor, to set common characteristics
+     *
+     * @param name the name assigned to this board instance
      */
-    protected GlyphBoard()
+    protected GlyphBoard( String    name)
     {
-        super(Board.Tag.GLYPH);
+        super(Board.Tag.GLYPH, name);
 
         // Dump action
         dump.setToolTipText("Dump this glyph");
@@ -176,12 +189,14 @@ public class GlyphBoard
                 {
                     public void actionPerformed (ActionEvent e)
                     {
+                        Selection input = GlyphBoard.this.inputSelection;
+                        Glyph glyph = (Glyph) input.getEntity();
                         if (glyph != null) {
                             glyph.dump();
                         }
                     }
                 });
-        dump.setEnabled(glyph != null);
+        dump.setEnabled(false); // Until a glyph selection is made
 
         // Precise layout
         layout.setColumnGroups(new int[][]{{1, 5, 9}, {3, 7, 11}});
@@ -193,6 +208,19 @@ public class GlyphBoard
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //----------------------//
+    // setLocationSelection //
+    //----------------------//
+    /**
+     * Inject dependency on pixel location selection (an input)
+     *
+     * @param locationSelection the location selection
+     */
+    public void setLocationSelection (Selection locationSelection)
+    {
+        this.locationSelection = locationSelection;
+    }
 
     //--------------//
     // defineLayout //
@@ -211,77 +239,85 @@ public class GlyphBoard
 
         builder.add(deassignButton,     cst.xyw(1, r, 3));
         builder.add(shape,              cst.xyw(5, r, 7));
-        
+
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
         deassignButton.setHorizontalAlignment(SwingConstants.RIGHT);
-}
-
-    //---------------//
-    // setGlyphFocus //
-    //---------------//
-    /**
-     * Connect an entity to be later notified of glyph focus, as input by a
-     * user (when a glyph ID is entered)
-     *
-     * @param glyphFocus
-     */
-    public void setGlyphFocus (GlyphFocus glyphFocus)
-    {
-        this.glyphFocus = glyphFocus;
     }
 
     //--------//
     // update //
     //--------//
     /**
-     * Display info about the glyph at hand (its id, its shape, etc)
+     * Call-back triggered when Glyph Selection has been modified
      *
-     * @param glyph the glyph at hand
+     * @param selection the (Glyph) Selection
+     * @param hint potential notification hint
      */
-    public void update (Glyph glyph)
+    @Override
+    public void update (Selection selection,
+                        SelectionHint hint)
     {
-        this.glyph = glyph;
-        dump.setEnabled(glyph != null);
-        deassignAction.setEnabled(glyph != null && glyph.isKnown());
+        Object entity = selection.getEntity();
+//        logger.info("GlyphBoard " + selection.getTag()
+//                    + " updating=" + updating + " idSelecting=" + idSelecting
+//                    + " : " + entity);
 
-        focusWanted = false;
-        if (glyph != null) {
-            if (gid != null) {
-                gid.setValue(glyph.getId());
+        switch (selection.getTag()) {
+        case VERTICAL_GLYPH :
+        case HORIZONTAL_GLYPH :
+
+            if (updating) {
+                ///logger.warning("double updating");
+                return;
             }
 
-            if (glyph.getShape() != null) {
-                shape.setText(glyph.getShape().toString());
-                deassignButton.setIcon(glyph.getShape().getIcon());
+            Glyph glyph = (Glyph) entity;
+            dump.setEnabled(glyph != null);
+            deassignAction.setEnabled(glyph != null && glyph.isKnown());
+            updating = true;
+
+            if (glyph != null) {
+                if (gid != null) {
+                    gid.setValue(glyph.getId());
+                }
+
+                if (glyph.getShape() != null) {
+                    shape.setText(glyph.getShape().toString());
+                    deassignButton.setIcon(glyph.getShape().getIcon());
+                } else {
+                    shape.setText("");
+                    deassignButton.setIcon(null);
+                }
+
+                // Set known field if shape is one of the desired ones
+                if (known != null) {
+                    if (glyph.isKnown() &&
+                        ((SpinnerListModel) known.getModel())
+                        .getList().contains(new Integer(glyph.getId()))) {
+                        known.setValue(glyph.getId());
+                    } else {
+                        known.setValue(NO_VALUE);
+                    }
+                }
             } else {
+                if (gid != null) {
+                    gid.setValue(NO_VALUE);
+                }
+
+                if (known != null) {
+                    known.setValue(NO_VALUE);
+                }
+
                 shape.setText("");
                 deassignButton.setIcon(null);
             }
 
-            // Set known field if shape is one of the desired ones
-            if (known != null) {
-                if (glyph.isKnown() &&
-                    ((SpinnerListModel) known.getModel())
-                    .getList().contains(new Integer(glyph.getId()))) {
-                    known.setValue(glyph.getId());
-                } else {
-                    known.setValue(NO_VALUE);
-                }
-            }
-        } else {
-            if (gid != null) {
-                gid.setValue(NO_VALUE);
-            }
+            updating = false;
+            break;
 
-            if (known != null) {
-                known.setValue(NO_VALUE);
-            }
-
-            shape.setText("");
-            deassignButton.setIcon(null);
+        default :
+            logger.severe("Unexpected selection event from " + selection);
         }
-
-        focusWanted = true;
     }
 
     //--------------//
@@ -291,20 +327,20 @@ public class GlyphBoard
      * CallBack triggered by a change in one of the spinners
      *
      * @param e the change event, this allows to retrieve the originating
-     * spinner
+     *          spinner
      */
     public void stateChanged(ChangeEvent e)
     {
-        if (glyphFocus != null && focusWanted) {
-            JSpinner spinner = (JSpinner) e.getSource();
-            int glyphId = (Integer) spinner.getValue();
-
-            if (logger.isFineEnabled()) {
-                logger.fine("glyphId=" + glyphId);
-            }
-
-            if (glyphId != NO_VALUE) {
-                glyphFocus.setFocusGlyph(glyphId);
+        if (!updating) {
+            if (outputSelection != null) {
+                JSpinner spinner = (JSpinner) e.getSource();
+                int glyphId = (Integer) spinner.getValue();
+                if (logger.isFineEnabled()) {
+                        logger.fine("glyphId=" + glyphId);
+                }
+                idSelecting = true;
+                outputSelection.setEntity(glyphId, SelectionHint.GLYPH_INIT);
+                idSelecting = false;
             }
         }
     }
@@ -339,8 +375,11 @@ public class GlyphBoard
 
         public void actionPerformed(ActionEvent e)
         {
-            if (glyphFocus != null && glyph != null && glyph.isKnown()) {
-                glyphFocus.deassignGlyph(glyph);
+            Selection input = GlyphBoard.this.inputSelection;
+            Glyph glyph = (Glyph) input.getEntity();
+
+            if (glyph != null && glyph.isKnown()) {
+                ///////////////// TBD glyphFocus.deassignGlyph(glyph);
             }
         }
     }
