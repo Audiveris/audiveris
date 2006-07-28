@@ -10,9 +10,9 @@
 
 package omr.constant;
 
-import omr.Main;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.SheetManager;
 import omr.ui.treetable.AbstractTreeTableModel;
 import omr.ui.treetable.TreeTableModel;
 import omr.util.Logger;
@@ -22,20 +22,20 @@ import javax.swing.*;
 /**
  * Class <code>UnitModel</code> implements a data model for units suitable
  * for use in a JTreeTable.
- *
+ * 
  * <p>A row in the UnitModel can any instance of the 3 following types:
  * <ul>
- *
+ * 
  * <li><b>PackageNode</b> to represent a package. Its children rows can be
  * either (sub) PackageNodes or UnitNodes.
- *
+ * 
  * <li><b>UnitNode</b> to represent a class that contains a ConstantSet or
  * a Logger or both. Its parent node is a PackageNode. Its children rows
  * (if any) are the Constants of its ConstantSet.
- *
+ * 
  * <li><b>Constant</b> to represent a constant within a ConstantSet. In
  * that case, its parent node is a UnitNode. It has no children rows. </ul>
- *
+ * 
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -380,7 +380,7 @@ public class UnitModel
                         // Compute the equivalent in pixels of this
                         // interline fraction, provided that we have a
                         // current sheet and its scale is available.
-                        Sheet sheet = Main.getJui().sheetPane.getCurrentSheet();
+                        Sheet sheet = (Sheet) SheetManager.getSelectedSheet();
 
                         if ((sheet != null) && sheet.SCALE.isDone()) {
                             Scale scale = sheet.getScale();
