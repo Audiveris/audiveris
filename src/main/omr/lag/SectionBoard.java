@@ -10,8 +10,9 @@
 
 package omr.lag;
 
+import omr.selection.Selection;
 import omr.stick.StickSection;
-import omr.ui.*;
+import omr.ui.Board;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 import omr.util.Logger;
@@ -23,18 +24,28 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import omr.selection.SelectionHint;
 
 /**
  * Class <code>SectionBoard</code> defines a board dedicated to the display
  * of {@link omr.lag.Section} and {@link omr.lag.Run} information, it can
  * also be used as an input means by directly entering the section id.
  *
+ * <dl>
+ * <dt><b>Selection Inputs:</b></dt><ul>
+ * <li>*_SECTION
+ * </ul>
+ *
+ * <dt><b>Selection Outputs:</b></dt><ul>
+ * <li>*_SECTION_ID (flagged with SECTION_INIT hint)
+ * </ul>
+ * </dl>
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class SectionBoard
     extends Board
-    implements SectionObserver
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -42,26 +53,7 @@ public class SectionBoard
 
     //~ Instance variables ------------------------------------------------
 
-    // Run
-    private JPanel runPanel;
-    private final LIntegerField rStart = new LIntegerField
-        (false, "Start", "Pixel coordinate at start of run");
-    private final LIntegerField rLength = new LIntegerField
-        (false, "Length", "Length of run in pixels");
-    private final LIntegerField rLevel = new LIntegerField
-        (false, "Level", "Average pixel level on this run");
-
-    // Specific Observer for Run subject
-    private RunObserver runObserver = new RunObserver()
-        {
-            public void update (Run run)
-            {
-                SectionBoard.this.update(run);
-            }
-        };
-
     // Section
-    private Section section = null;
     private JPanel sectionPanel;
     private final JButton dump = new JButton("Dump");
     private final JSpinner id = new JSpinner();
@@ -85,13 +77,12 @@ public class SectionBoard
         (false, "Dir", "Direction from the stick core");
     private final JTextField role = new JTextField();
 
-    // Section Focus if any
-    private SectionFocus sectionFocus;
+    // Location selection, used as output with section pixel contour
+    private Selection locationSelection;
 
-    // To differentiate between an id as selected from the id spinner
-    // (which triggers a focus on related section), and the simple display
-    // of section info (with no explicit section focus)
-    protected volatile boolean focusWanted = true;
+    // To avoid loop, indicate that update() method id being processed
+    private boolean updating = false;
+    private boolean idSelecting = false;
 
     //~ Constructors ------------------------------------------------------
 
@@ -101,11 +92,20 @@ public class SectionBoard
     /**
      * Create a Section Board
      *
+     * @param inputSelection the selection for section input
+     * @param outputSelection the selection for section id output
+     * @param locationSelection the selection for section contour output
      * @param maxSectionId the upper bound for section id
+     * @param name a distinguished name for this instance
      */
-    public SectionBoard (int maxSectionId)
+    public SectionBoard (Selection inputSelection,
+                         Selection outputSelection,
+                         Selection locationSelection,
+                         int       maxSectionId,
+                         String    name)
     {
-        this(new SpinnerNumberModel(0, 0, maxSectionId, 1));
+        this(inputSelection, outputSelection, locationSelection,
+             new SpinnerNumberModel(0, 0, maxSectionId, 1), name);
     }
 
     //--------------//
@@ -114,11 +114,24 @@ public class SectionBoard
     /**
      * Create a Section Board with a specific model for the section id
      *
+     * @param inputSelection the selection for section input
+     * @param outputSelection the selection for section id output
+     * @param locationSelection the selection for section contour output
      * @param model the specific id model
+     * @param name a distinguished name for this instance
      */
-    public SectionBoard (SpinnerModel model)
+    public SectionBoard (Selection    inputSelection,
+                         Selection    outputSelection,
+                         Selection    locationSelection,
+                         SpinnerModel model,
+                         String       name)
     {
-        super(Board.Tag.SECTION);
+        super(Board.Tag.SECTION, name);
+
+        // Dependencies on Selections
+        setOutputSelection(outputSelection);
+        setInputSelection(inputSelection);
+        this.locationSelection = locationSelection;
 
         // Dump button
         dump.setToolTipText("Dump this section");
@@ -127,12 +140,14 @@ public class SectionBoard
                 {
                     public void actionPerformed (ActionEvent e)
                     {
+                        Selection input = SectionBoard.this.inputSelection;
+                        Section section = (Section) input.getEntity();
                         if (section != null) {
                             section.dump();
                         }
                     }
                 });
-        dump.setEnabled(section != null);
+        dump.setEnabled(false); // Until a section selection is made
 
         // ID Spinner
         id.setToolTipText("General spinner for any glyph id");
@@ -141,104 +156,41 @@ public class SectionBoard
                 {
                     public void stateChanged(ChangeEvent e)
                     {
-                        if (sectionFocus != null) {
-                            if (focusWanted) {
-                                int sectionId = (Integer) id.getValue();
+                        if (!updating) {
+                            Selection output = SectionBoard.this.outputSelection;
+                            if (output != null) {
+                                Integer sectionId = (Integer) id.getValue();
                                 if (logger.isFineEnabled()) {
                                     logger.fine("sectionId=" + sectionId);
                                 }
-                                if (sectionId != NO_VALUE) {
-                                    sectionFocus.setFocusSection(sectionId);
-                                }
+                                idSelecting = true;
+                                output.setEntity(sectionId, SelectionHint.
+                                                 SECTION_INIT);
+                                idSelecting = false;
                             }
                         }
                     }
-                });
+        });
         id.setModel(model);
 
         // Role
         role.setEditable(false);
         role.setHorizontalAlignment(JTextField.CENTER);
         role.setToolTipText
-            ("Role in the composition of the containing stick");
+                ("Role in the composition of the containing stick");
 
         defineLayout();
     }
 
     //~ Methods -----------------------------------------------------------
 
-    //----------------//
-    // getRunObserver //
-    //----------------//
-    public RunObserver getRunObserver()
-    {
-        return runObserver;
-    }
-
     //--------------//
     // defineLayout //
     //--------------//
     private void defineLayout()
     {
-        FormLayout layout = new FormLayout
-            ("pref",
-             "pref," + Panel.getPanelInterline() + "," +
-             "pref");
-
-        PanelBuilder builder = new PanelBuilder(layout, getComponent());
-        builder.setDefaultDialogBorder();
-
-        CellConstraints cst = new CellConstraints();
-
-        int r = 1;                      // --------------------------------
-        runPanel = getRunPanel();
-        builder.add(runPanel,           cst.xy (1,  r));
-
-        r += 2;                         // --------------------------------
-        sectionPanel = getSectionPanel();
-        builder.add(sectionPanel,       cst.xy (1,  r));
-    }
-
-    //-------------//
-    // getRunPanel //
-    //-------------//
-    private JPanel getRunPanel()
-    {
-        FormLayout layout = Panel.makeFormLayout(2, 3);
-
-        Panel panel = new Panel();
-        panel.setNoInsets();
-        PanelBuilder builder = new PanelBuilder(layout, panel);
-        builder.setDefaultDialogBorder();
-
-        CellConstraints cst = new CellConstraints();
-
-        int r = 1;                      // --------------------------------
-        builder.addSeparator("Run",     cst.xyw(1,  r, 11));
-
-        r += 2;                         // --------------------------------
-        builder.add(rStart.getLabel(),  cst.xy (1,  r));
-        builder.add(rStart.getField(),  cst.xy (3,  r));
-
-        builder.add(rLength.getLabel(), cst.xy (5,  r));
-        builder.add(rLength.getField(), cst.xy (7,  r));
-
-        builder.add(rLevel.getLabel(),  cst.xy (9,  r));
-        builder.add(rLevel.getField(),  cst.xy (11, r));
-
-        return builder.getPanel();
-    }
-
-    //-----------------//
-    // getSectionPanel //
-    //-----------------//
-    private JPanel getSectionPanel()
-    {
         FormLayout layout = Panel.makeFormLayout(4, 3);
-
-        Panel panel = new Panel();
-        panel.setNoInsets();
-        PanelBuilder builder = new PanelBuilder(layout, panel);
+        PanelBuilder builder = new PanelBuilder(layout, getComponent());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
@@ -275,73 +227,75 @@ public class SectionBoard
         builder.add(direction.getField(), cst.xy (7,  r));
 
         builder.add(role,               cst.xyw(9, r, 3));
-
-        return builder.getPanel();
-    }
-
-    //-----------------//
-    // setSectionFocus //
-    //-----------------//
-    /**
-     * Connect an entity to be later notified of section focus, as input by
-     * a user (when a section ID is entered)
-     *
-     * @param sectionFocus
-     */
-    public void setSectionFocus (SectionFocus sectionFocus)
-    {
-        this.sectionFocus = sectionFocus;
     }
 
     //--------//
     // update //
     //--------//
-    public void update (Section section)
+    /**
+     * Call-back triggered when Section Selection has been modified
+     *
+     * @param selection the (Section) Selection
+     * @param hint potential notification hint
+     */
+    public void update (Selection selection,
+                        SelectionHint hint)
     {
-        this.section = section;
-        dump.setEnabled(section != null);
+        Object entity = selection.getEntity();
+        if (logger.isFineEnabled()){
+            logger.fine("SectionBoard " + selection.getTag() + ": " + entity);
+        }
 
-        focusWanted = false;
-        emptyFields(sectionPanel);
-        emptyFields(runPanel);
+        switch (selection.getTag()) {
+        case SKEW_SECTION :             // Section of initial skewed lag
+        case HORIZONTAL_SECTION :       // Section of horizontal lag
+        case VERTICAL_SECTION :         // Section of vertical lag
+            if (updating) {
+                ///logger.warning("double updating");
+                return;
+            }
 
-        if (section == null) {
-            id.setValue(NO_VALUE);
-        } else {
-            id.setValue(section.getId());
+            Section section = (Section) entity;
+            dump.setEnabled(section != null);
 
-            Rectangle box = section.getContourBox();
-            x.setValue(box.x);
-            y.setValue(box.y);
-            width.setValue(box.width);
-            height.setValue(box.height);
-            weight.setValue(section.getWeight());
+            updating = true;
+            Integer sectionId = null;
+            if (idSelecting) {
+                sectionId = (Integer) id.getValue();
+            }
+            emptyFields(getComponent());
 
-            if (section instanceof StickSection) {
-                StickSection ss = (StickSection) section;
+            if (section == null) {
+                if (idSelecting) {
+                    id.setValue(sectionId);
+                } else {
+                    id.setValue(NO_VALUE);
+                }
+            } else {
+                id.setValue(section.getId());
 
-                layer.setValue(ss.layer);
-                direction.setValue(ss.direction);
+                Rectangle box = section.getContourBox();
+                x.setValue(box.x);
+                y.setValue(box.y);
+                width.setValue(box.width);
+                height.setValue(box.height);
+                weight.setValue(section.getWeight());
 
-                if (ss.role != null) {
-                    role.setText(ss.role.toString());
+                if (section instanceof StickSection) {
+                    StickSection ss = (StickSection) section;
+                    layer.setValue(ss.layer);
+                    direction.setValue(ss.direction);
+                    if (ss.role != null) {
+                        role.setText(ss.role.toString());
+                    }
                 }
             }
-        }
-        focusWanted = true;
-    }
 
-    //--------//
-    // update //
-    //--------//
-    public void update (Run run)
-    {
-        if (run != null) {
-            rStart.setValue(run.getStart());
-            rLength.setValue(run.getLength());
-            rLevel.setValue(run.getLevel());
-        } else {
-            emptyFields(runPanel);
+            updating = false;
+            break;
+
+        default :
+            logger.severe("Unexpected selection event from " + selection);
         }
     }
 }
