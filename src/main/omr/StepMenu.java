@@ -12,20 +12,18 @@ package omr;
 
 import omr.sheet.InstanceStep;
 import omr.sheet.Sheet;
+import omr.sheet.SheetManager;
 
 import javax.swing.*;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import omr.ui.*;
+import javax.swing.event.*;
+import java.awt.event.*;
 
 /**
  * Class <code>StepMenu</code> encapsulates the user interface needed to
  * deal with application steps.  Steps are represented by menu items, each
  * one being a check box, to indicate the current status regarding the
  * execution of the step (done or not done).
- *
+ * 
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -76,14 +74,6 @@ public class StepMenu
     public JMenu getMenu()
     {
         return menu;
-    }
-
-    //----------//
-    // getSheet //
-    //----------//
-    private Sheet getSheet ()
-    {
-        return Main.getJui().sheetPane.getCurrentSheet();
     }
 
     //~ Classes -----------------------------------------------------------
@@ -172,7 +162,7 @@ public class StepMenu
         public void actionPerformed (ActionEvent e)
         {
             StepItem item = (StepItem) e.getSource();
-            Sheet sheet = getSheet();
+            Sheet sheet = SheetManager.getSelectedSheet();
             Main.getJui().setTarget(sheet.getPath());
             item.step.perform(sheet, null);
         }
@@ -201,7 +191,7 @@ public class StepMenu
 
         public void menuSelected (MenuEvent e)
         {
-            Sheet sheet = getSheet();
+            Sheet sheet = SheetManager.getSelectedSheet();
 
             for (int i = 0; i < menu.getItemCount(); i++) {
                 StepItem item = (StepItem) menu.getItem(i);
