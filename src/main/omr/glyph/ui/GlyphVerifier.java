@@ -10,15 +10,12 @@
 
 package omr.glyph.ui;
 
-import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphLagView;
 import omr.glyph.GlyphSection;
-import omr.glyph.Shape;
 import omr.lag.VerticalOrientation;
 import omr.ui.view.LogSlider;
 import omr.ui.util.Panel;
@@ -34,12 +31,8 @@ import com.jgoodies.forms.layout.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.*;
@@ -690,12 +683,12 @@ public class GlyphVerifier
                     next.setEnabled(glyphIndex < names.length -1);
 
                     // Forward to board panel
-                    board.update(glyph);
+                    ///board.update(glyph);
                     evaluatorsPanel.evaluate(glyph);
                 }
 
                 if (focus) {
-                    view.setFocusGlyph(glyph);
+                    ///view.setFocusGlyph(glyph);
                     view.repaint();
                 }
             }
@@ -800,9 +793,6 @@ public class GlyphVerifier
                 zoom = new Zoom(slider, 1);     // Default ratio set to 1
                 rubber = new Rubber(view, zoom);
                 rubber.setMouseMonitor(view);
-                view.getGlyphSubject().addObserver(board);
-                board.setGlyphFocus(view);
-                view.setRubber(rubber);
                 view.setZoom(zoom);
                 slv = new ScrollLagView(view);
 
@@ -832,43 +822,43 @@ public class GlyphVerifier
                 deleteGlyph();          // Current glyph
             }
 
-            //---------------//
-            // setFocusPoint //
-            //---------------//
-            /**
-             * Selection of a glyph by point designation.
-             *
-             * @param pt the selected point in model pixel coordinates
-             */
-            @Override
-                public void setFocusPoint (Point pt)
-            {
-                ///logger.info(getClass() + " setFocusPoint " + pt);
-                super.setFocusPoint(pt);
-
-                // Brute force
-                if (names != null) {
-                    for (int i = 0; i < names.length; i++) {
-                        String gName = names[i];
-                        Glyph glyph = repository.getGlyph(gName);
-                        if (glyph.getLag() == vLag) {
-                            for (GlyphSection section : glyph.getMembers()) {
-                                // Swap of x & y,  this is a vertical lag
-                                if (section.contains(pt.y, pt.x)) {
-                                    board.update(glyph);
-                                    navigator.setIndex(i, true, false);
-                                    pointedGlyph = glyph;
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // No glyph found
-                pointedGlyph = null;
-                view.repaint(); // ????
-            }
+//            //---------------//
+//            // setFocusPoint //
+//            //---------------//
+//            /**
+//             * Selection of a glyph by point designation.
+//             *
+//             * @param pt the selected point in model pixel coordinates
+//             */
+//            @Override
+//                public void setFocusPoint (Point pt)
+//            {
+//                ///logger.info(getClass() + " setFocusPoint " + pt);
+//                super.setFocusPoint(pt);
+//
+//                // Brute force
+//                if (names != null) {
+//                    for (int i = 0; i < names.length; i++) {
+//                        String gName = names[i];
+//                        Glyph glyph = repository.getGlyph(gName);
+//                        if (glyph.getLag() == vLag) {
+//                            for (GlyphSection section : glyph.getMembers()) {
+//                                // Swap of x & y,  this is a vertical lag
+//                                if (section.contains(pt.y, pt.x)) {
+//                                    board.update(glyph);
+//                                    navigator.setIndex(i, true, false);
+//                                    pointedGlyph = glyph;
+//                                    return;
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                // No glyph found
+//                pointedGlyph = null;
+//                view.repaint(); // ????
+//            }
 
             //-------------//
             // renderItems //
