@@ -63,6 +63,8 @@ public class SymbolGlyphView
         this.sheet = sheet;
         this.pane  = pane;
 
+        setName("SymbolGlyphView");
+
         // Use light gray color for past successful entities
         sheet.colorize(lag, viewIndex, Color.lightGray);
     }
@@ -136,11 +138,9 @@ public class SymbolGlyphView
      * Processing to be performed on the selected glyph.
      *
      * @param glyph the selected glyph, which may be null
-     * @param pt the designated point
      */
     @Override
-        protected void glyphSelected (Glyph glyph,
-                                      Point pt)
+        protected void glyphSelected (Glyph glyph)
     {
         if (logger.isFineEnabled()) {
             logger.fine("SymbolGlyphView glyphSelected");
@@ -198,27 +198,6 @@ public class SymbolGlyphView
             }
         }
         pane.getEvaluatorsPanel().evaluate(glyph);
-    }
-
-    //-------------------//
-    // setFocusRectangle //
-    //-------------------//
-    @Override
-        public void setFocusRectangle (Rectangle rect)
-    {
-        ///logger.info(getClass() + " setFocusRectangle " + rect);
-        /////new Throwable("Stack").printStackTrace();
-
-        // Notify observers about rectangle information
-        super.setFocusRectangle(rect);
-
-        // Retrieve glyphs for this rectangle
-        // Beware : this empties the current glyphs list !!! TBD
-        /////logger.info("current glyphs before : " + pane.getCurrentGlyphs().size());
-//        if (pane.getCurrentGlyphs().size() == 0) {
-        pane.setCurrentGlyphs(sheet.lookupGlyphs(rect));
-//        }
-        /////logger.info("current glyphs *after*: " + pane.getCurrentGlyphs().size());
     }
 
     //---------------//
