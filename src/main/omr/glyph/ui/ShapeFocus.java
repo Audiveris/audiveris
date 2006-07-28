@@ -12,29 +12,35 @@ package omr.glyph.ui;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
+import omr.selection.SelectionHint;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.ui.util.Panel;
 import omr.ui.field.SpinnerUtilities;
 import omr.util.Logger;
 
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.debug.*;
-import com.jgoodies.forms.layout.*;
-
+import static omr.selection.SelectionTag.*;
 import static omr.ui.Board.NO_VALUE;
+
+import com.jgoodies.forms.builder.*;
+import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import javax.swing.*;
-import javax.swing.border.*;
 import javax.swing.event.*;
 
 /**
  * Class <code>ShapeFocus</code> handles the shape that receives current
  * focus, and all glyphs whose shape or guess correspond to the focus
  * (for example all treble clefs glyphs if such is the focus)
+ *
+ * <dl>
+ * <dt><b>Selection Outputs:</b></dt><ul>
+ * <li>VERTICAL_GLYPH_ID (flagged with GLYPH_INIT hint)
+ * </ul>
+ * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -336,9 +342,9 @@ public class ShapeFocus
         {
             int id = (Integer) spinner.getValue();
             if (id != NO_VALUE) {
-                view.setFocusGlyph(id);
-                Glyph glyph = pane.getEntity(id);
-                pane.getEvaluatorsPanel().evaluate(glyph);
+                sheet.getSelection(VERTICAL_GLYPH_ID).setEntity
+                        (id,
+                        SelectionHint.GLYPH_INIT);
             }
         }
 
