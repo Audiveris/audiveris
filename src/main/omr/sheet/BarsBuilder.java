@@ -24,17 +24,19 @@ import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.LagBuilder;
+import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 import omr.lag.VerticalOrientation;
 import omr.score.Barline;
 import omr.score.Measure;
-import omr.score.PagePoint;
 import omr.score.Score;
 import omr.score.ScoreConstants;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.UnitDimension;
+import omr.selection.Selection;
+import omr.selection.SelectionTag;
 import omr.stick.Stick;
 import omr.stick.StickSection;
 import omr.stick.StickView;
@@ -43,11 +45,13 @@ import omr.ui.PixelBoard;
 import omr.ui.view.Zoom;
 import omr.util.Dumper;
 import omr.util.Logger;
+import omr.util.TreeNode;
+
+import static omr.selection.SelectionTag.*;
 
 import java.awt.*;
 import java.util.List;
 import java.util.*;
-import omr.util.TreeNode;
 
 /**
  * Class <code>BarsBuilder</code> handles the vertical lines that are
@@ -151,7 +155,7 @@ public class BarsBuilder
 
         // Retrieve the vertical lag of runs
         vLag = new GlyphLag(new VerticalOrientation());
-        vLag.setId("vLag");
+        vLag.setName("vLag");
         vLag.setVertexClass(StickSection.class);
         new LagBuilder<GlyphLag,GlyphSection>().rip
                 (vLag,
@@ -278,9 +282,9 @@ public class BarsBuilder
         }
 
         // Update the glyph board
-        if (glyphBoard != null) {
-            glyphBoard.update(bar);
-        }
+//        if (glyphBoard != null) {
+//            glyphBoard.update(bar);
+//        }
 
         // Update the view accordingly
         if (lagView != null) {
@@ -546,6 +550,9 @@ public class BarsBuilder
     private void displayFrame ()
     {
         lagView = new MyLagView(vLag);
+        Selection glyphSelection = sheet.getSelection(SelectionTag.VERTICAL_GLYPH);
+        lagView.setGlyphSelection(glyphSelection);
+        glyphSelection.addObserver(lagView);
         lagView.colorize();
 
         // Ids of recognized glyphs
@@ -555,14 +562,22 @@ public class BarsBuilder
             knownIds.add(new Integer(stick.getId()));
         }
 
-        glyphBoard = new GlyphBoard(vLag.getLastGlyphId(), knownIds);
+        glyphBoard = new GlyphBoard(vLag.getLastGlyphId(), knownIds, "BarsBuilder Glyph Board",
+                                    sheet.getSelection(VERTICAL_GLYPH),
+                                    sheet.getSelection(VERTICAL_GLYPH_ID));
         checkBoard = new CheckBoard<BarsChecker.Context>
-                (checker.getSuite());
+            (checker.getSuite(), "BarsBuilder Checker");
         lagView.setCheckMonitor(checkBoard);
         BoardsPane boardsPane = new BoardsPane
-            (lagView,
-             new PixelBoard(),
-             new SectionBoard(vLag.getLastVertexId()),
+            (sheet, lagView,
+             new PixelBoard("BarsBuilder-PixelBoard"),
+             new RunBoard(sheet.getSelection(VERTICAL_RUN),
+                          "BarsBuilder-RunBoard"),
+             new SectionBoard(sheet.getSelection(VERTICAL_SECTION),
+                              sheet.getSelection(VERTICAL_SECTION_ID),
+                              sheet.getSelection(PIXEL),
+                              vLag.getLastVertexId(),
+                              "BarsBuilder-SectionBoard"),
              glyphBoard,
              checkBoard);
 
@@ -599,6 +614,8 @@ public class BarsBuilder
         private MyLagView (GlyphLag lag)
         {
             super(lag, null, BarsBuilder.this);
+            setName("BarsBuilder-View");
+            setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
         }
 
         //~ Methods -------------------------------------------------------
@@ -645,8 +662,7 @@ public class BarsBuilder
         // glyphSelected //
         //---------------//
         @Override
-            protected void glyphSelected (Glyph glyph,
-                                          Point pt)
+            protected void glyphSelected (Glyph glyph)
         {
             ///logger.info(getClass() + " glyphSelected " + glyph);
             if (glyph == null) {

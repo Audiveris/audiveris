@@ -10,6 +10,9 @@
 
 package omr.sheet;
 
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
+import omr.selection.SelectionObserver;
 import omr.util.Logger;
 
 import java.awt.*;
@@ -31,30 +34,39 @@ import javax.media.jai.operator.MosaicDescriptor;
  * Class <code>Picture</code> encapsulates an image, allowing modifications
  * and rendering. Its current implementation is based on JAI (Java Advanced
  * Imaging). JAI is not used outside of this class.
- * 
+ *
  * <p> Operations allow : <ul>
- * 
+ *
  * <li> To <b>load</b> the original image from a file </li>
- * 
+ *
  * <li> To <b>store</b> the current image to a file </li>
- * 
+ *
  * <li> To <b>render</b> the (original) image in a graphic context </li>
- * 
+ *
  * <li> To report current image <b>dimension</b> parameters </li>
- * 
+ *
  * <li> To <b>rotate</b> the image </li>
- * 
+ *
  * <li> To <b>read</b> or to <b>write</b> a pixel knowing its location in
  * the current image </li>
- * 
+ *
  * </ul> </p>
- * 
- * 
- * 
+ *
+ * <dl>
+ * <dt><b>Selection Inputs:</b></dt><ul>
+ * <li>PIXEL Location
+ * </ul>
+ *
+ * <dt><b>Selection Outputs:</b></dt><ul>
+ * <li>LEVEL
+ * </ul>
+ * </dl>
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Picture
+    implements SelectionObserver
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -91,6 +103,10 @@ public class Picture
 
     // Remember if we have actually rotated the image
     private boolean rotated = false;
+
+    // Selection objects where grey level of pixel is to be written to when
+    // so asked for by calling the update method
+    private Selection levelSelection;
 
     //~ Constructors ------------------------------------------------------
 
@@ -159,7 +175,7 @@ public class Picture
         // Try to read the image file
         logger.info("Loading image from " + imgFile + " ...");
         setImage(JAI.create("fileload", imgFile.getPath()));
-        
+
         logger.info("Image loaded "
                 + image.getWidth() + " x "
                 + image.getHeight());
@@ -268,6 +284,58 @@ public class Picture
 
         logger.info("Mosaic " + " "
                     + image.getWidth() + " x " + image.getHeight());
+    }
+
+    //~ Methods -----------------------------------------------------------
+
+    //-------------------//
+    // setLevelSelection //
+    //-------------------//
+    /**
+     * Inject the selection object where pixel grey level must be written
+     * to, when triggered through the update method.
+     *
+     * @param levelSelection the output selection object
+     */
+    public void setLevelSelection (Selection levelSelection)
+    {
+        this.levelSelection = levelSelection;
+    }
+
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Call-back triggered when Pixel Selection has been modified.
+     * Based on pixel location, we forward the pixel grey level to
+     * whoever is interested in it.
+     *
+     * @param selection the (Pixel) Selection
+     * @param hint potential notification hint
+     */
+    public void update(Selection selection,
+                       SelectionHint hint)
+    {
+        switch (selection.getTag()) {
+        case PIXEL :
+            if (hint == SelectionHint.PIXEL_INIT) {
+                // Compute and forward pixel grey level
+                Integer level = null;
+                Rectangle rect = (Rectangle) selection.getEntity();
+                if (rect != null) {
+                    Point pt = rect.getLocation();
+                    // Check that we are not pointing outside the image
+                    if ((pt.x < getWidth()) && (pt.y < getHeight())) {
+                        level = new Integer(getPixel(pt.x, pt.y));
+                    }
+                }
+                levelSelection.setEntity(level, hint);
+            }
+            break;
+
+        default :
+            logger.severe("Unexpected selection event from " + selection);
+        }
     }
 
     //--------------//
@@ -666,5 +734,13 @@ public class Picture
             // Remember original dimension
             originalDimension = getDimension();
         }
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    public String getName()
+    {
+        return "Picture";
     }
 }

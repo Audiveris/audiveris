@@ -17,23 +17,24 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphDirectory;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
-import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.LagBuilder;
 import omr.lag.Run;
+import omr.lag.RunBoard;
+import omr.lag.ScrollLagView;
+import omr.lag.SectionBoard;
 import omr.math.Population;
 import omr.stick.Stick;
 import omr.stick.StickSection;
 import omr.stick.StickView;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import omr.lag.ScrollLagView;
-import omr.lag.SectionBoard;
 import omr.ui.ToggleHandler;
-import omr.util.Clock;
 import omr.util.Logger;
+
+import static omr.selection.SelectionTag.*;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
@@ -43,19 +44,10 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.awt.*;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 import javax.swing.*;
-import javax.swing.event.*;
 
 /**
  * Class <code>LinesBuilder</code> is dedicated to the retrieval of the
@@ -116,7 +108,7 @@ public class LinesBuilder
 
         // Retrieve the horizontal lag of runs
         hLag = new GlyphLag(new HorizontalOrientation());
-        hLag.setId("hLag");
+        hLag.setName("hLag");
         hLag.setVertexClass(StickSection.class);
 
         new LagBuilder<GlyphLag, GlyphSection>().rip
@@ -272,10 +264,19 @@ public class LinesBuilder
         lagView = new MyLagView(hLag, members);
 
         BoardsPane boardsPane = new BoardsPane
-            (lagView,
-             new PixelBoard(),
-             new SectionBoard(hLag.getLastVertexId()),
-             new GlyphBoard(hLag.getLastGlyphId(), knownIds));
+            (sheet, lagView,
+             new PixelBoard("LinesBuilder-PixelBoard"),
+             new RunBoard(sheet.getSelection(HORIZONTAL_RUN),
+                          "LinesBuilder-RunBoard"),
+             new SectionBoard(sheet.getSelection(HORIZONTAL_SECTION),
+                              sheet.getSelection(HORIZONTAL_SECTION_ID),
+                              sheet.getSelection(PIXEL),
+                              hLag.getLastVertexId(),
+                              "LinesBuilder-SectionBoard"),
+             new GlyphBoard(hLag.getLastGlyphId(), knownIds,
+                            "LinesBuilder-GlyphBoard",
+                sheet.getSelection(HORIZONTAL_GLYPH),
+                sheet.getSelection(HORIZONTAL_GLYPH_ID)));
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
@@ -578,6 +579,15 @@ public class LinesBuilder
                           List<GlyphSection> specifics)
         {
             super(lag, specifics, LinesBuilder.this);
+            setName("LinesBuilder-View");
+
+            setLocationSelection(sheet.getSelection(PIXEL));
+            setSpecificSelections(sheet.getSelection(HORIZONTAL_RUN),
+                                  sheet.getSelection(HORIZONTAL_SECTION));
+            setGlyphSelection(sheet.getSelection(HORIZONTAL_GLYPH));
+
+            // Other input
+            sheet.getSelection(HORIZONTAL_SECTION_ID).addObserver(this);
         }
 
         //~ Methods -------------------------------------------------------
@@ -594,27 +604,6 @@ public class LinesBuilder
             for (StaffInfo staff : staves) {
                 staff.render(g, getZoom());
             }
-        }
-
-        //--------//
-        // toggle //
-        //--------//
-        /**
-         * Override the toggle method, to react on the toggle event since
-         * the pointed section may be different (between a staff line and a
-         * patch section)
-         */
-        @Override
-            public void toggle ()
-        {
-            super.toggle();
-
-            // Use rubber information if any
-            Rectangle rect = rubber.getRectangle();
-            if (rect == null) {
-                return;
-            }
-            setFocusRectangle(rect);
         }
     }
 

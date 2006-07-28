@@ -13,6 +13,7 @@ package omr.sheet;
 import omr.Main;
 import omr.ProcessingException;
 import omr.check.Check;
+import omr.check.CheckBoard;
 import omr.check.CheckSuite;
 import omr.check.FailureResult;
 import omr.check.SuccessResult;
@@ -23,31 +24,26 @@ import omr.glyph.GlyphDirectory;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
+import omr.glyph.ui.GlyphBoard;
+import omr.lag.RunBoard;
+import omr.lag.ScrollLagView;
+import omr.lag.SectionBoard;
+import omr.selection.Selection;
+import omr.selection.SelectionTag;
 import omr.stick.Stick;
-import omr.stick.StickSection;
 import omr.stick.StickUtil;
 import omr.stick.StickView;
 import omr.ui.BoardsPane;
-import omr.check.CheckBoard;
-import omr.glyph.ui.GlyphBoard;
 import omr.ui.PixelBoard;
-import omr.lag.ScrollLagView;
-import omr.lag.SectionBoard;
 import omr.ui.ToggleHandler;
 import omr.ui.view.Zoom;
 import omr.util.Logger;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.GridLayout;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
+import static omr.selection.SelectionTag.*;
+
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.*;
-import javax.swing.event.*;
 
 /**
  * Class <code>HorizontalsBuilder</code> is in charge of retrieving
@@ -207,6 +203,12 @@ public class HorizontalsBuilder
 
         // Specific rubber display
         lagView = new MyView(lag, members);
+        lagView.setSpecificSelections
+                (sheet.getSelection(SelectionTag.HORIZONTAL_RUN),
+                sheet.getSelection(SelectionTag.HORIZONTAL_SECTION));
+        Selection glyphSelection = sheet.getSelection(SelectionTag.HORIZONTAL_GLYPH);
+        lagView.setGlyphSelection(glyphSelection);
+        glyphSelection.addObserver(lagView);
 
         // Ids of recognized glyphs
         List<Integer> knownIds = new ArrayList<Integer>(allDashes.size() +1);
@@ -215,18 +217,26 @@ public class HorizontalsBuilder
             knownIds.add(new Integer(dash.getStick().getId()));
         }
 
-        checkCommonBoard = new CheckBoard<Stick>(commonSuite);
-        checkLedgerBoard = new CheckBoard<Stick>(ledgerSuite);
-        checkEndingBoard = new CheckBoard<Stick>(endingSuite);
+        checkCommonBoard = new CheckBoard<Stick>(commonSuite, "Common");
+        checkLedgerBoard = new CheckBoard<Stick>(ledgerSuite, "Ledger");
+        checkEndingBoard = new CheckBoard<Stick>(endingSuite, "Ending");
         BoardsPane boardsPane = new BoardsPane
-            (lagView
-             ,new PixelBoard()
-             ,new SectionBoard(lag.getLastVertexId())
-             ,new GlyphBoard(lag.getLastGlyphId(), knownIds)
-             ,checkCommonBoard
-             ,checkLedgerBoard
-             ,checkEndingBoard
-             );
+            (sheet, lagView,
+             new PixelBoard("HorizontalsBuilder-PixelBoard"),
+             new RunBoard(sheet.getSelection(HORIZONTAL_RUN),
+                          "HorizontalsBuilder-RunBoard"),
+             new SectionBoard(sheet.getSelection(HORIZONTAL_SECTION),
+                              sheet.getSelection(HORIZONTAL_SECTION_ID),
+                              sheet.getSelection(PIXEL),
+                              lag.getLastVertexId(),
+                              "HorizontalsBuilder-SectionBoard"),
+             new GlyphBoard(lag.getLastGlyphId(), knownIds,
+                            "HorizontalsBuilder-GlyphBoard",
+                sheet.getSelection(HORIZONTAL_GLYPH),
+                sheet.getSelection(HORIZONTAL_GLYPH_ID)),
+             checkCommonBoard,
+             checkLedgerBoard,
+             checkEndingBoard);
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
@@ -359,6 +369,8 @@ public class HorizontalsBuilder
                        List<GlyphSection> members)
         {
             super(lag, members, HorizontalsBuilder.this);
+            setName("HorizontalsBuilder-View");
+            setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
         }
 
         //~ Methods -------------------------------------------------------
@@ -410,8 +422,7 @@ public class HorizontalsBuilder
         // glyphSelected //
         //---------------//
         @Override
-            protected void glyphSelected (Glyph glyph,
-                                          Point pt)
+            protected void glyphSelected (Glyph glyph)
         {
             ///logger.info(getClass() + " glyphSelected " + glyph);
             Stick stick = null;
