@@ -13,15 +13,17 @@ package omr.glyph.ui;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
 import omr.ui.field.SpinnerUtilities;
 import omr.util.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.*;
-import omr.ui.field.LDoubleField;
 
 /**
  * Class <code>SymbolGlyphBoard</code> defines an extended glyph board,
@@ -32,8 +34,13 @@ import omr.ui.field.LDoubleField;
  * or by combination of other symbols. This is a subset of the previous
  * one. Glyphs whose shape is set to {@link omr.glyph.Shape#NOISE}, that is
  * too small glyphs, are not included in this spinner.
- *
  * </ul>
+ *
+ * <dl>
+ * <dt><b>Selection Inputs:</b></dt><ul>
+ * <li>VERTICAL_GLYPH
+ * </ul>
+ * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -87,7 +94,7 @@ public class SymbolGlyphBoard
                              GlyphLag  vLag)
     {
         // For all glyphs
-        super(vLag.getLastGlyphId());
+        super(vLag.getLastGlyphId(), "SymbolGlyphBoard");
 
         // Cache info
         this.pane          = pane;
@@ -124,6 +131,7 @@ public class SymbolGlyphBoard
      */
     public SymbolGlyphBoard()
     {
+        super("SymbolGlyphBoard");
         defineSpecificLayout();
     }
 
@@ -152,16 +160,9 @@ public class SymbolGlyphBoard
 
         // For glyph characteristics
         r += 2;                         // --------------------------------
-        //builder.add(leftMargin.getLabel(), cst.xy (1,  r));
-        //builder.add(leftMargin.getField(), cst.xy (3,  r));
+        builder.add(pitchPosition.getLabel(), cst.xy (1, r));
+        builder.add(pitchPosition.getField(), cst.xy (3, r));
 
-        builder.add(pitchPosition.getLabel(), cst.xy (5, r));
-        builder.add(pitchPosition.getField(), cst.xy (7, r));
-
-        //builder.add(rightMargin.getLabel(), cst.xy (9,  r));
-        //builder.add(rightMargin.getField(), cst.xy (11, r));
-
-        r += 2;                         // --------------------------------
         builder.add(ledger.getLabel(),  cst.xy (5,  r));
         builder.add(ledger.getField(),  cst.xy (7,  r));
 
@@ -285,71 +286,93 @@ public class SymbolGlyphBoard
     {
         super.stateChanged(e);
 
-        if (focusWanted) {
-            JSpinner spinner = (JSpinner) e.getSource();
-            int glyphId = (Integer) spinner.getValue();
-            if (glyphId != NO_VALUE) {
-                Glyph glyph = null;
-                if (glyphId >= firstSymbolId) {
-                    glyph = pane.getEntity(glyphId);
-                }
-                pane.getEvaluatorsPanel().evaluate(glyph);
+        // Symbol evaluation ?
+        JSpinner spinner = (JSpinner) e.getSource();
+        int glyphId = (Integer) spinner.getValue();
+        if (glyphId != NO_VALUE) {
+            Glyph glyph = null;
+            if (glyphId >= firstSymbolId) {
+                glyph = pane.getEntity(glyphId);
             }
+            pane.getEvaluatorsPanel().evaluate(glyph);
         }
     }
 
     //--------//
     // update //
     //--------//
+    /**
+     * Call-back triggered when Glyph Selection has been modified
+     *
+     * @param selection the (Glyph) Selection
+     * @param hint potential notification hint
+     */
     @Override
-        public void update (Glyph glyph)
+    public void update (Selection selection,
+                        SelectionHint hint)
     {
-        // For normal glyph id and shape
-        try {
-            super.update(glyph);
-        } catch (IllegalArgumentException ex) {
-            logger.warning("Illegal glyph id for " + glyph);
-            return;
-        }
+//        logger.info("SymbolGlyphBoard " + selection.getTag()
+//                    + " updating=" + updating + " idSelecting=" + idSelecting);
 
-        // Update spinners
-        int id = 0;
-        if (glyph != null) {
-            id = glyph.getId();
-        }
-        focusWanted = false;
+        switch (selection.getTag()) {
+        case VERTICAL_GLYPH :
 
-        // Set symbol id accordingly
-        if (symbol != null) {
-            if (id >= firstSymbolId &&
-                glyph.getShape() != Shape.NOISE) {
-                symbol.setValue(id);
-            } else {
-                symbol.setValue(NO_VALUE);
+            if (updating) {
+                ///logger.warning("double updating");
+                return;
             }
-        }
 
-        // Set known id accordingly
-        if (known != null) {
-            if (id >= firstSymbolId && glyph.isKnown()) {
-                known.setValue(id);
-            } else {
-                known.setValue(NO_VALUE);
+            // For normal glyph id and shape
+            try {
+                super.update(selection, hint);
+            } catch (IllegalArgumentException ex) {
+                return;
             }
-        }
 
-        // Fill characteristics
-        if (glyph != null) {
-            pitchPosition.setValue((int) Math.rint(glyph.getPitchPosition()));
-            ledger.setText(Boolean.toString(glyph.hasLedger()));
-            stems.setValue(glyph.getStemNumber());
-        } else {
-            ledger.setText("");
-            pitchPosition.setText("");
-            stems.setText("");
-        }
+            updating = true;
+            Glyph glyph = (Glyph) selection.getEntity();
 
-        focusWanted = true;
+            // Update spinners
+            int id = 0;
+            if (glyph != null) {
+                id = glyph.getId();
+            }
+
+            // Set symbol id accordingly
+            if (symbol != null) {
+                if (id >= firstSymbolId &&
+                    glyph.getShape() != Shape.NOISE) {
+                    symbol.setValue(id);
+                } else {
+                    symbol.setValue(NO_VALUE);
+                }
+            }
+
+            // Set known id accordingly
+            if (known != null) {
+                if (id >= firstSymbolId && glyph.isKnown()) {
+                    known.setValue(id);
+                } else {
+                    known.setValue(NO_VALUE);
+                }
+            }
+
+            // Fill characteristics
+            if (glyph != null) {
+                pitchPosition.setValue((int) Math.rint(glyph.getPitchPosition()));
+                ledger.setText(Boolean.toString(glyph.hasLedger()));
+                stems.setValue(glyph.getStemNumber());
+            } else {
+                ledger.setText("");
+                pitchPosition.setText("");
+                stems.setText("");
+            }
+            updating = false;
+            break;
+
+        default :
+            logger.severe("Unexpected selection event from " + selection);
+        }
     }
 
     //-------------//
