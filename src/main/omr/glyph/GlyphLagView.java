@@ -10,36 +10,37 @@
 
 package omr.glyph;
 
-import omr.lag.Lag;
 import omr.lag.LagView;
-import omr.lag.Section;
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
 import omr.util.Logger;
-import omr.util.Observer;
-import omr.util.Subject;
 
-import java.awt.Color;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import java.util.Collection;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
 
 /**
  * Class <code>GlyphLagView</code> is a specific {@link omr.lag.LagView}
  * dedicated to the display and processing of glyphs.
  *
- * <p> One or several instances of {@link GlyphObserver} interface can be
- * connected to this view, for example to display information about the
- * processed glyph.
+ * <dl>
+ * <dt><b>Selection Inputs:</b></dt><ul>
+ * <li>PIXEL
+ * <li>*_SECTION_ID
+ * <li>*_GLYPH
+ * <li>*_GLYPH_ID
+ * </ul>
  *
- * <p> This class implements the {@link GlyphFocus} interface, so this view
- * can programmatically focus on a specified glyph.
+ * <dt><b>Selection Outputs:</b></dt><ul>
+ * <li>*_GLYPH
+ * </ul>
+ * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class GlyphLagView
     extends LagView<GlyphLag, GlyphSection>
-    implements GlyphFocus
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -50,12 +51,11 @@ public class GlyphLagView
     /** Directory of Glyphs */
     protected final transient GlyphDirectory directory;
 
-    /** Subject for glyph observers if any */
-    protected final transient DefaultGlyphSubject glyphSubject
-            = new DefaultGlyphSubject();
-
     /** Flag indicating that point is being added */
     protected transient volatile boolean addingGlyph = false;
+
+    /** Output selection for Glyph information */
+    protected Selection glyphSelection;
 
     //~ Constructors -----------------------------------------------------
 
@@ -68,6 +68,7 @@ public class GlyphLagView
      *
      * @param lag the related lag
      * @param specificSections the specific sections if any, otherwise null
+     * @param directory where to get glyph from its id
      */
     public GlyphLagView (GlyphLag                  lag,
                          Collection<GlyphSection>  specificSections,
@@ -79,17 +80,17 @@ public class GlyphLagView
 
     //~ Methods -----------------------------------------------------------
 
-    //-----------------//
-    // getGlyphSubject //
-    //-----------------//
+    //-------------------//
+    // setGlyphSelection //
+    //-------------------//
     /**
-     * Export the subject dedicated to glyph information
+     * Inject dependency on where we should write glyph information.
      *
-     * @return the glyph subject
+     * @param glyphSelection the Glyph selection
      */
-    public DefaultGlyphSubject getGlyphSubject()
+    public void setGlyphSelection (Selection glyphSelection)
     {
-        return glyphSubject;
+        this.glyphSelection = glyphSelection;
     }
 
     //---------------//
@@ -125,51 +126,6 @@ public class GlyphLagView
         }
     }
 
-    //---------------//
-    // setFocusGlyph //
-    //---------------//
-    public void setFocusGlyph (Glyph glyph)
-    {
-        Rectangle rect = null;
-        if (glyph != null) {
-            rect = glyph.getContourBox();
-            glyphSelected(glyph, rect.getLocation());
-        } else {
-            glyphSelected(null, null);
-        }
-
-        setFocusRectangle(rect);
-
-        glyphSubject.notifyObservers(glyph);
-
-        // Empty section info
-        sectionSubject.notifyObservers(null);
-    }
-
-    //---------------//
-    // setFocusGlyph //
-    //---------------//
-    public void setFocusGlyph (int id)
-    {
-        Glyph glyph = getGlyphById(id);
-        if (glyph != null) {
-            setFocusGlyph(glyph);
-        } else {
-            logger.warning ("Glyph " + id + " not found.");
-        }
-    }
-
-    //-----------------//
-    // setFocusSection //
-    //-----------------//
-    public void setFocusSection (GlyphSection section)
-    {
-        super.setFocusSection(section);
-        if (section != null) {
-            glyphSubject.notifyObservers(section.getGlyph());
-        }
-    }
-
     //--------------//
     // getGlyphById //
     //--------------//
@@ -185,37 +141,6 @@ public class GlyphLagView
     {
         logger.warning("Deassign action is not yet implemented for a " +
                        glyph.getShape() + " glyph.");
-    }
-
-    //---------------//
-    // setFocusPoint //
-    //---------------//
-    /**
-     * Selection of a glyph by point designation. Registered observers are
-     * notified of the glyph information. The method {@link #glyphSelected}
-     * is called with the glyph information, whether the glyph lookup has
-     * succeeded or not.
-     *
-     * @param pt the selected point in model pixel coordinates
-     */
-    @Override
-        public void setFocusPoint (Point pt)
-    {
-        ///logger.info(getClass() + " setFocusPoint " + pt);
-
-        // First, provide info related to designated point
-        super.setFocusPoint(pt);
-
-        // Then, look for a glyph selection
-        Glyph glyph = null;
-
-        final GlyphSection section = lookupSection(pt);
-        if (section != null) {
-            glyph = section.getGlyph();
-        }
-
-        glyphSelected(glyph, pt);       // glyph may be null
-        glyphSubject.notifyObservers(glyph);
     }
 
     //------------//
@@ -255,10 +180,8 @@ public class GlyphLagView
      * desired for the selected glyph.
      *
      * @param glyph the selected glyph, which may be null
-     * @param pt the designated point
      */
-    protected void glyphSelected (Glyph glyph,
-                                  Point pt)
+    protected void glyphSelected (Glyph glyph)
     {
         ///logger.info(getClass() + " glyphSelected " + glyph);
         // Empty by default
@@ -280,6 +203,54 @@ public class GlyphLagView
         // Empty by default
         if (logger.isFineEnabled()) {
             logger.fine ("Empty GlyphLagView glyphAdded " + glyph);
+        }
+    }
+
+    //---------//
+    // update  //
+    //---------//
+    /**
+     * Call-back triggered by selection notification. It reacts to PIXEL
+     * location selection, section ids, and glyph ids.
+     *
+     * @param selection the notified selection
+     * @param hint potential notification hint
+     */
+    @Override
+        public void update(Selection selection,
+                           SelectionHint hint)
+    {
+        ///logger.info("GlyphLagView. selection=" + selection + " hint=" + hint);
+
+        // Default lag view behavior, including specifics
+        super.update(selection, hint);
+
+        // Check for glyph information
+        if (glyphSelection != null) {
+            switch (selection.getTag()) {
+            case PIXEL :
+            case VERTICAL_SECTION_ID :
+            case HORIZONTAL_SECTION_ID :
+            case VERTICAL_GLYPH_ID :
+            case HORIZONTAL_GLYPH_ID :
+                // Current Section (perhaps null) is in Section Selection
+                if (sectionSelection != null) {
+                    GlyphSection section =
+                            (GlyphSection) sectionSelection.getEntity();
+                    if (section != null) {
+                        glyphSelection.setEntity(section.getGlyph(), hint);
+                    }
+                }
+                break;
+
+            case VERTICAL_GLYPH :
+            case HORIZONTAL_GLYPH :
+                Glyph glyph = (Glyph) glyphSelection.getEntity();
+                glyphSelected(glyph);
+                break;
+
+            default :
+            }
         }
     }
 }
