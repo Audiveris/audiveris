@@ -22,6 +22,9 @@ import omr.glyph.ui.GlyphPane;
 import omr.score.Score;
 import omr.score.ScoreBuilder;
 import omr.score.ScoreManager;
+import omr.selection.Selection;
+import omr.selection.SelectionManager;
+import omr.selection.SelectionTag;
 import omr.stick.Stick;
 import omr.ui.BoardsPane;
 import omr.ui.Jui;
@@ -31,14 +34,13 @@ import omr.ui.view.Zoom;
 import omr.util.FileUtil;
 import omr.util.Logger;
 
+import static omr.selection.SelectionTag.*;
+
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * Class <code>Sheet</code> encapsulates the original music image, as well
@@ -146,6 +148,9 @@ public class Sheet
     // To avoid concurrent modifications
     private transient volatile boolean busy = false;
 
+    // All Current selections for this sheet
+    private final transient SelectionManager selectionManager;
+
     //- InstanceStep Definitions (in proper order) ------------------------
 
     /**
@@ -171,14 +176,19 @@ public class Sheet
             try {
                 result = new Picture(imageFile);
 
+                // Attach proper Selection objects
+                // (reading from pixel location & writing to grey level)
+                result.setLevelSelection(getSelection(SelectionTag.LEVEL));
+                getSelection(SelectionTag.PIXEL).addObserver(result);
+
                 // Display sheet picture if not batch mode
                 if (Main.getJui() != null) {
                     PictureView pictureView = new PictureView(Sheet.this);
                     displayAssembly();
                     assembly.addViewTab
                         ("Picture", pictureView,
-                         new BoardsPane(pictureView.getView(),
-                                        new PixelBoard()));
+                         new BoardsPane(Sheet.this, pictureView.getView(),
+                                        new PixelBoard("Picture-PixelBoard")));
                 }
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find file " + imageFile);
@@ -197,7 +207,7 @@ public class Sheet
 
                 throw new ProcessingException();
             } catch (Exception ex) {
-                ///ex.printStackTrace();
+                ex.printStackTrace();
                 logger.warning(ex.getMessage());
                 throw new ProcessingException();
             }
@@ -565,10 +575,37 @@ public class Sheet
      */
     private Sheet ()
     {
+        selectionManager = new SelectionManager(this);
         checkTransientSteps();
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //---------------------//
+    // getSelectionManager //
+    //---------------------//
+    /**
+     * Report, the selection manager assigned to this sheet.
+     * @return the selection manager
+     */
+    public SelectionManager getSelectionManager ()
+    {
+        return selectionManager;
+    }
+
+    //--------------//
+    // getSelection //
+    //--------------//
+    /**
+     * Report, within this sheet, the Selection related to the provided Tag
+     *
+     * @param tag specific selection (such as PIXEL, GLYPH, etc)
+     * @return the selection object, that can be observed
+     */
+    public Selection getSelection (SelectionTag tag)
+    {
+        return selectionManager.getSelection(tag);
+    }
 
     //--------//
     // isBusy //
@@ -752,6 +789,21 @@ public class Sheet
     public void setHorizontalLag (GlyphLag hLag)
     {
         this.hLag = hLag;
+
+        // Input
+        getSelection(PIXEL).addObserver(hLag);
+        getSelection(HORIZONTAL_SECTION).addObserver(hLag);
+        getSelection(HORIZONTAL_SECTION_ID).addObserver(hLag);
+        getSelection(HORIZONTAL_GLYPH).addObserver(hLag);
+        getSelection(HORIZONTAL_GLYPH_ID).addObserver(hLag);
+
+        // Input & Output
+
+        // Output
+        hLag.setLocationSelection(getSelection(PIXEL));
+        hLag.setRunSelection(getSelection(HORIZONTAL_RUN));
+        hLag.setSectionSelection(getSelection(HORIZONTAL_SECTION));
+        hLag.setGlyphSelection(getSelection(HORIZONTAL_GLYPH));
     }
 
     //------------------//
@@ -1218,7 +1270,22 @@ public class Sheet
     public void setVerticalLag (GlyphLag vLag)
     {
         this.vLag = vLag;
-    }
+
+        // Input
+        getSelection(PIXEL).addObserver(vLag);
+        getSelection(VERTICAL_SECTION).addObserver(vLag);
+        getSelection(VERTICAL_SECTION_ID).addObserver(vLag);
+        getSelection(VERTICAL_GLYPH).addObserver(vLag);
+        getSelection(VERTICAL_GLYPH_ID).addObserver(vLag);
+
+        // Input & Output
+
+        // Output
+        vLag.setLocationSelection(getSelection(PIXEL));
+        vLag.setRunSelection(getSelection(VERTICAL_RUN));
+        vLag.setSectionSelection(getSelection(VERTICAL_SECTION));
+        vLag.setGlyphSelection(getSelection(VERTICAL_GLYPH));
+}
 
     //----------------//
     // getVerticalLag //

@@ -13,10 +13,11 @@ package omr.sheet;
 import omr.Main;
 import omr.ProcessingException;
 import omr.check.Check;
-import omr.check.Checkable;
 import omr.check.CheckBoard;
 import omr.check.CheckSuite;
+import omr.check.Checkable;
 import omr.check.FailureResult;
+import omr.check.Result;
 import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -25,25 +26,25 @@ import omr.glyph.GlyphDirectory;
 import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
+import omr.lag.RunBoard;
+import omr.lag.ScrollLagView;
+import omr.lag.SectionBoard;
+import omr.selection.Selection;
+import omr.selection.SelectionTag;
 import omr.stick.Stick;
 import omr.stick.StickSection;
 import omr.stick.StickView;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import omr.lag.ScrollLagView;
-import omr.lag.SectionBoard;
 import omr.ui.view.Zoom;
 import omr.util.Logger;
-import omr.util.Predicate;
+
+import static omr.selection.SelectionTag.*;
 
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.*;
-import omr.check.Result;
 
 /**
  * Class <code>VerticalsBuilder</code> is in charge of retrieving all the
@@ -161,15 +162,25 @@ public class VerticalsBuilder
         }
 
         // Create a hosting frame for the view
-        checkBoard = new CheckBoard<Context>(suite);
+        checkBoard = new CheckBoard<Context>(suite,
+                                             "VerticalsBuilder-CheckBoard");
         view.setCheckMonitor(checkBoard);
         sheet.getAssembly().addViewTab
             ("Verticals", new ScrollLagView(view),
              new BoardsPane
-             (view,
-              new PixelBoard(),
-              new SectionBoard(vLag.getLastVertexId()),
-              new GlyphBoard(vLag.getLastGlyphId(), knownIds),
+             (sheet, view,
+              new PixelBoard("VerticalsBuilder-PixelBoard"),
+              new RunBoard(sheet.getSelection(VERTICAL_RUN),
+                           "VerticalsBuilder-RunBoard"),
+              new SectionBoard(sheet.getSelection(VERTICAL_SECTION),
+                               sheet.getSelection(VERTICAL_SECTION_ID),
+                               sheet.getSelection(PIXEL),
+                               vLag.getLastVertexId(),
+                               "VerticalsBuilder-SectionBoard"),
+              new GlyphBoard(vLag.getLastGlyphId(), knownIds,
+                             "VerticalsBuilder-GlyphBoard",
+                             sheet.getSelection(VERTICAL_GLYPH),
+                             sheet.getSelection(VERTICAL_GLYPH_ID)),
               checkBoard));
     }
 
@@ -229,6 +240,12 @@ public class VerticalsBuilder
         public MyView ()
         {
             super(vLag, null, VerticalsBuilder.this);
+            setName("VerticalsBuilder-MyView");
+            setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
+            Selection glyphSelection = sheet.getSelection
+                (SelectionTag.VERTICAL_GLYPH);
+            setGlyphSelection(glyphSelection);
+            glyphSelection.addObserver(this);
         }
 
         //~ Methods -------------------------------------------------------
@@ -300,8 +317,7 @@ public class VerticalsBuilder
         // glyphSelected //
         //---------------//
         @Override
-            protected void glyphSelected (Glyph glyph,
-                                          Point pt)
+            protected void glyphSelected (Glyph glyph)
         {
             ///logger.info(getClass() + " glyphSelected " + glyph);
             Context context = null;
@@ -312,6 +328,9 @@ public class VerticalsBuilder
                     checkBoard.setSuite(suite);
 
                     Stick stick = (Stick) glyph;
+                    Rectangle rect = (Rectangle)
+                        sheet.getSelection(SelectionTag.PIXEL).getEntity();
+                    Point pt = rect.getLocation();
                     SystemInfo system = sheet.getSystemAtY(pt.y);
                     context = new Context(stick, system);
                 } catch (ProcessingException ex){

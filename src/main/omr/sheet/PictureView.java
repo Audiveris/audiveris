@@ -10,9 +10,9 @@
 
 package omr.sheet;
 
-import omr.ui.view.ScrollView;
+import omr.selection.SelectionTag;
 import omr.ui.view.RubberZoomedPanel;
-import omr.util.*;
+import omr.ui.view.ScrollView;
 
 import java.awt.*;
 
@@ -28,12 +28,7 @@ public class PictureView
 {
     //~ Static variables/initializers -------------------------------------
 
-    private static final Logger logger = Logger.getLogger(PictureView.class);
-
     //~ Instance variables ------------------------------------------------
-
-    // The displayed view
-    private final MyView view;
 
     // Link with sheet
     private final Sheet sheet;
@@ -51,118 +46,16 @@ public class PictureView
      */
     public PictureView (Sheet sheet)
     {
-        view = new MyView();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("creating PictureView on " + sheet);
-        }
-
         this.sheet = sheet;
+        
+        view = new MyView();
+        view.setName("Picture-View");
+        
+        // Inject dependency of pixel location
+        view.setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
 
         // Insert view
         setView(view);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("PictureView ready");
-        }
-    }
-
-    //~ Methods -----------------------------------------------------------
-
-    //---------//
-    // getView //
-    //---------//
-    public MyView getView()
-    {
-        return view;
-    }
-
-    //----------//
-    // getSheet //
-    //----------//
-    /**
-     * Report the sheet this view is related to
-     *
-     * @return the related sheet
-     */
-    public Sheet getSheet ()
-    {
-        return sheet;
-    }
-
-    //-------//
-    // close //
-    //-------//
-    /**
-     * Close the view, by removing it from the containing sheet tabbed
-     * pane.
-     */
-    public void close ()
-    {
-        ///Main.getJui().sheetPane.close(this);
-    }
-
-    //------------------//
-    // showRelatedScore //
-    //------------------//
-    /**
-     * If the sheet-related score exists, then display the score view in
-     * the score display. Focus is determined as the corresponding point in
-     * score/score display as the provided image point (or of the current
-     * sheet image point if a null image point is provided)
-     */
-    public void showRelatedScore ()
-    {
-//         // Do we have the corresponding score ?
-//         final Score score = sheet.getScore();
-
-//         if (logger.isFineEnabled()) {
-//             logger.debug("showRelatedScore: " + score);
-//         }
-
-//         if (score != null) {
-//             Main.getJui().scorePane.showScoreView(score.getView());
-//         } else {
-//             Main.getJui().scorePane.showScoreView(null);
-//         }
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * A readable description of this view
-     *
-     * @return a name based on the sheet this view is dedicated to
-     */
-    @Override
-    public String toString ()
-    {
-        return "{PictureView " + sheet.getPath() + "}";
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    /**
-     * Report the pixel level at the designated point.
-     *
-     * @param pt the designated point
-     * @return the pixel level (0->255) or -1 if info is not available, for
-     * example because the designated point is outside the image boundaries
-     */
-    @Override
-    public int getPixel (Point pt)
-    {
-        // Make sure the picture is available
-        Picture picture = sheet.getPicture();
-
-        // Check that we are not pointing outside the image
-        if ((pt.x < picture.getWidth()) && (pt.y < picture.getHeight())) {
-            return picture.getPixel(pt.x, pt.y);
-        } else {
-            return -1;
-        }
     }
 
     //~ Classes -----------------------------------------------------------
@@ -173,8 +66,6 @@ public class PictureView
     private class MyView
         extends RubberZoomedPanel
     {
-        //~ Methods -------------------------------------------------------
-
         //--------//
         // render //
         //--------//
@@ -183,27 +74,6 @@ public class PictureView
         {
             // Render the picture image
             sheet.getPicture().render(g, getZoom().getRatio());
-        }
-
-        //---------------//
-        // setFocusPoint //
-        //---------------//
-        /**
-         * Point designation. Registered observers are notified of the
-         * Point and Pixel informations.
-         *
-         * @param pt the selected point in model pixel coordinates
-         */
-        @Override
-            public void setFocusPoint (Point pt)
-        {
-            ///logger.info(getClass() + " setFocusPoint w/ pixel " + pt);
-
-            super.setFocusPoint(pt);
-
-            // We use a specific version which displays the pixel level
-    //        notifyObservers(new PixelPoint(pt.x, pt.y), getPixel(pt));
-            getView().getPixelSubject().notifyObservers(new PixelPoint(pt.x, pt.y));
         }
     }
 }

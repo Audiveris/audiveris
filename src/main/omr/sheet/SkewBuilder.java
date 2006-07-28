@@ -19,6 +19,7 @@ import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionRatioPolicy;
 import omr.lag.LagBuilder;
 import omr.lag.LagView;
+import omr.lag.RunBoard;
 import omr.lag.SectionView;
 import omr.stick.Stick;
 import omr.stick.StickSection;
@@ -26,8 +27,9 @@ import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
-import omr.util.Clock;
 import omr.util.Logger;
+
+import static omr.selection.SelectionTag.*;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
@@ -38,16 +40,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
 import java.awt.Color;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.event.*;
+import java.util.*;
 import javax.swing.WindowConstants;
 
 /**
@@ -84,7 +77,7 @@ public class SkewBuilder
     private List<Stick> sticks = new ArrayList<Stick>();
 
     // Lag of horizontal significant runs
-    private GlyphLag hLag;
+    private GlyphLag sLag;  // A skewed (horizontal) lag
     private int minSectionLength;
     private int maxThickness;
 
@@ -137,10 +130,11 @@ public class SkewBuilder
         minSectionLength = scale.toPixels(constants.minSectionLength);
 
         // Retrieve the horizontal lag of runs
-        hLag = new GlyphLag(new HorizontalOrientation());
-        hLag.setVertexClass(StickSection.class);
+        sLag = new GlyphLag(new HorizontalOrientation());
+        sLag.setName("Skew-HLag");
+        sLag.setVertexClass(StickSection.class);
         new LagBuilder<GlyphLag, GlyphSection>().rip
-                (hLag,
+                (sLag,
                  picture,
                  scale.toPixels(constants.minRunLength), // minRunLength
                  new JunctionRatioPolicy(constants.maxHeightRatio.getValue())); // maxHeightRatio
@@ -164,8 +158,6 @@ public class SkewBuilder
         if (constants.displayFrame.getValue() &&
             Main.getJui() != null) {
             displayFrame();
-//         } else {
-//             houseKeeping();
         }
 
         // De-skew the picture if necessary
@@ -214,7 +206,7 @@ public class SkewBuilder
     private void displayFrame()
     {
         // Create a view
-        LagView view = new SkewLagView(hLag);
+        LagView view = new SkewLagView(sLag);
         view.colorize();
 
         // Create a hosting frame for the view
@@ -222,9 +214,15 @@ public class SkewBuilder
             ("Skew",
              new ScrollLagView(view),
              new BoardsPane
-             (view,
-              new PixelBoard(),
-              new SectionBoard(hLag.getLastVertexId())));
+             (sheet, view,
+              new PixelBoard("SkewBuilder-Pixel-Board"),
+              new RunBoard(sheet.getSelection(SKEW_RUN),
+                           "SkewBuilder-RunBoard"),
+              new SectionBoard(sheet.getSelection(SKEW_SECTION),
+                               sheet.getSelection(SKEW_SECTION_ID),
+                              sheet.getSelection(PIXEL),
+                               sLag.getLastVertexId(),
+                               "SkewBuilder-SectionBoard")));
     }
 
     //---------------//
@@ -236,7 +234,7 @@ public class SkewBuilder
 
         // Try to aggregate sections into sticks.
         // Visit all sections of the lag
-        for (GlyphSection s : hLag.getVertices()) {
+        for (GlyphSection s : sLag.getVertices()) {
             StickSection section = (StickSection) s;
 
             if (logger.isFineEnabled()) {
@@ -251,7 +249,7 @@ public class SkewBuilder
                     stick = (Stick) section.getGlyph();
                 } else {
                     // Otherwise, start a brand new stick
-                    stick = (Stick) hLag.createGlyph(Stick.class);
+                    stick = (Stick) sLag.createGlyph(Stick.class);
 
                     // Store this new stick into the stick table
                     sticks.add(stick);
@@ -330,16 +328,6 @@ public class SkewBuilder
             angle = Math.atan(slope);
         }
     }
-
-    //--------------//
-    // houseKeeping //
-    //--------------//
-//     private void houseKeeping ()
-//     {
-//         sticks.clear();
-//         sticks = null;
-//         hLag = null;
-//     }
 
     //-----------//
     // writePlot //
@@ -423,6 +411,22 @@ public class SkewBuilder
         public SkewLagView (GlyphLag lag)
         {
             super(lag, null);
+            setName("SkewBuilder-View");
+
+            // Inject selection dependencies into this hlag, only when this
+            // display is activated, since there is no other consumer
+
+            // Location input / output
+            setLocationSelection(sheet.getSelection(PIXEL));
+
+            // Run input & Section input/output
+            sLag.setLocationSelection(sheet.getSelection(PIXEL));
+            sLag.setRunSelection(sheet.getSelection(SKEW_RUN));
+            sLag.setSectionSelection(sheet.getSelection(SKEW_SECTION));
+
+            sheet.getSelection(PIXEL).addObserver(sLag);
+            sheet.getSelection(SKEW_SECTION).addObserver(sLag);
+            sheet.getSelection(SKEW_SECTION_ID).addObserver(sLag);
         }
 
         //~ Methods -------------------------------------------------------

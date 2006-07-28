@@ -10,14 +10,12 @@
 
 package omr.sheet;
 
-import omr.Step;
+import omr.selection.Selection;
 import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.NameSet;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Class <code>SheetManager</code> handles the list of sheet instances in
@@ -42,6 +40,10 @@ public class SheetManager
 
     // Instances of sheet
     private List<Sheet> instances = new ArrayList<Sheet>();
+
+    // Current sheet selection
+    private final static Selection selection
+            = Selection.makeSheetSelection();
 
     //~ Constructors ------------------------------------------------------
 
@@ -192,5 +194,41 @@ public class SheetManager
     public List<Sheet> getSheets ()
     {
         return instances;
+    }
+
+    //--------------//
+    // getSelection //
+    //--------------//
+    /**
+     * Convenient method to access sheet selection, and potentially
+     * register observer
+     *
+     * @return the sheet selection
+     */
+    public static Selection getSelection()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("getSelection called");
+        }
+
+        return selection;
+    }
+
+    //------------------//
+    // getSelectedSheet //
+    //------------------//
+    /**
+     * Convenient method to directly access currently selected sheet if any
+     *
+     * @return the selected sheet, which may be null (case of no
+     * sheet selected yet)
+     */
+    public static Sheet getSelectedSheet()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("getSelectedSheet : " + selection.getEntity());
+        }
+
+        return (Sheet) selection.getEntity();
     }
 }

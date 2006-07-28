@@ -16,6 +16,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.score.PagePoint;
 import omr.score.Score;
+import omr.selection.Selection;
 import omr.ui.Jui;
 import omr.ui.SheetAssembly;
 import omr.ui.icon.IconManager;
@@ -36,6 +37,13 @@ import javax.swing.event.*;
  * <p>Multiple sheets are handled by means of a tabbed pane. For each tab,
  * and thus for each sheet, we have a separate {@link SheetAssembly}.
  *
+ * <p>This class is meant to be a Singleton
+ *
+ * <dl>
+ * <dt><b>Selection Outputs:</b></dt><ul>
+ * <li>SHEET
+ * </ul>
+ * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -53,7 +61,7 @@ public class SheetController
 
     //~ Instance variables ------------------------------------------------
 
-    // The concrete tabbed pane
+    // The concrete tabbed pane, one tab per sheet
     private final JTabbedPane component;
 
     // Ordered list of sheet assemblies
@@ -75,14 +83,15 @@ public class SheetController
     // Should we synchronize the (score) pane on the other side ?
     private boolean synchroWanted = true;
 
+    private int previousIndex = -1;
+
     //~ Constructors ------------------------------------------------------
 
-    //-----------//
+    //-----------------//
     // SheetController //
-    //-----------//
+    //-----------------//
     /**
      * Create the SheetController, within the jui frame.
-     *
      *
      * @param jui     the enclosing jui entity
      * @param toolBar the jui tool bar
@@ -159,7 +168,7 @@ public class SheetController
      *
      * @return the sheet assembly currently selected
      */
-    public SheetAssembly getSelectedAssembly()
+    private SheetAssembly getSelectedAssembly()
     {
         int index = component.getSelectedIndex();
         if (index != -1) {
@@ -177,7 +186,7 @@ public class SheetController
      *
      * @return the current sheet, or null otherwise
      */
-    public Sheet getCurrentSheet ()
+    private Sheet getCurrentSheet ()
     {
         SheetAssembly assembly = getSelectedAssembly();
 
@@ -201,54 +210,6 @@ public class SheetController
     {
         return toggleButton;
     }
-
-    //-------------------//
-    // setScoreSheetView //
-    //-------------------//
-    /**
-     * Preset (before info is actually shown by another explicit order
-     * showSheetView) the view parameters for the sheet that relates to the
-     * provided score. This method is called from the score side, to prepare
-     * the display of the counter part on sheet side.
-     *
-     * @param score the score for which related sheet view is to be
-     *              prepared.
-     * @param pagPt The desired focus point in the virtual page
-     *              coordinates.  If no focus point is explicitely given
-     *              (pagPt value is null), then there is no attempt to
-     *              actually load the related sheet if it is not yet
-     *              loaded. So, this may end up is just preparing a blank
-     *              tab, when we have no sheet information available, and
-     *              no explicit desire to load and show the sheet.
-     *
-     * @return The index in the tabbed pane of the prepared view, so that
-     *         the following showSheetView can point directly to this
-     *         index. Since sheet loading is performed asynchronously, a
-     *         special index value (DIFFERED_INDEX) is used to signal that
-     *         the tab index is not yet known.
-     */
-//     public int setScoreSheetView (Score score,
-//                                   PagePoint pagPt)
-//     {
-//         if (logger.isFineEnabled()) {
-//             logger.debug("setScoreSheetView " + score + " pagPt=" + pagPt);
-//         }
-
-//         // Remember that user is interested in seeing this sheet
-//         Main.getJui().setTarget(score.getImageFPath());
-
-//         Sheet sheet = score.getSheet();
-
-//         if (sheet == null) {
-//             // Simply post the asynchronous loading of the sheet image
-//             Step.getLoadStep().perform(null, new File(score.getImageFPath()));
-
-//             return DIFFERED_INDEX;
-//         } else {
-//             // Prepare the view parameters immediately
-//             return setSheetView(sheet, pagPt);
-//         }
-//     }
 
     //------------------//
     // setSheetAssembly //
@@ -311,27 +272,6 @@ public class SheetController
                 index = component.indexOfComponent(assembly.getComponent());
             }
 
-            // Focus info
-            if (pagPt == null) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("No focus specified on Sheet side");
-                }
-
-//                 // Does the score view has a defined focus ?
-//                 if (score != null) {
-//                     ScoreView scoreView = score.getView();
-
-//                     if (scoreView != null) {
-//                         pagPt = scoreView.getFocus();
-//                     }
-//                 }
-            }
-
-//            if (pagPt != null) {
-                // Use this focus information in the assembly
-                //                 assembly.setFocus(pagPt);
-//            }
-
             return index;
         } else {
             return -1; // Index of the empty tab
@@ -355,10 +295,10 @@ public class SheetController
             (assembly.getComponent());
 
         if (index != -1) {
-            // Remove from assemblies
-            assemblies.remove(index);
             // Remove from tabs
             component.remove(index);
+            // Remove from assemblies
+            assemblies.remove(index);
         }
     }
 
@@ -379,33 +319,6 @@ public class SheetController
         component.setSelectedIndex(index);
         setSynchroWanted(true);
     }
-
-//     //---------------//
-//     // showSheetView //
-//     //---------------//
-//     /**
-//      * Make the (preset) SheetView actually visible.
-//      *
-//      * @param index the index to the SheetView to be made current, with its
-//      *              potential focus point, or -1 to show a blank panel.
-//      */
-//     public void showSheetView (int index)
-//     {
-//         showSheetView(index, false);
-//     }
-
-//     //---------------//
-//     // showSheetView //
-//     //---------------//
-//     /**
-//      * Make the (preset) SheetView actually visible.
-//      *
-//      * @param view the SheetView to show, or null
-//      */
-//     public void showSheetView (SheetView view)
-//     {
-//         showSheetView(indexOfComponent(view), false);
-//     }
 
     //---------//
     // getMenu //
@@ -492,57 +405,61 @@ public class SheetController
         }
     }
 
-//     //---------------//
-//     // showSheetView //
-//     //---------------//
-//     /**
-//      * Make the (preset) SheetView actually visible.
-//      *
-//      * @param view    the SheetView to show, or null
-//      * @param synchro specify whether other side is to be shown also
-//      */
-//     private void showSheetView (SheetView view,
-//                                 boolean synchro)
-//     {
-//         showSheetView(indexOfComponent(view), synchro);
-//     }
-
     //--------------//
     // stateChanged //
     //--------------//
     /**
-     * Set the state (enabled or disabled) of all menu items that depend on
-     * status of current sheet. UI frame title is updated accordingly.
-     * This method is called whenever the tab selection is modified,
-     * whether it's programmatically (by means of setSheetView) of by user
-     * action (manual selection of the tab).
+     * This method is called whenever the sheet selection is
+     * modified, whether it's programmatically (by means of setSheetView)
+     * of by user action (manual selection of the tab).
+     *
+     * <p> Set the state (enabled or disabled) of all menu items that
+     * depend on status of current sheet.
      */
     public void stateChanged (ChangeEvent e)
     {
-        // Enable actions ?
-        Sheet sheet = getCurrentSheet();
+        final int index = component.getSelectedIndex();
+        ///logger.info("previous=" + previousIndex + " index=" + index);
+        if (index != -1) {
+            if (previousIndex != -1) {
+                tabDeselected (previousIndex);
+            }
+            tabSelected (index);
+        }
 
+        previousIndex = index;
+    }
+
+    //-------------//
+    // tabSelected //
+    //-------------//
+    private void tabSelected (int index)
+    {
+        // Remember the new selected sheet
+        Sheet sheet = getCurrentSheet();
         if (logger.isFineEnabled()) {
             logger.fine("stateChanged for " + sheet);
         }
 
+        Selection sheetSelection = SheetManager.getSelection();
+        sheetSelection.setEntity(sheet, null);
+
+        // Enable sheet-based menu actions ?
         UIUtilities.enableActions(sheetDependentActions, sheet != null);
-
-//         // Synchronize the score side ?
-//         SheetView view = (SheetView) getSelectedComponent();
-
-//         if ((view != null) && isSynchroWanted()) {
-//             view.showRelatedScore();
-//         }
-
-        // Make UI frame title consistent
-        Main.getJui().updateTitle();
 
         // Tell the selected assembly that it now has the focus...
         SheetAssembly assembly = getSelectedAssembly();
         if (assembly != null) {
             assembly.assemblySelected();
         }
+    }
+
+    //---------------//
+    // tabDeselected //
+    //---------------//
+    private void tabDeselected (int previousIndex)
+    {
+        assemblies.get(previousIndex).assemblyDeselected();
     }
 
     //~ Classes -----------------------------------------------------------
