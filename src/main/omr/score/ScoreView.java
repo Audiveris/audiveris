@@ -10,29 +10,34 @@
 
 package omr.score;
 
-import omr.Main;
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
+import omr.selection.SelectionTag;
 import omr.sheet.Sheet;
 import omr.ui.SheetAssembly;
+import omr.ui.util.Panel;
 import omr.ui.view.Rubber;
 import omr.ui.view.RubberZoomedPanel;
 import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
-import omr.ui.util.Panel;
 import omr.util.Logger;
 
 import static omr.score.ScoreConstants.*;
 
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-import java.util.Iterator;
+import java.util.*;
 import javax.swing.*;
 
 /**
  * Class <code>ScoreView</code> encapsulates the horizontal display of all
  * the score systems which may encompass several pages & systems. It knows
  * about the display zoom ratio of the score.
+ *
+ * <dl>
+ * <dt><b>Selection Inputs:</b></dt><ul>
+ * <li>SCORE Location
+ * </ul>
+ * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -66,9 +71,6 @@ public class ScoreView
     // The info zone
     private final JLabel info = new JLabel("Score");
 
-    // To avoid circular updating
-    private volatile transient boolean localSelfUpdating;
-
     //~ Constructors ------------------------------------------------------
 
     //-----------//
@@ -85,6 +87,11 @@ public class ScoreView
             logger.fine("new ScoreView on " + score);
         }
 
+        // Explicitly register the display to Score Selection
+        Sheet sheet = score.getSheet();
+        panel.setLocationSelection(sheet.getSelection(SelectionTag.SCORE));
+        sheet.getSelection(SelectionTag.SCORE).addObserver(panel);
+
         info.setHorizontalAlignment(SwingConstants.LEFT);
         compound.setLayout(new BorderLayout());
         compound.add(pane.getComponent(), BorderLayout.CENTER);
@@ -96,6 +103,13 @@ public class ScoreView
 
         // Compute origin of all members
         computePositions();
+
+        // Bridge companion between Score and Sheet locations both ways
+        new ScoreSheetBridge(score);
+
+        // Force selection update
+        Selection pixelSelection = sheet.getSelection(SelectionTag.PIXEL);
+        pixelSelection.refresh(null);
     }
 
     //~ Methods -----------------------------------------------------------
@@ -127,48 +141,22 @@ public class ScoreView
      */
     public void setFocus (PagePoint pagPt)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("setFocus pagPt=" + pagPt);
-        }
-
-         if (pagPt != null) {
-             ScorePoint scrPt = null;
-             // Which system ?
-             final System system = score.pageLocateSystem(pagPt);
-             if (system != null && !localSelfUpdating) {
-                 scrPt = system.sheetToScore(pagPt, null);
-                 localSelfUpdating = true;
-                 panel.setFocusPoint(scrPt);
-                 localSelfUpdating = false;
-             }
-             tellPoint(scrPt, pagPt);
-         }
-    }
-
-    //----------//
-    // getFocus //
-    //----------//
-    /**
-     * Report the focus point within this score view, if any
-     *
-     * @return the current focus point, or null
-     */
-    public PagePoint getFocus ()
-    {
-//         if (mark.isActive()) {
-//             scrPt = mark.getLocation();
-
-//             // The enclosing system
-//             System system = score.scoreLocateSystem(scrPt.x);
-
-//             if (system != null) {
-//                 system.scoreToSheet(scrPt, pagPt); // Point in the sheet
-
-//                 return pagPt;
-//             }
+//         if (logger.isFineEnabled()) {
+//             logger.fine("setFocus pagPt=" + pagPt);
 //         }
 
-        return null;
+//          if (pagPt != null) {
+//              ScorePoint scrPt = null;
+//              // Which system ?
+//              final System system = score.pageLocateSystem(pagPt);
+//              if (system != null && !localSelfUpdating) {
+//                  scrPt = system.sheetToScore(pagPt, null);
+//                  localSelfUpdating = true;
+//                  panel.setFocusPoint(scrPt);
+//                  localSelfUpdating = false;
+//              }
+//              tellPoint(scrPt, pagPt);
+//          }
     }
 
     //----------//
@@ -254,22 +242,6 @@ public class ScoreView
     //-----------//
     // tellPoint //
     //-----------//
-    private void tellPoint(ScorePoint scrPt)
-    {
-        tellPoint(scrPt, null);
-    }
-
-    //-----------//
-    // tellPoint //
-    //-----------//
-    private void tellPoint(PagePoint  pagPt)
-    {
-        tellPoint(null, pagPt);
-    }
-
-    //-----------//
-    // tellPoint //
-    //-----------//
     private void tellPoint(ScorePoint scrPt,
                            PagePoint  pagPt)
     {
@@ -306,6 +278,7 @@ public class ScoreView
                 Rubber rubber)
         {
             super(zoom, rubber);
+            setName("ScoreView-MyPanel");
             rubber.setMouseMonitor(this);
 
             // Initialize drawing colors, border, opacity.
@@ -327,49 +300,37 @@ public class ScoreView
             score.paintChildren(g2, zoom);
         }
 
-        //---------------//
-        // setFocusPoint //
-        //---------------//
-        @Override
-            public void setFocusPoint (Point pt)
+        //--------//
+        // update //
+        //--------//
+        /**
+         * Call-back (part of Observer interface) triggered when location
+         * has been modified
+         *
+         * @param selection the notified Selection
+         * @param hint potential notification hint
+         */
+        public void update(Selection selection,
+                           SelectionHint hint)
         {
-            // We forge a ScorePoint from the display point
-            ScorePoint scrPt = new ScorePoint(pt.x, pt.y);
-            
-            // Display the point in score view
-            super.setFocusPoint(scrPt);
-
-            // The enclosing system
-            System system = score.scoreLocateSystem(scrPt);
-
-            if (system != null) {
-                PagePoint pagPt = system.scoreToSheet(scrPt, null);
-
-                // Update score panel
-                tellPoint(scrPt, pagPt); 
-
-                // Focus on that point in the related sheet
-                Sheet sheet = score.getSheet();
-                if (sheet != null) {
-                    SheetAssembly assembly = sheet.getAssembly();
-                    if (assembly != null) {
-                        assembly.setSheetFocusPoint(pagPt);
-                    }
-                }
+            if (logger.isFineEnabled()) {
+                logger.fine("ScoreView: Score selection updated " + selection);
             }
-        }
 
-        //-------------------//
-        // setFocusRectangle //
-        //-------------------//
-        @Override
-        public void setFocusRectangle (Rectangle rect)
-        {
-            super.setFocusRectangle(rect);
+            // Show location in display (default dehavior)
+            super.update(selection, hint);
 
-            if (rect != null) {
-                setFocusPoint(new Point(rect.x + rect.width,
-                                        rect.y + rect.height));
+            // Display location coordinates
+            if (selection == locationSelection) {
+                Rectangle rect = (Rectangle) selection.getEntity();
+                if (rect != null) {
+                    ScorePoint scrPt = new ScorePoint(rect.x, rect.y);
+                    System system = score.scoreLocateSystem(scrPt);
+                    PagePoint pagPt = system.scoreToSheet(scrPt, null);
+                    tellPoint(scrPt, pagPt);
+                } else {
+                    tellPoint(null, null);
+                }
             }
         }
     }
