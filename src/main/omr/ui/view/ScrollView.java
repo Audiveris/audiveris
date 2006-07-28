@@ -10,15 +10,10 @@
 
 package omr.ui.view;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-import omr.ui.*;
 import omr.util.Logger;
 
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
 
 /**
  * Class <code>ScrollView</code> contains a JScrollPane, which provides a
@@ -118,21 +113,6 @@ public class ScrollView
     public RubberZoomedPanel getView()
     {
         return view;
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    /**
-     * Report the pixel level at the designated point. This is the default
-     * implementation which always return -1.
-     *
-     * @param pt the designated point
-     * @return the pixel level (0->255) or -1 if info is not available
-     */
-    public int getPixel(Point pt)
-    {
-        return -1;
     }
 
     //----------------//
