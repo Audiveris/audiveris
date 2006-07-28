@@ -12,7 +12,6 @@ package omr.ui.view;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import omr.ui.*;
 
 /**
  * Interface <code>PixelFocus</code> define the features related to setting
@@ -37,5 +36,5 @@ public interface PixelFocus
      *
      * @param rect the designated rectangle, using pixel coordinates
      */
-    void setFocusRectangle (Rectangle rect);
+    void setFocusLocation (Rectangle rect);
 }
