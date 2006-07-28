@@ -12,13 +12,7 @@ package omr.graph;
 
 import omr.util.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Collection;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Class <code>Digraph</code> handles a directed graph, a structure
@@ -74,7 +68,7 @@ public class Digraph <D extends Digraph <D, V>,
     /**
      * Name for debugging
      */
-    protected String id;
+    protected String name;
 
     //~ Constructors ------------------------------------------------------
 
@@ -90,17 +84,30 @@ public class Digraph <D extends Digraph <D, V>,
 
     //~ Methods -----------------------------------------------------------
 
-    //-------//
-    // setId //
-    //-------//
+    //---------//
+    // setName //
+    //---------//
     /**
-     * Assign an id to the graph (debug)
+     * Assign a name to the graph (debug)
      *
-     * @param id the new id
+     * @param name the new name
      */
-    public void setId (String id)
+    public void setName (String name)
     {
-        this.id = id;
+        this.name = name;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name (if any) assigned to this graph instance
+     *
+     * @return the readable name
+     */
+    public String getName()
+    {
+        return name;
     }
 
     //----------------//
@@ -232,8 +239,8 @@ public class Digraph <D extends Digraph <D, V>,
 
         sb.append("{").append(getPrefix());
 
-        if (id != null) {
-            sb.append("#").append(id);
+        if (name != null) {
+            sb.append("#").append(name);
         }
 
         sb.append(" ").append(getVertexCount()).append(" vertices");
