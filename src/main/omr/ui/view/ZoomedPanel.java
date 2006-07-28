@@ -12,14 +12,15 @@ package omr.ui.view;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import omr.sheet.PixelPoint;
 import omr.util.Logger;
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
+import omr.selection.SelectionObserver;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.event.*;
 
 /**
  * Class <code>ZoomedPanel</code> is a class meant to handle common
@@ -37,11 +38,15 @@ import javax.swing.event.ChangeListener;
  * in combination with a JScrollPane container (see {@link ScrollView}
  * example).
  *
- * <p>Via the {@link PixelFocus} interface, we can programmatically ask
- * this panel fo focus on a specific point or rectangle.
+ * <dl>
+ * <dt><b>Selection Inputs:</b></dt><ul>
+ * <li>PIXEL Location | SCORE Location
+ * </ul>
  *
- * <p>Via the {@link MouseMonitor} interface, this panel traps the various
- * mouse actions.
+ * <dt><b>Selection Outputs:</b></dt><ul>
+ * <li>PIXEL Location | SCORE Location (either flagged with PIXEL_INIT hint)
+ * </ul>
+ * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -49,9 +54,10 @@ import javax.swing.event.ChangeListener;
 
 public class ZoomedPanel
     extends JPanel
-    implements ChangeListener,
-               MouseMonitor,
-               PixelFocus
+    implements ComponentListener,       // To receive visibility events
+               ChangeListener,          // To receive events from Zoom
+               MouseMonitor,            // To receive mouse events from Rubber
+               SelectionObserver        // To receive events for location selection
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -66,16 +72,8 @@ public class ZoomedPanel
     /** Current display zoom */
     protected Zoom zoom;
 
-    /** Subject for pixel observers if any */
-    protected DefaultPixelSubject pixelSubject
-        = new DefaultPixelSubject();
-
-    /** Subject for rectangle observers if any */
-    protected DefaultRectangleSubject rectangleSubject
-        = new DefaultRectangleSubject();
-
-    /** To avoid circular updating */
-    protected volatile transient boolean selfUpdating;
+    /** Related location Selection if any */
+    protected Selection locationSelection;
 
     //~ Constructors ------------------------------------------------------
 
@@ -101,51 +99,41 @@ public class ZoomedPanel
     public ZoomedPanel (Zoom zoom)
     {
         setZoom(zoom);
-    }
-
-    //-------------//
-    // ZoomedPanel //
-    //-------------//
-    /**
-     * Create a zoomed panel, with a driving zoom instance and the
-     * underlying model size.
-     *
-     * @param zoom the related zoom instance
-     * @param modelSize the underlying model size
-     */
-    public ZoomedPanel (Zoom      zoom,
-                        Dimension modelSize)
-    {
-        setZoom(zoom);
-        setModelSize(modelSize);
+        addComponentListener(this);
     }
 
     //~ Methods -----------------------------------------------------------
 
-    //-----------------//
-    // getPixelSubject //
-    //-----------------//
+    //----------------------//
+    // setLocationSelection //
+    //----------------------//
     /**
-     * Export the pixel point subject
+     * Allow to inject a dependency on a location Selection object. This
+     * location Selection is used for two purposes: <ol>
      *
-     * @return pixel point subject
+     * <li>First, this panel is a producer of location information. The
+     * location can be modified both programmatically (by calling method
+     * {@link #setFocusLocation}) and interactively by mouse event
+     * (pointSelected or rectangleSelected which in turn call
+     * setFocusLocation) .</li>
+     *
+     * <li>Second, this panel is a consumer of location information, since
+     * it makes the selected location visible in the display, through the
+     * method {@link #showFocusLocation}.</li> </ol>
+     *
+     * <p><b>Nota</b>: Setting the location selection does not
+     * automatically register this view on the selection object. If
+     * such registering is needed, it must be done manually.
+     *
+     * @param locationSelection the proper location Selection to be updated
      */
-    public DefaultPixelSubject getPixelSubject()
+    public void setLocationSelection (Selection locationSelection)
     {
-        return pixelSubject;
-    }
+        if (this.locationSelection != null) {
+            this.locationSelection.deleteObserver(this);
+        }
 
-    //---------------------//
-    // getRectangleSubject //
-    //---------------------//
-    /**
-     * Export the pixel rectangle subject
-     *
-     * @return pixel rectangle subject
-     */
-    public DefaultRectangleSubject getRectangleSubject()
-    {
-        return rectangleSubject;
+        this.locationSelection = locationSelection;
     }
 
     //----------------//
@@ -187,7 +175,7 @@ public class ZoomedPanel
     // contextSelected //
     //-----------------//
     public void contextSelected (MouseEvent e,
-                                 Point pt)
+                                 Point      pt)
     {
         // Nothing by default
     }
@@ -203,34 +191,18 @@ public class ZoomedPanel
      * @param pt the selected point in model pixel coordinates
      */
     public void pointSelected (MouseEvent e,
-                               Point pt)
+                               Point      pt)
     {
-        selfUpdating = true;
-        setFocusPoint(pt);
-        selfUpdating = false;
+        setFocusLocation(new Rectangle(pt));
     }
 
     //------------//
     // pointAdded //
     //------------//
     public void pointAdded (MouseEvent e,
-                            Point pt)
+                            Point      pt)
     {
-        selfUpdating = true;
         pointSelected(e, pt);
-        selfUpdating = false;
-    }
-
-    //-----------//
-    // reDisplay //
-    //-----------//
-    /**
-     * Redisplay, keeping the focus of the display, that is the focus
-     * (point of interest) remains visible.
-     */
-    public void reDisplay ()
-    {
-        setFocusRectangle(null);
     }
 
     //-------------------//
@@ -239,19 +211,17 @@ public class ZoomedPanel
     public void rectangleSelected (MouseEvent e,
                                    Rectangle  rect)
     {
-        selfUpdating = true;
-        setFocusRectangle(rect);
-        selfUpdating = false;
+        setFocusLocation(rect);
     }
 
     //-----------------//
     // rectangleZoomed //
     //-----------------//
-    public void rectangleZoomed (MouseEvent e,
+    public void rectangleZoomed (MouseEvent      e,
                                  final Rectangle rect)
     {
         // First focus on center of the specified rectangle
-        setFocusRectangle(rect);
+        showFocusLocation(rect);
 
         // Then, adjust zoom ratio to fit the rectangle size
         SwingUtilities.invokeLater(new Runnable()
@@ -266,59 +236,68 @@ public class ZoomedPanel
             });
     }
 
-    //---------------//
-    // setFocusPoint //
-    //---------------//
+    //------------------//
+    // setFocusLocation //
+    //------------------//
     /**
-     * Force the panel to move so that the provided focus point gets
-     * visible
+     * Modifies the location information. This method simply posts the
+     * location information on the proper Selection object, provided that
+     * such object has been previously injected (by means of the method
+     * {@link #setLocationSelection}.
      *
-     * @param pt the desired focus point (expressed in model coordinates)
+     * @param rect the location information
      */
-    public void setFocusPoint (Point pt)
+    public void setFocusLocation (Rectangle rect)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("setFocusPoint pt=" + pt);
+            logger.fine("setFocusRectangle rect=" + rect);
         }
 
-        updatePreferredSize();
-
-        if (pt != null && !selfUpdating) {
-            int margin = constants.focusMargin.getValue();
-            Rectangle vr = new Rectangle
-                (zoom.scaled(pt.x) - margin,
-                 zoom.scaled(pt.y) - margin,
-                 zoom.scaled(2 * margin),
-                 zoom.scaled(2 * margin));
-            scrollRectToVisible(vr);
+        // Write & forward the new pixel selection
+        if (locationSelection != null) { // Producer
+            locationSelection.setEntity
+                (rect != null ? new Rectangle(rect) : null,
+                 SelectionHint.PIXEL_INIT);
         }
-
-        pixelSubject.notifyObservers(new PixelPoint(pt.x, pt.y));
-        repaint();
     }
 
     //-------------------//
-    // setFocusRectangle //
+    // showFocusLocation //
     //-------------------//
-    public void setFocusRectangle (Rectangle rect)
+    /**
+     * Update the display, so that the location rectangle gets visible.
+     *
+     * <b>NOTA</b>: Subclasses that override this method should call this
+     * super implementation or the display will not be updated by default.
+     *
+     * @param rect the location information
+     */
+    public void showFocusLocation (Rectangle rect)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("showFocusRectangle rect=" + rect);
+        }
+
         updatePreferredSize();
 
-        if (rect != null && !selfUpdating) {
-            if (rect.width != 0 || rect.height != 0) {
+        if (rect != null) {
+            // Check whether the rectangle is fully visible,
+            // if not scroll so as to make (most of) it visible
+            Rectangle scaledRect = zoom.scaled(rect);
+            // Needed to workaround strange behavior of 'contains'
+            if (scaledRect.width == 0) scaledRect.width = 1;
+            if (scaledRect.height== 0) scaledRect.height= 1;
+
+            if (!getVisibleRect().contains(scaledRect)) {
                 int margin = constants.focusMargin.getValue();
-                Rectangle vr = new Rectangle
-                    (zoom.scaled(rect.x) - margin,
-                     zoom.scaled(rect.y) - margin,
-                     zoom.scaled(rect.width   + 2 * margin),
-                     zoom.scaled(rect.height) + 2 * margin);
-                scrollRectToVisible(vr);
-            } else {
-                setFocusPoint(rect.getLocation());
+                scrollRectToVisible(new Rectangle
+                                    (zoom.scaled(rect.x) - margin,
+                                     zoom.scaled(rect.y) - margin,
+                                     zoom.scaled(rect.width   + 2 * margin),
+                                     zoom.scaled(rect.height) + 2 * margin));
             }
         }
 
-        rectangleSubject.notifyObservers(rect);
         repaint();
     }
 
@@ -356,7 +335,11 @@ public class ZoomedPanel
     public void stateChanged (ChangeEvent e)
     {
         // Force a redisplay
-        reDisplay();
+        if (locationSelection != null) {
+            showFocusLocation((Rectangle) locationSelection.getEntity());
+        } else {
+            showFocusLocation(null);
+        }
     }
 
     //--------------//
@@ -395,13 +378,66 @@ public class ZoomedPanel
         revalidate();
     }
 
-    public boolean getSelfUpdating() {
-        return selfUpdating;
-    }
-    public void setSelfUpdating(boolean val) {
-        this.selfUpdating = val;
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Call-back (part of Observer interface) triggered when location
+     * Selection has been modified, provided that such object has been
+     * previously injected (by means of {@link #setLocationSelection}.
+     *
+     * @param selection the Location Selection
+     * @param hint potential notification hint
+     */
+    public void update (Selection selection,
+                        SelectionHint hint)
+    {
+        ///logger.info("ZoomedPanel. selection=" + selection + " hint=" + hint);
+
+        switch (selection.getTag()) {
+        case PIXEL :    // For sheet display
+        case SCORE :    // For score display
+            Rectangle rect = (Rectangle) locationSelection.getEntity();
+            if (rect != null) {
+                showFocusLocation(rect);
+            }
+            break;
+
+        default :
+        }
     }
 
+    /**
+     * Invoked when the component's size changes.
+     */
+    public void componentResized(ComponentEvent e) {}
+
+    /**
+     * Invoked when the component's position changes.
+     */
+    public void componentMoved(ComponentEvent e) {}
+
+    /**
+     * Invoked when the component has been made visible.
+     */
+    public void componentShown(ComponentEvent e)
+    {
+        logger.info("Shown");
+        if (locationSelection != null) {
+            locationSelection.addObserver(this);
+        }
+    }
+
+    /**
+     * Invoked when the component has been made invisible.
+     */
+    public void componentHidden(ComponentEvent e)
+    {
+        logger.info("Hidden");
+        if (locationSelection != null) {
+            locationSelection.deleteObserver(this);
+        }
+    }
 
     //~ Classes -----------------------------------------------------------
 

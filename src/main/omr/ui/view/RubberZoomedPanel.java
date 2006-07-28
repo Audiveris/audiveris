@@ -13,9 +13,7 @@ package omr.ui.view;
 import omr.ui.*;
 import omr.util.Logger;
 
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
 
 /**
  * Class <code>RubberZoomedPanel</code> is a combination of two linked
@@ -69,10 +67,11 @@ public class RubberZoomedPanel
      * Create a RubberZoomedPanel, with the specified Rubber to interact
      * via the mouse.
      *
+     * @param zoom related display zoom
      * @param rubber the rubber instance to be linked to this panel
      */
-    public RubberZoomedPanel (Zoom   zoom,
-                              Rubber rubber)
+    public RubberZoomedPanel (Zoom      zoom,
+                              Rubber    rubber)
     {
         super(zoom);
         setRubber(rubber);
@@ -86,47 +85,18 @@ public class RubberZoomedPanel
 
     //~ Methods -----------------------------------------------------------
 
-    //-----------//
-    // reDisplay //
-    //-----------//
+    //--------------------//
+    // showFocusLocation //
+    //--------------------//
     @Override
-        public void reDisplay ()
-    {
-        if (rubber != null) {
-            setFocusRectangle(rubber.getRectangle());
-        } else {
-            setFocusRectangle(null);
-        }
-    }
-
-    //---------------//
-    // setFocusPoint //
-    //---------------//
-    @Override
-        public void setFocusPoint (Point pt)
-    {
-        // Modify the rubber accordingly
-        if (rubber != null) {
-            if (pt != null) {
-                rubber.resetOrigin(pt.x, pt.y);
-            }
-        }
-
-        super.setFocusPoint(pt);
-    }
-
-    //-------------------//
-    // setFocusRectangle //
-    //-------------------//
-    @Override
-        public void setFocusRectangle (Rectangle rect)
+        public void showFocusLocation (Rectangle rect)
     {
         // Modify the rubber accordingly
         if (rubber != null) {
             rubber.resetRectangle(rect);
         }
 
-        super.setFocusRectangle(rect);
+        super.showFocusLocation(rect);
     }
 
     //-----------//
