@@ -11,8 +11,11 @@
 package omr.selection;
 
 /**
- * Enum <code>Hint</code> gives a hint about what observers should do with
- * the updated selection
+ * Enum <code>SelectionHint</code> gives a hint about what observers should
+ * do with the updated selection
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public enum SelectionHint
 {

@@ -11,8 +11,11 @@
 package omr.selection;
 
 /**
- * Enum <code>Tag</code> allows a convenient handling of selection
+ * Enum <code>SelectionTag</code> allows a convenient handling of selection
  * objects.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 public enum SelectionTag
 {
