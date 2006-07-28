@@ -51,7 +51,7 @@ public class IconGlyph
      * real instance yet.
      *
      * @param icon the appearance of the glyph
-     * @param icon the corresponding shape
+     * @param shape the corresponding shape
      */
     public IconGlyph(SymbolIcon icon,
                      Shape shape)
@@ -62,7 +62,7 @@ public class IconGlyph
 
             // Build related vertical lag
             GlyphLag vLag = new GlyphLag(new VerticalOrientation());
-            vLag.setId("iconLag");
+            vLag.setName("iconLag");
             vLag.setVertexClass(GlyphSection.class);
             new LagBuilder<GlyphLag,GlyphSection>().rip
                     (vLag,
