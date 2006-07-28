@@ -10,17 +10,14 @@
 
 package omr.stick;
 
-import omr.glyph.Glyph;
+import omr.check.Checkable;
+import omr.check.CheckMonitor;
 import omr.glyph.GlyphDirectory;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphLagView;
 import omr.glyph.GlyphSection;
-import omr.check.Checkable;
-import omr.check.CheckMonitor;
 
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * Class <code>StickView</code> is a specific {@link omr.lag.LagView}
