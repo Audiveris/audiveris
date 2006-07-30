@@ -36,6 +36,21 @@
 	    <value name="y" field="y" />
          </structure>
 
+ 	<value name="stem-number" field="stemNumber"
+	       style="element"
+ 	       usage="optional"
+ 	       default="0" />
+	
+  	<value name="has-ledger" field="hasLedger"
+	       style="element"
+  	       usage="optional"
+  	       default="false" />
+	
+ 	<value name="pitch-position" field="pitchPosition"
+	       style="element"
+ 	       usage="optional"
+	       default="0"/>
+
 	<collection name="bitmap" value-style="element"
 		    get-method="getBitmap"
 		    set-method="setBitmap">
