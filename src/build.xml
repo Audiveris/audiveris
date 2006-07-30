@@ -79,6 +79,13 @@
     </path>
     <property name="project.run.string" refid="project.run.classpath" />
     
+    <!-- Jmp classpath -->
+    <path id="project.jmp.classpath">
+        <path refid="project.run.classpath" />
+        <pathelement path="c:/WINDOWS" />
+    </path>
+    <property name="project.run.string" refid="project.run.classpath" />
+    
     <!-- Run Test classpath -->
     <path id="project.run.test.classpath">
         <path refid="project.build.test.classpath" />
@@ -549,6 +556,46 @@ java -cp ${project.run.string} ${Name} %1 %2 %3 %4 %5 %6 %7 %8 %9
         </java>
     </target>
     
+    <!-- =============== -->
+    <!--  R U N - J M P  -->
+    <!-- =============== -->
+    <target name="run-jmp"
+        depends="jar"
+        description="Run the application with Java Memory Profiler">
+
+	<!-- Default values -->
+	<property name="run.batch" value=""/>
+	<property name="run.sheet" value=""/>
+	<property name="run.score" value=""/>
+	<property name="run.step"  value=""/>
+	
+        <java
+	    classname="Audiveris"
+            classpathref="project.jmp.classpath"
+            failonerror="true"
+            fork="true"
+            maxmemory="128m">
+            
+            <!-- Specific JVM arguments, if any -->
+<!--  	    <jvmarg value="-verbose:class" /> -->
+<!--  	    <jvmarg value="-Dcom.sun.management.jmxremote" /> -->
+ 	    <jvmarg value="-Xrunjmp:nomethods,nomonitors" />
+ 	    
+            <!-- Configuration file for logging -->
+            <sysproperty key="java.util.logging.config.file"
+                value="${config.dir}/logging.properties"/>
+            
+            <!-- Application arguments -->
+ 	    <arg line="${run.batch}"/>
+ 	    <arg line="${run.sheet}"/>
+ 	    <arg line="${run.score}"/>
+ 	    <arg line="${run.step}"/>
+	    
+            <arg line="-save ${save.dir}"/>
+            <arg line="-write"/>
+        </java>
+    </target>
+    
     <!-- =================== -->
     <!--  R U N - B A T C H  -->
     <!-- =================== -->
@@ -569,9 +616,9 @@ java -cp ${project.run.string} ${Name} %1 %2 %3 %4 %5 %6 %7 %8 %9
     <target name="run-specific"
         description="Run the application with specific parameters">
 
-	<property name="run.sheet" value="-sheet ${top.dir}/examples/Country.png"/>
-	<property name="run.step"  value="-step bars"/>
-	<property name="run.score" value="-score ${top.dir}/save/Country.xml"/>
+	<property name="run.sheet" value="-sheet ${top.dir}/examples/batuque.png"/>
+	<property name="run.step"  value="-step score"/>
+<!-- 	<property name="run.score" value="-score ${top.dir}/save/Country.xml"/> -->
 
 	<antcall target="run"/>
     </target>
@@ -646,8 +693,9 @@ java -cp ${project.run.string} ${Name} %1 %2 %3 %4 %5 %6 %7 %8 %9
         depends="jar"
         description="Run just the glyph trainer">
         
-        <java classname="omr.glyph.ui.GlyphTrainer"
-            classpath="${dist.jar}"
+        <java
+	    classname="omr.glyph.ui.GlyphTrainer"
+            classpathref="project.run.classpath"
             failonerror="true"
             fork="true"
             maxmemory="128m">
