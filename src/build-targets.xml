@@ -16,7 +16,7 @@
     <!-- JiBX binding compiler task definition -->
     <taskdef name="bind"
              classname="org.jibx.binding.ant.CompileTask"
-             classpath="${jibx.dir}/jibx-bind.jar" />
+             classpath="${jibx.dir}/jibx-bind.jar;${jibx.dir}/jibx-run.jar" />
 
     <target name="-bind"
             description="Generate some class binding, using JiBX" >
@@ -130,7 +130,7 @@ Implementation-Version: ${impl.version} ${DSTAMP}
                  title="User interface Packages"/>
              <group packages="omr.graph:omr.lag*:omr.stick*"
                  title="Geometry Packages"/>
-             <group packages="omr.check:omr.constant:omr.math:omr.util"
+             <group packages="omr.check:omr.constant:omr.math:omr.selection:omr.util"
                  title="Utility Packages"/>
         </javadoc>
 
