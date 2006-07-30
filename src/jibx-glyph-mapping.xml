@@ -23,10 +23,9 @@
 	       deserializer="omr.glyph.Shape.valueOf"
 	       style="attribute" />
 
-	<value name="is-within-system" field="isWithinSystem" />
-	<value name="has-ledger" field="hasLedger" />
 	<value name="stem-number" field="stemNumber" />
-	<value name="step-line" field="pitchPosition" />
+	<value name="has-ledger" field="hasLedger" />
+	<value name="pitch-position" field="pitchPosition" />
 	
 	<structure field="moments">
 	    <collection name="moments" field="k"> 
@@ -54,10 +53,9 @@
 	       deserializer="omr.glyph.Shape.valueOf"
 	       style="attribute" />
 
-	<value name="is-within-system" field="isWithinSystem" />
-	<value name="has-ledger" field="hasLedger" />
 	<value name="stem-number" field="stemNumber" />
-	<value name="step-line" field="pitchPosition" />
+	<value name="has-ledger" field="hasLedger" />
+	<value name="pitch-position" field="pitchPosition" />
 	
 	<structure field="moments">
 	    <collection name="moments" field="k"> 
