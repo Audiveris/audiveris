@@ -1,0 +1,323 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+	<!-- $Id$ -->
+    </head>
+    <body>
+	<table border="1" cellpadding="2" cellspacing="0">
+	    <tbody>
+		<tr>
+		    <td></td>
+		    <th>No Data Output</th>
+		    <th style="background-color: rgb(255, 204, 153);">SHEET</th>
+		    <th style="background-color: rgb(255, 204, 153);">SCORE</th>
+		    <th style="background-color: rgb(255, 204, 153);">PIXEL</th>
+		    <th style="background-color: rgb(255, 204, 153);">LEVEL</th>
+		    <th style="background-color: rgb(255, 204, 153);">RUN</th>
+		    <th style="background-color: rgb(255, 204, 153);">SECTION</th>
+		    <th style="background-color: rgb(255, 204, 153);">SECTION_ID</th>
+		    <th style="background-color: rgb(255, 204, 153);">GLYPH</th>
+		    <th style="background-color: rgb(255, 204, 153);">GLYPH_ID</th>
+		    <th style="background-color: rgb(255, 204, 153);">GLYPH_SET</th>
+		</tr>
+		<tr>
+		    <th>No Data Input</th>
+		    <td>.</td>
+		    <!-- NoInput to SHEET -->
+		    <td><b>SheetController</b>: on user tab-selection, write the corresponding Sheet</td>
+		    <!-- NoInput to SCORE -->
+		    <td><b>Zoomedpanel</b>: on user mouse pointing, write Score location with <i>LOCATION_INIT</i></td>
+		    <!-- NoInput to PIXEL -->
+		    <td><b>PixelBoard</b>: on user-entered rectangle parameters, write Pixel data with <i>LOCATION_INIT</i>
+			<hr/>
+			<b>ZoomedPanel</b>: on user mouse pointing, write Pixel location with <i>LOCATION_INIT</i></td>
+		    <!-- NoInput to LEVEL -->
+		    <td>.</td>
+		    <!-- NoInput to RUN -->
+		    <td>.</td>
+		    <!-- NoInput to SECTION -->
+		    <td>.</td>
+		    <!-- NoInput to SECTION_ID -->
+		    <td><b>SectionBoard</b>: on user spinner selection, write value with <i>SECTION_INIT</i></td>
+		    <!-- NoInput to GLYPH -->
+		    <td>.</td>
+		    <!-- NoInput to GLYPH_ID -->
+		    <td><b>GlyphBoard</b>: on user spinner selection, write value with <i>GLYPH_INIT</i></td>
+		    <!-- NoInput to GLYPH_SET -->
+		    <td>.</td>
+		</tr>
+		<tr>
+		    <th style="background-color: rgb(153, 255, 153);">SHEET</th>
+		    <!-- SHEET to NoOutput -->
+		    <td><b>Jui</b>: use Sheet information to update Jui frame title</td>
+		    <!-- SHEET to SHEET -->
+		    <td>.</td>
+		    <!-- SHEET to SCORE -->
+		    <td>.</td>
+		    <!-- SHEET to PIXEL -->
+		    <td>.</td>
+		    <!-- SHEET to LEVEL -->
+		    <td>.</td>
+		    <!-- SHEET to RUN -->
+		    <td>.</td>
+		    <!-- SHEET to SECTION -->
+		    <td>.</td>
+		    <!-- SHEET to SECTION_ID -->
+		    <td>.</td>
+		    <!-- SHEET to GLYPH -->
+		    <td>.</td>
+		    <!-- SHEET to GLYPH_ID -->
+		    <td>.</td>
+		    <!-- SHEET to GLYPH_SET -->
+		    <td>.</td>
+		</tr>
+		<tr>
+		    <th style="background-color: rgb(153, 255, 153);">SCORE</th>
+		    <!-- SCORE to NoOutput -->
+		    <td><b>ScoreView</b>: Tell Score coordinates
+			<hr/>
+			<b>ZoomedPanel</b>: make location visible</td>
+		    <!-- SCORE to SHEET -->
+		    <td>.</td>
+		    <!-- SCORE to SCORE -->
+		    <td>.</td>
+		    <!-- SCORE to PIXEL -->
+		    <td><b>ScoreSheetBridge</b>: translate to Pixel location</td>
+		    <!-- SCORE to LEVEL -->
+		    <td>.</td>
+		    <!-- SCORE to RUN -->
+		    <td>.</td>
+		    <!-- SCORE to SECTION -->
+		    <td>.</td>
+		    <!-- SCORE to SECTION_ID -->
+		    <td>.</td>
+		    <!-- SCORE to GLYPH -->
+		    <td>.</td>
+		    <!-- SCORE to GLYPH_ID -->
+		    <td>.</td>
+		    <!-- SCORE to GLYPH_SET -->
+		    <td>.</td>
+		</tr>
+		<tr>
+		    <th style="background-color: rgb(153, 255, 153);">PIXEL</th>
+		    <!-- PIXEL to NoOutput -->
+		    <td><b>PixelBoard</b>: display pixel parameters
+			<hr/>
+			<b>ZoomedPanel</b>: make location visible</td>
+		    <!-- PIXEL to SHEET -->
+		    <td>.</td>
+		    <!-- PIXEL to SCORE -->
+		    <td><b>ScoreSheetBridge</b>: translate to Score location</td>
+		    <!-- PIXEL to PIXEL -->
+		    <td>.</td>
+		    <!-- PIXEL to LEVEL -->
+		    <td><b>Picture</b>: if <i>LOCATION_INIT</i>, write the pixel grey level read in picture</td>
+		    <!-- PIXEL to RUN -->
+		    <td><b>Lag</b>:&nbsp;if <i>LOCATION_INIT</i>, write result of Run lookup
+			<hr/>
+			<b>LagView</b>: if <i>LOCATION_INIT</i>, search for Run in specifics</td>
+		    <!-- PIXEL to SECTION -->
+		    <td><b>Lag</b>: if <i>LOCATION_INIT</i>, write result of Section lookup
+			<hr/>
+			<b>LagView</b>: if <i>LOCATION_INIT</i>, search for Section in specifics</td>
+		    <!-- PIXEL to SECTION_ID -->
+		    <td>.</td>
+		    <!-- PIXEL to GLYPH -->
+		    <td><b>GlyphLag</b>: if <i>LOCATION_INIT</i>, write result of Glyph lookup
+			<hr/>
+			<b>GlyphLagView</b>: if Section found, write containing Glyph</td>
+		    <!-- PIXEL to GLYPH_ID -->
+		    <td>.</td>
+		    <!-- PIXEL to GLYPH_SET -->
+		    <td>.</td>
+		</tr>
+		<tr>
+		    <th style="background-color: rgb(153, 255, 153);">LEVEL</th>
+		    <!-- LEVEL to NoOutput -->
+		    <td><b>PixelBoard</b>: display level value</td>
+		    <!-- LEVEL to SHEET -->
+		    <td>.</td>
+		    <!-- LEVEL to SCORE -->
+		    <td>.</td>
+		    <!-- LEVEL to PIXEL -->
+		    <td>.</td>
+		    <!-- LEVEL to LEVEL -->
+		    <td>.</td>
+		    <!-- LEVEL to RUN -->
+		    <td>.</td>
+		    <!-- LEVEL to SECTION -->
+		    <td>.</td>
+		    <!-- LEVEL to SECTION_ID -->
+		    <td>.</td>
+		    <!-- LEVEL to GLYPH -->
+		    <td>.</td>
+		    <!-- LEVEL to GLYPH_ID -->
+		    <td>.</td>
+		    <!-- LEVEL to GLYPH_SET -->
+		    <td>.</td>
+		</tr>
+		<tr>
+		    <th style="background-color: rgb(153, 255, 153);">RUN</th>
+		    <!-- RUN to NoOutput -->
+		    <td><b>RunBoard</b>: display Run parameters</td>
+		    <!-- RUN to SHEET -->
+		    <td>.</td>
+		    <!-- RUN to SCORE -->
+		    <td>.</td>
+		    <!-- RUN to PIXEL -->
+		    <td>.</td>
+		    <!-- RUN to LEVEL -->
+		    <td>.</td>
+		    <!-- RUN to RUN -->
+		    <td>.</td>
+		    <!-- RUN to SECTION -->
+		    <td>.</td>
+		    <!-- RUN to SECTION_ID -->
+		    <td>.</td>
+		    <!-- RUN to GLYPH -->
+		    <td>.</td>
+		    <!-- RUN to GLYPH_ID -->
+		    <td>.</td>
+		    <!-- RUN to GLYPH_SET -->
+		    <td>.</td>
+		</tr>
+		<tr>
+		    <th style="background-color: rgb(153, 255, 153);">SECTION</th>
+		    <!-- SECTION to NoOutput -->
+		    <td><b>SectionBoard</b>: display Section parameters</td>
+		    <!-- SECTION to SHEET -->
+		    <td>.</td>
+		    <!-- SECTION to SCORE -->
+		    <td>.</td>
+		    <!-- SECTION to PIXEL -->
+		    <td><b>Lag</b>: if <i>SECTION_INIT</i>, write Section contours&nbsp;</td>
+		    <!-- SECTION to LEVEL -->
+		    <td>.</td>
+		    <!-- SECTION to RUN -->
+		    <td>.</td>
+		    <!-- SECTION to SECTION -->
+		    <td>.</td>
+		    <!-- SECTION to SECTION_ID -->
+		    <td>.</td>
+		    <!-- SECTION to GLYPH -->
+		    <td><b>GlyphLag</b>: if <i>SECTION_INIT</i>, write containing Glyph</td>
+		    <!-- SECTION to GLYPH_ID -->
+		    <td>.</td>
+		    <!-- SECTION to GLYPH_SET -->
+		    <td>.</td>
+		</tr>
+		<tr>
+		    <th style="background-color: rgb(153, 255, 153);">SECTION_ID</th>
+		    <!-- SECTION_ID to NoOutput -->
+		    <td>.</td>
+		    <!-- SECTION_ID to SHEET -->
+		    <td>.</td>
+		    <!-- SECTION_ID to SCORE -->
+		    <td>.</td>
+		    <!-- SECTION_ID to PIXEL -->
+		    <td>.</td>
+		    <!-- SECTION_ID to LEVEL -->
+		    <td>.</td>
+		    <!-- SECTION_ID to RUN -->
+		    <td><b>Lag</b>: write a null Run
+			<hr/>
+			<b>LagView</b>: if specifics, write a null Run</td>
+		    <!-- SECTION_ID to SECTION -->
+		    <td><b>Lag</b>: write the corresponding Section
+			<hr/>
+			<b>LagView</b>: if specifics, write the corresponding Section if any</td>
+		    <!-- SECTION_ID to SECTION_ID -->
+		    <td>.</td>
+		    <!-- SECTION_ID to GLYPH -->
+		    <td>
+			<b>GlyphLagView</b>: if Section found, write containing Glyph</td>
+		    <!-- SECTION_ID to GLYPH_ID -->
+		    <td>.</td>
+		    <!-- SECTION_ID to GLYPH_SET -->
+		    <td>.</td>
+		</tr>
+		<tr>
+		    <th style="background-color: rgb(153, 255, 153);">GLYPH</th>
+		    <!-- GLYPH to NoOutput -->
+		    <td><b>GlyphBoard</b>: display Glyph parameters
+			<hr/>
+			<b>CheckBoard</b>: perform test suite on it (or on a derived context)
+			<hr/>
+			<b>GlyphLagView</b>: call overridden glyphSelected()</td>
+		    <!-- GLYPH to SHEET -->
+		    <td>.</td>
+		    <!-- GLYPH to SCORE -->
+		    <td>.</td>
+		    <!-- GLYPH to PIXEL -->
+		    <td><b>GlyphLag</b>: if <i>GLYPH_INIT</i>, write Glyph contours</td>
+		    <!-- GLYPH to LEVEL -->
+		    <td>.</td>
+		    <!-- GLYPH to RUN -->
+		    <td>.</td>
+		    <!-- GLYPH to SECTION -->
+		    <td>.</td>
+		    <!-- GLYPH to SECTION_ID -->
+		    <td>.</td>
+		    <!-- GLYPH to GLYPH -->
+		    <td>.</td>
+		    <!-- GLYPH to GLYPH_ID -->
+		    <td>.</td>
+		    <!-- GLYPH to GLYPH_SET -->
+		    <td>.</td>
+		</tr>
+		<tr>
+		    <th style="background-color: rgb(153, 255, 153);">GLYPH_ID</th>
+		    <!-- GLYPH_ID to NoOutput -->
+		    <td>.</td>
+		    <!-- GLYPH_ID to SHEET -->
+		    <td>.</td>
+		    <!-- GLYPH_ID to SCORE -->
+		    <td>.</td>
+		    <!-- GLYPH_ID to PIXEL -->
+		    <td>.</td>
+		    <!-- GLYPH_ID to LEVEL -->
+		    <td>.</td>
+		    <!-- GLYPH_ID to RUN -->
+		    <td><b>GlyphLag</b>: write a null Run</td>
+		    <!-- GLYPH_ID to SECTION -->
+		    <td><b>GlyphLag</b>: write a null Section</td>
+		    <!-- GLYPH_ID to SECTION_ID -->
+		    <td>.</td>
+		    <!-- GLYPH_ID to GLYPH -->
+		    <td><b>GlyphLag</b>: Write the corresponding Glyph
+			<hr/>
+			<b>GlyphLagView</b>: if Section found, write containing Glyph</td>
+		    <!-- GLYPH_ID to GLYPH_ID -->
+		    <td>.</td>
+		    <!-- GLYPH_ID to GLYPH_SET -->
+		    <td>.</td>
+		</tr>
+		<tr>
+		    <th style="background-color: rgb(153, 255, 153);">GLYPH_SET</th>
+		    <!-- GLYPH_SET to NoOutput -->
+		    <td>.</td>
+		    <!-- GLYPH_SET to SHEET -->
+		    <td>.</td>
+		    <!-- GLYPH_SET to SCORE -->
+		    <td>.</td>
+		    <!-- GLYPH_SET to PIXEL -->
+		    <td>.</td>
+		    <!-- GLYPH_SET to LEVEL -->
+		    <td>.</td>
+		    <!-- GLYPH_SET to RUN -->
+		    <td>.</td>
+		    <!-- GLYPH_SET to SECTION -->
+		    <td>.</td>
+		    <!-- GLYPH_SET to SECTION_ID -->
+		    <td>.</td>
+		    <!-- GLYPH_SET to GLYPH -->
+		    <td>.</td>
+		    <!-- GLYPH_SET to GLYPH_ID -->
+		    <td>.</td>
+		    <!-- GLYPH_SET to GLYPH_SET -->
+		    <td>.</td>
+		</tr>
+	    </tbody>
+	</table>
+    </body>
+</html>
