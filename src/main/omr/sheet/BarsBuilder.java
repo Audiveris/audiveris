@@ -13,12 +13,14 @@ package omr.sheet;
 import omr.Main;
 import omr.ProcessingException;
 import omr.check.CheckBoard;
+import omr.check.CheckSuite;
 import omr.check.FailureResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphDirectory;
 import omr.glyph.GlyphLag;
+import omr.glyph.GlyphLagView;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
@@ -36,10 +38,10 @@ import omr.score.Staff;
 import omr.score.System;
 import omr.score.UnitDimension;
 import omr.selection.Selection;
+import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
 import omr.stick.Stick;
 import omr.stick.StickSection;
-import omr.stick.StickView;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 import omr.ui.view.Zoom;
@@ -101,12 +103,6 @@ public class BarsBuilder
 
     // Lag view on bars, if so desired
     private MyLagView lagView;
-
-    // Related glyph board
-    private GlyphBoard glyphBoard;
-
-    // Display of check results
-    private CheckBoard<BarsChecker.Context> checkBoard;
 
     // Companion physical stick checker
     private BarsChecker checker;
@@ -280,11 +276,6 @@ public class BarsBuilder
                 }
             }
         }
-
-        // Update the glyph board
-//        if (glyphBoard != null) {
-//            glyphBoard.update(bar);
-//        }
 
         // Update the view accordingly
         if (lagView != null) {
@@ -562,24 +553,24 @@ public class BarsBuilder
             knownIds.add(new Integer(stick.getId()));
         }
 
-        glyphBoard = new GlyphBoard(vLag.getLastGlyphId(), knownIds, "BarsBuilder Glyph Board",
-                                    sheet.getSelection(VERTICAL_GLYPH),
-                                    sheet.getSelection(VERTICAL_GLYPH_ID));
-        checkBoard = new CheckBoard<BarsChecker.Context>
-            (checker.getSuite(), "BarsBuilder Checker");
-        lagView.setCheckMonitor(checkBoard);
+        final String unit = "BarsBuilder";
         BoardsPane boardsPane = new BoardsPane
             (sheet, lagView,
-             new PixelBoard("BarsBuilder-PixelBoard"),
-             new RunBoard(sheet.getSelection(VERTICAL_RUN),
-                          "BarsBuilder-RunBoard"),
-             new SectionBoard(sheet.getSelection(VERTICAL_SECTION),
-                              sheet.getSelection(VERTICAL_SECTION_ID),
-                              sheet.getSelection(PIXEL),
+             new PixelBoard(unit),
+             new RunBoard(unit,
+                          sheet.getSelection(VERTICAL_RUN)),
+             new SectionBoard(unit,
                               vLag.getLastVertexId(),
-                              "BarsBuilder-SectionBoard"),
-             glyphBoard,
-             checkBoard);
+                              sheet.getSelection(VERTICAL_SECTION),
+                              sheet.getSelection(VERTICAL_SECTION_ID)),
+             new GlyphBoard(unit,
+                            vLag.getLastGlyphId(),
+                            knownIds,
+                            sheet.getSelection(VERTICAL_GLYPH),
+                            sheet.getSelection(VERTICAL_GLYPH_ID)),
+             new MyCheckBoard(unit,
+                              checker.getSuite(),
+                              sheet.getSelection(VERTICAL_GLYPH)));
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
@@ -603,11 +594,40 @@ public class BarsBuilder
 
     //~ Classes -----------------------------------------------------------
 
+    //--------------//
+    // MyCheckBoard //
+    //--------------//
+    private class MyCheckBoard
+        extends CheckBoard<BarsChecker.Context>
+    {
+        public MyCheckBoard(String     unit,
+                            CheckSuite suite,
+                            Selection  inputSelection)
+        {
+            super(unit, suite, inputSelection);
+        }
+
+        public void update(Selection selection,
+                           SelectionHint hint)
+        {
+            BarsChecker.Context context = null;
+            Object entity = selection.getEntity();
+            if (entity instanceof Stick) {
+                // To get a fresh suite
+                setSuite(checker.new BarCheckSuite());
+
+                Stick stick = (Stick) entity;
+                context = new BarsChecker.Context(stick);
+            }
+            tellObject(context);
+        }
+    }
+
     //-----------//
     // MyLagView //
     //-----------//
     private class MyLagView
-        extends StickView<BarsChecker.Context>
+        extends GlyphLagView
     {
         //~ Constructors --------------------------------------------------
 
@@ -655,25 +675,6 @@ public class BarsBuilder
             // Draw the contour of bar lines
             for (Stick stick : bars) {
                 stick.renderContour(g, z);
-            }
-        }
-
-        //---------------//
-        // glyphSelected //
-        //---------------//
-        @Override
-            protected void glyphSelected (Glyph glyph)
-        {
-            ///logger.info(getClass() + " glyphSelected " + glyph);
-            if (glyph == null) {
-                checkMonitor.tellObject(null);
-            } else if (glyph instanceof Stick) {
-                // To get a fresh suite
-                checker.createSuite();
-                checkBoard.setSuite(checker.getSuite());
-
-                Stick stick = (Stick) glyph;
-                checkMonitor.tellObject(new BarsChecker.Context(stick));
             }
         }
 
