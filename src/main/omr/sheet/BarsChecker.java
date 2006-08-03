@@ -169,7 +169,7 @@ public class BarsChecker
      * @return the containing SystemInfo, null if not found
      */
     SystemInfo getSystemOf (Stick bar,
-                            Sheet   sheet)
+                            Sheet sheet)
     {
         Context context = contexts.get(bar);
         if (context == null) {
