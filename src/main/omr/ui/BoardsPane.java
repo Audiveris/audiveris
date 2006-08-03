@@ -29,10 +29,10 @@ import javax.swing.*;
  * data related to current point, run, section and glyph can be displayed
  * in dedicated boards, as well as a general-purpose Filter board and a
  * custom board.
- *
+ * 
  * <p>There is now one single BoardsPane for all views of the same sheet,
  * while the visibility of some of its boards may vary with the view at hand.
- *
+ * 
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -115,8 +115,6 @@ public class BoardsPane
                 break;
 
             case GLYPH :
-                GlyphBoard glyphBoard = (GlyphBoard) board;
-                glyphBoard.setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
                 break;
 
             case CHECK :
