@@ -16,6 +16,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphDirectory;
 import omr.glyph.GlyphLag;
+import omr.glyph.GlyphLagView;
 import omr.glyph.GlyphSection;
 import omr.glyph.ui.GlyphBoard;
 import omr.lag.HorizontalOrientation;
@@ -28,7 +29,6 @@ import omr.lag.SectionBoard;
 import omr.math.Population;
 import omr.stick.Stick;
 import omr.stick.StickSection;
-import omr.stick.StickView;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 import omr.ui.ToggleHandler;
@@ -263,20 +263,21 @@ public class LinesBuilder
 
         lagView = new MyLagView(hLag, members);
 
+        final String unit = "LinesBuilder";
         BoardsPane boardsPane = new BoardsPane
             (sheet, lagView,
-             new PixelBoard("LinesBuilder-PixelBoard"),
-             new RunBoard(sheet.getSelection(HORIZONTAL_RUN),
-                          "LinesBuilder-RunBoard"),
-             new SectionBoard(sheet.getSelection(HORIZONTAL_SECTION),
-                              sheet.getSelection(HORIZONTAL_SECTION_ID),
-                              sheet.getSelection(PIXEL),
+             new PixelBoard(unit),
+             new RunBoard(unit,
+                          sheet.getSelection(HORIZONTAL_RUN)),
+             new SectionBoard(unit,
                               hLag.getLastVertexId(),
-                              "LinesBuilder-SectionBoard"),
-             new GlyphBoard(hLag.getLastGlyphId(), knownIds,
-                            "LinesBuilder-GlyphBoard",
-                sheet.getSelection(HORIZONTAL_GLYPH),
-                sheet.getSelection(HORIZONTAL_GLYPH_ID)));
+                              sheet.getSelection(HORIZONTAL_SECTION),
+                              sheet.getSelection(HORIZONTAL_SECTION_ID)),
+             new GlyphBoard(unit,
+                            hLag.getLastGlyphId(),
+                            knownIds,
+                            sheet.getSelection(HORIZONTAL_GLYPH),
+                            sheet.getSelection(HORIZONTAL_GLYPH_ID)));
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
@@ -568,7 +569,7 @@ public class LinesBuilder
     // MyLagView //
     //-----------//
     private class MyLagView
-        extends StickView<Stick>
+        extends GlyphLagView
     {
         //~ Constructors --------------------------------------------------
 

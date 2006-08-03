@@ -206,23 +206,23 @@ public class SkewBuilder
     private void displayFrame()
     {
         // Create a view
-        LagView view = new SkewLagView(sLag);
+        LagView view = new SkewLagView();
         view.colorize();
 
         // Create a hosting frame for the view
+        final String unit = "SkewBuilder";
         sheet.getAssembly().addViewTab
             ("Skew",
              new ScrollLagView(view),
              new BoardsPane
              (sheet, view,
-              new PixelBoard("SkewBuilder-Pixel-Board"),
-              new RunBoard(sheet.getSelection(SKEW_RUN),
-                           "SkewBuilder-RunBoard"),
-              new SectionBoard(sheet.getSelection(SKEW_SECTION),
-                               sheet.getSelection(SKEW_SECTION_ID),
-                              sheet.getSelection(PIXEL),
+              new PixelBoard(unit),
+              new RunBoard(unit,
+                           sheet.getSelection(SKEW_RUN)),
+              new SectionBoard(unit,
                                sLag.getLastVertexId(),
-                               "SkewBuilder-SectionBoard")));
+                               sheet.getSelection(SKEW_SECTION),
+                               sheet.getSelection(SKEW_SECTION_ID))));
     }
 
     //---------------//
@@ -408,9 +408,9 @@ public class SkewBuilder
         //-------------//
         // SkewLagView //
         //-------------//
-        public SkewLagView (GlyphLag lag)
+        public SkewLagView ()
         {
-            super(lag, null);
+            super(sLag, null);
             setName("SkewBuilder-View");
 
             // Inject selection dependencies into this hlag, only when this
