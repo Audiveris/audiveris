@@ -318,7 +318,7 @@ public class Picture
     {
         switch (selection.getTag()) {
         case PIXEL :
-            if (hint == SelectionHint.PIXEL_INIT) {
+            if (hint == SelectionHint.LOCATION_INIT) {
                 // Compute and forward pixel grey level
                 Integer level = null;
                 Rectangle rect = (Rectangle) selection.getEntity();
