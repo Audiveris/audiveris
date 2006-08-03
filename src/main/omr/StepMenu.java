@@ -128,18 +128,6 @@ public class StepMenu
                         setEnabled(!is.isDone());
                     }
                 }
-//                 InstanceStep is = sheet.getInstanceStep(step);
-//                 if (is != null) {
-//                     setState(is.isDone());
-//                     if (sheet.isBusy()) {
-//                         setEnabled(false);
-//                     } else {
-//                         setEnabled(!is.isDone());
-//                     }
-//                 } else {
-//                     setState(false);
-//                     setEnabled(false);
-//                 }
             }
         }
     }
