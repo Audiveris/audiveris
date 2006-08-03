@@ -86,15 +86,23 @@ public class SymbolGlyphBoard
      *
      * @param pane the companion pane which handles the other UI entities
      * @param firstSymbolId id of the first glyph made as a symbol (as
-     * opposed to sticks/glyphs elaborated during previous steps)
+     *                      opposed to sticks/glyphs elaborated during
+     *                      previous steps)
      * @param vLag the related vertical glyph lag
+     * @param glyphSelection glyph selection as input
+     * @param glyphIdSelection glyph_id selection as output
      */
     public SymbolGlyphBoard (GlyphPane pane,
                              int       firstSymbolId,
-                             GlyphLag  vLag)
+                             GlyphLag  vLag,
+                             Selection glyphSelection,
+                             Selection glyphIdSelection)
     {
         // For all glyphs
-        super(vLag.getLastGlyphId(), "SymbolGlyphBoard");
+        super("Symbol",
+              vLag.getLastGlyphId(),
+              glyphSelection,
+              glyphIdSelection);
 
         // Cache info
         this.pane          = pane;
@@ -131,7 +139,7 @@ public class SymbolGlyphBoard
      */
     public SymbolGlyphBoard()
     {
-        super("SymbolGlyphBoard");
+        super("Symbol");
         defineSpecificLayout();
     }
 
