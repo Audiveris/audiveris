@@ -26,36 +26,36 @@ import javax.swing.event.*;
  * Class <code>ZoomedPanel</code> is a class meant to handle common
  * task of a display with a magnifying lens, as provided by a related
  * {@link Zoom} entity.
- *
+ * 
  * <p>This class does not allocate any zoom instance. When using this
  * class, we have to provide our own Zoom instance, either at contruction
  * time by using the proper constructor or later by using the {@link
  * #setZoom} method. The class then registers itself as an observer of the
  * Zoom instance, to be notified when the zoom ratio is modified.
- *
+ * 
  * <p>The ModelSize is the unzoomed size of the data to be displayed, it
  * can be updated through {@link #setModelSize}. This is useful when used
  * in combination with a JScrollPane container (see {@link ScrollView}
  * example).
- *
+ * 
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
  * <li>PIXEL Location | SCORE Location
  * </ul>
- *
+ * 
  * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>PIXEL Location | SCORE Location (either flagged with PIXEL_INIT hint)
+ * <li>PIXEL Location | SCORE Location (either flagged with LOCATION_INIT hint)
  * </ul>
  * </dl>
- *
+ * 
+ * 
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 
 public class ZoomedPanel
     extends JPanel
-    implements ComponentListener,       // To receive visibility events
-               ChangeListener,          // To receive events from Zoom
+    implements ChangeListener,          // To receive events from Zoom
                MouseMonitor,            // To receive mouse events from Rubber
                SelectionObserver        // To receive events for location selection
 {
@@ -99,7 +99,6 @@ public class ZoomedPanel
     public ZoomedPanel (Zoom zoom)
     {
         setZoom(zoom);
-        addComponentListener(this);
     }
 
     //~ Methods -----------------------------------------------------------
@@ -257,7 +256,7 @@ public class ZoomedPanel
         if (locationSelection != null) { // Producer
             locationSelection.setEntity
                 (rect != null ? new Rectangle(rect) : null,
-                 SelectionHint.PIXEL_INIT);
+                 SelectionHint.LOCATION_INIT);
         }
     }
 
@@ -282,9 +281,9 @@ public class ZoomedPanel
 
         if (rect != null) {
             // Check whether the rectangle is fully visible,
-            // if not scroll so as to make (most of) it visible
+            // if not, scroll so as to make (most of) it visible
             Rectangle scaledRect = zoom.scaled(rect);
-            // Needed to workaround strange behavior of 'contains'
+            // Needed to work around a strange behavior of 'contains' method
             if (scaledRect.width == 0) scaledRect.width = 1;
             if (scaledRect.height== 0) scaledRect.height= 1;
 
@@ -404,38 +403,6 @@ public class ZoomedPanel
             break;
 
         default :
-        }
-    }
-
-    /**
-     * Invoked when the component's size changes.
-     */
-    public void componentResized(ComponentEvent e) {}
-
-    /**
-     * Invoked when the component's position changes.
-     */
-    public void componentMoved(ComponentEvent e) {}
-
-    /**
-     * Invoked when the component has been made visible.
-     */
-    public void componentShown(ComponentEvent e)
-    {
-        logger.info("Shown");
-        if (locationSelection != null) {
-            locationSelection.addObserver(this);
-        }
-    }
-
-    /**
-     * Invoked when the component has been made invisible.
-     */
-    public void componentHidden(ComponentEvent e)
-    {
-        logger.info("Hidden");
-        if (locationSelection != null) {
-            locationSelection.deleteObserver(this);
         }
     }
 
