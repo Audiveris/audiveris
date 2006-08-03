@@ -45,7 +45,7 @@ public class CheckPanel <C extends Checkable>
 
     private static final String LINE_GAP    = "1dlu";
     private static final String COLUMN_GAP  = "1dlu";
-    private static final int    FIELD_WIDTH = 5;
+    private static final int    FIELD_WIDTH = 4;
 
     //~ Instance variables ------------------------------------------------
 
