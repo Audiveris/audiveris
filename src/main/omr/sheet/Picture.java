@@ -318,19 +318,20 @@ public class Picture
     {
         switch (selection.getTag()) {
         case PIXEL :
+            Integer level = null;
             if (hint == SelectionHint.LOCATION_INIT) {
                 // Compute and forward pixel grey level
-                Integer level = null;
                 Rectangle rect = (Rectangle) selection.getEntity();
                 if (rect != null) {
                     Point pt = rect.getLocation();
                     // Check that we are not pointing outside the image
-                    if ((pt.x < getWidth()) && (pt.y < getHeight())) {
+                    if (pt.x >= 0 && pt.x < getWidth() &&
+                        pt.y >= 0 && pt.y < getHeight()) {
                         level = new Integer(getPixel(pt.x, pt.y));
                     }
                 }
-                levelSelection.setEntity(level, hint);
             }
+            levelSelection.setEntity(level, hint);
             break;
 
         default :
