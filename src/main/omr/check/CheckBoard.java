@@ -14,6 +14,9 @@ import omr.ui.Board;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
+import omr.selection.SelectionObserver;
 
 /**
  * Class <code>CheckBoard</code> defines a board dedicated to the display
@@ -26,12 +29,12 @@ import com.jgoodies.forms.layout.*;
  */
 public class CheckBoard <C extends Checkable>
     extends Board
-    implements CheckMonitor<C>
+    implements SelectionObserver
 {
     //~ Instance variables ------------------------------------------------
 
     // For display of check suite results
-    private final CheckPanel<C> checkPane;
+    private final CheckPanel<C> checkPanel;
 
     //~ Constructors ------------------------------------------------------
 
@@ -41,14 +44,19 @@ public class CheckBoard <C extends Checkable>
     /**
      * Create a Check Board
      *
-     * @param suite the check suite to be used
+     * @param name           the name of the check
+     * @param suite          the check suite to be used
+     * @param inputSelection the input to run check upon
      */
-    public CheckBoard (CheckSuite<C> suite,
-                       String name)
+    public CheckBoard (String        name,
+                       CheckSuite<C> suite,
+                       Selection     inputSelection)
     {
-        super(Board.Tag.CHECK, name);
-        checkPane = new CheckPanel<C>(suite);
+        super(Board.Tag.CHECK, name + "-CheckBoard");
+        checkPanel = new CheckPanel<C>(suite);
         defineLayout(suite.getName());
+
+        setInputSelection(inputSelection);
 
         // define default content
         tellObject(null);
@@ -66,7 +74,7 @@ public class CheckBoard <C extends Checkable>
      */
     public void setSuite (CheckSuite<C> suite)
     {
-        checkPane.setSuite(suite);
+        checkPanel.setSuite(suite);
     }
 
     //--------------//
@@ -83,7 +91,7 @@ public class CheckBoard <C extends Checkable>
         builder.addSeparator(name + " check",   cst.xy(1,  r));
 
         r += 2;                         // --------------------------------
-        builder.add(checkPane.getComponent(),   cst.xy (1,  r));
+        builder.add(checkPanel.getComponent(),   cst.xy (1,  r));
     }
 
     //------------//
@@ -94,13 +102,28 @@ public class CheckBoard <C extends Checkable>
      *
      * @param object the object whose check result is to be displayed
      */
-    public void tellObject (C object)
+    protected void tellObject (C object)
     {
         if (object == null) {
             getComponent().setVisible(false);
         } else {
             getComponent().setVisible(true);
-            checkPane.passForm(object);
+            checkPanel.passForm(object);
         }
+    }
+
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Call-back triggered when C Selection has been modified.
+     *
+     * @param selection the Selection to perform check upon
+     * @param hint potential notification hint
+     */
+    public void update(Selection selection,
+                       SelectionHint hint)
+    {
+        tellObject((C) selection.getEntity());
     }
 }
