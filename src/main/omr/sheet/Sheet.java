@@ -188,7 +188,7 @@ public class Sheet
                     assembly.addViewTab
                         ("Picture", pictureView,
                          new BoardsPane(Sheet.this, pictureView.getView(),
-                                        new PixelBoard("Picture-PixelBoard")));
+                                        new PixelBoard("Picture")));
                 }
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find file " + imageFile);
