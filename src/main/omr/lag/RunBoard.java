@@ -57,43 +57,18 @@ public class RunBoard
     //----------//
     /**
      * Create a Run Board
+     * @param unitName name of the owning unit
      * @param input the selection where run input is handled
-     * @param name a distinguished name for this instance
      */
-    public RunBoard (Selection input,
-                     String name)
+    public RunBoard (String    unitName,
+                     Selection input)
     {
-        super(Board.Tag.RUN, name);
+        super(Board.Tag.RUN, unitName + "-RunBoard");
         setInputSelection(input);
         defineLayout();
     }
 
     //~ Methods -----------------------------------------------------------
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout()
-    {
-        FormLayout layout = Panel.makeFormLayout(2, 3);
-        PanelBuilder builder = new PanelBuilder(layout, getComponent());
-        builder.setDefaultDialogBorder();
-
-        CellConstraints cst = new CellConstraints();
-
-        int r = 1;                      // --------------------------------
-        builder.addSeparator("Run",     cst.xyw(1,  r, 11));
-
-        r += 2;                         // --------------------------------
-        builder.add(rStart.getLabel(),  cst.xy (1,  r));
-        builder.add(rStart.getField(),  cst.xy (3,  r));
-
-        builder.add(rLength.getLabel(), cst.xy (5,  r));
-        builder.add(rLength.getField(), cst.xy (7,  r));
-
-        builder.add(rLevel.getLabel(),  cst.xy (9,  r));
-        builder.add(rLevel.getField(),  cst.xy (11, r));
-    }
 
     //--------//
     // update //
@@ -128,5 +103,32 @@ public class RunBoard
             default:
                 logger.severe("Unexpected selection event from " + selection);
         }
+    }
+
+    //~ Methods private ---------------------------------------------------
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout()
+    {
+        FormLayout layout = Panel.makeFormLayout(2, 3);
+        PanelBuilder builder = new PanelBuilder(layout, getComponent());
+        builder.setDefaultDialogBorder();
+
+        CellConstraints cst = new CellConstraints();
+
+        int r = 1;                      // --------------------------------
+        builder.addSeparator("Run",     cst.xyw(1,  r, 11));
+
+        r += 2;                         // --------------------------------
+        builder.add(rStart.getLabel(),  cst.xy (1,  r));
+        builder.add(rStart.getField(),  cst.xy (3,  r));
+
+        builder.add(rLength.getLabel(), cst.xy (5,  r));
+        builder.add(rLength.getField(), cst.xy (7,  r));
+
+        builder.add(rLevel.getLabel(),  cst.xy (9,  r));
+        builder.add(rLevel.getField(),  cst.xy (11, r));
     }
 }

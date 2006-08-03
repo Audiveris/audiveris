@@ -11,6 +11,7 @@
 package omr.lag;
 
 import omr.selection.Selection;
+import omr.selection.SelectionHint;
 import omr.stick.StickSection;
 import omr.ui.Board;
 import omr.ui.field.LIntegerField;
@@ -24,12 +25,12 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import omr.selection.SelectionHint;
 
 /**
  * Class <code>SectionBoard</code> defines a board dedicated to the display
  * of {@link omr.lag.Section} and {@link omr.lag.Run} information, it can
- * also be used as an input means by directly entering the section id.
+ * also be used as an input means by directly entering the section id in
+ * the proper Id spinner.
  *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
@@ -53,8 +54,7 @@ public class SectionBoard
 
     //~ Instance variables ------------------------------------------------
 
-    // Section
-    private JPanel sectionPanel;
+    // Section input devices
     private final JButton dump = new JButton("Dump");
     private final JSpinner id = new JSpinner();
 
@@ -77,9 +77,6 @@ public class SectionBoard
         (false, "Dir", "Direction from the stick core");
     private final JTextField role = new JTextField();
 
-    // Location selection, used as output with section pixel contour
-    private Selection locationSelection;
-
     // To avoid loop, indicate that update() method id being processed
     private boolean updating = false;
     private boolean idSelecting = false;
@@ -92,46 +89,21 @@ public class SectionBoard
     /**
      * Create a Section Board
      *
-     * @param inputSelection the selection for section input
-     * @param outputSelection the selection for section id output
-     * @param locationSelection the selection for section contour output
+     * @param unitName name for the owning unit
      * @param maxSectionId the upper bound for section id
-     * @param name a distinguished name for this instance
-     */
-    public SectionBoard (Selection inputSelection,
-                         Selection outputSelection,
-                         Selection locationSelection,
-                         int       maxSectionId,
-                         String    name)
-    {
-        this(inputSelection, outputSelection, locationSelection,
-             new SpinnerNumberModel(0, 0, maxSectionId, 1), name);
-    }
-
-    //--------------//
-    // SectionBoard //
-    //--------------//
-    /**
-     * Create a Section Board with a specific model for the section id
-     *
      * @param inputSelection the selection for section input
      * @param outputSelection the selection for section id output
-     * @param locationSelection the selection for section contour output
-     * @param model the specific id model
-     * @param name a distinguished name for this instance
      */
-    public SectionBoard (Selection    inputSelection,
-                         Selection    outputSelection,
-                         Selection    locationSelection,
-                         SpinnerModel model,
-                         String       name)
+    public SectionBoard(String    unitName,
+                        int       maxSectionId,
+                        Selection inputSelection,
+                        Selection outputSelection)
     {
-        super(Board.Tag.SECTION, name);
+        super(Board.Tag.SECTION, unitName + "-SectionBoard");
 
         // Dependencies on Selections
         setOutputSelection(outputSelection);
         setInputSelection(inputSelection);
-        this.locationSelection = locationSelection;
 
         // Dump button
         dump.setToolTipText("Dump this section");
@@ -156,6 +128,9 @@ public class SectionBoard
                 {
                     public void stateChanged(ChangeEvent e)
                     {
+                        // Make sure this new Id value is due to user
+                        // action on an Id spinner, and not the mere update
+                        // of section fields (which include this id).
                         if (!updating) {
                             Selection output = SectionBoard.this.outputSelection;
                             if (output != null) {
@@ -164,14 +139,15 @@ public class SectionBoard
                                     logger.fine("sectionId=" + sectionId);
                                 }
                                 idSelecting = true;
-                                output.setEntity(sectionId, SelectionHint.
-                                                 SECTION_INIT);
+                                output.setEntity(sectionId,
+                                                 SelectionHint.SECTION_INIT);
                                 idSelecting = false;
                             }
                         }
                     }
         });
-        id.setModel(model);
+        id.setModel(new SpinnerNumberModel(0, 0, maxSectionId, 1));
+
 
         // Role
         role.setEditable(false);
@@ -179,10 +155,90 @@ public class SectionBoard
         role.setToolTipText
                 ("Role in the composition of the containing stick");
 
+        // Component layout
         defineLayout();
     }
 
     //~ Methods -----------------------------------------------------------
+
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Call-back triggered when Section Selection has been modified
+     *
+     * @param selection the (Section) Selection
+     * @param hint potential notification hint
+     */
+    public void update (Selection selection,
+                        SelectionHint hint)
+    {
+        Object entity = selection.getEntity();
+        if (logger.isFineEnabled()){
+            logger.fine("SectionBoard " + selection.getTag() + ": " + entity);
+        }
+
+        switch (selection.getTag()) {
+        case SKEW_SECTION :             // Section of initial skewed lag
+        case HORIZONTAL_SECTION :       // Section of horizontal lag
+        case VERTICAL_SECTION :         // Section of vertical lag
+            if (updating) {
+                ///logger.warning("double updating");
+                return;
+            }
+
+            // Update section fields in this board
+            updating = true;
+
+            Section section = (Section) entity;
+            dump.setEnabled(section != null);
+
+            Integer sectionId = null;
+            if (idSelecting) {
+                sectionId = (Integer) id.getValue();
+            }
+            emptyFields(getComponent());
+
+            if (section == null) {
+                // If the user is currently using the Id spinner, make sure
+                // we display the right Id value in the spinner, even if
+                // there is no corresponding section
+                if (idSelecting) {
+                    id.setValue(sectionId);
+                } else {
+                    id.setValue(NO_VALUE);
+                }
+            } else {
+                // We have a valid section, let's display its fields
+                id.setValue(section.getId());
+
+                Rectangle box = section.getContourBox();
+                x.setValue(box.x);
+                y.setValue(box.y);
+                width.setValue(box.width);
+                height.setValue(box.height);
+                weight.setValue(section.getWeight());
+
+                // Additional fields for a StickSection
+                if (section instanceof StickSection) {
+                    StickSection ss = (StickSection) section;
+                    layer.setValue(ss.layer);
+                    direction.setValue(ss.direction);
+                    if (ss.role != null) {
+                        role.setText(ss.role.toString());
+                    }
+                }
+            }
+
+            updating = false;
+            break;
+
+        default :
+            logger.severe("Unexpected selection event from " + selection);
+        }
+    }
+
+    //~ Methods private ---------------------------------------------------
 
     //--------------//
     // defineLayout //
@@ -227,75 +283,5 @@ public class SectionBoard
         builder.add(direction.getField(), cst.xy (7,  r));
 
         builder.add(role,               cst.xyw(9, r, 3));
-    }
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Call-back triggered when Section Selection has been modified
-     *
-     * @param selection the (Section) Selection
-     * @param hint potential notification hint
-     */
-    public void update (Selection selection,
-                        SelectionHint hint)
-    {
-        Object entity = selection.getEntity();
-        if (logger.isFineEnabled()){
-            logger.fine("SectionBoard " + selection.getTag() + ": " + entity);
-        }
-
-        switch (selection.getTag()) {
-        case SKEW_SECTION :             // Section of initial skewed lag
-        case HORIZONTAL_SECTION :       // Section of horizontal lag
-        case VERTICAL_SECTION :         // Section of vertical lag
-            if (updating) {
-                ///logger.warning("double updating");
-                return;
-            }
-
-            Section section = (Section) entity;
-            dump.setEnabled(section != null);
-
-            updating = true;
-            Integer sectionId = null;
-            if (idSelecting) {
-                sectionId = (Integer) id.getValue();
-            }
-            emptyFields(getComponent());
-
-            if (section == null) {
-                if (idSelecting) {
-                    id.setValue(sectionId);
-                } else {
-                    id.setValue(NO_VALUE);
-                }
-            } else {
-                id.setValue(section.getId());
-
-                Rectangle box = section.getContourBox();
-                x.setValue(box.x);
-                y.setValue(box.y);
-                width.setValue(box.width);
-                height.setValue(box.height);
-                weight.setValue(section.getWeight());
-
-                if (section instanceof StickSection) {
-                    StickSection ss = (StickSection) section;
-                    layer.setValue(ss.layer);
-                    direction.setValue(ss.direction);
-                    if (ss.role != null) {
-                        role.setText(ss.role.toString());
-                    }
-                }
-            }
-
-            updating = false;
-            break;
-
-        default :
-            logger.severe("Unexpected selection event from " + selection);
-        }
     }
 }
