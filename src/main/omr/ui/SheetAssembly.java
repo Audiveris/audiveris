@@ -440,7 +440,7 @@ public class SheetAssembly
         displayContext();
 
         // Force update
-        locationSelection.refresh(null);
+        locationSelection.reNotifyObservers(null);
     }
 
     //---------------//
