@@ -197,25 +197,6 @@ public class Selection
         }
     }
 
-    //---------//
-    // refresh //
-    //---------//
-    /**
-     * Allows to resend a notification, using current value of the selection
-     *
-     * @param hint   a potential hint for selection observers
-     */
-    public void refresh(SelectionHint hint)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine(indent() + this + hintString(hint) +
-                        " refreshed by " + new Throwable().getStackTrace()[1]);
-        }
-
-        setChanged();
-        notifyObservers(hint);
-    }
-
     //----------//
     // toString //
     //----------//
@@ -263,11 +244,14 @@ public class Selection
     // dump //
     //------//
     /**
-     * Dump to the satndard output the list of all observers
+     * Dump to the standard output the list of all observers
      */
     public void dump()
     {
         System.out.println(this.toLongString());
+        if (level != 0) {
+            logger.warning("selection notification level is not zero: " + level);
+        }
         for (NamedObserver no : observers) {
             System.out.println("    + " + no.name);
         }
@@ -333,6 +317,17 @@ public class Selection
     }
 
     //-----------------//
+    // deleteObservers //
+    //-----------------//
+    /**
+     * Remove all observers
+     */
+    public void deleteObservers()
+    {
+        observers.clear();
+    }
+
+    //-----------------//
     // notifyObservers //
     //-----------------//
     /**
@@ -352,9 +347,8 @@ public class Selection
             return;
 
         // A temporary buffer, used as a snapshot of the state of current
-        // Observers
-        ArrayList<NamedObserver> copy
-            = (ArrayList<NamedObserver>) observers.clone();
+        // Observers, to avoid potential modification of this list on the fly
+        ArrayList<NamedObserver> copy = new ArrayList<NamedObserver>(observers);
 
         clearChanged();
 
@@ -376,15 +370,23 @@ public class Selection
         level--;
     }
 
-    //-----------------//
-    // deleteObservers //
-    //-----------------//
+    //-------------------//
+    // reNotifyObservers //
+    //-------------------//
     /**
-     * Remove all observers
+     * Allows to resend a notification, using current value of the selection
+     *
+     * @param hint   a potential hint for selection observers
      */
-    public void deleteObservers()
+    public void reNotifyObservers(SelectionHint hint)
     {
-        observers.clear();
+        if (logger.isFineEnabled()) {
+            logger.fine(indent() + this + hintString(hint) +
+                        " renotified by " + new Throwable().getStackTrace()[1]);
+        }
+
+        setChanged();
+        notifyObservers(hint);
     }
 
     //------------//
