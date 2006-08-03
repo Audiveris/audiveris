@@ -19,59 +19,58 @@ package omr.selection;
  */
 public enum SelectionTag
 {
-    /** Current Sheet. Entity type is a Sheet */
+    /** Current Sheet, entity type is a Sheet. */
     SHEET,
 
-        /** Rectangle in Score display. Entity type is a Rectangle. */
+        /** Rectangle in Score display, entity type is a Rectangle. */
         SCORE,
 
-        /** Rectangle in Sheet display. Entity type is a Rectangle. */
+        /** Rectangle in Sheet display, entity type is a Rectangle. */
         PIXEL,
 
-        /** Pixel grey level. Entity type is an Integer. */
+        /** Pixel grey level, entity type is an Integer. */
         LEVEL,
 
-        /** Run of initial skewed lag. Entity type is a Run. */
+        /** Run of initial skewed lag, entity type is a Run. */
         SKEW_RUN,
 
-        /** Section of initial skewed lag. Entity type is a Section. */
+        /** Section of initial skewed lag, entity type is a Section. */
         SKEW_SECTION,
 
-        /** Section Id of initial skewed lag. Entity type is an Integer. */
+        /** Section Id of initial skewed lag, entity type is an Integer. */
         SKEW_SECTION_ID,
 
-        /** Run of horizontal lag. Entity type is a Run. */
+        /** Run of horizontal lag, entity type is a Run. */
         HORIZONTAL_RUN,
 
-        /** Section of horizontal lag. Entity type is a Section. */
+        /** Section of horizontal lag, entity type is a Section. */
         HORIZONTAL_SECTION,
 
-        /** Section Id of horizontal lag. Entity type is an Integer. */
+        /** Section Id of horizontal lag, entity type is an Integer. */
         HORIZONTAL_SECTION_ID,
 
-        /** A horizontal glyph. Entity type is a Glyph. */
+        /** A horizontal glyph, entity type is a Glyph. */
         HORIZONTAL_GLYPH,
 
-        /** A horizontal glyph id. Entity type is an Integer. */
+        /** A horizontal glyph id, entity type is an Integer. */
         HORIZONTAL_GLYPH_ID,
 
-        /** Run of vertical lag. Entity type is a Run. */
+        /** Run of vertical lag, entity type is a Run. */
         VERTICAL_RUN,
 
-        /** Section of vertical lag. Entity type is a Section. */
+        /** Section of vertical lag, entity type is a Section. */
         VERTICAL_SECTION,
 
-        /** Section Id of vertical lag. Entity type is an Integer. */
+        /** Section Id of vertical lag, entity type is an Integer. */
         VERTICAL_SECTION_ID,
 
-        /** A vertical glyph. Entity type is a Glyph. */
+        /** A vertical glyph, entity type is a Glyph. */
         VERTICAL_GLYPH,
 
-        /** A vertical glyph id. Entity type is an Integer. */
+        /** A vertical glyph id, entity type is an Integer. */
         VERTICAL_GLYPH_ID,
 
-        /** Set of (vertical) glyphs. Entity type is a Collection of
+        /** Set of (vertical) glyphs, entity type is a Collection of
             Glyphs. */
         GLYPH_SET;
 }
-
