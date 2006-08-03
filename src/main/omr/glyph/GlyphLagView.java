@@ -226,7 +226,9 @@ public class GlyphLagView
         super.update(selection, hint);
 
         // Check for glyph information
-        if (glyphSelection != null) {
+        if (showingSpecifics &&
+            sectionSelection != null &&
+            glyphSelection != null) {
             switch (selection.getTag()) {
             case PIXEL :
             case VERTICAL_SECTION_ID :
