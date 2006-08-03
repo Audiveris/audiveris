@@ -109,7 +109,7 @@ public class ScoreView
 
         // Force selection update
         Selection pixelSelection = sheet.getSelection(SelectionTag.PIXEL);
-        pixelSelection.refresh(null);
+        pixelSelection.reNotifyObservers(null);
     }
 
     //~ Methods -----------------------------------------------------------
