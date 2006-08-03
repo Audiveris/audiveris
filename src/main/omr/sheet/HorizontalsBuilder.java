@@ -22,6 +22,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphDirectory;
 import omr.glyph.GlyphLag;
+import omr.glyph.GlyphLagView;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
@@ -32,7 +33,6 @@ import omr.selection.Selection;
 import omr.selection.SelectionTag;
 import omr.stick.Stick;
 import omr.stick.StickUtil;
-import omr.stick.StickView;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 import omr.ui.ToggleHandler;
@@ -104,11 +104,6 @@ public class HorizontalsBuilder
     // And the suite collections
     private ArrayList<CheckSuite<Stick>> ledgerList;
     private ArrayList<CheckSuite<Stick>> endingList;
-
-    // Display of check results
-    private CheckBoard<Stick> checkCommonBoard;
-    private CheckBoard<Stick> checkLedgerBoard;
-    private CheckBoard<Stick> checkEndingBoard;
 
     //~ Constructors ------------------------------------------------------
 
@@ -217,26 +212,27 @@ public class HorizontalsBuilder
             knownIds.add(new Integer(dash.getStick().getId()));
         }
 
-        checkCommonBoard = new CheckBoard<Stick>(commonSuite, "Common");
-        checkLedgerBoard = new CheckBoard<Stick>(ledgerSuite, "Ledger");
-        checkEndingBoard = new CheckBoard<Stick>(endingSuite, "Ending");
+        final String unit = "HorizontalsBuilder";
         BoardsPane boardsPane = new BoardsPane
             (sheet, lagView,
-             new PixelBoard("HorizontalsBuilder-PixelBoard"),
-             new RunBoard(sheet.getSelection(HORIZONTAL_RUN),
-                          "HorizontalsBuilder-RunBoard"),
-             new SectionBoard(sheet.getSelection(HORIZONTAL_SECTION),
-                              sheet.getSelection(HORIZONTAL_SECTION_ID),
-                              sheet.getSelection(PIXEL),
+             new PixelBoard(unit),
+             new RunBoard(unit,
+                          sheet.getSelection(HORIZONTAL_RUN)),
+             new SectionBoard(unit,
                               lag.getLastVertexId(),
-                              "HorizontalsBuilder-SectionBoard"),
-             new GlyphBoard(lag.getLastGlyphId(), knownIds,
-                            "HorizontalsBuilder-GlyphBoard",
-                sheet.getSelection(HORIZONTAL_GLYPH),
-                sheet.getSelection(HORIZONTAL_GLYPH_ID)),
-             checkCommonBoard,
-             checkLedgerBoard,
-             checkEndingBoard);
+                              sheet.getSelection(HORIZONTAL_SECTION),
+                              sheet.getSelection(HORIZONTAL_SECTION_ID)),
+             new GlyphBoard(unit,
+                            lag.getLastGlyphId(),
+                            knownIds,
+                            sheet.getSelection(HORIZONTAL_GLYPH),
+                            sheet.getSelection(HORIZONTAL_GLYPH_ID)),
+             new CheckBoard<Stick>(unit + "-Common", commonSuite,
+                                   sheet.getSelection(HORIZONTAL_GLYPH)),
+             new CheckBoard<Stick>(unit + "-Ledger", ledgerSuite,
+                                   sheet.getSelection(HORIZONTAL_GLYPH)),
+             new CheckBoard<Stick>(unit + "-Ending", endingSuite,
+                                   sheet.getSelection(HORIZONTAL_GLYPH)));
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
@@ -361,7 +357,7 @@ public class HorizontalsBuilder
     // MyView //
     //--------//
     private class MyView
-        extends StickView<Stick>
+        extends GlyphLagView
     {
         //~ Constructors --------------------------------------------------
 
@@ -416,32 +412,6 @@ public class HorizontalsBuilder
                 dash.render(g, z);
                 dash.renderContour(g, z);
             }
-        }
-
-        //---------------//
-        // glyphSelected //
-        //---------------//
-        @Override
-            protected void glyphSelected (Glyph glyph)
-        {
-            ///logger.info(getClass() + " glyphSelected " + glyph);
-            Stick stick = null;
-            if (glyph != null) {
-                // Safer to recreate suites, to take modifs into account
-                createSuites();
-
-                // Take new suites into account
-                checkCommonBoard.setSuite(commonSuite);
-                checkLedgerBoard.setSuite(ledgerSuite);
-                checkEndingBoard.setSuite(endingSuite);
-
-                stick = (Stick) glyph;
-            }
-
-            // Present common then ledger checks and ending checks
-            checkCommonBoard.tellObject(stick);
-            checkLedgerBoard.tellObject(stick);
-            checkEndingBoard.tellObject(stick);
         }
     }
 
