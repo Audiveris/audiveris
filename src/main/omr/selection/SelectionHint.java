@@ -19,19 +19,25 @@ package omr.selection;
  */
 public enum SelectionHint
 {
-    /** Designation is by Pixel pointing, so we keep the original pixel
-        information, and try to lookup for designated Run, Section &
-        Glyph */
-    PIXEL_INIT,
+    /**
+     * Designation is by location pointing (either SCORE or PIXEL), so we
+     * keep the original location information, and try to lookup for
+     * designated Run, Section & Glyph
+     */
+    LOCATION_INIT,
 
-        /** Designation is at Section level, so we display the pixel
-            contour of the Section, Run information is not available, and
-            related Glyph information is displayed */
+        /**
+         * Designation is at Section level, so we display the pixel contour
+         * of the Section, Run information is not available, and related
+         * Glyph information is displayed
+         */
         SECTION_INIT,
 
-        /** Designation is at Glyph level, so we display the pixel contour
-            of the Glyph, as well as Glyph information, but Run & Section
-            informations are not available */
+        /**
+         * Designation is at Glyph level, so we display the pixel contour
+         * of the Glyph, as well as Glyph information, but Run & Section
+         * informations are not available
+         */
         GLYPH_INIT;
 }
 
