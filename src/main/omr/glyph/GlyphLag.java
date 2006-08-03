@@ -24,15 +24,15 @@ import java.util.TreeMap;
  * Class <code>GlyphLag</code> is a lag of {@link GlyphSection} instances
  * which can be aggregated into {@link Glyph}instances. A GlyphLag keeps an
  * internal collection of all defined glyphs.
- *
+ * 
  * <dl>
  * <dt><b>Selection Inputs:</b> (On top of {@link Lag} inputs)</dt><ul>
- * <li>PIXEL Location (if PIXEL_INIT)
+ * <li>PIXEL Location (if LOCATION_INIT)
  * <li>*_SECTION (if SECTION_INIT)
  * <li>*_GLYPH (if GLYPH_INIT)
  * <li>*_GLYPH_ID
  * </ul>
- *
+ * 
  * <dt><b>Selection Outputs:</b></dt><ul>
  * <li>PIXEL Contour
  * <li>*_RUN
@@ -40,11 +40,11 @@ import java.util.TreeMap;
  * <li>*_GLYPH
  * </ul>
  * </dl>
- *
- * @see #setGlyphSelection
- *
+ * 
+ * 
  * @author Herv&eacute; Bitteur
  * @version $Id$
+ * @see #setGlyphSelection
  */
 public class GlyphLag
     extends Lag<GlyphLag, GlyphSection>
@@ -267,7 +267,7 @@ public class GlyphLag
         // Additional tasks
         switch (selection.getTag()) {
         case PIXEL :
-            if (hint == SelectionHint.PIXEL_INIT) {
+            if (hint == SelectionHint.LOCATION_INIT) {
                 // If a section has just been found,
                 // forward its related glyph if any
                 if (glyphSelection != null &&
