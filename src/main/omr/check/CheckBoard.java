@@ -22,6 +22,12 @@ import omr.selection.SelectionObserver;
  * Class <code>CheckBoard</code> defines a board dedicated to the display
  * of check result information.
  *
+ * <dl>
+ * <dt><b>Selection Inputs:</b></dt><ul>
+ * <li>*_GLYPH
+ * </ul>
+ * </dl>
+ *
  * @param C the specific {@link Checkable} type of object to be checked
  *
  * @author Herv&eacute; Bitteur
