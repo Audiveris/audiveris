@@ -135,21 +135,21 @@ public class GlyphPane
         customBoard.getComponent().setVisible(true);
 
         glyphBoard = new SymbolGlyphBoard(this,
-                                        sheet.getFirstSymbolId(),
-                                        vLag);
-        glyphBoard.setInputSelection(sheet.getSelection(VERTICAL_GLYPH));
-        glyphBoard.setOutputSelection(sheet.getSelection(VERTICAL_GLYPH_ID));
+                                          sheet.getFirstSymbolId(),
+                                          vLag,
+                                          sheet.getSelection(VERTICAL_GLYPH),
+                                          sheet.getSelection(VERTICAL_GLYPH_ID));
 
-
+        final String unit = "GlyphPane";
         BoardsPane boardsPane = new BoardsPane
             (sheet, view,
-             new PixelBoard("GlyphPane-PixelBoard"),
-             new RunBoard(sheet.getSelection(VERTICAL_RUN),
-                          "GlyphPane-RunBoard"),
-             new SectionBoard(sheet.getSelection(VERTICAL_SECTION),
-                              sheet.getSelection(VERTICAL_SECTION_ID),
-                              sheet.getSelection(PIXEL),
-                              vLag.getLastVertexId(), "GlyphPane-SectionBoard"),
+             new PixelBoard(unit),
+             new RunBoard(unit,
+                          sheet.getSelection(VERTICAL_RUN)),
+             new SectionBoard(unit,
+                              vLag.getLastVertexId(),
+                              sheet.getSelection(VERTICAL_SECTION),
+                              sheet.getSelection(VERTICAL_SECTION_ID)),
              glyphBoard,
              customBoard);
 

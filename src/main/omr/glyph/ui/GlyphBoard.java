@@ -95,9 +95,6 @@ public class GlyphBoard
     /** The JGoodies/Form constraints to be used by all subclasses  */
     protected CellConstraints cst = new CellConstraints();
 
-    // Location selection, used as output with glyph pixel contour
-    private Selection locationSelection;
-
     // To avoid loop, indicate that update() method is being processed
     protected boolean updating = false;
     protected boolean idSelecting = false;
@@ -110,19 +107,20 @@ public class GlyphBoard
     /**
      * Create a Glyph Board
      *
+     * @param unitName name of the owning unit
      * @param maxGlyphId the upper bound for glyph id
      * @param knownIds   the extended list of ids for known glyphs
-     * @param name       the name assigned to this board instance
      * @param glyphSelection input glyph selection
      * @param glyphIdSelection output glyph Id selection
      */
-    public GlyphBoard (int           maxGlyphId,
+    public GlyphBoard (String        unitName,
+                       int           maxGlyphId,
                        List<Integer> knownIds,
-                       String        name,
                        Selection     glyphSelection,
                        Selection     glyphIdSelection)
     {
-        this(maxGlyphId, name);
+        this(unitName + "-GlyphBoard", maxGlyphId, 
+                glyphSelection, glyphIdSelection);
 
         if (logger.isFineEnabled()) {
             logger.fine("knownIds=" + knownIds);
@@ -130,10 +128,7 @@ public class GlyphBoard
 
         known.setModel(new SpinnerListModel(knownIds));
         SpinnerUtilities.setRightAlignment(known);
-        SpinnerUtilities.fixIntegerList(known); // Waiting for swing bug
-                                                // fix
-        setInputSelection(glyphSelection);
-        setOutputSelection(glyphIdSelection);
+        SpinnerUtilities.fixIntegerList(known); // For swing bug fix
     }
 
     //------------//
@@ -142,13 +137,20 @@ public class GlyphBoard
     /**
      * Create a Glyph Board
      *
+     * @param unitName name of the owning unit
      * @param maxGlyphId the upper bound for glyph id
-     * @param name the name assigned to this board instance
+     * @param glyphSelection input glyph selection
+     * @param glyphIdSelection output glyph Id selection
      */
-    protected GlyphBoard (int           maxGlyphId,
-                          String        name)
+    protected GlyphBoard (String    unitName,
+                          int       maxGlyphId,
+                          Selection glyphSelection,
+                          Selection glyphIdSelection)
     {
-        this(name);
+        this(unitName);
+
+        setInputSelection(glyphSelection);
+        setOutputSelection(glyphIdSelection);
 
         // Model for id spinner
         gid = new JSpinner();
@@ -178,7 +180,7 @@ public class GlyphBoard
      *
      * @param name the name assigned to this board instance
      */
-    protected GlyphBoard( String    name)
+    protected GlyphBoard (String name)
     {
         super(Board.Tag.GLYPH, name);
 
@@ -208,19 +210,6 @@ public class GlyphBoard
     }
 
     //~ Methods -----------------------------------------------------------
-
-    //----------------------//
-    // setLocationSelection //
-    //----------------------//
-    /**
-     * Inject dependency on pixel location selection (an input)
-     *
-     * @param locationSelection the location selection
-     */
-    public void setLocationSelection (Selection locationSelection)
-    {
-        this.locationSelection = locationSelection;
-    }
 
     //--------------//
     // defineLayout //
