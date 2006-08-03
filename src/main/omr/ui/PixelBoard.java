@@ -28,18 +28,19 @@ import javax.swing.*;
  * as provided by other entities (output side), and which can also be used
  * by a user to directly specify pixel coordinate values by entering
  * numerical values in the fields (input side).
- *
+ * 
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
  * <li>PIXEL
  * <li>LEVEL
  * </ul>
- *
+ * 
  * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>PIXEL Location (flagged with PIXEL_INIT hint)
+ * <li>PIXEL Location (flagged with LOCATION_INIT hint)
  * </ul>
  * </dl>
- *
+ * 
+ * 
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -76,10 +77,12 @@ public class PixelBoard
     //------------//
     /**
      * Create a PixelBoard
+     *
+     * @param unitName name of the unit which declares a pixel board
      */
-    public PixelBoard (String name)
+    public PixelBoard (String unitName)
     {
-        super(Board.Tag.PIXEL, name);
+        super(Board.Tag.PIXEL, unitName + "-PixelBoard");
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent().getInputMap
@@ -250,7 +253,7 @@ public class PixelBoard
                 outputSelection.setEntity
                     (new Rectangle(x.getValue(), y.getValue(),
                                    width.getValue(), height.getValue()),
-                     SelectionHint.PIXEL_INIT);
+                     SelectionHint.LOCATION_INIT);
             }
         }
     }
