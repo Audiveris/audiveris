@@ -78,6 +78,14 @@ public class ScoreSheetBridge
 
     //~ Methods -----------------------------------------------------------
 
+    //---------//
+    // getName //
+    //---------//
+    public String getName()
+    {
+        return "Score-Sheet-Bridge";
+    }
+
     //--------//
     // update //
     //--------//
@@ -93,14 +101,14 @@ public class ScoreSheetBridge
             if (logger.isFineEnabled()){
                 logger.fine("Bridge " + selection.getTag() + ": " + entity);
             }
+            Rectangle rect = (Rectangle) entity;
 
-            if (selection == pixelSelection) {
-                Rectangle rect = (Rectangle) entity;
-
+            switch(selection.getTag()) {
+            case PIXEL :
                 // Forward to Score side
                 if (rect != null) {
                     PagePoint pagPt = sheet.getScale().toPagePoint
-                            (new PixelPoint(rect.x, rect.y));
+                        (new PixelPoint(rect.x, rect.y));
                     if (pagPt != null) {
                         // Which system ?
                         final System system = score.pageLocateSystem(pagPt);
@@ -110,10 +118,9 @@ public class ScoreSheetBridge
                 } else {
                     scoreSelection.setEntity(null, hint);
                 }
+                break;
 
-            } else if (selection == scoreSelection) {
-                Rectangle rect = (Rectangle) entity;
-
+            case SCORE :
                 // Forward to Sheet side
                 if (rect != null) {
                     // We forge a ScorePoint from the display point
@@ -127,18 +134,12 @@ public class ScoreSheetBridge
                 } else {
                     pixelSelection.setEntity(null, hint);
                 }
-            } else {
+                break;
+
+            default :
                 logger.severe("Unexpected selection event from " + selection);
             }
             bridging = false;
         }
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    public String getName()
-    {
-        return "Score-Sheet-Bridge";
     }
 }
