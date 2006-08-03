@@ -24,16 +24,17 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphDirectory;
 import omr.glyph.GlyphLag;
+import omr.glyph.GlyphLagView;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 import omr.selection.Selection;
+import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
 import omr.stick.Stick;
 import omr.stick.StickSection;
-import omr.stick.StickView;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 import omr.ui.view.Zoom;
@@ -87,8 +88,6 @@ public class VerticalsBuilder
     private StemCheckSuite suite = new StemCheckSuite();
     private MyView view;
 
-    // To displat check results
-    private CheckBoard<Context> checkBoard;
     //~ Constructors ------------------------------------------------------
 
     //------------------//
@@ -162,26 +161,26 @@ public class VerticalsBuilder
         }
 
         // Create a hosting frame for the view
-        checkBoard = new CheckBoard<Context>(suite,
-                                             "VerticalsBuilder-CheckBoard");
-        view.setCheckMonitor(checkBoard);
+        final String unit = "VerticalsBuilder";
         sheet.getAssembly().addViewTab
             ("Verticals", new ScrollLagView(view),
              new BoardsPane
              (sheet, view,
-              new PixelBoard("VerticalsBuilder-PixelBoard"),
-              new RunBoard(sheet.getSelection(VERTICAL_RUN),
-                           "VerticalsBuilder-RunBoard"),
-              new SectionBoard(sheet.getSelection(VERTICAL_SECTION),
-                               sheet.getSelection(VERTICAL_SECTION_ID),
-                               sheet.getSelection(PIXEL),
+              new PixelBoard(unit),
+              new RunBoard(unit,
+                           sheet.getSelection(VERTICAL_RUN)),
+              new SectionBoard(unit,
                                vLag.getLastVertexId(),
-                               "VerticalsBuilder-SectionBoard"),
-              new GlyphBoard(vLag.getLastGlyphId(), knownIds,
-                             "VerticalsBuilder-GlyphBoard",
+                               sheet.getSelection(VERTICAL_SECTION),
+                               sheet.getSelection(VERTICAL_SECTION_ID)),
+              new GlyphBoard(unit,
+                             vLag.getLastGlyphId(),
+                             knownIds,
                              sheet.getSelection(VERTICAL_GLYPH),
                              sheet.getSelection(VERTICAL_GLYPH_ID)),
-              checkBoard));
+              new MyCheckBoard(unit,
+                               suite,
+                               sheet.getSelection(VERTICAL_GLYPH))));
     }
 
     //-------------------//
@@ -229,11 +228,48 @@ public class VerticalsBuilder
 
     //~ Classes -----------------------------------------------------------
 
+    //--------------//
+    // MyCheckBoard //
+    //--------------//
+    private class MyCheckBoard
+        extends CheckBoard<Context>
+    {
+        public MyCheckBoard(String     unit,
+                            CheckSuite suite,
+                            Selection  inputSelection)
+        {
+            super(unit, suite, inputSelection);
+        }
+
+        public void update(Selection selection,
+                           SelectionHint hint)
+        {
+            Context context = null;
+            Object entity = selection.getEntity();
+            if (entity instanceof Stick) {
+                try {
+                    // Get a fresh suite
+                    setSuite(new StemCheckSuite());
+
+                    Stick stick = (Stick) entity;
+                    Rectangle rect = (Rectangle)
+                        sheet.getSelection(SelectionTag.PIXEL).getEntity();
+                    Point pt = rect.getLocation();
+                    SystemInfo system = sheet.getSystemAtY(pt.y);
+                    context = new Context(stick, system);
+                } catch (ProcessingException ex){
+                    logger.warning("Glyph cannot be processed");
+                }
+            }
+            tellObject(context);
+        }
+    }
+
     //--------//
     // MyView //
     //--------//
     private class MyView
-        extends StickView<Context>
+        extends GlyphLagView
     {
         //~ Constructors --------------------------------------------------
 
@@ -311,33 +347,6 @@ public class VerticalsBuilder
             }
 
             // TBD Render the contour of the unlucky candidates also?
-        }
-
-        //---------------//
-        // glyphSelected //
-        //---------------//
-        @Override
-            protected void glyphSelected (Glyph glyph)
-        {
-            ///logger.info(getClass() + " glyphSelected " + glyph);
-            Context context = null;
-            if (glyph instanceof Stick) {
-                try {
-                    // Get a fresh suite
-                    suite = new StemCheckSuite();
-                    checkBoard.setSuite(suite);
-
-                    Stick stick = (Stick) glyph;
-                    Rectangle rect = (Rectangle)
-                        sheet.getSelection(SelectionTag.PIXEL).getEntity();
-                    Point pt = rect.getLocation();
-                    SystemInfo system = sheet.getSystemAtY(pt.y);
-                    context = new Context(stick, system);
-                } catch (ProcessingException ex){
-                    logger.warning("Glyph cannot be processed");
-                }
-            }
-            checkMonitor.tellObject(context);
         }
 
         //---------------//
