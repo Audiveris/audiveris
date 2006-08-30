@@ -40,7 +40,6 @@ import javax.swing.*;
  * </ul>
  * </dl>
  * 
- * 
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -67,9 +66,6 @@ public class PixelBoard
     private final LIntegerField height = new LIntegerField
         ("Height", "Height of rectangle");
 
-    // Additional selection to be observed
-    private Selection levelSelection;
-
     //~ Constructors ------------------------------------------------------
 
     //------------//
@@ -95,18 +91,6 @@ public class PixelBoard
     }
 
     //~ Methods -----------------------------------------------------------
-
-    //-------------------//
-    // setLevelSelection //
-    //-------------------//
-    public void setLevelSelection (Selection levelSelection)
-    {
-        if (this.levelSelection != null) {
-            this.levelSelection.deleteObserver(this);
-        }
-
-        this.levelSelection = levelSelection;
-    }
 
     //--------------//
     // defineLayout //
@@ -143,50 +127,6 @@ public class PixelBoard
 
         builder.add(height.getLabel(),  cst.xy (5,  r));
         builder.add(height.getField(),  cst.xy (7,  r));
-    }
-
-    //----------------------//
-    // setLocationSelection //
-    //----------------------//
-    /**
-     * Allow to inject a dependency on a location Selection object
-     *
-     * @param locationSelection the proper location Selection to be updated
-     */
-    public void setLocationSelection (Selection locationSelection)
-    {
-        setInputSelection (locationSelection);
-        setOutputSelection(locationSelection);
-    }
-
-    //------------//
-    // boardShown //
-    //------------//
-    /**
-     * Invoked when the board has been made visible.
-     */
-    @Override
-    public void boardShown()
-    {
-        super.boardShown();
-        if (levelSelection != null) {
-            levelSelection.addObserver(this);
-        }
-    }
-
-    //-------------//
-    // boardHidden //
-    //-------------//
-    /**
-     * Invoked when the board has been made invisible.
-     */
-    @Override
-    public void boardHidden()
-    {
-        super.boardHidden();
-        if (levelSelection != null) {
-            levelSelection.deleteObserver(this);
-        }
     }
 
     //--------//
