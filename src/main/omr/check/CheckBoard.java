@@ -10,13 +10,14 @@
 
 package omr.check;
 
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
 import omr.ui.Board;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionObserver;
+
+import java.util.Collections;
 
 /**
  * Class <code>CheckBoard</code> defines a board dedicated to the display
@@ -35,7 +36,6 @@ import omr.selection.SelectionObserver;
  */
 public class CheckBoard <C extends Checkable>
     extends Board
-    implements SelectionObserver
 {
     //~ Instance variables ------------------------------------------------
 
@@ -62,7 +62,7 @@ public class CheckBoard <C extends Checkable>
         checkPanel = new CheckPanel<C>(suite);
         defineLayout(suite.getName());
 
-        setInputSelection(inputSelection);
+        setInputSelectionList(Collections.singletonList(inputSelection));
 
         // define default content
         tellObject(null);

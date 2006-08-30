@@ -17,15 +17,22 @@ import omr.ui.util.Panel;
 import omr.util.Logger;
 
 import java.awt.*;
+import java.util.List;
 import javax.swing.*;
 
 /**
  * Class <code>Board</code> defines the common properties of any user board
  * such as PixelBoard, SectionBoard, and the like.
- *
- * This is still an abstract class, since the update() method must be
+ * 
+ * <p>By default, any board can have multiple inputSelection and an
+ * outputSelection objects. When {@link #boardShown} is called, the board
+ * instance is added as an observer to its various inputSelection
+ * objects. Similarly, {@link #boardHidden} deletes the observer from the
+ * same inputSelection objects.
+ * 
+ * <p>This is still an abstract class, since the update() method must be
  * provided by every subclass.
- *
+ * 
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -51,7 +58,7 @@ public abstract class Board
     protected String name;
 
     // Input selection
-    protected Selection inputSelection;
+    protected List<Selection> inputSelectionList;
 
     // Output selection (if any)
     protected Selection outputSelection;
@@ -78,26 +85,28 @@ public abstract class Board
 
     //~ Methods -----------------------------------------------------------
 
-    //-------------------//
-    // setInputSelection //
-    //-------------------//
+    //-----------------------//
+    // setInputSelectionList //
+    //-----------------------//
     /**
-     * Inject the selection object where input is to be read from
+     * Inject the selection objects where input are to be read from
      *
-     * @param inputSelection the proper input selection object
+     * @param inputSelectionList the proper list of input selection objects
      */
-    public void setInputSelection (Selection inputSelection)
+    public void setInputSelectionList (List<Selection> inputSelectionList)
     {
-        if (this.inputSelection != null) {
-            this.inputSelection.deleteObserver(this);
+        if (this.inputSelectionList != null) {
+            for (Selection input : this.inputSelectionList) {
+                input.deleteObserver(this);
+            }
         }
 
-        this.inputSelection = inputSelection;
+        this.inputSelectionList = inputSelectionList;
     }
 
-    //-------------------//
+    //--------------------//
     // setOutputSelection //
-    //-------------------//
+    //--------------------//
     /**
      * Inject the selection object where output is to be written to
      *
@@ -168,8 +177,10 @@ public abstract class Board
     public void boardShown()
     {
         ///logger.info("+Board " + tag + " Shown");
-        if (inputSelection != null) {
-            inputSelection.addObserver(this);
+        if (inputSelectionList != null) {
+            for (Selection input : inputSelectionList) {
+                input.addObserver(this);
+            }
         }
     }
 
@@ -182,8 +193,10 @@ public abstract class Board
     public void boardHidden()
     {
         ///logger.info("-Board " + tag + " Hidden");
-        if (inputSelection != null) {
-            inputSelection.deleteObserver(this);
+        if (inputSelectionList != null) {
+            for (Selection input : inputSelectionList) {
+                input.deleteObserver(this);
+            }
         }
     }
 
@@ -210,7 +223,7 @@ public abstract class Board
     /**
      * Enum <code>Tag</code> is used to refer to the various user boards.
      */
-    public static enum Tag
+    public enum Tag
     {
             /** Board for pixel info (coordinates, pixel grey level) */
             PIXEL   ("Pixel"),
