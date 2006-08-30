@@ -57,8 +57,8 @@ public class SymbolGlyphBoard
     private GlyphPane pane;
     private GlyphLag vLag;
 
-    // Spinner just for symbols
-    private JSpinner symbol;
+    // Spinner just for symbol glyphs
+    private JSpinner symbolSpinner;
 
     // Glyph id for the very first symbol
     private int firstSymbolId;
@@ -96,13 +96,15 @@ public class SymbolGlyphBoard
                              int       firstSymbolId,
                              GlyphLag  vLag,
                              Selection glyphSelection,
-                             Selection glyphIdSelection)
+                             Selection glyphIdSelection,
+                             Selection glyphSetSelection)
     {
         // For all glyphs
-        super("Symbol",
+        super("SymbolBoard",
               vLag.getLastGlyphId(),
               glyphSelection,
-              glyphIdSelection);
+              glyphIdSelection,
+              glyphSetSelection);
 
         // Cache info
         this.pane          = pane;
@@ -111,19 +113,20 @@ public class SymbolGlyphBoard
 
         // Change spinner model for glyph id
         glyphIds.add(NO_VALUE);
-        gid.setModel(new SpinnerListModel(glyphIds));
-        SpinnerUtilities.setRightAlignment(gid);
-        SpinnerUtilities.fixIntegerList(gid); // Waiting for swing bug fix
+        globalSpinner.setModel(new SpinnerListModel(glyphIds));
+        SpinnerUtilities.setRightAlignment(globalSpinner);
+        SpinnerUtilities.fixIntegerList(globalSpinner); // Waiting for swing bug fix
 
-        // Change spinner model for known id
+        // Change spinner model for knownSpinner
         knownIds.add(NO_VALUE);
-        known.setModel(new SpinnerListModel(knownIds));
-        SpinnerUtilities.setRightAlignment(known);
-        SpinnerUtilities.fixIntegerList(known); // Waiting for swing bug fix
+        knownSpinner.setModel(new SpinnerListModel(knownIds));
+        SpinnerUtilities.setRightAlignment(knownSpinner);
+        SpinnerUtilities.fixIntegerList(knownSpinner); // Waiting for swing bug fix
 
         // For symbols
-        symbol = makeSpinner(symbolIds);
-        symbol.setToolTipText("Specific spinner for symbol glyphs");
+        symbolSpinner = makeSpinner(symbolIds);
+        symbolSpinner.setName("symbolSpinner");
+        symbolSpinner.setToolTipText("Specific spinner for symbol glyphs");
 
         defineSpecificLayout();
 
@@ -139,12 +142,15 @@ public class SymbolGlyphBoard
      */
     public SymbolGlyphBoard()
     {
-        super("Symbol");
+        super("SymbolSimpleBoard");
         defineSpecificLayout();
     }
 
     //~ Methods -----------------------------------------------------------
 
+    //----------------------//
+    // defineSpecificLayout //
+    //----------------------//
     /**
      * Define a specific layout for this Symbol GlyphBoard
      */
@@ -155,13 +161,13 @@ public class SymbolGlyphBoard
         r += 2;                         // --------------------------------
         if (pane != null) {
             builder.addLabel("Id",      cst.xy (1,  r));
-            builder.add(gid,            cst.xy (3,  r));
+            builder.add(globalSpinner,  cst.xy (3,  r));
 
             builder.addLabel("Known",   cst.xy (5,  r));
-            builder.add(known,          cst.xy (7,  r));
+            builder.add(knownSpinner,   cst.xy (7,  r));
 
             builder.addLabel("Symb",    cst.xy (9,  r));
-            builder.add(symbol,         cst.xy (11, r));
+            builder.add(symbolSpinner,  cst.xy (11, r));
         }
 
         r += 2;                         // --------------------------------
@@ -216,7 +222,7 @@ public class SymbolGlyphBoard
 
         Integer iden = new Integer(id);
 
-        // Just in case, remove from known spinners
+        // Just in case, remove from knownSpinner model
         knownIds.remove(iden);
     }
 
@@ -302,7 +308,7 @@ public class SymbolGlyphBoard
             if (glyphId >= firstSymbolId) {
                 glyph = pane.getEntity(glyphId);
             }
-            pane.getEvaluatorsPanel().evaluate(glyph);
+            ///pane.getEvaluatorsPanel().evaluate(glyph);
         }
     }
 
@@ -334,6 +340,7 @@ public class SymbolGlyphBoard
             try {
                 super.update(selection, hint);
             } catch (IllegalArgumentException ex) {
+                logger.warning("IllegalArgumentException");
                 return;
             }
 
@@ -347,23 +354,16 @@ public class SymbolGlyphBoard
             }
 
             // Set symbol id accordingly
-            if (symbol != null) {
-                if (id >= firstSymbolId &&
-                    glyph.getShape() != Shape.NOISE) {
-                    symbol.setValue(id);
-                } else {
-                    symbol.setValue(NO_VALUE);
-                }
-            }
+            trySetSpinner(symbolSpinner,
+                          (id >= firstSymbolId && glyph.getShape() != Shape.NOISE)
+                          ? id
+                          : NO_VALUE);
 
-            // Set known id accordingly
-            if (known != null) {
-                if (id >= firstSymbolId && glyph.isKnown()) {
-                    known.setValue(id);
-                } else {
-                    known.setValue(NO_VALUE);
-                }
-            }
+            // Set knownSpinner accordingly
+            trySetSpinner(knownSpinner,
+                          (id >= firstSymbolId && glyph.isKnown())
+                          ? id
+                          : NO_VALUE);
 
             // Fill characteristics
             if (glyph != null) {
@@ -378,8 +378,11 @@ public class SymbolGlyphBoard
             updating = false;
             break;
 
+        case GLYPH_SET :
+            super.update(selection, hint);
+            break;
+
         default :
-            logger.severe("Unexpected selection event from " + selection);
         }
     }
 
