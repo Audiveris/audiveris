@@ -20,9 +20,10 @@ package omr.selection;
 public interface SelectionObserver
 {
     /**
-     * This method is called whenever the observed selection is changed.
+     * This method is called whenever one of the observed selections has
+     * changed.
      *
-     * @param selection the updated selection
+     * @param selection the updated selection, source of this notification
      * @param hint      a potential notification hint
      */
     void update (Selection selection,
