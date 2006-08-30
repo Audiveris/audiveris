@@ -10,13 +10,18 @@
 
 package omr.glyph;
 
+import java.awt.Rectangle;
+import java.util.ArrayList;
 import omr.lag.Lag;
 import omr.lag.Oriented;
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.util.Logger;
 
+import static omr.selection.SelectionHint.*;
+
 import java.util.Collection;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -24,7 +29,7 @@ import java.util.TreeMap;
  * Class <code>GlyphLag</code> is a lag of {@link GlyphSection} instances
  * which can be aggregated into {@link Glyph}instances. A GlyphLag keeps an
  * internal collection of all defined glyphs.
- * 
+ *
  * <dl>
  * <dt><b>Selection Inputs:</b> (On top of {@link Lag} inputs)</dt><ul>
  * <li>PIXEL Location (if LOCATION_INIT)
@@ -32,16 +37,17 @@ import java.util.TreeMap;
  * <li>*_GLYPH (if GLYPH_INIT)
  * <li>*_GLYPH_ID
  * </ul>
- * 
+ *
  * <dt><b>Selection Outputs:</b></dt><ul>
  * <li>PIXEL Contour
  * <li>*_RUN
  * <li>*_SECTION
  * <li>*_GLYPH
+ * <li>GLYPH_SET
  * </ul>
  * </dl>
- * 
- * 
+ *
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  * @see #setGlyphSelection
@@ -64,6 +70,9 @@ public class GlyphLag
 
     /** Selection on glyph, output where found glyph is written */
     protected Selection glyphSelection;
+
+    /** Selection on glyphs, output where found glyphs are written */
+    protected Selection glyphSetSelection;
 
     //~ Constructors ------------------------------------------------------
 
@@ -93,6 +102,19 @@ public class GlyphLag
     public void setGlyphSelection (Selection glyphSelection)
     {
         this.glyphSelection = glyphSelection;
+    }
+
+    //----------------------//
+    // setGlyphSetSelection //
+    //----------------------//
+    /**
+     * Inject dependency about the output selection for found glyph set
+     *
+     * @param glyphSetSelection the output glyph set selection
+     */
+    public void setGlyphSetSelection (Selection glyphSetSelection)
+    {
+        this.glyphSetSelection = glyphSetSelection;
     }
 
     //----------//
@@ -247,6 +269,61 @@ public class GlyphLag
         return "GlyphLag";
     }
 
+    //--------------//
+    // lookupGlyphs //
+    //--------------//
+    /**
+     * Look up for a collection of glyphs, knowing the coordinates
+     * rectangle
+     *
+     * @param rect the coordinates rectangle
+     *
+     * @return the collection of glyphs, which may be empty
+     */
+    public List<Glyph> lookupGlyphs (Rectangle rect)
+    {
+        List<Glyph> list = new ArrayList<Glyph>();
+        for (Glyph glyph : glyphs.values()) {
+            boolean inRect = true;
+            sectionTest:
+            for (GlyphSection section : glyph.getMembers()) {
+                if (!rect.contains(section.getContourBox())) {
+                    inRect = false;
+                    break sectionTest;
+                }
+            }
+            if (inRect) {
+                list.add(glyph);
+            }
+        }
+        return list;
+    }
+
+    //----------------//
+    // singleGlyphSet //
+    //----------------//
+    private void singleGlyphSet (Glyph         glyph,
+                                 SelectionHint hint)
+    {
+        if (glyphSetSelection != null &&
+            glyphSetSelection.countObservers() > 0) {
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+            if (glyphs == null) {
+                glyphs = new ArrayList<Glyph>();
+            }
+            if (glyph == null) {
+                if (glyphs.size() > 0) {
+                    glyphs.clear();
+                    glyphSetSelection.setEntity(glyphs, hint);
+                }
+            } else {
+                glyphs.clear();
+                glyphs.add(glyph);
+                        glyphSetSelection.setEntity(glyphs, hint);
+            }
+        }
+    }
+
     //--------//
     // update //
     //--------//
@@ -258,8 +335,8 @@ public class GlyphLag
      * @param hint potential notification hint
      */
     @Override
-    public void update(Selection selection,
-                       SelectionHint hint)
+        public void update(Selection selection,
+                           SelectionHint hint)
     {
         // Keep normal lag behavior
         super.update(selection, hint);
@@ -267,26 +344,50 @@ public class GlyphLag
         // Additional tasks
         switch (selection.getTag()) {
         case PIXEL :
-            if (hint == SelectionHint.LOCATION_INIT) {
-                // If a section has just been found,
-                // forward its related glyph if any
-                if (glyphSelection != null &&
-                    glyphSelection.countObservers() > 0 &&
-                    sectionSelection != null &&
-                    sectionSelection.countObservers() > 1) { // GlyphLag itself
-                    Glyph glyph = null;
-                    GlyphSection section = (GlyphSection) sectionSelection.getEntity();
-                    if (section != null) {
-                        glyph = section.getGlyph();
+            if (hint == LOCATION_ADDITION ||
+                hint == LOCATION_INIT) {
+                Rectangle rect = (Rectangle) selection.getEntity();
+                if (rect != null) {
+                    if (rect.width > 0 || rect.height > 0) {
+                        // Look for enclosed glyphs
+                        if (glyphSetSelection != null &&
+                            glyphSetSelection.countObservers() > 0) {
+                            List<Glyph> glyphs = lookupGlyphs(rect);
+                            if (glyphs.size() > 0) {
+                                glyphSelection.setEntity
+                                    (glyphs.get(glyphs.size() -1), hint);
+                            } else {
+                                glyphSelection.setEntity(null, hint);
+                            }
+                            glyphSetSelection.setEntity(glyphs, hint);
+                        }
+                    } else {
+                        // If a section has just been found,
+                        // forward its related glyph if any
+                        if (glyphSelection != null &&
+                            glyphSelection.countObservers() > 0 &&
+                            sectionSelection != null &&
+                            sectionSelection.countObservers() > 1) { // GlyphLag itself
+                            Glyph glyph = null;
+                            GlyphSection section = (GlyphSection) sectionSelection.getEntity();
+                            if (section != null) {
+                                glyph = section.getGlyph();
+                            }
+                            glyphSelection.setEntity(glyph, hint);
+
+                            // Update the glyph set accordingly
+                            if (hint != LOCATION_ADDITION) {
+                                singleGlyphSet(glyph, hint);
+                            }
+                        }
                     }
-                    glyphSelection.setEntity(glyph, hint);
                 }
             }
             break;
 
         case HORIZONTAL_SECTION :
         case VERTICAL_SECTION :
-            if (hint == SelectionHint.SECTION_INIT) {
+            if (hint == SECTION_INIT) {
                 // Select related Glyph if any
                 GlyphSection section = (GlyphSection) selection.getEntity();
                 if (section != null) {
@@ -297,7 +398,7 @@ public class GlyphLag
 
         case HORIZONTAL_GLYPH :
         case VERTICAL_GLYPH :
-            if (hint == SelectionHint.GLYPH_INIT) {
+            if (hint == GLYPH_INIT) {
                 // Display glyph contour
                 Glyph glyph = (Glyph) selection.getEntity();
                 if (glyph != null) {
@@ -308,12 +409,20 @@ public class GlyphLag
 
         case HORIZONTAL_GLYPH_ID :
         case VERTICAL_GLYPH_ID :
-            // Lookup a glyph with proper ID
-            if (glyphSelection != null) {
-                Integer id = (Integer) selection.getEntity();
-                runSelection.setEntity(null, hint);
-                sectionSelection.setEntity(null, hint);
-                glyphSelection.setEntity(getGlyph(id), hint);
+            {
+                Glyph glyph = null;
+                // Lookup a glyph with proper ID
+                if (glyphSelection != null) {
+                    // Nullify Run & Section entities
+                    runSelection.setEntity(null, hint);
+                    sectionSelection.setEntity(null, hint);
+                    // Report Glyph entity
+                    Integer id = (Integer) selection.getEntity();
+                    glyph = getGlyph(id);
+                    glyphSelection.setEntity(glyph, hint);
+                }
+                // Update glyph set accordingly
+                singleGlyphSet(glyph, hint);
             }
             break;
 
