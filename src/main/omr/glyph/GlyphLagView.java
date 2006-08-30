@@ -13,11 +13,13 @@ package omr.glyph;
 import omr.lag.LagView;
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
+import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Class <code>GlyphLagView</code> is a specific {@link omr.lag.LagView}
@@ -57,6 +59,9 @@ public class GlyphLagView
     /** Output selection for Glyph information */
     protected Selection glyphSelection;
 
+    /** Output selection for Glyph Set information */
+    protected Selection glyphSetSelection;
+
     //~ Constructors -----------------------------------------------------
 
     //--------------//
@@ -93,6 +98,19 @@ public class GlyphLagView
         this.glyphSelection = glyphSelection;
     }
 
+    //----------------------//
+    // setGlyphSetSelection //
+    //----------------------//
+    /**
+     * Inject dependency on where we should write glyph set information.
+     *
+     * @param glyphSetSelection the Glyph Set selection
+     */
+    public void setGlyphSetSelection (Selection glyphSetSelection)
+    {
+        this.glyphSetSelection = glyphSetSelection;
+    }
+
     //---------------//
     // colorizeGlyph //
     //---------------//
@@ -123,6 +141,27 @@ public class GlyphLagView
             glyph.colorize(viewIndex, color);
         } else {
             glyph.recolorize(viewIndex);
+        }
+    }
+
+    //-------------//
+    // renderItems //
+    //-------------//
+    @Override
+        protected void renderItems (Graphics g)
+    {
+        Zoom z = getZoom();
+
+        // Mark the current members of the glyph set
+        if (glyphSetSelection != null) {
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+            if (glyphs != null && glyphs.size() > 0) {
+                g.setColor(Color.black);
+                g.setXORMode(Color.darkGray);
+                for (Glyph glyph : glyphs) {
+                    glyph.renderBoxArea(g, z);
+                }
+            }
         }
     }
 
@@ -157,7 +196,7 @@ public class GlyphLagView
         addingGlyph = true;
 
         // First, provide info related to designated point
-        pointSelected(e, pt);
+        super.pointAdded(e, pt);
 
         // Then, look for a glyph selection
         Glyph glyph = null;
@@ -172,50 +211,41 @@ public class GlyphLagView
         addingGlyph = false;
     }
 
-    //---------------//
-    // glyphSelected //
-    //---------------//
-    /**
-     * Meant to be overridden by subclasses when a real processing is
-     * desired for the selected glyph.
-     *
-     * @param glyph the selected glyph, which may be null
-     */
-    protected void glyphSelected (Glyph glyph)
-    {
-        ///logger.info(getClass() + " glyphSelected " + glyph);
-        // Empty by default
-    }
-
     //------------//
     // glyphAdded //
     //------------//
     /**
-     * Meant to be overridden by subclasses when a real processing is
-     * desired for the added glyph
+     * Addition of a glyph to a collection of selected glyphs. Il the
+     * collection already contains that glyph, the glyph is in fact removed
+     * from the collection
      *
-     * @param glyph the added glyph, which may be null
+     * @param glyph the to-be-added glyph, which may be null
      * @param pt the designated point
      */
     protected void glyphAdded (Glyph glyph,
                                Point pt)
     {
-        // Empty by default
         if (logger.isFineEnabled()) {
-            logger.fine ("Empty GlyphLagView glyphAdded " + glyph);
+            logger.fine ("GlyphLagView glyphAdded. glyph=" + glyph);
+        }
+
+        if (glyphSetSelection != null) {
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+            if (glyph != null) {
+                // Add to or remove from the collection of selected glyphs
+                if (glyphs.contains(glyph)) {
+                    glyphs.remove(glyph);
+                } else {
+                    glyphs.add(glyph);
+                }
+            }
+            glyphSetSelection.setEntity(glyphs, null);
         }
     }
 
     //---------//
     // update  //
     //---------//
-    /**
-     * Call-back triggered by selection notification. It reacts to PIXEL
-     * location selection, section ids, and glyph ids.
-     *
-     * @param selection the notified selection
-     * @param hint potential notification hint
-     */
     @Override
         public void update(Selection selection,
                            SelectionHint hint)
@@ -243,12 +273,6 @@ public class GlyphLagView
                         glyphSelection.setEntity(section.getGlyph(), hint);
                     }
                 }
-                break;
-
-            case VERTICAL_GLYPH :
-            case HORIZONTAL_GLYPH :
-                Glyph glyph = (Glyph) glyphSelection.getEntity();
-                glyphSelected(glyph);
                 break;
 
             default :
