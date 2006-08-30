@@ -276,10 +276,8 @@ public class Rubber
                 mouseMonitor.rectangleSelected(e, rect);
             }
         } else {
-            reset(e);
-            if (mouseMonitor != null) {
-                mouseMonitor.pointSelected(e, getCenter());
-            }
+            // Behavior equivalent to simple selection
+            mousePressed(e);
         }
     }
 
