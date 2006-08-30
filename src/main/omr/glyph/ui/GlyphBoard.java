@@ -23,6 +23,7 @@ import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -37,8 +38,8 @@ import javax.swing.event.*;
  * (which are special glyphs) built during the previous steps, for example
  * the bar lines.
  *
- * <li> The <b>known</b> spinner for known symbols. This is a subset of
- * the previous one.
+ * <li> The <b>knownSpinner</b> spinner for known symbols. This is a subset
+ * of the previous one.
  *
  * </ol> The ids handled by each of these spinners can dynamically vary,
  * since glyphs can change their status.
@@ -56,6 +57,8 @@ import javax.swing.event.*;
  * </ul>
  * </dl>
  *
+ *
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -69,14 +72,17 @@ public class GlyphBoard
 
     //~ Instance variables ------------------------------------------------
 
+    /** Counter of glyph selection */
+    protected final JLabel count = new JLabel("");
+
     /** A dump action */
     protected final JButton dump = new JButton("Dump");
 
-    /** Input / Output : spinner of glyph id */
-    protected JSpinner gid;
+    /** Input / Output : spinner of all glyphs */
+    protected JSpinner globalSpinner;
 
     /** Input / Output : spinner of known glyphs */
-    protected JSpinner known;
+    protected JSpinner knownSpinner;
 
     /** Input : Deassign button */
     protected DeassignAction deassignAction = new DeassignAction();
@@ -107,28 +113,31 @@ public class GlyphBoard
     /**
      * Create a Glyph Board
      *
+     *
      * @param unitName name of the owning unit
      * @param maxGlyphId the upper bound for glyph id
      * @param knownIds   the extended list of ids for known glyphs
      * @param glyphSelection input glyph selection
      * @param glyphIdSelection output glyph Id selection
+     * @param glyphSetSelection input glyph set selection
      */
     public GlyphBoard (String        unitName,
                        int           maxGlyphId,
                        List<Integer> knownIds,
                        Selection     glyphSelection,
-                       Selection     glyphIdSelection)
+                       Selection     glyphIdSelection,
+                       Selection     glyphSetSelection)
     {
-        this(unitName + "-GlyphBoard", maxGlyphId, 
-                glyphSelection, glyphIdSelection);
+        this(unitName + "-GlyphBoard", maxGlyphId,
+                glyphSelection, glyphIdSelection, glyphSetSelection);
 
         if (logger.isFineEnabled()) {
             logger.fine("knownIds=" + knownIds);
         }
 
-        known.setModel(new SpinnerListModel(knownIds));
-        SpinnerUtilities.setRightAlignment(known);
-        SpinnerUtilities.fixIntegerList(known); // For swing bug fix
+        knownSpinner.setModel(new SpinnerListModel(knownIds));
+        SpinnerUtilities.setRightAlignment(knownSpinner);
+        SpinnerUtilities.fixIntegerList(knownSpinner); // For swing bug fix
     }
 
     //------------//
@@ -141,35 +150,46 @@ public class GlyphBoard
      * @param maxGlyphId the upper bound for glyph id
      * @param glyphSelection input glyph selection
      * @param glyphIdSelection output glyph Id selection
+     * @param glyphSetSelection input glyph set selection
      */
     protected GlyphBoard (String    unitName,
                           int       maxGlyphId,
                           Selection glyphSelection,
-                          Selection glyphIdSelection)
+                          Selection glyphIdSelection,
+                          Selection glyphSetSelection)
     {
         this(unitName);
 
-        setInputSelection(glyphSelection);
+        ArrayList<Selection> inputs = new ArrayList<Selection>();
+        if (glyphSelection != null) {
+            inputs.add(glyphSelection);
+        }
+        if (glyphSetSelection != null) {
+            inputs.add(glyphSetSelection);
+        }
+        setInputSelectionList(inputs);
         setOutputSelection(glyphIdSelection);
 
-        // Model for id spinner
-        gid = new JSpinner();
-        gid.setToolTipText("General spinner for any glyph id");
-        gid.setModel(new SpinnerNumberModel(0, 0, maxGlyphId, 1));
-        gid.addChangeListener(this);
+        // Model for globalSpinner
+        globalSpinner = new JSpinner();
+        globalSpinner.setName("globalSpinner");
+        globalSpinner.setToolTipText("General spinner for any glyph id");
+        globalSpinner.setModel(new SpinnerNumberModel(0, 0, maxGlyphId, 1));
+        globalSpinner.addChangeListener(this);
 
-        // Model for known spinner
-        known = new JSpinner();
-        known.setToolTipText("Specific spinner for relevant known glyphs");
-        known.addChangeListener(this);
+        // Model for knownSpinner
+        knownSpinner = new JSpinner();
+        knownSpinner.setName("knownSpinner");
+        knownSpinner.setToolTipText("Specific spinner for relevant known glyphs");
+        knownSpinner.addChangeListener(this);
 
         // Layout
         int r = 3;                      // --------------------------------
         builder.addLabel("Id",          cst.xy (1,  r));
-        builder.add(gid,                cst.xy (3,  r));
+        builder.add(globalSpinner,      cst.xy (3,  r));
 
         builder.addLabel("Known",       cst.xy (5,  r));
-        builder.add(known,              cst.xy (7,  r));
+        builder.add(knownSpinner,       cst.xy (7,  r));
     }
 
     //------------//
@@ -191,7 +211,9 @@ public class GlyphBoard
                 {
                     public void actionPerformed (ActionEvent e)
                     {
-                        Selection input = GlyphBoard.this.inputSelection;
+                        // retrieve current glyph selection
+                        Selection input
+                                = GlyphBoard.this.inputSelectionList.get(0);
                         Glyph glyph = (Glyph) input.getEntity();
                         if (glyph != null) {
                             glyph.dump();
@@ -220,7 +242,8 @@ public class GlyphBoard
     protected void defineLayout()
     {
         int r = 1;                      // --------------------------------
-        builder.addSeparator("Glyph",   cst.xyw(1,  r, 9));
+        builder.addSeparator("Glyph",   cst.xyw(1,  r, 7));
+        builder.add(count,               cst.xy (9, r));
         builder.add(dump,               cst.xy (11, r));
 
         r += 2;                         // --------------------------------
@@ -231,6 +254,47 @@ public class GlyphBoard
 
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
         deassignButton.setHorizontalAlignment(SwingConstants.RIGHT);
+    }
+
+    //---------------//
+    // trySetSpinner //
+    //---------------//
+    /**
+     * Assign value to an id spinner, after checking the id is part of the
+     * spinner model
+     *
+     * @param spinner the spinner whose value is to be set
+     * @param id the id value
+     */
+    protected void trySetSpinner(JSpinner spinner,
+                                 int      id)
+    {
+        // Make sure we have a spinner entity
+        if (spinner == null) {
+            return;
+        }
+
+        SpinnerModel model = spinner.getModel();
+        if (model instanceof SpinnerListModel) {
+            SpinnerListModel listModel = (SpinnerListModel) model;
+            if (listModel.getList().contains(new Integer(id))) {
+                spinner.setValue(id);
+            } else {
+                ///logger.warning(spinner.getName() + ": no list slot for id " + id);
+                spinner.setValue(NO_VALUE);
+            }
+        } else if (model instanceof SpinnerNumberModel) {
+            SpinnerNumberModel numberModel = (SpinnerNumberModel) model;
+            if (numberModel.getMaximum().compareTo(id) >= 0) {
+                spinner.setValue(id);
+            } else {
+                ///logger.warning(spinner.getName() + ": no number slot for id " + id);
+                spinner.setValue(NO_VALUE);
+            }
+        } else {
+            logger.warning(spinner.getName() + ": no known model !!!");
+            spinner.setValue(id);
+        }
     }
 
     //--------//
@@ -247,9 +311,9 @@ public class GlyphBoard
                         SelectionHint hint)
     {
         Object entity = selection.getEntity();
-//        logger.info("GlyphBoard " + selection.getTag()
-//                    + " updating=" + updating + " idSelecting=" + idSelecting
-//                    + " : " + entity);
+//      logger.info("GlyphBoard " + selection.getTag()
+//                  + " updating=" + updating + " idSelecting=" + idSelecting
+//                  + " : " + entity);
 
         switch (selection.getTag()) {
         case VERTICAL_GLYPH :
@@ -266,9 +330,8 @@ public class GlyphBoard
             updating = true;
 
             if (glyph != null) {
-                if (gid != null) {
-                    gid.setValue(glyph.getId());
-                }
+                // Beware Stem glyph Id is not known ?
+                trySetSpinner(globalSpinner, glyph.getId());
 
                 if (glyph.getShape() != null) {
                     shape.setText(glyph.getShape().toString());
@@ -278,23 +341,16 @@ public class GlyphBoard
                     deassignButton.setIcon(null);
                 }
 
-                // Set known field if shape is one of the desired ones
-                if (known != null) {
-                    if (glyph.isKnown() &&
-                        ((SpinnerListModel) known.getModel())
-                        .getList().contains(new Integer(glyph.getId()))) {
-                        known.setValue(glyph.getId());
-                    } else {
-                        known.setValue(NO_VALUE);
-                    }
-                }
+                // Set knownSpinner field if shape is one of the desired ones
+                trySetSpinner(knownSpinner,
+                        glyph.isKnown() ? glyph.getId() : NO_VALUE);
             } else {
-                if (gid != null) {
-                    gid.setValue(NO_VALUE);
+                if (globalSpinner != null) {
+                    globalSpinner.setValue(NO_VALUE);
                 }
 
-                if (known != null) {
-                    known.setValue(NO_VALUE);
+                if (knownSpinner != null) {
+                    knownSpinner.setValue(NO_VALUE);
                 }
 
                 shape.setText("");
@@ -302,6 +358,16 @@ public class GlyphBoard
             }
 
             updating = false;
+            break;
+
+        case GLYPH_SET :
+            // Display count of glyphs in the glyph set
+            List<Glyph> glyphs = (List<Glyph>) entity;
+            if (glyphs != null && glyphs.size() > 0) {
+                count.setText(Integer.toString(glyphs.size()));
+            } else {
+                count.setText("");
+            }
             break;
 
         default :
@@ -364,7 +430,7 @@ public class GlyphBoard
 
         public void actionPerformed(ActionEvent e)
         {
-            Selection input = GlyphBoard.this.inputSelection;
+            Selection input = GlyphBoard.this.inputSelectionList.get(0);
             Glyph glyph = (Glyph) input.getEntity();
 
             if (glyph != null && glyph.isKnown()) {
