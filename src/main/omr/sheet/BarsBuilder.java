@@ -567,7 +567,8 @@ public class BarsBuilder
                             vLag.getLastGlyphId(),
                             knownIds,
                             sheet.getSelection(VERTICAL_GLYPH),
-                            sheet.getSelection(VERTICAL_GLYPH_ID)),
+                            sheet.getSelection(VERTICAL_GLYPH_ID),
+                            sheet.getSelection(GLYPH_SET)),
              new MyCheckBoard(unit,
                               checker.getSuite(),
                               sheet.getSelection(VERTICAL_GLYPH)));
@@ -635,7 +636,14 @@ public class BarsBuilder
         {
             super(lag, null, BarsBuilder.this);
             setName("BarsBuilder-View");
+
+            // Pixel
             setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
+
+            // Glyph set
+            Selection glyphSetSelection = sheet.getSelection(SelectionTag.GLYPH_SET);
+            setGlyphSetSelection(glyphSetSelection);
+            glyphSetSelection.addObserver(this);
         }
 
         //~ Methods -------------------------------------------------------
@@ -673,9 +681,11 @@ public class BarsBuilder
             sheet.render(g, z);
 
             // Draw the contour of bar lines
-            for (Stick stick : bars) {
-                stick.renderContour(g, z);
-            }
+//            for (Stick stick : bars) {
+//                stick.renderContour(g, z);
+//            }
+            
+            super.renderItems(g);
         }
 
         //---------------//
