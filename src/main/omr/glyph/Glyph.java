@@ -690,16 +690,15 @@ public class Glyph
     }
 
     //---------------//
-    // renderContour //
+    // renderBoxArea //
     //---------------//
     /**
-     * Render the contour box of the glyph, using the current foreground
-     * color
+     * Render the box area of the glyph, using inverted color
      *
      * @param g the graphic context
      * @param z the display zoom
      */
-    public boolean renderContour (Graphics g,
+    public boolean renderBoxArea (Graphics g,
                                   Zoom z)
     {
         // Check the clipping
@@ -707,7 +706,7 @@ public class Glyph
         z.scale(box);
 
         if (box.intersects(g.getClipBounds())) {
-            g.drawRect(box.x, box.y, box.width, box.height);
+            g.fillRect(box.x, box.y, box.width, box.height);
             return true;
         } else {
             return false;
