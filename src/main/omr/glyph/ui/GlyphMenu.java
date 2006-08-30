@@ -12,6 +12,7 @@ package omr.glyph.ui;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
+import omr.selection.Selection;
 import omr.util.Dumper;
 
 import java.awt.event.*;
@@ -29,6 +30,9 @@ import java.util.ArrayList;
 public class GlyphMenu
 {
     //~ Instance variables ------------------------------------------------
+
+    // Current selection of glyphs
+    private final Selection glyphSetSelection;
 
     // Concrete popup menu
     private final JPopupMenu popup;
@@ -62,14 +66,17 @@ public class GlyphMenu
      *
      * @param pane the top companion
      * @param focus the current shape focus
+     * @param glyphSetSelection the currently selected glyphs
      */
     public GlyphMenu (final GlyphPane  pane,
-                      ShapeFocus focus)
+                      ShapeFocus focus,
+                      Selection glyphSetSelection)
     {
         popup = new JPopupMenu();
 
         this.pane  = pane;
         this.focus = focus;
+        this.glyphSetSelection = glyphSetSelection;
 
         // Confirm current guess
         confirmItem = popup.add(confirmAction);
@@ -307,7 +314,7 @@ public class GlyphMenu
         // Deassign, check what is to be deassigned
         int knownNb = 0;
         int stemNb = 0;
-        for (Glyph glyph : pane.getCurrentGlyphs()) {
+        for (Glyph glyph : (List<Glyph>) glyphSetSelection.getEntity()) {
             if (glyph.isKnown()) {
                 knownNb++;
                 if (glyph.getShape() == Shape.COMBINING_STEM) {
@@ -394,7 +401,7 @@ public class GlyphMenu
         {
             // First phase, putting the stems apart
             List<Glyph> stems = new ArrayList<Glyph>();
-            for (Glyph glyph : pane.getCurrentGlyphs()) {
+            for (Glyph glyph : (List<Glyph>) glyphSetSelection.getEntity()) {
                 if (glyph.getShape() == Shape.COMBINING_STEM) {
                     stems.add(glyph);
                 } else {
@@ -431,7 +438,7 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            for (Glyph glyph : pane.getCurrentGlyphs()) {
+            for (Glyph glyph : (List<Glyph>) glyphSetSelection.getEntity()) {
                 Dumper.dump(glyph);
             }
         }
@@ -454,7 +461,7 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            List<Glyph> glyphs = pane.getCurrentGlyphs();
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
             if (glyphs.size() == 1) {
                 Glyph glyph = glyphs.get(0);
                 if (glyph.getShape() != null) {
