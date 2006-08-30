@@ -53,6 +53,7 @@ import javax.swing.border.*;
  * panel. If the user wants to discard the glyph, it can be removed from
  * the repository of training material.
  *
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -87,8 +88,8 @@ public class GlyphVerifier
     private GlyphSelector glyphSelector = new GlyphSelector();
 
     // Panel of glyph evaluators
-    private EvaluatorsPanel evaluatorsPanel
-        = new EvaluatorsPanel(null, null);
+//    private EvaluatorsPanel evaluatorsPanel
+//        = new EvaluatorsPanel(null, null);
 
     // The panel in charge of the current glyph
     private GlyphBrowser glyphBrowser;
@@ -539,7 +540,7 @@ public class GlyphVerifier
 
             builder.add(navigator,                      cst.xy (1, 1));
             builder.add(board.getComponent(),           cst.xy (1, 2));
-            builder.add(evaluatorsPanel.getComponent(), cst.xy (1, 3));
+            ///builder.add(evaluatorsPanel.getComponent(), cst.xy (1, 3));
 
             return builder.getPanel();
         }
@@ -684,7 +685,7 @@ public class GlyphVerifier
 
                     // Forward to board panel
                     ///board.update(glyph);
-                    evaluatorsPanel.evaluate(glyph);
+                    ///evaluatorsPanel.evaluate(glyph);
                 }
 
                 if (focus) {
@@ -872,7 +873,7 @@ public class GlyphVerifier
                 if (pointedGlyph != null) {
                     g.setColor(Color.black);
                     g.setXORMode(Color.white);
-                    pointedGlyph.renderContour(g, z);
+                    pointedGlyph.renderBoxArea(g, z);
                 }
             }
         }
