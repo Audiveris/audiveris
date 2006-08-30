@@ -198,12 +198,6 @@ public class HorizontalsBuilder
 
         // Specific rubber display
         lagView = new MyView(lag, members);
-        lagView.setSpecificSelections
-                (sheet.getSelection(SelectionTag.HORIZONTAL_RUN),
-                sheet.getSelection(SelectionTag.HORIZONTAL_SECTION));
-        Selection glyphSelection = sheet.getSelection(SelectionTag.HORIZONTAL_GLYPH);
-        lagView.setGlyphSelection(glyphSelection);
-        glyphSelection.addObserver(lagView);
 
         // Ids of recognized glyphs
         List<Integer> knownIds = new ArrayList<Integer>(allDashes.size() +1);
@@ -226,7 +220,8 @@ public class HorizontalsBuilder
                             lag.getLastGlyphId(),
                             knownIds,
                             sheet.getSelection(HORIZONTAL_GLYPH),
-                            sheet.getSelection(HORIZONTAL_GLYPH_ID)),
+                            sheet.getSelection(HORIZONTAL_GLYPH_ID),
+                            null),
              new CheckBoard<Stick>(unit + "-Common", commonSuite,
                                    sheet.getSelection(HORIZONTAL_GLYPH)),
              new CheckBoard<Stick>(unit + "-Ledger", ledgerSuite,
@@ -366,7 +361,17 @@ public class HorizontalsBuilder
         {
             super(lag, members, HorizontalsBuilder.this);
             setName("HorizontalsBuilder-View");
+
             setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
+
+            setSpecificSelections
+                    (sheet.getSelection(SelectionTag.HORIZONTAL_RUN),
+                    sheet.getSelection(SelectionTag.HORIZONTAL_SECTION));
+
+            Selection glyphSelection
+                    = sheet.getSelection(SelectionTag.HORIZONTAL_GLYPH);
+            setGlyphSelection(glyphSelection);
+            glyphSelection.addObserver(this);
         }
 
         //~ Methods -------------------------------------------------------

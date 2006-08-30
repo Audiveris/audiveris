@@ -277,7 +277,8 @@ public class LinesBuilder
                             hLag.getLastGlyphId(),
                             knownIds,
                             sheet.getSelection(HORIZONTAL_GLYPH),
-                            sheet.getSelection(HORIZONTAL_GLYPH_ID)));
+                            sheet.getSelection(HORIZONTAL_GLYPH_ID),
+                            null));
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
