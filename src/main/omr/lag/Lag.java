@@ -27,22 +27,22 @@ import java.util.List;
  * is no more contiguous run or when the compatibility is no longer met.
  * Sections are thus vertices of the graph, while junctions are directed
  * edges between sections.
- * 
+ *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
  * <li>PIXEL Location (if LOCATION_INIT)
  * <li>*_SECTION (if SECTION_INIT)
  * <li>*_SECTION_ID
  * </ul>
- * 
+ *
  * <dt><b>Selection Outputs:</b></dt><ul>
  * <li>PIXEL Contour
  * <li>*_RUN
  * <li>*_SECTION
  * </ul>
  * </dl>
- * 
- * 
+ *
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  * @param <L> precise lag (sub)type
@@ -501,7 +501,8 @@ public class Lag <L extends Lag <L, S>,
         switch (selection.getTag()) {
         case PIXEL :
             // Lookup for Run/Section pointed by this pixel location
-            if (hint == SelectionHint.LOCATION_INIT) {
+            if (hint == SelectionHint.LOCATION_ADDITION ||
+                    hint == SelectionHint.LOCATION_INIT) {
                 // Search and forward run & section info
                 // Optimization : do the lookup only if observers other
                 // than this lag are present
@@ -513,7 +514,7 @@ public class Lag <L extends Lag <L, S>,
                     S section = null;
                     Rectangle rect = (Rectangle) selection.getEntity();
 
-                    if (rect != null) {
+                    if (rect != null && rect.width == 0 && rect.height == 0) {
                         Point pt = rect.getLocation();
                         section = lookupSection(getVertices(),pt);
                         if (section != null) {

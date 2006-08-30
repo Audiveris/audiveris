@@ -24,30 +24,30 @@ import java.util.*;
  * Class <code>LagView</code> derives {@link omr.ui.view.RubberZoomedPanel}
  * to provide an implementation of a comprehensive display for lags,
  * whether they are vertical or horizontal.
- * 
+ *
  * <p>This view has the ability to handle a collection of "specific"
  * sections, provided in the constructor. These sections are supposed not
  * part (no longer part perhaps) of the lag sections which allows for a
  * special handling: depending on the current value of the boolean
  * <code>showingSpecifics</code>, these specific sections are displayed or not
  * (and can be lookedup or not).
- * 
+ *
  * <p><b>Nota</b>: For the time being, we've chosen to not draw the
  * edges/junctions but just the vertices/sections.
- * 
+ *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
  * <li>PIXEL Location (if LOCATION_INIT & specifics)
  * <li>*_SECTION_ID (if specifics)
  * </ul>
- * 
+ *
  * <dt><b>Selection Outputs:</b></dt><ul>
  * <li>*_RUN
  * <li>*_SECTION
  * </ul>
  * </dl>
- * 
- * 
+ *
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  * @param <L> the type of lag this view displays
@@ -394,13 +394,6 @@ public class LagView <L extends Lag     <L, S>,
     //---------//
     // update  //
     //---------//
-    /**
-     * Call-back triggered by selection notification. Besides PIXEL
-     * location selection, this class reacts to section ids.
-     *
-     * @param selection the notified selection
-     * @param hint potential notification hint
-     */
     @Override
         public void update(Selection selection,
                            SelectionHint hint)
@@ -415,7 +408,8 @@ public class LagView <L extends Lag     <L, S>,
             sectionSelection != null) {
             switch (selection.getTag()) {
             case PIXEL :
-                if (hint == SelectionHint.LOCATION_INIT) {
+                if (hint == SelectionHint.LOCATION_ADDITION ||
+                        hint == SelectionHint.LOCATION_INIT) {
                     Rectangle rect = (Rectangle) selection.getEntity();
                     if (rect != null) {
                         Point pt = rect.getLocation();
