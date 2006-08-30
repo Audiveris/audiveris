@@ -48,7 +48,7 @@ import javax.swing.*;
  * @version $Id$
  */
 public class Jui
-        implements SelectionObserver
+    implements SelectionObserver
 {
     //~ Static variables/initializers -------------------------------------
 
