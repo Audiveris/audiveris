@@ -177,7 +177,8 @@ public class VerticalsBuilder
                              vLag.getLastGlyphId(),
                              knownIds,
                              sheet.getSelection(VERTICAL_GLYPH),
-                             sheet.getSelection(VERTICAL_GLYPH_ID)),
+                             sheet.getSelection(VERTICAL_GLYPH_ID),
+                             sheet.getSelection(GLYPH_SET)),
               new MyCheckBoard(unit,
                                suite,
                                sheet.getSelection(VERTICAL_GLYPH))));
@@ -277,11 +278,21 @@ public class VerticalsBuilder
         {
             super(vLag, null, VerticalsBuilder.this);
             setName("VerticalsBuilder-MyView");
+
+            // Pixel
             setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
+
+            // Glyph
             Selection glyphSelection = sheet.getSelection
                 (SelectionTag.VERTICAL_GLYPH);
             setGlyphSelection(glyphSelection);
             glyphSelection.addObserver(this);
+
+            // Glyph set
+            Selection glyphSetSelection = sheet.getSelection
+                (SelectionTag.GLYPH_SET);
+            setGlyphSetSelection(glyphSetSelection);
+            glyphSetSelection.addObserver(this);
         }
 
         //~ Methods -------------------------------------------------------
@@ -329,24 +340,27 @@ public class VerticalsBuilder
             // Render all physical info known so far
             sheet.render(g, z);
 
-            Scale scale = sheet.getScale();
-            int nWidth = scale.toPixels(constants.chunkWidth);
-            int nHeight = scale.toPixels(constants.chunkHeight);
+//            Scale scale = sheet.getScale();
+//            int nWidth = scale.toPixels(constants.chunkWidth);
+//            int nHeight = scale.toPixels(constants.chunkHeight);
 
             // Render the contour of the verticals
-            for (SystemInfo system : sheet.getSystems()) {
-
-                for (Glyph glyph : system.getGlyphs()) {
-                    if (glyph.isStem()) {
-                        Stick stick = (Stick) glyph;
-                        stick.renderContour(g, z);
-                        //stick.renderChunk(g, z, nHeight, nWidth);
-                        stick.renderLine(g, z);
-                    }
-                }
-            }
+//            g.setColor(Color.black);
+//            g.setXORMode(Color.white);
+//            for (SystemInfo system : sheet.getSystems()) {
+//                for (Glyph glyph : system.getGlyphs()) {
+//                    if (glyph.isStem()) {
+//                        Stick stick = (Stick) glyph;
+//                        stick.renderContour(g, z);
+//                        //stick.renderChunk(g, z, nHeight, nWidth);
+//                        stick.renderLine(g, z);
+//                    }
+//                }
+//            }
 
             // TBD Render the contour of the unlucky candidates also?
+
+            super.renderItems(g);
         }
 
         //---------------//
