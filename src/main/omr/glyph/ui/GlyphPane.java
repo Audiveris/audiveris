@@ -83,13 +83,6 @@ public class GlyphPane
     // Popup menu related to glyph selection
     private final GlyphMenu popup;
 
-    // Panel of glyph evaluator
-    private final EvaluatorsPanel evaluatorsPanel;
-
-    // Various actions (for menus, popup, toolbar, ...)
-    private RecordAction recordAction = new RecordAction();
-    private RefreshAction refreshAction = new RefreshAction();
-
     // Pointer to related custom board
     private final Board customBoard;
 
@@ -98,9 +91,6 @@ public class GlyphPane
 
     // The entity used for display focus
     private ShapeFocus focus;
-
-    // The list of glyphs currently selected (empty, if none)
-    private transient List<Glyph> currentGlyphs = new ArrayList<Glyph>();
 
     // Latest shape assigned if any
     private transient Shape latestShapeAssigned;
@@ -122,13 +112,12 @@ public class GlyphPane
         vLag = sheet.getVerticalLag();
 
         // Allocation of components
-        evaluatorsPanel = new EvaluatorsPanel(sheet, this);
         view = new SymbolGlyphView(sheet, vLag, this);
         view.setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
 
-        evaluatorsPanel.setView(view);
         focus = new ShapeFocus(sheet, view, this);
-        popup = new GlyphMenu(this, focus);
+        popup = new GlyphMenu(this, focus,
+                sheet.getSelection(GLYPH_SET));
 
         // The UI combo
         customBoard = new CustomBoard("GlyphPane Custom Board");
@@ -138,7 +127,8 @@ public class GlyphPane
                                           sheet.getFirstSymbolId(),
                                           vLag,
                                           sheet.getSelection(VERTICAL_GLYPH),
-                                          sheet.getSelection(VERTICAL_GLYPH_ID));
+                                          sheet.getSelection(VERTICAL_GLYPH_ID),
+                                          sheet.getSelection(GLYPH_SET));
 
         final String unit = "GlyphPane";
         BoardsPane boardsPane = new BoardsPane
@@ -151,7 +141,12 @@ public class GlyphPane
                               sheet.getSelection(VERTICAL_SECTION),
                               sheet.getSelection(VERTICAL_SECTION_ID)),
              glyphBoard,
-             customBoard);
+             new ActionsBoard(sheet, this),
+             customBoard,
+             new EvaluationBoard(sheet,
+                                 this,
+                                 view,
+                                 sheet.getSelection(VERTICAL_GLYPH)));
 
         // Link with glyph builder & glyph inspector
         builder = sheet.getGlyphBuilder();
@@ -189,6 +184,9 @@ public class GlyphPane
                             boolean asGuessed,
                             boolean compound)
     {
+        List<Glyph> currentGlyphs
+            = (List<Glyph>) sheet.getSelection(GLYPH_SET).getEntity();
+
         if (currentGlyphs.size() > 0) {
             if (asGuessed) {            // Confirmation
                 for (Glyph glyph : currentGlyphs) {
@@ -265,20 +263,6 @@ public class GlyphPane
         refresh();
     }
 
-    //------------------//
-    // getCurrentGlyphs //
-    //------------------//
-    /**
-     * Report the list of glyphs currently selected. This list may contain
-     * 0, 1 or more glyphs
-     *
-     * @return the list of current glyphs
-     */
-    public List<Glyph> getCurrentGlyphs()
-    {
-        return currentGlyphs;
-    }
-
     //-----------//
     // getEntity //
     //-----------//
@@ -308,44 +292,17 @@ public class GlyphPane
 
     //~ Methods package private -------------------------------------------
 
-    //--------------------//
-    // getEvaluatorsPanel //
-    //--------------------//
-    /**
-     * Give access to the evaluators' panel
-     *
-     * @return that panel
-     */
-    EvaluatorsPanel getEvaluatorsPanel()
-    {
-        return evaluatorsPanel;
-    }
-
-    //----------//
-    // getPopup //
-    //----------//
+    //--------------//
+    // getGlyphMenu //
+    //--------------//
     /**
      * Give access to the GlyphMenu, in order to customize its content
      *
      * @return the GlyphMenu
      */
-    GlyphMenu getPopup()
+    GlyphMenu getGlyphMenu()
     {
         return popup;
-    }
-
-    //------------------//
-    // setCurrentGlyphs //
-    //------------------//
-    /**
-     * Allow to remember a new collection of glyphs as the result of
-     * current selection
-     *
-     * @param glyphs the current collection of glyphs
-     */
-    void setCurrentGlyphs(List<Glyph> glyphs)
-    {
-        currentGlyphs = glyphs;
     }
 
     //----------//
@@ -409,87 +366,6 @@ public class GlyphPane
 
     //~ Methods private ---------------------------------------------------
 
-    //-------------------//
-    // createGlobalPanel //
-    //-------------------//
-    private JPanel createGlobalPanel()
-    {
-        final String buttonWidth    = Panel.getButtonWidth();
-        final String fieldInterval  = Panel.getFieldInterval();
-        final String fieldInterline = Panel.getFieldInterline();
-
-        FormLayout layout = new FormLayout
-            (buttonWidth + "," + fieldInterval + "," +
-             buttonWidth + "," + fieldInterval + "," +
-             buttonWidth + "," + fieldInterval + "," +
-             buttonWidth,
-             "pref," + fieldInterline + "," +
-             "pref," + fieldInterline + "," +
-             "pref");
-
-        Panel panel = new Panel();
-        panel.setNoInsets();
-
-        PanelBuilder builder = new PanelBuilder(layout, panel);
-        builder.setDefaultDialogBorder();
-
-        CellConstraints cst = new CellConstraints();
-
-        int r = 1;                      // --------------------------------
-        builder.addSeparator("Global", cst.xyw(1,  r, 7));
-
-        r += 2;                         // --------------------------------
-        // Add a Refresh button
-        JButton refreshButton = new JButton(refreshAction);
-        refreshButton.setToolTipText("Refresh display");
-        builder.add(refreshButton,      cst.xy (1,  r));
-
-        // Add an Eval button
-        EvalAction evalAction = new EvalAction();
-        JButton evalButton = new JButton(evalAction);
-        evalButton.setToolTipText("Evaluate unknown glyphs");
-        builder.add(evalButton,         cst.xy (3,  r));
-
-        // Add a Save button
-        SaveAction saveAction = new SaveAction();
-        JButton saveButton = new JButton(saveAction);
-        saveButton.setToolTipText("Save current state");
-        builder.add(saveButton,         cst.xy (5,  r));
-
-        // Add a Record action
-        JButton recordButton = new JButton(recordAction);
-        recordButton.setToolTipText("Record glyphs for training");
-        builder.add(recordButton,       cst.xy (7,  r));
-
-        r += 2;                         // --------------------------------
-
-        // Add a Verticals action
-        VerticalsAction verticalsAction = new VerticalsAction();
-        JButton verticalsButton = new JButton(verticalsAction);
-        verticalsButton.setToolTipText("Extract Verticals like Stems");
-        builder.add(verticalsButton,    cst.xy (1,  r));
-
-        // Add a Leaves action
-        LeavesAction leavesAction = new LeavesAction();
-        JButton leavesButton = new JButton(leavesAction);
-        leavesButton.setToolTipText("Extract stem Leaves");
-        builder.add(leavesButton,       cst.xy (3,  r));
-
-        // Add a Compounds action
-        CompoundsAction compoundsAction = new CompoundsAction();
-        JButton compoundsButton = new JButton(compoundsAction);
-        compoundsButton.setToolTipText("Gather remaining stuff as Compounds");
-        builder.add(compoundsButton,    cst.xy (5,  r));
-
-        // Add a Cleanup action
-        CleanupAction cleanupAction = new CleanupAction();
-        JButton cleanupButton = new JButton(cleanupAction);
-        cleanupButton.setToolTipText("Cleanup stems with no symbols attached");
-        builder.add(cleanupButton,      cst.xy (7,  r));
-
-        return builder.getPanel();
-    }
-
     //---------------//
     // createMenuBar //
     //---------------//
@@ -519,9 +395,9 @@ public class GlyphPane
         JMenu networkMenu = new JMenu("Network");
         toolMenu.add(networkMenu);
 
-        // Add a record action
-        item = networkMenu.add(recordAction);
-        item.setToolTipText("Record known glyphs");
+//         // Add a record action
+//         item = networkMenu.add(recordAction);
+//         item.setToolTipText("Record known glyphs");
 
         return menuBar;
     }
@@ -538,8 +414,6 @@ public class GlyphPane
 
             FormLayout layout = new FormLayout
                 ("pref",
-                 "pref," + Panel.getPanelInterline() + "," +
-                 "pref," + Panel.getPanelInterline() + "," +
                  "pref");
 
             PanelBuilder builder = new PanelBuilder(layout, getComponent());
@@ -549,175 +423,6 @@ public class GlyphPane
 
             int r = 1;                  // --------------------------------
             builder.add(focus, cst.xy (1, r));
-            r += 2;                     // --------------------------------
-            builder.add(createGlobalPanel(), cst.xy (1, r));
-            r += 2;                     // --------------------------------
-            builder.add(evaluatorsPanel.getComponent(), cst.xy (1, r));
-        }
-    }
-
-    //---------------//
-    // RefreshAction // ---------------------------------------------------
-    //---------------//
-    private class RefreshAction
-        extends AbstractAction
-    {
-        public RefreshAction()
-        {
-            super("Refresh");
-        }
-
-        public void actionPerformed(ActionEvent e)
-        {
-            refresh();
-        }
-    }
-
-    //------------//
-    // EvalAction // ------------------------------------------------------
-    //------------//
-    private class EvalAction
-        extends AbstractAction
-    {
-        public EvalAction()
-        {
-            super("Eval");
-        }
-
-        public void actionPerformed(ActionEvent e)
-        {
-            inspector.evaluateGlyphs(inspector.getLeafMaxGrade());
-            refresh();
-        }
-    }
-
-    //------------//
-    // SaveAction // ------------------------------------------------------
-    //------------//
-    private class SaveAction
-        extends AbstractAction
-    {
-        public SaveAction()
-        {
-            super("Save");
-        }
-
-        public void actionPerformed(ActionEvent e)
-        {
-            final SwingWorker worker = new SwingWorker()
-                {
-                    public Object construct()
-                    {
-                        try {
-                            sheet.getScore().serialize();
-                        } catch (Exception ex) {
-                            logger.warning("Could not serialize " +
-                                           sheet.getScore());
-                        }
-                        return null;
-                    }
-                };
-            worker.start();
-        }
-    }
-
-    //--------------//
-    // RecordAction // ----------------------------------------------------
-    //--------------//
-    private class RecordAction
-        extends AbstractAction
-    {
-        public RecordAction()
-        {
-            super("Record");
-        }
-
-        public void actionPerformed(ActionEvent e)
-        {
-            final SwingWorker worker = new SwingWorker()
-                {
-                    public Object construct()
-                    {
-                        repository.recordSheetGlyphs
-                            (sheet,
-                             /* emptyStructures => */ sheet.isOnSymbols());
-                        return null;
-                    }
-                };
-            worker.start();
-        }
-    }
-
-    //-----------------//
-    // VerticalsAction // -------------------------------------------------
-    //-----------------//
-    private class VerticalsAction
-        extends AbstractAction
-    {
-        public VerticalsAction()
-        {
-            super("Verticals");
-        }
-
-        public void actionPerformed(ActionEvent e)
-        {
-            inspector.processVerticals();
-            refresh();
-        }
-    }
-
-    //--------------//
-    // LeavesAction // ----------------------------------------------------
-    //--------------//
-    private class LeavesAction
-        extends AbstractAction
-    {
-        public LeavesAction()
-        {
-            super("Leaves");
-        }
-
-        public void actionPerformed(ActionEvent e)
-        {
-            inspector.processLeaves();
-            inspector.evaluateGlyphs(inspector.getLeafMaxGrade());
-            refresh();
-        }
-    }
-
-    //-----------------//
-    // CompoundsAction // -------------------------------------------------
-    //-----------------//
-    private class CompoundsAction
-        extends AbstractAction
-    {
-        public CompoundsAction()
-        {
-            super("Compounds");
-        }
-
-        public void actionPerformed(ActionEvent e)
-        {
-            inspector.processCompounds(inspector.getLeafMaxGrade());
-            refresh();
-        }
-    }
-
-    //---------------//
-    // CleanupAction // ---------------------------------------------------
-    //---------------//
-    private class CleanupAction
-        extends AbstractAction
-    {
-        public CleanupAction()
-        {
-            super("Cleanup");
-        }
-
-        public void actionPerformed(ActionEvent e)
-        {
-            inspector.processUndueStems();
-            refresh();
         }
     }
 }
