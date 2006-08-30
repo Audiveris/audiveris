@@ -14,12 +14,16 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphLagView;
 import omr.glyph.Shape;
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
+import omr.selection.SelectionTag;
 import omr.sheet.Sheet;
 import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,6 +44,7 @@ public class SymbolGlyphView
 
     //~ Instance variables ------------------------------------------------
 
+    // Companion entities
     private final Sheet sheet;
     private final GlyphPane pane;
 
@@ -60,10 +65,20 @@ public class SymbolGlyphView
                             GlyphPane pane)
     {
         super(lag, null, pane);
+
         this.sheet = sheet;
         this.pane  = pane;
 
         setName("SymbolGlyphView");
+
+        // Current glyphs, initialized to empty list
+        glyphSetSelection = sheet.getSelection(SelectionTag.GLYPH_SET);
+        glyphSetSelection.setEntity(new ArrayList<Glyph>(),
+                                    null,
+                                    /* notity => */ false);
+
+        // Observe glyph set
+        glyphSetSelection.addObserver(this);
 
         // Use light gray color for past successful entities
         sheet.colorize(lag, viewIndex, Color.lightGray);
@@ -75,19 +90,13 @@ public class SymbolGlyphView
     // renderItems //
     //-------------//
     @Override
-        public void renderItems (Graphics g)
+        protected void renderItems (Graphics g)
     {
-        Zoom z = getZoom();
+        // Render all sheet physical info known so far
+        sheet.render(g, getZoom());
 
-        // Render all physical info known so far
-        sheet.render(g, z);
-
-        // Mark the current glyphs
-        g.setColor(Color.black);
-        for (Glyph glyph : pane.getCurrentGlyphs()) {
-            g.setXORMode(Color.white);
-            glyph.renderContour(g, z);
-        }
+        // Normal display of selected items
+        super.renderItems(g);
     }
 
     //-----------------//
@@ -103,101 +112,28 @@ public class SymbolGlyphView
         }
 
         contextSelected = true;
-        List<Glyph> glyphs = pane.getCurrentGlyphs();
+        List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
 
         // To display point information
         if (glyphs.size() == 0) {
             pointSelected(e, pt);
-        }
-
-        if (e == null) {
-            // Not an interactive selection, so let's get out now
-            contextSelected = false;
-            return;
+            glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // modified?
+            ///logger.info("size=" + glyphs.size());
         }
 
         if (glyphs.size() > 0) {
+            GlyphMenu menu = pane.getGlyphMenu();
             if (glyphs.size() == 1) {
-                pane.getPopup().updateForGlyph(glyphs.get(0));
-                pane.getPopup().getPopup().show(this, e.getX(), e.getY());
+                menu.updateForGlyph(glyphs.get(0));
             } else if (glyphs.size() > 1) {
-                pane.getPopup().updateForGlyphs(glyphs);
+                menu.updateForGlyphs(glyphs);
             }
             // Show the popup menu
-            pane.getPopup().getPopup().show(this, e.getX(), e.getY());
+            menu.getPopup().show(this, e.getX(), e.getY());
         } else {
             // Popup with no glyph selected ?
         }
         contextSelected = false;
-    }
-
-    //---------------//
-    // glyphSelected //
-    //---------------//
-    /**
-     * Processing to be performed on the selected glyph.
-     *
-     * @param glyph the selected glyph, which may be null
-     */
-    @Override
-        protected void glyphSelected (Glyph glyph)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("SymbolGlyphView glyphSelected");
-        }
-
-        // Process the selected glyph
-        List<Glyph> glyphs = pane.getCurrentGlyphs();
-        if (addingGlyph) {
-            // Adding glyphs, nothing to be done here
-            // This will be performed through glyphAdded()
-        } else if (contextSelected) {
-            // Single contextual glyph selection
-            if (glyphs.size() == 0) {
-                if (glyph != null) {
-                    glyphs.add(glyph);
-                }
-            }
-        } else {
-            // Simple selection
-            if (glyphs.size() > 0) {
-                glyphs.clear();
-            }
-            if (glyph != null) {
-                glyphs.add(glyph);
-            }
-        }
-        pane.getEvaluatorsPanel().evaluate(glyph);
-    }
-
-    //------------//
-    // glyphAdded //
-    //------------//
-    /**
-     * Addition of a glyph to a collection of selected glyphs. Il the
-     * collection already contains that glyph, the glyph is in fact removed
-     * of the collection
-     *
-     * @param glyph the to-be-added glyph, which may be null
-     * @param pt the designated point
-     */
-    protected void glyphAdded (Glyph glyph,
-                               Point pt)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine ("SymbolGlyphView glyphAdded");
-        }
-
-        if (glyph != null) {
-            // Add to or remove from the collection of selected glyphs
-            List<Glyph> glyphs = pane.getCurrentGlyphs();
-            if (glyphs.contains(glyph)) {
-                glyphs.remove(glyph);
-            } else {
-                glyphs.add(glyph);
-            }
-        }
-        pane.getEvaluatorsPanel().evaluate(glyph);
     }
 
     //---------------//
@@ -226,6 +162,61 @@ public class SymbolGlyphView
             pane.setShape(glyph, null, /* UpdateUI => */ true);
             pane.refresh();
             break;
+        }
+        }
+
+    //---------//
+    // update  //
+    //---------//
+    @Override
+        public void update(Selection selection,
+                           SelectionHint hint)
+    {
+        ///logger.info("SymbolGlyphView. selection=" + selection + " hint=" + hint);
+
+        // Default lag view behavior, including specifics
+        super.update(selection, hint);
+
+        switch (selection.getTag()) {
+        case VERTICAL_GLYPH :
+            Glyph glyph = (Glyph) selection.getEntity();
+
+            // Process the selected glyph
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+            boolean modified = false;
+            if (addingGlyph) {
+                // Adding glyphs, nothing to be done here
+                // This will be performed through glyphAdded()
+            } else if (contextSelected) {
+                // Single contextual glyph selection
+                if (glyphs.size() == 0) {
+                    if (glyph != null) {
+                        glyphs.add(glyph);
+                        modified = true;
+                    }
+                }
+            } else {
+                // Simple selection
+                if (glyphs.size() > 0) {
+                glyphs.clear();
+                modified = true;
+                }
+                if (glyph != null) {
+                    glyphs.add(glyph);
+                    modified = true;
+                }
+            }
+            if (modified) {
+                glyphSetSelection.setEntity(glyphs, hint);
+            }
+            break;
+
+        case GLYPH_SET :
+            ///logger.info("GlyphSet modified: Repainting");
+            repaint();
+            break;
+
+        default :
         }
     }
 }
