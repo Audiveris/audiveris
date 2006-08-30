@@ -319,7 +319,8 @@ public class Picture
         switch (selection.getTag()) {
         case PIXEL :
             Integer level = null;
-            if (hint == SelectionHint.LOCATION_INIT) {
+            if (hint == SelectionHint.LOCATION_ADDITION ||
+                    hint == SelectionHint.LOCATION_INIT) {
                 // Compute and forward pixel grey level
                 Rectangle rect = (Rectangle) selection.getEntity();
                 if (rect != null) {
