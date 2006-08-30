@@ -23,6 +23,7 @@ import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Collections;
 import javax.swing.*;
 import javax.swing.event.*;
 
@@ -41,6 +42,7 @@ import javax.swing.event.*;
  * <li>*_SECTION_ID (flagged with SECTION_INIT hint)
  * </ul>
  * </dl>
+ *
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -103,7 +105,7 @@ public class SectionBoard
 
         // Dependencies on Selections
         setOutputSelection(outputSelection);
-        setInputSelection(inputSelection);
+        setInputSelectionList(Collections.singletonList(inputSelection));
 
         // Dump button
         dump.setToolTipText("Dump this section");
@@ -112,7 +114,9 @@ public class SectionBoard
                 {
                     public void actionPerformed (ActionEvent e)
                     {
-                        Selection input = SectionBoard.this.inputSelection;
+                        // Retrieve current section selection
+                        Selection input
+                                = SectionBoard.this.inputSelectionList.get(0);
                         Section section = (Section) input.getEntity();
                         if (section != null) {
                             section.dump();

@@ -11,6 +11,7 @@
 package omr.lag;
 
 import omr.selection.Selection;
+import omr.selection.SelectionHint;
 import omr.ui.Board;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
@@ -18,7 +19,8 @@ import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
-import omr.selection.SelectionHint;
+
+import java.util.Collections;
 
 /**
  * Class <code>RunBoard</code> is dedicated to display of Run information.
@@ -64,7 +66,7 @@ public class RunBoard
                      Selection input)
     {
         super(Board.Tag.RUN, unitName + "-RunBoard");
-        setInputSelection(input);
+        setInputSelectionList(Collections.singletonList(input));
         defineLayout();
     }
 
