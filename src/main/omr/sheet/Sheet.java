@@ -782,7 +782,7 @@ public class Sheet
     // setHorizontalLag //
     //------------------//
     /**
-     * Assigns the current horizontal lag for the sheet
+     * Assign the current horizontal lag for the sheet
      *
      * @param hLag the horizontal lag at hand
      */
@@ -791,13 +791,12 @@ public class Sheet
         this.hLag = hLag;
 
         // Input
-        getSelection(PIXEL).addObserver(hLag);
-        getSelection(HORIZONTAL_SECTION).addObserver(hLag);
-        getSelection(HORIZONTAL_SECTION_ID).addObserver(hLag);
-        getSelection(HORIZONTAL_GLYPH).addObserver(hLag);
-        getSelection(HORIZONTAL_GLYPH_ID).addObserver(hLag);
-
-        // Input & Output
+        selectionManager.addObserver(hLag,
+                                     PIXEL,
+                                     HORIZONTAL_SECTION,
+                                     HORIZONTAL_SECTION_ID,
+                                     HORIZONTAL_GLYPH,
+                                     HORIZONTAL_GLYPH_ID);
 
         // Output
         hLag.setLocationSelection(getSelection(PIXEL));
@@ -1263,7 +1262,7 @@ public class Sheet
     // setVerticalLag //
     //----------------//
     /**
-     * Assigns the current vertical lag for the sheet
+     * Assign the current vertical lag for the sheet
      *
      * @param vLag the current vertical lag
      */
@@ -1272,20 +1271,20 @@ public class Sheet
         this.vLag = vLag;
 
         // Input
-        getSelection(PIXEL).addObserver(vLag);
-        getSelection(VERTICAL_SECTION).addObserver(vLag);
-        getSelection(VERTICAL_SECTION_ID).addObserver(vLag);
-        getSelection(VERTICAL_GLYPH).addObserver(vLag);
-        getSelection(VERTICAL_GLYPH_ID).addObserver(vLag);
-
-        // Input & Output
+        selectionManager.addObserver(vLag,
+                                     PIXEL,
+                                     VERTICAL_SECTION,
+                                     VERTICAL_SECTION_ID,
+                                     VERTICAL_GLYPH,
+                                     VERTICAL_GLYPH_ID);
 
         // Output
         vLag.setLocationSelection(getSelection(PIXEL));
         vLag.setRunSelection(getSelection(VERTICAL_RUN));
         vLag.setSectionSelection(getSelection(VERTICAL_SECTION));
         vLag.setGlyphSelection(getSelection(VERTICAL_GLYPH));
-}
+        vLag.setGlyphSetSelection(getSelection(GLYPH_SET));
+    }
 
     //----------------//
     // getVerticalLag //
