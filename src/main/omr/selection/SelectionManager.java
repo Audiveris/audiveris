@@ -98,4 +98,21 @@ public class SelectionManager
             sheet.getSelectionManager().dumpSelections();
         }
     }
+
+    //-------------//
+    // addObserver //
+    //-------------//
+    /**
+     * Convenient method to register an observer to multiple selections
+     *
+     * @param observer the observer to be notified
+     * @param tags the varying number of selections concerned
+     */
+    public void addObserver (SelectionObserver observer,
+                             SelectionTag...   tags)
+    {
+        for (SelectionTag tag : tags) {
+            getSelection(tag).addObserver(observer);
+        }
+    }
 }
