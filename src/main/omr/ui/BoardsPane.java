@@ -10,7 +10,7 @@
 
 package omr.ui;
 
-import omr.glyph.ui.GlyphBoard;
+import omr.selection.Selection;
 import omr.selection.SelectionTag;
 import omr.sheet.Sheet;
 import omr.ui.util.Panel;
@@ -21,6 +21,8 @@ import static omr.ui.Board.Tag.*;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -32,6 +34,8 @@ import javax.swing.*;
  * 
  * <p>There is now one single BoardsPane for all views of the same sheet,
  * while the visibility of some of its boards may vary with the view at hand.
+ * 
+ * 
  * 
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -105,8 +109,14 @@ public class BoardsPane
             switch(board.getTag()) {
             case PIXEL :
                 PixelBoard pixelBoard = (PixelBoard) board;
-                pixelBoard.setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
-                pixelBoard.setLevelSelection(sheet.getSelection(SelectionTag.LEVEL));
+                // inputs
+                List<Selection> inputs = new ArrayList<Selection>();
+                inputs.add(sheet.getSelection(SelectionTag.PIXEL));
+                inputs.add(sheet.getSelection(SelectionTag.LEVEL));
+                pixelBoard.setInputSelectionList(inputs);
+                // output
+                pixelBoard.setOutputSelection
+                        (sheet.getSelection(SelectionTag.PIXEL));
                 break;
 
             case RUN :
