@@ -17,6 +17,8 @@ import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
 
+import static omr.selection.SelectionHint.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -26,29 +28,29 @@ import javax.swing.event.*;
  * Class <code>ZoomedPanel</code> is a class meant to handle common
  * task of a display with a magnifying lens, as provided by a related
  * {@link Zoom} entity.
- * 
+ *
  * <p>This class does not allocate any zoom instance. When using this
  * class, we have to provide our own Zoom instance, either at contruction
  * time by using the proper constructor or later by using the {@link
  * #setZoom} method. The class then registers itself as an observer of the
  * Zoom instance, to be notified when the zoom ratio is modified.
- * 
+ *
  * <p>The ModelSize is the unzoomed size of the data to be displayed, it
  * can be updated through {@link #setModelSize}. This is useful when used
  * in combination with a JScrollPane container (see {@link ScrollView}
  * example).
- * 
+ *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
  * <li>PIXEL Location | SCORE Location
  * </ul>
- * 
+ *
  * <dt><b>Selection Outputs:</b></dt><ul>
  * <li>PIXEL Location | SCORE Location (either flagged with LOCATION_INIT hint)
  * </ul>
  * </dl>
- * 
- * 
+ *
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -192,7 +194,7 @@ public class ZoomedPanel
     public void pointSelected (MouseEvent e,
                                Point      pt)
     {
-        setFocusLocation(new Rectangle(pt));
+        setFocusLocation(new Rectangle(pt), LOCATION_INIT);
     }
 
     //------------//
@@ -201,7 +203,7 @@ public class ZoomedPanel
     public void pointAdded (MouseEvent e,
                             Point      pt)
     {
-        pointSelected(e, pt);
+        setFocusLocation(new Rectangle(pt), LOCATION_ADDITION);
     }
 
     //-------------------//
@@ -210,7 +212,7 @@ public class ZoomedPanel
     public void rectangleSelected (MouseEvent e,
                                    Rectangle  rect)
     {
-        setFocusLocation(rect);
+        setFocusLocation(rect, LOCATION_INIT);
     }
 
     //-----------------//
@@ -245,18 +247,20 @@ public class ZoomedPanel
      * {@link #setLocationSelection}.
      *
      * @param rect the location information
+     * @param hint the related selection hint
      */
-    public void setFocusLocation (Rectangle rect)
+    public void setFocusLocation (Rectangle rect,
+                                  SelectionHint hint)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("setFocusRectangle rect=" + rect);
+            logger.fine("setFocusRectangle rect=" + rect +
+                        " hint=" + hint);
         }
 
         // Write & forward the new pixel selection
         if (locationSelection != null) { // Producer
             locationSelection.setEntity
-                (rect != null ? new Rectangle(rect) : null,
-                 SelectionHint.LOCATION_INIT);
+                (rect != null ? new Rectangle(rect) : null, hint);
         }
     }
 
@@ -380,14 +384,6 @@ public class ZoomedPanel
     //--------//
     // update //
     //--------//
-    /**
-     * Call-back (part of Observer interface) triggered when location
-     * Selection has been modified, provided that such object has been
-     * previously injected (by means of {@link #setLocationSelection}.
-     *
-     * @param selection the Location Selection
-     * @param hint potential notification hint
-     */
     public void update (Selection selection,
                         SelectionHint hint)
     {
