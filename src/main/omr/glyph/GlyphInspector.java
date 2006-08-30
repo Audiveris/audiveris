@@ -40,7 +40,7 @@ import java.util.Set;
 /**
  * Class <code>GlyphInspector</code> is dedicated to processing of
  * retrieved glyphs, their recognition based on features as used by a
- * neural network evaluator and a regression-based evaluator.
+ * neural network evaluator.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -280,13 +280,12 @@ public class GlyphInspector
                 continue;
             }
 
-            // Use a widened contour box
-            StaffInfo staff = system.getStaffAtY(glyph.getContourBox().y);
+            // Use an extended contour box
             int dxy = sheet.getScale().toPixels(constants.boxWiden);
             Rectangle box = compoundBox(glyph.getContourBox(), dxy);
 
             // Consider neighboring glyphs, which are glyphs whose contour
-            // intersect the contour of glyph at hand
+            // intersect the extended contour of glyph at hand
             SUB_GLYPHS:
             for (Glyph g : glyphs.subList(index +1, glyphs.size())) {
                 if (g.isKnown()) {
