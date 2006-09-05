@@ -28,9 +28,9 @@ public enum SelectionHint
 
     /**
      * Designation is by location pointing (either SCORE or PIXEL) while
-     * adding to the existing selection (GLYPH_SET), so we keep the
-     * original location information, and try to lookup for designated Run,
-     * Section & Glyph
+     * adding to the existing selection(s), so we keep the original
+     * location information, and try to lookup for designated Run, Section
+     * & Glyph
      */
     LOCATION_ADDITION,
 
