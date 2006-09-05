@@ -28,10 +28,10 @@ import java.util.List;
  *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>PIXEL
  * <li>*_SECTION_ID
  * <li>*_GLYPH
  * <li>*_GLYPH_ID
+ * <li>GLYPH_SET
  * </ul>
  *
  * <dt><b>Selection Outputs:</b></dt><ul>
