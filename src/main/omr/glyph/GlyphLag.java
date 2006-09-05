@@ -299,11 +299,11 @@ public class GlyphLag
         return list;
     }
 
-    //----------------//
-    // singleGlyphSet //
-    //----------------//
-    private void singleGlyphSet (Glyph         glyph,
-                                 SelectionHint hint)
+    //---------------------//
+    // buildSingleGlyphSet //
+    //---------------------//
+    private void buildSingleGlyphSet (Glyph         glyph,
+                                      SelectionHint hint)
     {
         if (glyphSetSelection != null &&
             glyphSetSelection.countObservers() > 0) {
@@ -377,7 +377,7 @@ public class GlyphLag
 
                             // Update the glyph set accordingly
                             if (hint != LOCATION_ADDITION) {
-                                singleGlyphSet(glyph, hint);
+                                buildSingleGlyphSet(glyph, hint);
                             }
                         }
                     }
@@ -422,7 +422,7 @@ public class GlyphLag
                     glyphSelection.setEntity(glyph, hint);
                 }
                 // Update glyph set accordingly
-                singleGlyphSet(glyph, hint);
+                buildSingleGlyphSet(glyph, hint);
             }
             break;
 
