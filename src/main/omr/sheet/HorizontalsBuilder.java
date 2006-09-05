@@ -22,7 +22,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphDirectory;
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphLagView;
+import omr.glyph.ui.GlyphLagView;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;

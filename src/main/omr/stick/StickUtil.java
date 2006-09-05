@@ -14,7 +14,7 @@ import omr.check.FailureResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphLagView;
+import omr.glyph.ui.GlyphLagView;
 import omr.glyph.GlyphSection;
 import omr.graph.DigraphView;
 import omr.lag.Run;
