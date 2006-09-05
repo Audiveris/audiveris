@@ -462,38 +462,34 @@ public class GlyphPane
             super.renderItems(g);
         }
 
-    //-----------------//
-    // contextSelected //
-    //-----------------//
-    @Override
-        public void contextSelected (MouseEvent e,
-                                     Point pt)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("SymbolGlyphView contextSelected");
-        }
+        //-----------------//
+        // contextSelected //
+        //-----------------//
+        @Override
+            public void contextSelected (MouseEvent e,
+                                         Point pt)
+        {
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
 
-        List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
-
-        // To display point information
-        if (glyphs.size() == 0) {
-            pointSelected(e, pt);
-            glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // modified?
-        }
-
-        if (glyphs.size() > 0) {
-            GlyphMenu menu = getGlyphMenu();
-            if (glyphs.size() == 1) {
-                menu.updateForGlyph(glyphs.get(0));
-            } else if (glyphs.size() > 1) {
-                menu.updateForGlyphs(glyphs);
+            // To display point information
+            if (glyphs.size() == 0) {
+                pointSelected(e, pt);
+                glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // modified?
             }
-            // Show the popup menu
-            menu.getPopup().show(this, e.getX(), e.getY());
-        } else {
-            // Popup with no glyph selected ?
+
+            if (glyphs.size() > 0) {
+                GlyphMenu menu = getGlyphMenu();
+                if (glyphs.size() == 1) {
+                    menu.updateForGlyph(glyphs.get(0));
+                } else if (glyphs.size() > 1) {
+                    menu.updateForGlyphs(glyphs);
+                }
+                // Show the popup menu
+                menu.getPopup().show(this, e.getX(), e.getY());
+            } else {
+                // Popup with no glyph selected ?
+            }
         }
-    }
 
         //---------------//
         // deassignGlyph //
