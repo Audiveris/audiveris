@@ -16,6 +16,7 @@ import omr.lag.Lag;
 import omr.lag.Oriented;
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
+import omr.selection.SelectionTag;
 import omr.util.Logger;
 
 import static omr.selection.SelectionHint.*;
@@ -299,27 +300,42 @@ public class GlyphLag
         return list;
     }
 
-    //---------------------//
-    // buildSingleGlyphSet //
-    //---------------------//
-    private void buildSingleGlyphSet (Glyph         glyph,
-                                      SelectionHint hint)
+    //----------------//
+    // updateGlyphSet //
+    //----------------//
+    private void updateGlyphSet (Glyph         glyph,
+                                    SelectionHint hint)
     {
         if (glyphSetSelection != null &&
             glyphSetSelection.countObservers() > 0) {
+            // Get current glyph set
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
             if (glyphs == null) {
                 glyphs = new ArrayList<Glyph>();
             }
-            if (glyph == null) {
-                if (glyphs.size() > 0) {
-                    glyphs.clear();
+            
+            if (hint == LOCATION_ADD) {
+                // Adding / Removing
+                if (glyph != null) {
+                    // Add to (or remove from) glyph set
+                    if (glyphs.contains(glyph)) {
+                        glyphs.remove(glyph);
+                    } else {
+                        glyphs.add(glyph);
+                    }
                     glyphSetSelection.setEntity(glyphs, hint);
                 }
             } else {
-                glyphs.clear();
-                glyphs.add(glyph);
-                        glyphSetSelection.setEntity(glyphs, hint);
+                // Overwriting
+                if (glyph != null) {
+                    // Make a one-glyph set
+                    glyphs.clear();
+                    glyphs.add(glyph);
+                } else if (glyphs.size() > 0) {
+                    // Empty the glyph set
+                    glyphs.clear();
+                }
+                glyphSetSelection.setEntity(glyphs, hint);
             }
         }
     }
@@ -344,7 +360,7 @@ public class GlyphLag
         // Additional tasks
         switch (selection.getTag()) {
         case PIXEL :
-            if (hint == LOCATION_ADDITION ||
+            if (hint == LOCATION_ADD ||
                 hint == LOCATION_INIT) {
                 Rectangle rect = (Rectangle) selection.getEntity();
                 if (rect != null) {
@@ -374,11 +390,6 @@ public class GlyphLag
                                 glyph = section.getGlyph();
                             }
                             glyphSelection.setEntity(glyph, hint);
-
-                            // Update the glyph set accordingly
-                            if (hint != LOCATION_ADDITION) {
-                                buildSingleGlyphSet(glyph, hint);
-                            }
                         }
                     }
                 }
@@ -398,11 +409,17 @@ public class GlyphLag
 
         case HORIZONTAL_GLYPH :
         case VERTICAL_GLYPH :
-            if (hint == GLYPH_INIT) {
-                // Display glyph contour
+            {
                 Glyph glyph = (Glyph) selection.getEntity();
-                if (glyph != null) {
-                    locationSelection.setEntity(glyph.getContourBox(), hint);
+                if (hint == GLYPH_INIT) {
+                    // Display glyph contour
+                    if (glyph != null) {
+                        locationSelection.setEntity(glyph.getContourBox(), hint);
+                    }
+                }
+                if (selection.getTag() == SelectionTag.VERTICAL_GLYPH) {
+                    // Update (vertical) glyph set
+                    updateGlyphSet(glyph, hint);
                 }
             }
             break;
@@ -410,7 +427,6 @@ public class GlyphLag
         case HORIZONTAL_GLYPH_ID :
         case VERTICAL_GLYPH_ID :
             {
-                Glyph glyph = null;
                 // Lookup a glyph with proper ID
                 if (glyphSelection != null) {
                     // Nullify Run & Section entities
@@ -418,11 +434,8 @@ public class GlyphLag
                     sectionSelection.setEntity(null, hint);
                     // Report Glyph entity
                     Integer id = (Integer) selection.getEntity();
-                    glyph = getGlyph(id);
-                    glyphSelection.setEntity(glyph, hint);
+                    glyphSelection.setEntity(getGlyph(id), hint);
                 }
-                // Update glyph set accordingly
-                buildSingleGlyphSet(glyph, hint);
             }
             break;
 
