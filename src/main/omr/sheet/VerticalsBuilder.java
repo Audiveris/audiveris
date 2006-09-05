@@ -86,7 +86,7 @@ public class VerticalsBuilder
     private final VerticalArea verticalsArea;
 
     private StemCheckSuite suite = new StemCheckSuite();
-    private MyView view;
+    private GlyphLagView view;
 
     //~ Constructors ------------------------------------------------------
 
@@ -146,7 +146,7 @@ public class VerticalsBuilder
     private void displayFrame ()
     {
         // Specific rubber display
-        view = new MyView();
+        view = new MyGlyphLagView();
         view.colorize();
 
         // Ids of recognized glyphs
@@ -269,12 +269,12 @@ public class VerticalsBuilder
     //--------//
     // MyView //
     //--------//
-    private class MyView
+    private class MyGlyphLagView
         extends GlyphLagView
     {
         //~ Constructors --------------------------------------------------
 
-        public MyView ()
+        public MyGlyphLagView ()
         {
             super(vLag, null, VerticalsBuilder.this);
             setName("VerticalsBuilder-MyView");
@@ -321,9 +321,7 @@ public class VerticalsBuilder
                 for (Glyph glyph : system.getGlyphs()) {
                     if (glyph.isStem()) {
                         Stick stick = (Stick) glyph;
-                        stick.colorize(lag, viewIndex, Color.yellow); // TBD,
-                                                                      // use
-                                                                      // glyph.colorize ???
+                        stick.colorize(lag, viewIndex, Color.yellow);
                     }
                 }
             }
@@ -335,30 +333,8 @@ public class VerticalsBuilder
         @Override
         public void renderItems (Graphics g)
         {
-            Zoom z = getZoom();
-
             // Render all physical info known so far
-            sheet.render(g, z);
-
-//            Scale scale = sheet.getScale();
-//            int nWidth = scale.toPixels(constants.chunkWidth);
-//            int nHeight = scale.toPixels(constants.chunkHeight);
-
-            // Render the contour of the verticals
-//            g.setColor(Color.black);
-//            g.setXORMode(Color.white);
-//            for (SystemInfo system : sheet.getSystems()) {
-//                for (Glyph glyph : system.getGlyphs()) {
-//                    if (glyph.isStem()) {
-//                        Stick stick = (Stick) glyph;
-//                        stick.renderContour(g, z);
-//                        //stick.renderChunk(g, z, nHeight, nWidth);
-//                        stick.renderLine(g, z);
-//                    }
-//                }
-//            }
-
-            // TBD Render the contour of the unlucky candidates also?
+            sheet.render(g, getZoom());
 
             super.renderItems(g);
         }

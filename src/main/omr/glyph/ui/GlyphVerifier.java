@@ -496,7 +496,7 @@ public class GlyphVerifier
         Navigator        navigator = new Navigator();
         SymbolGlyphBoard board;
         Display          display;
-        MyView           view;
+        GlyphLagView     view;
         Dimension        modelSize;
         Rectangle        modelRectangle;
 

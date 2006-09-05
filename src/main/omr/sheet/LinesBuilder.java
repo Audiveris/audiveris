@@ -80,7 +80,7 @@ public class LinesBuilder
     private final Sheet sheet;
 
     // Lag view on staff lines, if so desired
-    private MyLagView lagView;
+    private GlyphLagView lagView;
 
     // Needed for displayChart
     private int[] histo;

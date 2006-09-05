@@ -88,7 +88,7 @@ public class HorizontalsBuilder
     private HorizontalArea horizontalsArea;
 
     // The related view if any
-    private MyView lagView;
+    private GlyphLagView lagView;
 
     // The whole list of horizontals (ledgers, legato signs, endings) found
     private final Horizontals info;
@@ -417,6 +417,8 @@ public class HorizontalsBuilder
                 dash.render(g, z);
                 dash.renderContour(g, z);
             }
+            
+            super.renderItems(g);
         }
     }
 

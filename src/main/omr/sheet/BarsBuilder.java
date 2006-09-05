@@ -102,7 +102,7 @@ public class BarsBuilder
     private Score score;
 
     // Lag view on bars, if so desired
-    private MyLagView lagView;
+    private GlyphLagView lagView;
 
     // Companion physical stick checker
     private BarsChecker checker;
@@ -674,16 +674,9 @@ public class BarsBuilder
         //-------------//
         public void renderItems (Graphics g)
         {
-            Zoom z = getZoom();
-
             // Render all physical info known so far, which is just the
             // staff line info, lineset by lineset
-            sheet.render(g, z);
-
-            // Draw the contour of bar lines
-//            for (Stick stick : bars) {
-//                stick.renderContour(g, z);
-//            }
+            sheet.render(g, getZoom());
             
             super.renderItems(g);
         }

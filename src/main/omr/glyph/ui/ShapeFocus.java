@@ -62,9 +62,9 @@ public class ShapeFocus
 
     //~ Instance variables ------------------------------------------------
 
-    private final GlyphPane     pane;
-    private final Sheet         sheet;
-    private final SymbolGlyphView view;
+    private final GlyphPane    pane;
+    private final Sheet        sheet;
+    private final GlyphLagView view;
 
     // Display filter
     private enum Filter
@@ -108,9 +108,9 @@ public class ShapeFocus
      * @param view the displayed lag view
      * @param pane the master component
      */
-    public ShapeFocus (Sheet           sheet,
-                       SymbolGlyphView view,
-                       GlyphPane       pane)
+    public ShapeFocus (Sheet       sheet,
+                       GlyphLagView view,
+                       GlyphPane    pane)
     {
         this.sheet = sheet;
         this.view  = view;

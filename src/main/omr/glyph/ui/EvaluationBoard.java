@@ -73,7 +73,7 @@ public class EvaluationBoard
     private final GlyphPane glyphPane;
 
     // Lag view (if any)
-    private SymbolGlyphView view;
+    private GlyphLagView view;
 
     // The evaluator this display is related to
     private final Evaluator evaluator = GlyphNetwork.getInstance();
@@ -102,7 +102,7 @@ public class EvaluationBoard
      */
     public EvaluationBoard (Sheet     sheet,
                             GlyphPane pane,
-                            SymbolGlyphView view,
+                            GlyphLagView view,
                             Selection inputSelection)
     {
         super(Board.Tag.CUSTOM, "EvaluationBoard");
