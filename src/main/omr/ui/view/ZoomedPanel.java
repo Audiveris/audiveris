@@ -203,7 +203,7 @@ public class ZoomedPanel
     public void pointAdded (MouseEvent e,
                             Point      pt)
     {
-        setFocusLocation(new Rectangle(pt), LOCATION_ADDITION);
+        setFocusLocation(new Rectangle(pt), LOCATION_ADD);
     }
 
     //-------------------//

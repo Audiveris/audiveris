@@ -32,7 +32,7 @@ public enum SelectionHint
      * location information, and try to lookup for designated Run, Section
      * & Glyph
      */
-    LOCATION_ADDITION,
+    LOCATION_ADD,
 
     /**
      * Designation is at Section level, so we display the pixel contour of

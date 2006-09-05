@@ -408,8 +408,8 @@ public class LagView <L extends Lag     <L, S>,
             sectionSelection != null) {
             switch (selection.getTag()) {
             case PIXEL :
-                if (hint == SelectionHint.LOCATION_ADDITION ||
-                        hint == SelectionHint.LOCATION_INIT) {
+                if (hint == SelectionHint.LOCATION_ADD ||
+                    hint == SelectionHint.LOCATION_INIT) {
                     Rectangle rect = (Rectangle) selection.getEntity();
                     if (rect != null) {
                         Point pt = rect.getLocation();

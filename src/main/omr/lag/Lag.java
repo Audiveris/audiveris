@@ -501,8 +501,8 @@ public class Lag <L extends Lag <L, S>,
         switch (selection.getTag()) {
         case PIXEL :
             // Lookup for Run/Section pointed by this pixel location
-            if (hint == SelectionHint.LOCATION_ADDITION ||
-                    hint == SelectionHint.LOCATION_INIT) {
+            if (hint == SelectionHint.LOCATION_ADD ||
+                hint == SelectionHint.LOCATION_INIT) {
                 // Search and forward run & section info
                 // Optimization : do the lookup only if observers other
                 // than this lag are present
