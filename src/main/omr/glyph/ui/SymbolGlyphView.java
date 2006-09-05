@@ -12,7 +12,7 @@ package omr.glyph.ui;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphLagView;
+import omr.glyph.ui.GlyphLagView;
 import omr.glyph.Shape;
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
