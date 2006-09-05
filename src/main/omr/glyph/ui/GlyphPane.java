@@ -27,8 +27,6 @@ import omr.sheet.SystemInfo;
 import omr.ui.Board;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import omr.ui.util.Panel;
-import omr.ui.util.SwingWorker;
 import omr.util.Logger;
 
 import static omr.selection.SelectionTag.*;
@@ -36,8 +34,10 @@ import static omr.selection.SelectionTag.*;
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
+import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.List;
 import javax.swing.*;
 
 /**
@@ -78,7 +78,7 @@ public class GlyphPane
     private final GlyphLag vLag;
 
     // Related Lag view
-    private final SymbolGlyphView view;
+    private final GlyphLagView view;
 
     // Popup menu related to glyph selection
     private final GlyphMenu popup;
@@ -112,7 +112,7 @@ public class GlyphPane
         vLag = sheet.getVerticalLag();
 
         // Allocation of components
-        view = new SymbolGlyphView(sheet, vLag, this);
+        view = new MyView();
         view.setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
 
         focus = new ShapeFocus(sheet, view, this);
@@ -423,6 +423,105 @@ public class GlyphPane
 
             int r = 1;                  // --------------------------------
             builder.add(focus, cst.xy (1, r));
+        }
+    }
+
+    //-----------//
+    // MyLagView //
+    //-----------//
+    private class MyView
+        extends GlyphLagView
+    {
+        //~ Constructors --------------------------------------------------
+
+        private MyView ()
+        {
+            super(vLag, null, GlyphPane.this);
+            setName("GlyphPane-View");
+
+            // Current glyphs
+            glyphSetSelection = sheet.getSelection(SelectionTag.GLYPH_SET);
+            glyphSetSelection.addObserver(this);
+
+            // Use light gray color for past successful entities
+            sheet.colorize(lag, viewIndex, Color.lightGray);
+        }
+
+        //~ Methods -------------------------------------------------------
+
+        //-------------//
+        // renderItems //
+        //-------------//
+        @Override
+            protected void renderItems (Graphics g)
+        {
+            // Render all sheet physical info known so far
+            sheet.render(g, getZoom());
+
+            // Normal display of selected items
+            super.renderItems(g);
+        }
+
+    //-----------------//
+    // contextSelected //
+    //-----------------//
+    @Override
+        public void contextSelected (MouseEvent e,
+                                     Point pt)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("SymbolGlyphView contextSelected");
+        }
+
+        List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+
+        // To display point information
+        if (glyphs.size() == 0) {
+            pointSelected(e, pt);
+            glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // modified?
+        }
+
+        if (glyphs.size() > 0) {
+            GlyphMenu menu = getGlyphMenu();
+            if (glyphs.size() == 1) {
+                menu.updateForGlyph(glyphs.get(0));
+            } else if (glyphs.size() > 1) {
+                menu.updateForGlyphs(glyphs);
+            }
+            // Show the popup menu
+            menu.getPopup().show(this, e.getX(), e.getY());
+        } else {
+            // Popup with no glyph selected ?
+        }
+    }
+
+        //---------------//
+        // deassignGlyph //
+        //---------------//
+        @Override
+            public void deassignGlyph (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+            logger.info("Deassign a " + shape + " symbol");
+
+            // Processing depends on shape at hand
+            switch (shape) {
+            case THICK_BAR_LINE :
+            case THIN_BAR_LINE :
+                sheet.getBarsBuilder().deassignBarGlyph(glyph);
+                setShape(glyph, null, /* UpdateUI => */ true);
+                refresh();
+                break;
+
+            case COMBINING_STEM :
+                cancelStems(Collections.singletonList(glyph));
+                break;
+
+            default :
+                setShape(glyph, null, /* UpdateUI => */ true);
+                refresh();
+                break;
+            }
         }
     }
 }
