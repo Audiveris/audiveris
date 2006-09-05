@@ -54,9 +54,6 @@ public class GlyphLagView
     /** Directory of Glyphs */
     protected final transient GlyphDirectory directory;
 
-    /** Flag indicating that point is being added */
-    protected transient volatile boolean addingGlyph = false;
-
     /** Output selection for Glyph information */
     protected Selection glyphSelection;
 
@@ -179,69 +176,9 @@ public class GlyphLagView
     //---------------//
     public void deassignGlyph (Glyph glyph)
     {
+        // Defaut (void) behavior
         logger.warning("Deassign action is not yet implemented for a " +
                        glyph.getShape() + " glyph.");
-    }
-
-    //------------//
-    // pointAdded //
-    //------------//
-    @Override
-        public void pointAdded (MouseEvent e,
-                                Point pt)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("GlyphLagView pointAdded");
-        }
-
-        addingGlyph = true;
-
-        // First, provide info related to designated point
-        super.pointAdded(e, pt);
-
-        // Then, look for a glyph selection
-        Glyph glyph = null;
-
-        final GlyphSection section = lookupSection(pt);
-        if (section != null) {
-            glyph = section.getGlyph();
-        }
-
-        glyphAdded(glyph, pt);
-
-        addingGlyph = false;
-    }
-
-    //------------//
-    // glyphAdded //
-    //------------//
-    /**
-     * Addition of a glyph to a collection of selected glyphs. Il the
-     * collection already contains that glyph, the glyph is in fact removed
-     * from the collection
-     *
-     * @param glyph the to-be-added glyph, which may be null
-     * @param pt the designated point
-     */
-    protected void glyphAdded (Glyph glyph,
-                               Point pt)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine ("GlyphLagView glyphAdded. glyph=" + glyph);
-        }
-
-        if (glyphSetSelection != null) {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
-            if (glyph != null) {
-                // Add to or remove from the collection of selected glyphs
-                if (glyphs.contains(glyph)) {
-                    glyphs.remove(glyph);
-                } else {
-                    glyphs.add(glyph);
-                }
-            }
-            glyphSetSelection.setEntity(glyphs, null);
-        }
     }
 
     //---------//
@@ -256,28 +193,32 @@ public class GlyphLagView
         // Default lag view behavior, including specifics
         super.update(selection, hint);
 
-        // Check for glyph information
-        if (showingSpecifics &&
-            sectionSelection != null &&
-            glyphSelection != null) {
-            switch (selection.getTag()) {
-            case PIXEL :
-            case VERTICAL_SECTION_ID :
-            case HORIZONTAL_SECTION_ID :
-            case VERTICAL_GLYPH_ID :
-            case HORIZONTAL_GLYPH_ID :
+        switch (selection.getTag()) {
+        case PIXEL :
+        case VERTICAL_SECTION_ID :
+        case HORIZONTAL_SECTION_ID :
+        case VERTICAL_GLYPH_ID :
+        case HORIZONTAL_GLYPH_ID :
+            // Check for glyph information
+            if (showingSpecifics &&
+                sectionSelection != null &&
+                glyphSelection != null) {
                 // Current Section (perhaps null) is in Section Selection
                 if (sectionSelection != null) {
                     GlyphSection section =
-                            (GlyphSection) sectionSelection.getEntity();
+                        (GlyphSection) sectionSelection.getEntity();
                     if (section != null) {
                         glyphSelection.setEntity(section.getGlyph(), hint);
                     }
                 }
-                break;
-
-            default :
             }
+            break;
+
+        case GLYPH_SET :
+            repaint();
+            break;
+
+        default :
         }
     }
 }
