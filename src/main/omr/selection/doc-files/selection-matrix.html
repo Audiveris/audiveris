@@ -35,7 +35,7 @@
                     <!-- NoInput to SHEET -->
                     <td><b>SheetController</b>: on user tab-selection, write the corresponding Sheet</td>
                     <!-- NoInput to SCORE -->
-                    <td><b>Zoomedpanel</b>: on user mouse pointing, write Score location with <i>LOCATION_INIT</i></td>
+                    <td><b>Zoomedpanel</b>: on user mouse pointing, write Score location with <i>LOCATION_INIT</i>, or when pointing with CTRL, with <i>LOCATION_ADD</i></td>
                     <!-- NoInput to PIXEL -->
                     <td><b>PixelBoard</b>: on user-entered rectangle parameters, write Pixel data with <i>LOCATION_INIT</i>
                         <hr/>
@@ -50,9 +50,15 @@
                     <!-- NoInput to SECTION_ID -->
                     <td><b>SectionBoard</b>: on user spinner selection, write value with <i>SECTION_INIT</i></td>
                     <!-- NoInput to GLYPH -->
-                    <td>.</td>
+                    <td><b>EvaluationBoard</b>: on user shape selection, write value with shape assigned (To Be Implemented)
+			<hr/>
+                        <b>GlyphPane</b>: on setting a glyph shape, write value with shape assigned with <i>GLYPH_INIT</i>
+		    </td>
                     <!-- NoInput to GLYPH_ID -->
-                    <td><b>GlyphBoard</b>: on user spinner selection, write value with <i>GLYPH_INIT</i></td>
+                    <td><b>GlyphBoard</b>: on user spinner selection, write value with <i>GLYPH_INIT</i>
+			<hr/>
+                        <b>ShapeFocus</b>: on user spinner selection, write value with <i>GLYPH_INIT</i>
+		    </td>
                     <!-- NoInput to GLYPH_SET -->
                     <td>.</td>
                 </tr>
@@ -258,7 +264,11 @@
                     <!-- GLYPH to NoOutput -->
                     <td><b>GlyphBoard</b>: display Glyph parameters
                         <hr/>
+                        <b>SymbolGlyphBoard</b>: update symbol spinners and characteristics
+                        <hr/>
                         <b>CheckBoard</b>: perform test suite on Glyph (or on a derived context thereof)
+                        <hr/>
+                        <b>EvaluationBoard</b>: perform recognition evaluation on Glyph
                     </td>
                     <!-- GLYPH to SHEET -->
                     <td>.</td>
