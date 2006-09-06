@@ -54,7 +54,7 @@ import javax.media.jai.operator.MosaicDescriptor;
  *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>PIXEL Location
+ * <li>PIXEL Location (if LOCATION_INIT or LOCATION_ADD)
  * </ul>
  *
  * <dt><b>Selection Outputs:</b></dt><ul>
