@@ -172,8 +172,7 @@ public class GlyphPane
      * is true, this assignment is performed only if the guess of the glyph
      * at hand corresponds to the shape to be assigned.
      *
-     * <p>The concerned glyphs are contained in the global currentGlyphs
-     * collection.
+     * <p>The concerned glyphs are contained in the Glyph Set selection
      *
      * @param shape the shape to be assigned
      * @param asGuessed flag to restrain assignment
