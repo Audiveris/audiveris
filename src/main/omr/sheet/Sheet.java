@@ -1560,39 +1560,6 @@ public class Sheet
         return null;
     }
 
-    //--------------//
-    // lookupGlyphs //
-    //--------------//
-    /**
-     * Look up for a collection of glyphs, knowing the coordinates
-     * rectangle
-     *
-     * @param rect the coordinates rectangle
-     *
-     * @return the collection of glyphs, which may be empty
-     */
-    public List<Glyph> lookupGlyphs (Rectangle rect)
-    {
-        List<Glyph> list = new ArrayList<Glyph>();
-        List<SystemInfo> infos = getSystemsAt(rect);
-        for (SystemInfo info : infos) {
-            for (Glyph glyph : info.getGlyphs()) {
-                boolean inRect = true;
-                sectionTest:
-                for (GlyphSection section : glyph.getMembers()) {
-                    if (!rect.contains(section.getContourBox())) {
-                        inRect = false;
-                        break sectionTest;
-                    }
-                }
-                if (inRect) {
-                    list.add(glyph);
-                }
-            }
-        }
-        return list;
-    }
-
     //--------//
     // render //
     //--------//
