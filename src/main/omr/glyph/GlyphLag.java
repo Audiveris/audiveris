@@ -313,7 +313,7 @@ public class GlyphLag
             if (glyphs == null) {
                 glyphs = new ArrayList<Glyph>();
             }
-            
+
             if (hint == LOCATION_ADD) {
                 // Adding / Removing
                 if (glyph != null) {
@@ -411,7 +411,8 @@ public class GlyphLag
         case VERTICAL_GLYPH :
             {
                 Glyph glyph = (Glyph) selection.getEntity();
-                if (hint == GLYPH_INIT) {
+                if (hint == GLYPH_INIT ||
+                    hint == GLYPH_MODIFIED) {
                     // Display glyph contour
                     if (glyph != null) {
                         locationSelection.setEntity(glyph.getContourBox(), hint);
