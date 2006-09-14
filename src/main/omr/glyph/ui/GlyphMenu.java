@@ -37,11 +37,8 @@ public class GlyphMenu
     // Concrete popup menu
     private final JPopupMenu popup;
 
-    private final GlyphPane  pane;
-    private final ShapeFocus focus;
-
-    private final ConfirmAction confirmAction = new ConfirmAction();
-    private final JMenuItem     confirmItem;
+    private final SymbolsBuilder  symbolsBuilder;
+    private final ShapeFocusBoard shapeFocus;
 
     private final DumpAction    dumpAction = new DumpAction();
     private final JMenuItem     dumpItem;
@@ -64,25 +61,19 @@ public class GlyphMenu
     /**
      * Create the popup menu
      *
-     * @param pane the top companion
-     * @param focus the current shape focus
+     * @param symbolsBuilder the top companion
+     * @param shapeFocus the current shape focus
      * @param glyphSetSelection the currently selected glyphs
      */
-    public GlyphMenu (final GlyphPane  pane,
-                      ShapeFocus focus,
-                      Selection glyphSetSelection)
+    public GlyphMenu (final SymbolsBuilder symbolsBuilder,
+                      ShapeFocusBoard      shapeFocus,
+                      Selection            glyphSetSelection)
     {
-        popup = new JPopupMenu();
-
-        this.pane  = pane;
-        this.focus = focus;
+        this.symbolsBuilder  = symbolsBuilder;
+        this.shapeFocus = shapeFocus;
         this.glyphSetSelection = glyphSetSelection;
 
-        // Confirm current guess
-        confirmItem = popup.add(confirmAction);
-        confirmItem.setToolTipText("Confirm current guess");
-
-        popup.addSeparator();
+        popup = new JPopupMenu();
 
         // Deassign selected glyph(s)
         deassignItem = popup.add(deassignAction);
@@ -100,9 +91,9 @@ public class GlyphMenu
                 {
                     JMenuItem source = (JMenuItem) e.getSource();
                     Shape shape = Shape.valueOf(source.getText());
-                    pane.assignShape(shape,
-                                     /* asGuessed => */ false,
-                                      /* compound => */ false);
+                    symbolsBuilder.assignSetShape(getCurrentGlyphs(),
+                                                  shape,
+                                                  /* compound => */ false);
                 }
             });
         assignMenu.add(latestAssign);
@@ -116,9 +107,9 @@ public class GlyphMenu
                  {
                      JMenuItem source = (JMenuItem) e.getSource();
                      Shape shape = Shape.valueOf(source.getText());
-                     pane.assignShape(shape,
-                                      /* asGuessed => */ false,
-                                      /* compound => */ false);
+                     symbolsBuilder.assignSetShape(getCurrentGlyphs(),
+                                                   shape,
+                                                   /* compound => */ false);
                  }
              });
         assignMenu.setToolTipText("Manually force an assignment");
@@ -136,9 +127,9 @@ public class GlyphMenu
                  {
                      JMenuItem source = (JMenuItem) e.getSource();
                      Shape shape = Shape.valueOf(source.getText());
-                     pane.assignShape(shape,
-                                      /* asGuessed => */ false,
-                                      /* compound => */ true);
+                     symbolsBuilder.assignSetShape(getCurrentGlyphs(),
+                                                   shape,
+                                                   /* compound => */ true);
                  }
              });
         compoundMenu.setToolTipText("Manually build a compound");
@@ -185,47 +176,6 @@ public class GlyphMenu
         // No compound for a single glyph
         compoundMenu.setEnabled(false);
 
-        // Confirm or Assign
-        if (glyph.getShape() == null) {
-            if (glyph.getGuess() == null) {
-                confirmAction.setEnabled(false);
-                confirmItem.setIcon(null);
-                confirmItem.setText("Confirm");
-                confirmItem.setToolTipText("No guess for this glyph");
-            } else {
-                confirmAction.setTargetShape(glyph.getGuess());
-                confirmAction.setEnabled(true);
-                confirmItem.setIcon(glyph.getGuess().getIcon());
-                if (focus.getCurrent() == glyph.getGuess()) {
-                    confirmItem.setText("Confirm " + glyph.getGuess());
-                    confirmItem.setToolTipText("Confirm this glyph is a " + glyph.getGuess());
-                } else {
-                    confirmItem.setText("Assign " + glyph.getGuess());
-                    confirmItem.setToolTipText("Assign this glyph as a " + glyph.getGuess());
-                }
-            }
-        } else {
-            if (focus.getCurrent() == null) {
-                confirmAction.setEnabled(false);
-                confirmItem.setIcon(null);
-                confirmItem.setText("Confirm");
-                confirmItem.setToolTipText("No focus defined");
-            } else {
-                confirmAction.setTargetShape(glyph.getGuess());
-                if (glyph.getGuess() != null) {
-                    confirmItem.setIcon(glyph.getGuess().getIcon());
-                }
-                if (focus.getCurrent() == glyph.getGuess()) {
-                    confirmAction.setEnabled(true);
-                    confirmItem.setText("Confirm " + glyph.getGuess());
-                    confirmItem.setToolTipText("Confirm this glyph is a " + glyph.getGuess());
-                } else {
-                    confirmAction.setEnabled(true);
-                    confirmItem.setText("Force " + glyph.getGuess());
-                    confirmItem.setToolTipText("Force this glyph as a " + glyph.getGuess());
-                }
-            }
-        }
         assignMenu.setText("Force assignment to");
         updateLatestAssign();
 
@@ -244,57 +194,25 @@ public class GlyphMenu
 
         // Show similar
         if (glyph.getShape() == null) {
-            if (glyph.getGuess() == null) {
-                similarAction.setEnabled(false);
-                similarItem.setText("Show similar");
-            } else {
-                similarAction.setEnabled(true);
-                similarItem.setText("Show similar " + glyph.getGuess() + "'s");
-            }
+            similarAction.setEnabled(false);
+            similarItem.setText("Show similar");
         } else {
             similarAction.setEnabled(true);
             similarItem.setText("Show similar " + glyph.getShape() + "'s");
         }
     }
 
-    //-----------------//
-    // updateForGlyphs //
-    //-----------------//
+    //-------------------//
+    // updateForGlyphSet //
+    //-------------------//
     /**
      * Update the popup menu when there are several glyphs selected (more
      * than one)
      *
      * @param glyphs the collection of current glyphs
      */
-    public void updateForGlyphs (List<Glyph> glyphs)
+    public void updateForGlyphSet (List<Glyph> glyphs)
     {
-        // Check that some candidate glyphs are consistent with current
-        // focus
-        int consistentNb = 0;
-        if (focus.getCurrent() != null) {
-            for (Glyph glyph : glyphs) {
-                if (!glyph.isKnown() &&
-                    (glyph.getGuess() == focus.getCurrent())) {
-                    consistentNb++;
-                }
-            }
-        }
-
-        if (consistentNb > 0) {
-            confirmAction.setEnabled(true);
-            confirmAction.setTargetShape(focus.getCurrent());
-            confirmItem.setText("Confirm " + consistentNb + " " +
-                                focus.getCurrent());
-            confirmItem.setToolTipText("Confirm " + consistentNb +
-                                       " glyphs as " + focus.getCurrent());
-        } else {
-            confirmAction.setEnabled(false);
-            confirmItem.setText("No candidate");
-            confirmItem.setToolTipText
-                ("No glyph consistent with current focus on "
-                 + focus.getCurrent());
-        }
-
         // Assign
         assignMenu.setText("Assign each of these " + glyphs.size() + " glyphs as");
         updateLatestAssign();
@@ -340,47 +258,24 @@ public class GlyphMenu
     //--------------------//
     private void updateLatestAssign()
     {
-        if (pane.getLatestShapeAssigned() != null) {
+        if (symbolsBuilder.getLatestShapeAssigned() != null) {
             latestAssign.setEnabled(true);
-            latestAssign.setText(pane.getLatestShapeAssigned().toString());
+            latestAssign.setText(symbolsBuilder.getLatestShapeAssigned().toString());
         } else {
             latestAssign.setEnabled(false);
             latestAssign.setText("no shape");
         }
     }
 
-    //~ Classes -----------------------------------------------------------
-
-    //---------------//
-    // ConfirmAction //
-    //---------------//
-    private class ConfirmAction
-        extends AbstractAction
+    //------------------//
+    // getCurrentGlyphs //
+    //------------------//
+    private List<Glyph> getCurrentGlyphs()
     {
-        // Shape that could be assigned or confirmed
-        private Shape targetShape;
-
-        //~ Constructors --------------------------------------------------
-
-        public ConfirmAction ()
-        {
-            super("Confirm Guess");
-        }
-
-        //~ Methods -------------------------------------------------------
-
-        public void setTargetShape (Shape targetShape)
-        {
-            this.targetShape = targetShape;
-        }
-
-        public void actionPerformed (ActionEvent e)
-        {
-            pane.assignShape(targetShape,
-                             /* asGuessed => */ true,
-                             /* compound => */ false);
-        }
+        return (List<Glyph>) glyphSetSelection.getEntity();
     }
+
+    //~ Classes -----------------------------------------------------------
 
     //----------------//
     // DeassignAction //
@@ -399,24 +294,7 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            // First phase, putting the stems apart
-            List<Glyph> stems = new ArrayList<Glyph>();
-            for (Glyph glyph : (List<Glyph>) glyphSetSelection.getEntity()) {
-                if (glyph.getShape() == Shape.COMBINING_STEM) {
-                    stems.add(glyph);
-                } else {
-                    if (glyph.isKnown()) {
-                        pane.setShape(glyph, null, /* UpdateUI => */ true);
-                    }
-                }
-            }
-
-            // Second phase dedicated to stems, if any
-            if (stems.size() > 0) {
-                pane.cancelStems(stems);
-            }
-
-            focus.colorizeAllGlyphs();  // TBI
+            symbolsBuilder.deassignSetShape(getCurrentGlyphs());
         }
     }
 
@@ -462,12 +340,10 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
-            if (glyphs.size() == 1) {
+            if (glyphs != null && glyphs.size() == 1) {
                 Glyph glyph = glyphs.get(0);
                 if (glyph.getShape() != null) {
-                    focus.setCurrent(glyph.getShape());
-                } else {
-                    focus.setCurrent(glyph.getGuess());
+                    shapeFocus.setCurrentShape(glyph.getShape());
                 }
             }
         }
