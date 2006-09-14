@@ -46,6 +46,11 @@ public enum SelectionHint
      * the Glyph, as well as Glyph information, but Run & Section
      * informations are not available
      */
-    GLYPH_INIT;
-}
+    GLYPH_INIT,
 
+    /**
+     * Designation is at Glyph level, for which a characteristic (typically
+     * the shape) has just been modified
+     */
+    GLYPH_MODIFIED;
+}
