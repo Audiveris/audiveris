@@ -35,8 +35,8 @@ public class ActionsBoard
 
     //~ Instance variables ------------------------------------------------
 
-    private final GlyphPane glyphPane;
-    
+    private final SymbolsBuilder symbolsBuilder;
+
     // Repository of known glyphs
     private final GlyphRepository repository = GlyphRepository.getInstance();
 
@@ -53,12 +53,12 @@ public class ActionsBoard
     //~ Constructors ------------------------------------------------------
 
     public ActionsBoard(Sheet sheet,
-            GlyphPane glyphPane)
+                        SymbolsBuilder symbolsBuilder)
     {
         super(Board.Tag.CUSTOM, "Actions");
 
         this.sheet = sheet;
-        this.glyphPane = glyphPane;
+        this.symbolsBuilder = symbolsBuilder;
 
         inspector = sheet.getGlyphInspector();
 
@@ -146,7 +146,7 @@ public class ActionsBoard
     // Temporary
     private void refresh()
     {
-        glyphPane.refresh();
+        symbolsBuilder.refresh();
     }
 
     //~ Classes -----------------------------------------------------------

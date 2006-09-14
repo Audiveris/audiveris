@@ -14,6 +14,7 @@ import omr.glyph.Evaluation;
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
+import omr.glyph.GlyphModel;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
 import omr.selection.Selection;
@@ -47,7 +48,7 @@ import javax.swing.*;
  * </ul>
  *
  * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>*_GLYPH (flagged with ??? hint)
+ * <li>*_GLYPH (flagged with GLYPH_INIT) TO BE CONFIRMED !!!
  * </ul>
  * </dl>
  *
@@ -68,9 +69,12 @@ public class EvaluationBoard
 
     //~ Instance variables ------------------------------------------------
 
-    // Related sheet & GlyphPane (if any)
-    private final Sheet     sheet;
-    private final GlyphPane glyphPane;
+    // Related sheet & GlyphModel
+    private final Sheet      sheet;
+    private final GlyphModel glyphModel;
+
+    // Should we use buttons (or plain output fields) ?
+    private final boolean useButtons;
 
     // Lag view (if any)
     private GlyphLagView view;
@@ -96,20 +100,22 @@ public class EvaluationBoard
      * Create a board with one neural network evaluator
      *
      * @param sheet the related sheet, or null
-     * @param pane the glyph pane, or null if this panel is just an output
+     * @param glyphModel the related glyph model
      * @param view the related symbol glyph view
      * @param inputSelection the Glyph input to evaluate
      */
-    public EvaluationBoard (Sheet     sheet,
-                            GlyphPane pane,
+    public EvaluationBoard (Sheet        sheet,
+                            GlyphModel   glyphModel,
+                            boolean      useButtons,
                             GlyphLagView view,
-                            Selection inputSelection)
+                            Selection    inputSelection)
     {
         super(Board.Tag.CUSTOM, "EvaluationBoard");
 
         // Useful ??? TBD
         this.sheet = sheet;
-        this.glyphPane  = pane;
+        this.glyphModel = glyphModel;
+        this.useButtons = useButtons;
         this.view = view;
 
         selector = new Selector();
@@ -154,13 +160,13 @@ public class EvaluationBoard
         switch (selection.getTag()) {
         case VERTICAL_GLYPH :
             Glyph glyph = (Glyph) selection.getEntity();
-            
+
             // Make sure the glyph interline has been set
             if (glyph != null &&
                     glyph.getInterline() == 0) {
                 glyph.setInterline(sheet.getScale().interline());
             }
-            
+
             evaluate(glyph);
             break;
 
@@ -210,7 +216,7 @@ public class EvaluationBoard
         for (int i = 0 ; i < EVAL_NB; i++) {
             r = i + 3;              // --------------------------------
             builder.add(selector.buttons[i].grade,  cst.xy (1,  r));
-            if (glyphPane != null) {
+            if (useButtons) {
                 builder.add(selector.buttons[i].button, cst.xyw(3,  r, 5));
             } else {
                 builder.add(selector.buttons[i].field,  cst.xyw(3,  r, 5));
@@ -302,7 +308,7 @@ public class EvaluationBoard
         public EvalButton()
         {
             grade.setToolTipText("Grade of the evaluation");
-            if (glyphPane != null) {
+            if (useButtons) {
                 button = new JButton();
                 button.addActionListener(this);
                 button.setToolTipText("Assignable shape");
@@ -320,13 +326,13 @@ public class EvaluationBoard
         public void setEval (Evaluation eval)
         {
             JComponent comp;
-            if (glyphPane != null) {
+            if (useButtons) {
                 comp = button;
             } else {
                 comp = field;
             }
             if (eval != null) {
-                if (glyphPane != null) {
+                if (useButtons) {
                     button.setText(eval.shape.toString());
                     button.setIcon(eval.shape.getIcon());
                 } else {
@@ -352,10 +358,10 @@ public class EvaluationBoard
         public void actionPerformed(ActionEvent e)
         {
             // Assign current glyph with selected shape
-            if (glyphPane != null) {
-                glyphPane.assignShape(Shape.valueOf(button.getText()),
-                                      /* asGuessed => */ false,
-                                      /* compound => */ false);
+            if (glyphModel != null) {
+                glyphModel.assignGlyphShape
+                    ((Glyph) inputSelectionList.get(0).getEntity(),
+                     Shape.valueOf(button.getText()));
             }
         }
     }
