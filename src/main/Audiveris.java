@@ -15,7 +15,7 @@
 * @author Herv&eacute; Bitteur
 * @version $Id$
 */
-public class Audiveris
+public final class Audiveris
 {
     //~ Constructors ------------------------------------------------------
 
@@ -37,7 +37,7 @@ public class Audiveris
      *
      * @param args These args are simply passed to Main
      */
-    public static void main (String[] args)
+    public static void main (final String[] args)
     {
         omr.Main.main(args, Audiveris.class);
     }
