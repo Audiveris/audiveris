@@ -35,7 +35,7 @@ import java.util.Set;
  * by abscissa then by ordinate. To cope with glyphs nearly vertically
  * aligned, and which would thus be too dependent on the precise x value,
  * the y value could be used instead. But this would lead to non transitive
- * comparisons...
+ * comparisons... TBC: does this apply to horizontal glyphs as well ?
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -76,11 +76,11 @@ public class Glyph
     /** Result of analysis wrt this glyph */
     protected Result result;
 
-    /** Recognized shape of this glyph */
+    /** Current recognized shape of this glyph */
     protected Shape shape;
 
-    /** Guessed shape of this glyph */
-    protected Shape guess;
+    /** Shape previously assigned to this glyph */
+    protected Shape oldShape;
 
     /** Interline of the containing staff (or sheet) */
     protected int interline;
@@ -378,19 +378,6 @@ public class Glyph
         return contourBox;
     }
 
-    //----------//
-    // getGuess //
-    //----------//
-    /**
-     * Report the stored guessed shape, if any, for the glyph
-     *
-     * @return the guessed shape, or null
-     */
-    public Shape getGuess ()
-    {
-        return guess;
-    }
-
     //-------//
     // getId //
     //-------//
@@ -485,6 +472,19 @@ public class Glyph
     public Shape getShape ()
     {
         return shape;
+    }
+
+    //-------------//
+    // getOldShape //
+    //-------------//
+    /**
+     * Report the previous glyph shape
+     *
+     * @return the glyph old shape, which may be null
+     */
+    public Shape getOldShape ()
+    {
+        return oldShape;
     }
 
     //------------------//
@@ -713,19 +713,6 @@ public class Glyph
         }
     }
 
-    //----------//
-    // setGuess //
-    //----------//
-    /**
-     * Register a shape as glyph guess
-     *
-     * @param guess the guessed shape to register
-     */
-    public void setGuess (Shape guess)
-    {
-        this.guess = guess;
-    }
-
     //--------------//
     // setHasLedger //
     //--------------//
@@ -801,6 +788,7 @@ public class Glyph
      */
     public void setShape (Shape shape)
     {
+        oldShape = this.shape;
         this.shape = shape;
     }
 
@@ -817,19 +805,19 @@ public class Glyph
     {
         this.pitchPosition = pitchPosition;
     }
-
-    //----------------//
-    // setStringShape //
-    //----------------//
-    /**
-     * Setter for the shape, knowing the name of the shape
-     *
-     * @param shape the NAME of the shape
-     */
-    public void setStringShape (String shape)
-    {
-        this.shape = Shape.valueOf(shape);
-    }
+//
+//    //----------------//
+//    // setStringShape //
+//    //----------------//
+//    /**
+//     * Setter for the shape, knowing the name of the shape
+//     *
+//     * @param shape the NAME of the shape
+//     */
+//    public void setStringShape (String shape)
+//    {
+//        setShape(Shape.valueOf(shape));
+//    }
 
     //----------//
     // toString //
@@ -850,8 +838,8 @@ public class Glyph
             sb.append(" shape=").append(shape);
         }
 
-        if (guess != null) {
-            sb.append(" guess=").append(guess);
+        if (oldShape != null) {
+            sb.append(" oldShape=").append(oldShape);
         }
 
         if (centroid != null) {
