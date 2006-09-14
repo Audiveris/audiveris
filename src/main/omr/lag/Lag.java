@@ -30,7 +30,7 @@ import java.util.List;
  *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>PIXEL Location (if LOCATION_INIT)
+ * <li>PIXEL Location (if LOCATION_INIT or LOCATION_ADD)
  * <li>*_SECTION (if SECTION_INIT)
  * <li>*_SECTION_ID
  * </ul>
@@ -41,7 +41,6 @@ import java.util.List;
  * <li>*_SECTION
  * </ul>
  * </dl>
- *
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$

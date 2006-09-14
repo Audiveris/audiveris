@@ -37,7 +37,7 @@ import java.util.*;
  *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>PIXEL Location (if LOCATION_INIT & specifics)
+ * <li>PIXEL Location (if LOCATION_INIT or LOCATION_ADD & specifics)
  * <li>*_SECTION_ID (if specifics)
  * </ul>
  *
@@ -47,9 +47,9 @@ import java.util.*;
  * </ul>
  * </dl>
  *
- *
  * @author Herv&eacute; Bitteur
  * @version $Id$
+ *
  * @param <L> the type of lag this view displays
  * @param <S> the type of section the related lag handles
  */
