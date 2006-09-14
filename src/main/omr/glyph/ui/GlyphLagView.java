@@ -28,8 +28,8 @@ import java.util.List;
  *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
+ * <li>PIXEL
  * <li>*_SECTION_ID
- * <li>*_GLYPH
  * <li>*_GLYPH_ID
  * <li>GLYPH_SET
  * </ul>
@@ -52,7 +52,7 @@ public class GlyphLagView
     //~ Instance variables ------------------------------------------------
 
     /** Directory of Glyphs */
-    protected final transient GlyphDirectory directory;
+    protected final transient GlyphModel model;
 
     /** Output selection for Glyph information */
     protected Selection glyphSelection;
@@ -68,17 +68,17 @@ public class GlyphLagView
     /**
      * Create a GlyphLagView as a LagView, with lag and potential specific
      * collection of sections
-     *
+     * 
      * @param lag the related lag
      * @param specificSections the specific sections if any, otherwise null
-     * @param directory where to get glyph from its id
+     * @param model the related glyph model
      */
     public GlyphLagView (GlyphLag                  lag,
                          Collection<GlyphSection>  specificSections,
-                         GlyphDirectory            directory)
+                         GlyphModel            model)
     {
         super(lag, specificSections);
-        this.directory = directory;
+        this.model = model;
     }
 
     //~ Methods -----------------------------------------------------------
@@ -142,6 +142,17 @@ public class GlyphLagView
         }
     }
 
+    //-------------------//
+    // colorizeAllGlyphs //
+    //-------------------//
+    /**
+     * 
+     */
+    public void colorizeAllGlyphs()
+    {
+        // Empty
+    }
+
     //-------------//
     // renderItems //
     //-------------//
@@ -168,7 +179,7 @@ public class GlyphLagView
     //--------------//
     public Glyph getGlyphById (int id)
     {
-        return directory.getEntity(id);
+        return model.getGlyphById(id);
     }
 
     //---------------//
@@ -188,7 +199,7 @@ public class GlyphLagView
         public void update(Selection selection,
                            SelectionHint hint)
     {
-        ///logger.info("GlyphLagView. selection=" + selection + " hint=" + hint);
+        ///logger.info(getName() + " update. " + selection + " hint=" + hint);
 
         // Default lag view behavior, including specifics
         super.update(selection, hint);
@@ -210,6 +221,17 @@ public class GlyphLagView
                     if (section != null) {
                         glyphSelection.setEntity(section.getGlyph(), hint);
                     }
+                }
+            }
+            break;
+
+        case VERTICAL_GLYPH :
+            if (hint == SelectionHint.GLYPH_MODIFIED) {
+                // Update display of this glyph
+                Glyph glyph = (Glyph) selection.getEntity();
+                if (glyph != null) {
+                    colorizeGlyph(glyph);
+                    repaint();
                 }
             }
             break;
