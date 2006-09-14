@@ -253,28 +253,6 @@ public abstract class Evaluator
      */
     public abstract String getName();
 
-    //------------//
-    // guessSheet //
-    //------------//
-    /**
-     * Compute and register a guess for each of the unknown glyphs of the
-     * sheet. Too small glyphs are flagged as noisy.
-     *
-     * @param sheet the sheet at hand
-     * @param maxGrade the maximum acceptable grade value
-     */
-    public void guessSheet (Sheet sheet,
-                            double maxGrade)
-    {
-        for (SystemInfo system : sheet.getSystems()) {
-            for (Glyph glyph : system.getGlyphs()) {
-                if (!glyph.isKnown()) {
-                    glyph.setGuess(vote(glyph, maxGrade));
-                }
-            }
-        }
-    }
-
     //-------------//
     // isBigEnough //
     //-------------//
