@@ -20,12 +20,12 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
-import omr.glyph.GlyphDirectory;
+import omr.glyph.GlyphModel;
 import omr.glyph.GlyphLag;
-import omr.glyph.ui.GlyphLagView;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
+import omr.glyph.ui.GlyphLagView;
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
@@ -53,7 +53,7 @@ import java.util.List;
  * @version $Id$
  */
 public class HorizontalsBuilder
-    implements GlyphDirectory
+    extends GlyphModel
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -80,9 +80,6 @@ public class HorizontalsBuilder
 
     // The containing sheet
     private Sheet sheet;
-
-    // Lag of horizontal runs
-    private GlyphLag lag;
 
     // Horizontals area, with retrieved horizontal sticks
     private HorizontalArea horizontalsArea;
@@ -115,19 +112,14 @@ public class HorizontalsBuilder
      */
     public HorizontalsBuilder (Sheet sheet)
     {
+        // Reuse the horizontal lag of runs (from staff lines)
+        super(sheet.getHorizontalLag());
+        
         this.sheet = sheet;
         info = new Horizontals();
     }
 
     //~ Methods -----------------------------------------------------------
-
-    //-----------//
-    // getEntity //
-    //-----------//
-    public Glyph getEntity (Integer id)
-    {
-        return lag.getGlyph(id);
-    }
 
     //-----------//
     // buildInfo //
@@ -142,9 +134,6 @@ public class HorizontalsBuilder
     public Horizontals buildInfo ()
             throws ProcessingException
     {
-        // Reuse the horizontal lag of runs (from staff lines)
-        lag = sheet.getHorizontalLag();
-
         // Purge small sections
         Scale scale = sheet.getScale();
         ///lag.purgeTinySections(scale.fracToSquarePixels(constants.minForeWeight));
@@ -417,7 +406,7 @@ public class HorizontalsBuilder
                 dash.render(g, z);
                 dash.renderContour(g, z);
             }
-            
+
             super.renderItems(g);
         }
     }

@@ -18,12 +18,12 @@ import omr.check.FailureResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
-import omr.glyph.GlyphDirectory;
+import omr.glyph.GlyphModel;
 import omr.glyph.GlyphLag;
-import omr.glyph.ui.GlyphLagView;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
+import omr.glyph.ui.GlyphLagView;
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.LagBuilder;
 import omr.lag.RunBoard;
@@ -69,7 +69,7 @@ import java.util.*;
  * @version $Id$
  */
 public class BarsBuilder
-    implements GlyphDirectory
+    extends GlyphModel
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -83,9 +83,6 @@ public class BarsBuilder
     private static final FailureResult CANCELLED                 = new FailureResult("Bar-Cancelled");
 
     //~ Instance variables ------------------------------------------------
-
-    // Underlying lag
-    private GlyphLag vLag;
 
     // Bars area, with retrieved vertical sticks
     private VerticalArea barsArea;
@@ -119,18 +116,11 @@ public class BarsBuilder
      */
     public BarsBuilder (Sheet sheet)
     {
+        super(new GlyphLag(new VerticalOrientation()));
         this.sheet = sheet;
     }
 
     //~ Methods -----------------------------------------------------------
-
-    //-----------//
-    // getEntity //
-    //-----------//
-    public Glyph getEntity (Integer id)
-    {
-        return vLag.getGlyph(id);
-    }
 
     //-----------//
     // buildInfo //
@@ -149,20 +139,19 @@ public class BarsBuilder
         //sheet.getStaves();
         sheet.getHorizontals();
 
-        // Retrieve the vertical lag of runs
-        vLag = new GlyphLag(new VerticalOrientation());
-        vLag.setName("vLag");
-        vLag.setVertexClass(StickSection.class);
+        // Augment the vertical lag of runs
+        lag.setName("vLag");
+        lag.setVertexClass(StickSection.class);
         new LagBuilder<GlyphLag,GlyphSection>().rip
-                (vLag,
+                (lag,
                  sheet.getPicture(),
                  0, // minRunLength
                  new JunctionDeltaPolicy(constants.maxDeltaLength
                                          .getValue())); // maxDeltaLength
-        sheet.setVerticalLag(vLag);
+        sheet.setVerticalLag(lag);
 
         // Retrieve (vertical) sticks
-        barsArea = new VerticalArea(sheet, vLag,
+        barsArea = new VerticalArea(sheet, lag,
                                     scale.toPixels(constants.maxBarThickness));
         clutter = new ArrayList<Stick>(barsArea.getSticks());
 
@@ -540,7 +529,7 @@ public class BarsBuilder
     //--------------//
     private void displayFrame ()
     {
-        lagView = new MyLagView(vLag);
+        lagView = new MyLagView(lag);
         Selection glyphSelection = sheet.getSelection(SelectionTag.VERTICAL_GLYPH);
         lagView.setGlyphSelection(glyphSelection);
         glyphSelection.addObserver(lagView);
@@ -560,11 +549,11 @@ public class BarsBuilder
              new RunBoard(unit,
                           sheet.getSelection(VERTICAL_RUN)),
              new SectionBoard(unit,
-                              vLag.getLastVertexId(),
+                              lag.getLastVertexId(),
                               sheet.getSelection(VERTICAL_SECTION),
                               sheet.getSelection(VERTICAL_SECTION_ID)),
              new GlyphBoard(unit,
-                            vLag.getLastGlyphId(),
+                            lag.getLastGlyphId(),
                             knownIds,
                             sheet.getSelection(VERTICAL_GLYPH),
                             sheet.getSelection(VERTICAL_GLYPH_ID),
@@ -656,7 +645,7 @@ public class BarsBuilder
             super.colorize();
 
             // Determine my view index in the lag views
-            final int viewIndex = vLag.getViews().indexOf(this);
+            final int viewIndex = lag.getViews().indexOf(this);
 
             // All remaining vertical sticks clutter
             for (Stick stick : clutter) {
@@ -677,7 +666,7 @@ public class BarsBuilder
             // Render all physical info known so far, which is just the
             // staff line info, lineset by lineset
             sheet.render(g, getZoom());
-            
+
             super.renderItems(g);
         }
 
@@ -689,7 +678,6 @@ public class BarsBuilder
         {
             if (glyph.getShape() == Shape.THICK_BAR_LINE ||
                 glyph.getShape() == Shape.THIN_BAR_LINE) {
-
                 deassignBarGlyph(glyph);
             } else {
                 logger.warning("No deassign meant for "

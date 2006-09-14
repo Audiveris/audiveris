@@ -22,11 +22,11 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
-import omr.glyph.GlyphDirectory;
+import omr.glyph.GlyphModel;
 import omr.glyph.GlyphLag;
-import omr.glyph.ui.GlyphLagView;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
+import omr.glyph.ui.GlyphLagView;
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
@@ -57,7 +57,7 @@ import java.util.List;
  * @version $Id$
  */
 public class VerticalsBuilder
-    implements GlyphDirectory
+    extends GlyphModel
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -81,8 +81,7 @@ public class VerticalsBuilder
     // The containing sheet
     private final Sheet sheet;
 
-    // Lag of vertical runs
-    private final GlyphLag vLag;
+    // Area of vertical runs
     private final VerticalArea verticalsArea;
 
     private StemCheckSuite suite = new StemCheckSuite();
@@ -96,19 +95,19 @@ public class VerticalsBuilder
     public VerticalsBuilder (Sheet sheet)
         throws ProcessingException
     {
+        // We re-use the same vertical lag (but not the sticks) from Bars.
+        super(sheet.getVerticalLag());
+
         this.sheet = sheet;
 
         Scale scale = sheet.getScale();
-
-        // We re-use the same vertical lag (but not the sticks) from Bars.
-        vLag = sheet.getVerticalLag();
 
         // We cannot reuse the sticks, since thick sticks are allowed for
         // bars but not for stems. So, let's rebuild the stick area from
         // the initial lag.
         verticalsArea = new VerticalArea
             (sheet,
-             vLag,
+             lag,
              new MySectionPredicate(),
              scale.toPixels(constants.maxStemThickness));
 
@@ -137,7 +136,7 @@ public class VerticalsBuilder
     //-----------//
     public Glyph getEntity (Integer id)
     {
-        return vLag.getGlyph(id);
+        return lag.getGlyph(id);
     }
 
     //--------------//
@@ -146,7 +145,7 @@ public class VerticalsBuilder
     private void displayFrame ()
     {
         // Specific rubber display
-        view = new MyGlyphLagView();
+        view = new MyGlyphLagView(lag);
         view.colorize();
 
         // Ids of recognized glyphs
@@ -170,11 +169,11 @@ public class VerticalsBuilder
               new RunBoard(unit,
                            sheet.getSelection(VERTICAL_RUN)),
               new SectionBoard(unit,
-                               vLag.getLastVertexId(),
+                               lag.getLastVertexId(),
                                sheet.getSelection(VERTICAL_SECTION),
                                sheet.getSelection(VERTICAL_SECTION_ID)),
               new GlyphBoard(unit,
-                             vLag.getLastGlyphId(),
+                             lag.getLastGlyphId(),
                              knownIds,
                              sheet.getSelection(VERTICAL_GLYPH),
                              sheet.getSelection(VERTICAL_GLYPH_ID),
@@ -274,9 +273,9 @@ public class VerticalsBuilder
     {
         //~ Constructors --------------------------------------------------
 
-        public MyGlyphLagView ()
+        public MyGlyphLagView (GlyphLag lag)
         {
-            super(vLag, null, VerticalsBuilder.this);
+            super(lag, null, VerticalsBuilder.this);
             setName("VerticalsBuilder-MyView");
 
             // Pixel
@@ -350,7 +349,7 @@ public class VerticalsBuilder
             switch (shape) {
             case COMBINING_STEM :
                 logger.info("Deassign a " + shape);
-                sheet.getGlyphPane()
+                sheet.getSymbolsBuilder()
                     .cancelStems(Collections.singletonList(glyph));
                 break;
 

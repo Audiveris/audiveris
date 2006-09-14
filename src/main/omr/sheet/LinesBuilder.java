@@ -14,11 +14,11 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
-import omr.glyph.GlyphDirectory;
+import omr.glyph.GlyphModel;
 import omr.glyph.GlyphLag;
-import omr.glyph.ui.GlyphLagView;
 import omr.glyph.GlyphSection;
 import omr.glyph.ui.GlyphBoard;
+import omr.glyph.ui.GlyphLagView;
 import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.LagBuilder;
@@ -60,7 +60,7 @@ import javax.swing.*;
  * @version $Id$
  */
 public class LinesBuilder
-    implements GlyphDirectory
+    extends GlyphModel
 {
     //~ Static variables/initializers -------------------------------------
 
@@ -68,9 +68,6 @@ public class LinesBuilder
     private static final Logger logger = Logger.getLogger(LinesBuilder.class);
 
     //~ Instance variables ------------------------------------------------
-
-    // Lag of horizontal runs
-    private GlyphLag hLag;
 
     // Series of horizontal peaks that signal staff areas
     private List<StaffInfo> staves = new ArrayList<StaffInfo>();
@@ -99,6 +96,8 @@ public class LinesBuilder
     public LinesBuilder (Sheet sheet)
             throws omr.ProcessingException
     {
+        super(new GlyphLag(new HorizontalOrientation()));
+
         // Check output needed from previous steps
         this.sheet = sheet;
         this.scale = sheet.getScale();  // Will run Scale if not yet done
@@ -106,17 +105,16 @@ public class LinesBuilder
 
         Picture picture = sheet.getPicture();
 
-        // Retrieve the horizontal lag of runs
-        hLag = new GlyphLag(new HorizontalOrientation());
-        hLag.setName("hLag");
-        hLag.setVertexClass(StickSection.class);
+        // Augment the horizontal lag of runs
+        lag.setName("hLag");
+        lag.setVertexClass(StickSection.class);
 
         new LagBuilder<GlyphLag, GlyphSection>().rip
-                (hLag,
+                (lag,
                  picture,
                  0, // minRunLength
                  new JunctionDeltaPolicy(constants.maxDeltaLength.getValue())); // maxDeltaLength
-        sheet.setHorizontalLag(hLag);
+        sheet.setHorizontalLag(lag);
 
         retrieveStaves(retrievePeaks(picture.getHeight()));
 
@@ -146,27 +144,6 @@ public class LinesBuilder
     public void displayChart()
     {
         writePlot(histo, threshold);
-    }
-
-    //-----------//
-    // getEntity //
-    //-----------//
-    public Glyph getEntity (Integer id)
-    {
-        return hLag.getGlyph(id);
-    }
-
-    //--------//
-    // getLag //
-    //--------//
-    /**
-     * Report the underlying lag
-     *
-     * @return the horizontal lag
-     */
-    public GlyphLag getLag ()
-    {
-        return hLag;
     }
 
     //-----------//
@@ -261,7 +238,7 @@ public class LinesBuilder
             }
         }
 
-        lagView = new MyLagView(hLag, members);
+        lagView = new MyLagView(lag, members);
 
         final String unit = "LinesBuilder";
         BoardsPane boardsPane = new BoardsPane
@@ -270,11 +247,11 @@ public class LinesBuilder
              new RunBoard(unit,
                           sheet.getSelection(HORIZONTAL_RUN)),
              new SectionBoard(unit,
-                              hLag.getLastVertexId(),
+                              lag.getLastVertexId(),
                               sheet.getSelection(HORIZONTAL_SECTION),
                               sheet.getSelection(HORIZONTAL_SECTION_ID)),
              new GlyphBoard(unit,
-                            hLag.getLastGlyphId(),
+                            lag.getLastGlyphId(),
                             knownIds,
                             sheet.getSelection(HORIZONTAL_GLYPH),
                             sheet.getSelection(HORIZONTAL_GLYPH_ID),
@@ -302,7 +279,7 @@ public class LinesBuilder
     {
         // One single iterator, since from peak area to peak area, we
         // keep moving forward in the ordered list of vertices
-        ArrayList<GlyphSection> vertices = new ArrayList<GlyphSection>(hLag.getVertices());
+        ArrayList<GlyphSection> vertices = new ArrayList<GlyphSection>(lag.getVertices());
         ListIterator<GlyphSection> vi = vertices.listIterator();
 
         // Maximum deviation accepted in the series of peaks in a staff
@@ -321,7 +298,7 @@ public class LinesBuilder
         LineBuilder.reset();
 
         // Use a new staff retriever
-        StaffBuilder staffBuilder = new StaffBuilder(sheet, hLag, vi);
+        StaffBuilder staffBuilder = new StaffBuilder(sheet, lag, vi);
 
         // Browse through the peak list
         Peak prevPeak = null;
@@ -457,7 +434,7 @@ public class LinesBuilder
         }
 
         // Visit all vertices (sections) of the lag
-        for (GlyphSection section : hLag.getVertices()) {
+        for (GlyphSection section : lag.getVertices()) {
             int y = section.getFirstPos();
 
             for (Run run : section.getRuns()) {
