@@ -29,12 +29,12 @@ import javax.swing.event.*;
  * Class <code>SymbolGlyphBoard</code> defines an extended glyph board,
  * with an additional symbol glyph spinner : <ul>
  *
- * <li> A spinner to browse through all glyphs that are considered as
- * <b>symbols</b>, that is built from aggregation of contiguous sections,
- * or by combination of other symbols. This is a subset of the previous
- * one. Glyphs whose shape is set to {@link omr.glyph.Shape#NOISE}, that is
- * too small glyphs, are not included in this spinner.
- * </ul>
+ * <li>A <b>symbolSpinner</b> to browse through all glyphs that are
+ * considered as symbols, that is built from aggregation of contiguous
+ * sections, or by combination of other symbols. Glyphs whose shape is set
+ * to {@link omr.glyph.Shape#NOISE}, that is too small glyphs, are not
+ * included in this spinner. The symbolSpinner is thus a subset of the
+ * knownSpinner (which is itself a subset of the globalSpinner). </ul>
  *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
@@ -54,7 +54,7 @@ public class SymbolGlyphBoard
 
     //~ Instance variables ------------------------------------------------
 
-    private GlyphPane pane;
+    private SymbolsBuilder pane;
     private GlyphLag vLag;
 
     // Spinner just for symbol glyphs
@@ -92,7 +92,7 @@ public class SymbolGlyphBoard
      * @param glyphSelection glyph selection as input
      * @param glyphIdSelection glyph_id selection as output
      */
-    public SymbolGlyphBoard (GlyphPane pane,
+    public SymbolGlyphBoard (SymbolsBuilder pane,
                              int       firstSymbolId,
                              GlyphLag  vLag,
                              Selection glyphSelection,
@@ -100,7 +100,7 @@ public class SymbolGlyphBoard
                              Selection glyphSetSelection)
     {
         // For all glyphs
-        super("SymbolBoard",
+        super("SymbolGlyphBoard",
               vLag.getLastGlyphId(),
               glyphSelection,
               glyphIdSelection,
@@ -184,15 +184,15 @@ public class SymbolGlyphBoard
         builder.add(stems.getField(),   cst.xy (11, r));
     }
 
-    //-------------//
-    // assignGlyph //
-    //-------------//
+    //------------//
+    // addGlyphId //
+    //------------//
     /**
      * This glyph is now known (assigned to a true shape)
      *
      * @param id the glyph id
      */
-    public void assignGlyph (int id)
+    public void addGlyphId (int id)
     {
         if (logger.isFineEnabled()) {
             logger.fine ("assign id=" + id);
@@ -205,27 +205,27 @@ public class SymbolGlyphBoard
             knownIds.add(iden);
         }
     }
-
-    //---------------//
-    // deassignGlyph //
-    //---------------//
-    /**
-     * This glyph is explicitly flagged as not interesting
-     *
-     * @param id the glyph id
-     */
-    public void deassignGlyph (int id)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine ("deassign id=" + id);
-        }
-
-        Integer iden = new Integer(id);
-
-        // Just in case, remove from knownSpinner model
-        knownIds.remove(iden);
-    }
-
+//
+//    //---------------//
+//    // deassignGlyph //
+//    //---------------//
+//    /**
+//     * This glyph is explicitly flagged as not interesting
+//     *
+//     * @param id the glyph id
+//     */
+//    public void deassignGlyph (int id)
+//    {
+//        if (logger.isFineEnabled()) {
+//            logger.fine ("deassign id=" + id);
+//        }
+//
+//        Integer iden = new Integer(id);
+//
+//        // Just in case, remove from knownSpinner model
+//        knownIds.remove(iden);
+//    }
+//
     //------------//
     // addGlyphId //
     //------------//
@@ -286,32 +286,6 @@ public class SymbolGlyphBoard
         }
     }
 
-    //--------------//
-    // stateChanged //
-    //--------------//
-    /**
-     * Callback triggered by a change in one of the spinners.
-     *
-     * @param e the change event, this allows to retrieve the originating
-     * spinner
-     */
-    @Override
-        public void stateChanged (ChangeEvent e)
-    {
-        super.stateChanged(e);
-
-        // Symbol evaluation ?
-        JSpinner spinner = (JSpinner) e.getSource();
-        int glyphId = (Integer) spinner.getValue();
-        if (glyphId != NO_VALUE) {
-            Glyph glyph = null;
-            if (glyphId >= firstSymbolId) {
-                glyph = pane.getEntity(glyphId);
-            }
-            ///pane.getEvaluatorsPanel().evaluate(glyph);
-        }
-    }
-
     //--------//
     // update //
     //--------//
@@ -326,46 +300,46 @@ public class SymbolGlyphBoard
                         SelectionHint hint)
     {
 //        logger.info("SymbolGlyphBoard " + selection.getTag()
-//                    + " updating=" + updating + " idSelecting=" + idSelecting);
+//                    + " selfUpdating=" + selfUpdating);
+
+        super.update(selection, hint);
 
         switch (selection.getTag()) {
         case VERTICAL_GLYPH :
-
-            if (updating) {
-                ///logger.warning("double updating");
-                return;
-            }
-
-            // For normal glyph id and shape
-            try {
-                super.update(selection, hint);
-            } catch (IllegalArgumentException ex) {
-                logger.warning("IllegalArgumentException");
-                return;
-            }
-
-            updating = true;
+            selfUpdating = true;
             Glyph glyph = (Glyph) selection.getEntity();
 
             // Update spinners
-            int id = 0;
-            if (glyph != null) {
-                id = glyph.getId();
-            }
+            // Update Symbol spinner model if needed
+            int id = (glyph != null) ? glyph.getId() : 0;
+            if (hint == SelectionHint.GLYPH_MODIFIED &&
+                    glyph != null &&
+                    id >= firstSymbolId) {
 
-            // Set symbol id accordingly
-            trySetSpinner(symbolSpinner,
-                          (id >= firstSymbolId && glyph.getShape() != Shape.NOISE)
-                          ? id
-                          : NO_VALUE);
+                // Update Global id spinner ?
+                if (glyph.getShape() != Shape.NOISE) {
+
+                }
+
+                // Update Known id spinner ?
+                if (glyph.isKnown()) {
+
+                }
+            }
 
             // Set knownSpinner accordingly
             trySetSpinner(knownSpinner,
-                          (id >= firstSymbolId && glyph.isKnown())
-                          ? id
-                          : NO_VALUE);
+                    (id >= firstSymbolId && glyph.isKnown())
+                    ? id
+                    : NO_VALUE);
 
-            // Fill characteristics
+            // Set symbolSpinner accordingly
+            trySetSpinner(symbolSpinner,
+                    (id >= firstSymbolId && glyph.getShape() != Shape.NOISE)
+                    ? id
+                    : NO_VALUE);
+
+            // Fill symbol characteristics
             if (glyph != null) {
                 pitchPosition.setValue((int) Math.rint(glyph.getPitchPosition()));
                 ledger.setText(Boolean.toString(glyph.hasLedger()));
@@ -375,11 +349,7 @@ public class SymbolGlyphBoard
                 pitchPosition.setText("");
                 stems.setText("");
             }
-            updating = false;
-            break;
-
-        case GLYPH_SET :
-            super.update(selection, hint);
+            selfUpdating = false;
             break;
 
         default :
