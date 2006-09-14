@@ -18,7 +18,7 @@ import omr.glyph.GlyphBuilder;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
-import omr.glyph.ui.GlyphPane;
+import omr.glyph.ui.SymbolsBuilder;
 import omr.score.Score;
 import omr.score.ScoreBuilder;
 import omr.score.ScoreManager;
@@ -143,7 +143,7 @@ public class Sheet
     private transient GlyphInspector glyphInspector;
 
     // Specific pane dealing with glyphs
-    private transient GlyphPane glyphPane;
+    private transient SymbolsBuilder symbolsBuilder;
 
     // To avoid concurrent modifications
     private transient volatile boolean busy = false;
@@ -349,7 +349,7 @@ public class Sheet
 
                 public void displayUI ()
                 {
-                    getGlyphPane().refresh();
+                    getSymbolsBuilder().refresh();
                 }
             };
 
@@ -372,7 +372,7 @@ public class Sheet
 
                 public void displayUI ()
                 {
-                    getGlyphPane().refresh();
+                    getSymbolsBuilder().refresh();
                 }
             };
 
@@ -395,7 +395,7 @@ public class Sheet
 
                 public void displayUI ()
                 {
-                    getGlyphPane().refresh();
+                    getSymbolsBuilder().refresh();
                 }
             };
 
@@ -419,7 +419,7 @@ public class Sheet
 
                 public void displayUI ()
                 {
-                    getGlyphPane().refresh();
+                    getSymbolsBuilder().refresh();
                 }
             };
 
@@ -444,7 +444,7 @@ public class Sheet
 
                 public void displayUI ()
                 {
-                    getGlyphPane().refresh();
+                    getSymbolsBuilder().refresh();
                 }
             };
 
@@ -467,7 +467,7 @@ public class Sheet
 
                 public void displayUI ()
                 {
-                    getGlyphPane().refresh();
+                    getSymbolsBuilder().refresh();
                 }
             };
 
@@ -488,7 +488,7 @@ public class Sheet
 
                 public void displayUI ()
                 {
-                    getGlyphPane().refresh();
+                    getSymbolsBuilder().refresh();
                 }
             };
 
@@ -722,21 +722,21 @@ public class Sheet
         return glyphInspector;
     }
 
-    //--------------//
-    // getGlyphPane //
-    //--------------//
+    //-------------------//
+    // getSymbolsBuilder //
+    //-------------------//
     /**
-     * Give access to the user interface dealing with symbol recognition
+     * Give access to the module dealing with symbol recognition
      *
      * @return the instance of glyph pane
      */
-    public GlyphPane getGlyphPane()
+    public SymbolsBuilder getSymbolsBuilder()
     {
-        if (glyphPane == null) {
-            glyphPane = new GlyphPane(this);
+        if (symbolsBuilder == null) {
+            symbolsBuilder = new SymbolsBuilder(this);
         }
 
-        return glyphPane;
+        return symbolsBuilder;
     }
 
     //----------------//
