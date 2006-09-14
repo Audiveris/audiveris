@@ -245,7 +245,7 @@ public class ScoreBuilder
             logger.fine("Deassigning " + glyph);
         }
 
-        sheet.getGlyphPane().setShape(glyph, null, true);
+        sheet.getSymbolsBuilder().assignGlyphShape(glyph, null);
     }
 
     //-----------//
