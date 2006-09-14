@@ -12,6 +12,7 @@ package omr.selection;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.util.Logger;
 
 import java.util.ArrayList;
@@ -37,22 +38,18 @@ import java.util.Iterator;
  */
 public class Selection
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(Selection.class);
+    private static final Logger    logger = Logger.getLogger(Selection.class);
     private static final Constants constants = new Constants();
 
     // Attempt to debug choreography of messages ...
     private static int level = 0;
 
-    //~ Instance variables ------------------------------------------------
-
-    // Indicate if entity has changed
-    private boolean changed = false;
+    //~ Instance fields --------------------------------------------------------
 
     // Collection of (named) selection observers
-    private final ArrayList<NamedObserver> observers
-        = new ArrayList<NamedObserver>();
+    private final ArrayList<NamedObserver> observers = new ArrayList<NamedObserver>();
 
     // The qualifying tag (better than mere class name)
     private final SelectionTag tag;
@@ -60,7 +57,10 @@ public class Selection
     // The entity designated by this selection
     private Object entity;
 
-    //~ Constructors ------------------------------------------------------
+    // Indicate if entity has changed
+    private boolean changed = false;
+
+    //~ Constructors -----------------------------------------------------------
 
     //-----------//
     // Selection //
@@ -87,9 +87,9 @@ public class Selection
     private Selection (SelectionTag tag,
                        boolean      extended)
     {
-        if (!extended && tag == SelectionTag.SHEET) {
-            throw new IllegalArgumentException
-                ("SelectionTag SHEET is not allowed in sheet selection");
+        if (!extended && (tag == SelectionTag.SHEET)) {
+            throw new IllegalArgumentException(
+                "SelectionTag SHEET is not allowed in sheet selection");
         }
 
         this.tag = tag;
@@ -99,7 +99,7 @@ public class Selection
         }
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //--------------------//
     // makeSheetSelection //
@@ -109,40 +109,9 @@ public class Selection
      *
      * @return the allocated SHEET Selection
      */
-    public static Selection makeSheetSelection()
+    public static Selection makeSheetSelection ()
     {
         return new Selection(SelectionTag.SHEET, true);
-    }
-
-    //--------//
-    // getTag //
-    //--------//
-    /**
-     * Report the tag of this selction (useful in switches for example)
-     *
-     * @return the tag that characterizes this selection
-     */
-    public SelectionTag getTag()
-    {
-        return tag;
-    }
-
-    //-----------//
-    // getEntity //
-    //-----------//
-    /**
-     * Report the current content of selected entity
-     *
-     * @return current entity value
-     */
-    public Object getEntity()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine(indent() + this + " " + entity + " read by " +
-                        new Throwable().getStackTrace()[1]);
-        }
-
-        return entity;
     }
 
     //-----------//
@@ -158,7 +127,7 @@ public class Selection
     public void setEntity (Object        entity,
                            SelectionHint hint)
     {
-        setEntity (entity, hint, true);
+        setEntity(entity, hint, true);
     }
 
     //-----------//
@@ -186,10 +155,10 @@ public class Selection
         setChanged();
 
         if (logger.isFineEnabled()) {
-            logger.fine(indent() + this + hintString(hint) +
-                        notifyString(notify) +
-                        " set to " + entity +
-                        " by " + new Throwable().getStackTrace()[2]);
+            logger.fine(
+                indent() + this + hintString(hint) + notifyString(notify) +
+                " set to " + entity + " by " +
+                new Throwable().getStackTrace()[2]);
         }
 
         if (notify) {
@@ -197,64 +166,36 @@ public class Selection
         }
     }
 
-    //----------//
-    // toString //
-    //----------//
+    //-----------//
+    // getEntity //
+    //-----------//
     /**
-     * Report a short description
+     * Report the current content of selected entity
      *
-     * @return short description
+     * @return current entity value
      */
-    @Override
-        public String toString()
+    public Object getEntity ()
     {
-        StringBuilder sb = new StringBuilder();
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                indent() + this + " " + entity + " read by " +
+                new Throwable().getStackTrace()[1]);
+        }
 
-        sb
-            .append("{Selection ")
-            .append(tag)
-            .append("}");
-
-        return sb.toString();
+        return entity;
     }
 
-    //--------------//
-    // toLongString //
-    //--------------//
+    //--------//
+    // getTag //
+    //--------//
     /**
-     * Report a longer description
+     * Report the tag of this selction (useful in switches for example)
      *
-     * @return a longer description
+     * @return the tag that characterizes this selection
      */
-    public String toLongString()
+    public SelectionTag getTag ()
     {
-        StringBuilder sb = new StringBuilder();
-
-        sb
-            .append("{Selection")
-            .append(" ").append(tag)
-            .append(" entity=").append(entity)
-            .append(" observers=").append(countObservers())
-            .append("}");
-
-        return sb.toString();
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Dump to the standard output the list of all observers
-     */
-    public void dump()
-    {
-        System.out.println(this.toLongString());
-        if (level != 0) {
-            logger.warning("selection notification level is not zero: " + level);
-        }
-        for (NamedObserver no : observers) {
-            System.out.println("    + " + no.name);
-        }
+        return tag;
     }
 
     //-------------//
@@ -265,28 +206,44 @@ public class Selection
      *
      * @param observer the observer to be registered
      */
-    public void addObserver(SelectionObserver observer)
+    public void addObserver (SelectionObserver observer)
     {
         String name = observer.getName();
+
         if (name == null) {
             logger.warning("No name provided for observer " + observer);
         }
 
         if (logger.isFineEnabled()) {
-            logger.fine(indent() + this + " adding observer " + name + " by " +
-                        new Throwable().getStackTrace()[2]);
+            logger.fine(
+                indent() + this + " adding observer " + name + " by " +
+                new Throwable().getStackTrace()[2]);
         }
 
         // Check if already registered
         for (NamedObserver no : observers) {
             if (no.observer.equals(observer)) {
                 logger.warning(this + " already registers " + name);
+
                 return;
             }
         }
 
         // Register
         observers.add(new NamedObserver(observer, name));
+    }
+
+    //----------------//
+    // countObservers //
+    //----------------//
+    /**
+     * Report the number of observers registered on this selection object
+     *
+     * @return the number of observers
+     */
+    public int countObservers ()
+    {
+        return observers.size();
     }
 
     //----------------//
@@ -297,23 +254,26 @@ public class Selection
      *
      * @param observer the observer to remove
      */
-    public void deleteObserver(SelectionObserver observer)
+    public void deleteObserver (SelectionObserver observer)
     {
-        for (Iterator<NamedObserver> it = observers.iterator();
-             it.hasNext();) {
+        for (Iterator<NamedObserver> it = observers.iterator(); it.hasNext();) {
             NamedObserver no = it.next();
+
             if (no.observer.equals(observer)) {
                 if (logger.isFineEnabled()) {
-                    logger.fine(indent() + this + " deleting observer " + no.name);
+                    logger.fine(
+                        indent() + this + " deleting observer " + no.name);
                 }
+
                 it.remove();
+
                 return;
             }
         }
 
         // Not found !
-        logger.warning(this + " cannot delete " +
-                       observer.getClass().getName());
+        logger.warning(
+            this + " cannot delete " + observer.getClass().getName());
     }
 
     //-----------------//
@@ -322,9 +282,42 @@ public class Selection
     /**
      * Remove all observers
      */
-    public void deleteObservers()
+    public void deleteObservers ()
     {
         observers.clear();
+    }
+
+    //------//
+    // dump //
+    //------//
+    /**
+     * Dump to the standard output the list of all observers
+     */
+    public void dump ()
+    {
+        System.out.println(this.toLongString());
+
+        if (level != 0) {
+            logger.warning(
+                "selection notification level is not zero: " + level);
+        }
+
+        for (NamedObserver no : observers) {
+            System.out.println("    + " + no.name);
+        }
+    }
+
+    //------------//
+    // hasChanged //
+    //------------//
+    /**
+     * Predicate about whether the value has changed since last notification
+     *
+     * @return true if changed
+     */
+    public boolean hasChanged ()
+    {
+        return changed;
     }
 
     //-----------------//
@@ -339,12 +332,14 @@ public class Selection
     public void notifyObservers (SelectionHint hint)
     {
         if (logger.isFineEnabled()) {
-            logger.fine(indent() + "*** " + this + hintString(hint) +
-                        " notifying list " + getNameList());
+            logger.fine(
+                indent() + "*** " + this + hintString(hint) +
+                " notifying list " + getNameList());
         }
 
-        if (!changed)
+        if (!changed) {
             return;
+        }
 
         // A temporary buffer, used as a snapshot of the state of current
         // Observers, to avoid potential modification of this list on the fly
@@ -353,20 +348,26 @@ public class Selection
         clearChanged();
 
         level++;
+
         // Check we are not in an endless loop
         if (level > constants.maxNotificationLevel.getValue()) {
             level = 0;
-            logger.severe("Too many selection levels",
-                          new Throwable("SelectionStack"));
+            logger.severe(
+                "Too many selection levels",
+                new Throwable("SelectionStack"));
             throw new RuntimeException("Too many selection levels");
         }
+
         for (NamedObserver no : copy) {
             if (logger.isFineEnabled()) {
-                logger.fine(indent() + "* " + this + hintString(hint) +
-                        " notifying " + no.observer.getName());
+                logger.fine(
+                    indent() + "* " + this + hintString(hint) + " notifying " +
+                    no.observer.getName());
             }
+
             no.observer.update(this, hint);
         }
+
         level--;
     }
 
@@ -378,44 +379,61 @@ public class Selection
      *
      * @param hint   a potential hint for selection observers
      */
-    public void reNotifyObservers(SelectionHint hint)
+    public void reNotifyObservers (SelectionHint hint)
     {
         if (logger.isFineEnabled()) {
-            logger.fine(indent() + this + hintString(hint) +
-                        " renotified by " + new Throwable().getStackTrace()[1]);
+            logger.fine(
+                indent() + this + hintString(hint) + " renotified by " +
+                new Throwable().getStackTrace()[1]);
         }
 
         setChanged();
         notifyObservers(hint);
     }
 
-    //------------//
-    // hasChanged //
-    //------------//
+    //--------------//
+    // toLongString //
+    //--------------//
     /**
-     * Predicate about whether the value has changed since last notification
+     * Report a longer description
      *
-     * @return true if changed
+     * @return a longer description
      */
-    public boolean hasChanged()
+    public String toLongString ()
     {
-        return changed;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{Selection")
+          .append(" ")
+          .append(tag)
+          .append(" entity=")
+          .append(entity)
+          .append(" observers=")
+          .append(countObservers())
+          .append("}");
+
+        return sb.toString();
     }
 
-    //----------------//
-    // countObservers //
-    //----------------//
+    //----------//
+    // toString //
+    //----------//
     /**
-     * Report the number of observers registered on this selection object
+     * Report a short description
      *
-     * @return the number of observers
+     * @return short description
      */
-    public int countObservers()
+    @Override
+    public String toString ()
     {
-        return observers.size();
-    }
+        StringBuilder sb = new StringBuilder();
 
-    //~ Methods protected -------------------------------------------------
+        sb.append("{Selection ")
+          .append(tag)
+          .append("}");
+
+        return sb.toString();
+    }
 
     //------------//
     // setChanged //
@@ -423,7 +441,7 @@ public class Selection
     /**
      * Flag the selection as changed
      */
-    protected void setChanged()
+    protected void setChanged ()
     {
         changed = true;
     }
@@ -434,46 +452,39 @@ public class Selection
     /**
      * Flag the selection as not changed
      */
-    protected void clearChanged()
+    protected void clearChanged ()
     {
         changed = false;
     }
 
-    //~ Methods private ---------------------------------------------------
-
     //-------------//
     // getNameList //
     //-------------//
-    private String getNameList()
+    private String getNameList ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append ("[");
+        sb.append("[");
+
         boolean started = false;
+
         for (NamedObserver no : observers) {
             if (started) {
                 sb.append(";");
             }
+
             sb.append(no.name);
             started = true;
         }
-        sb.append ("]");
+
+        sb.append("]");
 
         return sb.toString();
-    }
-
-    //--------//
-    // indent //
-    //--------//
-    private String indent()
-    {
-        String format = "%" + (2*level+1) + "s: ";
-        return String.format(format, level);
     }
 
     //------------//
     // hintString //
     //------------//
-    private String hintString(SelectionHint hint)
+    private String hintString (SelectionHint hint)
     {
         if (hint == null) {
             return "";
@@ -482,10 +493,20 @@ public class Selection
         }
     }
 
+    //--------//
+    // indent //
+    //--------//
+    private String indent ()
+    {
+        String format = "%" + ((2 * level) + 1) + "s: ";
+
+        return String.format(format, level);
+    }
+
     //--------------//
     // notifyString //
     //--------------//
-    private String notifyString(boolean notify)
+    private String notifyString (boolean notify)
     {
         if (notify) {
             return "";
@@ -494,7 +515,23 @@ public class Selection
         }
     }
 
-    //~ Classes -----------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+        extends ConstantSet
+    {
+        Constant.Integer maxNotificationLevel = new Constant.Integer(
+            10,
+            "Reasonable maximum level for stacked selection notifications");
+
+        Constants ()
+        {
+            initialize();
+        }
+    }
 
     //---------------//
     // NamedObserver //
@@ -512,25 +549,7 @@ public class Selection
                               String            name)
         {
             this.observer = observer;
-            this.name     = name;
-        }
-    }
-
-    //~ Classes -----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-        extends ConstantSet
-    {
-        Constant.Integer maxNotificationLevel = new Constant.Integer
-                (10,
-                 "Reasonable maximum level for stacked selection notifications");
-
-        Constants ()
-        {
-            initialize();
+            this.name = name;
         }
     }
 }
