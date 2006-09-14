@@ -115,8 +115,7 @@ public class SectionBoard
                     public void actionPerformed (ActionEvent e)
                     {
                         // Retrieve current section selection
-                        Selection input
-                                = SectionBoard.this.inputSelectionList.get(0);
+                        Selection input = inputSelectionList.get(0);
                         Section section = (Section) input.getEntity();
                         if (section != null) {
                             section.dump();
