@@ -1,17 +1,19 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                                S t e p                                //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                  S t e p                                   //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr;
 
-import omr.sheet.Sheet;
 import omr.StepMonitor;
+
+import omr.sheet.Sheet;
+
 import omr.util.Logger;
 import omr.util.Memory;
 
@@ -19,16 +21,16 @@ import java.io.File;
 import java.lang.reflect.Field;
 
 /**
- * Class <code>Step</code> describes the ordered sequence of processing
- * steps that are defined on a sheet. The comprehensive ordered list of
- * step names is defined in {@link omr.sheet.Sheet} class.
+ * Class <code>Step</code> describes the ordered sequence of processing steps
+ * that are defined on a sheet. The comprehensive ordered list of step names is
+ * defined in {@link omr.sheet.Sheet} class.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Step
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(Step.class);
 
@@ -36,33 +38,32 @@ public class Step
     private static StepMonitor monitor;
 
     // The most popular step, so it's easier to get it directly
-    private static Step LOAD;
+    private static Step  LOAD;
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // Reflection field to the corresponding sheet InstanceStep
-    private final Field field;
+    private final Field  field;
 
     // Readable description
     private final String description;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     /**
      * Create a step, related to a sheet InstanceStep
      *
      * @param field       the reflection field of the related InstanceStep
-     * @param description the verbose description of the related
-     * InstanceStep
+     * @param description the verbose description of the related InstanceStep
      */
-    public Step (Field field,
+    public Step (Field  field,
                  String description)
     {
         this.field = field;
         this.description = description;
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //----------------//
     // getDescription //
@@ -130,24 +131,38 @@ public class Step
         return null;
     }
 
+    //---------------//
+    // createMonitor //
+    //---------------//
+    /**
+     * Allows to couple the steps with a UI.
+     */
+    public static StepMonitor createMonitor ()
+    {
+        monitor = new StepMonitor();
+
+        return monitor;
+    }
+
     //-----------//
     // doPerform //
     //-----------//
     /**
      * Meant to actually perform the series of step(s), with or without UI.
      *
-     * @param sheet the sheet on which analysis is performed, sheet may be
-     *              null (case of loading a brand new sheet)
-     * @param param a potential parameter for the step. This is actually
-     *              used only when loading a new sheet.
+     * @param sheet the sheet on which analysis is performed, sheet may be null
+     *              (case of loading a brand new sheet)
+     * @param param a potential parameter for the step. This is actually used
+     *              only when loading a new sheet.
      *
      * @throws ProcessingException Raised when processing has failed
      */
-    public void doPerform (Sheet sheet,
+    public void doPerform (Sheet  sheet,
                            Object param)
-            throws ProcessingException
+        throws ProcessingException
     {
         Step current = null;
+
         try {
             // Force execution of specified step
             current = this;
@@ -167,8 +182,8 @@ public class Step
     /**
      * Notify a simple message, which may be not related to any step.
      *
-     * @param msg the message to display on the UI window, or to write in
-     *            the log if there is no UI.
+     * @param msg the message to display on the UI window, or to write in the
+     *            log if there is no UI.
      */
     public static void notifyMsg (String msg)
     {
@@ -185,14 +200,14 @@ public class Step
     /**
      * Trigger the execution of all needed steps up to this one.
      *
-     * <p> This is delegated to the UI if there is such interface, which
-     * will ultimately call doPerform(). If there is no UI, doPerform() is
-     * called directly.
+     * <p> This is delegated to the UI if there is such interface, which will
+     * ultimately call doPerform(). If there is no UI, doPerform() is called
+     * directly.
      *
      * @param sheet the sheet on which analysis is performed
      * @param param a potential parameters (depending on the processing)
      */
-    public void perform (Sheet sheet,
+    public void perform (Sheet  sheet,
                          Object param)
     {
         try {
@@ -202,8 +217,7 @@ public class Step
                 doPerform(sheet, param);
             }
         } catch (ProcessingException ex) {
-            // User has already been informed of the error details, so do
-            // nothing
+            // User has already been informed of error details, so do nothing
         }
     }
 
@@ -221,18 +235,6 @@ public class Step
         return field.getName();
     }
 
-    //---------------//
-    // createMonitor //
-    //---------------//
-    /**
-     * Allows to couple the steps with a UI.
-     */
-    public static StepMonitor createMonitor ()
-    {
-        monitor = new StepMonitor();
-        return monitor;
-    }
-
     //--------//
     // doStep //
     //--------//
@@ -245,7 +247,7 @@ public class Step
      * @return the (created or modified) sheet
      * @throws ProcessingException
      */
-    private Sheet doStep (Sheet sheet,
+    private Sheet doStep (Sheet  sheet,
                           Object param)
         throws ProcessingException
     {
@@ -256,34 +258,35 @@ public class Step
             startTime = System.currentTimeMillis();
         }
 
-        notifyMsg(toString() + ((param != null)
-                                ? (" " + param)
-                                : ""));
+        notifyMsg(toString() + ((param != null) ? (" " + param) : ""));
 
         // Do we have the sheet already ?
         if (sheet == null) {
             // Load sheet using the provided parameter
-            sheet = new Sheet((File) param, /* force => */ false);
+            sheet = new Sheet((File) param, /* force => */
+                              false);
         }
 
         // Check for loading of a sheet
         if (this != getLoadStep()) {
             // Standard processing on an existing sheet
-            sheet.getInstanceStep(this).undo();
-            sheet.getInstanceStep(this).getResult();
+            sheet.getInstanceStep(this)
+                 .undo();
+            sheet.getInstanceStep(this)
+                 .getResult();
         }
 
         // Update user interface ?
         if (monitor != null) {
-            sheet.getInstanceStep(this).displayUI();
+            sheet.getInstanceStep(this)
+                 .displayUI();
         }
-
 
         if (logger.isFineEnabled()) {
             final long stopTime = System.currentTimeMillis();
-            logger.fine("Completed " + this + " in "
-                         + (stopTime - startTime) + " ms with "
-                         + Memory.getValue() + " bytes");
+            logger.fine(
+                "Completed " + this + " in " + (stopTime - startTime) +
+                " ms with " + Memory.getValue() + " bytes");
         }
 
         return sheet;

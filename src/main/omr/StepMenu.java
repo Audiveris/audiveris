@@ -1,47 +1,47 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                            S t e p M e n u                            //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                              S t e p M e n u                               //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr;
 
 import omr.sheet.InstanceStep;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
-import javax.swing.*;
-import javax.swing.event.*;
 import java.awt.event.*;
 
+import javax.swing.*;
+import javax.swing.event.*;
+
 /**
- * Class <code>StepMenu</code> encapsulates the user interface needed to
- * deal with application steps.  Steps are represented by menu items, each
- * one being a check box, to indicate the current status regarding the
- * execution of the step (done or not done).
- * 
+ * Class <code>StepMenu</code> encapsulates the user interface needed to deal
+ * with application steps.  Steps are represented by menu items, each one being
+ * a check box, to indicate the current status regarding the execution of the
+ * step (done or not done).
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class StepMenu
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // The concrete UI menu
     private final JMenu menu;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //----------//
     // StepMenu //
     //----------//
     /**
-     * Generates the sub-menu to be inserted in the application menu
-     * hierarchy.
+     * Generates the sub-menu to be inserted in the application menu hierarchy.
      *
      * @param label Name for the sub-menu
      */
@@ -61,7 +61,7 @@ public class StepMenu
         menu.addMenuListener(new Listener());
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //---------//
     // getMenu //
@@ -71,34 +71,29 @@ public class StepMenu
      *
      * @return the menu entity
      */
-    public JMenu getMenu()
+    public JMenu getMenu ()
     {
         return menu;
     }
 
-    //~ Classes -----------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
 
     //----------//
     // StepItem //
     //----------//
     /**
-     * Class <code>StepItem</code> implements a menu item linked to a given
-     * step
+     * Class <code>StepItem</code> implements a menu item linked to a given step
      */
     private static class StepItem
         extends JCheckBoxMenuItem
     {
-        //~ Instance variables --------------------------------------------
-
         // The related step
         final transient Step step;
-
-        //~ Constructors --------------------------------------------------
 
         //----------//
         // StepItem //
         //----------//
-        public StepItem (Step step,
+        public StepItem (Step           step,
                          ActionListener actionListener)
         {
             super(step.toString());
@@ -106,8 +101,6 @@ public class StepMenu
             this.setToolTipText(step.getDescription());
             this.addActionListener(actionListener);
         }
-
-        //~ Methods -------------------------------------------------------
 
         //--------------//
         // displayState //
@@ -123,36 +116,13 @@ public class StepMenu
                     setEnabled(false);
                 } else {
                     InstanceStep is = sheet.getInstanceStep(step);
+
                     if (is != null) {
                         setState(is.isDone());
                         setEnabled(!is.isDone());
                     }
                 }
             }
-        }
-    }
-
-    //--------------//
-    // StepListener //
-    //--------------//
-    /**
-     * Class <code>StepListener</code> is triggered when a specific menu
-     * item is selected
-     */
-    private class StepListener
-        implements ActionListener
-    {
-        //~ Methods -------------------------------------------------------
-
-        //------------------//
-        // itemStateChanged //
-        //------------------//
-        public void actionPerformed (ActionEvent e)
-        {
-            StepItem item = (StepItem) e.getSource();
-            Sheet sheet = SheetManager.getSelectedSheet();
-            Main.getJui().setTarget(sheet.getPath());
-            item.step.perform(sheet, null);
         }
     }
 
@@ -167,8 +137,6 @@ public class StepMenu
     private class Listener
         implements MenuListener
     {
-        //~ Methods -------------------------------------------------------
-
         public void menuCanceled (MenuEvent e)
         {
         }
@@ -187,6 +155,29 @@ public class StepMenu
                 // Adjust the status for each step
                 item.displayState(sheet);
             }
+        }
+    }
+
+    //--------------//
+    // StepListener //
+    //--------------//
+    /**
+     * Class <code>StepListener</code> is triggered when a specific menu item is
+     * selected
+     */
+    private class StepListener
+        implements ActionListener
+    {
+        //------------------//
+        // itemStateChanged //
+        //------------------//
+        public void actionPerformed (ActionEvent e)
+        {
+            StepItem item = (StepItem) e.getSource();
+            Sheet    sheet = SheetManager.getSelectedSheet();
+            Main.getJui()
+                .setTarget(sheet.getPath());
+            item.step.perform(sheet, null);
         }
     }
 }
