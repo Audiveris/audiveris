@@ -61,11 +61,11 @@ public class LagTest
     protected void setUp ()
     {
         vLag = new MyLag(new VerticalOrientation());
-        vLag.setId("My Vertical Lag");
+        vLag.setName("My Vertical Lag");
         vLag.setVertexClass(MySection.class);
 
         hLag = new MyLag(new HorizontalOrientation());
-        hLag.setId("My Horizontal Lag");
+        hLag.setName("My Horizontal Lag");
         hLag.setVertexClass(MySection.class);
     }
 
@@ -282,7 +282,6 @@ public class LagTest
         System.out.println("getFirstAdjacency=" + section.getFirstAdjacency());
         System.out.println("getFirstPos=" + section.getFirstPos());
         System.out.println("getFirstRun=" + section.getFirstRun());
-        System.out.println("getInfo=" + section.getInfo());
         System.out.println("getLastAdjacency=" + section.getLastAdjacency());
         System.out.println("getLastPos=" + section.getLastPos());
         System.out.println("getLastRun=" + section.getLastRun());
