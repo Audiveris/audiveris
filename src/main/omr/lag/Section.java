@@ -1,41 +1,42 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                             S e c t i o n                             //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                               S e c t i o n                                //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.lag;
 
+import omr.graph.DigraphView;
 import omr.graph.Vertex;
+
 import omr.sheet.Picture;
+
 import omr.util.Logger;
 
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import omr.graph.DigraphView;
 
 /**
- * Class <code>Section</code> is an class to handle a section of contiguous
- * and compatible instances of class {@link Run}.
+ * Class <code>Section</code> is an class to handle a section of contiguous and
+ * compatible instances of class {@link Run}.
  *
- * <p> A section does not carry orientation information, only the
- * containing {@link Lag} has this information.  Thus all runs of a given
- * lag (and consequently all sections made of these runs) have the same
- * orientation.
+ * <p> A section does not carry orientation information, only the containing
+ * {@link Lag} has this information.  Thus all runs of a given lag (and
+ * consequently all sections made of these runs) have the same orientation.
  *
- * <ol> <li> Positions increase in parallel with run numbers, so the
- * thickness of a section is defined as the delta between last and first
- * positions, in other words its number of runs. </li>
+ * <ol> <li> Positions increase in parallel with run numbers, so the thickness
+ * of a section is defined as the delta between last and first positions, in
+ * other words its number of runs. </li>
  *
- * <li> Coordinates increase along any section run, so the section start is
- * the minimum of all run starting coordinates, and the section stop is the
- * maximum of all run stopping coordinates. We define section length as the
- * value: stop - start +1 </li> </ol>
+ * <li> Coordinates increase along any section run, so the section start is the
+ * minimum of all run starting coordinates, and the section stop is the maximum
+ * of all run stopping coordinates. We define section length as the value: stop
+ * - start +1 </li> </ol>
  *
  * @param <L> precise lag (sub)type
  * @param <S> precise section (sub)type
@@ -43,21 +44,14 @@ import omr.graph.DigraphView;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class Section <L extends Lag,
-                      S extends Section <L, S>>
+public class Section<L extends Lag, S extends Section<L, S>>
     extends Vertex<L, S>
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(Section.class);
 
-    //~ Instance variables ------------------------------------------------
-
-    // The collection of runs that make up the section
-    private final List<Run> runs = new ArrayList<Run>();
-
-    // Position of first run
-    private int firstPos;
+    //~ Instance fields --------------------------------------------------------
 
     // Cached data
     //
@@ -66,16 +60,21 @@ public class Section <L extends Lag,
      */
     protected Rectangle bounds;
 
-    private Point centroid; // Mass center
-    private int weight;   // Number of pixels, whatever the grey level
-    private int foreWeight; // Contribution to the foreground
-    private int maxRunLength; // Length of longest run
+    // The collection of runs that make up the section
+    private final List<Run> runs = new ArrayList<Run>();
+    private Point           centroid; // Mass center
 
     // Model(unzoomed) display contour points, which depend on orientation
-    private Polygon contour;
+    private Polygon   contour;
     private Rectangle contourBox;
 
-    //~ Constructors ------------------------------------------------------
+    // Position of first run
+    private int firstPos;
+    private int foreWeight; // Contribution to the foreground
+    private int maxRunLength; // Length of longest run
+    private int weight; // Number of pixels, whatever the grey level
+
+    //~ Constructors -----------------------------------------------------------
 
     //---------//
     // Section //
@@ -87,43 +86,7 @@ public class Section <L extends Lag,
     {
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //----------//
-    // complete //
-    //----------//
-    /**
-     * Called when we have finished adding runs to the section, thus it is
-     * now time (and safe) to compute section parameters such as contour,
-     * view, etc...
-     */
-    public void complete()
-    {
-        // Create views in parallel with containing Lag
-        for (Object obj : graph.getViews()) {
-            LagView view = (LagView) obj; // !!!!!
-            view.addSectionView(this);    // Compiler warning here
-        }
-    }
-
-    //----------------//
-    // computeContour //
-    //----------------//
-    /**
-     * Compute the arrays of points needed to draw the section runs. This
-     * is dependent upon the section orientation.
-     */
-    protected void computeContour ()
-    {
-        if (graph != null) {
-            Polygon p = getContour();
-            if (graph.isVertical()) {
-                computeContour(p.ypoints, p.xpoints);
-            } else {
-                computeContour(p.xpoints, p.ypoints);
-            }
-        }
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //-----------//
     // getAspect //
@@ -142,8 +105,8 @@ public class Section <L extends Lag,
     // getBounds //
     //-----------//
     /**
-     * Return the section bounding rectangle, so please clone it if you
-     * want to modify it afterwards
+     * Return the section bounding rectangle, so please clone it if you want to
+     * modify it afterwards
      *
      * @return the section bounding rectangle
      */
@@ -156,47 +119,12 @@ public class Section <L extends Lag,
         return bounds;
     }
 
-    //-----------//
-    // getPrefix //
-    //-----------//
-    /**
-     * Return a distinctive string, to be used as a prefix in toString()
-     * for example.
-     *
-     * @return the prefix string
-     */
-    @Override
-            protected String getPrefix ()
-    {
-        return "Section";
-    }
-
-    //----------//
-    // setPixel //
-    //----------//
-    /**
-     * This abstract method allows to write a specific pixel at given
-     * coordinates in the given picture. Any concrete subclass
-     * must of course implement this method, in a manner consistent with
-     * the <B>orientation</B> of the containing lag.
-     *
-     * @param picture the picture to be updated
-     * @param cp      the (coord,pos) coordinates of the specified point
-     * @param val     the color value for the pixel
-     */
-    protected void setPixel (Picture picture,
-                             Point cp,
-                             int val)
-    {
-        picture.setPixel(graph.switchRef(cp, null), val);
-    }
-
     //-------------//
     // getCentroid //
     //-------------//
     /**
-     * Return the point which is at the mass center of the section, with
-     * all pixels considered of equal weight.
+     * Return the point which is at the mass center of the section, with all
+     * pixels considered of equal weight.
      *
      * @return the mass center of the section, as a Point(coord,pos)
      */
@@ -229,8 +157,8 @@ public class Section <L extends Lag,
     // getContour //
     //------------//
     /**
-     * Return the polygon that defines the display contour. Beware, this
-     * entity depends on the lag orientation.
+     * Return the polygon that defines the display contour. Beware, this entity
+     * depends on the lag orientation.
      *
      * @return the perimeter contour
      */
@@ -238,8 +166,7 @@ public class Section <L extends Lag,
     {
         if (contour == null) {
             int pointNb = 4 * getRunNb();
-            contour = new Polygon(new int[pointNb], new int[pointNb],
-                                  pointNb);
+            contour = new Polygon(new int[pointNb], new int[pointNb], pointNb);
             computeContour();
         }
 
@@ -250,15 +177,16 @@ public class Section <L extends Lag,
     // getContourBox //
     //---------------//
     /**
-     * Return the bounding box of the display polygon. Useful to quickly
-     * check if the section needs to be repainted.
+     * Return the bounding box of the display polygon. Useful to quickly check
+     * if the section needs to be repainted.
      *
      * @return the bounding contour rectangle box
      */
     public Rectangle getContourBox ()
     {
         if (contourBox == null) {
-            contourBox = getContour().getBounds();
+            contourBox = getContour()
+                             .getBounds();
         }
 
         return contourBox;
@@ -277,9 +205,9 @@ public class Section <L extends Lag,
      * <ul> <li> An isolated section/vertex, such as the one related to a
      * barline, will exhibit a very low adjacency ratio. </li>
      *
-     * <li> On the contrary, a section which is just a piece of a larger
-     * glyph, such as a treble clef or a brace, will have a higher
-     * adjacency. </li> </ul>
+     * <li> On the contrary, a section which is just a piece of a larger glyph,
+     * such as a treble clef or a brace, will have a higher adjacency. </li>
+     * </ul>
      *
      * @return the percentage of overlapped run length
      * @see #getLastAdjacency
@@ -305,31 +233,31 @@ public class Section <L extends Lag,
     }
 
     //-------------//
+    // setFirstPos //
+    //-------------//
+    /**
+     * Set the position of the first run in the section.
+     *
+     * @param firstPos position of the first run, abscissa for a vertical run,
+     *                 ordinate for a horizontal run.
+     */
+    public void setFirstPos (int firstPos)
+    {
+        this.firstPos = firstPos;
+    }
+
+    //-------------//
     // getFirstPos //
     //-------------//
     /**
-     * Return the position (x for vertical runs, y for horizontal runs) of
-     * the first run in the section
+     * Return the position (x for vertical runs, y for horizontal runs) of the
+     * first run in the section
      *
      * @return the position
      */
     public int getFirstPos ()
     {
         return firstPos;
-    }
-
-    //-------------//
-    // setFirstPos //
-    //-------------//
-    /**
-     * Set the position of the first run in the section.
-     *
-     * @param firstPos position of the first run, abscissa for a vertical
-     *                 run, ordinate for a horizontal run.
-     */
-    public void setFirstPos (int firstPos)
-    {
-        this.firstPos = firstPos;
     }
 
     //-------------//
@@ -343,19 +271,6 @@ public class Section <L extends Lag,
     public Run getFirstRun ()
     {
         return runs.get(0);
-    }
-
-    //----------//
-    // getLevel //
-    //----------//
-    /**
-     * Return the mean grey level of the section
-     *
-     * @return the section foreground level (0 -> 255)
-     */
-    public int getLevel ()
-    {
-        return (int) Math.rint((double) foreWeight / (double) weight);
     }
 
     //---------------//
@@ -375,8 +290,8 @@ public class Section <L extends Lag,
     // getLastAdjacency //
     //------------------//
     /**
-     * Return the adjacency ratio at the end of the section/vertex at hand.
-     * See getFirstAdjacency for explanation of the role of adjacency.
+     * Return the adjacency ratio at the end of the section/vertex at hand.  See
+     * getFirstAdjacency for explanation of the role of adjacency.
      *
      * @return the percentage of overlapped run length
      * @see #getFirstAdjacency
@@ -440,6 +355,19 @@ public class Section <L extends Lag,
         return getBounds().width;
     }
 
+    //----------//
+    // getLevel //
+    //----------//
+    /**
+     * Return the mean grey level of the section
+     *
+     * @return the section foreground level (0 -> 255)
+     */
+    public int getLevel ()
+    {
+        return (int) Math.rint((double) foreWeight / (double) weight);
+    }
+
     //-----------------//
     // getMaxRunLength //
     //-----------------//
@@ -472,8 +400,7 @@ public class Section <L extends Lag,
     /**
      * Retrieves the run at the given position
      *
-     * @param pos position of the desired run (x for vertical, y for
-     *            horizontal)
+     * @param pos position of the desired run (x for vertical, y for horizontal)
      *
      * @return the proper Run
      */
@@ -495,12 +422,25 @@ public class Section <L extends Lag,
         return runs.size();
     }
 
+    //---------//
+    // getRuns //
+    //---------//
+    /**
+     * Return the list of all runs in this section
+     *
+     * @return the section runs
+     */
+    public List<Run> getRuns ()
+    {
+        return runs;
+    }
+
     //----------//
     // getStart //
     //----------//
     /**
-     * Return the smallest run starting coordinate, which means the
-     * smallest y value (ordinate) for a section of vertical runs.
+     * Return the smallest run starting coordinate, which means the smallest y
+     * value (ordinate) for a section of vertical runs.
      *
      * @return the starting coordinate of the section
      */
@@ -513,8 +453,8 @@ public class Section <L extends Lag,
     // getStop //
     //---------//
     /**
-     * Return the largest run stopping coordinate, which is the largest y
-     * value (ordinate) for a section of vertical runs.
+     * Return the largest run stopping coordinate, which is the largest y value
+     * (ordinate) for a section of vertical runs.
      *
      * @return the stopping coordinate of the section
      */
@@ -527,8 +467,7 @@ public class Section <L extends Lag,
     // getThickness //
     //--------------//
     /**
-     * Return the thickness of the section, which is just the number of
-     * runs.
+     * Return the thickness of the section, which is just the number of runs.
      *
      * @return the nb of runs in this section
      */
@@ -541,8 +480,8 @@ public class Section <L extends Lag,
     // getWeight //
     //-----------//
     /**
-     * Return the total weight of the section, which is the sum of the
-     * weight (length) of all runs.
+     * Return the total weight of the section, which is the sum of the weight
+     * (length) of all runs.
      *
      * @return the section weight
      */
@@ -555,13 +494,33 @@ public class Section <L extends Lag,
         return weight;
     }
 
+    //---------------//
+    // allocateTable //
+    //---------------//
+    /**
+     * For basic print out, allocate a drawing table, to be later filled with
+     * section pixels
+     *
+     * @param box the limits of the drawing table
+     * @return the table ready to be filled
+     */
+    public static char[][] allocateTable (Rectangle box)
+    {
+        char[][] table = new char[box.height + 1][box.width + 1];
+
+        for (int i = 0; i < table.length; i++) {
+            Arrays.fill(table[i], ' ');
+        }
+
+        return table;
+    }
+
     //--------//
     // append //
     //--------//
     /**
      * Extend a section with the given run. This new run is assumed to be
-     * contiguous to the current last run of the section, no check is
-     * performed.
+     * contiguous to the current last run of the section, no check is performed.
      *
      * @param run the new last run
      */
@@ -572,6 +531,23 @@ public class Section <L extends Lag,
 
         if (logger.isFineEnabled()) {
             logger.fine("Appended " + run + " to " + this);
+        }
+    }
+
+    //----------//
+    // complete //
+    //----------//
+    /**
+     * Called when we have finished adding runs to the section, thus it is now
+     * time (and safe) to compute section parameters such as contour, view,
+     * etc...
+     */
+    public void complete ()
+    {
+        // Create views in parallel with containing Lag
+        for (Object obj : graph.getViews()) {
+            LagView view = (LagView) obj; // !!!!!
+            view.addSectionView(this); // Compiler warning here
         }
     }
 
@@ -597,10 +573,10 @@ public class Section <L extends Lag,
         invalidateCache();
 
         if (logger.isFineEnabled()) {
-            logger.fine("Parameters of " + this + " maxRunLength="
-                         + getMaxRunLength() + " meanRunLength="
-                         + getMeanRunLength() + " weight=" + weight
-                         + "foreWeight=" + foreWeight);
+            logger.fine(
+                "Parameters of " + this + " maxRunLength=" + getMaxRunLength() +
+                " meanRunLength=" + getMeanRunLength() + " weight=" + weight +
+                "foreWeight=" + foreWeight);
         }
     }
 
@@ -620,7 +596,8 @@ public class Section <L extends Lag,
                              int pos)
     {
         // First check with the bounding rectangle
-        if (!getBounds().contains(coord, pos)) {
+        if (!getBounds()
+                 .contains(coord, pos)) {
             return false;
         }
 
@@ -645,7 +622,7 @@ public class Section <L extends Lag,
      */
     public int cumulatePoints (int[] coord,
                                int[] pos,
-                               int nb)
+                               int   nb)
     {
         int p = firstPos;
 
@@ -664,69 +641,6 @@ public class Section <L extends Lag,
         return nb;
     }
 
-    //-------//
-    // merge //
-    //-------//
-    /**
-     * Merge this section with the other provided section, which is not
-     * affected, and must generally be destroyed.
-     *
-     * It is assumed (and not checked) that the two sections are
-     * contiguous.
-     *
-     * @param other
-     */
-    public void merge (S other)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Merging " + this + " with " + other);
-        }
-
-        runs.addAll(other.runs);
-        computeParameters();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Merged " + this);
-        }
-    }
-
-    //---------//
-    // prepend //
-    //---------//
-    /**
-     * Add a run at the beginning rather than at the end of the section
-     *
-     * @param run the new first run
-     */
-    public void prepend (Run run)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Prepending " + run + " to " + this);
-        }
-
-        firstPos--;
-        runs.add(0, run);
-        addRun(run);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Prepended " + this);
-        }
-    }
-
-
-    //---------//
-    // getRuns //
-    //---------//
-    /**
-     * Return the list of all runs in this section
-     *
-     * @return the section runs
-     */
-    public List<Run> getRuns ()
-    {
-        return runs;
-    }
-
     //-----------//
     // drawAscii //
     //-----------//
@@ -738,28 +652,9 @@ public class Section <L extends Lag,
         // Determine the bounds
         Rectangle box = getContourBox();
 
-        char[][] table = allocateTable(box);
+        char[][]  table = allocateTable(box);
         fillTable(table, box);
         drawTable(table, box);
-    }
-
-    //---------------//
-    // allocateTable //
-    //---------------//
-    /**
-     * For basic print out, allocate a drawing table, to be later filled
-     * with section pixels
-     *
-     * @param box the limits of the drawing table
-     * @return the table ready to be filled
-     */
-    public static char[][] allocateTable (Rectangle box)
-    {
-        char[][] table = new char[box.height + 1][box.width + 1];
-        for (int i = 0; i < table.length; i++) {
-            Arrays.fill(table[i], ' ');
-        }
-        return table;
     }
 
     //-----------//
@@ -771,13 +666,12 @@ public class Section <L extends Lag,
      * @param table the filled table
      * @param box the table limits in the image
      */
-    public static void drawTable (char[][] table,
+    public static void drawTable (char[][]  table,
                                   Rectangle box)
     {
-        System.out.println
-            ("xMin=" + box.x + ", xMax=" + (box.x + box.width));
-        System.out.println
-            ("yMin=" + box.y + ", yMax=" + (box.y + box.height));
+        System.out.println("xMin=" + box.x + ", xMax=" + (box.x + box.width));
+        System.out.println("yMin=" + box.y + ", yMax=" + (box.y + box.height));
+
         for (int iy = 0; iy < table.length; iy++) {
             System.out.print((iy + box.y) + ": ");
             System.out.println(table[iy]);
@@ -790,13 +684,17 @@ public class Section <L extends Lag,
     /**
      * Draws the section, into the provided table
      */
-    public void fillTable (char[][] table,
+    public void fillTable (char[][]  table,
                            Rectangle box)
     {
         // Determine the bounds
         Polygon polygon = getContour();
 
-        int xPrev = 0, yPrev = 0, x, y;
+        int     xPrev = 0;
+        int     yPrev = 0;
+        int     x;
+        int     y;
+
         for (int i = 0; i <= polygon.npoints; i++) {
             if (i == polygon.npoints) { // Last point
                 x = polygon.xpoints[0] - box.x;
@@ -808,14 +706,18 @@ public class Section <L extends Lag,
 
             if (i > 0) {
                 if (x != xPrev) { // Horizontal
+
                     int x1 = Math.min(x, xPrev);
                     int x2 = Math.max(x, xPrev);
+
                     for (int ix = x1 + 1; ix < x2; ix++) {
                         table[y][ix] = '-';
                     }
-                } else {          // Vertical
+                } else { // Vertical
+
                     int y1 = Math.min(y, yPrev);
                     int y2 = Math.max(y, yPrev);
+
                     for (int iy = y1 + 1; iy < y2; iy++) {
                         table[iy][x] = '|';
                     }
@@ -828,143 +730,12 @@ public class Section <L extends Lag,
         }
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Return a readable description
-     *
-     * @return the descriptive string
-     */
-    @Override
-        public String toString ()
-    {
-        StringBuffer sb = new StringBuffer(256);
-
-        sb.append(super.toString());
-
-        sb.append(" fPos=").append(firstPos).append(" ");
-        sb.append(getFirstRun());
-
-        if (getRunNb() > 1) {
-            sb.append("-").append(getRunNb()).append("-").append(getLastRun());
-        }
-
-        sb.append(" Wt=").append(weight);
-        sb.append(" lv=").append(getLevel());
-        sb.append(" fW=").append(foreWeight);
-
-        if (this.getClass().getName().equals (Section.class.getName())) {
-            sb.append("}");
-        }
-
-        return sb.toString();
-    }
-
-    //-------//
-    // write //
-    //-------//
-    /**
-     * Write the pixels of the section in the given picture
-     *
-     * @param picture the picture to update
-     * @param pixel   the color to be used for the pixels
-     */
-    public void write (Picture picture,
-                       int pixel)
-    {
-        Point pt = new Point();
-        pt.y = getFirstPos();
-
-        for (Run run : runs) {
-            for (pt.x = run.getStart(); pt.x <= run.getStop(); pt.x++) {
-                setPixel(picture, pt, pixel);
-            }
-
-            pt.y++;
-        }
-    }
-
-    //----------------//
-    // computeContour //
-    //----------------//
-    /**
-     * Compute the arrays of points needed to draw the section runs
-     *
-     * @param xpoints to receive abscissae
-     * @param ypoints to receive coordinates
-     */
-    private void computeContour (int[] xpoints,
-                                 int[] ypoints)
-    {
-        // Precise delimitating points
-        int i = 0;
-        int runNb = getRunNb();
-        int y = getFirstPos();
-
-        for (Run run : runs) {
-            // Order of the 4 angle points for a run is
-            // Vertical lag:    Horizontal lag:
-            //     1 2              1 4
-            //     4 3              2 3
-            xpoints[i] = run.getStart();
-            xpoints[i + 1] = run.getStart();
-            xpoints[(4 * runNb) - i - 2] = run.getStop() + 1;
-            xpoints[(4 * runNb) - i - 1] = run.getStop() + 1;
-
-            ypoints[i] = y;
-            ypoints[i + 1] = y + 1;
-            ypoints[(4 * runNb) - i - 2] = y + 1;
-            ypoints[(4 * runNb) - i - 1] = y;
-
-            i += 2;
-            y += 1;
-        }
-    }
-
-    //--------//
-    // addRun //
-    //--------//
-    /**
-     * Compute incrementally the cached parameters
-     */
-    private void addRun (Run run)
-    {
-        // Invalidate cached data
-        invalidateCache();
-
-        // Compute contribution of this run
-        computeRunContribution(run);
-    }
-
-    //------------------------//
-    // computeRunContribution //
-    //------------------------//
-    private void computeRunContribution (Run run)
-    {
-        final int length = run.getLength();
-        weight += length;
-        foreWeight += length * run.getLevel();
-        maxRunLength = Math.max(maxRunLength, length);
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    private void invalidateCache ()
-    {
-        bounds = null;
-        centroid = null;
-        contour = null;
-        contourBox = null;
-    }
-
     //---------------//
     // inNextSibling //
     //---------------//
     /**
-     * Return the next sibling section, both linked by source of last
-     * incoming edge
+     * Return the next sibling section, both linked by source of last incoming
+     * edge
      *
      * @return the next sibling or null
      */
@@ -1015,8 +786,8 @@ public class Section <L extends Lag,
         S source = sources.get(0);
 
         // Browse till we get to this as target
-        for (ListIterator<S> li = source.targets.listIterator(source.getOutDegree());
-             li.hasPrevious();) {
+        for (ListIterator<S> li = source.targets.listIterator(
+            source.getOutDegree()); li.hasPrevious();) {
             S section = li.previous();
 
             if (section == this) {
@@ -1031,6 +802,32 @@ public class Section <L extends Lag,
         logger.severe("inPreviousSibling inconsistent graph");
 
         return null;
+    }
+
+    //-------//
+    // merge //
+    //-------//
+    /**
+     * Merge this section with the other provided section, which is not
+     * affected, and must generally be destroyed.
+     *
+     * It is assumed (and not checked) that the two sections are
+     * contiguous.
+     *
+     * @param other
+     */
+    public void merge (S other)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Merging " + this + " with " + other);
+        }
+
+        runs.addAll(other.runs);
+        computeParameters();
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Merged " + this);
+        }
     }
 
     //----------------//
@@ -1073,8 +870,8 @@ public class Section <L extends Lag,
     // outPreviousSibling //
     //--------------------//
     /**
-     * Return the previous sibling section, both linked by target of the
-     * first outgoing edge
+     * Return the previous sibling section, both linked by target of the first
+     * outgoing edge
      *
      * @return the previous sibling or null
      */
@@ -1088,8 +885,8 @@ public class Section <L extends Lag,
         S target = targets.get(getOutDegree() - 1);
 
         // Browse till we get to this as source
-        for (ListIterator<S> li = target.sources.listIterator(target.getInDegree());
-             li.hasPrevious();) {
+        for (ListIterator<S> li = target.sources.listIterator(
+            target.getInDegree()); li.hasPrevious();) {
             S section = li.previous();
 
             if (section == this) {
@@ -1104,5 +901,224 @@ public class Section <L extends Lag,
         logger.severe("outPreviousSibling inconsistent graph");
 
         return null;
+    }
+
+    //---------//
+    // prepend //
+    //---------//
+    /**
+     * Add a run at the beginning rather than at the end of the section
+     *
+     * @param run the new first run
+     */
+    public void prepend (Run run)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Prepending " + run + " to " + this);
+        }
+
+        firstPos--;
+        runs.add(0, run);
+        addRun(run);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Prepended " + this);
+        }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Return a readable description
+     *
+     * @return the descriptive string
+     */
+    @Override
+    public String toString ()
+    {
+        StringBuffer sb = new StringBuffer(256);
+
+        sb.append(super.toString());
+
+        sb.append(" fPos=")
+          .append(firstPos)
+          .append(" ");
+        sb.append(getFirstRun());
+
+        if (getRunNb() > 1) {
+            sb.append("-")
+              .append(getRunNb())
+              .append("-")
+              .append(getLastRun());
+        }
+
+        sb.append(" Wt=")
+          .append(weight);
+        sb.append(" lv=")
+          .append(getLevel());
+        sb.append(" fW=")
+          .append(foreWeight);
+
+        if (this.getClass()
+                .getName()
+                .equals(Section.class.getName())) {
+            sb.append("}");
+        }
+
+        return sb.toString();
+    }
+
+    //-------//
+    // write //
+    //-------//
+    /**
+     * Write the pixels of the section in the given picture
+     *
+     * @param picture the picture to update
+     * @param pixel   the color to be used for the pixels
+     */
+    public void write (Picture picture,
+                       int     pixel)
+    {
+        Point pt = new Point();
+        pt.y = getFirstPos();
+
+        for (Run run : runs) {
+            for (pt.x = run.getStart(); pt.x <= run.getStop(); pt.x++) {
+                setPixel(picture, pt, pixel);
+            }
+
+            pt.y++;
+        }
+    }
+
+    //----------//
+    // setPixel //
+    //----------//
+    /**
+     * This abstract method allows to write a specific pixel at given
+     * coordinates in the given picture. Any concrete subclass must of course
+     * implement this method, in a manner consistent with the <B>orientation</B>
+     * of the containing lag.
+     *
+     * @param picture the picture to be updated
+     * @param cp      the (coord,pos) coordinates of the specified point
+     * @param val     the color value for the pixel
+     */
+    protected void setPixel (Picture picture,
+                             Point   cp,
+                             int     val)
+    {
+        picture.setPixel(graph.switchRef(cp, null), val);
+    }
+
+    //-----------//
+    // getPrefix //
+    //-----------//
+    /**
+     * Return a distinctive string, to be used as a prefix in toString() for
+     * example.
+     *
+     * @return the prefix string
+     */
+    @Override
+    protected String getPrefix ()
+    {
+        return "Section";
+    }
+
+    //----------------//
+    // computeContour //
+    //----------------//
+    /**
+     * Compute the arrays of points needed to draw the section runs. This is
+     * dependent upon the section orientation.
+     */
+    protected void computeContour ()
+    {
+        if (graph != null) {
+            Polygon p = getContour();
+
+            if (graph.isVertical()) {
+                computeContour(p.ypoints, p.xpoints);
+            } else {
+                computeContour(p.xpoints, p.ypoints);
+            }
+        }
+    }
+
+    //--------//
+    // addRun //
+    //--------//
+    /**
+     * Compute incrementally the cached parameters
+     */
+    private void addRun (Run run)
+    {
+        // Invalidate cached data
+        invalidateCache();
+
+        // Compute contribution of this run
+        computeRunContribution(run);
+    }
+
+    //----------------//
+    // computeContour //
+    //----------------//
+    /**
+     * Compute the arrays of points needed to draw the section runs
+     *
+     * @param xpoints to receive abscissae
+     * @param ypoints to receive coordinates
+     */
+    private void computeContour (int[] xpoints,
+                                 int[] ypoints)
+    {
+        // Precise delimitating points
+        int i = 0;
+        int runNb = getRunNb();
+        int y = getFirstPos();
+
+        for (Run run : runs) {
+            // Order of the 4 angle points for a run is
+            // Vertical lag:    Horizontal lag:
+            //     1 2              1 4
+            //     4 3              2 3
+            xpoints[i] = run.getStart();
+            xpoints[i + 1] = run.getStart();
+            xpoints[(4 * runNb) - i - 2] = run.getStop() + 1;
+            xpoints[(4 * runNb) - i - 1] = run.getStop() + 1;
+
+            ypoints[i] = y;
+            ypoints[i + 1] = y + 1;
+            ypoints[(4 * runNb) - i - 2] = y + 1;
+            ypoints[(4 * runNb) - i - 1] = y;
+
+            i += 2;
+            y += 1;
+        }
+    }
+
+    //------------------------//
+    // computeRunContribution //
+    //------------------------//
+    private void computeRunContribution (Run run)
+    {
+        final int length = run.getLength();
+        weight += length;
+        foreWeight += (length * run.getLevel());
+        maxRunLength = Math.max(maxRunLength, length);
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    private void invalidateCache ()
+    {
+        bounds = null;
+        centroid = null;
+        contour = null;
+        contourBox = null;
     }
 }

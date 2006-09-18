@@ -7,7 +7,6 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.field;
 
 import javax.swing.*;
@@ -23,12 +22,19 @@ import javax.swing.event.*;
  */
 public class LSpinner
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
+    /**
+     * The related label
+     */
     protected JLabel label;
+
+    /**
+     * The underlying spinner
+     */
     protected JSpinner spinner;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //----------//
     // LSpinner //
@@ -50,10 +56,9 @@ public class LSpinner
             this.label.setToolTipText(tip);
             spinner.setToolTipText(tip);
         }
-
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //----------//
     // getLabel //
@@ -63,22 +68,9 @@ public class LSpinner
      *
      * @return the label
      */
-    public JLabel getLabel()
+    public JLabel getLabel ()
     {
         return label;
-    }
-
-    //------------//
-    // getSpinner //
-    //------------//
-    /**
-     * Report the spinner part
-     *
-     * @return the spinner
-     */
-    public JSpinner getSpinner()
-    {
-        return spinner;
     }
 
     //----------//
@@ -92,6 +84,19 @@ public class LSpinner
     public void setModel (SpinnerModel model)
     {
         spinner.setModel(model);
+    }
+
+    //------------//
+    // getSpinner //
+    //------------//
+    /**
+     * Report the spinner part
+     *
+     * @return the spinner
+     */
+    public JSpinner getSpinner ()
+    {
+        return spinner;
     }
 
     //-------------------//

@@ -1,60 +1,62 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                             N a m e S e t                             //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                               N a m e S e t                                //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.util;
 
 import omr.constant.Constant;
+
 import omr.ui.util.DynamicMenu;
 
-import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.swing.*;
+
 /**
- * Class <code>NameSet</code> encapsulates the handling of a list of names,
- * a typical use is a history of file names.
+ * Class <code>NameSet</code> encapsulates the handling of a list of names, a
+ * typical use is a history of file names.
  *
- * <p> Actually, rather than a set, it is a list where the most recently
- * used are kept at the head of the list. There is no duplicate in the set
- * (tests are case-insensitive). </p>
+ * <p> Actually, rather than a set, it is a list where the most recently used
+ * are kept at the head of the list. There is no duplicate in the set (tests are
+ * case-insensitive). </p>
  *
- * <p> The NameSet can additionally be used to dynamically generate and
- * handle a menu. </p>
+ * <p> The NameSet can additionally be used to dynamically generate and handle a
+ * menu. </p>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class NameSet
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final String SEPARATOR = ";"; // Separator
+    private static final String   SEPARATOR = ";"; // Separator
 
-    //~ Instance variables ------------------------------------------------
-
-    // Name of this set
-    private final String setName;
+    //~ Instance fields --------------------------------------------------------
 
     // Backing constant
     private final Constant.String constant;
 
-    // Max number of names in this set
-    private final int maxNameNb;
-
     // List of names in this set
     private final List<String> names = new ArrayList<String>();
 
-    //~ Constructors ------------------------------------------------------
+    // Name of this set
+    private final String setName;
+
+    // Max number of names in this set
+    private final int maxNameNb;
+
+    //~ Constructors -----------------------------------------------------------
 
     //---------//
     // NameSet //
@@ -66,24 +68,28 @@ public class NameSet
      * @param maxNameNb Maximum number of elements in this name set
      */
     public NameSet (String setName,
-                    int maxNameNb)
+                    int    maxNameNb)
     {
         this.setName = setName;
         this.maxNameNb = maxNameNb;
 
         // Retrieve the list of names in history
-        constant = new Constant.String(setName, "names", "",
-                                       "List of names in this name set");
+        constant = new Constant.String(
+            setName,
+            "names",
+            "",
+            "List of names in this name set");
 
-        StringTokenizer st = new StringTokenizer(constant.getValue(),
-                                                 SEPARATOR);
+        StringTokenizer st = new StringTokenizer(
+            constant.getValue(),
+            SEPARATOR);
 
         while (st.hasMoreTokens()) {
             names.add(st.nextToken());
         }
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //-----//
     // add //
@@ -125,49 +131,25 @@ public class NameSet
         constant.setValue(buf.toString());
     }
 
-    //--------//
-    // remove //
-    //--------//
-    /**
-     * Remove a given name from the list
-     *
-     * @param name the name to remove
-     * @return true if actually found and removed
-     */
-    public boolean remove (String name)
-    {
-        // If the ref exists in the list, it is removed
-        for (Iterator<String> it = names.iterator(); it.hasNext();) {
-            String f = it.next();
-            if (f.equalsIgnoreCase(name)) {
-                it.remove();
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     //------//
     // menu //
     //------//
     /**
-     * Return an up-to-date menu that can be used to trigger actions
-     * related to the designated name.
+     * Return an up-to-date menu that can be used to trigger actions related to
+     * the designated name.
      *
      * @param menu the existing menu to update
-     * @param listener The ActionListener to be triggered. (the selected
-     *                 name can be retrieved by the listener in the
-     *                 ActionEvent, by using the
-     *                 ActionEvent.getActionCommand method)
+     * @param listener The ActionListener to be triggered. (the selected name
+     *                 can be retrieved by the listener in the ActionEvent, by
+     *                 using the ActionEvent.getActionCommand method)
      *
      * @return the JMenu, ready to be inserted in a menu hierarchy.
      */
-    public JMenu menu (JMenu menu,
+    public JMenu menu (JMenu          menu,
                        ActionListener listener)
     {
-        // Don't fully destroy the menu, just clean all its items, so that
-        // the modifications are made available to the menu hierarchy.
+        // Don't fully destroy the menu, just clean all its items, so that the
+        // modifications are made available to the menu hierarchy.
         if (menu == null) {
             menu = new JMenu(setName);
         } else {
@@ -188,8 +170,8 @@ public class NameSet
     // menu //
     //------//
     /**
-     * Create a brand new menu, with the name of the set as default text
-     * for menu text.
+     * Create a brand new menu, with the name of the set as default text for
+     * menu text.
      *
      * @param listener the listener to be trigerred on item selection
      * @return the menu ready to be inserted
@@ -203,20 +185,45 @@ public class NameSet
     // menu //
     //------//
     /**
-     * Create a brand new menu for name selection, with label provided for
-     * the menu and action listener
+     * Create a brand new menu for name selection, with label provided for the
+     * menu and action listener
      *
      * @param label the text in the menu item
      * @param listener the listener to be trigerred on item selection
      * @return the menu ready to be inserted
      */
-    public JMenu menu (String label,
+    public JMenu menu (String         label,
                        ActionListener listener)
     {
         return new MyMenu(label, listener).getMenu();
     }
 
-    //~ Classes -----------------------------------------------------------
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove a given name from the list
+     *
+     * @param name the name to remove
+     * @return true if actually found and removed
+     */
+    public boolean remove (String name)
+    {
+        // If the ref exists in the list, it is removed
+        for (Iterator<String> it = names.iterator(); it.hasNext();) {
+            String f = it.next();
+
+            if (f.equalsIgnoreCase(name)) {
+                it.remove();
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
 
     //--------//
     // MyMenu //
@@ -224,20 +231,14 @@ public class NameSet
     private class MyMenu
         extends DynamicMenu
     {
-        //~ Instance variables --------------------------------------------
-
         private ActionListener listener;
 
-        //~ Constructors --------------------------------------------------
-
-        public MyMenu (String label,
+        public MyMenu (String         label,
                        ActionListener listener)
         {
             super(label);
             this.listener = listener;
         }
-
-        //~ Methods -------------------------------------------------------
 
         protected void buildItems ()
         {
@@ -245,7 +246,8 @@ public class NameSet
             for (String f : names) {
                 JMenuItem menuItem = new JMenuItem(f);
                 menuItem.addActionListener(listener);
-                getMenu().add(menuItem);
+                getMenu()
+                    .add(menuItem);
             }
         }
     }

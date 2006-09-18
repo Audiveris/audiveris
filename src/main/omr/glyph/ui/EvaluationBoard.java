@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                     E v a l u a t i o n B o a r d                     //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                       E v a l u a t i o n B o a r d                        //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.glyph.ui;
 
 import omr.glyph.Evaluation;
@@ -17,15 +17,18 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
+import static omr.selection.SelectionTag.*;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
 import omr.ui.Board;
 import omr.ui.util.Panel;
-import omr.util.Logger;
 
-import static omr.selection.SelectionTag.*;
+import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -33,14 +36,15 @@ import com.jgoodies.forms.layout.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Collections;
+
 import javax.swing.*;
 
 /**
- * Class <code>EvaluationBoard</code> is a board dedicated to the display
- * of evaluation results performed by an evaluator.
+ * Class <code>EvaluationBoard</code> is a board dedicated to the display of
+ * evaluation results performed by an evaluator.
  *
- * <p>By pressing one of the result buttons, the user can force the
- * assignment of the evaluated glyph.
+ * <p>By pressing one of the result buttons, the user can force the assignment
+ * of the evaluated glyph.
  *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
@@ -52,26 +56,40 @@ import javax.swing.*;
  * </ul>
  * </dl>
  *
- *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class EvaluationBoard
     extends Board
 {
-    private Logger logger = Logger.getLogger(EvaluationBoard.class);
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final Logger logger = Logger.getLogger(
+        EvaluationBoard.class);
 
     // Max number of buttons in the shape selector
-    private static final int EVAL_NB = 3;
-
+    private static final int   EVAL_NB = 3;
     private static final Color EVAL_GOOD_COLOR = new Color(100, 150, 0);
     private static final Color EVAL_SOSO_COLOR = new Color(255, 100, 150);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
+
+    // The evaluator this display is related to
+    private final Evaluator  evaluator = GlyphNetwork.getInstance();
+    private final GlyphModel glyphModel;
+    private final JButton    testButton = new JButton(new TestAction());
+
+    // Numeric result of whole sheet test
+    private final JLabel   testPercent = new JLabel(
+        "0%",
+        SwingConstants.CENTER);
+    private final JLabel   testResult = new JLabel("", SwingConstants.CENTER);
+
+    // Pane for detailed info display about the glyph evaluation
+    private final Selector selector;
 
     // Related sheet & GlyphModel
-    private final Sheet      sheet;
-    private final GlyphModel glyphModel;
+    private final Sheet   sheet;
 
     // Should we use buttons (or plain output fields) ?
     private final boolean useButtons;
@@ -79,19 +97,7 @@ public class EvaluationBoard
     // Lag view (if any)
     private GlyphLagView view;
 
-    // The evaluator this display is related to
-    private final Evaluator evaluator = GlyphNetwork.getInstance();
-
-    private final JButton testButton = new JButton(new TestAction());
-
-    // Pane for detailed info display about the glyph evaluation
-    private final Selector selector;
-
-    // Numeric result of whole sheet test
-    private final JLabel testPercent = new JLabel("0%", SwingConstants.CENTER);
-    private final JLabel testResult = new JLabel("", SwingConstants.CENTER);
-
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------------//
     // EvaluationBoard //
@@ -123,20 +129,20 @@ public class EvaluationBoard
         setInputSelectionList(Collections.singletonList(inputSelection));
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //----------//
     // evaluate //
     //----------//
     /**
-     * Evaluate the glyph at hand, and display the result from each
-     * evaluator in its dedicated area
+     * Evaluate the glyph at hand, and display the result from each evaluator in
+     * its dedicated area
      *
      * @param glyph the glyph at hand
      */
     public void evaluate (Glyph glyph)
     {
-        if (glyph == null || glyph.getShape() == Shape.COMBINING_STEM) {
+        if ((glyph == null) || (glyph.getShape() == Shape.COMBINING_STEM)) {
             // Blank the output
             selector.setEvals(null);
         } else {
@@ -154,20 +160,21 @@ public class EvaluationBoard
      * @param hint potential notification hint
      */
     @Override
-    public void update (Selection selection,
+    public void update (Selection     selection,
                         SelectionHint hint)
     {
         switch (selection.getTag()) {
         case VERTICAL_GLYPH :
+
             Glyph glyph = (Glyph) selection.getEntity();
 
             // Make sure the glyph interline has been set
-            if (glyph != null &&
-                    glyph.getInterline() == 0) {
+            if ((glyph != null) && (glyph.getInterline() == 0)) {
                 glyph.setInterline(sheet.getScale().interline());
             }
 
             evaluate(glyph);
+
             break;
 
         default :
@@ -178,118 +185,50 @@ public class EvaluationBoard
     //--------------//
     // defineLayout //
     //--------------//
-    private void defineLayout()
+    private void defineLayout ()
     {
-        final String buttonWidth    = Panel.getButtonWidth();
-        final String fieldInterval  = Panel.getFieldInterval();
+        final String buttonWidth = Panel.getButtonWidth();
+        final String fieldInterval = Panel.getFieldInterval();
         final String fieldInterline = Panel.getFieldInterline();
 
-        FormLayout layout = new FormLayout
-            (buttonWidth + "," + fieldInterval + "," +
-             buttonWidth + "," + fieldInterval + "," +
-             buttonWidth + "," + fieldInterval + "," +
-             buttonWidth,
-             "pref," + fieldInterline + "," +
-             "pref," +
-             "pref," +
-             "pref");
+        FormLayout   layout = new FormLayout(
+            buttonWidth + "," + fieldInterval + "," + buttonWidth + "," +
+            fieldInterval + "," + buttonWidth + "," + fieldInterval + "," +
+            buttonWidth,
+            "pref," + fieldInterline + "," + "pref," + "pref," + "pref");
 
         // Uncomment following line to have fixed sized rows, whether
         // they are filled or not
         ///layout.setRowGroups(new int[][]{{1, 3, 4, 5 }});
-
         PanelBuilder builder = new PanelBuilder(layout, getComponent());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
 
-        int r = 1;                  // --------------------------------
+        int             r = 1; // --------------------------------
+
         if (sheet != null) {
-            builder.addSeparator(evaluator.getName(), cst.xyw(1,  r, 1));
-            builder.add(testButton,                   cst.xy (3,  r));
-            builder.add(testPercent,                  cst.xy (5,  r));
-            builder.add(testResult,                   cst.xy (7,  r));
+            builder.addSeparator(evaluator.getName(), cst.xyw(1, r, 1));
+            builder.add(testButton, cst.xy(3, r));
+            builder.add(testPercent, cst.xy(5, r));
+            builder.add(testResult, cst.xy(7, r));
         } else {
-            builder.addSeparator(evaluator.getName(), cst.xyw(1,  r, 7));
+            builder.addSeparator(evaluator.getName(), cst.xyw(1, r, 7));
         }
 
-        for (int i = 0 ; i < EVAL_NB; i++) {
-            r = i + 3;              // --------------------------------
-            builder.add(selector.buttons[i].grade,  cst.xy (1,  r));
+        for (int i = 0; i < EVAL_NB; i++) {
+            r = i + 3; // --------------------------------
+            builder.add(selector.buttons[i].grade, cst.xy(1, r));
+
             if (useButtons) {
-                builder.add(selector.buttons[i].button, cst.xyw(3,  r, 5));
+                builder.add(selector.buttons[i].button, cst.xyw(3, r, 5));
             } else {
-                builder.add(selector.buttons[i].field,  cst.xyw(3,  r, 5));
+                builder.add(selector.buttons[i].field, cst.xyw(3, r, 5));
             }
         }
     }
 
-    //~ Classes -----------------------------------------------------------
-
-    //----------//
-    // Selector //
-    //----------//
-    private class Selector
-    {
-        // A collection of EvalButton's
-        EvalButton[] buttons;
-
-        public Selector()
-        {
-            buttons = new EvalButton[EVAL_NB];
-            for (int i = 0; i < buttons.length; i++) {
-                buttons[i] = new EvalButton();
-            }
-            setEvals(null);
-        }
-
-        //----------//
-        // setEvals //
-        //----------//
-        /**
-         * Display the evaluations with some text highlighting. Only
-         * relevant evaluations are displayed (distance less than an
-         * evaluator-dependent threshold, and less than x times (also
-         * evaluator-dependent) the best (first) eval whichever comes
-         * first)
-         *
-         * @param evals the ordered list of evaluations from best to worst
-         */
-        public void setEvals (Evaluation[] evals)
-        {
-            // Special case to empty the selector
-            if (evals == null) {
-                for (EvalButton evalButton : buttons) {
-                    evalButton.setEval(null);
-                }
-                return;
-            }
-
-            double maxDist = evaluator.getMaxDistance();
-            double maxRatio = evaluator.getMaxDistanceRatio();
-            double best = -1;       // i.e. Not set
-
-            int iBound = Math.min(EVAL_NB, evals.length);
-            int i;
-            for (i = 0; i < iBound; i++) {
-                Evaluation eval = evals[i];
-                if (eval.grade > maxDist) {
-                    break;
-                }
-                if (best < 0) {
-                    best = eval.grade;
-                }
-                if (eval.grade > best * maxRatio) {
-                    break;
-                }
-                buttons[i].setEval(eval);
-            }
-            // Zero the remaining buttons
-            for (; i < EVAL_NB; i++) {
-                buttons[i].setEval(null);
-            }
-        }
-    }
+    //~ Inner Classes ----------------------------------------------------------
 
     //------------//
     // EvalButton //
@@ -297,17 +236,19 @@ public class EvaluationBoard
     private class EvalButton
         implements ActionListener
     {
-        // A shape button or text field. Only one of them will be
-        // allocated and used
-        final JTextField field;
         final JButton    button;
+
+        // A shape button or text field. Only one of them will be allocated and
+        // used
+        final JTextField field;
 
         // The related grade
         JLabel grade = new JLabel("", SwingConstants.RIGHT);
 
-        public EvalButton()
+        public EvalButton ()
         {
             grade.setToolTipText("Grade of the evaluation");
+
             if (useButtons) {
                 button = new JButton();
                 button.addActionListener(this);
@@ -326,11 +267,13 @@ public class EvaluationBoard
         public void setEval (Evaluation eval)
         {
             JComponent comp;
+
             if (useButtons) {
                 comp = button;
             } else {
                 comp = field;
             }
+
             if (eval != null) {
                 if (useButtons) {
                     button.setText(eval.shape.toString());
@@ -340,6 +283,7 @@ public class EvaluationBoard
                 }
 
                 comp.setVisible(true);
+
                 if (eval.grade <= GlyphInspector.getSymbolMaxGrade()) {
                     comp.setForeground(EVAL_GOOD_COLOR);
                 } else {
@@ -355,13 +299,86 @@ public class EvaluationBoard
         }
 
         // Triggered by button
-        public void actionPerformed(ActionEvent e)
+        public void actionPerformed (ActionEvent e)
         {
             // Assign current glyph with selected shape
             if (glyphModel != null) {
-                glyphModel.assignGlyphShape
-                    ((Glyph) inputSelectionList.get(0).getEntity(),
-                     Shape.valueOf(button.getText()));
+                glyphModel.assignGlyphShape(
+                    (Glyph) inputSelectionList.get(0).getEntity(),
+                    Shape.valueOf(button.getText()));
+            }
+        }
+    }
+
+    //----------//
+    // Selector //
+    //----------//
+    private class Selector
+    {
+        // A collection of EvalButton's
+        EvalButton[] buttons;
+
+        public Selector ()
+        {
+            buttons = new EvalButton[EVAL_NB];
+
+            for (int i = 0; i < buttons.length; i++) {
+                buttons[i] = new EvalButton();
+            }
+
+            setEvals(null);
+        }
+
+        //----------//
+        // setEvals //
+        //----------//
+        /**
+         * Display the evaluations with some text highlighting. Only relevant
+         * evaluations are displayed (distance less than an evaluator-dependent
+         * threshold, and less than x times (also evaluator-dependent) the best
+         * (first) eval whichever comes first)
+         *
+         * @param evals the ordered list of evaluations from best to worst
+         */
+        public void setEvals (Evaluation[] evals)
+        {
+            // Special case to empty the selector
+            if (evals == null) {
+                for (EvalButton evalButton : buttons) {
+                    evalButton.setEval(null);
+                }
+
+                return;
+            }
+
+            double maxDist = evaluator.getMaxDistance();
+            double maxRatio = evaluator.getMaxDistanceRatio();
+            double best = -1; // i.e. Not set
+
+            int    iBound = Math.min(EVAL_NB, evals.length);
+            int    i;
+
+            for (i = 0; i < iBound; i++) {
+                Evaluation eval = evals[i];
+
+                if (eval.grade > maxDist) {
+                    break;
+                }
+
+                if (best < 0) {
+                    best = eval.grade;
+                }
+
+                if (eval.grade > (best * maxRatio)) {
+                    break;
+                }
+
+                buttons[i].setEval(eval);
+            }
+
+            // Zero the remaining buttons
+            for (; i < EVAL_NB; i++) {
+                buttons[i].setEval(null);
             }
         }
     }
@@ -370,47 +387,45 @@ public class EvaluationBoard
     // TestAction //
     //------------//
     /**
-     * Class <code>TestAction</code> uses the evaluator on all known
-     * glyphs within the sheet, to check if they can be correctly
-     * recognized. This does not modify the current glyph assignments.
+     * Class <code>TestAction</code> uses the evaluator on all known glyphs
+     * within the sheet, to check if they can be correctly recognized. This does
+     * not modify the current glyph assignments.
      */
     private class TestAction
         extends AbstractAction
     {
-        //~ Constructors ----------------------------------------------
-
         public TestAction ()
         {
             super("Global");
         }
 
-        //~ Methods ---------------------------------------------------
-
         public void actionPerformed (ActionEvent e)
         {
-            int ok = 0;
-            int total = 0;
+            int          ok = 0;
+            int          total = 0;
             final double maxGrade = GlyphInspector.getSymbolMaxGrade();
+
             for (SystemInfo system : sheet.getSystems()) {
                 for (Glyph glyph : system.getGlyphs()) {
                     if (glyph.isKnown() &&
-                        glyph.getShape() != Shape.COMBINING_STEM) {
+                        (glyph.getShape() != Shape.COMBINING_STEM)) {
                         total++;
+
                         Shape guess = evaluator.vote(glyph, maxGrade);
+
                         if (glyph.getShape() == guess) {
                             ok++;
-                            view.colorizeGlyph(glyph,
-                                               Shape.okColor);
+                            view.colorizeGlyph(glyph, Shape.okColor);
                         } else {
-                            view.colorizeGlyph(glyph,
-                                               Shape.missedColor);
+                            view.colorizeGlyph(glyph, Shape.missedColor);
                         }
                     }
                 }
             }
-            String pc = String.format(" %5.2f%%",
-                                      (double) ok * 100 /
-                                      (double) total);
+
+            String pc = String.format(
+                " %5.2f%%",
+                ((double) ok * 100) / (double) total);
             testPercent.setText(pc);
             testResult.setText(ok + "/" + total);
 

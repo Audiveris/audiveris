@@ -1,19 +1,22 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                     G l y p h R e g r e s s i o n                     //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                       G l y p h R e g r e s s i o n                        //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.glyph;
 
 import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.math.Population;
+
 import omr.util.Logger;
 
 import java.io.*;
@@ -21,8 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Class <code>GlyphRegression</code> is a glyph evaluator based on a
- * {@link omr.math.NeuralNetwork}.
+ * Class <code>GlyphRegression</code> is a glyph evaluator based on a {@link
+ * omr.math.NeuralNetwork}.
  *
  * <p>Note that this evaluator has been deprecated. It is used internally and
  * temporarily in the selection of core sheets among the training material. It
@@ -34,20 +37,21 @@ import java.util.List;
 public class GlyphRegression
     extends Evaluator
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(GlyphRegression.class);
     private static final Constants constants = new Constants();
+    private static final Logger    logger = Logger.getLogger(
+        GlyphRegression.class);
 
     // The singleton
     private static GlyphRegression INSTANCE;
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // All shape descriptions
     private ShapeDesc[] shapeDescs;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------------//
     // GlyphRegression //
@@ -58,25 +62,15 @@ public class GlyphRegression
     private GlyphRegression ()
     {
         // Allocate shape descriptors, as a brand new one
-        logger.fine ("Creating a brand new GlyphRegression");
+        logger.fine("Creating a brand new GlyphRegression");
         shapeDescs = new ShapeDesc[outSize];
+
         for (int s = outSize - 1; s >= 0; s--) {
             shapeDescs[s] = new ShapeDesc(Shape.values()[s]);
         }
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //------//
-    // dump //
-    //------//
-    @Override
-        public void dump ()
-    {
-        for (ShapeDesc desc : shapeDescs) {
-            desc.dump();
-        }
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //-------------//
     // getInstance //
@@ -99,15 +93,22 @@ public class GlyphRegression
     //----------------//
     // getEvaluations //
     //----------------//
+    /**
+     * Report the results of evaluating a glyph
+     *
+     * @param glyph the glyph to evaluate
+     *
+     * @return ordered array of evaluations
+     */
     @Override
-        public Evaluation[] getEvaluations (Glyph glyph)
+    public Evaluation[] getEvaluations (Glyph glyph)
     {
         // If too small, it's just NOISE
         if (!isBigEnough(glyph)) {
             return noiseEvaluations;
         }
 
-        double[] ins = feedInput(glyph, null);
+        double[]     ins = feedInput(glyph, null);
         Evaluation[] evals = new Evaluation[outSize];
 
         for (int s = 0; s < outSize; s++) {
@@ -126,8 +127,13 @@ public class GlyphRegression
     //---------//
     // getName //
     //---------//
+    /**
+     * Report a name for this evaluator
+     *
+     * @return a simple name
+     */
     @Override
-        public String getName()
+    public String getName ()
     {
         return "Regression";
     }
@@ -135,8 +141,13 @@ public class GlyphRegression
     //-----------//
     // isTrained //
     //-----------//
+    /**
+     * Check whether the evaluator has been trained
+     *
+     * @return true if trained
+     */
     @Override
-        public boolean isTrained ()
+    public boolean isTrained ()
     {
         for (ShapeDesc desc : shapeDescs) {
             if (desc.populations[0].getCardinality() >= 2) {
@@ -147,64 +158,18 @@ public class GlyphRegression
         return false;
     }
 
-    //-------//
-    // train //
-    //-------//
-    @Override
-        public void train (List<Glyph>  base,
-                           Monitor      monitor,
-                           StartingMode mode)
-    {
-        if (base.size() == 0) {
-            logger.warning("No glyph to retrain Regression Evaluator");
-            return;
-        }
-
-        // Reset counters ?
-        if (mode == StartingMode.SCRATCH) {
-            for (ShapeDesc desc : shapeDescs) {
-                for (Population population : desc.populations) {
-                    population.reset();
-                }
-            }
-        }
-
-        // Accumulate
-        double[] ins = new double[inSize];
-        for (Glyph glyph : base) {
-            if (monitor != null) {
-                monitor.glyphProcessed(glyph);
-            }
-
-            try {
-            ShapeDesc desc = shapeDescs[glyph.getShape().ordinal()];
-            desc.include(feedInput(glyph, ins));
-            } catch (Exception ex) {
-                logger.warning("Weird shape : " + glyph.getShape());
-            }
-        }
-
-        // Determine means & weights
-        for (ShapeDesc desc : shapeDescs) {
-            desc.compute();
-        }
-    }
-
-    //-----------------//
-    // measureDistance //
-    //-----------------//
+    //------//
+    // dump //
+    //------//
     /**
-     * Measure the "distance" information between a given glyph and a
-     * shape.
-     *
-     * @param glyph the glyph at hand
-     * @param shape the shape to measure distance from
-     * @return the measured distance
+     * Dump all descriptions to the standard output
      */
-    public double measureDistance (Glyph glyph,
-                                   Shape shape)
+    @Override
+    public void dump ()
     {
-        return shapeDescs[shape.ordinal()].distance(glyph);
+        for (ShapeDesc desc : shapeDescs) {
+            desc.dump();
+        }
     }
 
     //--------------//
@@ -223,7 +188,90 @@ public class GlyphRegression
         shapeDescs[shape.ordinal()].dumpDistance(glyph);
     }
 
-    //~ Classes -----------------------------------------------------------
+    //-----------------//
+    // measureDistance //
+    //-----------------//
+    /**
+     * Measure the "distance" information between a given glyph and a shape.
+     *
+     * @param glyph the glyph at hand
+     * @param shape the shape to measure distance from
+     * @return the measured distance
+     */
+    public double measureDistance (Glyph glyph,
+                                   Shape shape)
+    {
+        return shapeDescs[shape.ordinal()].distance(glyph);
+    }
+
+    //-------//
+    // train //
+    //-------//
+    /**
+     * Launch the training of the evaluator
+     *
+     * @param base the collection of glyphs used for training
+     * @param monitor a monitoring entity
+     * @param mode incremental or scratch mode
+     */
+    @Override
+    public void train (List<Glyph>  base,
+                       Monitor      monitor,
+                       StartingMode mode)
+    {
+        if (base.size() == 0) {
+            logger.warning("No glyph to retrain Regression Evaluator");
+
+            return;
+        }
+
+        // Reset counters ?
+        if (mode == StartingMode.SCRATCH) {
+            for (ShapeDesc desc : shapeDescs) {
+                for (Population population : desc.populations) {
+                    population.reset();
+                }
+            }
+        }
+
+        // Accumulate
+        double[] ins = new double[inSize];
+
+        for (Glyph glyph : base) {
+            if (monitor != null) {
+                monitor.glyphProcessed(glyph);
+            }
+
+            try {
+                ShapeDesc desc = shapeDescs[glyph.getShape()
+                                                 .ordinal()];
+                desc.include(feedInput(glyph, ins));
+            } catch (Exception ex) {
+                logger.warning("Weird shape : " + glyph.getShape());
+            }
+        }
+
+        // Determine means & weights
+        for (ShapeDesc desc : shapeDescs) {
+            desc.compute();
+        }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+        extends ConstantSet
+    {
+        Constant.Double weightMax = new Constant.Double(5e3, "Maximum weight");
+
+        Constants ()
+        {
+            initialize();
+        }
+    }
 
     //-----------//
     // ShapeDesc //
@@ -235,16 +283,14 @@ public class GlyphRegression
     private static class ShapeDesc
         implements java.io.Serializable
     {
-        //~ Instance variables --------------------------------------------
-
         // The related shape
-        final Shape shape;
+        final Shape        shape;
+
+        // Mean for each criteria
+        final double[]     means = new double[inSize];
 
         // Counters to compute mean value & std deviation
         final Population[] populations = new Population[inSize];
-
-        // Mean for each criteria
-        final double[] means = new double[inSize];
 
         // Weight for each criteria
         final double[] weights = new double[inSize];
@@ -266,28 +312,19 @@ public class GlyphRegression
         }
 
         //---------//
-        // include //
-        //---------//
-        public void include (double[] ins)
-        {
-            for (int c = inSize - 1; c >= 0; c--) {
-                populations[c].includeValue(ins[c]);
-            }
-        }
-
-        //---------//
         // compute //
         //---------//
         public void compute ()
         {
             double weightMax = constants.weightMax.getValue();
+
             if (populations[0].getCardinality() >= 2) {
                 for (int c = 0; c < inSize; c++) {
                     Population population = populations[c];
                     means[c] = population.getMeanValue();
-                    weights[c] = Math.min
-                        (weightMax,
-                         1d / (inSize * population.getStandardDeviation()));
+                    weights[c] = Math.min(
+                        weightMax,
+                        1d / (inSize * population.getStandardDeviation()));
                 }
             }
         }
@@ -300,14 +337,6 @@ public class GlyphRegression
             return distance(feedInput(glyph, null));
         }
 
-        //--------------//
-        // dumpDistance //
-        //--------------//
-        public double dumpDistance (Glyph glyph)
-        {
-            return dumpDistance(feedInput(glyph, null));
-        }
-
         //----------//
         // distance //
         //----------//
@@ -315,32 +344,12 @@ public class GlyphRegression
         {
             if (populations[0].getCardinality() >= 2) {
                 double dist = 0;
+
                 for (int c = 0; c < inSize; c++) {
                     double d = (means[c] - ins[c]) * weights[c];
-                    dist += d * d;
+                    dist += (d * d);
                 }
-                return dist;
-            } else {
-                return 50e50;
-            }
-        }
 
-        //--------------//
-        // dumpDistance //
-        //--------------//
-        public double dumpDistance (double[] ins)
-        {
-            if (populations[0].getCardinality() >= 2) {
-                double dist = 0;
-                for (int c = 0; c < inSize; c++) {
-                    double dm = Math.abs(means[c] - ins[c]);
-                    double wdm = weights[c] * dm;
-                    dist += wdm * wdm;
-                    System.out.printf
-                        ("%2d-> dm:%e wgt:%e wdm:%e\n",
-                         c, dm, weights[c], wdm);
-                }
-                System.out.printf("Dist to %s=%e\n", shape, dist);
                 return dist;
             } else {
                 return 50e50;
@@ -352,37 +361,68 @@ public class GlyphRegression
         //------//
         public void dump ()
         {
-            System.out.printf("\n%30s %3d\n",
-                              shape.toString(),
-                              populations[0].getCardinality());
+            System.out.printf(
+                "\n%30s %3d\n",
+                shape.toString(),
+                populations[0].getCardinality());
 
             if (populations[0].getCardinality() >= 2) {
                 for (int c = 0; c < inSize; c++) {
-                    System.out.printf
-                            ("%2d %7s -> mean=% e std=% e wgt=% e\n",
-                             c,
-                             getLabel(c),
-                             means[c],
-                             populations[c].getStandardDeviation(),
-                             weights[c]);
+                    System.out.printf(
+                        "%2d %7s -> mean=% e std=% e wgt=% e\n",
+                        c,
+                        getLabel(c),
+                        means[c],
+                        populations[c].getStandardDeviation(),
+                        weights[c]);
                 }
             }
         }
-    }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-        extends ConstantSet
-    {
-        Constant.Double weightMax = new Constant.Double
-                (5e3,
-                 "Maximum weight");
-
-        Constants ()
+        //--------------//
+        // dumpDistance //
+        //--------------//
+        public double dumpDistance (Glyph glyph)
         {
-            initialize();
+            return dumpDistance(feedInput(glyph, null));
+        }
+
+        //--------------//
+        // dumpDistance //
+        //--------------//
+        public double dumpDistance (double[] ins)
+        {
+            if (populations[0].getCardinality() >= 2) {
+                double dist = 0;
+
+                for (int c = 0; c < inSize; c++) {
+                    double dm = Math.abs(means[c] - ins[c]);
+                    double wdm = weights[c] * dm;
+                    dist += (wdm * wdm);
+                    System.out.printf(
+                        "%2d-> dm:%e wgt:%e wdm:%e\n",
+                        c,
+                        dm,
+                        weights[c],
+                        wdm);
+                }
+
+                System.out.printf("Dist to %s=%e\n", shape, dist);
+
+                return dist;
+            } else {
+                return 50e50;
+            }
+        }
+
+        //---------//
+        // include //
+        //---------//
+        public void include (double[] ins)
+        {
+            for (int c = inSize - 1; c >= 0; c--) {
+                populations[c].includeValue(ins[c]);
+            }
         }
     }
 }

@@ -1,27 +1,29 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                           M u s i c N o d e                           //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             M u s i c N o d e                              //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.score;
 
 import omr.lag.Lag;
+
 import omr.ui.view.Zoom;
+
 import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.awt.*;
 
 /**
- * Class <code>MusicNode</code> handles a node in the tree hierarchy of a
- * score entity.
- * <p/>
- * <p/>
+ * Class <code>MusicNode</code> handles a node in the tree hierarchy of a score
+ * entity.
+ *
+ * <p>
  * The use of TreeNode for the Score hierarchy is the following :
  * <pre>
  *                               Score                                    |
@@ -69,14 +71,13 @@ import java.awt.*;
  * starting generally from the top (the score instance).</p>
  *
  * <p> This is launched by calling an <b>xxxChildren()</b> method on the score
- * instance. To benefit from this, one only has to provide a overriding
- * version of the <b>xxxNode()</b> method for the sub-classes where some
- * processing is needed, since the hierarchy traversal is done
- * automatically.</p>
+ * instance. To benefit from this, one only has to provide a overriding version
+ * of the <b>xxxNode()</b> method for the sub-classes where some processing is
+ * needed, since the hierarchy traversal is done automatically.</p>
  *
  * <p>Each <b>xxxNode()</b> method returns a boolean to continue or stop the
- * processing under the node at hand. This is especially useful for
- * efficiently painting or rendering score entities.</p>
+ * processing under the node at hand. This is especially useful for efficiently
+ * painting or rendering score entities.</p>
  *
  * <p>Current implemented traversals are the following ones: <ul>
  *
@@ -99,11 +100,11 @@ import java.awt.*;
 public class MusicNode
     extends TreeNode
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(MusicNode.class);
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------//
     // MusicNode //
@@ -122,47 +123,103 @@ public class MusicNode
         }
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // colorizeNode //
-    //--------------//
+    //-----------------//
+    // cleanupChildren //
+    //-----------------//
     /**
-     * Placeholder for colorizing the sections that compose the physical
-     * info that corresponds to this MusicNode.
-     *
-     * @param lag       the lag to be colorized
-     * @param viewIndex the provided lag view index
-     * @param color     the color to be used
-     *
-     * @return true if processing must continue
+     * Pattern to launch cleanup recursively on all children of this node
      */
-    protected boolean colorizeNode (Lag lag,
-                                    int viewIndex,
-                                    Color color)
+    public void cleanupChildren ()
     {
-        return true;
+        for (TreeNode node : children) {
+            MusicNode child = (MusicNode) node;
+
+            if (child.cleanupNode()) {
+                child.cleanupChildren();
+            }
+        }
     }
 
     //------------------//
     // colorizeChildren //
     //------------------//
     /**
-     * Just forward the colorizing instruction to the direct depending
-     * children.
+     * Just forward the colorizing instruction to the direct depending children.
      *
      * @param lag       the lag to be colorized
      * @param viewIndex the provided lag view index
      * @param color     the color to be used
      */
-    public void colorizeChildren (Lag lag,
-                                  int viewIndex,
+    public void colorizeChildren (Lag   lag,
+                                  int   viewIndex,
                                   Color color)
     {
         for (TreeNode node : children) {
             MusicNode child = (MusicNode) node;
+
             if (child.colorizeNode(lag, viewIndex, color)) {
                 child.colorizeChildren(lag, viewIndex, color);
+            }
+        }
+    }
+
+    //-----------------//
+    // computeChildren //
+    //-----------------//
+    /**
+     * Pattern to launch computation recursively on all children of this node
+     */
+    public void computeChildren ()
+    {
+        for (TreeNode node : children) {
+            MusicNode child = (MusicNode) node;
+
+            if (child.computeNode()) {
+                child.computeChildren();
+            }
+        }
+    }
+
+    //---------------//
+    // paintChildren //
+    //---------------//
+    /**
+     * Just forwards the paint instruction to the direct depending children.
+     *
+     * @param g the graphics context
+     * @param z the zooming factor
+     */
+    public void paintChildren (Graphics g,
+                               Zoom     z)
+    {
+        for (TreeNode node : children) {
+            MusicNode child = (MusicNode) node;
+
+            if (child.paintNode(g, z)) {
+                child.paintChildren(g, z);
+            }
+        }
+    }
+
+    //----------------//
+    // renderChildren //
+    //----------------//
+    /**
+     * Just forwards the rendering instruction to the direct depending children.
+     *
+     * @param g the graphics context
+     * @param z the display zoom
+     */
+    public void renderChildren (Graphics g,
+                                Zoom     z)
+    {
+        for (TreeNode node : children) {
+            MusicNode child = (MusicNode) node;
+
+            if (child.renderNode(g, z)) {
+                child.renderChildren(g, z);
             }
         }
     }
@@ -180,21 +237,24 @@ public class MusicNode
         return true;
     }
 
-    //-----------------//
-    // cleanupChildren //
-    //-----------------//
+    //--------------//
+    // colorizeNode //
+    //--------------//
     /**
-     * Pattern to launch cleanup recursively on all children of this
-     * node
+     * Placeholder for colorizing the sections that compose the physical info
+     * that corresponds to this MusicNode.
+     *
+     * @param lag       the lag to be colorized
+     * @param viewIndex the provided lag view index
+     * @param color     the color to be used
+     *
+     * @return true if processing must continue
      */
-    public void cleanupChildren ()
+    protected boolean colorizeNode (Lag   lag,
+                                    int   viewIndex,
+                                    Color color)
     {
-        for (TreeNode node : children) {
-            MusicNode child = (MusicNode) node;
-            if (child.cleanupNode()) {
-                child.cleanupChildren();
-            }
-        }
+        return true;
     }
 
     //-------------//
@@ -210,31 +270,13 @@ public class MusicNode
         return true;
     }
 
-    //-----------------//
-    // computeChildren //
-    //-----------------//
-    /**
-     * Pattern to launch computation recursively on all children of this
-     * node
-     */
-    public void computeChildren ()
-    {
-        for (TreeNode node : children) {
-            MusicNode child = (MusicNode) node;
-            if (child.computeNode()) {
-                child.computeChildren();
-            }
-        }
-    }
-
     //-----------//
     // paintNode //
     //-----------//
     /**
-     * Painting in the <b>Score</b> display the node at hand, and returning
-     * true is the rendering has been made, so that (contained) children
-     * will be painted only if their container has been painted, at least
-     * partially.
+     * Painting in the <b>Score</b> display the node at hand, and returning true
+     * is the rendering has been made, so that (contained) children will be
+     * painted only if their container has been painted, at least partially.
      *
      * @param g the graphics context
      * @param z the zooming factor
@@ -247,35 +289,13 @@ public class MusicNode
         return true;
     }
 
-    //---------------//
-    // paintChildren //
-    //---------------//
-    /**
-     * Just forwards the paint instruction to the direct depending
-     * children.
-     *
-     * @param g the graphics context
-     * @param z the zooming factor
-     */
-    public void paintChildren (Graphics g,
-                               Zoom     z)
-    {
-        for (TreeNode node : children) {
-            MusicNode child = (MusicNode) node;
-            if (child.paintNode(g, z)) {
-                child.paintChildren(g, z);
-            }
-        }
-    }
-
     //------------//
     // renderNode //
     //------------//
     /**
-     * Rendering in the <b>Sheet</b> display the node at hand, and
-     * returning true is the rendering has been made, so that (contained)
-     * children will be rendered only if their container has been rendered,
-     * at least partially.
+     * Rendering in the <b>Sheet</b> display the node at hand, and returning
+     * true is the rendering has been made, so that (contained) children will be
+     * rendered only if their container has been rendered, at least partially.
      *
      * @param g the graphics context
      * @param z the display zoom
@@ -286,26 +306,5 @@ public class MusicNode
                                   Zoom     z)
     {
         return true;
-    }
-
-    //----------------//
-    // renderChildren //
-    //----------------//
-    /**
-     * Just forwards the rendering instruction to the direct depending
-     * children.
-     *
-     * @param g the graphics context
-     * @param z the display zoom
-     */
-    public void renderChildren (Graphics g,
-                                Zoom     z)
-    {
-        for (TreeNode node : children) {
-            MusicNode child = (MusicNode) node;
-            if (child.renderNode(g, z)) {
-                child.renderChildren(g, z);
-            }
-        }
     }
 }

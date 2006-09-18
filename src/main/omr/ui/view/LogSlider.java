@@ -7,14 +7,15 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.view;
 
 import omr.constant.*;
 
-import javax.swing.*;
-import java.util.Hashtable;
 import omr.ui.*;
+
+import java.util.Hashtable;
+
+import javax.swing.*;
 
 /**
  * Class <code>LogSlider</code> is a specific {@link JSlider} which handles
@@ -31,20 +32,20 @@ import omr.ui.*;
 public class LogSlider
     extends JSlider
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Constants constants = new Constants();
 
     // Internal resolution
-    private static final int unit = constants.resolution.getValue();
+    private static final int    unit = constants.resolution.getValue();
     private static final double doubleUnit = unit; // To speed up
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // Base of log (generally 2 or 10)
     private final double base;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------//
     // LogSlider //
@@ -81,28 +82,32 @@ public class LogSlider
         this.base = (double) base;
 
         // Ticks
-        super.setMajorTickSpacing (unit);
+        super.setMajorTickSpacing(unit);
+
         if (minors > 1) {
-            super.setMinorTickSpacing (unit / minors);
+            super.setMinorTickSpacing(unit / minors);
         }
+
         setPaintTicks(true);
 
         // More room given to labels
-//         switch (orientation) {
-//         case HORIZONTAL : setBorder (BorderFactory.createEmptyBorder(0,0,5,0));
-//             break;
-//         case VERTICAL   : setBorder (BorderFactory.createEmptyBorder(0,0,0,5));
-//         }
+        //         switch (orientation) {
+        //         case HORIZONTAL : setBorder (BorderFactory.createEmptyBorder(0,0,5,0));
+        //             break;
+        //         case VERTICAL   : setBorder (BorderFactory.createEmptyBorder(0,0,0,5));
+        //         }
 
         // Create and populate the label table
-        Hashtable<Integer, JLabel> labelTable
-            = new Hashtable<Integer, JLabel>();
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
+
         for (int i = min; i <= max; i++) {
-            labelTable.put(new Integer(i * unit),
-                           new JLabel((i < 0)
-                                      ? ("1/" + (int) expOf(-i * unit))
-                                      : ("" + (int) expOf(i * unit))));
+            labelTable.put(
+                new Integer(i * unit),
+                new JLabel(
+                    (i < 0) ? ("1/" + (int) expOf(-i * unit))
+                                        : ("" + (int) expOf(i * unit))));
         }
+
         setLabelTable(labelTable);
         setPaintLabels(true);
 
@@ -110,7 +115,20 @@ public class LogSlider
         setSnapToTicks(true);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // setDoubleValue //
+    //----------------//
+    /**
+     * Use the provided value, to set the slider internal position.
+     *
+     * @param d a <code>double</code> value, such as 32 or 0.125.
+     */
+    public void setDoubleValue (double d)
+    {
+        super.setValue(logOf(d));
+    }
 
     //----------------//
     // getDoubleValue //
@@ -126,19 +144,6 @@ public class LogSlider
         return expOf(super.getValue());
     }
 
-    //----------------//
-    // setDoubleValue //
-    //----------------//
-    /**
-     * Use the provided value, to set the slider internal position.
-     *
-     * @param d a <code>double</code> value, such as 32 or 0.125.
-     */
-    public void setDoubleValue (double d)
-    {
-        super.setValue(logOf(d));
-    }
-
     //---------------------//
     // setMajorTickSpacing //
     //---------------------//
@@ -150,10 +155,10 @@ public class LogSlider
      * @param n not used
      */
     @Override
-        public void setMajorTickSpacing (int n)
+    public void setMajorTickSpacing (int n)
     {
-        throw new UnsupportedOperationException
-            ("Method setMajorTickSpacing not supported by LogSlider");
+        throw new UnsupportedOperationException(
+            "Method setMajorTickSpacing not supported by LogSlider");
     }
 
     //---------------------//
@@ -168,10 +173,10 @@ public class LogSlider
      * @param n not used
      */
     @Override
-        public void setMinorTickSpacing (int n)
+    public void setMinorTickSpacing (int n)
     {
-        throw new UnsupportedOperationException
-            ("Method setMinorTickSpacing not supported by LogSlider");
+        throw new UnsupportedOperationException(
+            "Method setMinorTickSpacing not supported by LogSlider");
     }
 
     //-------//
@@ -187,11 +192,10 @@ public class LogSlider
     //-------//
     private int logOf (double d)
     {
-        return (int) Math.rint
-            ((doubleUnit * Math.log(d)) / Math.log(base));
+        return (int) Math.rint((doubleUnit * Math.log(d)) / Math.log(base));
     }
 
-    //~ Classes -----------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
     // Constants //
@@ -199,9 +203,9 @@ public class LogSlider
     private static class Constants
         extends ConstantSet
     {
-        Constant.Integer resolution = new Constant.Integer
-                (480,
-                 "Number of values between two major ticks");
+        Constant.Integer resolution = new Constant.Integer(
+            480,
+            "Number of values between two major ticks");
 
         Constants ()
         {

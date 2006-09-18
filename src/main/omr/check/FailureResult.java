@@ -1,14 +1,15 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                       F a i l u r e R e s u l t                       //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                         F a i l u r e R e s u l t                          //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.check;
+
 
 /**
  * Class <code>FailureResult</code> is the root of all results that store a
@@ -20,13 +21,13 @@ package omr.check;
 public class FailureResult
     extends Result
 {
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //---------------//
     // FailureResult //
     //---------------//
     /**
-     * Creates a new FailureResult object.
+     * Create a new FailureResult object.
      *
      * @param comment A comment that describe the failure reason
      */
@@ -35,7 +36,7 @@ public class FailureResult
         super(comment);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //----------//
     // toString //

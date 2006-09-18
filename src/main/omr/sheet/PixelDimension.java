@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                      P i x e l D i m e n s i o n                      //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                        P i x e l D i m e n s i o n                         //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import java.awt.*;
@@ -26,14 +26,16 @@ import java.awt.*;
 public class PixelDimension
     extends Dimension
 {
+    //~ Constructors -----------------------------------------------------------
+
     //----------------//
     // PixelDimension //
     //----------------//
     /**
-     * Creates an instance of <code>PixelDimension</code> with a width of
-     * zero and a height of zero.
+     * Creates an instance of <code>PixelDimension</code> with a width of zero
+     * and a height of zero.
      */
-    public PixelDimension()
+    public PixelDimension ()
     {
     }
 
@@ -47,8 +49,8 @@ public class PixelDimension
      * @param width the specified width
      * @param height the specified height
      */
-    public PixelDimension(int width,
-                          int height)
+    public PixelDimension (int width,
+                           int height)
     {
         super(width, height);
     }

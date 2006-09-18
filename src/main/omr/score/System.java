@@ -1,30 +1,31 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                              S y s t e m                              //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                S y s t e m                                 //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.score;
 
+import static omr.score.ScoreConstants.*;
+
 import omr.sheet.SystemInfo;
+
 import omr.ui.view.Zoom;
+
 import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
-
-import static omr.score.ScoreConstants.*;
 
 import java.awt.*;
 import java.util.List;
 
 /**
- * Class <code>System</code> encapsulates a system in a score.
- * <p>A system contains two direct children : staves and slurs, each in its
- * dedicated list.
+ * Class <code>System</code> encapsulates a system in a score.  <p>A system
+ * contains two direct children : staves and slurs, each in its dedicated list.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -32,35 +33,35 @@ import java.util.List;
 public class System
     extends MusicNode
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(System.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    // Related info from sheet analysis
-    private SystemInfo info;
+    // Specific Child : list of slurs
+    private final SlurList  slurs;
 
     // Specific Child : list of staves
     private final StaffList staves;
 
-    // Specific Child : list of slurs
-    private final SlurList slurs;
-
     // Top left corner of the system
-    private PagePoint topLeft;
+    private PagePoint     topLeft;
+
+    // Actual display origin
+    private ScorePoint    origin;
+
+    // Related info from sheet analysis
+    private SystemInfo    info;
 
     // System dimensions, expressed in units
     private UnitDimension dimension;
-
-    // Actual display origin
-    private ScorePoint origin;
 
     // First, and last measure ids
     private int firstMeasureId = 0;
     private int lastMeasureId = 0;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //--------//
     // System //
@@ -85,10 +86,10 @@ public class System
      *                  system in its containing score
      * @param dimension the dimension of the system, expressed in units
      */
-    public System (SystemInfo     info,
-                   Score          score,
-                   PagePoint      topLeft,
-                   UnitDimension  dimension)
+    public System (SystemInfo    info,
+                   Score         score,
+                   PagePoint     topLeft,
+                   UnitDimension dimension)
     {
         super(score);
 
@@ -96,8 +97,8 @@ public class System
         staves = new StaffList(this);
         slurs = new SlurList(this);
 
-        this.info      = info;
-        this.topLeft   = topLeft;
+        this.info = info;
+        this.topLeft = topLeft;
         this.dimension = dimension;
 
         if (logger.isFineEnabled()) {
@@ -105,15 +106,46 @@ public class System
         }
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
+
+    //--------------//
+    // setDimension //
+    //--------------//
+    /**
+     * Set the system dimension.
+     *
+     * <p>Width is the distance, in units, between left edge and right edge.
+     *
+     * <p>Height is the distance, in units, from top of first staff, down to
+     * bottom of last staff
+     *
+     * @param dimension system dimension, in units
+     */
+    public void setDimension (UnitDimension dimension)
+    {
+        this.dimension = dimension;
+    }
+
+    //--------------//
+    // getDimension //
+    //--------------//
+    /**
+     * Report the system dimension.
+     *
+     * @return the system dimension, in units
+     * @see #setDimension
+     */
+    public UnitDimension getDimension ()
+    {
+        return dimension;
+    }
 
     //-------------------//
     // getFirstMeasureId //
     //-------------------//
     /**
-     * Report the id of the first measure in the system, knowing that 0 is
-     * the id of the very first measure of the very first system in the
-     * score
+     * Report the id of the first measure in the system, knowing that 0 is the
+     * id of the very first measure of the very first system in the score
      *
      * @return the first measure id
      */
@@ -132,48 +164,15 @@ public class System
      */
     public Staff getFirstStaff ()
     {
-        return (Staff) getStaves().get(0);
-    }
-
-    //--------------//
-    // getDimension //
-    //--------------//
-    /**
-     * Report the system dimension.
-     *
-     * @return the system dimension, in units
-     * @see #setDimension
-     */
-    public UnitDimension getDimension ()
-    {
-        return dimension;
-    }
-
-    //--------------//
-    // setDimension //
-    //--------------//
-    /**
-     * Set the system dimension.
-     *
-     * <p>Width is the distance, in units, between left edge and right
-     * edge.
-     *
-     * <p>Height is the distance, in units, from top of first staff, down
-     * to bottom of last staff
-     *
-     * @param dimension system dimension, in units
-     */
-    public void setDimension (UnitDimension dimension)
-    {
-        this.dimension = dimension;
+        return (Staff) getStaves()
+                           .get(0);
     }
 
     //---------//
     // getInfo //
     //---------//
     /**
-     * Report the physical information retrieved from the sheet for this
-     * system
+     * Report the physical information retrieved from the sheet for this system
      *
      * @return the information entity
      */
@@ -218,36 +217,8 @@ public class System
      */
     public Staff getLastStaff ()
     {
-        return (Staff) getStaves().get(getStaves().size() - 1);
-    }
-
-    //------------//
-    // setTopLeft //
-    //------------//
-    /**
-     * Set the coordinates of the top left cormer of the system in the score
-     *
-     * @param topLeft the upper left point, with coordinates in units, in
-     * virtual score page
-     */
-    public void setTopLeft (PagePoint topLeft)
-    {
-        this.topLeft = topLeft;
-    }
-
-    //------------//
-    // getTopLeft //
-    //------------//
-    /**
-     * Report the coordinates of the upper left corner of this system in
-     * its containing score
-     *
-     * @return the top left corner
-     * @see #setTopLeft
-     */
-    public PagePoint getTopLeft ()
-    {
-        return topLeft;
+        return (Staff) getStaves()
+                           .get(getStaves().size() - 1);
     }
 
     //-----------//
@@ -287,6 +258,7 @@ public class System
     public void setSlurs (List<TreeNode> slurs)
     {
         final List<TreeNode> list = getSlurs();
+
         if (list != slurs) {
             list.clear();
             list.addAll(slurs);
@@ -309,15 +281,23 @@ public class System
     //------------//
     // getStaffAt //
     //------------//
+    /**
+     * Report the staff nearest (in ordinate) to a provided point
+     *
+     * @param point the provided point
+     *
+     * @return the nearest staff
+     */
     public Staff getStaffAt (PagePoint point)
     {
-        int minDy = Integer.MAX_VALUE;
+        int   minDy = Integer.MAX_VALUE;
         Staff best = null;
 
         for (TreeNode node : getStaves()) {
             Staff staff = (Staff) node;
-            int midY = staff.getTopLeft().y + staff.getSize() /2;
-            int dy = Math.abs(point.y - midY);
+            int   midY = staff.getTopLeft().y + (staff.getSize() / 2);
+            int   dy = Math.abs(point.y - midY);
+
             if (dy < minDy) {
                 minDy = dy;
                 best = staff;
@@ -338,6 +318,7 @@ public class System
     public void setStaves (List<TreeNode> staves)
     {
         final List<TreeNode> list = getStaves();
+
         if (list != staves) {
             list.clear();
             list.addAll(staves);
@@ -357,12 +338,41 @@ public class System
         return staves.getChildren();
     }
 
+    //------------//
+    // setTopLeft //
+    //------------//
+    /**
+     * Set the coordinates of the top left cormer of the system in the score
+     *
+     * @param topLeft the upper left point, with coordinates in units, in
+     * virtual score page
+     */
+    public void setTopLeft (PagePoint topLeft)
+    {
+        this.topLeft = topLeft;
+    }
+
+    //------------//
+    // getTopLeft //
+    //------------//
+    /**
+     * Report the coordinates of the upper left corner of this system in its
+     * containing score
+     *
+     * @return the top left corner
+     * @see #setTopLeft
+     */
+    public PagePoint getTopLeft ()
+    {
+        return topLeft;
+    }
+
     //----------//
     // addChild //
     //----------//
     /**
-     * Overrides normal behavior, to deal with the separation of children
-     * into slurs and staves
+     * Overrides normal behavior, to deal with the separation of children into
+     * slurs and staves
      *
      * @param node the node to insert (either a slur or a staff)
      */
@@ -386,37 +396,11 @@ public class System
     }
 
     //--------------//
-    // sheetToScore //
-    //--------------//
-    /**
-     * Compute the score display point that correspond to a given sheet
-     * point, since systems are displayed horizontally in the score
-     * display, while they are located one under the other in a sheet.
-     *
-     * @param pagPt the point in the sheet
-     * @param scrPt the corresponding point in score display, or null
-     * @return the score point
-     *
-     * @see #scoreToSheet
-     */
-    public ScorePoint sheetToScore (PagePoint  pagPt,
-                              ScorePoint scrPt)
-    {
-        if (scrPt == null) {
-            scrPt = new ScorePoint();
-        }
-        scrPt.x = (origin.x + pagPt.x) - topLeft.x;
-        scrPt.y = (origin.y + pagPt.y) - topLeft.y;
-        
-        return scrPt;
-    }
-
-    //--------------//
     // scoreToSheet //
     //--------------//
     /**
-     * Compute the point in the sheet that corresponds to a given point in
-     * the score display
+     * Compute the point in the sheet that corresponds to a given point in the
+     * score display
      *
      * @param scrPt the point in the score display
      * @param pagPt the corresponding sheet point, or null
@@ -425,15 +409,43 @@ public class System
      * @see #sheetToScore
      */
     public PagePoint scoreToSheet (ScorePoint scrPt,
-                              PagePoint pagPt)
+                                   PagePoint  pagPt)
     {
         if (pagPt == null) {
             pagPt = new PagePoint();
         }
+
         pagPt.x = (topLeft.x + scrPt.x) - origin.x;
         pagPt.y = (topLeft.y + scrPt.y) - origin.y;
-        
+
         return pagPt;
+    }
+
+    //--------------//
+    // sheetToScore //
+    //--------------//
+    /**
+     * Compute the score display point that correspond to a given sheet point,
+     * since systems are displayed horizontally in the score display, while they
+     * are located one under the other in a sheet.
+     *
+     * @param pagPt the point in the sheet
+     * @param scrPt the corresponding point in score display, or null
+     * @return the score point
+     *
+     * @see #scoreToSheet
+     */
+    public ScorePoint sheetToScore (PagePoint  pagPt,
+                                    ScorePoint scrPt)
+    {
+        if (scrPt == null) {
+            scrPt = new ScorePoint();
+        }
+
+        scrPt.x = (origin.x + pagPt.x) - topLeft.x;
+        scrPt.y = (origin.y + pagPt.y) - topLeft.y;
+
+        return scrPt;
     }
 
     //----------//
@@ -447,8 +459,8 @@ public class System
     @Override
     public String toString ()
     {
-        return "{System" + " topLeft=" + topLeft + " dimension=" + dimension
-                + "}";
+        return "{System" + " topLeft=" + topLeft + " dimension=" + dimension +
+               "}";
     }
 
     //---------//
@@ -501,15 +513,15 @@ public class System
     // computeNode //
     //-------------//
     /**
-     * The <code>computeNode</code> method overrides the normal routine,
-     * for specific system computation. The various 'systems' are aligned
-     * horizontally, rather than vertically as they were in the original
-     * music sheet.
+     * The <code>computeNode</code> method overrides the normal routine, for
+     * specific system computation. The various 'systems' are aligned
+     * horizontally, rather than vertically as they were in the original music
+     * sheet.
      *
      * @return true
      */
     @Override
-        protected boolean computeNode ()
+    protected boolean computeNode ()
     {
         super.computeNode();
 
@@ -519,12 +531,12 @@ public class System
         if (prevSystem == null) {
             // Very first system in the score
             origin = new ScorePoint();
-            origin.move (SCORE_INIT_X, SCORE_INIT_Y);
+            origin.move(SCORE_INIT_X, SCORE_INIT_Y);
             firstMeasureId = 0;
         } else {
             // Not the first system
             origin = new ScorePoint();
-            origin.setLocation (prevSystem.origin);
+            origin.setLocation(prevSystem.origin);
             origin.translate(prevSystem.dimension.width - 1 + INTER_SYSTEM, 0);
             firstMeasureId = prevSystem.lastMeasureId;
         }
@@ -540,41 +552,45 @@ public class System
     // paintNode //
     //-----------//
     /**
-     * Specific <code>paintNode</code> method, just the system left and
-     * right sides are drawn
+     * Specific <code>paintNode</code> method, just the system left and right
+     * sides are drawn
      *
      * @param g the graphic context
      * @param zoom the display zoom ratio
      *
-     * @return true if painted was actually done, so that depending
-     *         entities (staff, slurs) are also rendered, false otherwise
-     *         to stop the painting
+     * @return true if painted was actually done, so that depending entities
+     *         (staff, slurs) are also rendered, false otherwise to stop the
+     *         painting
      */
     @Override
-        protected boolean paintNode (Graphics g,
-                                     Zoom zoom)
+    protected boolean paintNode (Graphics g,
+                                 Zoom     zoom)
     {
         // What is the clipping region (to check whether our system is
         // impacted)
         Rectangle clip = g.getClipBounds();
-        if (!xIntersect(zoom.unscaled(clip.x),
-                        zoom.unscaled(clip.x + clip.width))) {
+
+        if (!xIntersect(
+            zoom.unscaled(clip.x),
+            zoom.unscaled(clip.x + clip.width))) {
             return false;
         }
 
         g.setColor(Color.lightGray);
 
         // Draw the system left edge
-        g.drawLine(zoom.scaled(origin.x),
-                   zoom.scaled(origin.y),
-                   zoom.scaled(origin.x),
-                   zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
+        g.drawLine(
+            zoom.scaled(origin.x),
+            zoom.scaled(origin.y),
+            zoom.scaled(origin.x),
+            zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
 
         // Draw the system right edge
-        g.drawLine(zoom.scaled(origin.x + dimension.width),
-                   zoom.scaled(origin.y),
-                   zoom.scaled(origin.x + dimension.width),
-                   zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
+        g.drawLine(
+            zoom.scaled(origin.x + dimension.width),
+            zoom.scaled(origin.y),
+            zoom.scaled(origin.x + dimension.width),
+            zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
 
         return true;
     }
@@ -583,9 +599,9 @@ public class System
     // xIntersect //
     //------------//
     /**
-     * Check for intersection of a given clip determined by (left, right)
-     * with the system abscissa range. TBD : add some margin on left and
-     * right so that symbols on a system border get correctly drawn.
+     * Check for intersection of a given clip determined by (left, right) with
+     * the system abscissa range. TBD : add some margin on left and right so
+     * that symbols on a system border get correctly drawn.
      *
      * @param left  min abscissa
      * @param right max abscissa
@@ -606,19 +622,7 @@ public class System
         return true;
     }
 
-    //~ Classes -----------------------------------------------------------
-
-    //-----------//
-    // StaffList //
-    //-----------//
-    private static class StaffList
-        extends MusicNode
-    {
-        StaffList (MusicNode container)
-        {
-            super(container);
-        }
-    }
+    //~ Inner Classes ----------------------------------------------------------
 
     //----------//
     // SlurList //
@@ -627,6 +631,18 @@ public class System
         extends MusicNode
     {
         SlurList (MusicNode container)
+        {
+            super(container);
+        }
+    }
+
+    //-----------//
+    // StaffList //
+    //-----------//
+    private static class StaffList
+        extends MusicNode
+    {
+        StaffList (MusicNode container)
         {
             super(container);
         }

@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                            O r i e n t e d                            //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                              O r i e n t e d                               //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.lag;
 
 import java.awt.*;
@@ -21,12 +21,14 @@ import java.awt.*;
  */
 public interface Oriented
 {
+    //~ Methods ----------------------------------------------------------------
+
     //------------//
     // isVertical //
     //------------//
     /**
-     * Return true if the entity is vertical, false if horizontal. Not a
-     * very object-oriented approach but who cares?
+     * Return true if the entity is vertical, false if horizontal. Not a very
+     * object-oriented approach but who cares?
      *
      * @return true if vertical, false otherwise
      */
@@ -37,9 +39,8 @@ public interface Oriented
     //-----------//
     /**
      * Given a (coord, pos) oriented point, return the point (x, y) in the
-     * absolute space taking the lag orientation into account. The same
-     * method can be used for the opposite computation, since the method is
-     * involutive.
+     * absolute space taking the lag orientation into account. The same method
+     * can be used for the opposite computation, since the method is involutive.
      *
      * @param cp the oriented (coord, pos) point
      * @param xy output parameter, or null if not pre-allocated
@@ -53,8 +54,8 @@ public interface Oriented
     // switchRef //
     //-----------//
     /**
-     * Given a (coord, pos, length, thickness) oriented rectangle, return
-     * the corresponding absolute rectangle, or vice versa.
+     * Given a (coord, pos, length, thickness) oriented rectangle, return the
+     * corresponding absolute rectangle, or vice versa.
      *
      * @param cplt the oriented rectangle (coord, pos, length, thickness)
      * @param xywh output parameter (x, y, width, height), or null if not
@@ -64,5 +65,4 @@ public interface Oriented
      */
     Rectangle switchRef (Rectangle cplt,
                          Rectangle xywh);
-
 }

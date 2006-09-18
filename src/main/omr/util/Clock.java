@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                               C l o c k                               //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                 C l o c k                                  //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.util;
 
 import java.text.DateFormat;
@@ -17,42 +17,41 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Class <code>Clock</code> provides various features related to the
- * current date and time, as well as the elapsed time since the beginning
- * of the application.
+ * Class <code>Clock</code> provides various features related to the current
+ * date and time, as well as the elapsed time since the beginning of the
+ * application.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Clock
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     // To have a reference time
-    private static long startTime = System.currentTimeMillis();
+    private static long          startTime = System.currentTimeMillis();
 
     // General date formatting
-    private static DateFormat dateFormatter
-        = DateFormat.getDateTimeInstance(DateFormat.FULL,
-                                         DateFormat.FULL,
-                                         Locale.US);
+    private static DateFormat    dateFormatter = DateFormat.getDateTimeInstance(
+        DateFormat.FULL,
+        DateFormat.FULL,
+        Locale.US);
 
     // General time formatting
-    // Locale to be used, coul dbe:  //Locale.US;   //Locale.FRANCE;
-    private static Locale locale = Locale.getDefault();
+    // Locale to be used, could be:  //Locale.US;   //Locale.FRANCE;
+    private static Locale        locale = Locale.getDefault();
 
     // Corresponding number format
-    private static NumberFormat nf = NumberFormat.getNumberInstance(locale);
+    private static NumberFormat  nf = NumberFormat.getNumberInstance(locale);
 
     // Decimal format
     private static DecimalFormat timeFormatter = (DecimalFormat) nf;
 
-    static
-    {
+    static {
         timeFormatter.applyPattern("000,000.00");
     }
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-------//
     // Clock // To prevent instantiation
@@ -61,7 +60,7 @@ public class Clock
     {
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //---------//
     // getDate //
@@ -81,10 +80,10 @@ public class Clock
     // getElapsed //
     //------------//
     /**
-     * Retrieves the number of milliseconds since the reference start time,
-     * and formats a standardized string using seconds and
-     * milliseconds. NB: The start time is usually the time when this class
-     * was elaborated. It can also be later reset, via the 'reset' method.
+     * Retrieves the number of milliseconds since the reference start time, and
+     * formats a standardized string using seconds and milliseconds. NB: The
+     * start time is usually the time when this class was elaborated. It can
+     * also be later reset, via the 'reset' method.
      *
      * @return A standardized duration string
      */

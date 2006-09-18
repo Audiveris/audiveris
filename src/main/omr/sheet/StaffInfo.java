@@ -1,25 +1,27 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                           S t a f f I n f o                           //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             S t a f f I n f o                              //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import omr.math.Line;
+
 import omr.ui.view.Zoom;
+
+import omr.util.Logger;
 
 import java.awt.*;
 import java.util.List;
-import omr.util.Logger;
 
 /**
- * Class <code>StaffInfo</code> handles the physical details of a staff
- * with its lines.
+ * Class <code>StaffInfo</code> handles the physical details of a staff with its
+ * lines.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -27,17 +29,27 @@ import omr.util.Logger;
 public class StaffInfo
     implements java.io.Serializable
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(StaffInfo.class);
 
-    //~ Instance variables ------------------------------------------------
-
-    // For debug only
-    private int id;
+    //~ Instance fields --------------------------------------------------------
 
     // Lines of the set
     private List<LineInfo> lines;
+
+    // Scale specific to this staff, since staves in a page may exhibit
+    // different scales.
+    private Scale specificScale;
+
+    // Bottom of staff related area
+    private int areaBottom = -1;
+
+    // Top of staff related area
+    private int areaTop = -1;
+
+    // For debug only
+    private int id;
 
     // Left extrema
     private int left;
@@ -45,17 +57,7 @@ public class StaffInfo
     // Right extrema
     private int right;
 
-    // Top of staff related area
-    private int areaTop = -1;
-
-    // Bottom of staff related area
-    private int areaBottom = -1;
-
-    // Scale specific to this staff, since staves in a page may exhibit
-    // different scales.
-    private Scale specificScale;
-
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------//
     // StaffInfo //
@@ -68,9 +70,9 @@ public class StaffInfo
      * @param specificScale specific scale detected for this staff
      * @param lines the collection of contained staff lines
      */
-    public StaffInfo (int left,
-                      int right,
-                      Scale specificScale,
+    public StaffInfo (int            left,
+                      int            right,
+                      Scale          specificScale,
                       List<LineInfo> lines)
     {
         this.left = left;
@@ -79,7 +81,7 @@ public class StaffInfo
         this.lines = lines;
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //---------------//
     // setAreaBottom //
@@ -156,7 +158,8 @@ public class StaffInfo
      */
     public int getHeight ()
     {
-        return getSpecificScale().interline() * 4;
+        return getSpecificScale()
+                   .interline() * 4;
     }
 
     //-------------//
@@ -228,6 +231,7 @@ public class StaffInfo
         } else {
             // Return the scale of the sheet
             logger.warning("No specific scale available");
+
             return null;
         }
     }
@@ -253,13 +257,35 @@ public class StaffInfo
      */
     public void dump ()
     {
-        System.out.println("StaffInfo" + id + " left=" + left + " right="
-                           + right);
+        System.out.println(
+            "StaffInfo" + id + " left=" + left + " right=" + right);
+
         int i = 0;
 
         for (LineInfo line : lines) {
             System.out.println(" LineInfo" + i++ + " " + line.toString());
         }
+    }
+
+    //-----------------//
+    // pitchPositionOf //
+    //-----------------//
+    /**
+     * Compute the pitch position of a pixel point
+     *
+     * @param pt the pixel point
+     * @return the pitch position
+     */
+    public double pitchPositionOf (PixelPoint pt)
+    {
+        int top = getFirstLine()
+                      .getLine()
+                      .yAt(pt.x);
+        int bottom = getLastLine()
+                         .getLine()
+                         .yAt(pt.x);
+
+        return (4.0d * ((2 * pt.y) - bottom - top)) / (bottom - top);
     }
 
     //--------//
@@ -272,12 +298,14 @@ public class StaffInfo
      * @param z the display zoom
      */
     public void render (Graphics g,
-                        Zoom z)
+                        Zoom     z)
     {
         // Check with the clipping region
         Rectangle clip = g.getClipBounds();
-        Line firstLine = getFirstLine().getLine();
-        Line lastLine = getLastLine().getLine();
+        Line      firstLine = getFirstLine()
+                                  .getLine();
+        Line      lastLine = getLastLine()
+                                 .getLine();
 
         if ((firstLine == null) || (lastLine == null)) {
             return;
@@ -328,35 +356,21 @@ public class StaffInfo
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb
-            .append("{StaffInfo")
-            .append(" id=").append(id)
-            .append(" left=").append(left)
-            .append(" right=").append(right);
+        sb.append("{StaffInfo")
+          .append(" id=")
+          .append(id)
+          .append(" left=")
+          .append(left)
+          .append(" right=")
+          .append(right);
+
         if (specificScale != null) {
-            sb.append(" specificScale=").append(specificScale.interline());
+            sb.append(" specificScale=")
+              .append(specificScale.interline());
         }
+
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //-----------------//
-    // pitchPositionOf //
-    //-----------------//
-    /**
-     * Compute the pitch position of a pixel point
-     *
-     * @param pt the pixel point
-     * @return the pitch position
-     */
-    public double pitchPositionOf (PixelPoint pt)
-    {
-        int top   = getFirstLine().getLine().yAt(pt.x);
-        int bottom = getLastLine().getLine().yAt(pt.x);
-
-        return
-            4.0d*(2*pt.y - bottom - top)
-            / (bottom - top);
     }
 }

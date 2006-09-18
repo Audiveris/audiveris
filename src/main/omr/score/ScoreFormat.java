@@ -1,39 +1,33 @@
-//--------------------------------------------------------------------------//
-//                                                                          //
-//                          S c o r e F o r m a t                           //
-//                                                                          //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.             //
-//  This software is released under the terms of the GNU General Public     //
-//  License. Please contact the author at herve.bitteur@laposte.net         //
-//  to report bugs & suggestions.                                           //
-//--------------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                           S c o r e F o r m a t                            //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.score;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 /**
- * Class <code>ScoreFormat</code> defines an enumeration of all possible
- * formats for score files.
+ * Class <code>ScoreFormat</code> defines an enumeration of all possible formats
+ * for score files.
  */
 public enum ScoreFormat
 {
-    //~ Static variables/initializers -------------------------------------
-
     /**
      * Binary format, used with plain Java (de)serialization
      */
-    BINARY("Binary",
-           ".score"),
+    BINARY("Binary", ".score"),
 
     /**
      * XML ASCII format, used with an XML mapper
      */
-    XML("Xml",
-        ".xml");
-
-    //~ Instance variables ------------------------------------------------
+    XML("Xml", ".xml");
 
     /**
      * Readable name of the format
@@ -45,9 +39,10 @@ public enum ScoreFormat
      */
     public final String extension;
 
+    /**
+     * The name of the default folder, where scores should be stored.
+     */
     public final Constant.String folder;
-
-    //~ Constructors ------------------------------------------------------
 
     //-------------//
     // ScoreFormat //
@@ -61,13 +56,13 @@ public enum ScoreFormat
     ScoreFormat (String name,
                  String extension)
     {
-        this.name      = name;
+        this.name = name;
         this.extension = extension;
 
-        folder = new Constant.String
-            (getClass().toString(),
-             "score" + name + "Folder",
-             "c:/",
-             "Default directory for " + name + " score files");
+        folder = new Constant.String(
+            getClass().toString(),
+            "score" + name + "Folder",
+            "c:/",
+            "Default directory for " + name + " score files");
     }
 }

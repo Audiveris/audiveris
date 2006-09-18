@@ -1,35 +1,40 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                         S k e w B u i l d e r                         //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                           S k e w B u i l d e r                            //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+
 import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionRatioPolicy;
 import omr.lag.LagBuilder;
 import omr.lag.LagView;
 import omr.lag.RunBoard;
-import omr.lag.SectionView;
-import omr.stick.Stick;
-import omr.stick.StickSection;
-import omr.ui.BoardsPane;
-import omr.ui.PixelBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
-import omr.util.Logger;
-
+import omr.lag.SectionView;
 import static omr.selection.SelectionTag.*;
+
+import omr.stick.Stick;
+import omr.stick.StickSection;
+
+import omr.ui.BoardsPane;
+import omr.ui.PixelBoard;
+
+import omr.util.Logger;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
@@ -41,6 +46,7 @@ import org.jfree.ui.RefineryUtilities;
 
 import java.awt.Color;
 import java.util.*;
+
 import javax.swing.WindowConstants;
 
 /**
@@ -54,34 +60,34 @@ import javax.swing.WindowConstants;
  */
 public class SkewBuilder
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Constants constants = new Constants();
-    private static final Logger logger = Logger.getLogger(SkewBuilder.class);
+    private static final Logger    logger = Logger.getLogger(SkewBuilder.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
+
+    // Lag of horizontal significant runs
+    private GlyphLag    sLag; // A skewed (horizontal) lag
+
+    // Sticks
+    private List<Stick> sticks = new ArrayList<Stick>();
+
+    // Sheet for which computation is to be done
+    private Sheet  sheet;
 
     // The target of this computation
     private double angle;
-
-    // Sheet for which computation is to be done
-    private Sheet sheet;
 
     // Skew slope as computed
     private double slope;
 
     // Length Threshold, for slope computation
     private int lengthThreshold;
-
-    // Sticks
-    private List<Stick> sticks = new ArrayList<Stick>();
-
-    // Lag of horizontal significant runs
-    private GlyphLag sLag;  // A skewed (horizontal) lag
-    private int minSectionLength;
     private int maxThickness;
+    private int minSectionLength;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-------------//
     // SkewBuilder //
@@ -97,18 +103,7 @@ public class SkewBuilder
         this.sheet = sheet;
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //--------------//
-    // displayChart //
-    //--------------//
-    /**
-     * Build and display the slope histogram of lengthy horizontal sticks
-     */
-    public void displayChart()
-    {
-        writePlot();
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //-----------//
     // buildInfo //
@@ -124,7 +119,7 @@ public class SkewBuilder
     {
         // Needed out for previous steps
         Picture picture = sheet.getPicture();
-        Scale scale = sheet.getScale();
+        Scale   scale = sheet.getScale();
 
         // Parameters
         minSectionLength = scale.toPixels(constants.minSectionLength);
@@ -133,11 +128,11 @@ public class SkewBuilder
         sLag = new GlyphLag(new HorizontalOrientation());
         sLag.setName("Skew-HLag");
         sLag.setVertexClass(StickSection.class);
-        new LagBuilder<GlyphLag, GlyphSection>().rip
-                (sLag,
-                 picture,
-                 scale.toPixels(constants.minRunLength), // minRunLength
-                 new JunctionRatioPolicy(constants.maxHeightRatio.getValue())); // maxHeightRatio
+        new LagBuilder<GlyphLag, GlyphSection>().rip(
+            sLag,
+            picture,
+            scale.toPixels(constants.minRunLength), // minRunLength
+            new JunctionRatioPolicy(constants.maxHeightRatio.getValue())); // maxHeightRatio
 
         // Detect long sticks
         maxThickness = scale.mainFore();
@@ -155,8 +150,7 @@ public class SkewBuilder
         logger.info("Skew angle is " + (float) angle + " radians");
 
         // Display the resulting lag
-        if (constants.displayFrame.getValue() &&
-            Main.getJui() != null) {
+        if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
             displayFrame();
         }
 
@@ -164,11 +158,22 @@ public class SkewBuilder
         if (Math.abs(angle) > constants.maxSkewAngle.getValue()) {
             picture.rotate(-angle);
         } else {
-            logger.info ("No image rotation needed.");
+            logger.info("No image rotation needed.");
         }
 
         // Report the computed info
         return new Skew(angle);
+    }
+
+    //--------------//
+    // displayChart //
+    //--------------//
+    /**
+     * Build and display the slope histogram of lengthy horizontal sticks
+     */
+    public void displayChart ()
+    {
+        writePlot();
     }
 
     //--------------//
@@ -178,9 +183,9 @@ public class SkewBuilder
     {
         // Check section length
         // Check /quadratic mean/ section thickness
-        int length = section.getLength();
-        boolean result = (length >= minSectionLength)
-                         && ((section.getWeight() / length) <= maxThickness);
+        int     length = section.getLength();
+        boolean result = (length >= minSectionLength) &&
+                         ((section.getWeight() / length) <= maxThickness);
 
         return result;
     }
@@ -193,36 +198,10 @@ public class SkewBuilder
     {
         // Make sure that two sections can be combined into a stick.
         // Tests are based on the angle between them,
-        boolean result = Math.abs(left.getLine().getSlope()
-                                  - right.getLine().getSlope())
-                         <= constants.maxDeltaSlope.getValue();
+        boolean result = Math.abs(
+            left.getLine().getSlope() - right.getLine().getSlope()) <= constants.maxDeltaSlope.getValue();
 
         return result;
-    }
-
-    //--------------//
-    // displayFrame //
-    //--------------//
-    private void displayFrame()
-    {
-        // Create a view
-        LagView view = new SkewLagView();
-        view.colorize();
-
-        // Create a hosting frame for the view
-        final String unit = "SkewBuilder";
-        sheet.getAssembly().addViewTab
-            ("Skew",
-             new ScrollLagView(view),
-             new BoardsPane
-             (sheet, view,
-              new PixelBoard(unit),
-              new RunBoard(unit,
-                           sheet.getSelection(SKEW_RUN)),
-              new SectionBoard(unit,
-                               sLag.getLastVertexId(),
-                               sheet.getSelection(SKEW_SECTION),
-                               sheet.getSelection(SKEW_SECTION_ID))));
     }
 
     //---------------//
@@ -232,8 +211,7 @@ public class SkewBuilder
     {
         Stick stick;
 
-        // Try to aggregate sections into sticks.
-        // Visit all sections of the lag
+        // Try to aggregate sections into sticks.  Visit all sections of the lag
         for (GlyphSection s : sLag.getVertices()) {
             StickSection section = (StickSection) s;
 
@@ -255,27 +233,31 @@ public class SkewBuilder
                     sticks.add(stick);
 
                     // Include this section in the stick list
-                    stick.addSection(section, /* link => */ true);
+                    stick.addSection(section, /* link => */
+                                     true);
                 }
 
-                // Now, from this stick section,
-                // Look at following connected chunks
+                // Now, from this stick section, Look at following connected
+                // chunks
                 for (GlyphSection gs : section.getTargets()) {
                     StickSection lnkSection = (StickSection) gs;
-                    if (isMajorChunk(lnkSection)
-                        && areCompatible(section, lnkSection)) {
-                        // If this section is already part of (another)
-                        // stick, then merge this other stick with ours
+
+                    if (isMajorChunk(lnkSection) &&
+                        areCompatible(section, lnkSection)) {
+                        // If this section is already part of (another) stick,
+                        // then merge this other stick with ours
                         if (lnkSection.getGlyph() != null) {
                             // Add the content of the other stick
                             if (lnkSection.getGlyph() != stick) {
-                                stick.addGlyphSections(lnkSection.getGlyph(),
-                                                       /* linkSections => */ true);
+                                stick.addGlyphSections(
+                                    lnkSection.getGlyph(),
+                                    /* linkSections => */ true);
                                 sticks.remove(lnkSection.getGlyph());
                             }
                         } else {
                             // Let's add this section to the stick
-                            stick.addSection(lnkSection, /* link => */ true);
+                            stick.addSection(lnkSection, /* link => */
+                                             true);
                         }
                     }
                 }
@@ -289,24 +271,23 @@ public class SkewBuilder
         // Now process these sticks
         if (sticks.size() > 0) {
             // Sort the sticks on their length, longest first (so the swap)
-            Collections.sort(sticks,
-                             new Comparator<Stick>()
-                             {
-                                 public int compare (Stick s1,
-                                                     Stick s2)
-                                 {
-                                     return s2.getLength() - s1.getLength();
-                                 }
-                             });
+            Collections.sort(
+                sticks,
+                new Comparator<Stick>() {
+                        public int compare (Stick s1,
+                                            Stick s2)
+                        {
+                            return s2.getLength() - s1.getLength();
+                        }
+                    });
 
             // Length of longest stick
             Iterator<Stick> it = sticks.iterator();
-            Stick longest = it.next();
-            lengthThreshold = (int) ((double) longest.getLength()
-                                     * constants.sizeRatio.getValue());
+            Stick           longest = it.next();
+            lengthThreshold = (int) ((double) longest.getLength() * constants.sizeRatio.getValue());
 
-            double slopeSum = longest.getLine().getSlope()
-                              * longest.getLength();
+            double slopeSum = longest.getLine()
+                                     .getSlope() * longest.getLength();
             double slopeNb = longest.getLength();
 
             // Compute on sticks w/ significant length
@@ -314,8 +295,8 @@ public class SkewBuilder
                 stick = it.next();
 
                 if (stick.getLength() >= lengthThreshold) {
-                    slopeSum += (stick.getLine().getSlope()
-                                 * stick.getLength());
+                    slopeSum += (stick.getLine()
+                                      .getSlope() * stick.getLength());
                     slopeNb += stick.getLength();
 
                     //stick.dump (false);
@@ -327,6 +308,33 @@ public class SkewBuilder
             slope = slopeSum / slopeNb;
             angle = Math.atan(slope);
         }
+    }
+
+    //--------------//
+    // displayFrame //
+    //--------------//
+    private void displayFrame ()
+    {
+        // Create a view
+        LagView view = new SkewLagView();
+        view.colorize();
+
+        // Create a hosting frame for the view
+        final String unit = "SkewBuilder";
+        sheet.getAssembly()
+             .addViewTab(
+            "Skew",
+            new ScrollLagView(view),
+            new BoardsPane(
+                sheet,
+                view,
+                new PixelBoard(unit),
+                new RunBoard(unit, sheet.getSelection(SKEW_RUN)),
+                new SectionBoard(
+                    unit,
+                    sLag.getLastVertexId(),
+                    sheet.getSelection(SKEW_SECTION),
+                    sheet.getSelection(SKEW_SECTION_ID))));
     }
 
     //-----------//
@@ -342,7 +350,7 @@ public class SkewBuilder
 
         // Range -0.4 .. +0.4 Radians (-24 .. +24 Degrees)
         final int MAX_INDEX = 400;
-        double[] histo = new double[MAX_INDEX];
+        double[]  histo = new double[MAX_INDEX];
 
         for (int i = MAX_INDEX - 1; i >= 0; i--) {
             histo[i] = 0;
@@ -354,9 +362,10 @@ public class SkewBuilder
                     stick.dump(false);
                 }
 
-                double slope = stick.getLine().getSlope();
-                int length = stick.getLength();
-                int index = (int) (slope * RESOLUTION) + (MAX_INDEX / 2);
+                double slope = stick.getLine()
+                                    .getSlope();
+                int    length = stick.getLength();
+                int    index = (int) (slope * RESOLUTION) + (MAX_INDEX / 2);
 
                 if ((index >= 0) && (index < MAX_INDEX)) {
                     histo[index] += stick.getLength();
@@ -367,35 +376,76 @@ public class SkewBuilder
         }
 
         XYSeriesCollection dataset = new XYSeriesCollection();
-        XYSeries slopeSeries = new XYSeries("Slope");
+        XYSeries           slopeSeries = new XYSeries("Slope");
+
         for (int i = 0; i < MAX_INDEX; i++) {
             slopeSeries.add(i - (MAX_INDEX / 2), histo[i]);
         }
+
         dataset.addSeries(slopeSeries);
 
         // Chart
-        JFreeChart chart = ChartFactory.createXYLineChart
-            (sheet.getRadix() + " - Slope Histogram", // Title
-             "Slope [" + (float) (RESOLUTION * angle)
-             + " Radians/" + RESOLUTION + "]", // X-Axis label
-             "Counts",                 // Y-Axis label
-             dataset,                   // Dataset
-             PlotOrientation.VERTICAL,  // orientation,
-             true,                      // Show legend
-             false,                     // Show tool tips
-             false                      // urls
-             );
+        JFreeChart chart = ChartFactory.createXYLineChart(
+            sheet.getRadix() + " - Slope Histogram", // Title
+            "Slope [" + (float) (RESOLUTION * angle) + " Radians/" +
+            RESOLUTION + "]", // X-Axis label
+            "Counts", // Y-Axis label
+            dataset, // Dataset
+            PlotOrientation.VERTICAL, // orientation,
+            true, // Show legend
+            false, // Show tool tips
+            false // urls
+        );
 
         // Hosting frame
-        ChartFrame frame = new ChartFrame(sheet.getRadix() + " - Slope",
-                                          chart, true) ;
+        ChartFrame frame = new ChartFrame(
+            sheet.getRadix() + " - Slope",
+            chart,
+            true);
         frame.pack();
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         RefineryUtilities.centerFrameOnScreen(frame);
         frame.setVisible(true);
     }
 
-    //~ Classes --------------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+        extends ConstantSet
+    {
+        Constant.Boolean displayFrame = new Constant.Boolean(
+            false,
+            "Should we display a frame on Lags found ?");
+        Constant.Double  maxDeltaSlope = new Constant.Double(
+            0.05,
+            "Maximum difference in slope between two sections in the same stick");
+        Constant.Double  maxHeightRatio = new Constant.Double(
+            2.5,
+            "Maximum ratio in height for a run to be combined with an existing section");
+        Constant.Double  maxSkewAngle = new Constant.Double(
+            0.001,
+            "Maximum value for skew angle before a rotation is performed");
+        Scale.Fraction   minRunLength = new Scale.Fraction(
+            1,
+            "Minimum length for a run to be considered");
+        Scale.Fraction   minSectionLength = new Scale.Fraction(
+            5,
+            "Minimum length for a section to be considered in skew computation");
+        Constant.Boolean plotting = new Constant.Boolean(
+            false,
+            "Should we produce a GnuPlot about computed skew data ?");
+        Constant.Double  sizeRatio = new Constant.Double(
+            0.5,
+            "Only sticks with length higher than this threshold are used for final computation");
+
+        Constants ()
+        {
+            initialize();
+        }
+    }
 
     //--------------//
     // SkewLagView //
@@ -403,8 +453,6 @@ public class SkewBuilder
     private class SkewLagView
         extends LagView<GlyphLag, GlyphSection>
     {
-        //~ Constructors -----------------------------------------------------
-
         //-------------//
         // SkewLagView //
         //-------------//
@@ -424,18 +472,19 @@ public class SkewBuilder
             sLag.setRunSelection(sheet.getSelection(SKEW_RUN));
             sLag.setSectionSelection(sheet.getSelection(SKEW_SECTION));
 
-            sheet.getSelection(PIXEL).addObserver(sLag);
-            sheet.getSelection(SKEW_SECTION).addObserver(sLag);
-            sheet.getSelection(SKEW_SECTION_ID).addObserver(sLag);
+            sheet.getSelection(PIXEL)
+                 .addObserver(sLag);
+            sheet.getSelection(SKEW_SECTION)
+                 .addObserver(sLag);
+            sheet.getSelection(SKEW_SECTION_ID)
+                 .addObserver(sLag);
         }
-
-        //~ Methods -------------------------------------------------------
 
         //----------//
         // colorize //
         //----------//
         @Override
-            public void colorize ()
+        public void colorize ()
         {
             if (logger.isFineEnabled()) {
                 logger.fine("colorize");
@@ -456,55 +505,11 @@ public class SkewBuilder
                 }
 
                 for (GlyphSection section : stick.getMembers()) {
-                    SectionView view = (SectionView) section.getViews().get(viewIndex);
+                    SectionView view = (SectionView) section.getViews()
+                                                            .get(viewIndex);
                     view.setColor(color);
                 }
             }
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-        extends ConstantSet
-    {
-
-        Constant.Double maxSkewAngle = new Constant.Double
-                (0.001,
-                 "Maximum value for skew angle before a rotation is performed");
-
-        Scale.Fraction minRunLength = new Scale.Fraction
-                (1,
-                 "Minimum length for a run to be considered");
-
-        Scale.Fraction minSectionLength = new Scale.Fraction
-                (5,
-                 "Minimum length for a section to be considered in skew computation");
-
-        Constant.Double maxDeltaSlope = new Constant.Double
-                (0.05,
-                 "Maximum difference in slope between two sections in the same stick");
-
-        Constant.Double sizeRatio = new Constant.Double
-                (0.5,
-                 "Only sticks with length higher than this threshold are used for final computation");
-
-        Constant.Double maxHeightRatio = new Constant.Double
-                (2.5,
-                 "Maximum ratio in height for a run to be combined with an existing section");
-
-        Constant.Boolean plotting = new Constant.Boolean
-                (false,
-                 "Should we produce a GnuPlot about computed skew data ?");
-
-        Constant.Boolean displayFrame = new Constant.Boolean
-                (false,
-                 "Should we display a frame on Lags found ?");
-
-        Constants ()
-        {
-            initialize();
         }
     }
 }

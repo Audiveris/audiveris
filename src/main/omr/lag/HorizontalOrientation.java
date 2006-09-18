@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//               H o r i z o n t a l O r i e n t a t i o n               //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                 H o r i z o n t a l O r i e n t a t i o n                  //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.lag;
 
 import java.awt.Point;
@@ -24,10 +24,16 @@ public class HorizontalOrientation
     implements Oriented,
                java.io.Serializable
 {
+    //~ Methods ----------------------------------------------------------------
 
     //------------//
     // isVertical //
     //------------//
+    /**
+     * A horizontal lag is NOT vertical
+     *
+     * @return false
+     */
     public boolean isVertical ()
     {
         return false;
@@ -36,6 +42,15 @@ public class HorizontalOrientation
     //-----------//
     // switchRef //
     //-----------//
+    /**
+     * Retrieve absolute coordinates of a point relative to the (horizontal)
+     * lag. Based on current lag implementation, this method is a pass-through.
+     *
+     * @param cp the relative coordinates
+     * @param xy variable for the absolute coordinates, or null
+     *
+     * @return the absolute coordinates
+     */
     public Point switchRef (Point cp,
                             Point xy)
     {
@@ -53,6 +68,15 @@ public class HorizontalOrientation
     //-----------//
     // switchRef //
     //-----------//
+    /**
+     * Retrieve absolute coordinates of a rectangle relative to the (horizontal)
+     * lag. Based on current lag implementation, this method is a pass-through.
+     *
+     * @param cplt the relative coordinates
+     * @param xywh variable for the absolute coordinates, or null
+     *
+     * @return the absolute coordinates
+     */
     public Rectangle switchRef (Rectangle cplt,
                                 Rectangle xywh)
     {

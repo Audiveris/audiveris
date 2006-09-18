@@ -1,29 +1,30 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                        S t i c k S e c t i o n                        //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                          S t i c k S e c t i o n                           //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.stick;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+
 import omr.lag.Lag;
 import omr.lag.Run;
+
 import omr.math.BasicLine;
 import omr.math.Line;
+import static omr.stick.SectionRole.*;
 
 import java.awt.*;
 
-import static omr.stick.SectionRole.*;
-
 /**
- * Class <code>StickSection</code> implements a specific class of
- * {@link GlyphSection}, meant for easy stick elaboration.
+ * Class <code>StickSection</code> implements a specific class of {@link
+ * GlyphSection}, meant for easy stick elaboration.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -31,18 +32,13 @@ import static omr.stick.SectionRole.*;
 public class StickSection
     extends GlyphSection
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     /**
-     * The role of the section in the enclosing stick. Not final, since it
-     * may be modified afterhand
+     * The role of the section in the enclosing stick. Not final, since it may
+     * be modified afterhand
      */
     public SectionRole role;
-
-    /**
-     * Layer of this section in the stick
-     */
-    public int layer;
 
     /**
      * Position with respect to line core center
@@ -50,11 +46,16 @@ public class StickSection
     public int direction;
 
     /**
+     * Layer of this section in the stick
+     */
+    public int layer;
+
+    /**
      * Approximating line for this section
      */
     protected Line line;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //--------------//
     // StickSection //
@@ -66,34 +67,45 @@ public class StickSection
     {
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // setParams //
-    //-----------//
+    //--------------//
+    // isAggregable //
+    //--------------//
     /**
-     * Assign major parameters (kind, layer and direction), since the
-     * enclosing stick may be assigned later.
+     * Check that the section at hand is a candidate section not yet aggregated
+     * to a recognized stick.
      *
-     * @param role      the role of this section in stick elaboration
-     * @param layer     the layer from stick core
-     * @param direction the direction when departing from the stick core
+     * @return true if aggregable (but not yet aggregated)
      */
-    public void setParams (SectionRole role,
-                           int         layer,
-                           int         direction)
+    public boolean isAggregable ()
     {
-        this.role = role;
-        this.layer = layer;
-        this.direction = direction;
+        if (!isCandidate()) {
+            return false;
+        }
+
+        return !isKnown();
+    }
+
+    //-------------//
+    // isCandidate //
+    //-------------//
+    /**
+     * Checks whether the section is a good candidate to be a member of a stick
+     *
+     * @return the result of the test
+     */
+    public boolean isCandidate ()
+    {
+        return (role != null) && (role.ordinal() < BORDER.ordinal());
     }
 
     //----------//
     // getColor //
     //----------//
     /**
-     * Define a color, according to the data at hand, that is according to
-     * the role of this section in the enclosing stick.
+     * Define a color, according to the data at hand, that is according to the
+     * role of this section in the enclosing stick.
      *
      * @return the related color
      */
@@ -137,45 +149,23 @@ public class StickSection
     }
 
     //-----------//
-    // getPrefix //
+    // setParams //
     //-----------//
-    @Override
-    protected String getPrefix ()
-    {
-        return "SS";
-    }
-
-    //-------------//
-    // isCandidate //
-    //-------------//
     /**
-     * Checks whether the section is a good candidate to be a member of a
-     * stick
+     * Assign major parameters (kind, layer and direction), since the enclosing
+     * stick may be assigned later.
      *
-     * @return the result of the test
+     * @param role      the role of this section in stick elaboration
+     * @param layer     the layer from stick core
+     * @param direction the direction when departing from the stick core
      */
-    public boolean isCandidate ()
+    public void setParams (SectionRole role,
+                           int         layer,
+                           int         direction)
     {
-        return (role != null) &&
-               (role.ordinal() < BORDER.ordinal());
-    }
-
-    //--------------//
-    // isAggregable //
-    //--------------//
-    /**
-     * Check that the section at hand is a candidate section not yet
-     * aggregated to a recognized stick.
-     *
-     * @return true if aggregable (but not yet aggregated)
-     */
-    public boolean isAggregable ()
-    {
-        if (!isCandidate()) {
-            return false;
-        }
-
-        return !isKnown();
+        this.role = role;
+        this.layer = layer;
+        this.direction = direction;
     }
 
     //----------//
@@ -193,18 +183,31 @@ public class StickSection
 
         sb.append(super.toString());
 
-        sb.append(" L=").append(layer);
-        sb.append(" D=").append(direction);
+        sb.append(" L=")
+          .append(layer);
+        sb.append(" D=")
+          .append(direction);
 
         if (role != null) {
-            sb.append(" ").append(role);
+            sb.append(" ")
+              .append(role);
         }
 
-        if (this.getClass().getName().equals
-                (StickSection.class.getName())) {
+        if (this.getClass()
+                .getName()
+                .equals(StickSection.class.getName())) {
             sb.append("}");
         }
 
         return sb.toString();
+    }
+
+    //-----------//
+    // getPrefix //
+    //-----------//
+    @Override
+    protected String getPrefix ()
+    {
+        return "SS";
     }
 }

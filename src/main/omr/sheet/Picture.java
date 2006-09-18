@@ -1,18 +1,19 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                             P i c t u r e                             //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                               P i c t u r e                                //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
+
 import omr.util.Logger;
 
 import java.awt.*;
@@ -24,6 +25,7 @@ import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
 import javax.media.jai.InterpolationBilinear;
 import javax.media.jai.InterpolationNearest;
 import javax.media.jai.JAI;
@@ -31,8 +33,8 @@ import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.MosaicDescriptor;
 
 /**
- * Class <code>Picture</code> encapsulates an image, allowing modifications
- * and rendering. Its current implementation is based on JAI (Java Advanced
+ * Class <code>Picture</code> encapsulates an image, allowing modifications and
+ * rendering. Its current implementation is based on JAI (Java Advanced
  * Imaging). JAI is not used outside of this class.
  *
  * <p> Operations allow : <ul>
@@ -47,8 +49,8 @@ import javax.media.jai.operator.MosaicDescriptor;
  *
  * <li> To <b>rotate</b> the image </li>
  *
- * <li> To <b>read</b> or to <b>write</b> a pixel knowing its location in
- * the current image </li>
+ * <li> To <b>read</b> or to <b>write</b> a pixel knowing its location in the
+ * current image </li>
  *
  * </ul> </p>
  *
@@ -68,9 +70,9 @@ import javax.media.jai.operator.MosaicDescriptor;
 public class Picture
     implements SelectionObserver
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(Picture.class);
+    private static final Logger   logger = Logger.getLogger(Picture.class);
 
     /**
      * Constant color of the picture background (generally white).
@@ -78,37 +80,37 @@ public class Picture
     public static final int BACKGROUND = 255;
 
     /**
-     * Constant color of the picture foreground (generally black), which
-     * means that any pixel whose level is higher than or equal to this
-     * value will be considered as foreground
+     * Constant color of the picture foreground (generally black), which means
+     * that any pixel whose level is higher than or equal to this value will be
+     * considered as foreground
      */
     public static final int FOREGROUND = 227;
 
-    //~ Instance variables ------------------------------------------------
-
-    // Original image dimension
-    private Dimension originalDimension;
+    //~ Instance fields --------------------------------------------------------
 
     // Transformation used for display
-    private final AffineTransform scaleTransform = AffineTransform
-            .getScaleInstance(1d,
-                              1d);
+    private final AffineTransform scaleTransform = AffineTransform.getScaleInstance(
+        1d,
+        1d);
+    private DataBuffer            dataBuffer;
+    private Dimension             dimension;
+
+    // Original image dimension
+    private Dimension   originalDimension;
 
     // Current image
     ////private RenderedOp image;
     private PlanarImage image;
-    private Dimension dimension;
-    private int dimensionWidth;         // To speedup ...
-    private DataBuffer dataBuffer;
+
+    // Selection objects where grey level of pixel is to be written to when so
+    // asked for by calling the update method
+    private Selection levelSelection;
 
     // Remember if we have actually rotated the image
     private boolean rotated = false;
+    private int     dimensionWidth; // To speedup ...
 
-    // Selection objects where grey level of pixel is to be written to when
-    // so asked for by calling the update method
-    private Selection levelSelection;
-
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //---------//
     // Picture //
@@ -129,26 +131,27 @@ public class Picture
     // Picture //
     //---------//
     /**
-     * Build a picture instance, using a given image, and the scaling to
-     * apply on the image
+     * Build a picture instance, using a given image, and the scaling to apply
+     * on the image
      *
      * @param image the image provided
      * @param scaling the scaling to apply (1.0 means no scaling)
      * @exception ImageFormatException
      */
     public Picture (RenderedImage image,
-                    float scaling)
+                    float         scaling)
         throws ImageFormatException
     {
         RenderedImage src = image;
+
         if (scaling != 1.0d) {
-            ParameterBlock pb = new ParameterBlock()
-                .addSource(image)
-                .add(scaling)
-                .add(scaling)
-                .add(0f)
-                .add(0f)
-                .add(new InterpolationNearest());
+            ParameterBlock pb = new ParameterBlock().addSource(image)
+                                                    .add(scaling)
+                                                    .add(scaling)
+                                                    .add(0f)
+                                                    .add(0f)
+                                                    .add(
+                new InterpolationNearest());
             src = JAI.create("scale", pb);
         }
 
@@ -168,45 +171,41 @@ public class Picture
      * @throws IOException           raised when an IO error occurred
      */
     public Picture (File imgFile)
-            throws FileNotFoundException,
-                   IOException,
-                   ImageFormatException
+        throws FileNotFoundException, IOException, ImageFormatException
     {
         // Try to read the image file
         logger.info("Loading image from " + imgFile + " ...");
         setImage(JAI.create("fileload", imgFile.getPath()));
 
-        logger.info("Image loaded "
-                + image.getWidth() + " x "
-                + image.getHeight());
-}
+        logger.info(
+            "Image loaded " + image.getWidth() + " x " + image.getHeight());
+    }
 
     //---------//
     // Picture //
     //---------//
     /**
-     * Create a picture as a mosaic or other images, which are to be
-     * composed one above the following one.
+     * Create a picture as a mosaic or other images, which are to be composed
+     * one above the following one.
      *
      * This method is not currently used
      *
      * @param files  ordered array of image files,
-     * @param thetas array parallel to files, that specifies the needed
-     *               rotation angles
+     * @param thetas array parallel to files, that specifies the needed rotation
+     *               angles
      *
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public Picture (File[] files,
+    public Picture (File[]   files,
                     double[] thetas)
-            throws FileNotFoundException,
-                   IOException
+        throws FileNotFoundException, IOException
     {
-        int globalWidth = 0;            // Width of resulting mosaic
-        int globalHeight = 0;           // Height of resulting mosaic
+        int           globalWidth = 0; // Width of resulting mosaic
+        int           globalHeight = 0; // Height of resulting mosaic
 
-        int narrowestIndex = 0;              // Index of narrowest image
-        int narrowestWidth = Integer.MAX_VALUE;// Width of narrowest image
+        int           narrowestIndex = 0; // Index of narrowest image
+        int           narrowestWidth = Integer.MAX_VALUE; // Width of narrowest image
 
         // Array of images and related shifts
         PlanarImage[] images = new PlanarImage[files.length];
@@ -215,59 +214,69 @@ public class Picture
             // Load from file
             PlanarImage img0 = JAI.create("fileload", files[i].getPath());
             System.out.println("i=" + i + " file=" + files[i]);
-            System.out.println("img0 width=" + img0.getWidth() +
-                               ", height=" + img0.getHeight());
+            System.out.println(
+                "img0 width=" + img0.getWidth() + ", height=" +
+                img0.getHeight());
 
             // Rotation
             PlanarImage img1;
+
             if (thetas[i] != 0) {
-                img1 = invert(JAI.create("Rotate",
-                                         (new ParameterBlock())
-                                         .addSource(invert(img0))
-                                         .add(0.0F)
-                                         .add(0.0F)
-                                         .add((float) thetas[i])
-                                         .add(new InterpolationBilinear()),
-                                         null));
+                img1 = invert(
+                    JAI.create(
+                        "Rotate",
+                        (new ParameterBlock()).addSource(invert(img0)).add(
+                            0.0F).add(0.0F).add((float) thetas[i]).add(
+                            new InterpolationBilinear()),
+                        null));
             } else {
                 img1 = img0;
             }
-            System.out.println("img1 width=" + img1.getWidth() +
-                               ", height=" + img1.getHeight());
+
+            System.out.println(
+                "img1 width=" + img1.getWidth() + ", height=" +
+                img1.getHeight());
 
             // Shift
-            AffineTransform shift = AffineTransform.getTranslateInstance(0, globalHeight);
-            images[i] = JAI.create("Affine",
-                                   (new ParameterBlock())
-                                   .addSource(img1)
-                                   .add(shift)
-                                   .add(new InterpolationBilinear()));
-            System.out.println("final width=" + images[i].getWidth() +
-                               ", height=" + images[i].getHeight());
+            AffineTransform shift = AffineTransform.getTranslateInstance(
+                0,
+                globalHeight);
+            images[i] = JAI.create(
+                "Affine",
+                (new ParameterBlock()).addSource(img1).add(shift).add(
+                    new InterpolationBilinear()));
+            System.out.println(
+                "final width=" + images[i].getWidth() + ", height=" +
+                images[i].getHeight());
 
             int width = images[i].getWidth();
+
             if (width < narrowestWidth) {
                 narrowestWidth = width;
                 narrowestIndex = i;
             }
+
             System.out.println("globalHeight=" + globalHeight);
             globalHeight += images[i].getHeight();
         }
 
         // Compute the mosaic parameter block, with narrowest image first
         System.out.println("narrowestIndex=" + narrowestIndex);
+
         ParameterBlock mosaicParam = new ParameterBlock();
-        mosaicParam.addSource(images[narrowestIndex]);  // Narrowest first !!!
+        mosaicParam.addSource(images[narrowestIndex]); // Narrowest first !!!
+
         for (int i = 0; i < files.length; i++) {
             if (i != narrowestIndex) {
                 mosaicParam.addSource(images[i]);
             }
         }
 
-        double[][] threshold = {{0}};
-        double[] bgColor = new double[]{150};
+        double[][] threshold = {
+                                   { 0 }
+                               };
+        double[]   bgColor = new double[] { 150 };
         //double[]   bgColor = new double[] {255};
-
         mosaicParam.add(MosaicDescriptor.MOSAIC_TYPE_OVERLAY);
         mosaicParam.add(null);
         mosaicParam.add(null);
@@ -282,63 +291,11 @@ public class Picture
         // Remember original stuff
         originalDimension = getDimension();
 
-        logger.info("Mosaic " + " "
-                    + image.getWidth() + " x " + image.getHeight());
+        logger.info(
+            "Mosaic " + " " + image.getWidth() + " x " + image.getHeight());
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //-------------------//
-    // setLevelSelection //
-    //-------------------//
-    /**
-     * Inject the selection object where pixel grey level must be written
-     * to, when triggered through the update method.
-     *
-     * @param levelSelection the output selection object
-     */
-    public void setLevelSelection (Selection levelSelection)
-    {
-        this.levelSelection = levelSelection;
-    }
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Call-back triggered when Pixel Selection has been modified.
-     * Based on pixel location, we forward the pixel grey level to
-     * whoever is interested in it.
-     *
-     * @param selection the (Pixel) Selection
-     * @param hint potential notification hint
-     */
-    public void update(Selection selection,
-                       SelectionHint hint)
-    {
-        switch (selection.getTag()) {
-        case PIXEL :
-            Integer level = null;
-            if (hint == SelectionHint.LOCATION_ADD ||
-                hint == SelectionHint.LOCATION_INIT) {
-                // Compute and forward pixel grey level
-                Rectangle rect = (Rectangle) selection.getEntity();
-                if (rect != null) {
-                    Point pt = rect.getLocation();
-                    // Check that we are not pointing outside the image
-                    if (pt.x >= 0 && pt.x < getWidth() &&
-                        pt.y >= 0 && pt.y < getHeight()) {
-                        level = new Integer(getPixel(pt.x, pt.y));
-                    }
-                }
-            }
-            levelSelection.setEntity(level, hint);
-            break;
-
-        default :
-            logger.severe("Unexpected selection event from " + selection);
-        }
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //--------------//
     // getDimension //
@@ -366,12 +323,39 @@ public class Picture
         return dimension.height;
     }
 
+    //-------------------//
+    // setLevelSelection //
+    //-------------------//
+    /**
+     * Inject the selection object where pixel grey level must be written to,
+     * when triggered through the update method.
+     *
+     * @param levelSelection the output selection object
+     */
+    public void setLevelSelection (Selection levelSelection)
+    {
+        this.levelSelection = levelSelection;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name for this Observer
+     *
+     * @return Observer name
+     */
+    public String getName ()
+    {
+        return "Picture";
+    }
+
     //---------------//
     // getOrigHeight //
     //---------------//
     /**
-     * Report the original picture height, as read from the image file,
-     * before any potential rotation.
+     * Report the original picture height, as read from the image file, before
+     * any potential rotation.
      *
      * @return the original height value, in pixels
      */
@@ -384,8 +368,8 @@ public class Picture
     // getOrigWidth //
     //--------------//
     /**
-     * Report the original picture width, as read from the image file,
-     * before any potential rotation.
+     * Report the original picture width, as read from the image file, before
+     * any potential rotation.
      *
      * @return the original width value, in pixels
      */
@@ -394,54 +378,18 @@ public class Picture
         return originalDimension.width;
     }
 
-    //------------------//
-    // checkImageFormat //
-    //------------------//
-    /**
-     * Check if the image format (and especially its color model) is
-     * properly handled by Audiveris.
-     *
-     * @throws ImageFormatException is the format is not supported
-     */
-    private void checkImageFormat()
-        throws ImageFormatException
-    {
-        // Check nb of bands
-        int numBands = image.getSampleModel().getNumBands();
-        if (numBands != 1) {
-            if (numBands == 3) {
-                image = RGBToGray(image);
-            } else if (numBands == 4) {
-                image = RGBAToGray(image);
-            } else {
-                throw new ImageFormatException
-                    ("Unsupported sample model" +
-                     " numBands=" + numBands);
-            }
-        }
-
-        // Check pixel size
-//        ColorModel colorModel = image.getColorModel();
-//        int pixelSize = colorModel.getPixelSize();
-//        if (pixelSize != 8) {
-//            logger.info("pixelSize=" + pixelSize +
-//                    " colorModel=" + colorModel);
-//            image = grayToGray256(image);
-//        }
-    }
-
     //----------//
     // setPixel //
     //----------//
     /**
-     * Write a pixel at the provided location, in the currently writable
-     * data buffer
+     * Write a pixel at the provided location, in the currently writable data
+     * buffer
      *
      * @param pt  pixel coordinates
      * @param val pixel value
      */
     public void setPixel (Point pt,
-                          int val)
+                          int   val)
     {
         dataBuffer.setElem(pt.x + (pt.y * dimensionWidth), val);
     }
@@ -480,8 +428,8 @@ public class Picture
     // getWidth //
     //----------//
     /**
-     * Report the current width of the picture image. Note that it may have
-     * been modified by a rotation.
+     * Report the current width of the picture image. Note that it may have been
+     * modified by a rotation.
      *
      * @return the current width value, in pixels.
      */
@@ -507,8 +455,8 @@ public class Picture
     // dumpRectangle //
     //---------------//
     /**
-     * Debugging routine, that prints a basic representation of a
-     * rectangular portion of the picture.
+     * Debugging routine, that prints a basic representation of a rectangular
+     * portion of the picture.
      *
      * @param title an optional title for this image dump
      * @param xMin  x first coord
@@ -517,42 +465,51 @@ public class Picture
      * @param yMax  y last coord
      */
     public void dumpRectangle (String title,
-                               int xMin,
-                               int xMax,
-                               int yMin,
-                               int yMax)
+                               int    xMin,
+                               int    xMax,
+                               int    yMin,
+                               int    yMax)
     {
         System.out.println();
+
         if (title != null) {
             System.out.println(title);
         }
 
         // Abscissae
         System.out.print("     ");
+
         for (int x = xMin; x <= xMax; x++) {
             System.out.printf("%4d", x);
         }
+
         System.out.println();
         System.out.print("    +");
+
         for (int x = xMin; x <= xMax; x++) {
             System.out.print(" ---");
         }
+
         System.out.println();
 
         // Pixels
         for (int y = yMin; y <= yMax; y++) {
             System.out.printf("%4d", y);
             System.out.print("|");
+
             for (int x = xMin; x <= xMax; x++) {
                 int pix = getPixel(x, y);
+
                 if (pix == 255) {
                     System.out.print("   .");
                 } else {
                     System.out.printf("%4d", pix);
                 }
             }
+
             System.out.println();
         }
+
         System.out.println();
     }
 
@@ -566,7 +523,7 @@ public class Picture
      * @param ratio the display zoom ratio
      */
     public void render (Graphics g,
-                        double ratio)
+                        double   ratio)
     {
         Graphics2D g2 = (Graphics2D) g;
         scaleTransform.setToScale(ratio, ratio);
@@ -588,28 +545,30 @@ public class Picture
         PlanarImage img = invert(image);
 
         // Rotate
-        image = JAI.create
-            ("Rotate",
-             new ParameterBlock()
-             .addSource(img)            // Source image
-             .add(0f)                   // x origin
-             .add(0f)                   // y origin
-             .add((float) theta)        // angle
-             .add(new InterpolationBilinear()), // Interpolation hint
-             null);
+        image = JAI.create(
+            "Rotate",
+            new ParameterBlock().addSource(img) // Source image
+            .add(0f) // x origin
+            .add(0f) // y origin
+            .add((float) theta) // angle
+            .add(new InterpolationBilinear()), // Interpolation hint
+            null);
 
         // Crop the image to fit the size of the previous one
-        ParameterBlock cpb = new ParameterBlock()
-            .addSource(image)           // The source image
-            .add(0f)                     // x
-            .add(0f);                    // y
-        if (theta < 0d) {                   // clock wise
+        ParameterBlock cpb = new ParameterBlock().addSource(image) // The source image
+
+                                                 .add(0f) // x
+
+                                                 .add(0f); // y
+
+        if (theta < 0d) { // clock wise
             cpb.add((float) (dimension.width));
-            cpb.add((float) (dimension.height * Math.cos(theta) -1f));
-        } else {                             // counter-clock wise
-            cpb.add((float) (dimension.width * Math.cos(theta) -1f));
+            cpb.add((float) ((dimension.height * Math.cos(theta)) - 1f));
+        } else { // counter-clock wise
+            cpb.add((float) ((dimension.width * Math.cos(theta)) - 1f));
             cpb.add((float) (dimension.height));
         }
+
         image = JAI.create("crop", cpb, null);
 
         // de-Invert
@@ -645,35 +604,49 @@ public class Picture
     }
 
     //--------//
-    // invert //
+    // update //
     //--------//
-    private static PlanarImage invert (PlanarImage image)
+    /**
+     * Call-back triggered when Pixel Selection has been modified.  Based on
+     * pixel location, we forward the pixel grey level to whoever is interested
+     * in it.
+     *
+     * @param selection the (Pixel) Selection
+     * @param hint potential notification hint
+     */
+    public void update (Selection     selection,
+                        SelectionHint hint)
     {
-        return JAI.create("Invert",
-                          new ParameterBlock()
-                          .addSource(image)
-                          .add(null)
-                          .add(null)
-                          .add(null)
-                          .add(null)
-                          .add(null),
-                          null);
-    }
+        switch (selection.getTag()) {
+        case PIXEL :
 
-    //-----------//
-    // RGBToGray //
-    //-----------//
-    private static PlanarImage RGBToGray (PlanarImage image)
-    {
-        logger.fine("Converting RGB image to gray ...");
+            Integer level = null;
 
-        double[][] matrix = { {0.114d, 0.587d, 0.299d, 0.0d} };
+            if ((hint == SelectionHint.LOCATION_ADD) ||
+                (hint == SelectionHint.LOCATION_INIT)) {
+                // Compute and forward pixel grey level
+                Rectangle rect = (Rectangle) selection.getEntity();
 
-        return JAI.create("bandcombine",
-                          new ParameterBlock()
-                          .addSource(image)
-                          .add(matrix),
-                          null);
+                if (rect != null) {
+                    Point pt = rect.getLocation();
+
+                    // Check that we are not pointing outside the image
+                    if ((pt.x >= 0) &&
+                        (pt.x < getWidth()) &&
+                        (pt.y >= 0) &&
+                        (pt.y < getHeight())) {
+                        level = new Integer(getPixel(pt.x, pt.y));
+                    }
+                }
+            }
+
+            levelSelection.setEntity(level, hint);
+
+            break;
+
+        default :
+            logger.severe("Unexpected selection event from " + selection);
+        }
     }
 
     //------------//
@@ -683,9 +656,63 @@ public class Picture
     {
         logger.fine("Discarding alpha band ...");
 
-        PlanarImage pi = JAI.create("bandselect", image, new int[] {0, 1, 2});
+        PlanarImage pi = JAI.create("bandselect", image, new int[] { 0, 1, 2 });
 
         return RGBToGray(pi);
+    }
+
+    //-----------//
+    // RGBToGray //
+    //-----------//
+    private static PlanarImage RGBToGray (PlanarImage image)
+    {
+        logger.fine("Converting RGB image to gray ...");
+
+        double[][] matrix = {
+                                { 0.114d, 0.587d, 0.299d, 0.0d }
+                            };
+
+        return JAI.create(
+            "bandcombine",
+            new ParameterBlock().addSource(image).add(matrix),
+            null);
+    }
+
+    //------------------//
+    // checkImageFormat //
+    //------------------//
+    /**
+     * Check if the image format (and especially its color model) is properly
+     * handled by Audiveris.
+     *
+     * @throws ImageFormatException is the format is not supported
+     */
+    private void checkImageFormat ()
+        throws ImageFormatException
+    {
+        // Check nb of bands
+        int numBands = image.getSampleModel()
+                            .getNumBands();
+
+        if (numBands != 1) {
+            if (numBands == 3) {
+                image = RGBToGray(image);
+            } else if (numBands == 4) {
+                image = RGBAToGray(image);
+            } else {
+                throw new ImageFormatException(
+                    "Unsupported sample model" + " numBands=" + numBands);
+            }
+        }
+
+        // Check pixel size
+        //        ColorModel colorModel = image.getColorModel();
+        //        int pixelSize = colorModel.getPixelSize();
+        //        if (pixelSize != 8) {
+        //            logger.info("pixelSize=" + pixelSize +
+        //                    " colorModel=" + colorModel);
+        //            image = grayToGray256(image);
+        //        }
     }
 
     //---------------//
@@ -695,23 +722,22 @@ public class Picture
     {
         logger.info("Converting gray image to gray-256 ...");
 
-        ColorSpace colorSpace = ColorSpace.getInstance
-            (java.awt.color.ColorSpace.CS_GRAY);
+        ColorSpace colorSpace = ColorSpace.getInstance(
+            java.awt.color.ColorSpace.CS_GRAY);
 
         return JAI.create("colorConvert", image, colorSpace, null);
     }
 
-    //--------------//
-    // updateParams //
-    //--------------//
-    private void updateParams()
+    //--------//
+    // invert //
+    //--------//
+    private static PlanarImage invert (PlanarImage image)
     {
-        // Cache dimensions
-        dimension = new Dimension(image.getWidth(), image.getHeight());
-        dimensionWidth = dimension.width;
-
-        // Point to the image data buffer
-        dataBuffer = image.getData().getDataBuffer();
+        return JAI.create(
+            "Invert",
+            new ParameterBlock().addSource(image).add(null).add(null).add(null).add(
+                null).add(null),
+            null);
     }
 
     //----------//
@@ -738,11 +764,17 @@ public class Picture
         }
     }
 
-    //---------//
-    // getName //
-    //---------//
-    public String getName()
+    //--------------//
+    // updateParams //
+    //--------------//
+    private void updateParams ()
     {
-        return "Picture";
+        // Cache dimensions
+        dimension = new Dimension(image.getWidth(), image.getHeight());
+        dimensionWidth = dimension.width;
+
+        // Point to the image data buffer
+        dataBuffer = image.getData()
+                          .getDataBuffer();
     }
 }

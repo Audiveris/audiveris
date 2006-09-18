@@ -7,27 +7,27 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.view;
 
 import omr.ui.*;
+
 import omr.util.Logger;
 
 import java.awt.*;
 
 /**
- * Class <code>RubberZoomedPanel</code> is a combination of two linked
- * entities: a {@link ZoomedPanel} and a {@link Rubber}.
+ * Class <code>RubberZoomedPanel</code> is a combination of two linked entities:
+ * a {@link ZoomedPanel} and a {@link Rubber}.
  *
  * <p>Its <i>paintComponent</i> method is declared final to ensure that the
- * rendering is done in proper sequence, with the rubber rectangle rendered
- * at the end on top of any other stuff. Any specific rendering required by
- * a subclass is performed by overriding the {@link #render} method.
+ * rendering is done in proper sequence, with the rubber rectangle rendered at
+ * the end on top of any other stuff. Any specific rendering required by a
+ * subclass is performed by overriding the {@link #render} method.
  *
  * <p>The Zoom instance and the Rubber instance can be provided separately,
- * after this RubberZoomedPanel has been constructed. This is meant for
- * cases where the same Zoom and Rubber instances are shared by several
- * views, as in the {@link SheetAssembly} example.
+ * after this RubberZoomedPanel has been constructed. This is meant for cases
+ * where the same Zoom and Rubber instances are shared by several views, as in
+ * the {@link SheetAssembly} example.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -35,16 +35,17 @@ import java.awt.*;
 public class RubberZoomedPanel
     extends ZoomedPanel
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(RubberZoomedPanel.class);
+    private static final Logger logger = Logger.getLogger(
+        RubberZoomedPanel.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     /** Rubber band mouse handling */
     protected Rubber rubber;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-------------------//
     // RubberZoomedPanel //
@@ -64,48 +65,33 @@ public class RubberZoomedPanel
     // RubberZoomedPanel //
     //-------------------//
     /**
-     * Create a RubberZoomedPanel, with the specified Rubber to interact
-     * via the mouse.
+     * Create a RubberZoomedPanel, with the specified Rubber to interact via the
+     * mouse.
      *
      * @param zoom related display zoom
      * @param rubber the rubber instance to be linked to this panel
      */
-    public RubberZoomedPanel (Zoom      zoom,
-                              Rubber    rubber)
+    public RubberZoomedPanel (Zoom   zoom,
+                              Rubber rubber)
     {
         super(zoom);
         setRubber(rubber);
 
         if (logger.isFineEnabled()) {
-            logger.fine("new RubberZoomedPanel"
-                         + " zoom=" + zoom
-                         + " rubber=" + rubber);
+            logger.fine(
+                "new RubberZoomedPanel" + " zoom=" + zoom + " rubber=" +
+                rubber);
         }
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //--------------------//
-    // showFocusLocation //
-    //--------------------//
-    @Override
-        public void showFocusLocation (Rectangle rect)
-    {
-        // Modify the rubber accordingly
-        if (rubber != null) {
-            rubber.resetRectangle(rect);
-        }
-
-        super.showFocusLocation(rect);
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //-----------//
     // setRubber //
     //-----------//
     /**
-     * Allows to provide the rubber instance, only after this
-     * RubberZoomedPanel has been built. This can be used to solve circular
-     * elaboration problems.
+     * Allows to provide the rubber instance, only after this RubberZoomedPanel
+     * has been built. This can be used to solve circular elaboration problems.
      *
      * @param rubber the rubber instance to be used
      */
@@ -114,6 +100,20 @@ public class RubberZoomedPanel
         this.rubber = rubber;
         rubber.setZoom(zoom);
         rubber.setComponent(this);
+    }
+
+    //-------------------//
+    // showFocusLocation //
+    //-------------------//
+    @Override
+    public void showFocusLocation (Rectangle rect)
+    {
+        // Modify the rubber accordingly
+        if (rubber != null) {
+            rubber.resetRectangle(rect);
+        }
+
+        super.showFocusLocation(rect);
     }
 
     //----------------//
@@ -144,9 +144,9 @@ public class RubberZoomedPanel
     // render //
     //--------//
     /**
-     * This is just a place holder, the real rendering must be provided by
-     * a subclass to actually render the object displayed, since the rubber
-     * is automatically rendered after this one.
+     * This is just a place holder, the real rendering must be provided by a
+     * subclass to actually render the object displayed, since the rubber is
+     * automatically rendered after this one.
      *
      * @param g the graphic context
      */

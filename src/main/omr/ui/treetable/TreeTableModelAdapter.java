@@ -1,6 +1,7 @@
 //      $Id$
 package omr.ui.treetable;
 
+
 /*
  * @(#)TreeTableModelAdapter.java       1.2 98/10/27
  *
@@ -14,7 +15,6 @@ package omr.ui.treetable;
  * it only in accordance with the terms of the license agreement
  * you entered into with Sun.
  */
-
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -35,67 +35,84 @@ import javax.swing.tree.TreePath;
 public class TreeTableModelAdapter
     extends AbstractTableModel
 {
-    //~ Instance variables ---------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    JTree tree;
+    JTree          tree;
     TreeTableModel treeTableModel;
 
-    //~ Constructors ---------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------------------//
     // TreeTableModelAdapter //
     //-----------------------//
+    /**
+     * Creates a new TreeTableModelAdapter object.
+     *
+     * @param treeTableModel DOCUMENT ME!
+     * @param tree DOCUMENT ME!
+     */
     public TreeTableModelAdapter (TreeTableModel treeTableModel,
-                                  JTree tree)
+                                  JTree          tree)
     {
         this.tree = tree;
         this.treeTableModel = treeTableModel;
 
-        tree.addTreeExpansionListener(new TreeExpansionListener()
-        {
-            // Don't use fireTableRowsInserted() here; the selection model
-            // would get updated twice.
-            public void treeExpanded (TreeExpansionEvent event)
-            {
-                fireTableDataChanged();
-            }
+        tree.addTreeExpansionListener(
+            new TreeExpansionListener() {
+                    // Don't use fireTableRowsInserted() here; the selection model
+                    // would get updated twice.
+                    public void treeExpanded (TreeExpansionEvent event)
+                    {
+                        fireTableDataChanged();
+                    }
 
-            public void treeCollapsed (TreeExpansionEvent event)
-            {
-                fireTableDataChanged();
-            }
-        });
+                    public void treeCollapsed (TreeExpansionEvent event)
+                    {
+                        fireTableDataChanged();
+                    }
+                });
 
         // Install a TreeModelListener that can update the table when
         // tree changes. We use delayedFireTableDataChanged as we can
         // not be guaranteed the tree will have finished processing
         // the event before us.
-        treeTableModel.addTreeModelListener(new TreeModelListener()
-        {
-            public void treeNodesChanged (TreeModelEvent e)
-            {
-                delayedFireTableDataChanged();
-            }
+        treeTableModel.addTreeModelListener(
+            new TreeModelListener() {
+                    public void treeNodesChanged (TreeModelEvent e)
+                    {
+                        delayedFireTableDataChanged();
+                    }
 
-            public void treeNodesInserted (TreeModelEvent e)
-            {
-                delayedFireTableDataChanged();
-            }
+                    public void treeNodesInserted (TreeModelEvent e)
+                    {
+                        delayedFireTableDataChanged();
+                    }
 
-            public void treeNodesRemoved (TreeModelEvent e)
-            {
-                delayedFireTableDataChanged();
-            }
+                    public void treeNodesRemoved (TreeModelEvent e)
+                    {
+                        delayedFireTableDataChanged();
+                    }
 
-            public void treeStructureChanged (TreeModelEvent e)
-            {
-                delayedFireTableDataChanged();
-            }
-        });
+                    public void treeStructureChanged (TreeModelEvent e)
+                    {
+                        delayedFireTableDataChanged();
+                    }
+                });
     }
 
-    //~ Methods --------------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
+    //----------------//
+    // isCellEditable //
+    //----------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param row DOCUMENT ME!
+     * @param column DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
     @Override
     public boolean isCellEditable (int row,
                                    int column)
@@ -103,37 +120,94 @@ public class TreeTableModelAdapter
         return treeTableModel.isCellEditable(nodeForRow(row), column);
     }
 
+    //----------------//
+    // getColumnClass //
+    //----------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param column DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
     @Override
     public Class getColumnClass (int column)
     {
         return treeTableModel.getColumnClass(column);
     }
 
+    //----------------//
+    // getColumnCount //
+    //----------------//
     // Wrappers, implementing TableModel interface.
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
     public int getColumnCount ()
     {
         return treeTableModel.getColumnCount();
     }
 
+    //---------------//
+    // getColumnName //
+    //---------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param column DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
     @Override
     public String getColumnName (int column)
     {
         return treeTableModel.getColumnName(column);
     }
 
+    //-------------//
+    // getRowCount //
+    //-------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
     public int getRowCount ()
     {
         return tree.getRowCount();
     }
 
+    //------------//
+    // setValueAt //
+    //------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param value DOCUMENT ME!
+     * @param row DOCUMENT ME!
+     * @param column DOCUMENT ME!
+     */
     @Override
     public void setValueAt (Object value,
-                            int row,
-                            int column)
+                            int    row,
+                            int    column)
     {
         treeTableModel.setValueAt(value, nodeForRow(row), column);
     }
 
+    //------------//
+    // getValueAt //
+    //------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param row DOCUMENT ME!
+     * @param column DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
     public Object getValueAt (int row,
                               int column)
     {
@@ -149,18 +223,25 @@ public class TreeTableModelAdapter
      */
     protected void delayedFireTableDataChanged ()
     {
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            public void run ()
-            {
-                fireTableDataChanged();
-            }
-        });
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    public void run ()
+                    {
+                        fireTableDataChanged();
+                    }
+                });
     }
 
     //------------//
     // nodeForRow //
     //------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param row DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
     protected Object nodeForRow (int row)
     {
         TreePath treePath = tree.getPathForRow(row);

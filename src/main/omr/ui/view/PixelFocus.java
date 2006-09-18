@@ -7,7 +7,6 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.view;
 
 import java.awt.Point;
@@ -24,12 +23,7 @@ import java.awt.Rectangle;
  */
 public interface PixelFocus
 {
-    /**
-     * Focus on a point
-     *
-     * @param pt the designated point, using pixel coordinates
-     */
-    void setFocusPoint (Point pt);
+    //~ Methods ----------------------------------------------------------------
 
     /**
      * Focus on a rectangle
@@ -37,4 +31,11 @@ public interface PixelFocus
      * @param rect the designated rectangle, using pixel coordinates
      */
     void setFocusLocation (Rectangle rect);
+
+    /**
+     * Focus on a point
+     *
+     * @param pt the designated point, using pixel coordinates
+     */
+    void setFocusPoint (Point pt);
 }

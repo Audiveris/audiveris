@@ -1,16 +1,17 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                          L a g B u i l d e r                          //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            L a g B u i l d e r                             //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.lag;
 
 import omr.sheet.Picture;
+
 import omr.util.Logger;
 
 import java.awt.*;
@@ -18,46 +19,45 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class <code>LagBuilder</code> populates a full lag, by ripping a
- * picture.  Using a proper oriented {@link LagReader}, it first retrieves
- * the proper runs structure out of the given picture, and then builds the
- * lag sections and junctions.
+ * Class <code>LagBuilder</code> populates a full lag, by ripping a picture.
+ * Using a proper oriented {@link LagReader}, it first retrieves the proper runs
+ * structure out of the given picture, and then builds the lag sections and
+ * junctions.
  *
  * @param <S> the precise subtype of Section to be created
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class LagBuilder <L extends Lag     <L, S>,
-                         S extends Section <L, S>>
+public class LagBuilder<L extends Lag<L, S>, S extends Section<L, S>>
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(LagBuilder.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
+
+    // Policy for detection of junctions
+    private JunctionPolicy  junctionPolicy;
 
     // The lag to populate
-    private L lag;
+    private L               lag;
+
+    // All Active sections in the next column
+    private List<S>         nextActives = new ArrayList<S>();
+
+    // List of sections in prev column that overlap given run in next
+    // column
+    private List<S>         overlappingSections = new ArrayList<S>();
+
+    // All Active sections in the previous column, i.e. only sections
+    // that have a run in prev column
+    private List<S>         prevActives = new ArrayList<S>();
 
     // The section runs
     private List<List<Run>> runs;
 
-    // Policy for detection of junctions
-    private JunctionPolicy junctionPolicy;
-
-    // All Active sections in the previous column, i.e. only sections
-    // that have a run in prev column
-    private List<S> prevActives = new ArrayList<S>();
-
-    // All Active sections in the next column
-    private List<S> nextActives = new ArrayList<S>();
-
-    // List of sections in prev column that overlap given run in next
-    // column
-    private List<S> overlappingSections = new ArrayList<S>();
-
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //------------//
     // LagBuilder //
@@ -69,7 +69,7 @@ public class LagBuilder <L extends Lag     <L, S>,
     {
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //-----//
     // rip //
@@ -82,9 +82,9 @@ public class LagBuilder <L extends Lag     <L, S>,
      * @param minRunLength   minimum length to consider a run
      * @param junctionPolicy the policy to detect junctions
      */
-    public void rip (L lag,
-                     Picture picture,
-                     int minRunLength,
+    public void rip (L              lag,
+                     Picture        picture,
+                     int            minRunLength,
                      JunctionPolicy junctionPolicy)
     {
         // Store for later use
@@ -92,27 +92,34 @@ public class LagBuilder <L extends Lag     <L, S>,
         this.junctionPolicy = junctionPolicy;
 
         // Retrieve the properly oriented picture dimension
-        Rectangle rect = lag.switchRef(new Rectangle(0, 0,
-                                                     picture.getWidth(),
-                                                     picture.getHeight()),
-                                       null);
+        Rectangle rect = lag.switchRef(
+            new Rectangle(0, 0, picture.getWidth(), picture.getHeight()),
+            null);
 
         // Prepare the collections of runs, one collection per pos value
         runs = new ArrayList<List<Run>>(rect.height);
+
         for (int i = 0; i < rect.height; i++) {
             runs.add(new ArrayList<Run>());
         }
 
-        // Populate the runs. To optimize access to pixels, we use a
-        // dedicated adapter, depending on the lag orientation
-        Run.readRuns(new LagReader
-                     (lag, runs, picture, minRunLength), rect);
+        // Populate the runs. To optimize access to pixels, we use a dedicated
+        // adapter, depending on the lag orientation
+        Run.readRuns(new LagReader(lag, runs, picture, minRunLength), rect);
 
         // Organize the runs into sections
         buildLag();
 
         // Store the runs into the lag
         lag.setRuns(runs);
+    }
+
+    //------------//
+    // isFinished //
+    //------------//
+    private boolean isFinished (S section)
+    {
+        return section.getId() < 0;
     }
 
     //----------//
@@ -127,9 +134,11 @@ public class LagBuilder <L extends Lag     <L, S>,
 
         // Now scan each pair of columns, starting at 2nd column
         List<List<Run>> subList = runs.subList(1, runs.size());
-        int col = 0;
+        int             col = 0;
+
         for (List<Run> runList : subList) {
             col++;
+
             // If we have runs in this column
             if (runList.size() > 0) {
                 // Copy the former next actives sections
@@ -137,9 +146,9 @@ public class LagBuilder <L extends Lag     <L, S>,
                 prevActives = nextActives;
                 nextActives = new ArrayList<S>();
 
-                // Process all sections of previous column, then
-                // prevActives will contain only active sections (i.e. that
-                // may be continued)
+                // Process all sections of previous column, then prevActives
+                // will contain only active sections (i.e. that may be
+                // continued)
                 if (logger.isFineEnabled()) {
                     logger.fine("Prev column");
                 }
@@ -169,18 +178,11 @@ public class LagBuilder <L extends Lag     <L, S>,
         // Reset proper Ids
         for (S section : lag.getVertices()) {
             int id = section.getId();
+
             if (id < 0) {
                 section.setId(-id);
             }
         }
-    }
-
-    //------------//
-    // isFinished //
-    //------------//
-    private boolean isFinished (S section)
-    {
-        return section.getId() < 0;
     }
 
     //-----------------//
@@ -247,37 +249,38 @@ public class LagBuilder <L extends Lag     <L, S>,
         }
 
         switch (overlappingSections.size()) {
-            case 0: // Begin a brand new section
-                nextActives.add(lag.createSection(col, run));
+        case 0 : // Begin a brand new section
+            nextActives.add(lag.createSection(col, run));
 
-                break;
+            break;
 
-            case 1: // Continuing sections (if not finished)
+        case 1 : // Continuing sections (if not finished)
 
-                S prevSection = overlappingSections.get(0);
+            S prevSection = overlappingSections.get(0);
 
-                if (!isFinished(prevSection)) {
-                    continueSection(prevSection, run);
-                } else {
-                    // Create a new section, linked by a junction
-                    S sct = lag.createSection(col, run);
-                    nextActives.add(sct);
-                    Section.addEdge(prevSection, sct);
-                }
+            if (!isFinished(prevSection)) {
+                continueSection(prevSection, run);
+            } else {
+                // Create a new section, linked by a junction
+                S sct = lag.createSection(col, run);
+                nextActives.add(sct);
+                Section.addEdge(prevSection, sct);
+            }
 
-                break;
+            break;
 
-            default : // Converging sections, end them, start a new one
+        default : // Converging sections, end them, start a new one
 
-                if (logger.isFineEnabled()) {
-                    logger.fine("Converging at " + run);
-                }
+            if (logger.isFineEnabled()) {
+                logger.fine("Converging at " + run);
+            }
 
-                S newSection = lag.createSection(col, run);
-                nextActives.add(newSection);
-                for (S section : overlappingSections) {
-                    Section.addEdge(section, newSection);
-                }
+            S newSection = lag.createSection(col, run);
+            nextActives.add(newSection);
+
+            for (S section : overlappingSections) {
+                Section.addEdge(section, newSection);
+            }
         }
     }
 
@@ -285,14 +288,13 @@ public class LagBuilder <L extends Lag     <L, S>,
     // processPrevSide //
     //-----------------//
     /**
-     * processPrevSide take care of the first column, at the given
-     * section/run, checking links to the nextColumnRuns that overlap this
-     * run.
+     * processPrevSide take care of the first column, at the given section/run,
+     * checking links to the nextColumnRuns that overlap this run.
      *
      * @param section
      * @param nextColumnRuns
      */
-    private void processPrevSide (S section,
+    private void processPrevSide (S         section,
                                   List<Run> nextColumnRuns)
     {
         Run lastRun = section.getLastRun();
@@ -311,10 +313,12 @@ public class LagBuilder <L extends Lag     <L, S>,
             if (run.getStart() > prevStop) {
                 break;
             }
+
             if (run.getStop() >= prevStart) {
                 if (logger.isFineEnabled()) {
                     logger.fine("Overlap from " + lastRun + " to " + run);
                 }
+
                 overlapNb++;
                 overlapRun = run;
             }
@@ -326,33 +330,36 @@ public class LagBuilder <L extends Lag     <L, S>,
         }
 
         switch (overlapNb) {
-            case 0: // Nothing : end of the section
+        case 0 : // Nothing : end of the section
 
+            if (logger.isFineEnabled()) {
+                logger.fine("Ending section " + section);
+            }
+
+            break;
+
+        case 1 : // Continue if consistent
+
+            if (junctionPolicy.consistentRun(overlapRun, section)) {
                 if (logger.isFineEnabled()) {
-                    logger.fine("Ending section " + section);
+                    logger.fine(
+                        "Perhaps extending section " + section + " with run " +
+                        overlapRun);
+                }
+            } else {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Incompatible height between " + section + " and run " +
+                        overlapRun);
                 }
 
-                break;
-
-            case 1: // Continue if consistent
-
-                if (junctionPolicy.consistentRun(overlapRun, section)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Perhaps extending section " +
-                                     section + " with run " + overlapRun);
-                    }
-                } else {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Incompatible height between " +
-                                     section + " and run " + overlapRun);
-                    }
-                    finish(section);
-                }
-
-                break;
-
-            default : // Diverging, so conclude the section here
                 finish(section);
+            }
+
+            break;
+
+        default : // Diverging, so conclude the section here
+            finish(section);
         }
     }
 }

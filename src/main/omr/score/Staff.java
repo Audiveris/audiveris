@@ -1,39 +1,41 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                               S t a f f                               //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                 S t a f f                                  //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.score;
 
+import omr.glyph.Glyph;
+
 import omr.lag.Lag;
+import static omr.score.ScoreConstants.*;
+
+import omr.sheet.PixelPoint;
+import omr.sheet.Scale;
 import omr.sheet.StaffInfo;
+
+import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
+
 import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
-import static omr.score.ScoreConstants.*;
-
 import java.awt.*;
 import java.util.Collection;
 import java.util.List;
-import omr.glyph.Glyph;
-import omr.sheet.PixelPoint;
-import omr.sheet.Scale;
-import omr.ui.icon.SymbolIcon;
 
 /**
  * Class <code>Staff</code> handles a staff in a system.
  *
- * <p/> It comprises measures, lyric info, text and dynamic
- * indications. Each kind of these elements is kept in a dedicated
- * collection, so the direct children of a staff are in fact these 4
- * collections. </p>
+ * <p/> It comprises measures, lyric info, text and dynamic indications. Each
+ * kind of these elements is kept in a dedicated collection, so the direct
+ * children of a staff are in fact these 4 collections. </p>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -41,38 +43,29 @@ import omr.ui.icon.SymbolIcon;
 public class Staff
     extends MusicNode
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(Staff.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    // Related info from sheet analysis
-    private StaffInfo info;
-
-    // Top left corner of the staff (relative to the system top left corner)
-    private PagePoint topLeft;
-
-    // Attributes
-    private int width;
-
-    // Attributes
-    private int size;
-
-    // Attributes
-    private int stafflink;
+    // Starting bar line (the others are linked to measures)
+    private Barline     startingBarline;
+    private DynamicList dynamics;
+    private LyricList   lyriclines;
 
     // Specific children
     private MeasureList measures;
-    private LyricList lyriclines;
-    private TextList texts;
-    private DynamicList dynamics;
 
-    // Starting bar line (the others are linked to measures)
-    private Barline startingBarline;
+    // Top left corner of the staff (relative to the system top left corner)
+    private PagePoint  topLeft;
 
     // Actual cached display origin
     private ScorePoint origin;
+
+    // Related info from sheet analysis
+    private StaffInfo info;
+    private TextList  texts;
 
     // First, and last measure ids
     private int firstMeasureId;
@@ -80,7 +73,16 @@ public class Staff
     // First, and last measure ids
     private int lastMeasureId;
 
-    //~ Constructors ------------------------------------------------------
+    // Attributes
+    private int size;
+
+    // Attributes
+    private int stafflink;
+
+    // Attributes
+    private int width;
+
+    //~ Constructors -----------------------------------------------------------
 
     //-------//
     // Staff //
@@ -104,21 +106,21 @@ public class Staff
     /**
      * Build a staff, given all its parameters
      *
-     * @param info      the physical information read from the sheet
-     * @param system    the containing system
-     * @param topLeft   the coordinate,in units, wrt to the score upper left
+     * @param info the physical information read from the sheet
+     * @param system the containing system
+     * @param topLeft the coordinate,in units, wrt to the score upper left
      *                  corner, of the upper left corner of this staff
-     * @param width     the staff width, in units
-     * @param size      the staff height, in units ??? TBD ???
+     * @param width the staff width, in units
+     * @param size the staff height, in units ??? TBD ???
      * @param stafflink the index of the staff in the containing system,
      *                  starting at 0
      */
     public Staff (StaffInfo info,
-                  System system,
+                  System    system,
                   PagePoint topLeft,
-                  int width,
-                  int size,
-                  int stafflink)
+                  int       width,
+                  int       size,
+                  int       stafflink)
     {
         super(system);
         allocateChildren();
@@ -134,7 +136,7 @@ public class Staff
         }
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //-------------//
     // setDynamics //
@@ -147,7 +149,8 @@ public class Staff
     public void setDynamics (List<TreeNode> dynamics)
     {
         this.dynamics = new DynamicList(this);
-        getDynamics().addAll(dynamics);
+        getDynamics()
+            .addAll(dynamics);
     }
 
     //-------------//
@@ -173,15 +176,16 @@ public class Staff
      */
     public Measure getFirstMeasure ()
     {
-        return (Measure) getMeasures().get(0);
+        return (Measure) getMeasures()
+                             .get(0);
     }
 
     //-------------------//
     // getFirstMeasureId //
     //-------------------//
     /**
-     * Report the id (0 is the very first measure id in the score) of the
-     * first measure of the staff
+     * Report the id (0 is the very first measure id in the score) of the first
+     * measure of the staff
      *
      * @return the measure id of the first measure
      */
@@ -213,7 +217,8 @@ public class Staff
      */
     public Measure getLastMeasure ()
     {
-        return (Measure) getMeasures().get(getMeasures().size() - 1);
+        return (Measure) getMeasures()
+                             .get(getMeasures().size() - 1);
     }
 
     //------------------//
@@ -229,38 +234,6 @@ public class Staff
         return lastMeasureId;
     }
 
-    //------------//
-    // setTopLeft //
-    //------------//
-    /**
-     * Set the coordinates of the top left point in the score
-     *
-     * @param topLeft coordinates in units, wrt system top left corner
-     */
-    public void setTopLeft (PagePoint topLeft)
-    {
-        this.topLeft = topLeft;
-
-        // Invalidate the coordinates of all contained staff-based nodes
-        for (TreeNode treeNode : children) {
-            StaffNode node = (StaffNode) treeNode;
-            node.setStaff(this);
-        }
-    }
-
-    //------------//
-    // getTopLeft //
-    //------------//
-    /**
-     * Report the coordinates of the top left corner of the staff, wrt to the score
-     *
-     * @return the top left coordinates
-     */
-    public PagePoint getTopLeft ()
-    {
-        return topLeft;
-    }
-
     //---------------//
     // setLyriclines //
     //---------------//
@@ -272,7 +245,8 @@ public class Staff
     public void setLyriclines (List<TreeNode> lyriclines)
     {
         this.lyriclines = new LyricList(this);
-        getLyriclines().addAll(lyriclines);
+        getLyriclines()
+            .addAll(lyriclines);
     }
 
     //---------------//
@@ -288,39 +262,30 @@ public class Staff
         return lyriclines.getChildren();
     }
 
-    //---------------//
-    // barlineExists //
-    //---------------//
+    //--------------//
+    // getMeasureAt //
+    //--------------//
     /**
-     * Check whether there is a  measure with leftlinex = x (within dx error).
-     * This is used in
-     * Bars retrieval, to check that the bar candidate is actually a bar,
-     * since there is a measure starting at this abscissa in each staff of
-     * the system (this test is relevant only for systems with more than
-     * one staff).
+     * Report the measure that contains a given point (assumed to be in the
+     * containing staff)
      *
-     * @param x  starting abscissa of the desired measure
-     * @param dx tolerance in abscissa
-     *
-     * @return true if bar line found within tolerance, false otherwise
+     * @param staffPoint staff-based coordinates of the given point
+     * @return the containing measure
      */
-    public boolean barlineExists(int x,
-                                 int dx)
+    public Measure getMeasureAt (StaffPoint staffPoint)
     {
-        logger.fine("x=" + x + " dx=" + dx);
+        Measure measure = null;
+
         for (TreeNode node : getMeasures()) {
-            Measure measure = (Measure) node;
+            measure = (Measure) node;
 
-            logger.fine("center.x =" + measure.getBarline().getCenter().x);
-
-            if (Math.abs(measure.getBarline().getCenter().x - x) <= dx) {
-                logger.fine("found");
-                return true;
+            if (staffPoint.x <= measure.getBarline()
+                                       .getRightX()) {
+                return measure;
             }
         }
 
-        logger.fine("noLine");
-        return false; // Not found
+        return measure;
     }
 
     //-------------//
@@ -334,8 +299,10 @@ public class Staff
     public void setMeasures (List<TreeNode> measures)
     {
         if (getMeasures() != measures) {
-            getMeasures().clear();
-            getMeasures().addAll(measures);
+            getMeasures()
+                .clear();
+            getMeasures()
+                .addAll(measures);
         }
     }
 
@@ -391,32 +358,6 @@ public class Staff
         return size;
     }
 
-    //----------------//
-    // getStartingBar //
-    //----------------//
-    /**
-     * Get the bar line that starts the staff
-     *
-     * @return barline the starting bar line (which may be null)
-     */
-    public Barline getStartingBar()
-    {
-        return startingBarline;
-    }
-
-    //----------------//
-    // setStartingBar //
-    //----------------//
-    /**
-     * Set the bar line that starts the staff
-     *
-     * @param startingBarline the starting bar line
-     */
-    public void setStartingBar (Barline startingBarline)
-    {
-        this.startingBarline = startingBarline;
-    }
-
     //--------------//
     // setStafflink //
     //--------------//
@@ -443,6 +384,32 @@ public class Staff
         return stafflink;
     }
 
+    //----------------//
+    // setStartingBar //
+    //----------------//
+    /**
+     * Set the bar line that starts the staff
+     *
+     * @param startingBarline the starting bar line
+     */
+    public void setStartingBar (Barline startingBarline)
+    {
+        this.startingBarline = startingBarline;
+    }
+
+    //----------------//
+    // getStartingBar //
+    //----------------//
+    /**
+     * Get the bar line that starts the staff
+     *
+     * @return barline the starting bar line (which may be null)
+     */
+    public Barline getStartingBar ()
+    {
+        return startingBarline;
+    }
+
     //-----------//
     // getSystem //
     //-----------//
@@ -456,6 +423,39 @@ public class Staff
         // Beware, staff is not a direct child of System, there is an
         // intermediate StaffList to skip
         return (System) container.getContainer();
+    }
+
+    //------------//
+    // setTopLeft //
+    //------------//
+    /**
+     * Set the coordinates of the top left point in the score
+     *
+     * @param topLeft coordinates in units, wrt system top left corner
+     */
+    public void setTopLeft (PagePoint topLeft)
+    {
+        this.topLeft = topLeft;
+
+        // Invalidate the coordinates of all contained staff-based nodes
+        for (TreeNode treeNode : children) {
+            StaffNode node = (StaffNode) treeNode;
+            node.setStaff(this);
+        }
+    }
+
+    //------------//
+    // getTopLeft //
+    //------------//
+    /**
+     * Report the coordinates of the top left corner of the staff, wrt to the
+     * score
+     *
+     * @return the top left coordinates
+     */
+    public PagePoint getTopLeft ()
+    {
+        return topLeft;
     }
 
     //----------//
@@ -488,14 +488,13 @@ public class Staff
     // addChild // Overrides normal behavior
     //----------//
     /**
-     * Override normal behavior, so that a given child is store in its
-     * proper type collection (measure to measure list, lyrics to lyrics
-     * list, etc...)
+     * Override normal behavior, so that a given child is store in its proper
+     * type collection (measure to measure list, lyrics to lyrics list, etc...)
      *
      * @param node the child to insert in the staff
      */
     @Override
-        public void addChild (TreeNode node)
+    public void addChild (TreeNode node)
     {
         if (node instanceof Measure) {
             measures.addChild(node);
@@ -521,6 +520,43 @@ public class Staff
         }
     }
 
+    //---------------//
+    // barlineExists //
+    //---------------//
+    /**
+     * Check whether there is a measure with leftlinex = x (within dx error).
+     * This is used in Bars retrieval, to check that the bar candidate is
+     * actually a bar, since there is a measure starting at this abscissa in
+     * each staff of the system (this test is relevant only for systems with
+     * more than one staff).
+     *
+     * @param x  starting abscissa of the desired measure
+     * @param dx tolerance in abscissa
+     *
+     * @return true if bar line found within tolerance, false otherwise
+     */
+    public boolean barlineExists (int x,
+                                  int dx)
+    {
+        logger.fine("x=" + x + " dx=" + dx);
+
+        for (TreeNode node : getMeasures()) {
+            Measure measure = (Measure) node;
+
+            logger.fine("center.x =" + measure.getBarline().getCenter().x);
+
+            if (Math.abs(measure.getBarline().getCenter().x - x) <= dx) {
+                logger.fine("found");
+
+                return true;
+            }
+        }
+
+        logger.fine("noLine");
+
+        return false; // Not found
+    }
+
     //------------------------//
     // incrementLastMeasureId //
     //------------------------//
@@ -529,7 +565,40 @@ public class Staff
      */
     public void incrementLastMeasureId ()
     {
-        getSystem().setLastMeasureId(++lastMeasureId);
+        getSystem()
+            .setLastMeasureId(++lastMeasureId);
+    }
+
+    //-------------//
+    // pitchToUnit //
+    //-------------//
+    /**
+     * Compute the ordinate Y (counted in units and measured from staff origin)
+     * that corresponds to a given step line
+     *
+     * @param pitchPosition the pitch position (-4 for top line, +4 for bottom
+     *                      line)
+     * @return the ordinate in pixels, counted from staff origin (upper line),
+     * so top line is 0px and bottom line is 64px (with an inter line of 16).
+     */
+    public static int pitchToUnit (int pitchPosition)
+    {
+        return ((pitchPosition + 4) * INTER_LINE) / 2;
+    }
+
+    //--------------//
+    // toStaffPoint //
+    //--------------//
+    /**
+     * Report the staff-based coordinates (wrt staff top left corner) of a point
+     * with page-based coordinates
+     *
+     * @param pagePoint the coordinates within page
+     * @return coordinates within the containing staff
+     */
+    public StaffPoint toStaffPoint (PagePoint pagePoint)
+    {
+        return new StaffPoint(pagePoint.x - topLeft.x, pagePoint.y - topLeft.y);
     }
 
     //----------//
@@ -542,11 +611,164 @@ public class Staff
      */
     public String toString ()
     {
-        return "{Staff" +
-            " topLeft=" + topLeft +
-            " width=" + width +
-            " size=" + size +
-            " origin=" + origin + "}";
+        return "{Staff" + " topLeft=" + topLeft + " width=" + width + " size=" +
+               size + " origin=" + origin + "}";
+    }
+
+    //-------------//
+    // unitToPitch //
+    //-------------//
+    /**
+     * Compute the pitch position of a given ordinate Y (counted in units and
+     * measured from staff origin)
+     *
+     * @param unit the ordinate in pixel units, counted from staff origin (upper
+     * line), so top line is 0px and bottom line is 64px (with an inter line of
+     * 16).
+     * @return the pitch position (-4 for top line, +4 for bottom line)
+     */
+    public static int unitToPitch (int unit)
+    {
+        return (int) Math.rint(((2D * unit) - (4D * INTER_LINE)) / INTER_LINE);
+    }
+
+    //--------------------//
+    // computeGlyphCenter //
+    //--------------------//
+    /**
+     * Compute the bounding center of a glyph
+     *
+     * @param glyph the glyph
+     *
+     * @return the glyph center
+     */
+    public StaffPoint computeGlyphCenter (Glyph glyph,
+                                          Scale scale)
+    {
+        // We compute the bounding center of all glyphs
+        Rectangle  rect = new Rectangle(glyph.getContourBox());
+
+        StaffPoint p = new StaffPoint(
+            scale.pixelsToUnits(rect.x + (rect.width / 2)) - getTopLeft().x,
+            scale.pixelsToUnits(rect.y + (rect.height / 2)) - getTopLeft().y);
+
+        return p;
+    }
+
+    //---------------------//
+    // computeGlyphsCenter //
+    //---------------------//
+    /**
+     * Compute the bounding center of a collection of glyphs
+     *
+     * @param glyphs the collection of glyph components
+     *
+     * @return the area center
+     */
+    public StaffPoint computeGlyphsCenter (Collection<?extends Glyph> glyphs,
+                                           Scale                      scale)
+    {
+        // We compute the bounding center of all glyphs
+        Rectangle rect = null;
+
+        for (Glyph glyph : glyphs) {
+            if (rect == null) {
+                rect = new Rectangle(glyph.getContourBox());
+            } else {
+                rect = rect.union(glyph.getContourBox());
+            }
+        }
+
+        StaffPoint p = new StaffPoint(
+            scale.pixelsToUnits(rect.x + (rect.width / 2)) - getTopLeft().x,
+            scale.pixelsToUnits(rect.y + (rect.height / 2)) - getTopLeft().y);
+
+        return p;
+    }
+
+    //-------------//
+    // paintSymbol //
+    //-------------//
+    /**
+     * Paint a symbol using its pitch position for ordinate in the containing
+     * staff
+     *
+     *
+     * @param g graphical context
+     * @param zoom display zoom
+     * @param icon the symbol icon to paint
+     * @param center staff-based coordinates of bounding center in units (only
+     *               abscissa is actually used)
+     * @param pitchPosition staff-based ordinate in step lines
+     */
+    public void paintSymbol (Graphics   g,
+                             Zoom       zoom,
+                             SymbolIcon icon,
+                             StaffPoint center,
+                             int        pitchPosition)
+    {
+        if (icon == null) {
+            logger.warning("No icon to paint");
+        } else if (center == null) {
+            logger.warning("Need bounding center for " + icon.getName());
+        } else {
+            ScorePoint origin = getOrigin();
+            int        dy = pitchToUnit(pitchPosition);
+            Point      refPoint = icon.getRefPoint();
+            int        refY = (refPoint == null) ? icon.getCentroid().y
+                              : refPoint.y;
+
+            g.drawImage(
+                icon.getImage(),
+                zoom.scaled(origin.x + center.x) - (icon.getActualWidth() / 2),
+                zoom.scaled(origin.y + dy) - refY,
+                null);
+        }
+    }
+
+    //-------------//
+    // paintSymbol //
+    //-------------//
+    /**
+     * Paint a symbol icon using the coordinates in units of its bounding center
+     * within the containing staff
+     *
+     * @param g graphical context
+     * @param zoom display zoom
+     * @param icon the symbol icon to paint
+     * @param center staff-based bounding center in units
+     */
+    public void paintSymbol (Graphics   g,
+                             Zoom       zoom,
+                             SymbolIcon icon,
+                             StaffPoint center)
+    {
+        if (icon == null) {
+            logger.warning("No icon to paint");
+        } else if (center == null) {
+            logger.warning("Need area center for " + icon.getName());
+        } else {
+            ScorePoint origin = getOrigin();
+            g.drawImage(
+                icon.getImage(),
+                zoom.scaled(origin.x + center.x) - (icon.getActualWidth() / 2),
+                zoom.scaled(origin.y + center.y) - (icon.getIconHeight() / 2),
+                null);
+        }
+    }
+
+    //-----------------//
+    // pitchPositionOf //
+    //-----------------//
+    /**
+     * Compute the pitch position of a pixel point
+     *
+     * @param pt the pixel point
+     * @return the pitch position
+     */
+    public double pitchPositionOf (PixelPoint pt)
+    {
+        return info.pitchPositionOf(pt);
     }
 
     //--------------//
@@ -562,8 +784,8 @@ public class Staff
      *
      * @return true if processing must continue
      */
-    protected boolean colorizeNode (Lag lag,
-                                    int viewIndex,
+    protected boolean colorizeNode (Lag   lag,
+                                    int   viewIndex,
                                     Color color)
     {
         // Set color for the starting bar line, if any
@@ -587,16 +809,16 @@ public class Staff
         super.computeNode();
 
         // Display origin for system
-        Point sysorg = getSystem().getOrigin();
+        Point sysorg = getSystem()
+                           .getOrigin();
 
         // Display origin for the staff
-        origin = new ScorePoint
-            (//sysorg.x + (topLeft.x - getSystem().getTopLeft().x),
-                sysorg.x,
-             sysorg.y + (topLeft.y - getSystem().getTopLeft().y));
+        origin = new ScorePoint( //sysorg.x + (topLeft.x - getSystem().getTopLeft().x),
+        sysorg.x, sysorg.y + (topLeft.y - getSystem().getTopLeft().y));
 
         // First/Last measure ids
-        firstMeasureId = lastMeasureId = getSystem().getFirstMeasureId();
+        firstMeasureId = lastMeasureId = getSystem()
+                                             .getFirstMeasureId();
 
         return true;
     }
@@ -605,8 +827,8 @@ public class Staff
     // paintNode //
     //-----------//
     @Override
-        protected boolean paintNode (Graphics  g,
-                                     Zoom      zoom)
+    protected boolean paintNode (Graphics g,
+                                 Zoom     zoom)
     {
         g.setColor(Color.black);
 
@@ -614,8 +836,11 @@ public class Staff
         for (int i = 0; i < LINE_NB; i++) {
             // Y of this staff line
             int y = zoom.scaled(origin.y + (i * INTER_LINE));
-            g.drawLine(zoom.scaled(origin.x), y,
-                       zoom.scaled(origin.x + width), y);
+            g.drawLine(
+                zoom.scaled(origin.x),
+                y,
+                zoom.scaled(origin.x + width),
+                y);
         }
 
         // Draw the starting bar line, if any
@@ -639,7 +864,7 @@ public class Staff
      */
     @Override
     protected boolean renderNode (Graphics g,
-                                  Zoom z)
+                                  Zoom     z)
     {
         // Render the staff lines
         if (info != null) {
@@ -661,232 +886,21 @@ public class Staff
     private void allocateChildren ()
     {
         // Allocate specific children lists
-        measures   = new MeasureList(this);
+        measures = new MeasureList(this);
         lyriclines = new LyricList(this);
-        texts      = new TextList(this);
-        dynamics   = new DynamicList(this);
+        texts = new TextList(this);
+        dynamics = new DynamicList(this);
     }
 
-    //--------------//
-    // getMeasureAt //
-    //--------------//
-    /**
-     * Report the measure that contains a given point (assumed to be in the
-     * containing staff)
-     *
-     * @param staffPoint staff-based coordinates of the given point
-     * @return the containing measure
-     */
-    public Measure getMeasureAt (StaffPoint staffPoint)
-    {
-        Measure measure = null;
-        for (TreeNode node : getMeasures()) {
-            measure = (Measure) node;
-            if (staffPoint.x <= measure.getBarline().getRightX()) {
-                return measure;
-            }
-        }
-
-        return measure;
-    }
-
-    //--------------//
-    // toStaffPoint //
-    //--------------//
-    /**
-     * Report the staff-based coordinates (wrt staff top left corner) of a
-     * point with page-based coordinates
-     *
-     * @param pagePoint the coordinates within page
-     * @return coordinates within the containing staff
-     */
-    public StaffPoint toStaffPoint (PagePoint pagePoint)
-    {
-        return new StaffPoint(pagePoint.x - topLeft.x,
-                              pagePoint.y - topLeft.y);
-    }
+    //~ Inner Classes ----------------------------------------------------------
 
     //-------------//
-    // pitchToUnit //
+    // DynamicList //
     //-------------//
-    /**
-     * Compute the ordinate Y (counted in units and measured from staff
-     * origin) that corresponds to a given step line
-     *
-     * @param pitchPosition the pitch position (-4 for top line, +4 for
-     *                      bottom line)
-     * @return the ordinate in pixels, counted from staff origin (upper
-     * line), so top line is 0px and bottom line is 64px (with an inter
-     * line of 16).
-     */
-    public static int pitchToUnit (int pitchPosition)
-    {
-        return (pitchPosition + 4) * INTER_LINE /2;
-    }
-
-    //-------------//
-    // unitToPitch //
-    //-------------//
-    /**
-     * Compute the pitch position of a given ordinate Y (counted in units
-     * and measured from staff origin)
-     *
-     * @param unit the ordinate in pixel units, counted from staff origin
-     * (upper line), so top line is 0px and bottom line is 64px (with an
-     * inter line of 16).
-     * @return the pitch position (-4 for top line, +4 for bottom line)
-     */
-    public static int unitToPitch (int unit)
-    {
-        return (int) Math.rint((2D * unit - 4D * INTER_LINE) / INTER_LINE);
-    }
-
-    //---------------------//
-    // computeGlyphsCenter //
-    //---------------------//
-    /**
-     * Compute the bounding center of a collection of glyphs
-     *
-     * @param glyphs the collection of glyph components
-     *
-     * @return the area center
-     */
-    public StaffPoint computeGlyphsCenter(Collection<? extends Glyph> glyphs,
-                                          Scale                       scale)
-    {
-        // We compute the bounding center of all glyphs
-        Rectangle rect = null;
-        for (Glyph glyph : glyphs) {
-            if (rect == null) {
-                rect = new Rectangle(glyph.getContourBox());
-            } else {
-                rect = rect.union(glyph.getContourBox());
-            }
-        }
-
-        StaffPoint p = new StaffPoint
-            (scale.pixelsToUnits(rect.x + rect.width/2)  - getTopLeft().x,
-             scale.pixelsToUnits(rect.y + rect.height/2) - getTopLeft().y);
-
-        return p;
-    }
-
-    //--------------------//
-    // computeGlyphCenter //
-    //--------------------//
-    /**
-     * Compute the bounding center of a glyph
-     *
-     * @param glyph the glyph
-     *
-     * @return the glyph center
-     */
-    public StaffPoint computeGlyphCenter(Glyph glyph,
-                                         Scale scale)
-    {
-        // We compute the bounding center of all glyphs
-        Rectangle rect = new Rectangle(glyph.getContourBox());
-
-        StaffPoint p = new StaffPoint
-            (scale.pixelsToUnits(rect.x + rect.width/2)  - getTopLeft().x,
-             scale.pixelsToUnits(rect.y + rect.height/2) - getTopLeft().y);
-
-        return p;
-    }
-
-    //-------------//
-    // paintSymbol //
-    //-------------//
-    /**
-     * Paint a symbol using its pitch position for ordinate in the
-     * containing staff
-     *
-     *
-     * @param g graphical context
-     * @param zoom display zoom
-     * @param icon the symbol icon to paint
-     * @param center staff-based coordinates of bounding center in units
-     *               (only abscissa is actually used)
-     * @param pitchPosition staff-based ordinate in step lines
-     */
-    public void paintSymbol (Graphics   g,
-                             Zoom       zoom,
-                             SymbolIcon icon,
-                             StaffPoint center,
-                             int        pitchPosition)
-    {
-        if (icon == null) {
-            logger.warning("No icon to paint");
-        } else if (center == null) {
-            logger.warning("Need bounding center for " + icon.getName());
-        } else {
-            ScorePoint origin = getOrigin();
-            int dy = pitchToUnit(pitchPosition);
-            Point refPoint = icon.getRefPoint();
-            int refY = (refPoint == null) ? icon.getCentroid().y : refPoint.y;
-
-            g.drawImage
-                (icon.getImage(),
-                 zoom.scaled(origin.x + center.x) - icon.getActualWidth()/2,
-                 zoom.scaled(origin.y + dy)       - refY,
-                 null);
-        }
-    }
-
-    //-------------//
-    // paintSymbol //
-    //-------------//
-    /**
-     * Paint a symbol icon using the coordinates in units of its bounding
-     * center within the containing staff
-     *
-     * @param g graphical context
-     * @param zoom display zoom
-     * @param icon the symbol icon to paint
-     * @param center staff-based bounding center in units
-     */
-    public void paintSymbol (Graphics   g,
-                             Zoom       zoom,
-                             SymbolIcon icon,
-                             StaffPoint center)
-    {
-        if (icon == null) {
-            logger.warning("No icon to paint");
-        } else if (center == null) {
-            logger.warning("Need area center for " + icon.getName());
-        } else {
-            ScorePoint origin = getOrigin();
-            g.drawImage
-                    (icon.getImage(),
-                    zoom.scaled(origin.x + center.x) - icon.getActualWidth()/2,
-                    zoom.scaled(origin.y + center.y) - icon.getIconHeight()/2,
-                    null);
-        }
-    }
-
-    //-----------------//
-    // pitchPositionOf //
-    //-----------------//
-    /**
-     * Compute the pitch position of a pixel point
-     *
-     * @param pt the pixel point
-     * @return the pitch position
-     */
-    public double pitchPositionOf (PixelPoint pt)
-    {
-        return info.pitchPositionOf(pt);
-    }
-
-    //~ Classes -----------------------------------------------------------
-
-    //-------------//
-    // MeasureList //
-    //-------------//
-    private static class MeasureList
+    private static class DynamicList
         extends StaffNode
     {
-        MeasureList (Staff staff)
+        DynamicList (Staff staff)
         {
             super(staff, staff);
         }
@@ -904,6 +918,18 @@ public class Staff
         }
     }
 
+    //-------------//
+    // MeasureList //
+    //-------------//
+    private static class MeasureList
+        extends StaffNode
+    {
+        MeasureList (Staff staff)
+        {
+            super(staff, staff);
+        }
+    }
+
     //----------//
     // TextList //
     //----------//
@@ -911,18 +937,6 @@ public class Staff
         extends StaffNode
     {
         TextList (Staff staff)
-        {
-            super(staff, staff);
-        }
-    }
-
-    //-------------//
-    // DynamicList //
-    //-------------//
-    private static class DynamicList
-        extends StaffNode
-    {
-        DynamicList (Staff staff)
         {
             super(staff, staff);
         }

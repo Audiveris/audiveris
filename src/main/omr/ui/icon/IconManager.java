@@ -7,13 +7,15 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.icon;
 
 import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.ui.*;
+
 import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.XmlMapper;
@@ -23,6 +25,7 @@ import java.awt.image.*;
 import java.awt.image.MemoryImageSource;
 import java.io.*;
 import java.net.URL;
+
 import javax.swing.*;
 
 /**
@@ -30,46 +33,45 @@ import javax.swing.*;
  * storing. It thus handles the location where icon definition files are
  * kept, as well as the marshalling and unmarshalling to and from these
  * files. The binding is implemented by means of JiBX.
- * 
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class IconManager
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(IconManager.class);
     private static final Constants constants = new Constants();
+    private static final Logger    logger = Logger.getLogger(IconManager.class);
 
     // mapper for XML persistency
-    private static XmlMapper xmlMapper;
+    private static XmlMapper    xmlMapper;
 
     // Dedicated file extension for our icon files
     private static final String FILE_EXTENSION = ".xml";
 
     // Characters used for encoding bitmaps with 8 levels of gray (this is
     // sufficient for our symbol display)
-    private static char WHITE = '-';    // And transparent
-    private static char[] charTable = new char[]
-    {
-        '#',  // 0 Black
-        '$',  // 1
-        '*',  // 2
-        '0',  // 3
-        'o',  // 4
-        '+',  // 5
-        '.',  // 6
-        WHITE // 7
-    };
+    private static char   WHITE = '-'; // And transparent
+    private static char[] charTable = new char[] {
+                                          '#', // 0 Black
+    '$', // 1
+    '*', // 2
+    '0', // 3
+    'o', // 4
+    '+', // 5
+    '.', // 6
+    WHITE // 7
+                                      };
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     // Not meant to be instantiated
-    private IconManager()
+    private IconManager ()
     {
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //--------------//
     // buttonIconOf //
@@ -83,8 +85,92 @@ public class IconManager
      */
     public static Icon buttonIconOf (String fname)
     {
-        return iconOf("/toolbarButtonGraphics",
-                      fname + constants.buttonIconSize.getValue());
+        return iconOf(
+            "/toolbarButtonGraphics",
+            fname + constants.buttonIconSize.getValue());
+    }
+
+    //-------------//
+    // decodeImage //
+    //-------------//
+    /**
+     * Build an image out of an array of strings. This is meant for JiBX
+     * unmarshalling.
+     *
+     * @param rows the lines of characters
+     * @return the decoded image
+     */
+    public static BufferedImage decodeImage (String[] rows)
+    {
+        // Create the DataBuffer to hold the pixel samples
+        final int  width = rows[0].length();
+        final int  height = rows.length;
+
+        // Create Raster
+        Raster     raster = Raster.createPackedRaster(
+            DataBuffer.TYPE_INT,
+            width,
+            height,
+            new int[] { 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000 }, // bandMasks RGBA
+            null);
+
+        // Populate the data buffer
+        DataBuffer dataBuffer = raster.getDataBuffer();
+        int        index = 0;
+
+        for (String row : rows) {
+            for (int x = 0; x < width; x++) {
+                dataBuffer.setElem(index++, toARGB(row.charAt(x)));
+            }
+        }
+
+        // Create the image
+        BufferedImage bufferedImage = new BufferedImage(
+            width,
+            height,
+            BufferedImage.TYPE_INT_ARGB);
+        bufferedImage.setData(raster);
+
+        return bufferedImage;
+    }
+
+    //-------------//
+    // encodeImage //
+    //-------------//
+    /**
+     * Build an array of strings from a given image. This is meant for JiBX
+     * marshalling.
+     *
+     * @param icon the icon, whose image is to be used
+     * @return the array of strings
+     */
+    public static String[] encodeImage (SymbolIcon icon)
+    {
+        BufferedImage image = icon.getImage();
+
+        // Retrieve proper image width & height values
+        final int     width = image.getWidth();
+        final int     height = image.getHeight();
+        String[]      rows = new String[height];
+
+        StringBuilder sb = new StringBuilder();
+
+        // Bitmap
+        int[] argbs = new int[width * height];
+        image.getRGB(0, 0, width, height, argbs, 0, width);
+
+        for (int y = 0; y < height; y++) {
+            sb.delete(0, sb.length());
+
+            for (int x = 0; x < width; x++) {
+                int argb = argbs[x + (y * width)];
+                sb.append(ARGBtoChar(argb));
+            }
+
+            rows[y] = sb.toString();
+        }
+
+        return rows;
     }
 
     //--------//
@@ -102,7 +188,8 @@ public class IconManager
                                String fname)
     {
         final String resName = path + "/" + fname + ".gif";
-        final URL iconUrl = IconManager.class.getResource(resName);
+        final URL    iconUrl = IconManager.class.getResource(resName);
+
         if (iconUrl == null) {
             logger.warning("iconOf. Could not load icon from " + resName);
 
@@ -110,6 +197,28 @@ public class IconManager
         }
 
         return new ImageIcon(iconUrl);
+    }
+
+    //-------------------//
+    // loadFromXmlStream //
+    //-------------------//
+    /**
+     * Load an icon description from an XML stream
+     *
+     * @param is the input stream
+     *
+     * @return a new SymbolIcon, or null if loading has failed
+     */
+    public static SymbolIcon loadFromXmlStream (InputStream is)
+    {
+        try {
+            return (SymbolIcon) getXmlMapper()
+                                    .load(is);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
+            return null;
+        }
     }
 
     //----------//
@@ -127,19 +236,20 @@ public class IconManager
             logger.fine("Trying to load Icon '" + name + "'");
         }
 
-
-        InputStream is = Main.class.getResourceAsStream
-            ("/icons/" + name + FILE_EXTENSION);
+        InputStream is = Main.class.getResourceAsStream(
+            "/icons/" + name + FILE_EXTENSION);
 
         if (is == null) {
             if (logger.isFineEnabled()) {
                 logger.fine("No file for icon " + name);
             }
+
             return null;
         }
 
         // Then we de-serialize the icon
         SymbolIcon icon = loadFromXmlStream(is);
+
         try {
             is.close();
         } catch (IOException ignored) {
@@ -149,6 +259,7 @@ public class IconManager
             logger.warning("Could not load icon '" + name + "'");
         } else {
             icon.setName(name);
+
             if (logger.isFineEnabled()) {
                 logger.fine("Icon '" + name + "' loaded");
             }
@@ -190,6 +301,7 @@ public class IconManager
             os = getIconOutputStream(name);
         } catch (FileNotFoundException ex) {
             logger.warning("Cannot store icon " + name);
+
             return;
         }
 
@@ -206,147 +318,65 @@ public class IconManager
         }
     }
 
-    //-------------//
-    // encodeImage //
-    //-------------//
+    //------------------//
+    // storeToXmlStream //
+    //------------------//
     /**
-     * Build an array of strings from a given image. This is meant for JiBX
-     * marshalling.
+     * Store an icon description to an XML stream
      *
-     * @param icon the icon, whose image is to be used
-     * @return the array of strings
+     * @param icon the icon to store
+     * @param os the output stream
+     *
+     * @return true if successful, false otherwise
      */
-    public static String[] encodeImage (SymbolIcon icon)
+    public static boolean storeToXmlStream (SymbolIcon   icon,
+                                            OutputStream os)
     {
-        BufferedImage image = icon.getImage();
+        try {
+            getXmlMapper()
+                .store(icon, os);
 
-        // Retrieve proper image width & height values
-        final int width  = image.getWidth();
-        final int height = image.getHeight();
-        String[] rows = new String[height];
+            return true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
 
-        StringBuilder sb = new StringBuilder();
-
-        // Bitmap
-        int[] argbs = new int[width * height];
-        image.getRGB(0,0,width,height,argbs,0,width);
-
-        for (int y = 0; y < height; y++) {
-            sb.delete(0, sb.length());
-            for (int x = 0; x < width; x++) {
-                int argb = argbs[x + y*width];
-                sb.append(ARGBtoChar(argb));
-            }
-            rows[y] = sb.toString();
+            return false;
         }
-
-        return rows;
     }
 
-    //-------------//
-    // decodeImage //
-    //-------------//
-    /**
-     * Build an image out of an array of strings. This is meant for JiBX
-     * unmarshalling.
-     *
-     * @param rows the lines of characters
-     * @return the decoded image
-     */
-    public static BufferedImage decodeImage (String[] rows)
+    //---------------------//
+    // getIconOutputStream //
+    //---------------------//
+    private static OutputStream getIconOutputStream (String name)
+        throws FileNotFoundException
     {
-        // Create the DataBuffer to hold the pixel samples
-        final int width = rows[0].length();
-        final int height = rows.length;
+        File folder = Main.getIconsFolder();
 
-        // Create Raster
-        Raster raster = Raster.createPackedRaster
-            (DataBuffer.TYPE_INT, width, height,
-             new int[] {0x00ff0000,
-                        0x0000ff00,
-                        0x000000ff,
-                        0xff000000},// bandMasks RGBA
-             null);
-
-        // Populate the data buffer
-        DataBuffer dataBuffer = raster.getDataBuffer();
-        int index = 0;
-        for (String row : rows) {
-            for (int x = 0; x < width; x++) {
-                dataBuffer.setElem(index++, toARGB(row.charAt(x)));
-            }
+        if (!folder.exists()) {
+            logger.info("Creating directory " + folder);
+            folder.mkdirs();
         }
 
-        // Create the image
-        BufferedImage bufferedImage = new BufferedImage
-                (width, height, BufferedImage.TYPE_INT_ARGB);
-        bufferedImage.setData(raster);
+        File file = new File(folder, name + FILE_EXTENSION);
 
-        return bufferedImage;
+        try {
+            return new FileOutputStream(file);
+        } catch (FileNotFoundException ex) {
+            logger.warning("Cannot open output stream to icon " + file);
+            throw ex;
+        }
     }
-
-    //~ Methods private ---------------------------------------------------
 
     //--------------//
     // getXmlMapper //
     //--------------//
-    private static XmlMapper getXmlMapper()
+    private static XmlMapper getXmlMapper ()
     {
         if (xmlMapper == null) {
             xmlMapper = new XmlMapper(SymbolIcon.class);
         }
+
         return xmlMapper;
-    }
-
-    //--------//
-    // toGray //
-    //--------//
-    /**
-     * Compute the pixel gray level that corresponds to the given char
-     *
-     * @param c the char
-     * @return the corresponding pixel value ( 0 .. 255)
-     */
-    private static int toGray(char c)
-    {
-        // Check the char
-        if (c == WHITE) {
-            return  255;
-        } else {
-            for (int i = charTable.length -1; i >= 0; i--) {
-                if (charTable[i] == c) {
-                    int level = 3 + i * 36; // Range 3 .. 255 (not too bad)
-                    return level;
-                }
-            }
-        }
-
-        // Unknown -> white
-        logger.warning("Invalid pixel encoding char : '" + c + "'");
-        return 255;
-    }
-
-    //--------//
-    // toARGB //
-    //--------//
-    /**
-     * Compute the ARGB pixel that corresponds to the given char
-     *
-     * @param c the char
-     * @return the corresponding pixel value (ARGB format)
-     */
-    private static int toARGB (char c)
-    {
-        final int level = toGray(c);
-        if (level == 255) {
-            return 0x00ffffff;      // Totally transparent / white
-        } else {
-            return
-                255   << 24 |      // Alpha (opaque)
-                level << 16 |      // R
-                level <<  8 |      // G
-                level;             // B
-        }
     }
 
     //------------//
@@ -362,70 +392,73 @@ public class IconManager
     private static char ARGBtoChar (int argb)
     {
         int a = (argb & 0xff000000) >>> 24; // Alpha
+
         if (a == 0) {
-            return WHITE;               // White / transparent
+            return WHITE; // White / transparent
         } else {
             int r = (argb & 0x00ff0000) >>> 16;
             int g = (argb & 0x0000ff00) >>> 8;
             int b = (argb & 0x000000ff);
-            int index = (int) Math.rint((r+g+b) / 108.0); // 3 * 36
+            int index = (int) Math.rint((r + g + b) / 108.0); // 3 * 36
 
             return charTable[index];
         }
     }
 
-    //---------------------//
-    // getIconOutputStream //
-    //---------------------//
-    private static OutputStream getIconOutputStream (String name)
-        throws FileNotFoundException
+    //--------//
+    // toARGB //
+    //--------//
+    /**
+     * Compute the ARGB pixel that corresponds to the given char
+     *
+     * @param c the char
+     * @return the corresponding pixel value (ARGB format)
+     */
+    private static int toARGB (char c)
     {
-        File folder = Main.getIconsFolder();
-        if (!folder.exists()) {
-            logger.info("Creating directory " + folder);
-            folder.mkdirs();
-        }
+        final int level = toGray(c);
 
-        File file = new File (folder, name + FILE_EXTENSION);
-        try {
-            return new FileOutputStream (file);
-        } catch (FileNotFoundException ex) {
-            logger.warning("Cannot open output stream to icon " + file);
-            throw ex;
+        if (level == 255) {
+            return 0x00ffffff; // Totally transparent / white
+        } else {
+            return (255 << 24) | // Alpha (opaque)
+                   (level << 16) | // R
+                   (level << 8) | // G
+                   level; // B
         }
     }
 
-    //-------------------//
-    // loadFromXmlStream //
-    //-------------------//
-    /// Turn it back to private !!!
-    public static SymbolIcon loadFromXmlStream (InputStream is)
+    //--------//
+    // toGray //
+    //--------//
+    /**
+     * Compute the pixel gray level that corresponds to the given char
+     *
+     * @param c the char
+     * @return the corresponding pixel value ( 0 .. 255)
+     */
+    private static int toGray (char c)
     {
-        try {
-            return (SymbolIcon) getXmlMapper().load(is);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
+        // Check the char
+        if (c == WHITE) {
+            return 255;
+        } else {
+            for (int i = charTable.length - 1; i >= 0; i--) {
+                if (charTable[i] == c) {
+                    int level = 3 + (i * 36); // Range 3 .. 255 (not too bad)
+
+                    return level;
+                }
+            }
         }
+
+        // Unknown -> white
+        logger.warning("Invalid pixel encoding char : '" + c + "'");
+
+        return 255;
     }
 
-    //------------------//
-    // storeToXmlStream //
-    //------------------//
-    /// Turn it back to private !!!
-    public static boolean storeToXmlStream (SymbolIcon   icon,
-                                            OutputStream os)
-    {
-        try {
-            getXmlMapper().store(icon, os);
-            return true;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return false;
-        }
-    }
-
-    //~ Classes -----------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
     // Constants //
@@ -433,9 +466,9 @@ public class IconManager
     private static class Constants
         extends ConstantSet
     {
-        Constant.Integer buttonIconSize = new Constant.Integer
-                (16,
-                 "Size of toolbar icons (16 or 24)");
+        Constant.Integer buttonIconSize = new Constant.Integer(
+            16,
+            "Size of toolbar icons (16 or 24)");
 
         Constants ()
         {

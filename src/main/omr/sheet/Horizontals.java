@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                         H o r i z o n t a l s                         //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                           H o r i z o n t a l s                            //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import omr.stick.Stick;
@@ -26,23 +26,23 @@ import java.util.List;
 public class Horizontals
     implements java.io.Serializable
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
+
+    private final List<Ending> endings = new ArrayList<Ending>();
 
     // The whole list of horizontals (ledgers, legato signs, endings) found
     private final List<Ledger> ledgers = new ArrayList<Ledger>();
-    private final List<Ending> endings = new ArrayList<Ending>();
-    //private final List<Dash> legatos = new ArrayList<Dash>();
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
-    //-------------//
-    // Horizontals //
-    //-------------//
+    /**
+     * Creates a new Horizontals object.
+     */
     public Horizontals ()
     {
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //------------//
     // getEndings //

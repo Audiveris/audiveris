@@ -21,7 +21,6 @@ package omr.ui.treetable;
  * THIS SOFTWARE OR ITS DERIVATIVES.
  *
  */
-
 import javax.swing.tree.TreeModel;
 
 /**
@@ -38,14 +37,14 @@ import javax.swing.tree.TreeModel;
 public interface TreeTableModel
     extends TreeModel
 {
-    //~ Methods --------------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     /**
      * Indicates whether the the value for node <code>node</code>, at column
      * number <code>column</code> is editable.
      */
     public boolean isCellEditable (Object node,
-                                   int column);
+                                   int    column);
 
     /**
      * Returns the type for column number <code>column</code>.
@@ -68,12 +67,12 @@ public interface TreeTableModel
      */
     public void setValueAt (Object aValue,
                             Object node,
-                            int column);
+                            int    column);
 
     /**
      * Returns the value to be displayed for node <code>node</code>, at column
      * number <code>column</code>.
      */
     public Object getValueAt (Object node,
-                              int column);
+                              int    column);
 }

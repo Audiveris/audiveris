@@ -11,29 +11,35 @@
 package omr.ui.field;
 
 import java.util.List;
+
 import javax.swing.*;
 
+/**
+ * Class <code>IntegerListSpinner</code> is a spinner whose model is a list of
+ * integers
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
+ */
 public class IntegerListSpinner
     extends JSpinner
 {
+    //~ Constructors -----------------------------------------------------------
+
     //--------------------//
     // IntegerListSpinner //
     //--------------------//
-    public IntegerListSpinner()
+    /**
+     * Creates a new IntegerListSpinner object.
+     */
+    public IntegerListSpinner ()
     {
         setModel(new SpinnerListModel());
 
         // Right alignment
         JSpinner.DefaultEditor editor;
         editor = (JSpinner.DefaultEditor) getEditor();
-        editor.getTextField().setHorizontalAlignment(JTextField.RIGHT);
-    }
-
-    //---------//
-    // setList //
-    //---------//
-    public void setList(List<Integer> values)
-    {
-        ((SpinnerListModel) getModel()).setList(values);
+        editor.getTextField()
+              .setHorizontalAlignment(JTextField.RIGHT);
     }
 }

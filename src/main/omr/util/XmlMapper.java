@@ -1,46 +1,46 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                           X m l M a p p e r                           //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             X m l M a p p e r                              //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.util;
-
-import java.io.*;
 
 import org.jibx.runtime.*;
 import org.jibx.runtime.impl.*;
 
+import java.io.*;
+
 /**
- * Class <code>XmlMapper</code> handles the marshalling and unmarshalling
- * of any entity with an external XML support. This is implemented on top
- * of JiBX utility.
+ * Class <code>XmlMapper</code> handles the marshalling and unmarshalling of any
+ * entity with an external XML support. This is implemented on top of JiBX
+ * utility.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class XmlMapper
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(XmlMapper.class);
+    private static final Logger   logger = Logger.getLogger(XmlMapper.class);
 
     /** Standard indentation value for xml formatting */
     public static final int XML_INDENT = 4;
 
     /** Standard encoding for xml file */
-     public static final String XML_ENCODING = "UTF-8";
+    public static final String XML_ENCODING = "UTF-8";
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // The JiBX factory for loading and storing from/to an XML file
     private final IBindingFactory factory;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------//
     // XmlMapper //
@@ -61,14 +61,13 @@ public class XmlMapper
         }
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //------//
     // load //
     //------//
     /**
-     * Unmarshall the provided XML file to allocate the corresponding
-     * entity
+     * Unmarshall the provided XML file to allocate the corresponding entity
      *
      * @param xmlFile the file that contains the Entity data in XML format
      *
@@ -81,6 +80,7 @@ public class XmlMapper
 
         try {
             is = new FileInputStream(xmlFile);
+
             Object entity = load(is);
 
             if (logger.isFineEnabled()) {
@@ -115,7 +115,7 @@ public class XmlMapper
     {
         try {
             IUnmarshallingContext uctx = factory.createUnmarshallingContext();
-            Object entity = uctx.unmarshalDocument(is, null);
+            Object                entity = uctx.unmarshalDocument(is, null);
 
             if (logger.isFineEnabled()) {
                 logger.fine("Entity loaded from input stream " + is);
@@ -123,7 +123,7 @@ public class XmlMapper
 
             return entity;
         } catch (Exception ex) {
-            ex.printStackTrace ();
+            ex.printStackTrace();
             logger.warning(ex.toString());
             logger.warning("Cannot Unmarshall from input stream " + is);
 
@@ -141,7 +141,7 @@ public class XmlMapper
      * @param xmlFile the XML file to be written
      */
     public void store (Object entity,
-                       File xmlFile)
+                       File   xmlFile)
         throws Exception
     {
         OutputStream os = null;

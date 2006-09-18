@@ -7,7 +7,6 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.util;
 
 import javax.swing.*;
@@ -24,12 +23,12 @@ import javax.swing.event.MenuListener;
  */
 public abstract class DynamicMenu
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // The concrete UI menu
     private final JMenu menu;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-------------//
     // DynamicMenu //
@@ -44,28 +43,28 @@ public abstract class DynamicMenu
         menu = new JMenu(menuLabel);
 
         // Listener to menu selection, to modify content on-the-fly
-        menu.addMenuListener(new MenuListener()
-        {
-            public void menuCanceled (MenuEvent e)
-            {
-            }
+        menu.addMenuListener(
+            new MenuListener() {
+                    public void menuCanceled (MenuEvent e)
+                    {
+                    }
 
-            public void menuDeselected (MenuEvent e)
-            {
-            }
+                    public void menuDeselected (MenuEvent e)
+                    {
+                    }
 
-            public void menuSelected (MenuEvent e)
-            {
-                // Clean up the whole menu
-                menu.removeAll();
+                    public void menuSelected (MenuEvent e)
+                    {
+                        // Clean up the whole menu
+                        menu.removeAll();
 
-                // Rebuild the whole list of menu items on the fly
-                buildItems();
-            }
-        });
+                        // Rebuild the whole list of menu items on the fly
+                        buildItems();
+                    }
+                });
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //---------//
     // getMenu //
@@ -74,7 +73,7 @@ public abstract class DynamicMenu
      * Report the concrete menu
      * @return the usable menu
      */
-    public JMenu getMenu()
+    public JMenu getMenu ()
     {
         return menu;
     }

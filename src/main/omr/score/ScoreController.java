@@ -1,29 +1,32 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                     S c o r e C o n t r o l l e r                     //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2005. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                       S c o r e C o n t r o l l e r                        //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.score;
 
 import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+import static omr.score.ScoreFormat.*;
+
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
+
 import omr.ui.Jui;
 import omr.ui.icon.IconManager;
 import omr.ui.util.FileFilter;
 import omr.ui.util.SwingWorker;
+import static omr.ui.util.UIUtilities.*;
+
 import omr.util.Logger;
 import omr.util.NameSet;
-
-import static omr.ui.util.UIUtilities.*;
-import static omr.score.ScoreFormat.*;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,12 +35,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import javax.swing.*;
 
 /**
- * Class <code>ScoreController</code> encapsulates a set of user interface
- * means related to score handling, typically menus and buttons, with their
- * related actions.
+ * Class <code>ScoreController</code> encapsulates a set of user interface means
+ * related to score handling, typically menus and buttons, with their related
+ * actions.
  *
  * <p>We have defined groups of actions: <ol>
  *
@@ -51,32 +55,31 @@ import javax.swing.*;
  */
 public class ScoreController
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants constants = new Constants();
-    private static final Logger logger = Logger.getLogger(ScoreController.class);
+    private static final Constants              constants = new Constants();
+    private static final Logger                 logger = Logger.getLogger(
+        ScoreController.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
+
+    // Map format -> history
+    private final HashMap<ScoreFormat, History> historyMap = new HashMap<ScoreFormat, History>();
+
+    // Menu for score actions
+    private final JMenu        scoreMenu = new JMenu("Score");
 
     // Toolbar needed to add buttons in it
-    private final JToolBar toolBar;
+    private final JToolBar     toolBar;
 
     // Collection of score-dependent actions, that are enabled only if
     // there is a current score.
-    private final List<Object> scoreDependentActions
-        = new ArrayList<Object>();
-
-    // Menu for score actions
-    private final JMenu scoreMenu = new JMenu("Score");
+    private final List<Object> scoreDependentActions = new ArrayList<Object>();
 
     // Should we synchronize the sheet view
     private boolean synchroWanted = true;
 
-    // Map format -> history
-    private final HashMap<ScoreFormat,History> historyMap
-        = new HashMap<ScoreFormat,History>();
-
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------------//
     // ScoreController //
@@ -115,21 +118,55 @@ public class ScoreController
         enableActions(scoreDependentActions, false);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
+
+    //-----------------//
+    // getCurrentScore //
+    //-----------------//
+    /**
+     * Report the current selected Score (the score related to the currently
+     * selected sheet)
+     *
+     * @return the current score, or null if none selected
+     */
+    public Score getCurrentScore ()
+    {
+        Sheet sheet = (Sheet) SheetManager.getSelectedSheet();
+
+        if (sheet != null) {
+            return sheet.getScore();
+        }
+
+        return null;
+    }
+
+    //---------//
+    // getMenu //
+    //---------//
+    /**
+     * This method is meant for access by Jui (in the same package), to report
+     * the menu dedicated to score handling.
+     *
+     * @return the score menu
+     */
+    public JMenu getMenu ()
+    {
+        return scoreMenu;
+    }
 
     //--------------//
     // setScoreView //
     //--------------//
     /**
-     * Set the various display parameter of a view for the given score, if
-     * such score is provided, or a blank tab otherwise.
+     * Set the various display parameter of a view for the given score, if such
+     * score is provided, or a blank tab otherwise.
      *
      * @param score the desired score if any, null otherwise
      */
     public void setScoreView (Score score)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("setScoreView score=" + score );
+            logger.fine("setScoreView score=" + score);
         }
 
         if (score != null) {
@@ -146,36 +183,26 @@ public class ScoreController
 
             // Make sure the view is part of the related sheet assembly
             Jui jui = Main.getJui();
+
             if (jui != null) {
                 Sheet sheet = score.getSheet();
+
                 if (sheet != null) {
-                    sheet.getAssembly().setScoreView(view);
+                    sheet.getAssembly()
+                         .setScoreView(view);
                 }
             }
         }
-        enableActions(scoreDependentActions, score != null);
-    }
 
-    //---------//
-    // getMenu //
-    //---------//
-    /**
-     * This method is meant for access by Jui (in the same package), to
-     * report the menu dedicated to score handling.
-     *
-     * @return the score menu
-     */
-    public JMenu getMenu ()
-    {
-        return scoreMenu;
+        enableActions(scoreDependentActions, score != null);
     }
 
     //------------------//
     // setSynchroWanted //
     //------------------//
     /**
-     * Allow to register the need (or lack of) for synchronization of the
-     * other side (score view).
+     * Allow to register the need (or lack of) for synchronization of the other
+     * side (score view).
      *
      * @param synchroWanted the value to set to the flag
      */
@@ -188,10 +215,9 @@ public class ScoreController
     // isSynchroWanted //
     //-----------------//
     /**
-     * Check is synchronization of the other side view (score) is
-     * wanted. This is usually true, except in specific case, where the
-     * initial order already comes from the other side, so there is no need
-     * to go back there.
+     * Check is synchronization of the other side view (score) is wanted. This
+     * is usually true, except in specific case, where the initial order already
+     * comes from the other side, so there is no need to go back there.
      *
      * @return the flag value
      */
@@ -206,164 +232,54 @@ public class ScoreController
     private void loadScore (final File        file,
                             final ScoreFormat format)
     {
-        final SwingWorker<Score> worker = new SwingWorker<Score>()
+        final SwingWorker<Score> worker = new SwingWorker<Score>() {
+            // This runs on worker's thread
+            public Score construct ()
             {
-                // This runs on worker's thread
-                public Score construct()
-                {
-                    if (file.exists()) {
-                        return ScoreManager.getInstance().load(file);
+                if (file.exists()) {
+                    return ScoreManager.getInstance()
+                                       .load(file);
+                } else {
+                    logger.warning("File not found " + file);
+
+                    return null;
+                }
+            }
+
+            // This runs on the event-dispatching thread.
+            public void finished ()
+            {
+                Score score = getValue();
+
+                try {
+                    String  path = file.getCanonicalPath();
+                    History history = historyMap.get(format);
+
+                    // Insert in (or remove from) history
+                    if (score != null) {
+                        history.names.add(path);
+                        setScoreView(score);
+
+                        //  Sheet sheet = score.getSheet();
+                        //  if (sheet != null) {
+                        //      sheet.checkTransientSteps();
+                        //  }
+
+                        ////showScoreView(setScoreView(score), true);
                     } else {
-                        logger.warning("File not found " + file);
-                        return null;
+                        history.names.remove(path);
                     }
-                }
 
-                // This runs on the event-dispatching thread.
-                public void finished()
-                {
-                    Score score = getValue();
-                    try {
-                        String path = file.getCanonicalPath();
-                        History history = historyMap.get(format);
-                        // Insert in (or remove from) history
-                        if (score != null) {
-                            history.names.add(path);
-                            setScoreView(score);
-                            //  Sheet sheet = score.getSheet();
-                            //  if (sheet != null) {
-                            //      sheet.checkTransientSteps();
-                            //  }
-
-                            ////showScoreView(setScoreView(score), true);
-                        } else {
-                            history.names.remove(path);
-                        }
-                        enableActions(scoreDependentActions, score != null);
-                    } catch (IOException ex) {
-                    }
+                    enableActions(scoreDependentActions, score != null);
+                } catch (IOException ex) {
                 }
-            };
+            }
+        };
+
         worker.start();
     }
 
-    //-----------------//
-    // getCurrentScore //
-    //-----------------//
-    public Score getCurrentScore()
-    {
-        Sheet sheet = (Sheet) SheetManager.getSelectedSheet();
-        if (sheet != null) {
-            return sheet.getScore();
-        }
-
-        return null;
-    }
-
-    //~ Classes -----------------------------------------------------------
-
-//     //--------//
-//     // Format //
-//     //--------//
-//     private static enum Format
-//     {
-//         BINARY("Binary",                // Binary format
-//                ".score",
-//                constants.binaryScoreFolder),
-
-//             XML("Xml",                  // XML format
-//                 ".xml",
-//                 constants.xmlScoreFolder);
-
-//         public final String          name;
-//         public final String          extension;
-//         public final Constant.String folder;
-//         private      History         history;
-
-//         Format (String          name,
-//                 String          extension,
-//                 Constant.String folder)
-//         {
-//             this.name      = name;
-//             this.extension = extension;
-//             this.folder    = folder;
-//         }
-
-//         public void setHistory (History history)
-//         {
-//             this.history = history;
-//         }
-//     }
-
-    //---------//
-    // History //
-    //---------//
-    private class History
-    {
-        // Score file history
-        private NameSet names;
-
-        public History(final ScoreFormat format)
-        {
-            // Register this history with its score format
-            historyMap.put(format, this);
-
-            names = new NameSet("omr.score.ScoreController." + format,
-                                constants.maxHistorySize.getValue());
-
-            JMenuItem historyMenu = names.menu
-                (format.name + " History",
-                 new ActionListener()
-                 {
-                     public void actionPerformed (ActionEvent e)
-                     {
-                         File file = new File(e.getActionCommand());
-                         loadScore(file, format);
-                     }
-                 });
-            historyMenu.setToolTipText("History of " + format.name +
-                                       " score files");
-            historyMenu.setIcon(IconManager.buttonIconOf("general/History"));
-            scoreMenu.add(historyMenu);
-        }
-    }
-
-    //-------------//
-    // ScoreAction //
-    //-------------//
-    /**
-     * Class <code>ScoreAction</code> is a template for any score-related
-     * action : it builds the action, registers it in the list of
-     * score-dependent actions if needed, inserts the action in the score
-     * menu, and inserts a button in the toolbar if an icon is provided.
-     */
-    private abstract class ScoreAction
-        extends AbstractAction
-    {
-        public ScoreAction (boolean enabled,
-                            String label,
-                            String tip,
-                            Icon icon)
-        {
-            super(label, icon);
-
-            // Is this a Score-dependent action ? If so, it is by default
-            // disabled, so we use this characteristic to detect such actions
-            if (!enabled) {
-                scoreDependentActions.add(this);
-            }
-
-            // Add the related Menu item
-            scoreMenu.add(this).setToolTipText(tip);
-
-            // Add an icon in the Tool bar, if any icon is provided
-            if (icon != null) {
-                final JButton button = toolBar.add(this);
-                button.setBorder(getToolBorder());
-                button.setToolTipText(tip);
-            }
-        }
-    }
+    //~ Inner Classes ----------------------------------------------------------
 
     //--------------//
     // FormatAction //
@@ -379,13 +295,196 @@ public class ScoreController
         protected final ScoreFormat format;
 
         public FormatAction (ScoreFormat format,
-                             boolean enabled,
-                             String label,
-                             String tip,
-                             Icon icon)
+                             boolean     enabled,
+                             String      label,
+                             String      tip,
+                             Icon        icon)
         {
             super(enabled, label, tip, icon);
             this.format = format;
+        }
+    }
+
+    //--------------//
+    // BrowseAction //
+    //--------------//
+    /**
+     * Class <code>BrowseAction</code> launches the tree display of the current
+     * score.
+     */
+    private class BrowseAction
+        extends ScoreAction
+    {
+        public BrowseAction ()
+        {
+            super(
+                false,
+                "Browse Score",
+                "Browse through the score document",
+                IconManager.buttonIconOf("general/PrintPreview"));
+        }
+
+        public void actionPerformed (ActionEvent e)
+        {
+            getCurrentScore()
+                .viewScore();
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+        extends ConstantSet
+    {
+        Constant.Integer maxHistorySize = new Constant.Integer(
+            10,
+            "Maximum number of score files kept in history");
+
+        Constants ()
+        {
+            initialize();
+        }
+    }
+
+    //------------//
+    // DumpAction //
+    //------------//
+    private class DumpAction
+        extends ScoreAction
+    {
+        public DumpAction ()
+        {
+            super(false, "Dump Score", "Dump the current score", null);
+        }
+
+        public void actionPerformed (ActionEvent e)
+        {
+            getCurrentScore()
+                .dump();
+        }
+    }
+
+    //---------------//
+    // DumpAllAction //
+    //---------------//
+    private class DumpAllAction
+        extends ScoreAction
+    {
+        public DumpAllAction ()
+        {
+            super(true, "Dump all scores", "Dump all score instances", null);
+        }
+
+        public void actionPerformed (ActionEvent e)
+        {
+            ScoreManager.getInstance()
+                        .dumpAllScores();
+        }
+    }
+
+    //     //--------//
+    //     // Format //
+    //     //--------//
+    //     private static enum Format
+    //     {
+    //         BINARY("Binary",                // Binary format
+    //                ".score",
+    //                constants.binaryScoreFolder),
+
+    //             XML("Xml",                  // XML format
+    //                 ".xml",
+    //                 constants.xmlScoreFolder);
+
+    //         public final String          name;
+    //         public final String          extension;
+    //         public final Constant.String folder;
+    //         private      History         history;
+
+    //         Format (String          name,
+    //                 String          extension,
+    //                 Constant.String folder)
+    //         {
+    //             this.name      = name;
+    //             this.extension = extension;
+    //             this.folder    = folder;
+    //         }
+
+    //         public void setHistory (History history)
+    //         {
+    //             this.history = history;
+    //         }
+    //     }
+
+    //---------//
+    // History //
+    //---------//
+    private class History
+    {
+        // Score file history
+        private NameSet names;
+
+        public History (final ScoreFormat format)
+        {
+            // Register this history with its score format
+            historyMap.put(format, this);
+
+            names = new NameSet(
+                "omr.score.ScoreController." + format,
+                constants.maxHistorySize.getValue());
+
+            JMenuItem historyMenu = names.menu(
+                format.name + " History",
+                new ActionListener() {
+                        public void actionPerformed (ActionEvent e)
+                        {
+                            File file = new File(e.getActionCommand());
+                            loadScore(file, format);
+                        }
+                    });
+
+            historyMenu.setToolTipText(
+                "History of " + format.name + " score files");
+            historyMenu.setIcon(IconManager.buttonIconOf("general/History"));
+            scoreMenu.add(historyMenu);
+        }
+    }
+
+    //-------------//
+    // ScoreAction //
+    //-------------//
+    /**
+     * Class <code>ScoreAction</code> is a template for any score-related action
+     * : it builds the action, registers it in the list of score-dependent
+     * actions if needed, inserts the action in the score menu, and inserts a
+     * button in the toolbar if an icon is provided.
+     */
+    private abstract class ScoreAction
+        extends AbstractAction
+    {
+        public ScoreAction (boolean enabled,
+                            String  label,
+                            String  tip,
+                            Icon    icon)
+        {
+            super(label, icon);
+
+            // Is this a Score-dependent action ? If so, it is by default
+            // disabled, so we use this characteristic to detect such actions
+            if (!enabled) {
+                scoreDependentActions.add(this);
+            }
+
+            // Add the related Menu item
+            scoreMenu.add(this)
+                     .setToolTipText(tip);
+
+            // Add an icon in the Tool bar, if any icon is provided
+            if (icon != null) {
+                final JButton button = toolBar.add(this);
+                button.setBorder(getToolBorder());
+                button.setToolTipText(tip);
+            }
         }
     }
 
@@ -401,13 +500,17 @@ public class ScoreController
     {
         public CloseAction ()
         {
-            super(false, "Close Score", "Close the current score",
-                  IconManager.buttonIconOf("general/Remove"));
+            super(
+                false,
+                "Close Score",
+                "Close the current score",
+                IconManager.buttonIconOf("general/Remove"));
         }
 
         public void actionPerformed (ActionEvent e)
         {
             Score score = getCurrentScore();
+
             if (score != null) {
                 score.close();
             } else {
@@ -428,11 +531,12 @@ public class ScoreController
     {
         public OpenAction (ScoreFormat format)
         {
-            super(format,
-                  true,
-                  "Open " + format.name + " Score",
-                  "Open a score " + format.name + " file",
-                  IconManager.buttonIconOf("general/Import"));
+            super(
+                format,
+                true,
+                "Open " + format.name + " Score",
+                "Open a score " + format.name + " file",
+                IconManager.buttonIconOf("general/Import"));
         }
 
         public void actionPerformed (ActionEvent e)
@@ -441,13 +545,15 @@ public class ScoreController
             JFileChooser fc = new JFileChooser(format.folder.getValue());
             fc.setAcceptAllFileFilterUsed(false);
             fc.setMultiSelectionEnabled(false);
-            fc.addChoosableFileFilter(new FileFilter
-                                      ("Score " + format.name +
-                                       " Files (" + format.extension + ")",
-                                       format.extension));
+            fc.addChoosableFileFilter(
+                new FileFilter(
+                    "Score " + format.name + " Files (" + format.extension +
+                    ")",
+                    format.extension));
 
             // Check user action
             int rc = fc.showOpenDialog(Main.getJui().getFrame());
+
             if (rc == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
                 loadScore(file, format);
@@ -461,116 +567,51 @@ public class ScoreController
     // StoreAction //
     //-------------//
     /**
-     * Class <code>StoreAction</code> handles the saving of the
-     * currently selected score, using a binary or xml format.
+     * Class <code>StoreAction</code> handles the saving of the currently
+     * selected score, using a binary or xml format.
      */
     private class StoreAction
         extends FormatAction
     {
         public StoreAction (ScoreFormat format)
         {
-            super(format, false,
-                  "Store in " + format.name,
-                  "Store current score in " + format.name + " format",
-                  IconManager.buttonIconOf("general/Export"));
+            super(
+                format,
+                false,
+                "Store in " + format.name,
+                "Store current score in " + format.name + " format",
+                IconManager.buttonIconOf("general/Export"));
         }
 
         public void actionPerformed (ActionEvent e)
         {
-            final SwingWorker worker = new SwingWorker()
+            final SwingWorker worker = new SwingWorker() {
+                public Object construct ()
                 {
-                    public Object construct()
-                    {
-                        try {
-                            switch (format) {
-                            case BINARY:
-                                getCurrentScore().serialize();
-                                break;
-                            case XML:
-                                getCurrentScore().store();
-                                break;
-                            }
-                        } catch (Exception ex) {
-                            logger.warning("Could not store score");
-                            logger.warning(ex.toString());
+                    try {
+                        switch (format) {
+                        case BINARY :
+                            getCurrentScore()
+                                .serialize();
+
+                            break;
+
+                        case XML :
+                            getCurrentScore()
+                                .store();
+
+                            break;
                         }
-
-                        return null;
+                    } catch (Exception ex) {
+                        logger.warning("Could not store score");
+                        logger.warning(ex.toString());
                     }
-                };
+
+                    return null;
+                }
+            };
+
             worker.start();
-        }
-    }
-
-    //--------------//
-    // BrowseAction //
-    //--------------//
-    /**
-     * Class <code>BrowseAction</code> launches the tree display of the
-     * current score.
-     */
-    private class BrowseAction
-        extends ScoreAction
-    {
-        public BrowseAction ()
-        {
-            super(false, "Browse Score", "Browse through the score document",
-                  IconManager.buttonIconOf("general/PrintPreview"));
-        }
-
-        public void actionPerformed (ActionEvent e)
-        {
-            getCurrentScore().viewScore();
-        }
-    }
-
-    //------------//
-    // DumpAction //
-    //------------//
-    private class DumpAction
-        extends ScoreAction
-    {
-        public DumpAction ()
-        {
-            super(false, "Dump Score", "Dump the current score", null);
-        }
-
-        public void actionPerformed (ActionEvent e)
-        {
-            getCurrentScore().dump();
-        }
-    }
-
-    //---------------//
-    // DumpAllAction //
-    //---------------//
-    private class DumpAllAction
-        extends ScoreAction
-    {
-        public DumpAllAction ()
-        {
-            super(true, "Dump all scores", "Dump all score instances", null);
-        }
-
-        public void actionPerformed (ActionEvent e)
-        {
-            ScoreManager.getInstance().dumpAllScores();
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-        extends ConstantSet
-    {
-        Constant.Integer maxHistorySize = new Constant.Integer
-                (10,
-                 "Maximum number of score files kept in history");
-
-        Constants ()
-        {
-            initialize();
         }
     }
 }

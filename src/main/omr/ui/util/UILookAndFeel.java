@@ -7,17 +7,16 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.util;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.util.Logger;
 
 // import com.jgoodies.looks.windows.*;
 // import com.jgoodies.looks.plastic.*;
 // import com.jgoodies.looks.plastic.theme.*;
-
 import javax.swing.UIManager;
 
 /**
@@ -29,54 +28,56 @@ import javax.swing.UIManager;
  */
 public class UILookAndFeel
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(UILookAndFeel.class);
     private static final Constants constants = new Constants();
+    private static final Logger    logger = Logger.getLogger(
+        UILookAndFeel.class);
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
-    private UILookAndFeel()
+    private UILookAndFeel ()
     {
     }
 
-    //~ Methods -----------------------------------------------------------
-        // Available Themes:
-        //
-        // AbstractSkyTheme
-        // BrownSugar
-        // Colors
-        // DarkStar
-        // DesertBlue
-        // DesertBluer
-        // DesertGreen
-        // DesertRed
-        // DesertYellow
-        // ExperienceBlue
-        // ExperienceGreen
-        // Silver
-        // SkyBlue
-        // SkyBluer
-        // SkyBluerTahoma
-        // SkyGreen
-        // SkyKrupp
-        // SkyPink
-        // SkyRed
-        // SkyYellow
+    //~ Methods ----------------------------------------------------------------
 
-//         try {
-//             // Available Look & Feel:
-//             //
-//             // WindowsLookAndFeel
-//             // PlasticLookAndFeel
-//             // Plastic3DLookAndFeel
-//             // PlasticXPLookAndFeel
+    // Available Themes:
+    //
+    // AbstractSkyTheme
+    // BrownSugar
+    // Colors
+    // DarkStar
+    // DesertBlue
+    // DesertBluer
+    // DesertGreen
+    // DesertRed
+    // DesertYellow
+    // ExperienceBlue
+    // ExperienceGreen
+    // Silver
+    // SkyBlue
+    // SkyBluer
+    // SkyBluerTahoma
+    // SkyGreen
+    // SkyKrupp
+    // SkyPink
+    // SkyRed
+    // SkyYellow
 
-//             PlasticLookAndFeel.setMyCurrentTheme(new SkyKrupp());
-//             UIManager.setLookAndFeel(new Plastic3DLookAndFeel());
-//         } catch (Exception ex) {
-//             ex.printStackTrace();
-//         }
+    //         try {
+    //             // Available Look & Feel:
+    //             //
+    //             // WindowsLookAndFeel
+    //             // PlasticLookAndFeel
+    //             // Plastic3DLookAndFeel
+    //             // PlasticXPLookAndFeel
+
+    //             PlasticLookAndFeel.setMyCurrentTheme(new SkyKrupp());
+    //             UIManager.setLookAndFeel(new Plastic3DLookAndFeel());
+    //         } catch (Exception ex) {
+    //             ex.printStackTrace();
+    //         }
 
     //-------//
     // setUI //
@@ -88,9 +89,10 @@ public class UILookAndFeel
      *
      * @param className the full path to the desired UI class name
      */
-    public static void setUI(String className)
+    public static void setUI (String className)
     {
         com.jgoodies.looks.Options.setUseNarrowButtons(true);
+
         try {
             if (className != null) {
                 UIManager.setLookAndFeel(className);
@@ -104,15 +106,17 @@ public class UILookAndFeel
         }
     }
 
+    //~ Inner Classes ----------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
     private static class Constants
         extends ConstantSet
     {
-        Constant.String lookAndFeel = new Constant.String
-                ("com.jgoodies.looks.plastic.Plastic3DLookAndFeel",
-                 "Full class path to the desired UI Look & Feel");
+        Constant.String lookAndFeel = new Constant.String(
+            "com.jgoodies.looks.plastic.Plastic3DLookAndFeel",
+            "Full class path to the desired UI Look & Feel");
 
         Constants ()
         {

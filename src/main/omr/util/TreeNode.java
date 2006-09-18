@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                            T r e e N o d e                            //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                              T r e e N o d e                               //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.util;
 
 import java.util.ArrayList;
@@ -21,8 +21,8 @@ import java.util.List;
  *
  * <li> A container (which may be null) to which the TreeNode belongs
  *
- * <li> A list (which may be empty) of contained chidren, for which the
- * TreeNode is the container.
+ * <li> A list (which may be empty) of contained chidren, for which the TreeNode
+ * is the container.
  *
  * </ul>
  *
@@ -32,23 +32,23 @@ import java.util.List;
 public class TreeNode
     implements java.io.Serializable
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(TreeNode.class);
+    private static final Logger    logger = Logger.getLogger(TreeNode.class);
 
-    //~ Instance variables ------------------------------------------------
-
-    /**
-     * Container : the node just above in the tree
-     */
-    protected TreeNode container;
+    //~ Instance fields --------------------------------------------------------
 
     /**
      * Children : the list of nodes just below in the tree
      */
     protected final List<TreeNode> children = new ArrayList<TreeNode>();
 
-    //~ Constructors ------------------------------------------------------
+    /**
+     * Container : the node just above in the tree
+     */
+    protected TreeNode container;
+
+    //~ Constructors -----------------------------------------------------------
 
     //----------//
     // TreeNode //
@@ -69,7 +69,7 @@ public class TreeNode
         }
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //-------------//
     // setChildren //
@@ -77,14 +77,15 @@ public class TreeNode
     /**
      * Set a (new) list of children
      *
-     * @param children the list of nodes to register as children of the
-     *                 node at hand
+     * @param children the list of nodes to register as children of the node at
+     *                 hand
      */
-    public void setChildren (List<? extends TreeNode> children)
+    public void setChildren (List<?extends TreeNode> children)
     {
         if (logger.isFineEnabled()) {
             logger.fine("setChildren of " + this);
         }
+
         if (this.children != children) {
             this.children.clear();
             this.children.addAll(children);
@@ -138,8 +139,7 @@ public class TreeNode
     public void setContainer (TreeNode container)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("setContainer container=" + container + " for "
-                         + this);
+            logger.fine("setContainer container=" + container + " for " + this);
         }
 
         this.container = container;

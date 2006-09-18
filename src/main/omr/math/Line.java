@@ -1,21 +1,21 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                                L i n e                                //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                  L i n e                                   //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.math;
 
 import omr.util.Logger;
 
 /**
  * Interface <code>Line</code> handles the equation of a line, whatever its
- * orientation, using the form : a*x + b*y + c = 0. The equation is
- * normalized, in other words, we always have a**2 + b**2 = 1.
+ * orientation, using the form : a*x + b*y + c = 0. The equation is normalized,
+ * in other words, we always have a**2 + b**2 = 1.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -23,25 +23,12 @@ import omr.util.Logger;
 public interface Line
     extends java.io.Serializable
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     /** The same logger, usable by all subclasses */
     static final Logger logger = Logger.getLogger(Line.class);
 
-    /**
-     * Specific exception raised when trying to use a line with undefined
-     * parameters
-     * */
-    static class UndefinedLineException
-        extends RuntimeException
-    {
-        UndefinedLineException (String message)
-        {
-            super(message);
-        }
-    }
-
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //------//
     // getA //
@@ -73,16 +60,6 @@ public interface Line
      */
     double getC ();
 
-    //----------//
-    // getSlope //
-    //----------//
-    /**
-     * Return -a/b, from a*x + b*y +c
-     *
-     * @return the y/x coefficient
-     */
-    double getSlope ();
-
     //------------------//
     // getInvertedSlope //
     //------------------//
@@ -93,6 +70,18 @@ public interface Line
      */
     double getInvertedSlope ();
 
+    //-----------------//
+    // getMeanDistance //
+    //-----------------//
+    /**
+     * Return the mean quadratic distance of the defining population of points
+     * to the resulting line. This can be used to measure how well the line fits
+     * the points.
+     *
+     * @return the absolute value of the mean distance
+     */
+    double getMeanDistance ();
+
     //-------------------//
     // getNumberOfPoints //
     //-------------------//
@@ -102,6 +91,44 @@ public interface Line
      * @return the number of defining points so far
      */
     int getNumberOfPoints ();
+
+    //----------//
+    // getSlope //
+    //----------//
+    /**
+     * Return -a/b, from a*x + b*y +c
+     *
+     * @return the y/x coefficient
+     */
+    double getSlope ();
+
+    //------------//
+    // distanceOf //
+    //------------//
+    /**
+     * Compute the orthogonal distance between the line and the provided
+     * point. Note that the distance may be negative.
+     *
+     * @param x the point abscissa
+     * @param y the point ordinate
+     *
+     * @return the algebraic orthogonal distance
+     */
+    double distanceOf (double x,
+                       double y);
+
+    //-------------//
+    // includeLine //
+    //-------------//
+    /**
+     * Add the whole population of another line, which results in merging this
+     * other line with the line at hand.
+     *
+     * @param other the other line
+     *
+     * @return this augmented line, which permits to chain the additions.
+     */
+    Line includeLine (Line other);
 
     //--------------//
     // includePoint //
@@ -114,19 +141,6 @@ public interface Line
      */
     void includePoint (double x,
                        double y);
-
-    //-------------//
-    // includeLine //
-    //-------------//
-    /**
-     * Add the whole population of another line, which results in merging
-     * this other line with the line at hand.
-     *
-     * @param other the other line
-     *
-     * @return this augmented line, which permits to chain the additions.
-     */
-    Line includeLine (Line other);
 
     //-------//
     // reset //
@@ -151,6 +165,19 @@ public interface Line
     double xAt (double y);
 
     //-----//
+    // xAt //
+    //-----//
+    /**
+     * Retrieve the abscissa where the line crosses the given ordinate y,
+     * rounded to the nearest integer value.  Beware of horizontal lines !!!
+     *
+     * @param y the imposed ordinate
+     *
+     * @return the corresponding x value
+     */
+    int xAt (int y);
+
+    //-----//
     // yAt //
     //-----//
     /**
@@ -162,20 +189,6 @@ public interface Line
      * @return the corresponding y value
      */
     double yAt (double x);
-
-    //-----//
-    // xAt //
-    //-----//
-    /**
-     * Retrieve the abscissa where the line crosses the given ordinate y,
-     * rounded to the nearest integer value.  Beware of horizontal lines
-     * !!!
-     *
-     * @param y the imposed ordinate
-     *
-     * @return the corresponding x value
-     */
-    int xAt (int y);
 
     //-----//
     // yAt //
@@ -190,30 +203,18 @@ public interface Line
      */
     int yAt (int x);
 
-    //------------//
-    // distanceOf //
-    //------------//
-    /**
-     * Compute the orthogonal distance between the line and the provided
-     * point. Note that the distance may be negative.
-     *
-     * @param x the point abscissa
-     * @param y the point ordinate
-     *
-     * @return the algebraic orthogonal distance
-     */
-    double distanceOf (double x,
-                       double y);
+    //~ Inner Classes ----------------------------------------------------------
 
-    //-----------------//
-    // getMeanDistance //
-    //-----------------//
     /**
-     * Return the mean quadratic distance of the defining population of
-     * points to the resulting line. This can be used to measure how well
-     * the line fits the points.
-     *
-     * @return the absolute value of the mean distance
+     * Specific exception raised when trying to use a line with undefined
+     * parameters
      */
-    double getMeanDistance ();
+    static class UndefinedLineException
+        extends RuntimeException
+    {
+        UndefinedLineException (String message)
+        {
+            super(message);
+        }
+    }
 }

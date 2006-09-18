@@ -12,55 +12,88 @@ package omr.ui.field;
 
 import java.awt.event.ActionEvent;
 import java.util.List;
+
 import javax.swing.*;
 
+/**
+ * Class <code>SpinnerUtilities</code> gathers a few utilities for JSpinner
+ * entities
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
+ */
 public class SpinnerUtilities
 {
-
-    //-------------------//
-    // setRightAlignment //
-    //-------------------//
-    public static void setRightAlignment (JSpinner spinner)
-    {
-        JSpinner.DefaultEditor editor;
-        editor = (JSpinner.DefaultEditor) spinner.getEditor();
-        editor.getTextField().setHorizontalAlignment(JTextField.RIGHT);
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //---------//
     // setList //
     //---------//
-    public static void setList(JSpinner spinner,
-                               List<?>  values)
+    /**
+     * Assign the List model (for a list-based spinner)
+     *
+     * @param spinner the spinner to update
+     * @param values the model list values
+     */
+    public static void setList (JSpinner spinner,
+                                List<?>  values)
     {
         SpinnerModel model = spinner.getModel();
+
         if (model instanceof SpinnerListModel) {
             ((SpinnerListModel) model).setList(values);
         } else {
-            throw new IllegalArgumentException
-                ("Spinner model is not a SpinnerListModel");
+            throw new IllegalArgumentException(
+                "Spinner model is not a SpinnerListModel");
         }
+    }
+
+    //-------------------//
+    // setRightAlignment //
+    //-------------------//
+    /**
+     * Align the spinner display to the right
+     *
+     * @param spinner the spinner to update
+     */
+    public static void setRightAlignment (JSpinner spinner)
+    {
+        JSpinner.DefaultEditor editor;
+        editor = (JSpinner.DefaultEditor) spinner.getEditor();
+        editor.getTextField()
+              .setHorizontalAlignment(JTextField.RIGHT);
     }
 
     //----------------//
     // fixIntegerList //
     //----------------//
+    /**
+     * Workaround for a swing bug : when the user enters an illegal value, the
+     * text is forced to the last value.
+     *
+     * @param spinner the spinner to update
+     */
     public static void fixIntegerList (final JSpinner spinner)
     {
         JSpinner.DefaultEditor editor;
         editor = (JSpinner.DefaultEditor) spinner.getEditor();
-        final JFormattedTextField ftf = editor.getTextField();
-        ftf.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "enterAction");
-        ftf.getActionMap().put("enterAction", new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        spinner.setValue(Integer.parseInt(ftf.getText()));
-                    } catch (Exception ex) {
-                        // Reset to last value
-                        ftf.setText(ftf.getValue().toString());
-                    }
-                }
-            });
-    }
 
+        final JFormattedTextField ftf = editor.getTextField();
+        ftf.getInputMap()
+           .put(KeyStroke.getKeyStroke("ENTER"), "enterAction");
+        ftf.getActionMap()
+           .put(
+            "enterAction",
+            new AbstractAction() {
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        try {
+                            spinner.setValue(Integer.parseInt(ftf.getText()));
+                        } catch (Exception ex) {
+                            // Reset to last value
+                            ftf.setText(ftf.getValue().toString());
+                        }
+                    }
+                });
+    }
 }

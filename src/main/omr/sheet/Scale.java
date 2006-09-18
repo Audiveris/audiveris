@@ -1,46 +1,44 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                               S c a l e                               //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                 S c a l e                                  //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import omr.constant.Constant;
-import omr.score.PagePoint;
-import omr.score.UnitDimension;
-import omr.util.Logger;
 
+import omr.score.PagePoint;
 import static omr.score.ScoreConstants.*;
+import omr.score.UnitDimension;
+
+import omr.util.Logger;
 
 import java.awt.Rectangle;
 
 /**
- * Class <code>Scale</code> encapsulates what drives the scale of a given
- * sheet, namely the main lengths of foreground and background vertical
- * lags (which are staff line thickness and white interval between staff
- * lines respectively), and the sum of both which represents the main
- * interline value.
+ * Class <code>Scale</code> encapsulates what drives the scale of a given sheet,
+ * namely the main lengths of foreground and background vertical lags (which are
+ * staff line thickness and white interval between staff lines respectively),
+ * and the sum of both which represents the main interline value.
  *
- * <p>This class also provides methods for converting values based on what
- * the interline is actually worth. There are three different measurements
- * :
+ * <p>This class also provides methods for converting values based on what the
+ * interline is actually worth. There are three different measurements :
  *
  * <dl> <dt> <b>pixel</b> </dt> <dd> This is simply an absolute number of
  * pixels, so generally an integer. One pixel is worth 1 pixel (sic) </dd>
  *
- * <dt> <b>(interline) fraction</b> </dt> <dd> This is a number of
- * interlines, so generally a fraction which is implemented as a
- * double. One interline is worth whatever the scale is, generally
- * something around 20 pixels </dd>
+ * <dt> <b>(interline) fraction</b> </dt> <dd> This is a number of interlines,
+ * so generally a fraction which is implemented as a double. One interline is
+ * worth whatever the scale is, generally something around 20 pixels </dd>
  *
- * <dt> <b>unit</b> </dt> <dd> This is a number of 1/16th of interline,
- * since the score display is built on this value. One unit is thus
- * generally worth something like 20/16 of pixels </dd> </dl>
+ * <dt> <b>unit</b> </dt> <dd> This is a number of 1/16th of interline, since
+ * the score display is built on this value. One unit is thus generally worth
+ * something like 20/16 of pixels </dd> </dl>
  *
  * @see omr.score.ScoreConstants#BASE
  *
@@ -50,21 +48,21 @@ import java.awt.Rectangle;
 public class Scale
     implements java.io.Serializable
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(Scale.class);
+    private static final Logger    logger = Logger.getLogger(Scale.class);
 
-    //~ Instance variables ------------------------------------------------
-
-    // Most frequent run lengths for foreground & background runs.
-    private int mainFore;
-    private int mainBack;
-    private int interline;
+    //~ Instance fields --------------------------------------------------------
 
     // The utility to compute the scale
     private transient ScaleBuilder builder;
+    private int                    interline;
+    private int                    mainBack;
 
-    //~ Constructors ------------------------------------------------------
+    // Most frequent run lengths for foreground & background runs.
+    private int mainFore;
+
+    //~ Constructors -----------------------------------------------------------
 
     //-------//
     // Scale //
@@ -73,8 +71,8 @@ public class Scale
      * Create a scale entity, this is meant for allocation after a score is
      * read.
      *
-     * @param spacing the score spacing value, expressed using BASE
-     *                resolution, since this is an int.
+     * @param spacing the score spacing value, expressed using BASE resolution,
+     *                since this is an int.
      *
      * @see omr.score.ScoreConstants#BASE
      */
@@ -119,7 +117,7 @@ public class Scale
         interline = mainFore + mainBack;
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //--------------//
     // displayChart //
@@ -127,7 +125,7 @@ public class Scale
     /**
      * Build and display the histogram of run lengths
      */
-    public void displayChart()
+    public void displayChart ()
     {
         if (builder != null) {
             builder.displayChart();
@@ -136,112 +134,13 @@ public class Scale
         }
     }
 
-    //----------//
-    // toPixels //
-    //----------//
-    /**
-     * Compute the number of pixels that corresponds to the fraction of
-     * interline provided, according to the scale.
-     *
-     * @param frac a measure based on interline (1 = one interline)
-     *
-     * @return the actual number of pixels with the current scale
-     */
-    public int toPixels (Fraction frac)
-    {
-        return (int) Math.rint(toPixelsDouble(frac));
-    }
-
-    //----------------//
-    // toPixelsDouble //
-    //----------------//
-    /**
-     * Same as toPixels, but the result is a double instead of a
-     * rounded int.
-     *
-     *
-     * @param frac the interline fraction
-     * @return the equivalent in number of pixels
-     * @see #toPixels
-     */
-    public double toPixelsDouble (Fraction frac)
-    {
-        return (double) interline * frac.getValue();
-    }
-
-    //----------------//
-    // toSquarePixels //
-    //----------------//
-    /**
-     * Compute the squared-normalized number of pixels, according to the
-     * scale.
-     *
-     * @param frac a measure based on interline (1 = one interline)
-     *
-     * @return the actual squared number of pixels with the current scale
-     */
-    public int toSquarePixels (Fraction frac)
-    {
-        double val = toPixelsDouble(frac);
-
-        return (int) Math.rint(val * val);
-    }
-
-    //---------//
-    // toUnits //
-    //---------//
-    /**
-     * Compute the number of units that corresponds to the fraction of
-     * interline provided, according to the scale.
-     *
-     * @param frac a measure based on interline (1 = one interline)
-     *
-     * @return the actual number of units with the current scale
-     */
-    public int toUnits (Fraction frac)
-    {
-        return (int) Math.rint(toUnitsDouble(frac));
-    }
-
-    //-------------//
-    // unitsToFrac //
-    //-------------//
-    /**
-     * Transtale a number of units to an interline fraction
-     *
-     * @param d the number of units
-     * @return the corresponding interline fraction
-     */
-    public double unitsToFrac (double d)
-    {
-        return d / INTER_LINE;
-    }
-
-    //---------------//
-    // toUnitsDouble //
-    //---------------//
-    /**
-     * Same as toUnits, but the result is a double instead of a
-     * rounded int.
-     *
-     *
-     * @param frac the interline fraction
-     * @return the equivalent in number of units
-     * @see #toUnits
-     */
-    public double toUnitsDouble (Fraction frac)
-    {
-        return INTER_LINE * frac.getValue();
-    }
-
     //-----------//
     // interline //
     //-----------//
     /**
      * Report the interline value this scale is based upon
      *
-     * @return the number of pixels (black + white) from one line to the
-     *         other.
+     * @return the number of pixels (black + white) from one line to the other.
      */
     public int interline ()
     {
@@ -278,9 +177,8 @@ public class Scale
     // pixelsToFrac //
     //--------------//
     /**
-     * Compute the interline fraction that corresponds to the given number
-     * of pixels.
-     *
+     * Compute the interline fraction that corresponds to the given number of
+     * pixels.
      *
      * @param pixels the equivalent in number of pixels
      * @return the interline fraction
@@ -289,90 +187,6 @@ public class Scale
     public double pixelsToFrac (int pixels)
     {
         return (double) pixels / (double) interline;
-    }
-
-    //-------------//
-    // toPagePoint //
-    //-------------//
-    /**
-     * Convert a point whose coordinates are in pixels to a point whose
-     * coordinates are in units.
-     *
-     * @param pixPt point in pixels
-     *
-     * @return the result in units
-     */
-    public PagePoint toPagePoint (PixelPoint pixPt)
-    {
-        return toPagePoint(pixPt, null);
-    }
-
-    //-------------//
-    // toPagePoint //
-    //-------------//
-    /**
-     * Convert a point whose coordinates are in pixels to a point whose
-     * coordinates are in units.
-     *
-     * @param pixPt point in pixels
-     * @param pagPt equivalent point in units, or null if allocation to be
-     *              performed by the routine
-     *
-     * @return the result in units
-     */
-    public PagePoint toPagePoint (PixelPoint pixPt,
-                                  PagePoint pagPt)
-    {
-        if (pagPt == null) {
-            pagPt = new PagePoint();
-        }
-
-        pagPt.x = pixelsToUnits(pixPt.x);
-        pagPt.y = pixelsToUnits(pixPt.y);
-
-        return pagPt;
-    }
-
-    //---------//
-    // toUnits //
-    //---------//
-    /**
-     * Convert a dimension whose compoents are in pixels to a dimension
-     * whose components are in units.
-     *
-     * @param pixelDim dimension in pixels
-     *
-     * @return the result in units
-     */
-    public UnitDimension toUnits (PixelDimension pixelDim)
-    {
-        return toUnits(pixelDim, null);
-    }
-
-    //---------//
-    // toUnits //
-    //---------//
-    /**
-     * Convert a dimension whose compoents are in pixels to a dimension
-     * whose components are in units.
-     *
-     * @param pixelDim dimension in pixels
-     * @param unitDim equivalent dimension in units, or null if allocation to be
-     *                performed by the routine
-     *
-     * @return the result in units
-     */
-    public UnitDimension toUnits (PixelDimension pixelDim,
-                                  UnitDimension  unitDim)
-    {
-        if (unitDim == null) {
-            unitDim = new UnitDimension();
-        }
-
-        unitDim.width = pixelsToUnits(pixelDim.width);
-        unitDim.height = pixelsToUnits(pixelDim.height);
-
-        return unitDim;
     }
 
     //---------------//
@@ -413,13 +227,55 @@ public class Scale
     /**
      * Report a measure of spacing, based on the interline
      *
-     * @return an int value, which is the interline value (expressed in
-     *         pixels) times the BASE resolution
+     * @return an int value, which is the interline value (expressed in pixels)
+     *         times the BASE resolution
      * @see omr.score.ScoreConstants#BASE
      */
     public int spacing ()
     {
         return interline * BASE;
+    }
+
+    //-------------//
+    // toPagePoint //
+    //-------------//
+    /**
+     * Convert a point whose coordinates are in pixels to a point whose
+     * coordinates are in units.
+     *
+     * @param pixPt point in pixels
+     *
+     * @return the result in units
+     */
+    public PagePoint toPagePoint (PixelPoint pixPt)
+    {
+        return toPagePoint(pixPt, null);
+    }
+
+    //-------------//
+    // toPagePoint //
+    //-------------//
+    /**
+     * Convert a point whose coordinates are in pixels to a point whose
+     * coordinates are in units.
+     *
+     * @param pixPt point in pixels
+     * @param pagPt equivalent point in units, or null if allocation to be
+     *              performed by the routine
+     *
+     * @return the result in units
+     */
+    public PagePoint toPagePoint (PixelPoint pixPt,
+                                  PagePoint  pagPt)
+    {
+        if (pagPt == null) {
+            pagPt = new PagePoint();
+        }
+
+        pagPt.x = pixelsToUnits(pixPt.x);
+        pagPt.y = pixelsToUnits(pixPt.y);
+
+        return pagPt;
     }
 
     //--------------//
@@ -446,12 +302,12 @@ public class Scale
      * coordinates in pixels. Reverse function of pixelsToUnits
      *
      * @param pagPt point in units
-     * @param pixPt point in pixels, or null if allocation to be made by
-     *              the routine
+     * @param pixPt point in pixels, or null if allocation to be made by the
+     *              routine
      *
      * @return the computed point in pixels
      */
-    public PixelPoint toPixelPoint (PagePoint pagPt,
+    public PixelPoint toPixelPoint (PagePoint  pagPt,
                                     PixelPoint pixPt)
     {
         if (pixPt == null) {
@@ -462,6 +318,22 @@ public class Scale
         pixPt.y = unitsToPixels(pagPt.y);
 
         return pixPt;
+    }
+
+    //----------//
+    // toPixels //
+    //----------//
+    /**
+     * Compute the number of pixels that corresponds to the fraction of
+     * interline provided, according to the scale.
+     *
+     * @param frac a measure based on interline (1 = one interline)
+     *
+     * @return the actual number of pixels with the current scale
+     */
+    public int toPixels (Fraction frac)
+    {
+        return (int) Math.rint(toPixelsDouble(frac));
     }
 
     //----------//
@@ -484,7 +356,7 @@ public class Scale
             pixelDim = new PixelDimension();
         }
 
-        pixelDim.width  = unitsToPixels(unitDim.width);
+        pixelDim.width = unitsToPixels(unitDim.width);
         pixelDim.height = unitsToPixels(unitDim.height);
 
         return pixelDim;
@@ -501,7 +373,7 @@ public class Scale
      *
      * @return the computed point in pixels
      */
-    public PixelDimension toPixels (UnitDimension  unitDim)
+    public PixelDimension toPixels (UnitDimension unitDim)
     {
         return toPixels(unitDim, null);
     }
@@ -530,8 +402,8 @@ public class Scale
      * coordinates in pixels. Reverse function of pixelsToUnits
      *
      * @param pagRect rectangle in units
-     * @param pixRect rectangle in pixels, or null if allocation to be made
-     *              by the routine
+     * @param pixRect rectangle in pixels, or null if allocation to be made by
+     *              the routine
      *
      * @return the computed rectangle in pixels
      */
@@ -545,9 +417,128 @@ public class Scale
         pixRect.x = unitsToPixels(pagRect.x);
         pixRect.y = unitsToPixels(pagRect.y);
         pixRect.width = unitsToPixels(pagRect.width);
-        pixRect.height= unitsToPixels(pagRect.height);
+        pixRect.height = unitsToPixels(pagRect.height);
 
         return pixRect;
+    }
+
+    //----------------//
+    // toPixelsDouble //
+    //----------------//
+    /**
+     * Same as toPixels, but the result is a double instead of a rounded int.
+     *
+     * @param frac the interline fraction
+     * @return the equivalent in number of pixels
+     * @see #toPixels
+     */
+    public double toPixelsDouble (Fraction frac)
+    {
+        return (double) interline * frac.getValue();
+    }
+
+    //----------------//
+    // toSquarePixels //
+    //----------------//
+    /**
+     * Compute the squared-normalized number of pixels, according to the scale.
+     *
+     * @param frac a measure based on interline (1 = one interline)
+     *
+     * @return the actual squared number of pixels with the current scale
+     */
+    public int toSquarePixels (Fraction frac)
+    {
+        double val = toPixelsDouble(frac);
+
+        return (int) Math.rint(val * val);
+    }
+
+    //---------//
+    // toUnits //
+    //---------//
+    /**
+     * Compute the number of units that corresponds to the fraction of interline
+     * provided, according to the scale.
+     *
+     * @param frac a measure based on interline (1 = one interline)
+     *
+     * @return the actual number of units with the current scale
+     */
+    public int toUnits (Fraction frac)
+    {
+        return (int) Math.rint(toUnitsDouble(frac));
+    }
+
+    //---------//
+    // toUnits //
+    //---------//
+    /**
+     * Convert a dimension whose compoents are in pixels to a dimension whose
+     * components are in units.
+     *
+     * @param pixelDim dimension in pixels
+     *
+     * @return the result in units
+     */
+    public UnitDimension toUnits (PixelDimension pixelDim)
+    {
+        return toUnits(pixelDim, null);
+    }
+
+    //---------//
+    // toUnits //
+    //---------//
+    /**
+     * Convert a dimension whose compoents are in pixels to a dimension whose
+     * components are in units.
+     *
+     * @param pixelDim dimension in pixels
+     * @param unitDim equivalent dimension in units, or null if allocation to be
+     *                performed by the routine
+     *
+     * @return the result in units
+     */
+    public UnitDimension toUnits (PixelDimension pixelDim,
+                                  UnitDimension  unitDim)
+    {
+        if (unitDim == null) {
+            unitDim = new UnitDimension();
+        }
+
+        unitDim.width = pixelsToUnits(pixelDim.width);
+        unitDim.height = pixelsToUnits(pixelDim.height);
+
+        return unitDim;
+    }
+
+    //---------------//
+    // toUnitsDouble //
+    //---------------//
+    /**
+     * Same as toUnits, but the result is a double instead of a rounded int.
+     *
+     * @param frac the interline fraction
+     * @return the equivalent in number of units
+     * @see #toUnits
+     */
+    public double toUnitsDouble (Fraction frac)
+    {
+        return INTER_LINE * frac.getValue();
+    }
+
+    //-------------//
+    // unitsToFrac //
+    //-------------//
+    /**
+     * Transtale a number of units to an interline fraction
+     *
+     * @param d the number of units
+     * @return the corresponding interline fraction
+     */
+    public double unitsToFrac (double d)
+    {
+        return d / INTER_LINE;
     }
 
     //---------------//
@@ -565,21 +556,18 @@ public class Scale
         return (units * interline) / INTER_LINE;
     }
 
-    //~ Classes -----------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
 
     //----------//
     // Fraction //
     //----------//
     /**
-     * A subclass of Double, meant to store a fraction of interline, since
-     * many distances on a music sheet are expressed in fraction of staff
-     * interline.
+     * A subclass of Double, meant to store a fraction of interline, since many
+     * distances on a music sheet are expressed in fraction of staff interline.
      */
     public static class Fraction
         extends Constant.Double
     {
-        //~ Constructors --------------------------------------------------
-
         /**
          * Normal constructor, with a double type for default value
          *
@@ -590,7 +578,7 @@ public class Scale
          */
         public Fraction (java.lang.String unit,
                          java.lang.String name,
-                         double defaultValue,
+                         double           defaultValue,
                          java.lang.String description)
         {
             super(unit, name, defaultValue, description);
@@ -602,7 +590,7 @@ public class Scale
          * @param defaultValue the (double) default value
          * @param description  the semantic of the constant
          */
-        public Fraction (double defaultValue,
+        public Fraction (double           defaultValue,
                          java.lang.String description)
         {
             super(defaultValue, description);

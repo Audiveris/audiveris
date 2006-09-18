@@ -1,28 +1,28 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                            C o n s t a n t                            //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                              C o n s t a n t                               //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.constant;
 
 import omr.util.Logger;
 
 /**
- * This abstract class handles the mapping between one application variable
- * and a property name and value. It is meant essentially to handle any
- * kind of symbolic constant, whose value may have to be tuned and saved
- * for future runs of the application.
+ * This abstract class handles the mapping between one application variable and
+ * a property name and value. It is meant essentially to handle any kind of
+ * symbolic constant, whose value may have to be tuned and saved for future runs
+ * of the application.
  *
- * <p>Please refer to {@link ConstantManager} for a detailed explanation on
- * how the current value of any given Constant is determined at run-time.
+ * <p>Please refer to {@link ConstantManager} for a detailed explanation on how
+ * the current value of any given Constant is determined at run-time.
  *
- * <p> The class <code>Constant</code> is not meant to be used directly (it
- * is abstract), but rather through any of its subclasses :
+ * <p> The class <code>Constant</code> is not meant to be used directly (it is
+ * abstract), but rather through any of its subclasses :
  *
  * <ul> <li> {@link Constant.Boolean} </li> <li> {@link Constant.Color}
  * </li> <li> {@link Constant.Double} </li> <li> {@link Constant.Integer}
@@ -33,35 +33,34 @@ import omr.util.Logger;
  */
 public abstract class Constant
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(Constant.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    private java.lang.String unit; // Requiring unit
+    private java.lang.String currentString; // Current Value
+    private java.lang.String defaultString; // Value to be used if needed
+    private java.lang.String description; // Semantic
+    private java.lang.String initialString; // Initial Value (for reset)
     private java.lang.String name; // Constant name
     private java.lang.String qualifiedName; // Fully qualified Constant name
-    private java.lang.String description; // Semantic
-    private java.lang.String defaultString; // Value to be used if needed
-    private java.lang.String initialString; // Initial Value (for reset)
-    private java.lang.String currentString; // Current Value
-    private Object cachedValue; // Current Value (optimized)
+    private java.lang.String unit; // Requiring unit
+    private Object           cachedValue; // Current Value (optimized)
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //----------//
     // Constant //
     //----------//
     /**
-     * Creates a constant instance, while providing a default value, in
-     * case the external property is not yet defined.
+     * Creates a constant instance, while providing a default value, in case the
+     * external property is not yet defined.
      *
      * @param unit          Name of the enclosing class/unit
      * @param name          Name of the variable
      * @param defaultString Default value, expressed in a string literal
-     * @param description   A quick description of the purpose of this
-     *                      constant
+     * @param description A quick description of the purpose of this constant
      */
     protected Constant (java.lang.String unit,
                         java.lang.String name,
@@ -75,22 +74,22 @@ public abstract class Constant
         setName(name);
 
         // Pure debugging (which cannot use Debug ...)
-//         System.out.println("new Constant" +
-//                            " unit=" + unit +
-//                            " name=" + name +
-//                            " defaultString=" + defaultString +
-//                            " description=" + description);
+        //         System.out.println("new Constant" +
+        //                            " unit=" + unit +
+        //                            " name=" + name +
+        //                            " defaultString=" + defaultString +
+        //                            " description=" + description);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //----------//
     // setValue //
     //----------//
     /**
-     * Allows to modify the current value of the constant; This abstract
-     * method is actually defined in each subclass, to enforce validation
-     * of the provided string with respect to the target constant type.
+     * Allows to modify the current value of the constant; This abstract method
+     * is actually defined in each subclass, to enforce validation of the
+     * provided string with respect to the target constant type.
      *
      * @param string the new value, as a string to be checked
      */
@@ -107,6 +106,26 @@ public abstract class Constant
     public java.lang.String getDescription ()
     {
         return description;
+    }
+
+    //------------//
+    // isModified //
+    //------------//
+    /**
+     * Checks whether the current value is different from the original one.
+     * NOTA_BENE: The test is made on string literal, which may result in false
+     * modification signals, simply because the string for example contains an
+     * additional space
+     *
+     * @return The modification status
+     */
+    public boolean isModified ()
+    {
+        if (currentString == null) {
+            return false;
+        } else {
+            return !currentString.equals(initialString);
+        }
     }
 
     //---------//
@@ -135,41 +154,13 @@ public abstract class Constant
         return qualifiedName;
     }
 
-    //----------------//
-    // getCachedValue //
-    //----------------//
-    private Object getCachedValue ()
-    {
-        return cachedValue;
-    }
-
-    //------------//
-    // isModified //
-    //------------//
-    /**
-     * Checks whether the current value is different from the original one.
-     * NB: The test is made on string literal, which may result in false
-     * modification signals, simply because the string for example contains
-     * an additional space
-     *
-     * @return The modification status
-     */
-    public boolean isModified ()
-    {
-        if (currentString == null) {
-            return false;
-        } else {
-            return !currentString.equals(initialString);
-        }
-    }
-
     //--------//
     // remove //
     //--------//
     /**
      * Remove a given constant from memory
      */
-    public void remove()
+    public void remove ()
     {
         // Remove the underlying property
         ConstantManager.removeProperty(qualifiedName);
@@ -179,8 +170,7 @@ public abstract class Constant
     // reset //
     //-------//
     /**
-     * Forget any modification eventually made, and reset to the initial
-     * value.
+     * Forget any modification eventually made, and reset to the initial value.
      */
     public void reset ()
     {
@@ -198,7 +188,7 @@ public abstract class Constant
     public boolean toBoolean ()
     {
         if (cachedValue == null) {
-            cachedValue = java.lang.Boolean.valueOf (currentString());
+            cachedValue = java.lang.Boolean.valueOf(currentString());
         }
 
         return ((java.lang.Boolean) cachedValue).booleanValue();
@@ -208,8 +198,8 @@ public abstract class Constant
     // toString //
     //----------//
     /**
-     * Used by ConstantTreeTable to display the name of the constant, so
-     * only the unqualified name is returned
+     * Used by ConstantTreeTable to display the name of the constant, so only
+     * the unqualified name is returned
      *
      * @return the (unqualified) constant name
      */
@@ -269,6 +259,27 @@ public abstract class Constant
         }
 
         return ((Character) cachedValue).charValue();
+    }
+
+    //---------//
+    // toColor //
+    //---------//
+    /**
+     * Gets the current value, as a Color type.
+     *
+     * @return the Color view of the value, which can be null
+     */
+    protected java.awt.Color toColor ()
+    {
+        if (cachedValue == null) {
+            java.lang.String str = currentString();
+
+            if (str != null) {
+                cachedValue = java.awt.Color.decode(str);
+            }
+        }
+
+        return (java.awt.Color) cachedValue;
     }
 
     //----------//
@@ -357,26 +368,6 @@ public abstract class Constant
     }
 
     //---------//
-    // toColor //
-    //---------//
-    /**
-     * Gets the current value, as a Color type.
-     *
-     * @return the Color view of the value, which can be null
-     */
-    protected java.awt.Color toColor ()
-    {
-        if (cachedValue == null) {
-            java.lang.String str = currentString();
-            if (str != null) {
-                cachedValue = java.awt.Color.decode(str);
-            }
-        }
-
-        return (java.awt.Color) cachedValue;
-    }
-
-    //---------//
     // setName //
     //---------//
     /**
@@ -399,8 +390,7 @@ public abstract class Constant
     // setUnit //
     //---------//
     /**
-     * (package access) Allows to record the containing unit of the
-     * constant
+     * (package access) Allows to record the containing unit of the constant
      *
      * @param unit the unit (class name) this constant belongs to
      */
@@ -430,19 +420,18 @@ public abstract class Constant
 
                 if (defaultString != null) {
                     if (logger.isFineEnabled()) {
-                        logger.fine("Property " +
-                                     qualifiedName + " = " + currentString
-                                     + " -> " + defaultString);
+                        logger.fine(
+                            "Property " + qualifiedName + " = " +
+                            currentString + " -> " + defaultString);
                     }
 
                     currentString = defaultString; // Use default
                 } else {
-                    logger.fine("No value found for Property "
-                                 + qualifiedName);
+                    logger.fine("No value found for Property " + qualifiedName);
                 }
             } else if (logger.isFineEnabled()) {
-                logger.fine("Property " + qualifiedName + " = "
-                             + currentString);
+                logger.fine(
+                    "Property " + qualifiedName + " = " + currentString);
             }
 
             // Save this initial value string
@@ -452,7 +441,15 @@ public abstract class Constant
         return currentString;
     }
 
-    //~ Classes -----------------------------------------------------------
+    //----------------//
+    // getCachedValue //
+    //----------------//
+    private Object getCachedValue ()
+    {
+        return cachedValue;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
 
     //---------//
     // Boolean //
@@ -463,8 +460,6 @@ public abstract class Constant
     public static class Boolean
         extends Constant
     {
-        //~ Constructors --------------------------------------------------
-
         /**
          * Normal constructor, with a boolean type for default value
          *
@@ -475,11 +470,14 @@ public abstract class Constant
          */
         public Boolean (java.lang.String unit,
                         java.lang.String name,
-                        boolean defaultValue,
+                        boolean          defaultValue,
                         java.lang.String description)
         {
-            super(unit, name, java.lang.Boolean.toString(defaultValue),
-                  description);
+            super(
+                unit,
+                name,
+                java.lang.Boolean.toString(defaultValue),
+                description);
         }
 
         /**
@@ -488,13 +486,11 @@ public abstract class Constant
          * @param defaultValue the (boolean) default value
          * @param description  the semantic of the constant
          */
-        public Boolean (boolean defaultValue,
+        public Boolean (boolean          defaultValue,
                         java.lang.String description)
         {
             this(null, null, defaultValue, description);
         }
-
-        //~ Methods -------------------------------------------------------
 
         /**
          * Allows to set a new boolean value (passed as a string) to this
@@ -528,6 +524,97 @@ public abstract class Constant
         }
     }
 
+    //-------//
+    // Color //
+    //-------//
+    /**
+     * A subclass of Constant, meant to store a {@link java.awt.Color} value.
+     */
+    public static class Color
+        extends Constant
+    {
+        /**
+         * Normal constructor, with a int type for default value
+         *
+         * @param unit         the enclosing unit
+         * @param name         the constant name
+         * @param defaultValue the default (int) RGB value
+         * @param description  the semantic of the constant
+         */
+        public Color (java.lang.String unit,
+                      java.lang.String name,
+                      int              defaultValue,
+                      java.lang.String description)
+        {
+            super(
+                unit,
+                name,
+                java.lang.Integer.toString(defaultValue),
+                description);
+        }
+
+        /**
+         * Normal constructor, with a String type for default value
+         *
+         * @param unit         the enclosing unit
+         * @param name         the constant name
+         * @param defaultValue the default (String) RGB value
+         * @param description  the semantic of the constant
+         */
+        public Color (java.lang.String unit,
+                      java.lang.String name,
+                      java.lang.String defaultValue,
+                      java.lang.String description)
+        {
+            super(unit, name, defaultValue, description);
+        }
+
+        /**
+         * Specific constructor, where 'unit' and 'name' are assigned later
+         *
+         * @param defaultValue the (int) RGB default value
+         * @param description  the semantic of the constant
+         */
+        public Color (int              defaultValue,
+                      java.lang.String description)
+        {
+            this(null, null, defaultValue, description);
+        }
+
+        /**
+         * Allows to set a new int RGB value (passed as a string) to this
+         * constant. The string validity is actually checked.
+         *
+         * @param string the int value as a string
+         */
+        public void setValue (java.lang.String string)
+        {
+            setValue(java.awt.Color.decode(string));
+        }
+
+        /**
+         * Set a new value to the constant
+         *
+         * @param val the new Color value
+         */
+        public void setValue (java.awt.Color val)
+        {
+            // TBD : find a more readable format such as #RRGGBB
+            //setString(java.lang.Integer.toString(val.getRGB(), 16));
+            setString(java.lang.Integer.toString(val.getRGB()));
+        }
+
+        /**
+         * Retrieve the current constant value
+         *
+         * @return the current (Color) value
+         */
+        public java.awt.Color getValue ()
+        {
+            return toColor();
+        }
+    }
+
     //--------//
     // Double //
     //--------//
@@ -537,8 +624,6 @@ public abstract class Constant
     public static class Double
         extends Constant
     {
-        //~ Constructors --------------------------------------------------
-
         /**
          * Normal constructor, with a double type for default value
          *
@@ -549,11 +634,14 @@ public abstract class Constant
          */
         public Double (java.lang.String unit,
                        java.lang.String name,
-                       double defaultValue,
+                       double           defaultValue,
                        java.lang.String description)
         {
-            super(unit, name, java.lang.Double.toString(defaultValue),
-                  description);
+            super(
+                unit,
+                name,
+                java.lang.Double.toString(defaultValue),
+                description);
         }
 
         /**
@@ -562,13 +650,11 @@ public abstract class Constant
          * @param defaultValue the (double) default value
          * @param description  the semantic of the constant
          */
-        public Double (double defaultValue,
+        public Double (double           defaultValue,
                        java.lang.String description)
         {
             this(null, null, defaultValue, description);
         }
-
-        //~ Methods -------------------------------------------------------
 
         /**
          * Allows to set a new double value (passed as a string) to this
@@ -611,8 +697,6 @@ public abstract class Constant
     public static class Integer
         extends Constant
     {
-        //~ Constructors --------------------------------------------------
-
         /**
          * Normal constructor, with a int type for default value
          *
@@ -623,11 +707,14 @@ public abstract class Constant
          */
         public Integer (java.lang.String unit,
                         java.lang.String name,
-                        int defaultValue,
+                        int              defaultValue,
                         java.lang.String description)
         {
-            super(unit, name, java.lang.Integer.toString(defaultValue),
-                  description);
+            super(
+                unit,
+                name,
+                java.lang.Integer.toString(defaultValue),
+                description);
         }
 
         /**
@@ -636,13 +723,11 @@ public abstract class Constant
          * @param defaultValue the (int) default value
          * @param description  the semantic of the constant
          */
-        public Integer (int defaultValue,
+        public Integer (int              defaultValue,
                         java.lang.String description)
         {
             this(null, null, defaultValue, description);
         }
-
-        //~ Methods -------------------------------------------------------
 
         /**
          * Allows to set a new int value (passed as a string) to this
@@ -676,99 +761,6 @@ public abstract class Constant
         }
     }
 
-    //-------//
-    // Color //
-    //-------//
-    /**
-     * A subclass of Constant, meant to store a {@link java.awt.Color}
-     * value.
-     */
-    public static class Color
-        extends Constant
-    {
-        //~ Constructors --------------------------------------------------
-
-        /**
-         * Normal constructor, with a int type for default value
-         *
-         * @param unit         the enclosing unit
-         * @param name         the constant name
-         * @param defaultValue the default (int) RGB value
-         * @param description  the semantic of the constant
-         */
-        public Color (java.lang.String unit,
-                      java.lang.String name,
-                      int defaultValue,
-                      java.lang.String description)
-        {
-            super(unit, name, java.lang.Integer.toString(defaultValue),
-                  description);
-        }
-
-        /**
-         * Normal constructor, with a String type for default value
-         *
-         * @param unit         the enclosing unit
-         * @param name         the constant name
-         * @param defaultValue the default (String) RGB value
-         * @param description  the semantic of the constant
-         */
-        public Color (java.lang.String unit,
-                      java.lang.String name,
-                      java.lang.String defaultValue,
-                      java.lang.String description)
-        {
-            super(unit, name, defaultValue, description);
-        }
-
-        /**
-         * Specific constructor, where 'unit' and 'name' are assigned later
-         *
-         * @param defaultValue the (int) RGB default value
-         * @param description  the semantic of the constant
-         */
-        public Color (int defaultValue,
-                      java.lang.String description)
-        {
-            this(null, null, defaultValue, description);
-        }
-
-        //~ Methods -------------------------------------------------------
-
-        /**
-         * Allows to set a new int RGB value (passed as a string) to this
-         * constant. The string validity is actually checked.
-         *
-         * @param string the int value as a string
-         */
-        public void setValue (java.lang.String string)
-        {
-            setValue(java.awt.Color.decode(string));
-        }
-
-        /**
-         * Set a new value to the constant
-         *
-         * @param val the new Color value
-         */
-        public void setValue (java.awt.Color val)
-        {
-            // TBD : find a more readable format such as #RRGGBB
-            //setString(java.lang.Integer.toString(val.getRGB(), 16));
-            setString(java.lang.Integer.toString(val.getRGB()));
-        }
-
-        /**
-         * Retrieve the current constant value
-         *
-         * @return the current (Color) value
-         */
-        public java.awt.Color getValue ()
-        {
-            return toColor();
-        }
-    }
-
     //--------//
     // String //
     //--------//
@@ -778,8 +770,6 @@ public abstract class Constant
     public static class String
         extends Constant
     {
-        //~ Constructors --------------------------------------------------
-
         /**
          * Normal constructor, with a string type for default value
          *
@@ -808,8 +798,6 @@ public abstract class Constant
             this(null, null, defaultValue, description);
         }
 
-        //~ Methods -------------------------------------------------------
-
         /**
          * Set a new string value to the constant
          *
@@ -821,8 +809,8 @@ public abstract class Constant
         }
 
         /**
-         * Retrieve the current constant value. Actually this is synonymous
-         * with currentString()
+         * Retrieve the current constant value. Actually this is synonymous with
+         * currentString()
          *
          * @return the current (string) value
          */

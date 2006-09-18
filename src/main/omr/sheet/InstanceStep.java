@@ -1,21 +1,22 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                        I n s t a n c e S t e p                        //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                          I n s t a n c e S t e p                           //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import omr.ProcessingException;
+
 import java.io.Serializable;
 
 /**
- * Class <code>InstanceStep</code> encapsulates a processing step performed
- * on a sheet instance.
+ * Class <code>InstanceStep</code> encapsulates a processing step performed on a
+ * sheet instance.
  *
  * @param <R> the type produced by the step as result
  * @see omr.Step The various steps defined
@@ -23,20 +24,20 @@ import java.io.Serializable;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public abstract class InstanceStep <R>
+public abstract class InstanceStep<R>
     implements java.io.Serializable
 {
-    //~ Instance variables ------------------------------------------------
-
-    // A readable description for this step
-    private String description;
+    //~ Instance fields --------------------------------------------------------
 
     /**
      * Cache the result of the step
      */
     protected R result;
 
-    //~ Constructors ------------------------------------------------------
+    // A readable description for this step
+    private String description;
+
+    //~ Constructors -----------------------------------------------------------
 
     //--------------//
     // InstanceStep //
@@ -51,28 +52,7 @@ public abstract class InstanceStep <R>
         this.description = description;
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //------//
-    // doit //
-    //------//
-    /**
-     * Actually perform the step
-     *
-     * @throws ProcessingException raised if processing failed
-     */
-    protected abstract void doit ()
-            throws ProcessingException;
-
-    //-----------//
-    // displayUI //
-    //-----------//
-    /**
-     * Make the related user interface visible for this step
-     */
-    public void displayUI ()
-    {
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //----------------//
     // getDescription //
@@ -87,25 +67,6 @@ public abstract class InstanceStep <R>
         return description;
     }
 
-    //-----------//
-    // getResult //
-    //-----------//
-    /**
-     * Return the result of the step
-     *
-     * @return the result
-     * @throws ProcessingException raised if processing failed
-     */
-    public R getResult ()
-            throws ProcessingException
-    {
-        if (!isDone()) {
-            doit();
-        }
-
-        return result;
-    }
-
     //--------//
     // isDone //
     //--------//
@@ -117,6 +78,35 @@ public abstract class InstanceStep <R>
     public boolean isDone ()
     {
         return result != null;
+    }
+
+    //-----------//
+    // getResult //
+    //-----------//
+    /**
+     * Return the result of the step
+     *
+     * @return the result
+     * @throws ProcessingException raised if processing failed
+     */
+    public R getResult ()
+        throws ProcessingException
+    {
+        if (!isDone()) {
+            doit();
+        }
+
+        return result;
+    }
+
+    //-----------//
+    // displayUI //
+    //-----------//
+    /**
+     * Make the related user interface visible for this step
+     */
+    public void displayUI ()
+    {
     }
 
     //----------//
@@ -143,4 +133,15 @@ public abstract class InstanceStep <R>
     {
         result = null;
     }
+
+    //------//
+    // doit //
+    //------//
+    /**
+     * Actually perform the step
+     *
+     * @throws ProcessingException raised if processing failed
+     */
+    protected abstract void doit ()
+        throws ProcessingException;
 }

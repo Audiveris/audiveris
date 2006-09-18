@@ -1,35 +1,40 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                         B a r s B u i l d e r                         //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                           B a r s B u i l d e r                            //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import omr.Main;
 import omr.ProcessingException;
+
 import omr.check.CheckBoard;
 import omr.check.CheckSuite;
 import omr.check.FailureResult;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.glyph.Glyph;
-import omr.glyph.GlyphModel;
 import omr.glyph.GlyphLag;
+import omr.glyph.GlyphModel;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
+
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.LagBuilder;
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 import omr.lag.VerticalOrientation;
+
 import omr.score.Barline;
 import omr.score.Measure;
 import omr.score.Score;
@@ -37,28 +42,31 @@ import omr.score.ScoreConstants;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.UnitDimension;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
+import static omr.selection.SelectionTag.*;
+
 import omr.stick.Stick;
 import omr.stick.StickSection;
+
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 import omr.ui.view.Zoom;
+
 import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
-import static omr.selection.SelectionTag.*;
-
 import java.awt.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
- * Class <code>BarsBuilder</code> handles the vertical lines that are
- * recognized as bar lines. This class uses a dedicated companion named
- * {@link omr.sheet.BarsChecker} which handles physical checks.
+ * Class <code>BarsBuilder</code> handles the vertical lines that are recognized
+ * as bar lines. This class uses a dedicated companion named {@link
+ * omr.sheet.BarsChecker} which handles physical checks.
  *
  * <p> Input is provided by the list of vertical sticks retrieved by the
  * preceding step.
@@ -71,40 +79,45 @@ import java.util.*;
 public class BarsBuilder
     extends GlyphModel
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants constants = new Constants();
-    private static final Logger logger = Logger.getLogger(BarsBuilder.class);
+    private static final Constants     constants = new Constants();
+    private static final Logger        logger = Logger.getLogger(
+        BarsBuilder.class);
 
     // Failure
-    private static final FailureResult NOT_SYSTEM_ALIGNED        = new FailureResult("Bar-NotSystemAligned");
-    private static final FailureResult SHORTER_THAN_STAFF_HEIGHT = new FailureResult("Bar-ShorterThanStaffHeight");
-    private static final FailureResult THICK_BAR_NOT_ALIGNED     = new FailureResult("Bar-ThickBarNotAligned");
-    private static final FailureResult CANCELLED                 = new FailureResult("Bar-Cancelled");
+    private static final FailureResult NOT_SYSTEM_ALIGNED = new FailureResult(
+        "Bar-NotSystemAligned");
+    private static final FailureResult SHORTER_THAN_STAFF_HEIGHT = new FailureResult(
+        "Bar-ShorterThanStaffHeight");
+    private static final FailureResult THICK_BAR_NOT_ALIGNED = new FailureResult(
+        "Bar-ThickBarNotAligned");
+    private static final FailureResult CANCELLED = new FailureResult(
+        "Bar-Cancelled");
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    // Bars area, with retrieved vertical sticks
-    private VerticalArea barsArea;
-
-    // List of found bar sticks
-    private List<Stick> bars = new ArrayList<Stick>();
-
-    // Unused vertical sticks
-    private List<Stick> clutter;
-
-    // Cached data
-    private final Sheet sheet;
-    private Scale scale;
-    private Score score;
+    // Companion physical stick checker
+    private BarsChecker  checker;
 
     // Lag view on bars, if so desired
     private GlyphLagView lagView;
 
-    // Companion physical stick checker
-    private BarsChecker checker;
+    // List of found bar sticks
+    private List<Stick>  bars = new ArrayList<Stick>();
 
-    //~ Constructors ------------------------------------------------------
+    // Unused vertical sticks
+    private List<Stick>  clutter;
+
+    // Cached data
+    private final Sheet  sheet;
+    private Scale        scale;
+    private Score        score;
+
+    // Bars area, with retrieved vertical sticks
+    private VerticalArea barsArea;
+
+    //~ Constructors -----------------------------------------------------------
 
     //-------------//
     // BarsBuilder //
@@ -120,7 +133,7 @@ public class BarsBuilder
         this.sheet = sheet;
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //-----------//
     // buildInfo //
@@ -128,11 +141,11 @@ public class BarsBuilder
     /**
      * Retrieve and store the bars information on the provided sheet
      *
-     * @throws ProcessingException raised when step processing must stop,
-     *                             due to encountered error
+     * @throws ProcessingException raised when step processing must stop, due to
+     *                             encountered error
      */
     public void buildInfo ()
-            throws ProcessingException
+        throws ProcessingException
     {
         // Stuff to be made available
         scale = sheet.getScale();
@@ -142,17 +155,18 @@ public class BarsBuilder
         // Augment the vertical lag of runs
         lag.setName("vLag");
         lag.setVertexClass(StickSection.class);
-        new LagBuilder<GlyphLag,GlyphSection>().rip
-                (lag,
-                 sheet.getPicture(),
-                 0, // minRunLength
-                 new JunctionDeltaPolicy(constants.maxDeltaLength
-                                         .getValue())); // maxDeltaLength
+        new LagBuilder<GlyphLag, GlyphSection>().rip(
+            lag,
+            sheet.getPicture(),
+            0, // minRunLength
+            new JunctionDeltaPolicy(constants.maxDeltaLength.getValue())); // maxDeltaLength
         sheet.setVerticalLag(lag);
 
         // Retrieve (vertical) sticks
-        barsArea = new VerticalArea(sheet, lag,
-                                    scale.toPixels(constants.maxBarThickness));
+        barsArea = new VerticalArea(
+            sheet,
+            lag,
+            scale.toPixels(constants.maxBarThickness));
         clutter = new ArrayList<Stick>(barsArea.getSticks());
 
         // Allocate score
@@ -163,10 +177,10 @@ public class BarsBuilder
         checker.retrieveMeasures(clutter, bars);
 
         // Assign bar line shape
-        for (Stick stick : bars){
-            stick.setShape(checker.isThickBar(stick) ?
-                           Shape.THICK_BAR_LINE :
-                           Shape.THIN_BAR_LINE);
+        for (Stick stick : bars) {
+            stick.setShape(
+                checker.isThickBar(stick) ? Shape.THICK_BAR_LINE
+                                : Shape.THIN_BAR_LINE);
             stick.setInterline(sheet.getScale().interline());
         }
 
@@ -180,8 +194,8 @@ public class BarsBuilder
         score.computeChildren();
 
         // Report number of measures retrieved
-        logger.info(score.getLastSystem().getLastMeasureId()
-                    + " measure(s) found");
+        logger.info(
+            score.getLastSystem().getLastMeasureId() + " measure(s) found");
 
         // Split everything, including horizontals, per system
         SystemSplit.computeSystemLimits(sheet);
@@ -189,8 +203,7 @@ public class BarsBuilder
         SystemSplit.splitBars(sheet, bars);
 
         // Display the resulting stickarea if so asked for
-        if (constants.displayFrame.getValue() &&
-            Main.getJui() != null) {
+        if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
             displayFrame();
         }
     }
@@ -199,18 +212,18 @@ public class BarsBuilder
     // deassignBarGlyph //
     //------------------//
     /**
-     * Remove a bar together with all its related entities. This means
-     * removing reference in the bars list of this builder, reference in
-     * the containing SystemInfo, reference in the Measure it ends, and
-     * removing this Measure itself if this (false) bar was the only ending
-     * bar left for the Measure. The related stick must also be assigned a
-     * failure result.
+     * Remove a bar together with all its related entities. This means removing
+     * reference in the bars list of this builder, reference in the containing
+     * SystemInfo, reference in the Measure it ends, and removing this Measure
+     * itself if this (false) bar was the only ending bar left for the
+     * Measure. The related stick must also be assigned a failure result.
      *
      * @param glyph the (false) bar glyph to deassign
      */
     public void deassignBarGlyph (Glyph glyph)
     {
         Stick bar = getBarOf(glyph);
+
         if (bar == null) {
             return;
         } else {
@@ -226,42 +239,48 @@ public class BarsBuilder
 
         // Remove from the containing SystemInfo
         SystemInfo system = checker.getSystemOf(bar, sheet);
+
         if (system == null) {
             return;
         } else {
-            system.getBars().remove(bar);
+            system.getBars()
+                  .remove(bar);
         }
 
         // Remove from the containing Measure
         System scoreSystem = system.getScoreSystem();
-        for (Iterator it = scoreSystem.getStaves().iterator(); it.hasNext();) {
+
+        for (Iterator it = scoreSystem.getStaves()
+                                      .iterator(); it.hasNext();) {
             Staff staff = (Staff) it.next();
-            if (checker.isStaffEmbraced (staff, bar)) {
-                for (Iterator mit = staff.getMeasures().iterator();
-                     mit.hasNext();) {
+
+            if (checker.isStaffEmbraced(staff, bar)) {
+                for (Iterator mit = staff.getMeasures()
+                                         .iterator(); mit.hasNext();) {
                     Measure measure = (Measure) mit.next();
-//                    for (Iterator bit = measure.getInfos().iterator();
-//                         bit.hasNext();) {
-//                        BarInfo info = (BarInfo) bit.next();
-//                        if (info == bar) {
-//                            // Remove the bar info
-//                            if (logger.isFineEnabled()) {
-//                                logger.fine("Removing " + info +
-//                                             " from " + measure);
-//                            }
-//                            bit.remove();
-//
-//                            // Remove measure as well ?
-//                            if (measure.getInfos().size() == 0) {
-//                                if (logger.isFineEnabled()) {
-//                                    logger.fine("Removing " + measure);
-//                                }
-//                                mit.remove();
-//                            }
-//
-//                            break;
-//                        }
-//                    }
+
+                    //                    for (Iterator bit = measure.getInfos().iterator();
+                    //                         bit.hasNext();) {
+                    //                        BarInfo info = (BarInfo) bit.next();
+                    //                        if (info == bar) {
+                    //                            // Remove the bar info
+                    //                            if (logger.isFineEnabled()) {
+                    //                                logger.fine("Removing " + info +
+                    //                                             " from " + measure);
+                    //                            }
+                    //                            bit.remove();
+                    //
+                    //                            // Remove measure as well ?
+                    //                            if (measure.getInfos().size() == 0) {
+                    //                                if (logger.isFineEnabled()) {
+                    //                                    logger.fine("Removing " + measure);
+                    //                                }
+                    //                                mit.remove();
+                    //                            }
+                    //
+                    //                            break;
+                    //                        }
+                    //                    }
                 }
             }
         }
@@ -273,41 +292,20 @@ public class BarsBuilder
         }
     }
 
-    //~ Methods private ---------------------------------------------------
-
-    //---------------//
-    // checkMeasures //
-    //---------------//
-    /**
-     * Check measure reality, using a set of additional tests.
-     */
-    private void checkMeasures ()
+    //----------//
+    // getBarOf //
+    //----------//
+    private Stick getBarOf (Glyph glyph)
     {
-        // Check are performed on a system basis
-        for (TreeNode node : score.getSystems()) {
-            omr.score.System system = (omr.score.System) node;
-
-            // Check alignment of each measure of each staff with the other
-            // staff measures, a test that needs several staves in the
-            // system
-            checkBarAlignments(system);
-
-            // Detect very narrow measures which in fact indicate double
-            // bar lines.
-            mergeBarlines(system);
-
-            // First barline may be just the beginning of the staff, so do
-            // not count the very first bar line, which in general defines
-            // the beginning of the staff rather than the end of a measure,
-            // but use it to precisely define the left abscissa of the
-            // system and all its contained staves.
-            removeStartingBar(system);
-
-            // Similarly, use the very last bar line, which generally ends
-            // the system, to define the right abscissa of the system and
-            // its staves.
-            checkEndingBar(system);
+        for (Stick bar : bars) {
+            if (bar == glyph) {
+                return bar;
+            }
         }
+
+        logger.warning("Cannot find bar for " + glyph);
+
+        return null;
     }
 
     //--------------------//
@@ -321,25 +319,29 @@ public class BarsBuilder
      */
     private void checkBarAlignments (omr.score.System system)
     {
-        if (system.getStaves().size() > 1) {
+        if (system.getStaves()
+                  .size() > 1) {
             int maxShiftDx = scale.toPixels(constants.maxAlignShiftDx);
 
-            for (Iterator sit = system.getStaves().iterator(); sit.hasNext();) {
+            for (Iterator sit = system.getStaves()
+                                      .iterator(); sit.hasNext();) {
                 Staff staff = (Staff) sit.next();
 
-                for (Iterator mit = staff.getMeasures().iterator();
-                     mit.hasNext();) {
+                for (Iterator mit = staff.getMeasures()
+                                         .iterator(); mit.hasNext();) {
                     Measure measure = (Measure) mit.next();
+
                     if (logger.isFineEnabled()) {
                         logger.fine("Checking alignment of " + measure);
                     }
 
                     // Compare the abscissa with corresponding position in
                     // the other staves
-                    int x = measure.getBarline().getCenter().x;
+                    int x = measure.getBarline()
+                                   .getCenter().x;
 
-                    for (Iterator it = system.getStaves().iterator();
-                         it.hasNext();) {
+                    for (Iterator it = system.getStaves()
+                                             .iterator(); it.hasNext();) {
                         Staff stv = (Staff) it.next();
 
                         if (stv == staff) {
@@ -348,12 +350,14 @@ public class BarsBuilder
 
                         if (!stv.barlineExists(x, maxShiftDx)) {
                             if (logger.isFineEnabled()) {
-                                logger.fine("Singular measure removed: "
-                                             + Dumper.dumpOf(measure));
+                                logger.fine(
+                                    "Singular measure removed: " +
+                                    Dumper.dumpOf(measure));
                             }
 
                             // Remove the false bar info
-                            for (Stick stick : measure.getBarline().getSticks()) {
+                            for (Stick stick : measure.getBarline()
+                                                      .getSticks()) {
                                 stick.setResult(NOT_SYSTEM_ALIGNED);
                                 bars.remove(stick);
                             }
@@ -369,6 +373,150 @@ public class BarsBuilder
         }
     }
 
+    //----------------//
+    // checkEndingBar //
+    //----------------//
+    /**
+     * Use ending bar line if any, to adjust the right abscissa of the system
+     * and its staves.
+     *
+     * @param system the system to check
+     */
+    private void checkEndingBar (omr.score.System system)
+    {
+        Staff   staff = system.getFirstStaff();
+        Measure measure = staff.getLastMeasure();
+        Barline barline = measure.getBarline();
+        int     lastX = barline.getRightX();
+        int     minWidth = scale.toPixels(constants.minMeasureWidth);
+
+        if ((staff.getWidth() - lastX) < minWidth) {
+            if (logger.isFineEnabled()) {
+                logger.fine("Adjusting EndingBar " + system);
+            }
+
+            // Adjust end of system & staff(s) to this one
+            UnitDimension dim = system.getDimension();
+
+            if (dim == null) {
+                system.setDimension(new UnitDimension(lastX, 0));
+            } else {
+                dim.width = lastX;
+            }
+
+            for (Iterator sit = system.getStaves()
+                                      .iterator(); sit.hasNext();) {
+                Staff stv = (Staff) sit.next();
+                stv.setWidth(system.getDimension().width);
+            }
+        }
+    }
+
+    //---------------//
+    // checkMeasures //
+    //---------------//
+    /**
+     * Check measure reality, using a set of additional tests.
+     */
+    private void checkMeasures ()
+    {
+        // Check are performed on a system basis
+        for (TreeNode node : score.getSystems()) {
+            omr.score.System system = (omr.score.System) node;
+
+            // Check alignment of each measure of each staff with the other
+            // staff measures, a test that needs several staves in the system
+            checkBarAlignments(system);
+
+            // Detect very narrow measures which in fact indicate double bar
+            // lines.
+            mergeBarlines(system);
+
+            // First barline may be just the beginning of the staff, so do not
+            // count the very first bar line, which in general defines the
+            // beginning of the staff rather than the end of a measure, but use
+            // it to precisely define the left abscissa of the system and all
+            // its contained staves.
+            removeStartingBar(system);
+
+            // Similarly, use the very last bar line, which generally ends the
+            // system, to define the right abscissa of the system and its
+            // staves.
+            checkEndingBar(system);
+        }
+    }
+
+    //-------------//
+    // createScore //
+    //-------------//
+    private void createScore ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Allocating score");
+        }
+
+        score = new Score(
+            scale.toUnits(
+                new PixelDimension(sheet.getWidth(), sheet.getHeight())),
+            (int) Math.rint(sheet.getSkew().angle() * ScoreConstants.BASE),
+            scale.spacing(),
+            sheet.getPath());
+
+        // Mutual referencing
+        score.setSheet(sheet);
+        sheet.setScore(score);
+    }
+
+    //--------------//
+    // displayFrame //
+    //--------------//
+    private void displayFrame ()
+    {
+        lagView = new MyLagView(lag);
+
+        Selection glyphSelection = sheet.getSelection(
+            SelectionTag.VERTICAL_GLYPH);
+        lagView.setGlyphSelection(glyphSelection);
+        glyphSelection.addObserver(lagView);
+        lagView.colorize();
+
+        // Ids of recognized glyphs
+        List<Integer> knownIds = new ArrayList<Integer>(bars.size() + 1);
+        knownIds.add(GlyphBoard.NO_VALUE);
+
+        for (Stick stick : bars) {
+            knownIds.add(new Integer(stick.getId()));
+        }
+
+        final String  unit = "BarsBuilder";
+        BoardsPane    boardsPane = new BoardsPane(
+            sheet,
+            lagView,
+            new PixelBoard(unit),
+            new RunBoard(unit, sheet.getSelection(VERTICAL_RUN)),
+            new SectionBoard(
+                unit,
+                lag.getLastVertexId(),
+                sheet.getSelection(VERTICAL_SECTION),
+                sheet.getSelection(VERTICAL_SECTION_ID)),
+            new GlyphBoard(
+                unit,
+                lag.getLastGlyphId(),
+                knownIds,
+                sheet.getSelection(VERTICAL_GLYPH),
+                sheet.getSelection(VERTICAL_GLYPH_ID),
+                sheet.getSelection(GLYPH_SET)),
+            new MyCheckBoard(
+                unit,
+                checker.getSuite(),
+                sheet.getSelection(VERTICAL_GLYPH)));
+
+        // Create a hosting frame for the view
+        ScrollLagView slv = new ScrollLagView(lagView);
+        sheet.getAssembly()
+             .addViewTab("Bars", slv, boardsPane);
+    }
+
     //---------------//
     // mergeBarlines //
     //---------------//
@@ -382,23 +530,31 @@ public class BarsBuilder
     {
         int maxDoubleDx = scale.toPixels(constants.maxDoubleBarDx);
 
-        for (Iterator sit = system.getStaves().iterator(); sit.hasNext();) {
-            Staff staff = (Staff) sit.next();
+        for (Iterator sit = system.getStaves()
+                                  .iterator(); sit.hasNext();) {
+            Staff   staff = (Staff) sit.next();
 
             Measure prevMeasure = null;
 
-            for (Iterator mit = staff.getMeasures().iterator(); mit.hasNext();) {
+            for (Iterator mit = staff.getMeasures()
+                                     .iterator(); mit.hasNext();) {
                 Measure measure = (Measure) mit.next();
 
                 if (prevMeasure != null) {
-                    final int measureWidth = measure.getBarline().getCenter().x
-                                             - prevMeasure.getBarline().getCenter().x;
+                    final int measureWidth = measure.getBarline()
+                                                    .getCenter().x -
+                                             prevMeasure.getBarline()
+                                                        .getCenter().x;
 
                     if (measureWidth <= maxDoubleDx) {
                         // Merge the two bar lines into the first one
-                        prevMeasure.getBarline().mergeWith(measure.getBarline());
+                        prevMeasure.getBarline()
+                                   .mergeWith(measure.getBarline());
+
                         if (logger.isFineEnabled()) {
-                            logger.fine("Merged two barlines into " + prevMeasure.getBarline());
+                            logger.fine(
+                                "Merged two barlines into " +
+                                prevMeasure.getBarline());
                         }
 
                         mit.remove();
@@ -416,19 +572,20 @@ public class BarsBuilder
     // removeStartingBar //
     //-------------------//
     /**
-     * We associate measures only with their ending bar line(s), so the
-     * starting bar of a staff does not end a measure, we thus have to
-     * remove the measure that we first had associated with it.
+     * We associate measures only with their ending bar line(s), so the starting
+     * bar of a staff does not end a measure, we thus have to remove the measure
+     * that we first had associated with it.
      *
      * @param system the system whose staves starting measure has to be
      *               checked
      */
     private void removeStartingBar (omr.score.System system)
     {
-        int minWidth = scale.toPixels(constants.minMeasureWidth);
-        Barline firstBarline =
-                system.getFirstStaff().getFirstMeasure().getBarline();
-        int firstX = firstBarline.getLeftX();
+        int     minWidth = scale.toPixels(constants.minMeasureWidth);
+        Barline firstBarline = system.getFirstStaff()
+                                     .getFirstMeasure()
+                                     .getBarline();
+        int     firstX = firstBarline.getLeftX();
 
         // Check is based on the width of this first measure
         if (firstX < minWidth) {
@@ -437,25 +594,29 @@ public class BarsBuilder
                 if (logger.isFineEnabled()) {
                     logger.fine("Adjusting firstX=" + firstX + " " + system);
                 }
-                system.getTopLeft().translate(firstX, 0);
+
+                system.getTopLeft()
+                      .translate(firstX, 0);
                 system.getDimension().width -= -firstX;
             }
 
             // Adjust beginning of all staves to this one
             // Remove this false "measure" in all staves of the system
             for (TreeNode node : system.getStaves()) {
-                Staff staff = (Staff) node;
+                Staff   staff = (Staff) node;
 
                 // Set the bar as starting bar for the staff
-                Measure measure = (Measure) staff.getMeasures().get(0);
+                Measure measure = (Measure) staff.getMeasures()
+                                                 .get(0);
                 staff.setStartingBar(measure.getBarline());
 
                 // Remove this first measure
-                staff.getMeasures().remove(0);
+                staff.getMeasures()
+                     .remove(0);
 
                 // Update abscissa of top-left corner of the staff
-                staff.getTopLeft().translate
-                        (staff.getStartingBar().getLeftX(), 0);
+                staff.getTopLeft()
+                     .translate(staff.getStartingBar().getLeftX(), 0);
 
                 // Update other bar lines abscissae accordingly
                 for (TreeNode mNode : staff.getMeasures()) {
@@ -466,123 +627,38 @@ public class BarsBuilder
         }
     }
 
-    //----------------//
-    // checkEndingBar //
-    //----------------//
-    /**
-     * Use ending bar line if any, to adjust the right abscissa of the
-     * system and its staves.
-     *
-     * @param system the system to check
-     */
-    private void checkEndingBar (omr.score.System system)
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+        extends ConstantSet
     {
-        Staff staff = system.getFirstStaff();
-        Measure measure = staff.getLastMeasure();
-        Barline barline = measure.getBarline();
-        int lastX = barline.getRightX();
-        int minWidth = scale.toPixels(constants.minMeasureWidth);
+        Constant.Boolean displayFrame = new Constant.Boolean(
+            false,
+            "Should we display a frame on the vertical sticks");
+        Scale.Fraction   maxAlignShiftDx = new Scale.Fraction(
+            0.2,
+            "Maximum horizontal shift in bars between staves in a system");
+        Scale.Fraction   maxBarThickness = new Scale.Fraction(
+            0.75,
+            "Maximum thickness of an interesting vertical stick");
+        Constant.Integer maxDeltaLength = new Constant.Integer(
+            4,
+            "Maximum difference in run length to be part of the same section");
+        Scale.Fraction   maxDoubleBarDx = new Scale.Fraction(
+            0.75,
+            "Maximum horizontal distance between the two bars of a double bar");
+        Scale.Fraction   minMeasureWidth = new Scale.Fraction(
+            0.75,
+            "Minimum width for a measure");
 
-        if ((staff.getWidth() - lastX) < minWidth) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Adjusting EndingBar " + system);
-            }
-
-            // Adjust end of system & staff(s) to this one
-            UnitDimension dim = system.getDimension ();
-            if (dim == null) {
-                system.setDimension (new UnitDimension(lastX, 0));
-            } else {
-                dim.width = lastX;
-            }
-
-            for (Iterator sit = system.getStaves().iterator(); sit.hasNext();) {
-                Staff stv = (Staff) sit.next();
-                stv.setWidth(system.getDimension().width);
-            }
+        Constants ()
+        {
+            initialize();
         }
     }
-
-    //-------------//
-    // createScore //
-    //-------------//
-    private void createScore ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Allocating score");
-        }
-
-        score = new Score
-            (scale.toUnits(new PixelDimension(sheet.getWidth(),
-                                                    sheet.getHeight())),
-             (int) Math.rint(sheet.getSkew().angle() * ScoreConstants.BASE),
-             scale.spacing(),
-             sheet.getPath());
-
-        // Mutual referencing
-        score.setSheet(sheet);
-        sheet.setScore(score);
-    }
-
-    //--------------//
-    // displayFrame //
-    //--------------//
-    private void displayFrame ()
-    {
-        lagView = new MyLagView(lag);
-        Selection glyphSelection = sheet.getSelection(SelectionTag.VERTICAL_GLYPH);
-        lagView.setGlyphSelection(glyphSelection);
-        glyphSelection.addObserver(lagView);
-        lagView.colorize();
-
-        // Ids of recognized glyphs
-        List<Integer> knownIds = new ArrayList<Integer>(bars.size() +1);
-        knownIds.add(GlyphBoard.NO_VALUE);
-        for (Stick stick: bars) {
-            knownIds.add(new Integer(stick.getId()));
-        }
-
-        final String unit = "BarsBuilder";
-        BoardsPane boardsPane = new BoardsPane
-            (sheet, lagView,
-             new PixelBoard(unit),
-             new RunBoard(unit,
-                          sheet.getSelection(VERTICAL_RUN)),
-             new SectionBoard(unit,
-                              lag.getLastVertexId(),
-                              sheet.getSelection(VERTICAL_SECTION),
-                              sheet.getSelection(VERTICAL_SECTION_ID)),
-             new GlyphBoard(unit,
-                            lag.getLastGlyphId(),
-                            knownIds,
-                            sheet.getSelection(VERTICAL_GLYPH),
-                            sheet.getSelection(VERTICAL_GLYPH_ID),
-                            sheet.getSelection(GLYPH_SET)),
-             new MyCheckBoard(unit,
-                              checker.getSuite(),
-                              sheet.getSelection(VERTICAL_GLYPH)));
-
-        // Create a hosting frame for the view
-        ScrollLagView slv = new ScrollLagView(lagView);
-        sheet.getAssembly().addViewTab("Bars",  slv, boardsPane);
-    }
-
-    //----------//
-    // getBarOf //
-    //----------//
-    private Stick getBarOf (Glyph glyph)
-    {
-        for (Stick bar : bars) {
-            if (bar == glyph) {
-                return bar;
-            }
-        }
-
-        logger.warning("Cannot find bar for " + glyph);
-        return null;
-    }
-
-    //~ Classes -----------------------------------------------------------
 
     //--------------//
     // MyCheckBoard //
@@ -590,18 +666,19 @@ public class BarsBuilder
     private class MyCheckBoard
         extends CheckBoard<BarsChecker.Context>
     {
-        public MyCheckBoard(String     unit,
-                            CheckSuite suite,
-                            Selection  inputSelection)
+        public MyCheckBoard (String     unit,
+                             CheckSuite suite,
+                             Selection  inputSelection)
         {
             super(unit, suite, inputSelection);
         }
 
-        public void update(Selection selection,
-                           SelectionHint hint)
+        public void update (Selection     selection,
+                            SelectionHint hint)
         {
             BarsChecker.Context context = null;
-            Object entity = selection.getEntity();
+            Object              entity = selection.getEntity();
+
             if (entity instanceof Stick) {
                 // To get a fresh suite
                 setSuite(checker.new BarCheckSuite());
@@ -609,6 +686,7 @@ public class BarsBuilder
                 Stick stick = (Stick) entity;
                 context = new BarsChecker.Context(stick);
             }
+
             tellObject(context);
         }
     }
@@ -619,8 +697,6 @@ public class BarsBuilder
     private class MyLagView
         extends GlyphLagView
     {
-        //~ Constructors --------------------------------------------------
-
         private MyLagView (GlyphLag lag)
         {
             super(lag, null, BarsBuilder.this);
@@ -630,12 +706,11 @@ public class BarsBuilder
             setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
 
             // Glyph set
-            Selection glyphSetSelection = sheet.getSelection(SelectionTag.GLYPH_SET);
+            Selection glyphSetSelection = sheet.getSelection(
+                SelectionTag.GLYPH_SET);
             setGlyphSetSelection(glyphSetSelection);
             glyphSetSelection.addObserver(this);
         }
-
-        //~ Methods -------------------------------------------------------
 
         //----------//
         // colorize //
@@ -645,7 +720,8 @@ public class BarsBuilder
             super.colorize();
 
             // Determine my view index in the lag views
-            final int viewIndex = lag.getViews().indexOf(this);
+            final int viewIndex = lag.getViews()
+                                     .indexOf(this);
 
             // All remaining vertical sticks clutter
             for (Stick stick : clutter) {
@@ -658,69 +734,31 @@ public class BarsBuilder
             }
         }
 
+        //---------------//
+        // deassignGlyph //
+        //---------------//
+        @Override
+        public void deassignGlyph (Glyph glyph)
+        {
+            if ((glyph.getShape() == Shape.THICK_BAR_LINE) ||
+                (glyph.getShape() == Shape.THIN_BAR_LINE)) {
+                deassignBarGlyph(glyph);
+            } else {
+                BarsBuilder.logger.warning(
+                    "No deassign meant for " + glyph.getShape() + " glyph");
+            }
+        }
+
         //-------------//
         // renderItems //
         //-------------//
         public void renderItems (Graphics g)
         {
-            // Render all physical info known so far, which is just the
-            // staff line info, lineset by lineset
+            // Render all physical info known so far, which is just the staff
+            // line info, lineset by lineset
             sheet.render(g, getZoom());
 
             super.renderItems(g);
-        }
-
-        //---------------//
-        // deassignGlyph //
-        //---------------//
-        @Override
-            public void deassignGlyph (Glyph glyph)
-        {
-            if (glyph.getShape() == Shape.THICK_BAR_LINE ||
-                glyph.getShape() == Shape.THIN_BAR_LINE) {
-                deassignBarGlyph(glyph);
-            } else {
-                logger.warning("No deassign meant for "
-                               + glyph.getShape() + " glyph");
-            }
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-        extends ConstantSet
-    {
-        //~ Instance variables --------------------------------------------
-
-        Constant.Boolean displayFrame = new Constant.Boolean
-                (false,
-                 "Should we display a frame on the vertical sticks");
-
-        Scale.Fraction maxAlignShiftDx = new Scale.Fraction
-                (0.2,
-                 "Maximum horizontal shift in bars between staves in a system");
-
-        Constant.Integer maxDeltaLength = new Constant.Integer
-                (4,
-                 "Maximum difference in run length to be part of the same section");
-
-        Scale.Fraction maxDoubleBarDx = new Scale.Fraction
-                (0.75,
-                 "Maximum horizontal distance between the two bars of a double bar");
-
-        Scale.Fraction maxBarThickness = new Scale.Fraction
-                (0.75,
-                 "Maximum thickness of an interesting vertical stick");
-
-        Scale.Fraction minMeasureWidth = new Scale.Fraction
-                (0.75,
-                 "Minimum width for a measure");
-
-        Constants ()
-        {
-            initialize();
         }
     }
 }

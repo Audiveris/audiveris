@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                              L o g g e r                              //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                L o g g e r                                 //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.util;
 
 import omr.constant.UnitManager;
@@ -35,11 +35,7 @@ import java.util.logging.LogManager;
 public class Logger
     extends java.util.logging.Logger
 {
-    //~ Static variables/initializers -------------------------------------
-
-    //~ Instance variables ------------------------------------------------
-
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //--------//
     // Logger // Not meant to be instantiated from outside
@@ -49,14 +45,13 @@ public class Logger
         super(name, null);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //-----------//
     // getLogger //
     //-----------//
     /**
-     * Report (and possibly create) the logger related to the provided
-     * class
+     * Report (and possibly create) the logger related to the provided class
      *
      * @param cl the related class
      * @return the logger
@@ -70,16 +65,16 @@ public class Logger
     // getLogger //
     //-----------//
     /**
-     * Report (and possibly create) the logger related to the provided
-     * name (usually the full class name)
+     * Report (and possibly create) the logger related to the provided name
+     * (usually the full class name)
      *
      * @param name the logger name
      * @return the logger found or created
      */
-    public static synchronized Logger getLogger(String name)
+    public static synchronized Logger getLogger (String name)
     {
         LogManager manager = LogManager.getLogManager();
-        Logger result = (Logger) manager.getLogger(name);
+        Logger     result = (Logger) manager.getLogger(name);
 
         if (result == null) {
             result = new Logger(name);
@@ -87,7 +82,8 @@ public class Logger
             result = (Logger) manager.getLogger(name);
 
             // Insert in the hierarchy of units with logger
-            UnitManager.getInstance().addLogger(result);
+            UnitManager.getInstance()
+                       .addLogger(result);
         }
 
         return result;
@@ -97,22 +93,26 @@ public class Logger
     // getEffectiveLevel //
     //-------------------//
     /**
-     * Report the resulting level for the logger, which may be inherited
-     * from parents higher in the hierarchy
+     * Report the resulting level for the logger, which may be inherited from
+     * parents higher in the hierarchy
      *
      * @return The effective logging level for this logger
      */
-    public Level getEffectiveLevel()
+    public Level getEffectiveLevel ()
     {
         java.util.logging.Logger logger = this;
-        Level level = getLevel();
+        Level                    level = getLevel();
+
         while (level == null) {
             logger = logger.getParent();
+
             if (logger == null) {
                 return null;
             }
+
             level = logger.getLevel();
         }
+
         return level;
     }
 
@@ -124,28 +124,9 @@ public class Logger
      *
      * @return true if to be logged
      */
-    public boolean isFineEnabled()
+    public boolean isFineEnabled ()
     {
         return isLoggable(Level.FINE);
-    }
-
-    //-----------//
-    // logAssert //
-    //-----------//
-    /**
-     * Assert the provided condition, and stop the application if the
-     * condition is false, since this is supposed to detect a programming
-     * error
-     *
-     * @param exp the expression to check
-     * @param msg the related error message
-     */
-    public void logAssert (boolean exp,
-                           String msg)
-    {
-        if (!exp) {
-            severe(msg);
-        }
     }
 
     //----------//
@@ -154,12 +135,30 @@ public class Logger
     /**
      * Set the logger level, using a level name
      *
-     * @param levelStr the name of the level (case is irrelevant),
-     *                 such as Fine or INFO
+     * @param levelStr the name of the level (case is irrelevant), such as Fine
+     *                 or INFO
      */
     public void setLevel (String levelStr)
     {
         setLevel(Level.parse(levelStr.toUpperCase()));
+    }
+
+    //-----------//
+    // logAssert //
+    //-----------//
+    /**
+     * Assert the provided condition, and stop the application if the condition
+     * is false, since this is supposed to detect a programming error
+     *
+     * @param exp the expression to check
+     * @param msg the related error message
+     */
+    public void logAssert (boolean exp,
+                           String  msg)
+    {
+        if (!exp) {
+            severe(msg);
+        }
     }
 
     //--------//
@@ -174,6 +173,7 @@ public class Logger
     {
         super.severe(msg);
         new Throwable().printStackTrace();
+
         ///System.exit(-1);
     }
 
@@ -186,11 +186,12 @@ public class Logger
      * @param msg the (severe) message
      * @param thrown the exception
      */
-    public void severe (String msg,
+    public void severe (String    msg,
                         Throwable thrown)
     {
         super.severe(msg);
         thrown.printStackTrace();
+
         ///System.exit(-1);
     }
 
@@ -203,7 +204,7 @@ public class Logger
      * @param msg the (warning) message
      * @param thrown the related exception
      */
-    public void warning (String msg,
+    public void warning (String    msg,
                          Throwable thrown)
     {
         super.warning(msg);

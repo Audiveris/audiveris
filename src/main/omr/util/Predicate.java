@@ -1,21 +1,24 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                           P r e d i c a t e                           //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-//      $Id$
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             P r e d i c a t e                              //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.util;
 
+
 /**
- * Interface <code>Predicate</code> is used to specify a filter on a
- * provided entity
+ * Interface <code>Predicate</code> is used to specify a filter on a provided
+ * entity
  */
-public interface Predicate <E>
+public interface Predicate<E>
 {
+    //~ Methods ----------------------------------------------------------------
+
     /**
      * Run a check on the provided entity, and return the result
      *

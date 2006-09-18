@@ -1,21 +1,21 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                           B a s i c L i n e                           //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             B a s i c L i n e                              //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.math;
 
 import static java.lang.Math.*;
 
 /**
- * Class <code>BasicLine</code> is a basic Line implementation which
- * switches between horizontal and vertical equations when computing the
- * points regression
+ * Class <code>BasicLine</code> is a basic Line implementation which switches
+ * between horizontal and vertical equations when computing the points
+ * regression
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -23,40 +23,40 @@ import static java.lang.Math.*;
 public class BasicLine
     implements Line
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
+
+    // Flag to indicate that data needs to be recomputed */
+    private boolean dirty;
+
+    // Orientation indication
+    private boolean isRatherVertical = false;
 
     // Line equation
     private double a;
     private double b;
     private double c;
 
-    // Orientation indication
-    private boolean isRatherVertical = false;
+    // Sigma (x) */
+    private double sx;
+
+    // Sigma (x**2) */
+    private double sx2;
+
+    // Sigma (x*y) */
+    private double sxy;
+
+    // Sigma (y) */
+    private double sy;
+
+    // Sigma (y**2) */
+    private double sy2;
 
     // For regression
 
     // Number of points */
     private int n;
 
-    // Sigma (x) */
-    private double sx;
-
-    // Sigma (y) */
-    private double sy;
-
-    // Sigma (x**2) */
-    private double sx2;
-
-    // Sigma (y**2) */
-    private double sy2;
-
-    // Sigma (x*y) */
-    private double sxy;
-
-    // Flag to indicate that data needs to be recomputed */
-    private boolean dirty;
-
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------//
     // BasicLine //
@@ -75,10 +75,9 @@ public class BasicLine
     //-----------//
     /**
      * Creates a line, for which we already know the coefficients. The
-     * coeeficients don't have to be normalized, the constructor takes care
-     * of this. This line is not meant to be modified by including
-     * additional points (although this is doable), since it contains no
-     * defining points.
+     * coeeficients don't have to be normalized, the constructor takes care of
+     * this. This line is not meant to be modified by including additional
+     * points (although this is doable), since it contains no defining points.
      *
      * @param a xCoeff
      * @param b yCoeff
@@ -104,34 +103,32 @@ public class BasicLine
     // BasicLine //
     //-----------//
     /**
-     * Creates a line (and immediately compute its coefficients), as the
-     * least square fitted line on the provided points population.
+     * Creates a line (and immediately compute its coefficients), as the least
+     * square fitted line on the provided points population.
      *
      * @param xVals abscissas of the points
      * @param yVals ordinates of the points
      */
     public BasicLine (double[] xVals,
-                         double[] yVals)
+                      double[] yVals)
     {
         this();
 
         // Checks for parameter validity
-        if (xVals == null ||
-            yVals == null) {
-            throw new IllegalArgumentException
-                ("Provided arrays may not be null");
+        if ((xVals == null) || (yVals == null)) {
+            throw new IllegalArgumentException(
+                "Provided arrays may not be null");
         }
 
         // Checks for parameter validity
         if (xVals.length != yVals.length) {
-            throw new IllegalArgumentException
-                ("Provided arrays have different lengths");
+            throw new IllegalArgumentException(
+                "Provided arrays have different lengths");
         }
 
         // Checks for parameter validity
         if (xVals.length < 2) {
-            throw new IllegalArgumentException
-                ("Provided arrays are too short");
+            throw new IllegalArgumentException("Provided arrays are too short");
         }
 
         // Include all defining points
@@ -142,7 +139,7 @@ public class BasicLine
         checkLineParameters();
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //------//
     // getA //
@@ -150,6 +147,7 @@ public class BasicLine
     public double getA ()
     {
         checkLineParameters();
+
         return a;
     }
 
@@ -159,6 +157,7 @@ public class BasicLine
     public double getB ()
     {
         checkLineParameters();
+
         return b;
     }
 
@@ -168,16 +167,8 @@ public class BasicLine
     public double getC ()
     {
         checkLineParameters();
-        return c;
-    }
 
-    //----------//
-    // getSlope //
-    //----------//
-    public double getSlope ()
-    {
-        checkLineParameters();
-        return -a/b;
+        return c;
     }
 
     //------------------//
@@ -186,7 +177,28 @@ public class BasicLine
     public double getInvertedSlope ()
     {
         checkLineParameters();
-        return -b/a;
+
+        return -b / a;
+    }
+
+    //-----------------//
+    // getMeanDistance //
+    //-----------------//
+    public double getMeanDistance ()
+    {
+        // Check we have at least 2 points
+        if (n < 2) {
+            throw new UndefinedLineException(
+                "Not enough defining points : " + n);
+        }
+
+        checkLineParameters();
+
+        // abs is used in case of rounding errors
+        return sqrt(
+            abs(
+                (a * a * sx2) + (b * b * sy2) + (c * c * n) +
+                (2 * a * b * sxy) + (2 * a * c * sx) + (2 * b * c * sy)) / n);
     }
 
     //-------------------//
@@ -197,24 +209,25 @@ public class BasicLine
         return n;
     }
 
-    //--------------//
-    // includePoint //
-    //--------------//
-    public void includePoint (double x,
+    //----------//
+    // getSlope //
+    //----------//
+    public double getSlope ()
+    {
+        checkLineParameters();
+
+        return -a / b;
+    }
+
+    //------------//
+    // distanceOf //
+    //------------//
+    public double distanceOf (double x,
                               double y)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("includePoint x=" + x + " y=" + y);
-        }
+        checkLineParameters();
 
-        n   += 1;
-        sx  += x;
-        sy  += y;
-        sx2 += (x * x);
-        sy2 += (y * y);
-        sxy += (x * y);
-
-        dirty = true;
+        return (a * x) + (b * y) + c;
     }
 
     //-------------//
@@ -224,9 +237,9 @@ public class BasicLine
     {
         if (other instanceof BasicLine) {
             BasicLine o = (BasicLine) other;
-            n   += o.n;
-            sx  += o.sx;
-            sy  += o.sy;
+            n += o.n;
+            sx += o.sx;
+            sy += o.sy;
             sx2 += o.sx2;
             sy2 += o.sy2;
             sxy += o.sxy;
@@ -239,16 +252,79 @@ public class BasicLine
         return this;
     }
 
+    //--------------//
+    // includePoint //
+    //--------------//
+    public void includePoint (double x,
+                              double y)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("includePoint x=" + x + " y=" + y);
+        }
+
+        n += 1;
+        sx += x;
+        sy += y;
+        sx2 += (x * x);
+        sy2 += (y * y);
+        sxy += (x * y);
+
+        dirty = true;
+    }
+
     //-------//
     // reset //
     //-------//
     public void reset ()
     {
-        a =b = c = Double.NaN;;
+        a = b = c = Double.NaN;
+        ;
         n = 0;
         sx = sy = sx2 = sy2 = sxy = 0d;
 
         dirty = false;
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        if (dirty) {
+            compute();
+        }
+
+        StringBuffer sb = new StringBuffer();
+
+        if (isRatherVertical) {
+            sb.append("{VLine ");
+        } else {
+            sb.append("{HLine ");
+        }
+
+        if (a >= 0) {
+            sb.append(" ");
+        }
+
+        sb.append((float) a)
+          .append("*x ");
+
+        if (b >= 0) {
+            sb.append("+");
+        }
+
+        sb.append((float) b)
+          .append("*y ");
+
+        if (c >= 0) {
+            sb.append("+");
+        }
+
+        sb.append((float) c)
+          .append("}");
+
+        return sb.toString();
     }
 
     //-----//
@@ -259,10 +335,9 @@ public class BasicLine
         checkLineParameters();
 
         if (a != 0d) {
-            return - (b*y + c) / a;
+            return -((b * y) + c) / a;
         } else {
-            throw new RuntimeException
-                ("Line is horizontal");
+            throw new RuntimeException("Line is horizontal");
         }
     }
 
@@ -282,10 +357,9 @@ public class BasicLine
         checkLineParameters();
 
         if (b != 0d) {
-            return (-a*x -c) / b;
+            return ((-a * x) - c) / b;
         } else {
-            throw new RuntimeException
-                ("Line is vertical");
+            throw new RuntimeException("Line is vertical");
         }
     }
 
@@ -297,85 +371,13 @@ public class BasicLine
         return (int) rint(yAt((double) x));
     }
 
-    //------------//
-    // distanceOf //
-    //------------//
-    public double distanceOf (double x,
-                              double y)
-    {
-        checkLineParameters();
-
-        return a*x + b*y +c;
-    }
-
-    //-----------------//
-    // getMeanDistance //
-    //-----------------//
-    public double getMeanDistance ()
-    {
-        // Check we have at least 2 points
-        if (n < 2) {
-            throw new UndefinedLineException
-                ("Not enough defining points : " + n);
-        }
-
-        checkLineParameters();
-
-        // abs is used in case of rounding errors
-        return sqrt(abs(a*a*sx2 + b*b*sy2 + c*c*n +
-                        2*a*b*sxy + 2*a*c*sx + 2*b*c*sy)/n);
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-        public String toString()
-    {
-        if (dirty) {
-            compute();
-        }
-
-        StringBuffer sb = new StringBuffer();
-        if (isRatherVertical) {
-            sb.append("{VLine ");
-        } else {
-            sb.append("{HLine ");
-        }
-
-        if (a >= 0) {
-            sb.append(" ");
-        }
-        sb
-            .append((float) a)
-            .append("*x ");
-
-        if (b >= 0) {
-            sb.append("+");
-        }
-        sb
-            .append((float) b)
-            .append("*y ");
-
-        if (c >= 0) {
-            sb.append("+");
-        }
-        sb
-            .append((float) c)
-            .append("}");
-
-        return sb.toString();
-    }
-
-    //~ Methods private ---------------------------------------------------
-
     //---------------------//
     // checkLineParameters //
     //---------------------//
     /**
      * Make sure the line parameters are usable.
      */
-    private void checkLineParameters()
+    private void checkLineParameters ()
     {
         // Recompute parameters based on points if so needed
         if (dirty) {
@@ -383,26 +385,10 @@ public class BasicLine
         }
 
         // Make sure the parameters are available
-        if (Double.isNaN(a) ||
-            Double.isNaN(b) ||
-            Double.isNaN(c)) {
-            throw new UndefinedLineException
-                ("Line parameters not properly set");
+        if (Double.isNaN(a) || Double.isNaN(b) || Double.isNaN(c)) {
+            throw new UndefinedLineException(
+                "Line parameters not properly set");
         }
-    }
-
-    //-----------//
-    // normalize //
-    //-----------//
-    /**
-     * Compute the distance normalizing factor
-     */
-    private void normalize ()
-    {
-        double norm = hypot(a, b);
-        a /= norm;
-        b /= norm;
-        c /= norm;
     }
 
     //---------//
@@ -414,8 +400,8 @@ public class BasicLine
     private void compute ()
     {
         if (n < 2) {
-            throw new UndefinedLineException
-                ("Not enough defining points : " + n);
+            throw new UndefinedLineException(
+                "Not enough defining points : " + n);
         }
 
         // Make a choice between horizontal vs vertical
@@ -442,5 +428,19 @@ public class BasicLine
 
         normalize();
         dirty = false;
+    }
+
+    //-----------//
+    // normalize //
+    //-----------//
+    /**
+     * Compute the distance normalizing factor
+     */
+    private void normalize ()
+    {
+        double norm = hypot(a, b);
+        a /= norm;
+        b /= norm;
+        c /= norm;
     }
 }

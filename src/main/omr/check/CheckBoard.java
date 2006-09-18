@@ -1,17 +1,18 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                          C h e c k B o a r d                          //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            C h e c k B o a r d                             //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.check;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
+
 import omr.ui.Board;
 
 import com.jgoodies.forms.builder.*;
@@ -20,8 +21,8 @@ import com.jgoodies.forms.layout.*;
 import java.util.Collections;
 
 /**
- * Class <code>CheckBoard</code> defines a board dedicated to the display
- * of check result information.
+ * Class <code>CheckBoard</code> defines a board dedicated to the display of
+ * check result information.
  *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
@@ -34,15 +35,15 @@ import java.util.Collections;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class CheckBoard <C extends Checkable>
+public class CheckBoard<C extends Checkable>
     extends Board
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // For display of check suite results
     private final CheckPanel<C> checkPanel;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //------------//
     // CheckBoard //
@@ -68,7 +69,7 @@ public class CheckBoard <C extends Checkable>
         tellObject(null);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //----------//
     // setSuite //
@@ -83,21 +84,19 @@ public class CheckBoard <C extends Checkable>
         checkPanel.setSuite(suite);
     }
 
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout (String name)
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Call-back triggered when C Selection has been modified.
+     *
+     * @param selection the Selection to perform check upon
+     * @param hint potential notification hint
+     */
+    public void update (Selection     selection,
+                        SelectionHint hint)
     {
-        FormLayout layout = new FormLayout("pref", "pref,pref,pref");
-        PanelBuilder builder = new PanelBuilder(layout, getComponent());
-        builder.setDefaultDialogBorder();
-        CellConstraints cst = new CellConstraints();
-
-        int r = 1;                      // --------------------------------
-        builder.addSeparator(name + " check",   cst.xy(1,  r));
-
-        r += 2;                         // --------------------------------
-        builder.add(checkPanel.getComponent(),   cst.xy (1,  r));
+        tellObject((C) selection.getEntity());
     }
 
     //------------//
@@ -111,25 +110,30 @@ public class CheckBoard <C extends Checkable>
     protected void tellObject (C object)
     {
         if (object == null) {
-            getComponent().setVisible(false);
+            getComponent()
+                .setVisible(false);
         } else {
-            getComponent().setVisible(true);
+            getComponent()
+                .setVisible(true);
             checkPanel.passForm(object);
         }
     }
 
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Call-back triggered when C Selection has been modified.
-     *
-     * @param selection the Selection to perform check upon
-     * @param hint potential notification hint
-     */
-    public void update(Selection selection,
-                       SelectionHint hint)
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout (String name)
     {
-        tellObject((C) selection.getEntity());
+        FormLayout   layout = new FormLayout("pref", "pref,pref,pref");
+        PanelBuilder builder = new PanelBuilder(layout, getComponent());
+        builder.setDefaultDialogBorder();
+
+        CellConstraints cst = new CellConstraints();
+
+        int             r = 1; // --------------------------------
+        builder.addSeparator(name + " check", cst.xy(1, r));
+
+        r += 2; // --------------------------------
+        builder.add(checkPanel.getComponent(), cst.xy(1, r));
     }
 }

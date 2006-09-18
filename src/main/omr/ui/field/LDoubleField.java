@@ -7,10 +7,10 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.field;
 
 import java.util.Scanner;
+
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
@@ -24,7 +24,7 @@ import javax.swing.JTextField;
 public class LDoubleField
     extends LField
 {
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //--------------//
     // LDoubleField //
@@ -36,8 +36,8 @@ public class LDoubleField
      * @param label string for the label text
      * @param tip related tool tip text
      */
-    public LDoubleField(String label,
-                        String tip)
+    public LDoubleField (String label,
+                         String tip)
     {
         this(true, label, tip);
     }
@@ -52,28 +52,14 @@ public class LDoubleField
      * @param label string for the label text
      * @param tip related tool tip text
      */
-    public LDoubleField(boolean editable,
-                        String  label,
-                        String  tip)
+    public LDoubleField (boolean editable,
+                         String  label,
+                         String  tip)
     {
         super(editable, label, tip);
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //----------//
-    // getValue //
-    //----------//
-    /**
-     * Extract the double value from the field (more precisely, the first
-     * value found in the text of the field ...)
-     *
-     * @return the value as double
-     */
-    public double getValue()
-    {
-        return new Scanner(getText()).nextDouble();
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //----------//
     // setValue //
@@ -101,5 +87,19 @@ public class LDoubleField
                           String format)
     {
         field.setText(String.format(format, val));
+    }
+
+    //----------//
+    // getValue //
+    //----------//
+    /**
+     * Extract the double value from the field (more precisely, the first
+     * value found in the text of the field ...)
+     *
+     * @return the value as double
+     */
+    public double getValue ()
+    {
+        return new Scanner(getText()).nextDouble();
     }
 }

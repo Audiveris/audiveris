@@ -1,29 +1,31 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                    S c o r e S h e e t B r i d g e                    //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                      S c o r e S h e e t B r i d g e                       //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.score;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
 import omr.selection.SelectionTag;
+
 import omr.sheet.PixelPoint;
 import omr.sheet.Sheet;
+
 import omr.util.Logger;
 
 import java.awt.Rectangle;
 
 /**
  * Class <code>ScoreSheetBridge</code> is in charge of keeping in sync the
- * (sheet) Pixel Selection and the Score Selection. There should exactly
- * one instance of this class per score (and thus per sheet).
+ * (sheet) Pixel Selection and the Score Selection. There should exactly one
+ * instance of this class per score (and thus per sheet).
  *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
@@ -43,25 +45,31 @@ import java.awt.Rectangle;
 public class ScoreSheetBridge
     implements SelectionObserver
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(ScoreSheetBridge.class);
+    private static final Logger logger = Logger.getLogger(
+        ScoreSheetBridge.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    private Score score;
-    private Sheet sheet;
-    private final Selection pixelSelection;
-    private final Selection scoreSelection;
+    private Score            score;
+    private final Selection  pixelSelection;
+    private final Selection  scoreSelection;
+    private Sheet            sheet;
 
     // Needed to force only one-way sync at a time
     private volatile boolean bridging;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //------------------//
     // ScoreSheetBridge //
     //------------------//
+    /**
+     * Creates a new ScoreSheetBridge object.
+     *
+     * @param score the related score (and thus the related sheet)
+     */
     public ScoreSheetBridge (Score score)
     {
         this.score = score;
@@ -76,12 +84,17 @@ public class ScoreSheetBridge
         scoreSelection.addObserver(this);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //---------//
     // getName //
     //---------//
-    public String getName()
+    /**
+     * Report the name of this observer
+     *
+     * @return name of the bridge
+     */
+    public String getName ()
     {
         return "Score-Sheet-Bridge";
     }
@@ -89,56 +102,75 @@ public class ScoreSheetBridge
     //--------//
     // update //
     //--------//
-    public void update (Selection selection,
+    /**
+     * Notification of selection objects (disabled when already bridging, to
+     * avoid endless loop)
+     *
+     * @param selection the originating selection object
+     * @param hint processing hint, if any
+     */
+    public void update (Selection     selection,
                         SelectionHint hint)
     {
         if (logger.isFineEnabled()) {
             logger.fine("Bridge : selection updated " + selection);
         }
+
         if (!bridging) {
-            bridging = true;            // Prevent re-entry
+            bridging = true; // Prevent re-entry
+
             Object entity = selection.getEntity();
-            if (logger.isFineEnabled()){
+
+            if (logger.isFineEnabled()) {
                 logger.fine("Bridge " + selection.getTag() + ": " + entity);
             }
+
             Rectangle rect = (Rectangle) entity;
 
-            switch(selection.getTag()) {
+            switch (selection.getTag()) {
             case PIXEL :
+
                 // Forward to Score side
                 if (rect != null) {
-                    PagePoint pagPt = sheet.getScale().toPagePoint
-                        (new PixelPoint(rect.x, rect.y));
+                    PagePoint pagPt = sheet.getScale()
+                                           .toPagePoint(
+                        new PixelPoint(rect.x, rect.y));
+
                     if (pagPt != null) {
                         // Which system ?
                         final System system = score.pageLocateSystem(pagPt);
-                        ScorePoint scrPt = system.sheetToScore(pagPt, null);
+                        ScorePoint   scrPt = system.sheetToScore(pagPt, null);
                         scoreSelection.setEntity(new Rectangle(scrPt), hint);
                     }
                 } else {
                     scoreSelection.setEntity(null, hint);
                 }
+
                 break;
 
             case SCORE :
+
                 // Forward to Sheet side
                 if (rect != null) {
                     // We forge a ScorePoint from the display point
                     ScorePoint scrPt = new ScorePoint(rect.x, rect.y); // ???
 
                     // The enclosing system
-                    System system = score.scoreLocateSystem(scrPt);
-                    PagePoint pagPt = system.scoreToSheet(scrPt, null);
-                    PixelPoint pt = sheet.getScale().toPixelPoint(pagPt, null);
+                    System     system = score.scoreLocateSystem(scrPt);
+                    PagePoint  pagPt = system.scoreToSheet(scrPt, null);
+                    PixelPoint pt = sheet.getScale()
+                                         .toPixelPoint(pagPt, null);
                     pixelSelection.setEntity(new Rectangle(pt), hint);
                 } else {
                     pixelSelection.setEntity(null, hint);
                 }
+
                 break;
 
             default :
                 logger.severe("Unexpected selection event from " + selection);
             }
+
             bridging = false;
         }
     }

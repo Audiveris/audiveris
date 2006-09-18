@@ -1,37 +1,41 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                           S c o r e V i e w                           //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             S c o r e V i e w                              //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.score;
+
+import static omr.score.ScoreConstants.*;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
+
 import omr.sheet.Sheet;
+
 import omr.ui.SheetAssembly;
 import omr.ui.util.Panel;
 import omr.ui.view.Rubber;
 import omr.ui.view.RubberZoomedPanel;
 import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
-import omr.util.Logger;
 
-import static omr.score.ScoreConstants.*;
+import omr.util.Logger;
 
 import java.awt.*;
 import java.util.*;
+
 import javax.swing.*;
 
 /**
- * Class <code>ScoreView</code> encapsulates the horizontal display of all
- * the score systems which may encompass several pages & systems. It knows
- * about the display zoom ratio of the score.
+ * Class <code>ScoreView</code> encapsulates the horizontal display of all the
+ * score systems which may encompass several pages & systems. It knows about the
+ * display zoom ratio of the score.
  *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
@@ -44,34 +48,34 @@ import javax.swing.*;
  */
 public class ScoreView
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(ScoreView.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
+
+    // The info zone
+    private final JLabel     info = new JLabel("Score");
+
+    // The displayed panel
+    private final MyPanel    panel;
+
+    // The scroll pane + info zone
+    private final Panel      compound = new Panel();
 
     // The related score
-    private final Score score;
+    private final Score      score;
+
+    // The scroll pane
+    private final ScrollView pane;
 
     // Display zoom
-    private final Zoom zoom = new Zoom(0.5d);
+    private final Zoom   zoom = new Zoom(0.5d);
 
     // Mouse rubber
     private final Rubber rubber = new Rubber(zoom);
 
-    // The displayed panel
-    private final MyPanel panel = new MyPanel(zoom, rubber);
-
-    // The scroll pane + info zone
-    private final Panel compound = new Panel();
-
-    // The scroll pane
-    private final ScrollView pane = new ScrollView(panel);
-
-    // The info zone
-    private final JLabel info = new JLabel("Score");
-
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------//
     // ScoreView //
@@ -87,10 +91,14 @@ public class ScoreView
             logger.fine("new ScoreView on " + score);
         }
 
+        panel = new MyPanel(zoom, rubber);
+        pane = new ScrollView(panel);
+
         // Explicitly register the display to Score Selection
         Sheet sheet = score.getSheet();
         panel.setLocationSelection(sheet.getSelection(SelectionTag.SCORE));
-        sheet.getSelection(SelectionTag.SCORE).addObserver(panel);
+        sheet.getSelection(SelectionTag.SCORE)
+             .addObserver(panel);
 
         info.setHorizontalAlignment(SwingConstants.LEFT);
         compound.setLayout(new BorderLayout());
@@ -112,51 +120,19 @@ public class ScoreView
         pixelSelection.reNotifyObservers(null);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //--------------//
     // getComponent //
     //--------------//
-    public Component getComponent()
+    /**
+     * Report the encapsulated UI component
+     *
+     * @return the UI component
+     */
+    public Component getComponent ()
     {
         return compound;
-    }
-
-    //---------------//
-    // getScrollPane //
-    //---------------//
-    public ScrollView getScrollPane()
-    {
-        return pane;
-    }
-
-    //----------//
-    // setFocus //
-    //----------//
-    /**
-     * Move the score display, so that focus is on the specified page
-     * point.
-     *
-     * @param pagPt the point in the score
-     */
-    public void setFocus (PagePoint pagPt)
-    {
-//         if (logger.isFineEnabled()) {
-//             logger.fine("setFocus pagPt=" + pagPt);
-//         }
-
-//          if (pagPt != null) {
-//              ScorePoint scrPt = null;
-//              // Which system ?
-//              final System system = score.pageLocateSystem(pagPt);
-//              if (system != null && !localSelfUpdating) {
-//                  scrPt = system.sheetToScore(pagPt, null);
-//                  localSelfUpdating = true;
-//                  panel.setFocusPoint(scrPt);
-//                  localSelfUpdating = false;
-//              }
-//              tellPoint(scrPt, pagPt);
-//          }
     }
 
     //----------//
@@ -172,12 +148,24 @@ public class ScoreView
         return score;
     }
 
+    //---------------//
+    // getScrollPane //
+    //---------------//
+    /**
+     * Report the underlying ScrollView
+     *
+     * @return the Scroll Pane
+     */
+    public ScrollView getScrollPane ()
+    {
+        return pane;
+    }
+
     //-------//
     // close //
     //-------//
     /**
-     * Close the score display, by removing it from the enclosing tabbed
-     * pane.
+     * Close the score display, by removing it from the enclosing tabbed pane.
      */
     public void close ()
     {
@@ -186,8 +174,10 @@ public class ScoreView
         }
 
         Sheet sheet = score.getSheet();
+
         if (sheet != null) {
             SheetAssembly assembly = sheet.getAssembly();
+
             if (assembly != null) {
                 assembly.closeScoreView();
             }
@@ -198,9 +188,8 @@ public class ScoreView
     // computePositions //
     //------------------//
     /**
-     * Run computations on the tree of score, systems, etc, so that all
-     * display data, such as origins and widths are available for display
-     * use.
+     * Run computations on the tree of score, systems, etc, so that all display
+     * data, such as origins and widths are available for display use.
      */
     public void computePositions ()
     {
@@ -213,16 +202,18 @@ public class ScoreView
 
         // Determine the X value of the whole set of systems
         int totalWidth = 0;
-        for (Iterator it = score.getChildren().iterator(); it.hasNext();) {
+
+        for (Iterator it = score.getChildren()
+                                .iterator(); it.hasNext();) {
             System system = (System) it.next();
             totalWidth += (system.getDimension().width + INTER_SYSTEM);
         }
 
         // Total size of this panel (for proper scrolling)
-        int h = 2 * STAFF_MARGIN_HEIGHT +
-            score.getMaxStaffNumber() * STAFF_AREA_HEIGHT;
-        panel.setModelSize
-            (new Dimension(SCORE_INIT_X + totalWidth + INTER_SYSTEM, 2*h));
+        int h = (2 * STAFF_MARGIN_HEIGHT) +
+                (score.getMaxStaffNumber() * STAFF_AREA_HEIGHT);
+        panel.setModelSize(
+            new Dimension(SCORE_INIT_X + totalWidth + INTER_SYSTEM, 2 * h));
     }
 
     //----------//
@@ -242,26 +233,33 @@ public class ScoreView
     //-----------//
     // tellPoint //
     //-----------//
-    private void tellPoint(ScorePoint scrPt,
-                           PagePoint  pagPt)
+    private void tellPoint (ScorePoint scrPt,
+                            PagePoint  pagPt)
     {
         StringBuilder sb = new StringBuilder();
+
         if (scrPt != null) {
             sb.append("ScorePoint")
-                .append(" X:").append(scrPt.x)
-                .append(" Y:").append(scrPt.y)
-                .append(" ");
+              .append(" X:")
+              .append(scrPt.x)
+              .append(" Y:")
+              .append(scrPt.y)
+              .append(" ");
         }
+
         if (pagPt != null) {
             sb.append("PagePoint")
-                .append(" X:").append(pagPt.x)
-                .append(" Y:").append(pagPt.y)
-                .append(" ");
+              .append(" X:")
+              .append(pagPt.x)
+              .append(" Y:")
+              .append(pagPt.y)
+              .append(" ");
         }
+
         info.setText(sb.toString());
     }
 
-    //~ Classes -----------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
 
     //-------//
     // Panel //
@@ -269,13 +267,11 @@ public class ScoreView
     private class MyPanel
         extends RubberZoomedPanel
     {
-        //~ Constructors --------------------------------------------------
-
         //---------//
         // MyPanel //
         //---------//
-        MyPanel (Zoom zoom,
-                Rubber rubber)
+        MyPanel (Zoom   zoom,
+                 Rubber rubber)
         {
             super(zoom, rubber);
             setName("ScoreView-MyPanel");
@@ -286,13 +282,11 @@ public class ScoreView
             setForeground(Color.black);
         }
 
-        //~ Methods -------------------------------------------------------
-
         //--------//
         // render //
         //--------//
         @Override
-            public void render (Graphics g)
+        public void render (Graphics g)
         {
             Graphics2D g2 = (Graphics2D) g;
 
@@ -304,14 +298,14 @@ public class ScoreView
         // update //
         //--------//
         /**
-         * Call-back (part of Observer interface) triggered when location
-         * has been modified
+         * Call-back (part of Observer interface) triggered when location has
+         * been modified
          *
          * @param selection the notified Selection
          * @param hint potential notification hint
          */
-        public void update(Selection selection,
-                           SelectionHint hint)
+        public void update (Selection     selection,
+                            SelectionHint hint)
         {
             if (logger.isFineEnabled()) {
                 logger.fine("ScoreView: Score selection updated " + selection);
@@ -323,10 +317,11 @@ public class ScoreView
             // Display location coordinates
             if (selection == locationSelection) {
                 Rectangle rect = (Rectangle) selection.getEntity();
+
                 if (rect != null) {
                     ScorePoint scrPt = new ScorePoint(rect.x, rect.y);
-                    System system = score.scoreLocateSystem(scrPt);
-                    PagePoint pagPt = system.scoreToSheet(scrPt, null);
+                    System     system = score.scoreLocateSystem(scrPt);
+                    PagePoint  pagPt = system.scoreToSheet(scrPt, null);
                     tellPoint(scrPt, pagPt);
                 } else {
                     tellPoint(null, null);

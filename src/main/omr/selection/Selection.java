@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                           S e l e c t i o n                           //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             S e l e c t i o n                              //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.selection;
 
 import omr.constant.Constant;
@@ -20,15 +20,15 @@ import java.util.Iterator;
 
 /**
  * Class <code>Selection</code> is a specific observable subject, meant to
- * encapsulate the result of a given selection made by the user through the
- * User Interface.
+ * encapsulate the result of a given selection made by the user through the User
+ * Interface.
  *
- * <p>For a better customization, the original java.util.Observable class
- * has been rewritten here, in a non thread-safe manner, with better
- * handling of observer identities.
+ * <p>For a better customization, the original java.util.Observable class has
+ * been rewritten here, in a non thread-safe manner, with better handling of
+ * observer identities.
  *
- * <p>The collection of instances of {@link SelectionObserver} is
- * constrained by the enumeration {@link SelectionTag}.
+ * <p>The collection of instances of {@link SelectionObserver} is constrained by
+ * the enumeration {@link SelectionTag}.
  *
  * <p>Notification can be flagged by a {@link SelectionHint} to provide
  * additional information to the observers.
@@ -40,11 +40,12 @@ public class Selection
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger    logger = Logger.getLogger(Selection.class);
-    private static final Constants constants = new Constants();
+    private static final Constants         constants = new Constants();
+    private static final Logger            logger = Logger.getLogger(
+        Selection.class);
 
     // Attempt to debug choreography of messages ...
-    private static int level = 0;
+    private static int                     level = 0;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -55,7 +56,7 @@ public class Selection
     private final SelectionTag tag;
 
     // The entity designated by this selection
-    private Object entity;
+    private Object  entity;
 
     // Indicate if entity has changed
     private boolean changed = false;
@@ -134,18 +135,17 @@ public class Selection
     // setEntity //
     //-----------//
     /**
-     * Update the selected entity, with a specific hint, and with the
-     * ability to specify whether notification must be done or not.
+     * Update the selected entity, with a specific hint, and with the ability to
+     * specify whether notification must be done or not.
      *
-     * <p>In case of multiple items selected to be viewed in a consistent
-     * state, this let the entity modifier decide when it's OK to notify
-     * the observers.
+     * <p>In case of multiple items selected to be viewed in a consistent state,
+     * this let the entity modifier decide when it's OK to notify the observers.
      *
      * @param entity the new value for selected entity
      * @param hint   a potential hint for selection observers
-     * @param notify false if notification must not be done immediately.
-     *               Nota: In that case it's the caller's responsibility to
-     *               call the notifyObservers() method later.
+     * @param notify false if notification must not be done immediately.  Nota:
+     *               In that case it's the caller's responsibility to call the
+     *               notifyObservers() method later.
      */
     public void setEntity (Object        entity,
                            SelectionHint hint,
@@ -324,8 +324,8 @@ public class Selection
     // notifyObservers //
     //-----------------//
     /**
-     * Notify synchronously all registered observers, providing them with
-     * the hint flag (which may be null).
+     * Notify synchronously all registered observers, providing them with the
+     * hint flag (which may be null).
      *
      * @param hint   a potential hint for selection observers
      */
@@ -537,8 +537,8 @@ public class Selection
     // NamedObserver //
     //---------------//
     /**
-     * Class <code>NamedObserver</code> simply encapsulates a pair composed
-     * of an SelectionObserver and its readable name
+     * Class <code>NamedObserver</code> simply encapsulates a pair composed of
+     * an SelectionObserver and its readable name
      */
     private static class NamedObserver
     {

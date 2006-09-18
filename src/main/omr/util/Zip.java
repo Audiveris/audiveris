@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                                 Z i p                                 //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                   Z i p                                    //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.util;
 
 import java.io.*;
@@ -17,24 +17,90 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Class <code>Zip</code> is a convenient utility that provides both
- * writing and reading from a file which is transparently compressed in
- * Zip.
+ * Class <code>Zip</code> is a convenient utility that provides both writing and
+ * reading from a file which is transparently compressed in Zip.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Zip
 {
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
+
+    //--------------------//
+    // createInputStream //
+    //-------------------//
+    /**
+     * Create a InputStream on a given file, by looking for a zip archive whose
+     * path is the file path with ".zip" appended, and by reading the first
+     * entry in this zip file.
+     *
+     * @param file the file (with no zip extension)
+     *
+     * @return a InputStream on the zip entry
+     */
+    public static InputStream createInputStream (File file)
+    {
+        try {
+            String  path = file.getCanonicalPath();
+
+            //ZipFile zf = new ZipFile(path + ".zip");
+            ZipFile zf = new ZipFile(path);
+
+            for (Enumeration entries = zf.entries(); entries.hasMoreElements();) {
+                ZipEntry entry = (ZipEntry) entries.nextElement();
+
+                return zf.getInputStream(entry);
+            }
+        } catch (FileNotFoundException ex) {
+            System.err.println(ex.toString());
+            System.err.println(file + " not found");
+        } catch (IOException ex) {
+            System.err.println(ex.toString());
+        }
+
+        return null;
+    }
+
+    //--------------------//
+    // createOutputStream //
+    //-------------------//
+    /**
+     * Create a OutputStream on a given file, transparently compressing the data
+     * to a Zip file whose name is the provided file path, with a ".zip"
+     * extension added.
+     *
+     * @param file the file (with no zip extension)
+     *
+     * @return a OutputStream on the zip entry
+     */
+    public static OutputStream createOutputStream (File file)
+    {
+        try {
+            String           path = file.getCanonicalPath();
+            FileOutputStream fos = new FileOutputStream(path + ".zip");
+            ZipOutputStream  zos = new ZipOutputStream(fos);
+            ZipEntry         ze = new ZipEntry(file.getName());
+            zos.putNextEntry(ze);
+
+            return zos;
+        } catch (FileNotFoundException ex) {
+            System.err.println(ex.toString());
+            System.err.println(file + " not found");
+        } catch (Exception ex) {
+            System.err.println(ex.toString());
+        }
+
+        return null;
+    }
 
     //--------------//
     // createReader //
     //--------------//
     /**
-     * Create a Reader on a given file, by looking for a zip archive whose
-     * path is the file path with ".zip" appended, and by reading the first
-     * entry in this zip file.
+     * Create a Reader on a given file, by looking for a zip archive whose path
+     * is the file path with ".zip" appended, and by reading the first entry in
+     * this zip file.
      *
      * @param file the file (with no zip extension)
      *
@@ -43,13 +109,12 @@ public class Zip
     public static Reader createReader (File file)
     {
         try {
-            String path = file.getCanonicalPath();
+            String  path = file.getCanonicalPath();
 
             ZipFile zf = new ZipFile(path + ".zip");
 
-            for (Enumeration entries = zf.entries();
-                 entries.hasMoreElements();) {
-                ZipEntry entry = (ZipEntry) entries.nextElement();
+            for (Enumeration entries = zf.entries(); entries.hasMoreElements();) {
+                ZipEntry    entry = (ZipEntry) entries.nextElement();
                 InputStream is = zf.getInputStream(entry);
 
                 return new InputStreamReader(is);
@@ -68,9 +133,9 @@ public class Zip
     // createWriter //
     //--------------//
     /**
-     * Create a Writer on a given file, transparently compressing the data
-     * to a Zip file whose name is the provided file path, with a ".zip"
-     * extension added.
+     * Create a Writer on a given file, transparently compressing the data to a
+     * Zip file whose name is the provided file path, with a ".zip" extension
+     * added.
      *
      * @param file the file (with no zip extension)
      *
@@ -79,79 +144,13 @@ public class Zip
     public static Writer createWriter (File file)
     {
         try {
-            String path = file.getCanonicalPath();
+            String           path = file.getCanonicalPath();
             FileOutputStream fos = new FileOutputStream(path + ".zip");
-            ZipOutputStream zos = new ZipOutputStream(fos);
-            ZipEntry ze = new ZipEntry(file.getName());
+            ZipOutputStream  zos = new ZipOutputStream(fos);
+            ZipEntry         ze = new ZipEntry(file.getName());
             zos.putNextEntry(ze);
 
             return new OutputStreamWriter(zos);
-        } catch (FileNotFoundException ex) {
-            System.err.println(ex.toString());
-            System.err.println(file + " not found");
-        } catch (Exception ex) {
-            System.err.println(ex.toString());
-        }
-
-        return null;
-    }
-
-    //--------------------//
-    // createInputStream //
-    //-------------------//
-    /**
-     * Create a InputStream on a given file, by looking for a zip archive
-     * whose path is the file path with ".zip" appended, and by reading the
-     * first entry in this zip file.
-     *
-     * @param file the file (with no zip extension)
-     *
-     * @return a InputStream on the zip entry
-     */
-    public static InputStream createInputStream (File file)
-    {
-        try {
-            String path = file.getCanonicalPath();
-            //ZipFile zf = new ZipFile(path + ".zip");
-            ZipFile zf = new ZipFile(path);
-
-            for (Enumeration entries = zf.entries();
-                 entries.hasMoreElements();) {
-                ZipEntry entry = (ZipEntry) entries.nextElement();
-                return zf.getInputStream(entry);
-            }
-        } catch (FileNotFoundException ex) {
-            System.err.println(ex.toString());
-            System.err.println(file + " not found");
-        } catch (IOException ex) {
-            System.err.println(ex.toString());
-        }
-
-        return null;
-    }
-
-    //--------------------//
-    // createOutputStream //
-    //-------------------//
-    /**
-     * Create a OutputStream on a given file, transparently compressing the
-     * data to a Zip file whose name is the provided file path, with a
-     * ".zip" extension added.
-     *
-     * @param file the file (with no zip extension)
-     *
-     * @return a OutputStream on the zip entry
-     */
-    public static OutputStream createOutputStream (File file)
-    {
-        try {
-            String path = file.getCanonicalPath();
-            FileOutputStream fos = new FileOutputStream(path + ".zip");
-            ZipOutputStream zos = new ZipOutputStream(fos);
-            ZipEntry ze = new ZipEntry(file.getName());
-            zos.putNextEntry(ze);
-
-            return zos;
         } catch (FileNotFoundException ex) {
             System.err.println(ex.toString());
             System.err.println(file + " not found");

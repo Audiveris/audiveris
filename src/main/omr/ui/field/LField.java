@@ -7,7 +7,6 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.field;
 
 import javax.swing.JLabel;
@@ -23,12 +22,19 @@ import javax.swing.SwingConstants;
  */
 public class LField
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
+    /**
+     * The related label
+     */
     protected JLabel label;
+
+    /**
+     * The underlying field
+     */
     protected SField field;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //--------//
     // LField //
@@ -70,20 +76,7 @@ public class LField
         field = new SField(editable, tip);
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //----------//
-    // getLabel //
-    //----------//
-    /**
-     * Report the label part
-     *
-     * @return the label
-     */
-    public JLabel getLabel()
-    {
-        return label;
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //----------//
     // getField //
@@ -93,9 +86,22 @@ public class LField
      *
      * @return the field
      */
-    public SField getField()
+    public SField getField ()
     {
         return field;
+    }
+
+    //----------//
+    // getLabel //
+    //----------//
+    /**
+     * Report the label part
+     *
+     * @return the label
+     */
+    public JLabel getLabel ()
+    {
+        return label;
     }
 
     //---------//
@@ -119,7 +125,7 @@ public class LField
      *
      * @return the field content
      */
-    public String getText()
+    public String getText ()
     {
         return field.getText();
     }

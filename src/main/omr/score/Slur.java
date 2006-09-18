@@ -1,16 +1,17 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                                S l u r                                //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                  S l u r                                   //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.score;
 
 import omr.ui.view.Zoom;
+
 import omr.util.Dumper;
 import omr.util.Logger;
 
@@ -25,31 +26,31 @@ import java.awt.*;
 public class Slur
     extends MusicNode
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(Slur.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    // Cached attributes
-    private int leftrow;
+    // Additional drawing data
+    private Arc arc;
 
     // Cached attributes
     private int leftcolumn;
 
     // Cached attributes
-    private int rightrow;
+    private int leftrow;
+
+    // Cached attributes
+    private int radius;
 
     // Cached attributes
     private int rightcolumn;
 
     // Cached attributes
-    private int radius;
+    private int rightrow;
 
-    // Additional drawing data
-    private Arc arc;
-
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //------//
     // Slur //
@@ -73,8 +74,7 @@ public class Slur
      * Create a slur with all the specified parameters
      *
      * @param system      the containing system
-     * @param leftrow     y (in units) of the left point, wrt the system
-     *                    origin
+     * @param leftrow y (in units) of the left point, wrt the system origin
      * @param leftcolumn  x (in units) of the left point
      * @param rightrow    y (in units) of the right point
      * @param rightcolumn x (in units) of the right point
@@ -82,11 +82,11 @@ public class Slur
      *                    above, &gt;0 if center is below
      */
     public Slur (System system,
-                 int leftrow,
-                 int leftcolumn,
-                 int rightrow,
-                 int rightcolumn,
-                 int radius)
+                 int    leftrow,
+                 int    leftcolumn,
+                 int    rightrow,
+                 int    rightcolumn,
+                 int    radius)
     {
         super(system);
 
@@ -101,7 +101,7 @@ public class Slur
         }
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //---------------//
     // getLeftcolumn //
@@ -133,8 +133,8 @@ public class Slur
     // getOrigin //
     //-----------//
     /**
-     * Report the display origin (which is the origin of the containing
-     * system) used for slur x and y relative coordinates
+     * Report the display origin (which is the origin of the containing system)
+     * used for slur x and y relative coordinates
      *
      * @return the base origin
      */
@@ -191,22 +191,19 @@ public class Slur
      * @return a string with all slur parameters
      */
     @Override
-        public String toString ()
+    public String toString ()
     {
-        return "{Slur:" +
-            " leftrow=" + leftrow +
-            " leftcolumn=" + leftcolumn +
-            " rightrow=" + rightrow +
-            " rightcolumn=" + rightcolumn +
-            " radius=" + radius + "}";
+        return "{Slur:" + " leftrow=" + leftrow + " leftcolumn=" + leftcolumn +
+               " rightrow=" + rightrow + " rightcolumn=" + rightcolumn +
+               " radius=" + radius + "}";
     }
 
     //-----------//
     // paintNode //
     //-----------//
     @Override
-        protected boolean paintNode (Graphics g,
-                                     Zoom zoom)
+    protected boolean paintNode (Graphics g,
+                                 Zoom     zoom)
     {
         // Compute data needed for drawing
         if (arc == null) {
@@ -218,21 +215,17 @@ public class Slur
         return true;
     }
 
-    //~ Classes -----------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
 
     //-----//
     // Arc //
     //-----//
     private static class Arc
     {
-        //~ Instance variables --------------------------------------------
-
         private final Point upperleft;
-        private final int squareside;
-        private final int startangle;
-        private final int arcangle;
-
-        //~ Constructors --------------------------------------------------
+        private final int   arcangle;
+        private final int   squareside;
+        private final int   startangle;
 
         //-----//
         // Arc //
@@ -243,8 +236,8 @@ public class Slur
                     int y2,
                     int radius)
         {
-            int rad = Math.abs(radius);
-            int sign = radius / rad;
+            int    rad = Math.abs(radius);
+            int    sign = radius / rad;
             double dx = x2 - x1;
             double dy = y2 - y1;
             double L2 = (dx * dx) + (dy * dy);
@@ -264,19 +257,20 @@ public class Slur
             arcangle = sign * (int) Math.toDegrees(2 * Math.acos(h / rad));
         }
 
-        //~ Methods -------------------------------------------------------
-
         //------//
         // draw //
         //------//
         public void draw (Graphics g,
-                          Point origin,
-                          Zoom zoom)
+                          Point    origin,
+                          Zoom     zoom)
         {
-            g.drawArc(zoom.scaled(origin.x + upperleft.x),
-                      zoom.scaled(origin.y + upperleft.y),
-                      zoom.scaled(squareside), zoom.scaled(squareside),
-                      startangle, arcangle);
+            g.drawArc(
+                zoom.scaled(origin.x + upperleft.x),
+                zoom.scaled(origin.y + upperleft.y),
+                zoom.scaled(squareside),
+                zoom.scaled(squareside),
+                startangle,
+                arcangle);
         }
     }
 }

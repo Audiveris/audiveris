@@ -1,18 +1,19 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                                S k e w                                //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                  S k e w                                   //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
+
 /**
- * Class <code>Skew</code> handles the skew angle of a given sheet picture,
- * and provides rotation methods for easy conversion of point coordinates.
+ * Class <code>Skew</code> handles the skew angle of a given sheet picture, and
+ * provides rotation methods for easy conversion of point coordinates.
  *
  * @see SkewBuilder
  *
@@ -22,27 +23,27 @@ package omr.sheet;
 public class Skew
     implements java.io.Serializable
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // Skew angle as computed
     private double angle;
 
-//     // To perform (un)rotations: sine and cosine of the skew angle
-//     private double sin;
-//     private double cos;
+    //~ Constructors -----------------------------------------------------------
 
-//     // Shift of the origin due to image rotation
-//     private int shiftDx;
-//     private int shiftDy;
+    //     // To perform (un)rotations: sine and cosine of the skew angle
+    //     private double sin;
+    //     private double cos;
 
-    //~ Constructors ------------------------------------------------------
+    //     // Shift of the origin due to image rotation
+    //     private int shiftDx;
+    //     private int shiftDy;
 
     //------//
     // Skew //
     //------//
     /**
-     * This is meant to generate a skew entity, when its key informations
-     * (the skew angle) is already known.
+     * This is meant to generate a skew entity, when its key informations (the
+     * skew angle) is already known.
      *
      * @param angle the skew angle
      */
@@ -51,11 +52,11 @@ public class Skew
         this.angle = angle;
 
         // Computation of trigo values
-//         computeTrigo(sheet.getPicture().getOrigWidth(),
-//                      sheet.getPicture().getOrigHeight());
+        //         computeTrigo(sheet.getPicture().getOrigWidth(),
+        //                      sheet.getPicture().getOrigHeight());
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //-------//
     // angle //
@@ -73,27 +74,27 @@ public class Skew
     //--------------//
     // computeTrigo //
     //--------------//
-//     private void computeTrigo (int origwidth,
-//                                int origheight)
-//     {
-//         // Compute the trigonometric parameters (sine and cosine), as well as
-//         // the shift of origin.
-//         sin = Math.sin(angle);
-//         cos = Math.cos(angle);
+    //     private void computeTrigo (int origwidth,
+    //                                int origheight)
+    //     {
+    //         // Compute the trigonometric parameters (sine and cosine), as well as
+    //         // the shift of origin.
+    //         sin = Math.sin(angle);
+    //         cos = Math.cos(angle);
 
-//         // Origin shift if rotated
-//         if (angle < 0) {
-//             shiftDx = -(int) Math.rint(origheight * sin);
+    //         // Origin shift if rotated
+    //         if (angle < 0) {
+    //             shiftDx = -(int) Math.rint(origheight * sin);
 
-//             if (logger.isDebugEnabled()) {
-//                 logger.debug("shiftDx=" + shiftDx);
-//             }
-//         } else if (angle > 0) {
-//             shiftDy = (int) Math.rint(origwidth * sin);
+    //             if (logger.isDebugEnabled()) {
+    //                 logger.debug("shiftDx=" + shiftDx);
+    //             }
+    //         } else if (angle > 0) {
+    //             shiftDy = (int) Math.rint(origwidth * sin);
 
-//             if (logger.isDebugEnabled()) {
-//                 logger.debug("shiftDy=" + shiftDy);
-//             }
-//         }
-//     }
+    //             if (logger.isDebugEnabled()) {
+    //                 logger.debug("shiftDy=" + shiftDy);
+    //             }
+    //         }
+    //     }
 }

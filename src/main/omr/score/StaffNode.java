@@ -1,28 +1,29 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                           S t a f f N o d e                           //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             S t a f f N o d e                              //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.score;
-
-import omr.ui.icon.SymbolIcon;
-import omr.ui.view.Zoom;
-import omr.util.Logger;
 
 import static omr.score.ScoreConstants.*;
 
-import java.awt.*;
+import omr.ui.icon.SymbolIcon;
+import omr.ui.view.Zoom;
+
+import omr.util.Logger;
 import omr.util.TreeNode;
 
+import java.awt.*;
+
 /**
- * Class <code>StaffNode</code> is an abstract class that is subclassed for
- * any MusicNode whose location is known with respect to its containing
- * staff. So this class encapsulates a direct link to the enclosing staff.
+ * Class <code>StaffNode</code> is an abstract class that is subclassed for any
+ * MusicNode whose location is known with respect to its containing staff. So
+ * this class encapsulates a direct link to the enclosing staff.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -30,18 +31,18 @@ import omr.util.TreeNode;
 public abstract class StaffNode
     extends MusicNode
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(MusicNode.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     /**
      * Containing staff
      */
     protected Staff staff;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------//
     // StaffNode //
@@ -50,24 +51,40 @@ public abstract class StaffNode
      * Create a StaffNode
      *
      * @param container the (direct) container of the node
-     * @param staff     the enclosing staff, which is never the direct
-     *                  container by the way
+     * @param staff the enclosing staff, which is never the direct container by
+     *                  the way
      */
     public StaffNode (MusicNode container,
-                      Staff staff)
+                      Staff     staff)
     {
         super(container);
         this.staff = staff;
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
+
+    //------------------//
+    // setChildrenStaff //
+    //------------------//
+    /**
+     * Pattern to launch computation recursively on all children of this node
+     */
+    public void setChildrenStaff (Staff staff)
+    {
+        for (TreeNode node : children) {
+            if (node instanceof StaffNode) {
+                StaffNode child = (StaffNode) node;
+                child.setStaff(staff);
+            }
+        }
+    }
 
     //-----------//
     // getOrigin //
     //-----------//
     /**
-     * The display origin which is relevant for this node (this is the
-     * staff origin)
+     * The display origin which is relevant for this node (this is the staff
+     * origin)
      *
      * @return the display origin
      */
@@ -88,22 +105,5 @@ public abstract class StaffNode
     {
         this.staff = staff;
         setChildrenStaff(staff);
-    }
-
-    //------------------//
-    // setChildrenStaff //
-    //------------------//
-    /**
-     * Pattern to launch computation recursively on all children of this
-     * node
-     */
-    public void setChildrenStaff (Staff staff)
-    {
-        for (TreeNode node : children) {
-            if (node instanceof StaffNode) {
-                StaffNode child = (StaffNode) node;
-                child.setStaff(staff);
-            }
-        }
     }
 }

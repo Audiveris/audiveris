@@ -1,18 +1,20 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                        S c a l e B u i l d e r                        //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                          S c a l e B u i l d e r                           //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.lag.Run;
+
 import omr.util.Clock;
 import omr.util.Logger;
 
@@ -25,12 +27,13 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
 import java.awt.Rectangle;
+
 import javax.swing.WindowConstants;
 
 /**
  * Class <code>ScaleBuilder</code> encapsulates the computation of a sheet
- * scale. This is kept separate from the simple <code>Scale</code> class,
- * to save the loading of this when computation is not required.
+ * scale. This is kept separate from the simple <code>Scale</code> class, to
+ * save the loading of this when computation is not required.
  *
  * @see omr.sheet.Scale
  *
@@ -39,31 +42,31 @@ import javax.swing.WindowConstants;
  */
 public class ScaleBuilder
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Constants constants = new Constants();
-    private static final Logger logger = Logger.getLogger(ScaleBuilder.class);
+    private static final Logger    logger = Logger.getLogger(
+        ScaleBuilder.class);
 
-    //~ Instance variables ------------------------------------------------
-
-    private Sheet sheet;
-
-    // Most frequent run lengths for foreground & background runs as read
-    // from the sheet picture. They are initialized to -1, so as to detect
-    // if they have been computed or not.
-    private int mainFore = -1;
-    private int mainBack = -1;
+    //~ Instance fields --------------------------------------------------------
 
     private Adapter adapter;
+    private Sheet   sheet;
+    private int     mainBack = -1;
 
-    //~ Constructors ------------------------------------------------------
+    // Most frequent run lengths for foreground & background runs as read from
+    // the sheet picture. They are initialized to -1, so as to detect if they
+    // have been computed or not.
+    private int mainFore = -1;
+
+    //~ Constructors -----------------------------------------------------------
 
     //--------------//
     // ScaleBuilder //
     //--------------//
     /**
-     * (package private) constructor, to enable scale computation on a
-     * given sheet
+     * (package private) constructor, to enable scale computation on a given
+     * sheet
      *
      * @param sheet the sheet at hand
      */
@@ -72,7 +75,7 @@ public class ScaleBuilder
         this.sheet = sheet;
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //--------------//
     // displayChart //
@@ -80,7 +83,7 @@ public class ScaleBuilder
     /**
      * Build and display the scale histogram
      */
-    public void displayChart()
+    public void displayChart ()
     {
         if (adapter != null) {
             adapter.writePlot();
@@ -93,14 +96,14 @@ public class ScaleBuilder
     // getMainBack //
     //-------------//
     /**
-     * A (package private) lazy method to retrieve the main length of
-     * background runs of pixels
+     * A (package private) lazy method to retrieve the main length of background
+     * runs of pixels
      *
      * @return the main back length
      * @throws omr.ProcessingException
      */
     int getMainBack ()
-            throws omr.ProcessingException
+        throws omr.ProcessingException
     {
         if (mainBack == -1) {
             retrieveScale();
@@ -113,14 +116,14 @@ public class ScaleBuilder
     // getMainFore //
     //-------------//
     /**
-     * A (package private) lazy method to retrieve the main length of
-     * foreground runs of pixels
+     * A (package private) lazy method to retrieve the main length of foreground
+     * runs of pixels
      *
      * @return the main fore length
      * @throws omr.ProcessingException
      */
     int getMainFore ()
-            throws omr.ProcessingException
+        throws omr.ProcessingException
     {
         if (mainFore == -1) {
             retrieveScale();
@@ -138,22 +141,22 @@ public class ScaleBuilder
      * @throws omr.ProcessingException
      */
     private void retrieveScale ()
-            throws omr.ProcessingException
+        throws omr.ProcessingException
     {
         Picture picture = sheet.getPicture();
         adapter = new Adapter(sheet, picture.getHeight() - 1);
 
         // Read the picture runs
-        Run.readRuns(adapter,
-                     new Rectangle(0, 0,
-                                   picture.getHeight(),
-                                   picture.getWidth()));
+        Run.readRuns(
+            adapter,
+            new Rectangle(0, 0, picture.getHeight(), picture.getWidth()));
 
-        logger.info("Scale black is " + mainFore + ", white is " + mainBack
-                    + ", interline is " + (mainFore + mainBack));
+        logger.info(
+            "Scale black is " + mainFore + ", white is " + mainBack +
+            ", interline is " + (mainFore + mainBack));
     }
 
-    //~ Classes -----------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
 
     //---------//
     // Adapter //          Needed for readRuns
@@ -161,20 +164,16 @@ public class ScaleBuilder
     private class Adapter
         implements Run.Reader
     {
-        //~ Instance variables --------------------------------------------
-
-        private Sheet sheet;
         private Picture picture;
-        private int[] fore;
-        private int[] back;
-
-        //~ Constructors --------------------------------------------------
+        private Sheet   sheet;
+        private int[]   back;
+        private int[]   fore;
 
         //---------//
         // Adapter //
         //---------//
         public Adapter (Sheet sheet,
-                        int hMax)
+                        int   hMax)
         {
             this.sheet = sheet;
             this.picture = sheet.getPicture();
@@ -188,8 +187,6 @@ public class ScaleBuilder
                 back[i] = 0;
             }
         }
-
-        //~ Methods -------------------------------------------------------
 
         //--------//
         // isFore //
@@ -257,51 +254,59 @@ public class ScaleBuilder
             }
 
             // House keeping (useful ? TBD)
-//             sheet = null;
-//             picture = null;
-//             fore = null;
-//             back = null;
+            //             sheet = null;
+            //             picture = null;
+            //             fore = null;
+            //             back = null;
         }
 
         //-----------//
         // writePlot //
         //-----------//
-        public void writePlot()
+        public void writePlot ()
         {
             XYSeriesCollection dataset = new XYSeriesCollection();
-            int upper = Math.min(fore.length, mainBack + (mainBack / 2));
+            int                upper = Math.min(
+                fore.length,
+                mainBack + (mainBack / 2));
 
             // Foreground
-            XYSeries foreSeries = new XYSeries("Foreground"
-                                               + " [" + mainFore + "]");
+            XYSeries foreSeries = new XYSeries(
+                "Foreground" + " [" + mainFore + "]");
+
             for (int i = 0; i < upper; i++) {
                 foreSeries.add(i, fore[i]);
             }
+
             dataset.addSeries(foreSeries);
 
             // Background
-            XYSeries backSeries = new XYSeries("Background"
-                                               + " [" + mainBack + "]");
+            XYSeries backSeries = new XYSeries(
+                "Background" + " [" + mainBack + "]");
+
             for (int i = 0; i < upper; i++) {
                 backSeries.add(i, back[i]);
             }
+
             dataset.addSeries(backSeries);
 
             // Chart
-            JFreeChart chart = ChartFactory.createXYLineChart
-                (sheet.getRadix() + " - Run Lengths", // Title
-                 "Lengths",                 // X-Axis label
-                 "Numbers",                 // Y-Axis label
-                 dataset,                   // Dataset
-                 PlotOrientation.VERTICAL,  // orientation,
-                 true,                      // Show legend
-                 false,                     // Show tool tips
-                 false                      // urls
-                 );
+            JFreeChart chart = ChartFactory.createXYLineChart(
+                sheet.getRadix() + " - Run Lengths", // Title
+                "Lengths", // X-Axis label
+                "Numbers", // Y-Axis label
+                dataset, // Dataset
+                PlotOrientation.VERTICAL, // orientation,
+                true, // Show legend
+                false, // Show tool tips
+                false // urls
+            );
 
             // Hosting frame
-            ChartFrame frame = new ChartFrame(sheet.getRadix() + " - Runs",
-                                              chart, true) ;
+            ChartFrame frame = new ChartFrame(
+                sheet.getRadix() + " - Runs",
+                chart,
+                true);
             frame.pack();
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             RefineryUtilities.centerFrameOnScreen(frame);
@@ -315,9 +320,9 @@ public class ScaleBuilder
     private static class Constants
         extends ConstantSet
     {
-        Constant.Boolean plotting = new Constant.Boolean
-                (false,
-                 "Should we produce a chart on computed scale data ?");
+        Constant.Boolean plotting = new Constant.Boolean(
+            false,
+            "Should we produce a chart on computed scale data ?");
 
         Constants ()
         {

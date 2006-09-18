@@ -1,21 +1,21 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                          P i x e l P o i n t                          //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            P i x e l P o i n t                             //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import java.awt.*;
 
 /**
- * Class <code>PixelPoint</code> is a simple Point that is meant to
- * represent a point in a deskewed page, with its coordinates specified in
- * pixels, so the name.
+ * Class <code>PixelPoint</code> is a simple Point that is meant to represent a
+ * point in a deskewed page, with its coordinates specified in pixels, so the
+ * name.
  *
  * <p> This specialization is used to take benefit of compiler checks, to
  * prevent the use of points with incorrect meaning or units. </p>
@@ -26,9 +26,14 @@ import java.awt.*;
 public class PixelPoint
     extends Point
 {
+    //~ Constructors -----------------------------------------------------------
+
     //------------//
     // PixelPoint //
     //------------//
+    /**
+     * Creates a new PixelPoint object.
+     */
     public PixelPoint ()
     {
     }
@@ -36,6 +41,12 @@ public class PixelPoint
     //------------//
     // PixelPoint //
     //------------//
+    /**
+     * Creates a new PixelPoint object, by cloning an untyped point
+     *
+     * @param x abscissa
+     * @param y ordinate
+     */
     public PixelPoint (int x,
                        int y)
     {

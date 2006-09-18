@@ -1,32 +1,39 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                           S t i c k U t i l                           //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             S t i c k U t i l                              //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.stick;
 
 import omr.check.FailureResult;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.ui.GlyphLagView;
+
 import omr.graph.DigraphView;
+
 import omr.lag.Run;
+import omr.lag.Section;
+
 import omr.math.BasicLine;
 import omr.math.Line;
+
 import omr.sheet.Picture;
+
 import omr.util.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import omr.lag.Section;
 
 /**
  * Class <code>StickUtil</code> gathers static utilities for sticks.
@@ -36,21 +43,21 @@ import omr.lag.Section;
  */
 public class StickUtil
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Constants constants = new Constants();
-    private static final Logger logger = Logger.getLogger(StickUtil.class);
+    private static final Logger    logger = Logger.getLogger(StickUtil.class);
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //---------------//
     // areExtensions //
     //---------------//
     /**
-     * Checks whether two sticks can be considered as extensions of the
-     * other one.  Due to some missing points, a long stick can be broken
-     * into several smaller ones, that we must check for this.  This is
-     * checked before actually merging them.
+     * Checks whether two sticks can be considered as extensions of the other
+     * one.  Due to some missing points, a long stick can be broken into several
+     * smaller ones, that we must check for this.  This is checked before
+     * actually merging them.
      *
      * @param foo           one stick
      * @param bar           one other stick
@@ -60,25 +67,27 @@ public class StickUtil
      *
      * @return The result of the test
      */
-    public static boolean areExtensions (Stick foo,
-                                         Stick bar,
-                                         int maxDeltaCoord,
+    public static boolean areExtensions (Stick  foo,
+                                         Stick  bar,
+                                         int    maxDeltaCoord,
                                          // X for horizontal
-                                         int maxDeltaPos,
+    int                                         maxDeltaPos,
                                          // Y for horizontal
-                                         double maxDeltaSlope)
+    double                                      maxDeltaSlope)
     {
         // Check that a pair of start/stop is compatible
-        if ((Math.abs(foo.getStart() - bar.getStop()) <= maxDeltaCoord)
-            || (Math.abs(foo.getStop() - bar.getStart()) <= maxDeltaCoord)) {
+        if ((Math.abs(foo.getStart() - bar.getStop()) <= maxDeltaCoord) ||
+            (Math.abs(foo.getStop() - bar.getStart()) <= maxDeltaCoord)) {
             // Check that a pair of positions is compatible
-            if ((Math.abs(foo.getLine().yAt(foo.getStart())
-                          - bar.getLine().yAt(foo.getStop())) <= maxDeltaPos)
-                || (Math.abs(foo.getLine().yAt(foo.getStop())
-                             - bar.getLine().yAt(foo.getStart())) <= maxDeltaPos)) {
+            if ((Math.abs(
+                foo.getLine().yAt(foo.getStart()) -
+                bar.getLine().yAt(foo.getStop())) <= maxDeltaPos) ||
+                (Math.abs(
+                foo.getLine().yAt(foo.getStop()) -
+                bar.getLine().yAt(foo.getStart())) <= maxDeltaPos)) {
                 // Check that slopes are compatible (a useless test ?)
-                if (Math.abs(foo.getLine().getSlope()
-                             - bar.getLine().getSlope()) <= maxDeltaSlope) {
+                if (Math.abs(
+                    foo.getLine().getSlope() - bar.getLine().getSlope()) <= maxDeltaSlope) {
                     return true;
                 } else if (logger.isFineEnabled()) {
                     logger.fine("isExtensionOf:  Incompatible slopes");
@@ -97,78 +106,108 @@ public class StickUtil
     // cleanup //
     //---------//
     /**
-     * When a stick is logically removed, the crossing objects must be
-     * extended through the former stick.
+     * When a stick is logically removed, the crossing objects must be extended
+     * through the former stick.
      *
-     * @param minPointNb Minimum number of points, across the stick, to be
-     *                   able to compute an extension axis. Otherwise, the
-     *                   extension is performed orthogonally to the stick.
-     * @param picture    the picture which hosts the pixels handled by the
-     *                   stick
+     * @param minPointNb Minimum number of points, across the stick, to be able
+     *                   to compute an extension axis. Otherwise, the extension
+     *                   is performed orthogonally to the stick.
+     * @param picture the picture which hosts the pixels handled by the stick
      */
-    public static void cleanup (Stick stick,
+    public static void cleanup (Stick    stick,
                                 GlyphLag lag,
-                                int minPointNb,
-                                Picture picture)
+                                int      minPointNb,
+                                Picture  picture)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("cleanup stick=" + stick
-                         + ", lag=" + lag
-                         + ", minPointNb=" + minPointNb);
+            logger.fine(
+                "cleanup stick=" + stick + ", lag=" + lag + ", minPointNb=" +
+                minPointNb);
         }
+
         Collection<GlyphSection> members = stick.getMembers();
-        List<GlyphSection> borders = new ArrayList<GlyphSection>();
-        List<GlyphSection> patches = new ArrayList<GlyphSection>();
+        List<GlyphSection>       borders = new ArrayList<GlyphSection>();
+        List<GlyphSection>       patches = new ArrayList<GlyphSection>();
 
         // Extend crossing objects
         for (GlyphSection s : members) {
             StickSection section = (StickSection) s;
 
             // Extend crossing vertices before and after
-//             if (logger.isFineEnabled()) {
-//                 logger.debug("before lineSection=" + section);
-//             }
             for (GlyphSection source : section.getSources()) {
-                cleanupSection(stick, borders, patches, lag, picture,
-                               minPointNb, section, (StickSection) source,
-                               +1, true);
+                cleanupSection(
+                    stick,
+                    borders,
+                    patches,
+                    lag,
+                    picture,
+                    minPointNb,
+                    section,
+                    (StickSection) source,
+                    +1,
+                    true);
             }
-//             if (logger.isFineEnabled()) {
-//                 logger.debug("after lineSection=" + section);
-//             }
+
             for (GlyphSection target : section.getTargets()) {
-                cleanupSection(stick, borders, patches, lag, picture,
-                               minPointNb, section, (StickSection) target,
-                               -1, true);
+                cleanupSection(
+                    stick,
+                    borders,
+                    patches,
+                    lag,
+                    picture,
+                    minPointNb,
+                    section,
+                    (StickSection) target,
+                    -1,
+                    true);
             }
 
             // Delete the section itself
             section.delete();
         }
 
-        //logger.debug("cleanup. " + members.size() + " members " + borders.size() + " borders " + stick);
         // Include the border sections as line members
         members.addAll(borders);
 
         // Extend crossing objects for borders
         for (GlyphSection s : borders) {
             StickSection section = (StickSection) s;
+
             // Extend crossing vertices before and after
             if (logger.isFineEnabled()) {
                 logger.fine("border. before lineSection=" + section);
             }
+
             for (GlyphSection source : section.getSources()) {
-                cleanupSection(stick, borders, patches, lag, picture,
-                               minPointNb, section, (StickSection) source,
-                               +1, false);
+                cleanupSection(
+                    stick,
+                    borders,
+                    patches,
+                    lag,
+                    picture,
+                    minPointNb,
+                    section,
+                    (StickSection) source,
+                    +1,
+                    false);
             }
+
             if (logger.isFineEnabled()) {
                 logger.fine("border. after lineSection=" + section);
             }
+
             for (GlyphSection target : section.getTargets()) {
-                cleanupSection(stick, borders, patches, lag, picture,
-                               minPointNb, section, (StickSection) target,
-                               -1, false);
+                cleanupSection(
+                    stick,
+                    borders,
+                    patches,
+                    lag,
+                    picture,
+                    minPointNb,
+                    section,
+                    (StickSection) target,
+                    -1,
+                    false);
             }
 
             // Delete the section itself
@@ -189,10 +228,10 @@ public class StickUtil
     // cleanupSection //
     //----------------//
     /**
-     * Cleanup one line section, by extending potential crossing objects in
-     * a certain direction. During this operation, we may consider that
-     * tangent vertices are in fact borders that we should include in the
-     * line, rather than consider them as real crossing objects.
+     * Cleanup one line section, by extending potential crossing objects in a
+     * certain direction. During this operation, we may consider that tangent
+     * vertices are in fact borders that we should include in the line, rather
+     * than consider them as real crossing objects.
      *
      * @param picture       the picture whose pixels must be modified
      * @param lineSection   the section to clean up
@@ -200,30 +239,32 @@ public class StickUtil
      * @param direction     in which direction we extend objects
      * @param borderEnabled do we consider adding borders to the line
      */
-    private static void cleanupSection (Stick stick,
+    private static void cleanupSection (Stick              stick,
                                         List<GlyphSection> borders,
                                         List<GlyphSection> patches,
-                                        GlyphLag lag,
-                                        Picture picture,
-                                        int minPointNb,
-                                        StickSection lineSection,
-                                        StickSection sct,
-                                        int direction,
-                                        boolean borderEnabled)
+                                        GlyphLag           lag,
+                                        Picture            picture,
+                                        int                minPointNb,
+                                        StickSection       lineSection,
+                                        StickSection       sct,
+                                        int                direction,
+                                        boolean            borderEnabled)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("sct=" + sct
-                         + ", direction=" + direction
-                         + ", borderEnabled=" + borderEnabled);
+            logger.fine(
+                "sct=" + sct + ", direction=" + direction + ", borderEnabled=" +
+                borderEnabled);
         }
 
         // We are interested in non-stick vertices, and also in failed
         // sticks
         if (sct.isGlyphMember()) {
-            if (!(sct.getGlyph().getResult() instanceof FailureResult)) {
+            if (!(sct.getGlyph()
+                     .getResult() instanceof FailureResult)) {
                 if (logger.isFineEnabled()) {
                     logger.fine("Member of successful stick");
                 }
+
                 return;
             }
         }
@@ -232,25 +273,33 @@ public class StickUtil
         if (borderEnabled) {
             if (sct.getRunNb() == 1) { // Too restrictive ??? TBD
 
-                double adj = (direction > 0)
-                             ? sct.getFirstAdjacency()
+                double adj = (direction > 0) ? sct.getFirstAdjacency()
                              : sct.getLastAdjacency();
 
                 if (adj <= constants.maxBorderAdjacency.getValue()) {
-                    // No concrete crossing object, let's aggregate this
-                    // section to the line border.
+                    // No concrete crossing object, let's aggregate this section
+                    // to the line border.
                     sct.setParams(SectionRole.BORDER, 0, 0);
                     borders.add(sct);
+
                     if (logger.isFineEnabled()) {
                         logger.fine("Is a border");
                     }
+
                     return;
                 }
             }
         }
 
         // This sct is actually crossing, we extend it
-        patchSection(stick, patches, lag, minPointNb, lineSection, sct, direction);
+        patchSection(
+            stick,
+            patches,
+            lag,
+            minPointNb,
+            lineSection,
+            sct,
+            direction);
     }
 
     //--------//
@@ -266,16 +315,17 @@ public class StickUtil
      * @return the y for middle of found vertices
      */
     private static int middle (Stick stick,
-                               int c1,
-                               int c2)
+                               int   c1,
+                               int   c2)
     {
         int firstPos = Integer.MAX_VALUE;
         int lastPos = Integer.MIN_VALUE;
 
         for (Section section : stick.getMembers()) {
             // Check overlap with coordinates at hand
-            if (Math.max(c1, section.getStart()) <=
-                Math.min(c2, section.getStop())) {
+            if (Math.max(c1, section.getStart()) <= Math.min(
+                c2,
+                section.getStop())) {
                 firstPos = Math.min(firstPos, section.getFirstPos());
                 lastPos = Math.max(lastPos, section.getLastPos());
             }
@@ -288,30 +338,30 @@ public class StickUtil
     // patchSection //
     //--------------//
     /**
-     * Build a patching section, which extends the crossing sct in the
-     * given direction.
+     * Build a patching section, which extends the crossing sct in the given
+     * direction.
      *
      * @param section   the line section, through which the sct is extended
      * @param sct       the section of the crossing object
      * @param direction the direction in which extension must be performed
      */
-    private static void patchSection (Stick stick,
+    private static void patchSection (Stick              stick,
                                       List<GlyphSection> patches,
-                                      GlyphLag lag,
-                                      int minPointNb,
-                                      StickSection section,
-                                      StickSection sct,
-                                      int direction)
+                                      GlyphLag           lag,
+                                      int                minPointNb,
+                                      StickSection       section,
+                                      StickSection       sct,
+                                      int                direction)
     {
-        Run lineRun;                     // Run of staff line in contact
-        Run run;                         // Run to be extended
-        int yBegin;                      // y value at beginning of the extension
-        Line startTg = new BasicLine(); // Vertical tangent at runs starts
-        Line stopTg = new BasicLine();  // Vertical tangent at runs stops
-        Line axis = new BasicLine();    // Middle axis
-        int x1;                          // Left abscissa
-        int x2;                          // Right abscissa
-        double x;                        // Middle abscissa
+        Run    lineRun; // Run of staff line in contact
+        Run    run; // Run to be extended
+        int    yBegin; // y value at beginning of the extension
+        Line   startTg = new BasicLine(); // Vertical tangent at runs starts
+        Line   stopTg = new BasicLine(); // Vertical tangent at runs stops
+        Line   axis = new BasicLine(); // Middle axis
+        int    x1; // Left abscissa
+        int    x2; // Right abscissa
+        double x; // Middle abscissa
 
         if (direction > 0) { // Going downwards
             run = sct.getLastRun();
@@ -330,6 +380,7 @@ public class StickUtil
             if (logger.isFineEnabled()) {
                 logger.fine("line shorter than external contact");
             }
+
             x1 = lineRun.getStart();
             x2 = lineRun.getStop();
             length = lineRun.getLength();
@@ -341,50 +392,65 @@ public class StickUtil
         }
 
         x = (double) (x1 + x2) / 2;
-        if( logger.isFineEnabled()) {
+
+        if (logger.isFineEnabled()) {
             logger.fine("x1=" + x1 + " x=" + x + " x2=" + x2);
         }
+
         ////axis.includePoint(x, yBegin);
 
         // Compute the y position where our patch should stop
         final int yMid = middle(stick, x1, x2);
+
         if (yMid == 0) {
             logger.warning("Cannot find line");
+
             return;
         }
+
         final int yPast = yMid + direction; // y value, past the last one
 
         // Try to compute tangents on a total of minPointNb points
-        if ((startTg.getNumberOfPoints() + sct.getRunNb()) >= minPointNb +1) {
+        if ((startTg.getNumberOfPoints() + sct.getRunNb()) >= (minPointNb + 1)) {
             int y = yBegin - direction; // Skip the run stuck to the line
 
             while (startTg.getNumberOfPoints() < minPointNb) {
                 y -= direction;
+
                 Run r = sct.getRunAt(y);
-                if( logger.isFineEnabled()) {
-                    logger.fine("y=" + y +
-                                 " xl=" + r.getStart() +
-                                 " x=" + (double) (r.getStart() + r.getStop())/2 +
-                                 " xr=" + r.getStop());
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "y=" + y + " xl=" + r.getStart() + " x=" +
+                        ((double) (r.getStart() + r.getStop()) / 2) + " xr=" +
+                        r.getStop());
                 }
+
                 startTg.includePoint(r.getStart(), y);
                 stopTg.includePoint(r.getStop(), y);
-                axis.includePoint((double) (r.getStart() + r.getStop())/2, y);
+                axis.includePoint((double) (r.getStart() + r.getStop()) / 2, y);
             }
         }
 
         // Check whether we have enough runs to compute extension axis
         if (startTg.getNumberOfPoints() >= minPointNb) {
             if (logger.isFineEnabled()) {
-                logger.fine("startTg=" + startTg + " invertedSlope=" + startTg.getInvertedSlope());
-                logger.fine("axis=" + axis + " invertedSlope=" + axis.getInvertedSlope());
-                logger.fine("stopTg=" + stopTg + " invertedSlope=" + stopTg.getInvertedSlope());
+                logger.fine(
+                    "startTg=" + startTg + " invertedSlope=" +
+                    startTg.getInvertedSlope());
+                logger.fine(
+                    "axis=" + axis + " invertedSlope=" +
+                    axis.getInvertedSlope());
+                logger.fine(
+                    "stopTg=" + stopTg + " invertedSlope=" +
+                    stopTg.getInvertedSlope());
             }
+
             // Check that we don't diverge (convergence to the line is OK)
-            if (((stopTg.getInvertedSlope() - startTg.getInvertedSlope())
-                 * direction) > constants.maxDeltaSlope.getValue()) {
+            if (((stopTg.getInvertedSlope() - startTg.getInvertedSlope()) * direction) > constants.maxDeltaSlope.getValue()) {
                 /////axis = startTg.includeLine(stopTg); // Merge the two sides
                 startTg = stopTg = null;
+
                 if (logger.isFineEnabled()) {
                     logger.fine("Merged. Axis=" + axis);
                 }
@@ -402,8 +468,9 @@ public class StickUtil
 
         // Sanity check
         if (((yPast - yBegin) * direction) <= 0) {
-            logger.fine("Weird relative positions yBegin=" + yBegin
-                         + " yPast=" + yPast + " dir=" + direction);
+            logger.fine(
+                "Weird relative positions yBegin=" + yBegin + " yPast=" +
+                yPast + " dir=" + direction);
             logger.fine("patchSection line=" + section);
             logger.fine("patchSection contact=" + sct);
         } else {
@@ -415,26 +482,33 @@ public class StickUtil
                     length = stopTg.xAt(y) - start + 1;
 
                     if (logger.isFineEnabled()) {
-                        logger.fine("y=" + y + " start=" + start + " length=" + length);
+                        logger.fine(
+                            "y=" + y + " start=" + start + " length=" + length);
                     }
 
                     if (length <= 0) { // We have decreased to nothing
+
                         if (logger.isFineEnabled()) {
                             logger.fine("* length is zero *");
                         }
+
                         break;
                     }
                 } else {
                     if (axis != null) {
                         x = axis.xAt(y);
+
                         if (logger.isFineEnabled()) {
                             logger.fine("x=" + x);
                         }
                     }
-                    start = (int) (0.5 + x - ((double) length / 2));
+
+                    start = (int) ((0.5 + x) - ((double) length / 2));
                 }
+
                 if (logger.isFineEnabled()) {
-                    logger.fine("y=" + y + ", start=" + start + ", length=" + length);
+                    logger.fine(
+                        "y=" + y + ", start=" + start + ", length=" + length);
                 }
 
                 //Run newRun = new Run(start, length, Picture.FOREGROUND); // TBD
@@ -479,32 +553,28 @@ public class StickUtil
     // write //
     //-------//
     private static void write (Collection<GlyphSection> sections,
-                               Picture picture,
-                               int pixel)
+                               Picture                  picture,
+                               int                      pixel)
     {
         for (GlyphSection section : sections) {
             section.write(picture, pixel);
         }
     }
 
-    //~ Classes -----------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
 
     private static class Constants
         extends ConstantSet
     {
-        //~ Instance variables --------------------------------------------
-
-        Constant.Double maxDeltaSlope = new Constant.Double
-                (0.5d,
-                 "Maximum difference of side tangent slopes when patching TBD");
-
-        Constant.Double maxBorderAdjacency = new Constant.Double
-                (0.7d,
-                 "Maximum adjacency for a section to be a border");
-
-        Constant.Integer patchGreyLevel = new Constant.Integer
-                (200,
-                 "Grey level to be used when patching crossing objects");
+        Constant.Double  maxBorderAdjacency = new Constant.Double(
+            0.7d,
+            "Maximum adjacency for a section to be a border");
+        Constant.Double  maxDeltaSlope = new Constant.Double(
+            0.5d,
+            "Maximum difference of side tangent slopes when patching TBD");
+        Constant.Integer patchGreyLevel = new Constant.Integer(
+            200,
+            "Grey level to be used when patching crossing objects");
 
         Constants ()
         {

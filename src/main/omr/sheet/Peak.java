@@ -1,33 +1,34 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                                P e a k                                //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                  P e a k                                   //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
+
 /**
- * Class <code>Peak</code> encapsulates a peak in the histogram of
- * horizontal projections. When reading sequentially the projection
- * histogram, a peak is created when the threshold is passed, and the peak
- * ordinate is extended until we get under the threshold again.
+ * Class <code>Peak</code> encapsulates a peak in the histogram of horizontal
+ * projections. When reading sequentially the projection histogram, a peak is
+ * created when the threshold is passed, and the peak ordinate is extended until
+ * we get under the threshold again.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Peak
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     private final int yTop; // Y value at top of the peak
-    private int yBottom; // Y value at bottom of the peak
-    private int max; // Histogram maximum within this peak
+    private int       max; // Histogram maximum within this peak
+    private int       yBottom; // Y value at bottom of the peak
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //------//
     // Peak //
@@ -47,7 +48,7 @@ public class Peak
         max = val; // To be increased later by peak extensions
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //-----------//
     // getBottom //
@@ -92,9 +93,8 @@ public class Peak
     // extend //
     //--------//
     /**
-     * Continues a peak, extending its ordinate range, and perhaps its max
-     * value if this projection is the highest one since the beginning of
-     * the peak.
+     * Continues a peak, extending its ordinate range, and perhaps its max value
+     * if this projection is the highest one since the beginning of the peak.
      *
      * @param y   ordinate of this peak horizontal slice
      * @param val number of pixels cumulated at 'y' ordinate
@@ -115,7 +115,7 @@ public class Peak
      * @return the description
      */
     @Override
-        public String toString ()
+    public String toString ()
     {
         return "{Peak " + yTop + "-" + yBottom + " max=" + max + "}";
     }

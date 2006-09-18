@@ -1,35 +1,39 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                      S y m b o l s B u i l d e r                      //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                        S y m b o l s B u i l d e r                         //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphBuilder;
-import omr.glyph.GlyphModel;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
+import omr.glyph.GlyphModel;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
+
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
+
 import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
+import static omr.selection.SelectionTag.*;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
 import omr.ui.Board;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import omr.util.Logger;
 
-import static omr.selection.SelectionTag.*;
+import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -38,11 +42,12 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+
 import javax.swing.*;
 
 /**
- * Class <code>SymbolsBuilder</code> defines a UI pane from which all
- * symbol processing actions can be launched and checked.
+ * Class <code>SymbolsBuilder</code> defines a UI pane from which all symbol
+ * processing actions can be launched and checked.
  *
  * <dl>
  * <dt><b>Selection Outputs:</b></dt><ul>
@@ -56,32 +61,33 @@ import javax.swing.*;
 public class SymbolsBuilder
     extends GlyphModel
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(SymbolsBuilder.class);
+    private static final Logger    logger = Logger.getLogger(
+        SymbolsBuilder.class);
 
     /** Color for hiding unknown glyphs when filter is ON */
     public static final Color hiddenColor = Color.white;
 
-    //~ Instance variables ------------------------------------------------
-
-    // Repository of known glyphs
-    private final GlyphRepository repository = GlyphRepository.getInstance();
+    //~ Instance fields --------------------------------------------------------
 
     // Glyph builder
-    private final GlyphBuilder builder;
+    private final GlyphBuilder     builder;
 
     // Glyph inspector
-    private final GlyphInspector inspector;
-
-    // Sheet with Loaded glyphs
-    private final Sheet sheet;
+    private final GlyphInspector   inspector;
 
     // Related Lag view
-    private final GlyphLagView view;
+    private final GlyphLagView     view;
 
     // Popup menu related to glyph selection
-    private final GlyphMenu glyphMenu;
+    private final GlyphMenu        glyphMenu;
+
+    // Repository of known glyphs
+    private final GlyphRepository  repository = GlyphRepository.getInstance();
+
+    // Sheet with Loaded glyphs
+    private final Sheet            sheet;
 
     // Pointer to glyph board
     private final SymbolGlyphBoard glyphBoard;
@@ -89,18 +95,18 @@ public class SymbolsBuilder
     // The entity used for display focus
     private ShapeFocusBoard focus;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //----------------//
     // SymbolsBuilder //
     //----------------//
     /**
-     * Create a view in the sheet assembly tabs, dedicated to the display
-     * and handling of glyphs
+     * Create a view in the sheet assembly tabs, dedicated to the display and
+     * handling of glyphs
      *
      * @param sheet the sheet whose glyphs are considered
      */
-    public SymbolsBuilder(Sheet sheet)
+    public SymbolsBuilder (Sheet sheet)
     {
         super(sheet.getVerticalLag());
 
@@ -110,42 +116,47 @@ public class SymbolsBuilder
         view = new MyView(lag);
         view.setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
 
-        focus = new ShapeFocusBoard
-            (sheet, view, this,
-             new ActionListener() {
-                 public void actionPerformed(ActionEvent e) {
-                     view.colorizeAllGlyphs();
-                 }
-             });
+        focus = new ShapeFocusBoard(
+            sheet,
+            view,
+            this,
+            new ActionListener() {
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        view.colorizeAllGlyphs();
+                    }
+                });
 
-        glyphMenu = new GlyphMenu(this, focus,
-                sheet.getSelection(GLYPH_SET));
+        glyphMenu = new GlyphMenu(this, focus, sheet.getSelection(GLYPH_SET));
 
-        glyphBoard = new SymbolGlyphBoard(this,
-                                          sheet.getFirstSymbolId(),
-                                          lag,
-                                          sheet.getSelection(VERTICAL_GLYPH),
-                                          sheet.getSelection(VERTICAL_GLYPH_ID),
-                                          sheet.getSelection(GLYPH_SET));
+        glyphBoard = new SymbolGlyphBoard(
+            this,
+            sheet.getFirstSymbolId(),
+            lag,
+            sheet.getSelection(VERTICAL_GLYPH),
+            sheet.getSelection(VERTICAL_GLYPH_ID),
+            sheet.getSelection(GLYPH_SET));
 
         final String unit = "GlyphPane";
-        BoardsPane boardsPane = new BoardsPane
-            (sheet, view,
-             new PixelBoard(unit),
-             new RunBoard(unit,
-                          sheet.getSelection(VERTICAL_RUN)),
-             new SectionBoard(unit,
-                              lag.getLastVertexId(),
-                              sheet.getSelection(VERTICAL_SECTION),
-                              sheet.getSelection(VERTICAL_SECTION_ID)),
-             glyphBoard,
-             new ActionsBoard(sheet, this),
-             focus,
-             new EvaluationBoard(sheet,
-                                 this,
-                                 true,  // useButtons
-                                 view,
-                                 sheet.getSelection(VERTICAL_GLYPH)));
+        BoardsPane   boardsPane = new BoardsPane(
+            sheet,
+            view,
+            new PixelBoard(unit),
+            new RunBoard(unit, sheet.getSelection(VERTICAL_RUN)),
+            new SectionBoard(
+                unit,
+                lag.getLastVertexId(),
+                sheet.getSelection(VERTICAL_SECTION),
+                sheet.getSelection(VERTICAL_SECTION_ID)),
+            glyphBoard,
+            new ActionsBoard(sheet, this),
+            focus,
+            new EvaluationBoard(
+                sheet,
+                this,
+                true, // useButtons
+                view,
+                sheet.getSelection(VERTICAL_GLYPH)));
 
         // Link with glyph builder & glyph inspector
         builder = sheet.getGlyphBuilder();
@@ -154,17 +165,24 @@ public class SymbolsBuilder
 
         // Create a hosting pane for the view
         ScrollLagView slv = new ScrollLagView(view);
-        sheet.getAssembly().addViewTab("Glyphs", slv, boardsPane);
+        sheet.getAssembly()
+             .addViewTab("Glyphs", slv, boardsPane);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //------------------//
     // assignGlyphShape //
     //------------------//
+    /**
+     * Assign a shape to a glyph
+     *
+     * @param glyph the glyph at hand
+     * @param shape the shape to assign to the glyph
+     */
     @Override
-        public void assignGlyphShape(Glyph glyph,
-                                     Shape shape)
+    public void assignGlyphShape (Glyph glyph,
+                                  Shape shape)
     {
         if (glyph != null) {
             // First, do assign the shape to the glyph
@@ -176,21 +194,28 @@ public class SymbolsBuilder
             }
 
             // Update immediately the glyph info as displayed
-            sheet.getSelection(VERTICAL_GLYPH).setEntity
-                (glyph,
-                 SelectionHint.GLYPH_MODIFIED);
+            sheet.getSelection(VERTICAL_GLYPH)
+                 .setEntity(glyph, SelectionHint.GLYPH_MODIFIED);
         }
     }
 
     //----------------//
     // assignSetShape //
     //----------------//
+    /**
+     * Assign a shape to a set of glyphs, either to each glyph individually, or
+     * to a compund glyph built from the glyph set
+     *
+     * @param glyphs the collection of glyphs
+     * @param shape the shape to be assigned
+     * @param compound flag to indicate a compound is desired
+     */
     @Override
-        public void assignSetShape(List<Glyph> glyphs,
-                                   Shape       shape,
-                                   boolean     compound)
+    public void assignSetShape (List<Glyph> glyphs,
+                                Shape       shape,
+                                boolean     compound)
     {
-        if (glyphs != null && glyphs.size() > 0) {
+        if ((glyphs != null) && (glyphs.size() > 0)) {
             if (compound) {
                 // Build & insert a compound
                 Glyph glyph = builder.buildCompound(glyphs);
@@ -198,13 +223,15 @@ public class SymbolsBuilder
                 assignGlyphShape(glyph, shape);
             } else {
                 int noiseNb = 0;
+
                 for (Glyph glyph : glyphs) {
                     if (glyph.getShape() != Shape.NOISE) {
                         assignGlyphShape(glyph, shape);
                     } else {
-                        noiseNb ++;
+                        noiseNb++;
                     }
                 }
+
                 if (noiseNb > 0) {
                     logger.info(noiseNb + " noise glyphs skipped");
                 }
@@ -212,11 +239,58 @@ public class SymbolsBuilder
         }
     }
 
+    //-------------//
+    // cancelStems //
+    //-------------//
+    /**
+     * Cancel one or several stems, turning them back to just a set of sections,
+     * and rebuilding glyphs from their member sections together with the
+     * neighbouring non-assigned sections
+     *
+     * @param stems a list of stems
+     */
+    public void cancelStems (List<Glyph> stems)
+    {
+        /**
+         * To remove a stem, several infos need to be modified : shape from
+         * COMBINING_STEM to null, result from STEM to null, and the Stem must
+         * be removed from system list of stems.
+         *
+         * The stem glyph must be removed (as well as all other non-recognized
+         * glyphs that are connected to the former stem)
+         *
+         * Then, re-glyph extraction from sections when everything is ready
+         * (GlyphBuilder). Should work on a micro scale : just the former stem
+         * and the neighboring (non-assigned) glyphs.
+         */
+        Set<SystemInfo> systems = new HashSet<SystemInfo>();
+
+        for (Glyph stem : stems) {
+            SystemInfo system = sheet.getSystemAtY(stem.getContourBox().y);
+            inspector.removeGlyph(stem, system, /* cutSections => */
+                                  true);
+            systems.add(system);
+        }
+
+        // Extract brand new glyphs from impacted systems
+        for (SystemInfo system : systems) {
+            inspector.extractNewSystemGlyphs(system);
+        }
+
+        // Update the UI
+        refresh();
+    }
+
     //--------------------//
     // deassignGlyphShape //
     //--------------------//
+    /**
+     * De-assign the shape of a glyph
+     *
+     * @param glyph the glyph to deassign
+     */
     @Override
-        public void deassignGlyphShape (Glyph glyph)
+    public void deassignGlyphShape (Glyph glyph)
     {
         Shape shape = glyph.getShape();
         logger.info("Deassign a " + shape + " symbol");
@@ -225,28 +299,39 @@ public class SymbolsBuilder
         switch (shape) {
         case THICK_BAR_LINE :
         case THIN_BAR_LINE :
-            sheet.getBarsBuilder().deassignBarGlyph(glyph);
+            sheet.getBarsBuilder()
+                 .deassignBarGlyph(glyph);
             assignGlyphShape(glyph, null);
+
             break;
 
         case COMBINING_STEM :
             cancelStems(Collections.singletonList(glyph));
+
             break;
 
         default :
             assignGlyphShape(glyph, null);
+
             break;
         }
     }
+
     //------------------//
     // deassignSetShape //
     //------------------//
+    /**
+     * Deassign all the glyphs of the provided collection
+     *
+     * @param glyphs the collection of glyphs to deassign
+     */
     @Override
-        public void deassignSetShape(List<Glyph> glyphs)
+    public void deassignSetShape (List<Glyph> glyphs)
     {
         // First phase, putting the stems apart
         List<Glyph> stems = new ArrayList<Glyph>();
         List<Glyph> glyphsCopy = new ArrayList(glyphs);
+
         for (Glyph glyph : glyphsCopy) {
             if (glyph.getShape() == Shape.COMBINING_STEM) {
                 stems.add(glyph);
@@ -260,56 +345,15 @@ public class SymbolsBuilder
             cancelStems(stems);
         }
 
-        view.colorizeAllGlyphs();  // TBI
-    }
-
-    //-------------//
-    // cancelStems //
-    //-------------//
-    /**
-     * Cancel one or several stems, turning them back to just a set of
-     * sections, and rebuilding glyphs from their member sections together
-     * with the neighbouring non-assigned sections
-     *
-     * @param stems a list of stems
-     */
-    public void cancelStems (List<Glyph> stems)
-    {
-        /**
-         * To remove a stem, several infos need to be modified : shape from
-         * COMBINING_STEM to null, result from STEM to null, and the Stem
-         * must be removed from system list of stems.
-         *
-         * The stem glyph must be removed (as well as all other
-         * non-recognized glyphs that are connected to the former stem)
-         *
-         * Then, re-glyph extraction from sections when everything is ready
-         * (GlyphBuilder). Should work on a micro scale : just the former
-         * stem and the neighboring (non-assigned) glyphs.
-         */
-
-        Set<SystemInfo> systems = new HashSet<SystemInfo>();
-        for (Glyph stem : stems) {
-            SystemInfo system = sheet.getSystemAtY(stem.getContourBox().y);
-            inspector.removeGlyph(stem, system, /* cutSections => */ true);
-            systems.add(system);
-        }
-
-        // Extract brand new glyphs from impacted systems
-        for (SystemInfo system : systems) {
-            inspector.extractNewSystemGlyphs(system);
-        }
-
-        // Update the UI
-        refresh();
+        view.colorizeAllGlyphs(); // TBI
     }
 
     //---------//
     // refresh //
     //---------//
     /**
-     * Refresh the UI display (reset the model values of all spinners,
-     * update the colors of the glyphs)
+     * Refresh the UI display (reset the model values of all spinners, update
+     * the colors of the glyphs)
      */
     public void refresh ()
     {
@@ -317,15 +361,13 @@ public class SymbolsBuilder
         view.colorizeAllGlyphs();
     }
 
-    //~ Methods private ---------------------------------------------------
-
     //---------------//
     // createMenuBar //
     //---------------//
-    private JMenuBar createMenuBar()
+    private JMenuBar createMenuBar ()
     {
         // Menus in the frame
-        JMenuBar menuBar = new JMenuBar();
+        JMenuBar  menuBar = new JMenuBar();
         JMenuItem item;
 
         // Tools menu
@@ -334,14 +376,15 @@ public class SymbolsBuilder
 
         // Focus mode
         JMenu focusMenu = new JMenu("Focus");
-        Shape.addShapeItems
-            (focusMenu,
-             new ActionListener() {
-                 public void actionPerformed(ActionEvent e) {
-                     JMenuItem source = (JMenuItem) e.getSource();
-                     focus.setCurrentShape(Shape.valueOf(source.getText()));
-                 }
-             });
+        Shape.addShapeItems(
+            focusMenu,
+            new ActionListener() {
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        JMenuItem source = (JMenuItem) e.getSource();
+                        focus.setCurrentShape(Shape.valueOf(source.getText()));
+                    }
+                });
         toolMenu.add(focusMenu);
 
         // Neural Network
@@ -351,14 +394,14 @@ public class SymbolsBuilder
         return menuBar;
     }
 
+    //~ Inner Classes ----------------------------------------------------------
+
     //-----------//
     // MyLagView //
     //-----------//
     private class MyView
         extends GlyphLagView
     {
-        //~ Constructors --------------------------------------------------
-
         private MyView (GlyphLag lag)
         {
             super(lag, null, SymbolsBuilder.this);
@@ -376,59 +419,6 @@ public class SymbolsBuilder
             sheet.colorize(lag, viewIndex, Color.lightGray);
         }
 
-        //~ Methods -------------------------------------------------------
-
-        //-------------//
-        // renderItems //
-        //-------------//
-        @Override
-            protected void renderItems (Graphics g)
-        {
-            // Render all sheet physical info known so far
-            sheet.render(g, getZoom());
-
-            // Normal display of selected items
-            super.renderItems(g);
-        }
-
-        //-----------------//
-        // contextSelected //
-        //-----------------//
-        @Override
-            public void contextSelected (MouseEvent e,
-                                         Point pt)
-        {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
-
-            // To display point information
-            if (glyphs == null || glyphs.size() == 0) {
-                pointSelected(e, pt);
-                glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // modified?
-            }
-
-            if (glyphs!= null && glyphs.size() > 0) {
-                if (glyphs.size() == 1) {
-                    glyphMenu.updateForGlyph(glyphs.get(0));
-                } else if (glyphs.size() > 1) {
-                    glyphMenu.updateForGlyphSet(glyphs);
-                }
-                // Show the popup menu
-                glyphMenu.getPopup().show(this, e.getX(), e.getY());
-            } else {
-                // Popup with no glyph selected ?
-            }
-        }
-
-        //---------------//
-        // deassignGlyph //
-        //---------------//
-        @Override
-            public void deassignGlyph (Glyph glyph)
-        {
-            deassignGlyphShape(glyph);
-            refresh();
-        }
-
         //-------------------//
         // colorizeAllGlyphs //
         //-------------------//
@@ -442,6 +432,7 @@ public class SymbolsBuilder
                     colorizeGlyph(glyph);
                 }
             }
+
             repaint();
         }
 
@@ -451,26 +442,84 @@ public class SymbolsBuilder
         public void colorizeGlyph (Glyph glyph)
         {
             switch (focus.getFilter()) {
-            case ALL:
+            case ALL :
                 super.colorizeGlyph(glyph);
+
                 break;
 
-            case KNOWN:
+            case KNOWN :
+
                 if (glyph.isKnown()) {
                     super.colorizeGlyph(glyph);
                 } else {
                     super.colorizeGlyph(glyph, hiddenColor);
                 }
+
                 break;
 
-            case UNKNOWN:
+            case UNKNOWN :
+
                 if (glyph.isKnown()) {
                     super.colorizeGlyph(glyph, hiddenColor);
                 } else {
                     super.colorizeGlyph(glyph);
                 }
+
                 break;
             }
+        }
+
+        //-----------------//
+        // contextSelected //
+        //-----------------//
+        @Override
+        public void contextSelected (MouseEvent e,
+                                     Point      pt)
+        {
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+
+            // To display point information
+            if ((glyphs == null) || (glyphs.size() == 0)) {
+                pointSelected(e, pt);
+                glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // modified?
+            }
+
+            if ((glyphs != null) && (glyphs.size() > 0)) {
+                if (glyphs.size() == 1) {
+                    glyphMenu.updateForGlyph(glyphs.get(0));
+                } else if (glyphs.size() > 1) {
+                    glyphMenu.updateForGlyphSet(glyphs);
+                }
+
+                // Show the popup menu
+                glyphMenu.getPopup()
+                         .show(this, e.getX(), e.getY());
+            } else {
+                // Popup with no glyph selected ?
+            }
+        }
+
+        //---------------//
+        // deassignGlyph //
+        //---------------//
+        @Override
+        public void deassignGlyph (Glyph glyph)
+        {
+            deassignGlyphShape(glyph);
+            refresh();
+        }
+
+        //-------------//
+        // renderItems //
+        //-------------//
+        @Override
+        protected void renderItems (Graphics g)
+        {
+            // Render all sheet physical info known so far
+            sheet.render(g, getZoom());
+
+            // Normal display of selected items
+            super.renderItems(g);
         }
     }
 }

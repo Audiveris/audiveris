@@ -1,63 +1,63 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                          B o a r d s P a n e                          //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            B o a r d s P a n e                             //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.ui;
 
 import omr.selection.Selection;
 import omr.selection.SelectionTag;
+
 import omr.sheet.Sheet;
+import static omr.ui.Board.Tag.*;
 import omr.ui.util.Panel;
 import omr.ui.view.RubberZoomedPanel;
-import omr.util.Logger;
 
-import static omr.ui.Board.Tag.*;
+import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
 
 /**
- * Class <code>BoardsPane</code> defines a comprehensive user board, where
- * data related to current point, run, section and glyph can be displayed
- * in dedicated boards, as well as a general-purpose Filter board and a
- * custom board.
- * 
- * <p>There is now one single BoardsPane for all views of the same sheet,
- * while the visibility of some of its boards may vary with the view at hand.
- * 
- * 
- * 
+ * Class <code>BoardsPane</code> defines a comprehensive user board, where data
+ * related to current point, run, section and glyph can be displayed in
+ * dedicated boards, as well as a general-purpose Filter board and a custom
+ * board.
+ *
+ * <p>There is now one single BoardsPane for all views of the same sheet, while
+ * the visibility of some of its boards may vary with the view at hand.
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class BoardsPane
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(BoardsPane.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // The concrete UI component
-    private Panel component;
+    private Panel   component;
 
     // Unique (application-wide) name for this pane.
-    private String name;
+    private String  name;
 
     // Collection of boards
     private Board[] boards;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     /**
      * Create a BoardsPane, with selected boards
@@ -68,7 +68,7 @@ public class BoardsPane
      */
     public BoardsPane (Sheet             sheet,
                        RubberZoomedPanel view,
-                       Board...          boards)
+                       Board... boards)
     {
         // View
         if (view == null) {
@@ -83,18 +83,20 @@ public class BoardsPane
         // Prepare layout elements
         final String panelInterline = Panel.getPanelInterline();
         StringBuffer sbr = new StringBuffer();
+
         for (int n = 0; n <= boards.length; n++) {
             if (n != 0) {
-                sbr.append(", ").append(panelInterline).append(", ");
+                sbr.append(", ")
+                   .append(panelInterline)
+                   .append(", ");
             }
+
             sbr.append("pref");
         }
 
-        FormLayout layout = new FormLayout
-            ("pref",
-             sbr.toString());
+        FormLayout layout = new FormLayout("pref", sbr.toString());
 
-        Panel panel = new Panel();
+        Panel      panel = new Panel();
         panel.setNoInsets();
 
         PanelBuilder builder = new PanelBuilder(layout, panel);
@@ -104,23 +106,28 @@ public class BoardsPane
 
         // Now add the desired components, using provided order
         int r = 1;
+
         for (Board board : boards) {
             builder.add(board.getComponent(), cst.xy(1, r));
-            switch(board.getTag()) {
+
+            switch (board.getTag()) {
             case PIXEL :
-                PixelBoard pixelBoard = (PixelBoard) board;
+
+                PixelBoard      pixelBoard = (PixelBoard) board;
                 // inputs
                 List<Selection> inputs = new ArrayList<Selection>();
                 inputs.add(sheet.getSelection(SelectionTag.PIXEL));
                 inputs.add(sheet.getSelection(SelectionTag.LEVEL));
                 pixelBoard.setInputSelectionList(inputs);
                 // output
-                pixelBoard.setOutputSelection
-                        (sheet.getSelection(SelectionTag.PIXEL));
+                pixelBoard.setOutputSelection(
+                    sheet.getSelection(SelectionTag.PIXEL));
+
                 break;
 
             case RUN :
             case SECTION :
+
                 // Connections done by constructor, since they depend on Lag
                 break;
 
@@ -134,15 +141,16 @@ public class BoardsPane
                 break;
 
             default :
-                logger.severe ("Unexpected Board Tag : " + board.getTag());
+                logger.severe("Unexpected Board Tag : " + board.getTag());
             }
+
             r += 2;
         }
 
         component.add(builder.getPanel());
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //--------------//
     // getComponent //
@@ -152,7 +160,7 @@ public class BoardsPane
      *
      * @return the concrete component
      */
-    public JComponent getComponent()
+    public JComponent getComponent ()
     {
         return component;
     }
@@ -178,32 +186,9 @@ public class BoardsPane
      *
      * @return the declared name
      */
-    public String getName()
+    public String getName ()
     {
         return name;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-        public String toString()
-    {
-        return "{BoardsPane " + name + "}";
-    }
-
-    //-------//
-    // shown //
-    //-------//
-    /**
-     * Invoked when the boardsPane has been selected
-     */
-    public void shown()
-    {
-        ///logger.info("+BoardPane " + name + " Shown");
-        for (Board board : boards) {
-            board.boardShown();
-        }
     }
 
     //--------//
@@ -212,11 +197,34 @@ public class BoardsPane
     /**
      * Invoked when the boardsPane has been made deselected
      */
-    public void hidden()
+    public void hidden ()
     {
         ///logger.info("-BoardPane " + name + " Hidden");
         for (Board board : boards) {
             board.boardHidden();
         }
+    }
+
+    //-------//
+    // shown //
+    //-------//
+    /**
+     * Invoked when the boardsPane has been selected
+     */
+    public void shown ()
+    {
+        ///logger.info("+BoardPane " + name + " Shown");
+        for (Board board : boards) {
+            board.boardShown();
+        }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "{BoardsPane " + name + "}";
     }
 }

@@ -1,24 +1,14 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                          S h a p e F o c u s                          //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                       S h a p e F o c u s B o a r d                        //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.glyph.ui;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Collections;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphModel;
@@ -40,10 +30,21 @@ import omr.ui.util.Panel;
 
 import omr.util.Logger;
 
+import com.jgoodies.forms.builder.*;
+import com.jgoodies.forms.layout.*;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Collections;
+
+import javax.swing.*;
+import javax.swing.event.*;
+
 /**
  * Class <code>ShapeFocusBoard</code> handles the shape that receives current
- * focus, and all glyphs whose shape corresponds to the focus (for example
- * all treble clefs glyphs if such is the focus)
+ * focus, and all glyphs whose shape corresponds to the focus (for example all
+ * treble clefs glyphs if such is the focus)
  *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
@@ -73,11 +74,11 @@ public class ShapeFocusBoard
     private final Sheet        sheet;
 
     // Counter on symbols assigned to the current shape
-    private Counter assignedCounter = new Counter();
-    private JButton selectButton = new JButton();
+    private Counter    assignedCounter = new Counter();
+    private JButton    selectButton = new JButton();
 
     // Filter for known / unknown symbol display
-    private JComboBox filterButton = new JComboBox(Filter.values());
+    private JComboBox  filterButton = new JComboBox(Filter.values());
 
     // Popup menu to allow shape selection
     private JPopupMenu pm = new JPopupMenu();
@@ -91,8 +92,8 @@ public class ShapeFocusBoard
     // ShapeFocusBoard //
     //-----------------//
     /**
-     * Create the instance to handle the shape focus, with pointers to
-     * needed companions
+     * Create the instance to handle the shape focus, with pointers to needed
+     * companions
      *
      * @param sheet the related sheet
      * @param view the displayed lag view
@@ -202,11 +203,14 @@ public class ShapeFocusBoard
     }
 
     //--------//
+    // update //
+    //--------//
     /**
-     * DOCUMENT ME!
+     * Notification about selection objects (the shape of a just modified glyph,
+     * if not null, is used as the new shape focus)
      *
-     * @param selection DOCUMENT ME!
-     * @param hint DOCUMENT ME!
+     * @param selection the notified selection
+     * @param hint the processing hint if any
      */
     public void update (Selection     selection,
                         SelectionHint hint)
@@ -259,26 +263,20 @@ public class ShapeFocusBoard
             buttonWidth,
             "pref," + fieldInterline + "," + "pref");
 
-        PanelBuilder builder = new PanelBuilder(layout,
-                                                getComponent());
+        PanelBuilder builder = new PanelBuilder(layout, getComponent());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
 
         int             r = 1; // --------------------------------
-        builder.addSeparator("Focus",
-                             cst.xyw(1, r, 1));
-        builder.add(selectButton,
-                    cst.xyw(3, r, 5));
+        builder.addSeparator("Focus", cst.xyw(1, r, 1));
+        builder.add(selectButton, cst.xyw(3, r, 5));
 
         r += 2; // --------------------------------
-        builder.add(filterButton,
-                    cst.xy(1, r));
+        builder.add(filterButton, cst.xy(1, r));
 
-        builder.add(assignedCounter.val,
-                    cst.xy(5, r));
-        builder.add(assignedCounter.spinner,
-                    cst.xy(7, r));
+        builder.add(assignedCounter.val, cst.xy(5, r));
+        builder.add(assignedCounter.spinner, cst.xy(7, r));
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -358,9 +356,9 @@ public class ShapeFocusBoard
     /** Filter on which symbols should be displayed */
     public static enum Filter {
         /** Display all symbols */
-        ALL, 
+        ALL,
         /** Display only known symbols */
-        KNOWN, 
+        KNOWN,
         /** Display only unknown symbols */
         UNKNOWN;
     }

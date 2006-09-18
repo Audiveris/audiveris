@@ -1,18 +1,20 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                          S y s t e m I n f o                          //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            S y s t e m I n f o                             //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
+
 import omr.score.System;
+
 import omr.stick.Stick;
 import omr.stick.StickSection;
 
@@ -22,8 +24,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class <code>SystemInfo</code> gathers information from the original
- * picture about a retrieved system.
+ * Class <code>SystemInfo</code> gathers information from the original picture
+ * about a retrieved system.
  *
  * <p>Nota: All measurements are assumed in pixels.
  *
@@ -33,43 +35,28 @@ import java.util.List;
 public class SystemInfo
     implements java.io.Serializable
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    // Unique Id for this system (in the sheet)
-    private int id;
+    // Retrieved bar lines in this system
+    private List<Stick>                  bars = new ArrayList<Stick>();
 
-    // NOTA: Following items are listed in the chronological order of their
-    // filling/computation step
-    //
-    // BARS step
-    // =========
-    //
+    // Retrieved endings in this system
+    private List<Ending>                 endings = new ArrayList<Ending>();
 
-    // Index of first staff of the system, counted from 0 within all staves
-    // of the score
-    private int startIdx;
+    // Sections
+    private transient List<GlyphSection> hSections = new ArrayList<GlyphSection>();
 
-    // Index of last staff of the system, also counted from 0.
-    private int stopIdx;
+    // Glyphs & Sticks
+    private List<Glyph>           glyphs = new ArrayList<Glyph>();
+    private transient List<Stick> hSticks = new ArrayList<Stick>();
 
-    // Ordinate of top of first staff of the system.
-    private int top;
-
-    // Abscissa of beginning of system.
-    private int left = -1;
-
-    // Width of the system.
-    private int width = -1;
-
-    // Ordinate of bottom of last staff of the system.
-    private int bottom;
-
-    // Delta ordinate between first line of first staff & first line of
-    // last staff.
-    private int deltaY;
+    // Retrieved ledgers in this system
+    private List<Ledger>       ledgers = new ArrayList<Ledger>();
 
     // Staves of this system
-    private List<StaffInfo> staves;
+    private List<StaffInfo>    staves;
+    private List<GlyphSection> vSections = new ArrayList<GlyphSection>();
+    private List<Stick>        vSticks = new ArrayList<Stick>();
 
     // Related System in Score hierarchy
     private System scoreSystem;
@@ -83,29 +70,44 @@ public class SystemInfo
     // Top of system related area
     private int areaTop = -1;
 
-    // Retrieved bar lines in this system
-    private List<Stick> bars = new ArrayList<Stick>();
+    // Ordinate of bottom of last staff of the system.
+    private int bottom;
+
+    // Delta ordinate between first line of first staff & first line of
+    // last staff.
+    private int deltaY;
+
+    // Unique Id for this system (in the sheet)
+    private int id;
+
+    // Abscissa of beginning of system.
+    private int left = -1;
 
     // Width of widest glyph in this system
     private int maxGlyphWidth = -1;
-
-    // Retrieved ledgers in this system
-    private List<Ledger> ledgers = new ArrayList<Ledger>();
     private int maxLedgerWidth = -1;
 
-    // Retrieved endings in this system
-    private List<Ending> endings = new ArrayList<Ending>();
+    // NOTA: Following items are listed in the chronological order of their
+    // filling/computation step
+    //
+    // BARS step
+    // =========
+    //
 
-    // Sections
-    private transient List<GlyphSection> hSections = new ArrayList<GlyphSection>();
-    private List<GlyphSection> vSections = new ArrayList<GlyphSection>();
+    // Index of first staff of the system, counted from 0 within all staves of
+    // the score
+    private int startIdx;
 
-    // Glyphs & Sticks
-    private List<Glyph> glyphs  = new ArrayList<Glyph>();
-    private transient List<Stick> hSticks = new ArrayList<Stick>();
-    private List<Stick> vSticks = new ArrayList<Stick>();
+    // Index of last staff of the system, also counted from 0.
+    private int stopIdx;
 
-    //~ Constructors ------------------------------------------------------
+    // Ordinate of top of first staff of the system.
+    private int top;
+
+    // Width of the system.
+    private int width = -1;
+
+    //~ Constructors -----------------------------------------------------------
 
     //------------//
     // SystemInfo //
@@ -120,10 +122,10 @@ public class SystemInfo
      *
      * @throws omr.ProcessingException
      */
-    public SystemInfo (int id,
+    public SystemInfo (int   id,
                        Sheet sheet,
-                       int startIdx,
-                       int stopIdx)
+                       int   startIdx,
+                       int   stopIdx)
     {
         this.id = id;
         this.startIdx = startIdx;
@@ -149,31 +151,21 @@ public class SystemInfo
 
         // First staff
         StaffInfo set = staves.get(0);
-        LineInfo line = set.getFirstLine();
-        top = line.getLine().yAt(line.getLeft());
+        LineInfo  line = set.getFirstLine();
+        top = line.getLine()
+                  .yAt(line.getLeft());
 
         // Last staff
         set = staves.get(staves.size() - 1);
         line = set.getFirstLine();
-        deltaY = line.getLine().yAt(line.getLeft()) - top;
+        deltaY = line.getLine()
+                     .yAt(line.getLeft()) - top;
         line = set.getLastLine();
-        bottom = line.getLine().yAt(line.getLeft());
+        bottom = line.getLine()
+                     .yAt(line.getLeft());
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the id (debugging info) of the system info
-     *
-     * @return the id
-     */
-    public int getId ()
-    {
-        return id;
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //---------------//
     // setAreaBottom //
@@ -192,8 +184,8 @@ public class SystemInfo
     // getAreaBottom //
     //---------------//
     /**
-     * Report the ordinate of the bottom of the picture area whose all
-     * items are assumed to belong to this system (the system related area)
+     * Report the ordinate of the bottom of the picture area whose all items are
+     * assumed to belong to this system (the system related area)
      *
      * @return the related area bottom ordinate (in pixels)
      */
@@ -245,8 +237,8 @@ public class SystemInfo
     // getBottom //
     //-----------//
     /**
-     * Report the ordinate of the bottom of the system, which is the
-     * ordinate of the last line of the last staff of this system
+     * Report the ordinate of the bottom of the system, which is the ordinate of
+     * the last line of the last staff of this system
      *
      * @return the system bottom, in pixels
      */
@@ -260,8 +252,8 @@ public class SystemInfo
     //-----------//
     /**
      * Report the deltaY of the system, that is the difference in ordinate
-     * between first and last staves of the system. This deltaY is of
-     * course 0 for a one-staff system.
+     * between first and last staves of the system. This deltaY is of course 0
+     * for a one-staff system.
      *
      * @return the deltaY value, expressed in pixels
      */
@@ -300,8 +292,7 @@ public class SystemInfo
     // getHorizontalSections //
     //-----------------------//
     /**
-     * Report the collection of horizontal sections in the system related
-     * area
+     * Report the collection of horizontal sections in the system related area
      *
      * @return the area horizontal sections
      */
@@ -324,6 +315,19 @@ public class SystemInfo
         return hSticks;
     }
 
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the id (debugging info) of the system info
+     *
+     * @return the id
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
     //------------//
     // getLedgers //
     //------------//
@@ -335,26 +339,6 @@ public class SystemInfo
     public List<Ledger> getLedgers ()
     {
         return ledgers;
-    }
-
-    //-------------------//
-    // getMaxLedgerWidth //
-    //-------------------//
-    /**
-     * Report the maximum width of ledgers within the system
-     *
-     * @return the maximum width in pixels
-     */
-    public int getMaxLedgerWidth()
-    {
-        if (maxLedgerWidth == -1) {
-            for (Ledger ledger : ledgers) {
-                maxLedgerWidth = Math.max(maxLedgerWidth,
-                                          ledger.getContourBox().width);
-            }
-        }
-
-        return maxLedgerWidth;
     }
 
     //---------//
@@ -370,32 +354,6 @@ public class SystemInfo
         return left;
     }
 
-    //-----------//
-    // getStaves //
-    //-----------//
-    /**
-     * Report the list of staves that compose this system
-     *
-     * @return the staves
-     */
-    public List<StaffInfo> getStaves ()
-    {
-        return staves;
-    }
-
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * Assign list of staves that compose this system
-     *
-     * @param staves the list of staves
-     */
-    public void setStaves (List<StaffInfo> staves)
-    {
-        this.staves = staves;
-    }
-
     //------------------//
     // getMaxGlyphWidth //
     //------------------//
@@ -404,57 +362,38 @@ public class SystemInfo
      *
      * @return the maximum width in pixels
      */
-    public int getMaxGlyphWidth()
+    public int getMaxGlyphWidth ()
     {
         if (maxGlyphWidth == -1) {
             for (Glyph glyph : glyphs) {
-                maxGlyphWidth = Math.max(maxGlyphWidth,
-                                         glyph.getContourBox().width);
+                maxGlyphWidth = Math.max(
+                    maxGlyphWidth,
+                    glyph.getContourBox().width);
             }
         }
 
         return maxGlyphWidth;
     }
 
-    //--------//
-    // getTop //
-    //--------//
-    /**
-     * Report the ordinate of the top of this system
-     *
-     * @return the top ordinate, expressed in pixels
-     */
-    public int getTop ()
-    {
-        return top;
-    }
-
-    //---------------------//
-    // getVerticalSections //
-    //---------------------//
-    /**
-     * Report the collection of vertical sections in the system related
-     * area
-     *
-     * @return the area vertical sections
-     */
-    public List<GlyphSection> getVerticalSections ()
-    {
-        return vSections;
-    }
-
     //-------------------//
-    // getVerticalSticks //
+    // getMaxLedgerWidth //
     //-------------------//
     /**
-     * Report the collection of vertical sticks left over in the system
-     * related area
+     * Report the maximum width of ledgers within the system
      *
-     * @return the area vertical sticks clutter
+     * @return the maximum width in pixels
      */
-    public List<Stick> getVerticalSticks ()
+    public int getMaxLedgerWidth ()
     {
-        return vSticks;
+        if (maxLedgerWidth == -1) {
+            for (Ledger ledger : ledgers) {
+                maxLedgerWidth = Math.max(
+                    maxLedgerWidth,
+                    ledger.getContourBox().width);
+            }
+        }
+
+        return maxLedgerWidth;
     }
 
     //----------//
@@ -468,113 +407,6 @@ public class SystemInfo
     public int getRight ()
     {
         return left + width;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the width of the system
-     *
-     * @return the width value, expressed in pixels
-     */
-    public int getWidth ()
-    {
-        return width;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Report a readable description
-     *
-     * @return a description based on staff indices
-     */
-    public String toString ()
-    {
-        StringBuffer sb = new StringBuffer(80);
-        sb.append("{SystemInfo#").append(id);
-        sb.append(" ").append(startIdx);
-        if (startIdx != stopIdx) {
-            sb.append("..").append(stopIdx);
-        }
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    //-------------//
-    // getStartIdx //
-    //-------------//
-    /**
-     * Report the index of the starting staff of this system
-     *
-     * @return the staff index, counted from 0
-     */
-    public int getStartIdx ()
-    {
-        return startIdx;
-    }
-
-    //-------------//
-    // setStartIdx //
-    //-------------//
-    /**
-     * Set the index of the starting staff of this system
-     *
-     * @param startIdx the staff index, counted from 0
-     */
-    public void setStartIdx (int startIdx)
-    {
-        this.startIdx = startIdx;
-    }
-
-    //-------------//
-    // getStaffAtY //
-    //-------------//
-    /**
-     * Given an ordinate value, retrieve the closest staff within the system
-     *
-     * @param y the ordinate value
-     * @return the "containing" staff
-     */
-    public StaffInfo getStaffAtY (int y)
-    {
-        for (StaffInfo staff : staves) {
-            if (y <= staff.getAreaBottom()) {
-                return staff;
-            }
-        }
-
-        // Return the last staff
-        return staves.get(staves.size() -1);
-    }
-
-    //------------//
-    // getStopIdx //
-    //------------//
-    /**
-     * Report the index of the terminating staff of this system
-     *
-     * @return the stopping staff index, counted from 0
-     */
-    public int getStopIdx ()
-    {
-        return stopIdx;
-    }
-
-    //------------//
-    // setStopIdx //
-    //------------//
-    /**
-     * Set the index of the terminating staff of this system
-     *
-     * @param stopIdx the stopping staff index, counted from 0
-     */
-    public void setStopIdx (int stopIdx)
-    {
-        this.stopIdx = stopIdx;
     }
 
     //----------------//
@@ -603,22 +435,201 @@ public class SystemInfo
         return scoreSystem;
     }
 
+    //-------------//
+    // getStaffAtY //
+    //-------------//
+    /**
+     * Given an ordinate value, retrieve the closest staff within the system
+     *
+     * @param y the ordinate value
+     * @return the "containing" staff
+     */
+    public StaffInfo getStaffAtY (int y)
+    {
+        for (StaffInfo staff : staves) {
+            if (y <= staff.getAreaBottom()) {
+                return staff;
+            }
+        }
+
+        // Return the last staff
+        return staves.get(staves.size() - 1);
+    }
+
+    //-------------//
+    // setStartIdx //
+    //-------------//
+    /**
+     * Set the index of the starting staff of this system
+     *
+     * @param startIdx the staff index, counted from 0
+     */
+    public void setStartIdx (int startIdx)
+    {
+        this.startIdx = startIdx;
+    }
+
+    //-------------//
+    // getStartIdx //
+    //-------------//
+    /**
+     * Report the index of the starting staff of this system
+     *
+     * @return the staff index, counted from 0
+     */
+    public int getStartIdx ()
+    {
+        return startIdx;
+    }
+
+    //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * Assign list of staves that compose this system
+     *
+     * @param staves the list of staves
+     */
+    public void setStaves (List<StaffInfo> staves)
+    {
+        this.staves = staves;
+    }
+
+    //-----------//
+    // getStaves //
+    //-----------//
+    /**
+     * Report the list of staves that compose this system
+     *
+     * @return the staves
+     */
+    public List<StaffInfo> getStaves ()
+    {
+        return staves;
+    }
+
+    //------------//
+    // setStopIdx //
+    //------------//
+    /**
+     * Set the index of the terminating staff of this system
+     *
+     * @param stopIdx the stopping staff index, counted from 0
+     */
+    public void setStopIdx (int stopIdx)
+    {
+        this.stopIdx = stopIdx;
+    }
+
+    //------------//
+    // getStopIdx //
+    //------------//
+    /**
+     * Report the index of the terminating staff of this system
+     *
+     * @return the stopping staff index, counted from 0
+     */
+    public int getStopIdx ()
+    {
+        return stopIdx;
+    }
+
+    //--------//
+    // getTop //
+    //--------//
+    /**
+     * Report the ordinate of the top of this system
+     *
+     * @return the top ordinate, expressed in pixels
+     */
+    public int getTop ()
+    {
+        return top;
+    }
+
+    //---------------------//
+    // getVerticalSections //
+    //---------------------//
+    /**
+     * Report the collection of vertical sections in the system related area
+     *
+     * @return the area vertical sections
+     */
+    public List<GlyphSection> getVerticalSections ()
+    {
+        return vSections;
+    }
+
+    //-------------------//
+    // getVerticalSticks //
+    //-------------------//
+    /**
+     * Report the collection of vertical sticks left over in the system related
+     * area
+     *
+     * @return the area vertical sticks clutter
+     */
+    public List<Stick> getVerticalSticks ()
+    {
+        return vSticks;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the width of the system
+     *
+     * @return the width value, expressed in pixels
+     */
+    public int getWidth ()
+    {
+        return width;
+    }
+
     //------------//
     // sortGlyphs //
     //------------//
     /**
-     * Sort all glyphs in the system, according to the left abscissa of
-     * their contour box
+     * Sort all glyphs in the system, according to the left abscissa of their
+     * contour box
      */
-    public void sortGlyphs()
+    public void sortGlyphs ()
     {
-        Collections.sort(glyphs,
-                         new Comparator<Glyph>() {
-                             public int compare(Glyph o1,
-                                                Glyph o2) {
-                                 return o1.getContourBox().x
-                                     -  o2.getContourBox().x;
-                             }
-                         });
+        Collections.sort(
+            glyphs,
+            new Comparator<Glyph>() {
+                    public int compare (Glyph o1,
+                                        Glyph o2)
+                    {
+                        return o1.getContourBox().x - o2.getContourBox().x;
+                    }
+                });
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Report a readable description
+     *
+     * @return a description based on staff indices
+     */
+    public String toString ()
+    {
+        StringBuffer sb = new StringBuffer(80);
+        sb.append("{SystemInfo#")
+          .append(id);
+        sb.append(" ")
+          .append(startIdx);
+
+        if (startIdx != stopIdx) {
+            sb.append("..")
+              .append(stopIdx);
+        }
+
+        sb.append("}");
+
+        return sb.toString();
     }
 }

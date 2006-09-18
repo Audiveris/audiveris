@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                                 R u n                                 //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                   R u n                                    //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.lag;
 
 import java.awt.*;
@@ -22,19 +22,15 @@ import java.awt.*;
 public class Run
     implements java.io.Serializable
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    // Run characteristics
-    private int start;
     private int length;
     private int level;
 
-    //~ Constructors ------------------------------------------------------
+    // Run characteristics
+    private int start;
 
-    // For JiBX
-    private Run()
-    {
-    }
+    //~ Constructors -----------------------------------------------------------
 
     //-----//
     // Run //
@@ -44,46 +40,50 @@ public class Run
      *
      * @param start  the coordinate of start for a run (y for vertical run)
      * @param length the length of the run in pixels
-     * @param level  the average level of grey in the run (0 for totally
-     *               black, 255 for totally white)
+     * @param level the average level of grey in the run (0 for totally black,
+     *               255 for totally white)
      */
     public Run (int start,
                 int length,
                 int level)
     {
-        this.start  = start;
+        this.start = start;
         this.length = length;
-        this.level  = level;
+        this.level = level;
     }
 
-    //~ Methods -----------------------------------------------------------
+    // For JiBX
+    private Run ()
+    {
+    }
+
+    //~ Methods ----------------------------------------------------------------
 
     //----------//
     // readRuns //
     //----------//
     /**
-     * The <code>readRuns</code> method can be used to build the runs on
-     * the fly, by providing a given rectangle. Note that the w and h
-     * parameters can be swapped, which allows both vertical and horizontal
-     * uses, if the Reader.getPixel() method is defined accordingly.
+     * The <code>readRuns</code> method can be used to build the runs on the
+     * fly, by providing a given rectangle. Note that the w and h parameters can
+     * be swapped, which allows both vertical and horizontal uses, if the
+     * Reader.getPixel() method is defined accordingly.
      *
-     * @param reader a <code>Reader</code> instance, used to link to
-     *               specific call-back actions on behalf of the caller,
-     *               when a run (either foreground or background) has just
-     *               been read.
+     * @param reader a <code>Reader</code> instance, used to link to specific
+     *               call-back actions on behalf of the caller, when a run
+     *               (either foreground or background) has just been read.
      * @param rect   the rectangular area (coord x pos) to explore
      */
-    public static void readRuns (Reader reader,
+    public static void readRuns (Reader    reader,
                                  Rectangle rect)
     {
         final int cMin = rect.x;
-        final int cMax = rect.x + rect.width - 1;
+        final int cMax = (rect.x + rect.width) - 1;
         final int pMin = rect.y;
-        final int pMax = rect.y + rect.height - 1;
+        final int pMax = (rect.y + rect.height) - 1;
 
-        boolean isFore; // Current run is FOREGROUND or BACKGROUND
-        int length; // Current length of the run in progress
-        int cumul; // Current cumulated grey level for the run in progress
+        boolean   isFore; // Current run is FOREGROUND or BACKGROUND
+        int       length; // Current length of the run in progress
+        int       cumul; // Current cumulated grey level for the run in progress
 
         // Browse one dimension
         for (int p = pMin; p <= pMax; p++) {
@@ -186,9 +186,8 @@ public class Run
     // getStop //
     //---------//
     /**
-     * Return the coordinate of the stop for a run.  This is the bottom
-     * ordinate for a vertical run, or the right abscissa for a horizontal
-     * run.
+     * Return the coordinate of the stop for a run.  This is the bottom ordinate
+     * for a vertical run, or the right abscissa for a horizontal run.
      *
      * @return the stop coordinate
      */
@@ -201,8 +200,8 @@ public class Run
     // toString //
     //----------//
     /**
-     * The <code>toString</code> method is used to get a readable image of
-     * the run.
+     * The <code>toString</code> method is used to get a readable image of the
+     * run.
      *
      * @return a <code>String</code> value
      */
@@ -211,23 +210,24 @@ public class Run
     {
         StringBuffer sb = new StringBuffer(80);
         sb.append("{Run ");
-        sb.append(start).append("/").append(length);
-        sb.append("@").append(level);
+        sb.append(start)
+          .append("/")
+          .append(length);
+        sb.append("@")
+          .append(level);
         sb.append("}");
 
         return sb.toString();
     }
 
-    //~ Interfaces --------------------------------------------------------
+    //~ Inner Interfaces -------------------------------------------------------
 
     /**
-     * Interface <code<Run.Reader</code> is used to plug call-backs to a
-     * run retrieval process.
+     * Interface <code<Run.Reader</code> is used to plug call-backs to a run
+     * retrieval process.
      */
     public static interface Reader
     {
-        //~ Methods -------------------------------------------------------
-
         //--------//
         // isFore //
         //--------//
@@ -245,8 +245,8 @@ public class Run
         // getLevel //
         //----------//
         /**
-         * This method is used to report the grey level of the pixel read
-         * at location (coord, pos).
+         * This method is used to report the grey level of the pixel read at
+         * location (coord, pos).
          *
          * @param coord x for horizontal runs, y for vertical runs
          * @param pos   y for horizontal runs, x for vertical runs
@@ -275,8 +275,8 @@ public class Run
         // foreRun //
         //---------//
         /**
-         * Same as background, but for a foreground run. We also provide
-         * the measure of accumulated grey level in that case.
+         * Same as background, but for a foreground run. We also provide the
+         * measure of accumulated grey level in that case.
          *
          * @param coord  location of the point past the end of the run
          * @param pos    constant position of the run

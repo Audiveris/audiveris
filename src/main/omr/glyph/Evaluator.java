@@ -1,57 +1,53 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                           E v a l u a t o r                           //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             E v a l u a t o r                              //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.glyph;
 
 import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.math.Moments;
 import omr.math.NeuralNetwork;
+
+import omr.score.ScoreConstants;
+
+import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
 import omr.util.Logger;
+
 import java.io.File;
 import java.util.Comparator;
 import java.util.List;
-import omr.score.ScoreConstants;
-import omr.sheet.Scale;
 
 /**
  * Class <code>Evaluator</code> is an abstract class that gathers data and
- * processing common to any evaluator working on glyph characteristics to
- * infer glyph shape.
+ * processing common to any evaluator working on glyph characteristics to infer
+ * glyph shape.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public abstract class Evaluator
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants constants = new Constants();
-    private static final Logger logger = Logger.getLogger(Evaluator.class);
+    private static final Constants                constants = new Constants();
+    private static final Logger                   logger = Logger.getLogger(
+        Evaluator.class);
 
     // Extension used by evaluator backup files
-    private static final String BACKUP_EXTENSION = ".def";
-
-    /** Describes the various modes for starting the training of an
-        evaluator */
-    public static enum StartingMode
-    {
-            /** Start from scratch, with new initial values */
-            SCRATCH,
-
-            /** Start with the current values */
-            INCREMENTAL;
-    }
+    private static final String                   BACKUP_EXTENSION = ".def";
 
     /**
      * Number of useful moments
@@ -67,70 +63,51 @@ public abstract class Evaluator
     /**
      * Number of shapes to differentiate
      */
-    public static final int outSize = Shape.LastPhysicalShape.ordinal() +1;
+    public static final int outSize = Shape.LastPhysicalShape.ordinal() + 1;
 
     /**
      * A special evaluation array, used to report NOISE
      */
-    static final Evaluation[] noiseEvaluations =
-    {
-        new Evaluation(Shape.NOISE, 0d)
-    };
+    static final Evaluation[] noiseEvaluations = {
+                                                     new Evaluation(
+        Shape.NOISE,
+        0d)
+                                                 };
 
     /**
-     * An Evaluation comparator in increasing order, where smaller grade
-     * value means better interpretation
+     * An Evaluation comparator in increasing order, where smaller grade value
+     * means better interpretation
      */
-    protected static final Comparator<Evaluation> comparator
-            = new Comparator<Evaluation>()
-            {
-                public int compare (Evaluation e1,
-                                    Evaluation e2)
-                {
-                    if (e1.grade < e2.grade) {
-                        return -1;
-                    }
-                    if (e1.grade > e2.grade) {
-                        return +1;
-                    }
-                    return 0;
-                }
-            };
+    protected static final Comparator<Evaluation> comparator = new Comparator<Evaluation>() {
+        public int compare (Evaluation e1,
+                            Evaluation e2)
+        {
+            if (e1.grade < e2.grade) {
+                return -1;
+            }
+
+            if (e1.grade > e2.grade) {
+                return +1;
+            }
+
+            return 0;
+        }
+    };
 
     /** Descriptive labels for glyph characteristics */
     static String[] labels;
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // getCustomFile //
-    //---------------//
+    //---------//
+    // getName //
+    //---------//
     /**
-     * Report the custom file used to store or load the internal evaluator
-     * data
+     * Report the name of this evaluator
      *
-     * @return the evaluator custom backup file
+     * @return the evaluator declared name
      */
-    protected File getCustomFile()
-    {
-        // The custom file, if any, is located at the root of the train
-        // folder
-        return new File(Main.getConfigFolder(), "neural" + BACKUP_EXTENSION);
-    }
-
-    //----------------//
-    // getDefaultFile //
-    //----------------//
-    /**
-     * Report the default file used to load the internal evaluator data
-     *
-     * @return the evaluator default backup file
-     */
-    protected File getDefaultFile()
-    {
-        // The system file, is located in the config folder
-        return new File(Main.getConfigFolder(), "neural.default" + BACKUP_EXTENSION);
-    }
+    public abstract String getName ();
 
     //------//
     // dump //
@@ -140,64 +117,20 @@ public abstract class Evaluator
      */
     public abstract void dump ();
 
-    //-----------//
-    // feedInput //
-    //-----------//
+    //-------------//
+    // isBigEnough //
+    //-------------//
     /**
-     * Prepare the evaluator input, by picking up some characteristics of
-     * the glyph (some of its moments, and some info on surroundings)
+     * Use a threshold on glyph weight, to tell if the provided glyph is just
+     * {@link Shape#NOISE}, or a real glyph
      *
-     * @param glyph the glyph to be evaluated
-     * @param ins   the evaluator input array to be filled (if null, it is
-     *              allocated by the routine)
-     *
-     * @return the filled input array
+     * @param glyph the glyph to be checked
+     * @return true if not noise, false otherwise
      */
-    public static double[] feedInput (Glyph glyph,
-                                      double[] ins)
+    public static boolean isBigEnough (Glyph glyph)
     {
-        if (ins == null) {
-            ins = new double[inSize];
-        }
-
-        // We take all the first moments
-        Double[] k = glyph.getMoments().getValues();
-        for (int i = 0; i < inMoments; i++) {
-            ins[i] = k[i];
-        }
-
-        // We append flags and step position
-        int i = inMoments;
-        /* 10 */ ins[i++] = boolAsDouble(glyph.hasLedger());
-        /* 11 */ ins[i++] = glyph.getStemNumber();
-        /* 12 */ ins[i++] = glyph.getPitchPosition();
-
-        // We skip moments 17 & 18 (xMean and yMean) ???
-
-        return ins;
-    }
-
-    //-----------//
-    // getLabels // Lazy initialization
-    //-----------//
-    private static String[] getLabels ()
-    {
-        if (labels == null) {
-            labels = new String[inSize];
-
-            // We take all the first moments
-            System.arraycopy(Moments.labels, 0, labels, 0, inMoments);
-
-            // We append flags and step position
-            int i = inMoments;
-            /* 10 */ labels[i++] = "leftMg";
-            /* 11 */ labels[i++] = "rightMg";
-            /* 12 */ labels[i++] = "ledger";
-            /* 13 */ labels[i++] = "stemNb";
-            /* 14 */ labels[i++] = "pitch";
-        }
-
-        return labels;
+        return glyph.getMoments()
+                    .getWeight() >= constants.minWeight.getValue();
     }
 
     //----------//
@@ -212,6 +145,44 @@ public abstract class Evaluator
     public static String getLabel (int index)
     {
         return getLabels()[index];
+    }
+
+    //-----------//
+    // feedInput //
+    //-----------//
+    /**
+     * Prepare the evaluator input, by picking up some characteristics of the
+     * glyph (some of its moments, and some info on surroundings)
+     *
+     * @param glyph the glyph to be evaluated
+     * @param ins   the evaluator input array to be filled (if null, it is
+     *              allocated by the routine)
+     *
+     * @return the filled input array
+     */
+    public static double[] feedInput (Glyph    glyph,
+                                      double[] ins)
+    {
+        if (ins == null) {
+            ins = new double[inSize];
+        }
+
+        // We take all the first moments
+        Double[] k = glyph.getMoments()
+                          .getValues();
+
+        for (int i = 0; i < inMoments; i++) {
+            ins[i] = k[i];
+        }
+
+        // We append flags and step position
+        int i = inMoments;
+        /* 10 */ ins[i++] = boolAsDouble(glyph.hasLedger());
+        /* 11 */ ins[i++] = glyph.getStemNumber();
+        /* 12 */ ins[i++] = glyph.getPitchPosition();
+
+        // We skip moments 17 & 18 (xMean and yMean) ???
+        return ins;
     }
 
     //-------------------//
@@ -243,33 +214,6 @@ public abstract class Evaluator
      */
     public abstract Evaluation[] getEvaluations (Glyph glyph);
 
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name of this evaluator
-     *
-     * @return the evaluator declared name
-     */
-    public abstract String getName();
-
-    //-------------//
-    // isBigEnough //
-    //-------------//
-    /**
-     * Use a threshold on glyph weight, to tell if the provided glyph is
-     * just {@link Shape#NOISE}, or a real glyph
-     *
-     * @param glyph the glyph to be checked
-     * @return true if not noise, false otherwise
-     */
-    public static boolean isBigEnough (Glyph glyph)
-    {
-        return
-            glyph.getMoments().getWeight()
-            >= constants.minWeight.getValue();
-    }
-
     //-----------//
     // isTrained //
     //-----------//
@@ -286,7 +230,7 @@ public abstract class Evaluator
     /**
      * Stop the on-going training. By default, this is a no-op
      */
-    public void stop()
+    public void stop ()
     {
     }
 
@@ -294,53 +238,16 @@ public abstract class Evaluator
     // train //
     //-------//
     /**
-     * Here we train the evaluator "ab initio", based on the set of known
-     * glyphs accumulated in the previous runs.
+     * Here we train the evaluator "ab initio", based on the set of known glyphs
+     * accumulated in the previous runs.
      *
      * @param base the list of glyphs to retrain the evaluator
      * @param monitor a monitoring interface
      * @param mode specify the starting mode of the training session
      */
-    public abstract void train (List<Glyph> base,
-                                Monitor           monitor,
-                                StartingMode      mode);
-
-    //------//
-    // vote //
-    //------//
-    /**
-     * Run the evaluator with the specified glyph, and infer a shape.
-     *
-     * @param glyph the glyph to be examined
-     * @param maxGrade the maximum grade to be accepted
-     *
-     * @return the best suitable interpretation, or null
-     */
-    public Shape vote (Glyph glyph,
-                       double maxGrade)
-    {
-        if (isBigEnough(glyph)) {
-            Evaluation eval = getBestEvaluation(glyph);
-            if (eval.grade <= maxGrade) {
-                return eval.shape;
-            } else {
-                return null;
-            }
-        } else {
-            return Shape.NOISE;
-        }
-    }
-
-    //--------------//
-    // boolAsDouble //
-    //--------------//
-    private static double boolAsDouble (boolean b)
-    {
-        if (b)
-            return 1d;
-        else
-            return 0d;
-    }
+    public abstract void train (List<Glyph>  base,
+                                Monitor      monitor,
+                                StartingMode mode);
 
     //----------------//
     // getMaxDistance //
@@ -369,14 +276,107 @@ public abstract class Evaluator
         return constants.maxDistanceRatio.getValue();
     }
 
-    //~ Classes -----------------------------------------------------------
+    //------//
+    // vote //
+    //------//
+    /**
+     * Run the evaluator with the specified glyph, and infer a shape.
+     *
+     * @param glyph the glyph to be examined
+     * @param maxGrade the maximum grade to be accepted
+     *
+     * @return the best suitable interpretation, or null
+     */
+    public Shape vote (Glyph  glyph,
+                       double maxGrade)
+    {
+        if (isBigEnough(glyph)) {
+            Evaluation eval = getBestEvaluation(glyph);
+
+            if (eval.grade <= maxGrade) {
+                return eval.shape;
+            } else {
+                return null;
+            }
+        } else {
+            return Shape.NOISE;
+        }
+    }
+
+    //---------------//
+    // getCustomFile //
+    //---------------//
+    /**
+     * Report the custom file used to store or load the internal evaluator data
+     *
+     * @return the evaluator custom backup file
+     */
+    protected File getCustomFile ()
+    {
+        // The custom file, if any, is located at the root of the train
+        // folder
+        return new File(Main.getConfigFolder(), "neural" + BACKUP_EXTENSION);
+    }
+
+    //----------------//
+    // getDefaultFile //
+    //----------------//
+    /**
+     * Report the default file used to load the internal evaluator data
+     *
+     * @return the evaluator default backup file
+     */
+    protected File getDefaultFile ()
+    {
+        // The system file, is located in the config folder
+        return new File(
+            Main.getConfigFolder(),
+            "neural.default" + BACKUP_EXTENSION);
+    }
+
+    //-----------//
+    // getLabels // Lazy initialization
+    //-----------//
+    private static String[] getLabels ()
+    {
+        if (labels == null) {
+            labels = new String[inSize];
+
+            // We take all the first moments
+            System.arraycopy(Moments.labels, 0, labels, 0, inMoments);
+
+            // We append flags and step position
+            int i = inMoments;
+            /* 10 */ labels[i++] = "leftMg";
+            /* 11 */ labels[i++] = "rightMg";
+            /* 12 */ labels[i++] = "ledger";
+            /* 13 */ labels[i++] = "stemNb";
+            /* 14 */ labels[i++] = "pitch";
+        }
+
+        return labels;
+    }
+
+    //--------------//
+    // boolAsDouble //
+    //--------------//
+    private static double boolAsDouble (boolean b)
+    {
+        if (b) {
+            return 1d;
+        } else {
+            return 0d;
+        }
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
 
     //---------//
     // Monitor //
     //---------//
     /**
-     * Interface <code>Monitor</code> specifies a general monitoring
-     * interface to pass information about the behavior of evaluators.
+     * Interface <code>Monitor</code> specifies a general monitoring interface
+     * to pass information about the behavior of evaluators.
      */
     public static interface Monitor
         extends NeuralNetwork.Monitor
@@ -387,29 +387,37 @@ public abstract class Evaluator
         void glyphProcessed (Glyph glyph);
     }
 
+    //~ Inner Classes ----------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
     private static class Constants
         extends ConstantSet
     {
-        //~ Instance variables --------------------------------------------
-
-        Constant.Double minWeight = new Constant.Double
-                (0.19,
-                 "Minimum normalized weight to be considered not a noise");
-
-        Constant.Double maxDistance = new Constant.Double
-                (5.0,
-                 "Threshold on displayable distance");
-
-        Constant.Double maxDistanceRatio = new Constant.Double
-                (3.0,
-                 "Max ratio, WRT the best evaluation");
+        Constant.Double maxDistance = new Constant.Double(
+            5.0,
+            "Threshold on displayable distance");
+        Constant.Double maxDistanceRatio = new Constant.Double(
+            3.0,
+            "Max ratio, WRT the best evaluation");
+        Constant.Double minWeight = new Constant.Double(
+            0.19,
+            "Minimum normalized weight to be considered not a noise");
 
         Constants ()
         {
             initialize();
         }
+    }
+
+    //~ Enumerations -----------------------------------------------------------
+
+    /** Describes the various modes for starting the training of an evaluator */
+    public static enum StartingMode {
+        /** Start with the current values */
+        INCREMENTAL,
+        /** Start from scratch, with new initial values */
+        SCRATCH;
     }
 }

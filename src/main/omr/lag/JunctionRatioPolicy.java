@@ -1,19 +1,20 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                 J u n c t i o n R a t i o P o l i c y                 //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                   J u n c t i o n R a t i o P o l i c y                    //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.lag;
 
+
 /**
- * Class <code>JunctionRatioPolicy</code> defined a junction policy based
- * on the ratio between the length of the candidate run and the mean length
- * of the section runs so far.
+ * Class <code>JunctionRatioPolicy</code> defined a junction policy based on the
+ * ratio between the length of the candidate run and the mean length of the
+ * section runs so far.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -21,7 +22,7 @@ package omr.lag;
 public class JunctionRatioPolicy
     extends JunctionPolicy
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     /**
      * Maximum value acceptable for height ratio, for a ratio criteria
@@ -33,7 +34,7 @@ public class JunctionRatioPolicy
      */
     private final double minHeightRatio;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //---------------------//
     // JunctionRatioPolicy //
@@ -51,17 +52,25 @@ public class JunctionRatioPolicy
         this.minHeightRatio = 1f / maxHeightRatio;
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //---------------//
     // consistentRun //
     //---------------//
-    public boolean consistentRun (Run run,
+    /**
+     * Check whether the Run is consistent with the provided Section, according
+     * to this junction policy, based on run length and mean section run length
+     *
+     * @param run the Run candidate
+     * @param section the potentially hosting Section
+     *
+     * @return true if consistent, false otherwise
+     */
+    public boolean consistentRun (Run     run,
                                   Section section)
     {
         // Check is based on ratio of lengths
-        final float ratio = (float) run.getLength() / (float) section
-                .getMeanRunLength();
+        final float ratio = (float) run.getLength() / (float) section.getMeanRunLength();
 
         return (ratio <= maxHeightRatio) && (ratio >= minHeightRatio);
     }
@@ -77,7 +86,7 @@ public class JunctionRatioPolicy
     @Override
     public String toString ()
     {
-        return "{JunctionRatioPolicy" + " maxHeightRatio=" + maxHeightRatio
-               + " minHeightRatio=" + minHeightRatio + "}";
+        return "{JunctionRatioPolicy" + " maxHeightRatio=" + maxHeightRatio +
+               " minHeightRatio=" + minHeightRatio + "}";
     }
 }

@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                         P a c k a g e N o d e                         //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                           P a c k a g e N o d e                            //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.constant;
 
 import java.util.Comparator;
@@ -26,21 +26,21 @@ import java.util.TreeSet;
 public class PackageNode
     extends Node
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // The children, composed of either other <code>PackageNode</code> or
     // <code>ConstantSet</code>.
-    private final SortedSet<Node> children =
-            new TreeSet<Node>(new Comparator<Node>()
-            {
+    private final SortedSet<Node> children = new TreeSet<Node>(
+        new Comparator<Node>() {
                 public int compare (Node n1,
                                     Node n2)
                 {
-                    return n1.getName().compareTo(n2.getName());
+                    return n1.getName()
+                             .compareTo(n2.getName());
                 }
             });
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-------------//
     // PackageNode //
@@ -49,11 +49,11 @@ public class PackageNode
      * Create a new PackageNode.
      *
      * @param name  the fully qualified package name
-     * @param child the first child of the package (either a sub-package,
-     *              or a ConstantSet).
+     * @param child the first child of the package (either a sub-package, or a
+     *              ConstantSet).
      */
     public PackageNode (String name,
-                        Node child)
+                        Node   child)
     {
         super(name);
 
@@ -62,20 +62,7 @@ public class PackageNode
         }
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //----------//
-    // addChild //
-    //----------//
-    /**
-     * Add a child to the package children
-     *
-     * @param obj the child to add (sub-package or ConstantSet)
-     */
-    public void addChild (Node obj)
-    {
-        children.add(obj);
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //----------//
     // getChild //
@@ -103,5 +90,18 @@ public class PackageNode
     public int getChildCount ()
     {
         return children.size();
+    }
+
+    //----------//
+    // addChild //
+    //----------//
+    /**
+     * Add a child to the package children
+     *
+     * @param obj the child to add (sub-package or ConstantSet)
+     */
+    public void addChild (Node obj)
+    {
+        children.add(obj);
     }
 }

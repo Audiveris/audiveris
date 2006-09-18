@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                       U n i t D i m e n s i o n                       //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                         U n i t D i m e n s i o n                          //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.score;
 
 import java.awt.*;
@@ -26,14 +26,16 @@ import java.awt.*;
 public class UnitDimension
     extends Dimension
 {
+    //~ Constructors -----------------------------------------------------------
+
     //---------------//
     // UnitDimension //
     //---------------//
     /**
-     * Creates an instance of <code>UnitDimension</code> with a width of
-     * zero and a height of zero.
+     * Creates an instance of <code>UnitDimension</code> with a width of zero
+     * and a height of zero.
      */
-    public UnitDimension()
+    public UnitDimension ()
     {
     }
 
@@ -47,8 +49,8 @@ public class UnitDimension
      * @param width the specified width
      * @param height the specified height
      */
-    public UnitDimension(int width,
-                         int height)
+    public UnitDimension (int width,
+                          int height)
     {
         super(width, height);
     }

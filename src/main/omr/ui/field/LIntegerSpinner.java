@@ -7,7 +7,6 @@
 //  License. Please contact the author at herve.bitteur@laposte.net         //
 //  to report bugs & suggestions.                                           //
 //--------------------------------------------------------------------------//
-
 package omr.ui.field;
 
 import javax.swing.*;
@@ -24,9 +23,7 @@ import javax.swing.event.*;
 public class LIntegerSpinner
     extends LSpinner
 {
-    //~ Instance variables ------------------------------------------------
-
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------------//
     // LIntegerSpinner //
@@ -39,39 +36,13 @@ public class LIntegerSpinner
      * @param tip the related tool tip text
      */
     public LIntegerSpinner (String label,
-			    String tip)
+                            String tip)
     {
-	super(label, tip);
+        super(label, tip);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // setModel //
-    //----------//
-    /**
-     * Set the data model for the spinner
-     *
-     * @param model the new data model
-     */
-    void setModel (SpinnerNumberModel model) 
-    {
-	spinner.setModel(model);
-    }
-
-    //-------------------//
-    // addChangeListener //
-    //-------------------//
-    /**
-     * Add a change listener to the spinner
-     *
-     * @param listener 
-     */
-    public void addChangeListener (ChangeListener listener) 
-    {
-	spinner.addChangeListener(listener);
-    }
-    
     //----------//
     // setValue //
     //----------//
@@ -93,8 +64,34 @@ public class LIntegerSpinner
      *
      * @return the spinner content
      */
-    public Integer getValue()
+    public Integer getValue ()
     {
         return (Integer) spinner.getValue();
+    }
+
+    //-------------------//
+    // addChangeListener //
+    //-------------------//
+    /**
+     * Add a change listener to the spinner
+     *
+     * @param listener
+     */
+    public void addChangeListener (ChangeListener listener)
+    {
+        spinner.addChangeListener(listener);
+    }
+
+    //----------//
+    // setModel //
+    //----------//
+    /**
+     * Set the data model for the spinner
+     *
+     * @param model the new data model
+     */
+    void setModel (SpinnerNumberModel model)
+    {
+        spinner.setModel(model);
     }
 }

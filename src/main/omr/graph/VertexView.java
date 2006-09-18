@@ -1,26 +1,28 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                          V e r t e x V i e w                          //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            V e r t e x V i e w                             //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.graph;
 
 import java.awt.*;
 
 /**
- * Interface <code>VertexView</code> defines the interface needed to handle
- * the rendering of a vertex.
+ * Interface <code>VertexView</code> defines the interface needed to handle the
+ * rendering of a vertex.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public interface VertexView
 {
+    //~ Methods ----------------------------------------------------------------
+
     //--------------//
     // getRectangle //
     //--------------//

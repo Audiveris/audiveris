@@ -1,20 +1,22 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                             L o g P a n e                             //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                               L o g P a n e                                //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.ui;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.util.Logger;
 
 import java.util.concurrent.ArrayBlockingQueue;
+
 import javax.swing.*;
 
 /**
@@ -29,22 +31,22 @@ import javax.swing.*;
  */
 public class LogPane
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(LogPane.class);
-    private static final Constants constants = new Constants();
+    private static final Constants           constants = new Constants();
+    private static final Logger              logger = Logger.getLogger(
+        LogPane.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    private JScrollPane component;
+    // Mail box for incoming messages
+    private final ArrayBlockingQueue<String> logMbx;
+    private JScrollPane                      component;
 
     // Status/log area
     private final JTextArea logArea;
 
-    // Mail box for incoming messages
-    private final ArrayBlockingQueue<String> logMbx;
-
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //---------//
     // LogPane //
@@ -58,12 +60,13 @@ public class LogPane
         component = new JScrollPane();
 
         // Allocate message mail box for several simultaneous msgs max
-        logMbx = new ArrayBlockingQueue<String>
-            (constants.msgQueueSize.getValue());
+        logMbx = new ArrayBlockingQueue<String>(
+            constants.msgQueueSize.getValue());
 
         // log/status area
-        logArea = new JTextArea(1, // nb of rows
-                                60); // nb of columns
+        logArea = new JTextArea(
+            1, // nb of rows
+            60); // nb of columns
         logArea.setEditable(false);
 
         //logArea.setMargin (new Insets (5,5,5,5));
@@ -71,7 +74,7 @@ public class LogPane
         component.setViewportView(logArea);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //--------------//
     // getComponent //
@@ -81,9 +84,22 @@ public class LogPane
      *
      * @return the concrete component
      */
-    public JComponent getComponent()
+    public JComponent getComponent ()
     {
         return component;
+    }
+
+    //----------//
+    // clearLog //
+    //----------//
+    /**
+     * Clear the current content of the log
+     */
+    public void clearLog ()
+    {
+        logArea.setText("");
+        logArea.setCaretPosition(0);
+        component.repaint();
     }
 
     //-----//
@@ -100,40 +116,28 @@ public class LogPane
             logMbx.put(msg);
         } catch (Exception ex) {
             logger.warning(ex.getMessage());
+
             return;
         }
 
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            public void run ()
-            {
-                while (logMbx.size() != 0) {
-                    String msg = logMbx.poll();
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    public void run ()
+                    {
+                        while (logMbx.size() != 0) {
+                            String msg = logMbx.poll();
 
-                    if (msg != null) {
-                        logArea.append(msg);
-                        logArea.setCaretPosition(logArea.getDocument()
-                                                 .getLength());
+                            if (msg != null) {
+                                logArea.append(msg);
+                                logArea.setCaretPosition(
+                                    logArea.getDocument().getLength());
+                            }
+                        }
                     }
-                }
-            }
-        });
+                });
     }
 
-    //----------//
-    // clearLog //
-    //----------//
-    /**
-     * Clear the current content of the log
-     */
-    public void clearLog()
-    {
-        logArea.setText("");
-        logArea.setCaretPosition(0);
-        component.repaint();
-    }
-
-    //~ Classes -----------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
     // Constants //
@@ -141,11 +145,9 @@ public class LogPane
     private static class Constants
         extends ConstantSet
     {
-        //~ Instance variables --------------------------------------------
-
-        Constant.Integer msgQueueSize = new Constant.Integer
-                (1000,
-                 "Size of message queue");
+        Constant.Integer msgQueueSize = new Constant.Integer(
+            1000,
+            "Size of message queue");
 
         Constants ()
         {

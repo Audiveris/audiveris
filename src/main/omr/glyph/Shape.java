@@ -1,35 +1,32 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                               S h a p e                               //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                 S h a p e                                  //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.glyph;
 
 import omr.constant.Constant;
+
 import omr.ui.icon.IconManager;
 
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
+import java.util.*;
+
+import javax.swing.*;
 
 /**
- * Class <code>Shape</code> defines the comprehensive list of glyph shapes,
- * as well as pre-defined ranges (see nested class {@link Range}) of the
- * shapes list (such as rests, heads, etc...) to ease user interactions. It
- * is organized according to the Unicode Standard 4.0, with a few addition
- * for convenience only.
+ * Class <code>Shape</code> defines the comprehensive list of glyph shapes, as
+ * well as pre-defined ranges (see nested class {@link Range}) of the shapes
+ * list (such as rests, heads, etc...) to ease user interactions. It is
+ * organized according to the Unicode Standard 4.0, with a few addition for
+ * convenience only.
  *
  * <p>As far as possible, an Icon should be generated for every shape.
  *
@@ -39,12 +36,12 @@ import javax.swing.JMenuItem;
 public enum Shape
     implements java.io.Serializable
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static variables/initializers ------------------------------------------
 
-    // ====================================================================
+    // =========================================================================
     // Physical shapes, whose physical characteristics can be stored for
     // evaluator training.
-    // ====================================================================
+    // =========================================================================
 
     // Garbage
     //
@@ -320,10 +317,10 @@ public enum Shape
         /*1D1B0*/ // HALF_PEDAL_MARK,
 
 
-        // ===============================================================
+        // =====================================================================
          // Pure Logical shapes, that cannot be inferred only from their
          // physical characteristics.
-         // ===============================================================
+         // ====================================================================
 
         // Bars
         //
@@ -367,12 +364,16 @@ public enum Shape
         /*-----*/ CHARACTER("A letter");
 
     /**
-     * Last physical shape an evaluator should be able to recognize based
-     * on their physical characteristics. For example a DOT is a DOT. Also,
-     * a DOT plus a FERMATA_BEND together can compose a FERMATA.
+     * First physical shape an evaluator should be able to recognize based on
+     * their physical characteristics. For example a DOT is a DOT. Also, a DOT
+     * plus a FERMATA_BEND together can compose a FERMATA.
      */
     public static final Shape FirstPhysicalShape = NOISE;
-    public static final Shape LastPhysicalShape  = PEDAL_UP_MARK;
+
+    /**
+     * Last physical shape.
+     */
+    public static final Shape LastPhysicalShape = PEDAL_UP_MARK;
 
     /**
      * First logical shape, that are more precisely assigned.
@@ -383,31 +384,31 @@ public enum Shape
     public static final Color missedColor = Color.red;
 
     /** Color for glyphs tested as OK (color used temporarily) */
-    public static final Color okColor     = Color.green;
+    public static final Color okColor = Color.green;
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance variables -----------------------------------------------------
 
     // Explanation of the glyph shape
-    private final String description;
+    private final String   description;
 
     // Related display color
     private Color          color;
     private Constant.Color constantColor;
 
     // Potential related icon
-    private Icon icon;
+    private Icon    icon;
 
     // Remember the fact that this shape has no related icon
     private boolean hasNoIcon;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-------//
     // Shape //
     //-------//
     Shape ()
     {
-        this("", null);                 // No param
+        this("", null); // No param
     }
 
     //-------//
@@ -415,7 +416,7 @@ public enum Shape
     //-------//
     Shape (String description)
     {
-        this(description, null);        // No icon
+        this(description, null); // No icon
     }
 
     //-------//
@@ -423,7 +424,7 @@ public enum Shape
     //-------//
     Shape (Icon icon)
     {
-        this(null, icon);               // No description
+        this(null, icon); // No description
     }
 
     //-------//
@@ -433,23 +434,24 @@ public enum Shape
            Icon   icon)
     {
         this.description = description;
-        this.icon        = icon;
+        this.icon = icon;
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //-------------//
     // isWellKnown //
     //-------------//
     /**
-     * Report whether this shape is well known, that is a symbol not part
-     * of the Garbage range
+     * Report whether this shape is well known, that is a symbol not part of the
+     * Garbage range
      *
      * @return true if not part of garbage range, false otherwise
      */
-    public boolean isWellKnown()
+    public boolean isWellKnown ()
     {
-        return !Garbage.getShapes().contains(this);
+        return !Garbage.getShapes()
+                       .contains(this);
     }
 
     //----------------//
@@ -460,12 +462,13 @@ public enum Shape
      *
      * @return the shape description
      */
-    public String getDescription()
+    public String getDescription ()
     {
-        if (description == null)
-            return toString();          // Could be improved
-        else
+        if (description == null) {
+            return toString(); // Could be improved
+        } else {
             return description;
+        }
     }
 
     //----------//
@@ -476,7 +479,7 @@ public enum Shape
      *
      * @return the related color, or null
      */
-    public java.awt.Color getColor()
+    public java.awt.Color getColor ()
     {
         return color;
     }
@@ -485,8 +488,8 @@ public enum Shape
     // setColor //
     //----------//
     /**
-     * Assign a color for current display. This is the specific shape color
-     * if any, otherwise it is the default color of the containing range.
+     * Assign a color for current display. This is the specific shape color if
+     * any, otherwise it is the default color of the containing range.
      *
      * @param color the display color
      */
@@ -501,11 +504,11 @@ public enum Shape
     private void createShapeColor (Color color)
     {
         // Create the underlying constant
-        constantColor = new Constant.Color
-            (getClass().getName(),      // Unit
-             name() + ".color",         // Name
-             null,                      // DefaultValue
-             "Color code for shape " + name());
+        constantColor = new Constant.Color(
+            getClass().getName(), // Unit
+            name() + ".color", // Name
+            null, // DefaultValue
+            "Color code for shape " + name());
 
         // Assign the shape display color
         if (constantColor.getValue() != null) {
@@ -525,7 +528,7 @@ public enum Shape
      *
      * @return the specific color if any, null otherwise
      */
-    public Color getConstantColor()
+    public Color getConstantColor ()
     {
         return constantColor.getValue();
     }
@@ -553,10 +556,10 @@ public enum Shape
      *
      * @param color the default color
      */
-    public void resetConstantColor(Color color)
+    public void resetConstantColor (Color color)
     {
         constantColor.remove();
-        createShapeColor(color);          // Use range color !!!
+        createShapeColor(color); // Use range color !!!
     }
 
     //---------//
@@ -567,14 +570,15 @@ public enum Shape
      *
      * @return the related icon, or null
      */
-    public Icon getIcon()
+    public Icon getIcon ()
     {
         if (hasNoIcon) {
             return null;
         }
-        
+
         if (icon == null) {
             setIcon(IconManager.loadIcon(toString()));
+
             if (icon == null) {
                 hasNoIcon = true;
             }
@@ -604,18 +608,18 @@ public enum Shape
      * given range
      *
      * @param range the range for which shape menu items must be buit
-     * @param top the JComponent to populate (typically a JMenu or a
-     * JPopupMenu)
+     * @param top the JComponent to populate (typically a JMenu or a JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addRangeShapeItems (Range range,
-                                           JComponent top,
+    public static void addRangeShapeItems (Range          range,
+                                           JComponent     top,
                                            ActionListener listener)
     {
         // All shapes in the given range
         for (Shape shape : range.shapes) {
-            JMenuItem menuItem  = new JMenuItem
-                (shape.toString(), shape.getIcon());
+            JMenuItem menuItem = new JMenuItem(
+                shape.toString(),
+                shape.getIcon());
             addColoredItem(top, menuItem, shape.getColor());
 
             menuItem.setToolTipText(shape.description);
@@ -629,11 +633,10 @@ public enum Shape
     /**
      * Populate the given menu with a hierarchy of all shapes
      *
-     * @param top the JComponent to populate (typically a JMenu or a
-     * JPopupMenu)
+     * @param top the JComponent to populate (typically a JMenu or a JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addShapeItems (JComponent top,
+    public static void addShapeItems (JComponent     top,
                                       ActionListener listener)
     {
         // All ranges of glyph shapes
@@ -661,36 +664,28 @@ public enum Shape
         } else {
             item.setForeground(Color.black);
         }
+
         top.add(item);
     }
-
-    //~ Classes -----------------------------------------------------------
 
     //-------//
     // Range //
     //-------//
     /**
-     * Class <code>Range</code> defines a range of related shapes, for
-     * example the "Rests" range gathers all rest shapes from MULTI_REST
-     * down to ONE_HUNDRED_TWENTY_EIGHTH_REST. 
-     * It handles additional properties over a simple EnumSet, especially 
-     * assigned colors and its automatic insertion in shape menu hierarchy.
+     * Class <code>Range</code> defines a range of related shapes, for example
+     * the "Rests" range gathers all rest shapes from MULTI_REST down to
+     * ONE_HUNDRED_TWENTY_EIGHTH_REST.  It handles additional properties over a
+     * simple EnumSet, especially assigned colors and its automatic insertion in
+     * shape menu hierarchy.
      */
     public static class Range
     {
-        //~ Static variables/initializers ---------------------------------
-
         // Map for all defined ranges
         private static Map<String, Range> rangeMap;
-
-        //~ Instance variables --------------------------------------------
-
-        private String name;                  // Name of the range
-        private final EnumSet<Shape> shapes;  // Contained shapes
-        private Color color;                  // For current color
-        private Constant.Color constantColor; // For specific color
-
-        //~ Constructors --------------------------------------------------
+        private String                    name; // Name of the range
+        private final EnumSet<Shape>      shapes; // Contained shapes
+        private Color                     color; // For current color
+        private Constant.Color            constantColor; // For specific color
 
         //-------//
         // Range //
@@ -705,8 +700,6 @@ public enum Shape
             this.shapes = shapes;
         }
 
-        //~ Methods -------------------------------------------------------
-
         //-----------//
         // getShapes //
         //-----------//
@@ -715,11 +708,11 @@ public enum Shape
          *
          * @return the proper enum set
          */
-        public EnumSet<Shape> getShapes()
+        public EnumSet<Shape> getShapes ()
         {
             return shapes;
         }
-        
+
         //----------//
         // contains //
         //----------//
@@ -742,7 +735,7 @@ public enum Shape
          *
          * @return the related color, or null
          */
-        public java.awt.Color getColor()
+        public java.awt.Color getColor ()
         {
             return color;
         }
@@ -770,7 +763,7 @@ public enum Shape
          */
         public void setConstantColor (java.awt.Color color)
         {
-            constantColor.setValue (color);
+            constantColor.setValue(color);
             setColor(color);
         }
 
@@ -788,6 +781,7 @@ public enum Shape
             // Build the range map in a lazy way
             if (rangeMap == null) {
                 rangeMap = new HashMap<String, Range>();
+
                 for (Field field : Shape.class.getDeclaredFields()) {
                     if (field.getType() == Range.class) {
                         try {
@@ -813,14 +807,14 @@ public enum Shape
          * JPopupMenu)
          * @param listener the listener for notification of user selection
          */
-        public static void addRangeItems (JComponent top,
+        public static void addRangeItems (JComponent     top,
                                           ActionListener listener)
         {
             // All ranges of glyph shapes
             for (Field field : Shape.class.getDeclaredFields()) {
                 if (field.getType() == Range.class) {
-                    JMenuItem menuItem  = new JMenuItem(field.getName());
-                    Range range = valueOf(field.getName());
+                    JMenuItem menuItem = new JMenuItem(field.getName());
+                    Range     range = valueOf(field.getName());
                     addColoredItem(top, menuItem, range.getColor());
 
                     menuItem.addActionListener(listener);
@@ -836,7 +830,7 @@ public enum Shape
          *
          * @return the range name
          */
-        public String getName()
+        public String getName ()
         {
             return name;
         }
@@ -848,11 +842,11 @@ public enum Shape
         {
             this.name = name;
 
-            constantColor = new Constant.Color
-                (getClass().getName(),            // Unit
-                 name + ".color",                 // Name
-                 null,                            // DefaultValue
-                 "Color code for range " + name);
+            constantColor = new Constant.Color(
+                getClass().getName(), // Unit
+                name + ".color", // Name
+                null, // DefaultValue
+                "Color code for range " + name);
 
             // Assign the range display color
             if (constantColor.getValue() != null) {
@@ -890,8 +884,7 @@ public enum Shape
 
     // Assign proper name to all ranges and proper color to their contained
     // shapes
-    static
-    {
+    static {
         for (Field field : Shape.class.getDeclaredFields()) {
             if (field.getType() == Range.class) {
                 try {
@@ -907,13 +900,13 @@ public enum Shape
                 }
             }
         }
-
     }
 
     /** Symbols that can be attached to a stem */
-    public static final EnumSet<Shape> stemSymbols = EnumSet.noneOf(Shape.class);
-    static
-    {
+    public static final EnumSet<Shape> stemSymbols = EnumSet.noneOf(
+        Shape.class);
+
+    static {
         stemSymbols.add(Shape.BEAM);
         stemSymbols.add(Shape.BEAM_CHUNK);
 
@@ -921,7 +914,13 @@ public enum Shape
         stemSymbols.addAll(Flags.getShapes());
     }
 
-    /** Specific symbols for time signature */
-    public static final EnumSet<Shape> SingleTimes = EnumSet.range(TIME_ZERO, TIME_SIXTEEN);
-    public static final EnumSet<Shape> MultiTimes  = EnumSet.range(TIME_FOUR_FOUR, CUT_TIME);
+    /** Specific single symbol for part of time signature (such as 4) */
+    public static final EnumSet<Shape> SingleTimes = EnumSet.range(
+        TIME_ZERO,
+        TIME_SIXTEEN);
+
+    /** Specific multi-symbol for entiretime signature (such as 4/4 */
+    public static final EnumSet<Shape> MultiTimes = EnumSet.range(
+        TIME_FOUR_FOUR,
+        CUT_TIME);
 }

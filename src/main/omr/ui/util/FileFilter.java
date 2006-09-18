@@ -7,7 +7,6 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.util;
 
 import omr.util.FileUtil;
@@ -24,12 +23,12 @@ import java.io.File;
 public class FileFilter
     extends javax.swing.filechooser.FileFilter
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    private final String description;
+    private final String   description;
     private final String[] extensions;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //------------//
     // FileFilter //
@@ -57,9 +56,7 @@ public class FileFilter
     public FileFilter (String description,
                        String extension)
     {
-        this(description, new String[]{
-            extension
-        });
+        this(description, new String[] { extension });
     }
 
     //------------//
@@ -72,7 +69,7 @@ public class FileFilter
      * @param description the user readable description
      * @param extensions  the array of allowed file extensions
      */
-    public FileFilter (String description,
+    public FileFilter (String   description,
                        String[] extensions)
     {
         if (description == null) {
@@ -90,7 +87,7 @@ public class FileFilter
         }
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //----------------//
     // getDescription //

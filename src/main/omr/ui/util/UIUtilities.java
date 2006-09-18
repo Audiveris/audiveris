@@ -7,19 +7,25 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.util;
 
 import omr.util.Logger;
 
 import java.util.Collection;
 import java.util.Iterator;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 
+/**
+ * Class <code>UIUtilities</code> gathers utilities related to User Interface
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
+ */
 public class UIUtilities
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(UIUtilities.class);
 
@@ -27,7 +33,24 @@ public class UIUtilities
     // components
     private static Border toolBorder;
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
+
+    //---------------//
+    // getToolBorder //
+    //---------------//
+    /**
+     * Report a standard tool border entity, which is a raised bevel border
+     *
+     * @return the standard tool border
+     */
+    public static Border getToolBorder ()
+    {
+        if (toolBorder == null) {
+            toolBorder = BorderFactory.createRaisedBevelBorder();
+        }
+
+        return toolBorder;
+    }
 
     //---------------//
     // enableActions //
@@ -41,7 +64,7 @@ public class UIUtilities
      * @param bool    true for enable, false for disable
      */
     public static void enableActions (Collection actions,
-                                      boolean bool)
+                                      boolean    bool)
     {
         for (Iterator it = actions.iterator(); it.hasNext();) {
             Object next = it.next();
@@ -55,13 +78,4 @@ public class UIUtilities
             }
         }
     }
-
-    public static Border getToolBorder()
-    {
-        if (toolBorder == null) {
-            toolBorder = BorderFactory.createRaisedBevelBorder();
-        }
-        return toolBorder;
-    }
-
 }

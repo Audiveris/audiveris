@@ -7,7 +7,6 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.view;
 
 import omr.ui.*;
@@ -25,21 +24,7 @@ import java.awt.event.*;
  */
 public interface MouseMonitor
 {
-    /**
-     * Selection (by left button clic)
-     * @param e the mouse event
-     * @param pt the selected point in model pixel coordinates
-     */
-    void pointSelected (MouseEvent e,
-                        Point pt);
-
-    /**
-     * Selection (by left button clic + control) of an additional point
-     * @param e the mouse event
-     * @param pt the added point in model pixel coordinates
-     */
-    void pointAdded (MouseEvent e,
-                     Point pt);
+    //~ Methods ----------------------------------------------------------------
 
     /**
      * Contextual action (by right button clic)
@@ -47,7 +32,23 @@ public interface MouseMonitor
      * @param pt the current point in model pixel coordinates
      */
     void contextSelected (MouseEvent e,
-                          Point pt);
+                          Point      pt);
+
+    /**
+     * Selection (by left button clic + control) of an additional point
+     * @param e the mouse event
+     * @param pt the added point in model pixel coordinates
+     */
+    void pointAdded (MouseEvent e,
+                     Point      pt);
+
+    /**
+     * Selection (by left button clic)
+     * @param e the mouse event
+     * @param pt the selected point in model pixel coordinates
+     */
+    void pointSelected (MouseEvent e,
+                        Point      pt);
 
     /**
      * Selection (by left button drag) of a rectangle when mouse is
@@ -65,5 +66,5 @@ public interface MouseMonitor
      *             the focus and the zoom ratio
      */
     void rectangleZoomed (MouseEvent e,
-                          Rectangle rect);
+                          Rectangle  rect);
 }

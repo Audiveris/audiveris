@@ -7,7 +7,6 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.field;
 
 import javax.swing.JTextField;
@@ -22,13 +21,11 @@ import javax.swing.JTextField;
 public class SField
     extends JTextField
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private final static int FIELD_WIDTH = 6;
+    private static final int FIELD_WIDTH = 6;
 
-    //~ Instance variables ------------------------------------------------
-
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //--------//
     // SField //

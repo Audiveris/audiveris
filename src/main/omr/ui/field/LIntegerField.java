@@ -7,7 +7,6 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.field;
 
 import javax.swing.JLabel;
@@ -23,7 +22,7 @@ import javax.swing.JTextField;
 public class LIntegerField
     extends LField
 {
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //---------------//
     // LIntegerField //
@@ -34,8 +33,8 @@ public class LIntegerField
      * @param label string to be used as label text
      * @param tip related tool tip text
      */
-    public LIntegerField(String label,
-                         String tip)
+    public LIntegerField (String label,
+                          String tip)
     {
         super(true, label, tip);
     }
@@ -50,33 +49,14 @@ public class LIntegerField
      * @param label string to be used as label text
      * @param tip related tool tip text
      */
-    public LIntegerField(boolean editable,
-                         String  label,
-                         String  tip)
+    public LIntegerField (boolean editable,
+                          String  label,
+                          String  tip)
     {
         super(editable, label, tip);
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //----------//
-    // getValue //
-    //----------//
-    /**
-     * Extract the current integer value form the text field (TBD: better
-     * handling of exceptions)
-     *
-     * @return current integer value
-     */
-    public int getValue()
-    {
-        int val = 0;
-        try {
-            val = Integer.parseInt(field.getText());
-        } catch (NumberFormatException ex) {
-        }
-        return val;
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //----------//
     // setValue //
@@ -89,5 +69,26 @@ public class LIntegerField
     public void setValue (int val)
     {
         field.setText(Integer.toString(val));
+    }
+
+    //----------//
+    // getValue //
+    //----------//
+    /**
+     * Extract the current integer value form the text field (TBD: better
+     * handling of exceptions)
+     *
+     * @return current integer value
+     */
+    public int getValue ()
+    {
+        int val = 0;
+
+        try {
+            val = Integer.parseInt(field.getText());
+        } catch (NumberFormatException ex) {
+        }
+
+        return val;
     }
 }

@@ -1,17 +1,19 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                            L i n e I n f o                            //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                              L i n e I n f o                               //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import omr.math.Line;
+
 import omr.stick.Stick;
+
 import omr.ui.view.Zoom;
 
 import java.awt.*;
@@ -26,19 +28,18 @@ import java.util.List;
 public class LineInfo
     implements java.io.Serializable
 {
-    //~ Instance variables ------------------------------------------------
-
-    private int id; // Just a sequential id for debug
+    //~ Instance fields --------------------------------------------------------
 
     // Best line equation
-    private Line line;
-    private int left;
-    private int right;
+    private Line                  line;
 
     // Related Builder
     private transient LineBuilder builder;
+    private int                   id; // Just a sequential id for debug
+    private int                   left;
+    private int                   right;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //----------//
     // LineInfo //
@@ -59,7 +60,7 @@ public class LineInfo
         this.right = right;
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //-------//
     // getId //
@@ -100,19 +101,6 @@ public class LineInfo
         return line;
     }
 
-    //---------//
-    // setLine //
-    //---------//
-    /**
-     * Store the underlying physical line
-     *
-     * @param line the line equation
-     */
-    void setLine (Line line)
-    {
-        this.line = line;
-    }
-
     //----------//
     // getRight //
     //----------//
@@ -124,31 +112,6 @@ public class LineInfo
     public int getRight ()
     {
         return right;
-    }
-
-    //---------//
-    // cleanup //
-    //---------//
-    /**
-     * Cleanup the line
-     */
-    public void cleanup ()
-    {
-        builder.cleanup();
-    }
-
-    //------------//
-    // setBuilder //
-    //------------//
-    /**
-     * Set the link back to the builder who holds the build context for
-     * this line
-     *
-     * @param builder the LineBuilder
-     */
-    void setBuilder (LineBuilder builder)
-    {
-        this.builder = builder;
     }
 
     //-----------//
@@ -164,6 +127,17 @@ public class LineInfo
         return builder.getSticks();
     }
 
+    //---------//
+    // cleanup //
+    //---------//
+    /**
+     * Cleanup the line
+     */
+    public void cleanup ()
+    {
+        builder.cleanup();
+    }
+
     //--------//
     // render //
     //--------//
@@ -176,16 +150,17 @@ public class LineInfo
      * @param right the imposed right abscissa
      */
     public void render (Graphics g,
-                        Zoom z,
-                        int left,
-                        int right)
+                        Zoom     z,
+                        int      left,
+                        int      right)
     {
         // Paint the computed line
         if (line != null) {
-            g.drawLine(z.scaled(left + 0.5),
-                       z.scaled(line.yAt(left + 0.5) + 0.5),
-                       z.scaled(right + 0.5),
-                       z.scaled(line.yAt(right + 0.5) + 0.5));
+            g.drawLine(
+                z.scaled(left + 0.5),
+                z.scaled(line.yAt(left + 0.5) + 0.5),
+                z.scaled(right + 0.5),
+                z.scaled(line.yAt(right + 0.5) + 0.5));
         }
     }
 
@@ -198,11 +173,36 @@ public class LineInfo
      * @return a short description
      */
     @Override
-        public String toString ()
+    public String toString ()
     {
-        return "LineInfo" + id + " left=" + left + " right=" + right
-               + ((line != null)
-                  ? line.toString()
-                  : "");
+        return "LineInfo" + id + " left=" + left + " right=" + right +
+               ((line != null) ? line.toString() : "");
+    }
+
+    //------------//
+    // setBuilder //
+    //------------//
+    /**
+     * Set the link back to the builder who holds the build context for this
+     * line
+     *
+     * @param builder the LineBuilder
+     */
+    void setBuilder (LineBuilder builder)
+    {
+        this.builder = builder;
+    }
+
+    //---------//
+    // setLine //
+    //---------//
+    /**
+     * Store the underlying physical line
+     *
+     * @param line the line equation
+     */
+    void setLine (Line line)
+    {
+        this.line = line;
     }
 }

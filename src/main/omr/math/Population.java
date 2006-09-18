@@ -1,14 +1,15 @@
-//--------------------------------------------------------------------------//
-//                                                                          //
-//                           P o p u l a t i o n                            //
-//                                                                          //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.             //
-//  This software is released under the terms of the GNU General Public     //
-//  License. Please contact the author at herve.bitteur@laposte.net         //
-//  to report bugs & suggestions.                                           //
-//--------------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            P o p u l a t i o n                             //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.math;
+
 
 /**
  * Class <code>Population</code> is used to cumulate measurements, and compute
@@ -20,15 +21,13 @@ package omr.math;
 public class Population
     implements java.io.Serializable
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    //~ Instance variables ------------------------------------------------
-
-    private int n = 0; // Number of measurements
     private double s = 0d; // Sum of measured values
     private double s2 = 0d; // Sum of squared measured values
+    private int    n = 0; // Number of measurements
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //------------//
     // Population //
@@ -40,7 +39,20 @@ public class Population
     {
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // getCardinality //
+    //----------------//
+    /**
+     * Get the number of cumulated measurements
+     *
+     * @return this number
+     */
+    public int getCardinality ()
+    {
+        return n;
+    }
 
     //--------------//
     // getMeanValue //
@@ -57,19 +69,6 @@ public class Population
         }
 
         return s / (double) n;
-    }
-
-    //----------------//
-    // getCardinality //
-    //----------------//
-    /**
-     * Get the number of cumulated measurements
-     *
-     * @return this number
-     */
-    public int getCardinality ()
-    {
-        return n;
     }
 
     //----------------------//
@@ -116,8 +115,8 @@ public class Population
             throw new RuntimeException("Population is empty");
         }
 
-        n  -= 1;
-        s  -= val;
+        n -= 1;
+        s -= val;
         s2 -= (val * val);
     }
 
@@ -131,8 +130,8 @@ public class Population
      */
     public void includeValue (double val)
     {
-        n  += 1;
-        s  += val;
+        n += 1;
+        s += val;
         s2 += (val * val);
     }
 
@@ -144,8 +143,8 @@ public class Population
      */
     public void reset ()
     {
-        n  = 0;
-        s  = 0d;
+        n = 0;
+        s = 0d;
         s2 = 0d;
     }
 

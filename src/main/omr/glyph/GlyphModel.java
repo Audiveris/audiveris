@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                          G l y p h M o d e l                          //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            G l y p h M o d e l                             //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.glyph;
 
 import omr.util.Logger;
@@ -22,11 +22,11 @@ import java.util.List;
  */
 public abstract class GlyphModel
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(GlyphModel.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     /** Underlying lag (vertical or horizontal) */
     protected final GlyphLag lag;
@@ -34,7 +34,7 @@ public abstract class GlyphModel
     /** Latest shape assigned if any */
     protected Shape latestShapeAssigned;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //------------//
     // GlyphModel //
@@ -47,14 +47,14 @@ public abstract class GlyphModel
     public GlyphModel (GlyphLag lag)
     {
         if (lag == null) {
-            throw new IllegalArgumentException
-                ("Attempt to create a GlyphModel with null underlying Lag");
+            throw new IllegalArgumentException(
+                "Attempt to create a GlyphModel with null underlying Lag");
         } else {
             this.lag = lag;
         }
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //--------------//
     // getGlyphById //
@@ -78,7 +78,7 @@ public abstract class GlyphModel
      *
      * @return latest shape assigned, or null if none
      */
-    public Shape getLatestShapeAssigned()
+    public Shape getLatestShapeAssigned ()
     {
         return latestShapeAssigned;
     }
@@ -110,9 +110,9 @@ public abstract class GlyphModel
      * @param compound flag to build one compound, rather than assign each
      *                 individual glyph
      */
-    public void assignSetShape(List<Glyph> glyphs,
-                               Shape       shape,
-                               boolean     compound)
+    public void assignSetShape (List<Glyph> glyphs,
+                                Shape       shape,
+                                boolean     compound)
     {
         // Empty by default
         logger.warning("assignSetShape not implemented for this glyph model");
@@ -129,6 +129,7 @@ public abstract class GlyphModel
     public void deassignGlyphShape (Glyph glyph)
     {
         // Empty by default
+        logger.warning("deassignGlyphShape not implemented for this glyph model");
     }
 
     //------------------//
@@ -139,7 +140,7 @@ public abstract class GlyphModel
      *
      * @param glyphs the collection of glyphs to be de-assigned
      */
-    public void deassignSetShape(List<Glyph> glyphs)
+    public void deassignSetShape (List<Glyph> glyphs)
     {
         // Empty by default
         logger.warning("deassignSetShape not implemented for this glyph model");

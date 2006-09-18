@@ -1,38 +1,39 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                     C o n s t a n t M a n a g e r                     //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                       C o n s t a n t M a n a g e r                        //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.constant;
 
 import omr.Main;
+
 import omr.util.Logger;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.io.File;
 
 /**
- * Class <code>ConstantManager</code> manages the whole population of
- * Constants, including their mapping to properties, their storing on disk
- * and their reloading from disk.
+ * Class <code>ConstantManager</code> manages the whole population of Constants,
+ * including their mapping to properties, their storing on disk and their
+ * reloading from disk.
  *
- * <p/> The actual value of an application "constant", as returned by the
- * method {@link Constant#currentString}, is determined in the following
- * order, any definition overriding the previous ones:
+ * <p/> The actual value of an application "constant", as returned by the method
+ * {@link Constant#currentString}, is determined in the following order, any
+ * definition overriding the previous ones:
  *
  * <ol> <li> First, <b>SOURCE</b> values are always provided within
- * <em><b>source declaration</b></em> of the constants in the Java source
- * file itself. For example, in the "omr/ui/Jui.java" file, we can find:
+ * <em><b>source declaration</b></em> of the constants in the Java source file
+ * itself. For example, in the "omr/ui/Jui.java" file, we can find:
  *
  * <pre>
  * Constant.Integer frameWidth = new Constant.Integer
@@ -42,66 +43,64 @@ import java.io.File;
  * </li>
  *
  * <li> Then, <b>DEFAULT</b> values, contained in a property file named
- * <em><b>"config/run.default.properties"</b></em> can assign overriding
- * values to some constants. For example, the <code>frameWidth</code>
- * constant above could be altered by the following line in this default
- * file: <pre> omr.ui.Jui.frameWidth=640 </pre> This file is mandatory,
- * although it can be empty, and must be located at the root of application
- * binary (either the class hierarchy or the jar file). If this file is not
- * found at start-up the application is stopped.  Typically, these DEFAULT
- * values define values for a distribution of the application, for example
- * Linux and Windows binaries might need different values for some
- * constants. The only way to modify the content of this file is to
- * manually edit it, and this should be reserved to omr developer. </li>
- * <br/>
+ * <em><b>"config/run.default.properties"</b></em> can assign overriding values
+ * to some constants. For example, the <code>frameWidth</code> constant above
+ * could be altered by the following line in this default file: <pre>
+ * omr.ui.Jui.frameWidth=640 </pre> This file is mandatory, although it can be
+ * empty, and must be located at the root of application binary (either the
+ * class hierarchy or the jar file). If this file is not found at start-up the
+ * application is stopped.  Typically, these DEFAULT values define values for a
+ * distribution of the application, for example Linux and Windows binaries might
+ * need different values for some constants. The only way to modify the content
+ * of this file is to manually edit it, and this should be reserved to omr
+ * developer. </li> <br/>
  *
- * <li> Finally, <b>USER</b> values, may be contained in another property
- * file named <em><b>"run.properties"</b></em>. This file is modified every
- * time the user updates the value of a constant by means of the provided
- * Constant user interface at run-time. The file is not mandatory, the
- * user's home directory (which corresponds to java property
- * <b>user.home</b>) is searched for a <b>.audiveris</b> folder to contain
- * such file. Its values override the Source (and Default if any)
- * corresponding constants. Typically, these USER values represent some
- * modification made by the end user at run-time and thus saved from one
- * run to the other. The format of the user file is the same as the default
- * file, and it is not meant to be edited manually, but rather through the
- * provided GUI tool. </li> </ol>
+ * <li> Finally, <b>USER</b> values, may be contained in another property file
+ * named <em><b>"run.properties"</b></em>. This file is modified every time the
+ * user updates the value of a constant by means of the provided Constant user
+ * interface at run-time. The file is not mandatory, the user's home directory
+ * (which corresponds to java property <b>user.home</b>) is searched for a
+ * <b>.audiveris</b> folder to contain such file. Its values override the Source
+ * (and Default if any) corresponding constants. Typically, these USER values
+ * represent some modification made by the end user at run-time and thus saved
+ * from one run to the other. The format of the user file is the same as the
+ * default file, and it is not meant to be edited manually, but rather through
+ * the provided GUI tool. </li> </ol>
  *
- * <p> The whole set of constant values is stored on disk, every time the
- * user modifies a constant via {@link UnitTreeTable}). Doing so, the disk
- * values are always kept in synch with the program values. It can also be
- * stored by manually calling the method <code>storeResource</code>.
+ * <p> The whole set of constant values is stored on disk, every time the user
+ * modifies a constant via {@link UnitTreeTable}). Doing so, the disk values are
+ * always kept in synch with the program values. It can also be stored by
+ * manually calling the method <code>storeResource</code>.
  *
- * <p> Only the user property file is written, the source value in the
- * source code, or the potential overriding default values, are not
- * altered.
+ * <p> Only the user property file is written, the source value in the source
+ * code, or the potential overriding default values, are not altered.
  *
- * </p> Moreover, if the user has modified a value in such a way that the
- * final value is the same as found in the default stage, the value is
- * simply discarded from the user property file. Doing so, the user
- * property file really contains only the additions of the user. </p>
+ * </p> Moreover, if the user has modified a value in such a way that the final
+ * value is the same as found in the default stage, the value is simply
+ * discarded from the user property file. Doing so, the user property file
+ * really contains only the additions of the user. </p>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class ConstantManager
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final String UNIT = ConstantManager.class.getName();
-    private static final Logger logger = Logger.getLogger(ConstantManager.class);
+    private static final Logger logger = Logger.getLogger(
+        ConstantManager.class);
 
     // Default properties
     private static Properties defaultProperties = new Properties();
-    private static String DEFAULT_FILE_NAME = "run.default.properties";
+    private static String     DEFAULT_FILE_NAME = "run.default.properties";
 
     // User properties
     private static Properties userProperties = null;
-    private static String USER_FILE_NAME = System.getProperty("user.home")
-                                           + "/.audiveris/run.properties";
+    private static String     USER_FILE_NAME = System.getProperty("user.home") +
+                                               "/.audiveris/run.properties";
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------------//
     // ConstantManager //
@@ -111,15 +110,15 @@ public class ConstantManager
     {
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //---------------//
     // storeResource //
     //---------------//
     /**
      * Stores the current content of the whole property set to disk.  More
-     * specifically, only the values set OUTSIDE the original Default parts
-     * are stored, and they are stored in the user property file.
+     * specifically, only the values set OUTSIDE the original Default parts are
+     * stored, and they are stored in the user property file.
      */
     public static void storeResource ()
     {
@@ -133,16 +132,16 @@ public class ConstantManager
             }
 
             FileOutputStream out = new FileOutputStream(USER_FILE_NAME);
-            String text = " User Audiveris run properties file. Do not edit";
+            String           text = " User Audiveris run properties file. Do not edit";
             userProperties.store(out, text);
             out.close();
-
         } catch (FileNotFoundException ex) {
-            logger.warning("User property file " + USER_FILE_NAME
-                           + " not found or not writable");
+            logger.warning(
+                "User property file " + USER_FILE_NAME +
+                " not found or not writable");
         } catch (IOException ex) {
-            logger.warning("Error while storing the User property file "
-                           + USER_FILE_NAME);
+            logger.warning(
+                "Error while storing the User property file " + USER_FILE_NAME);
         }
     }
 
@@ -150,8 +149,8 @@ public class ConstantManager
     // setProperty //
     //-------------//
     /**
-     * Meant to be called by <code>Constant</code> class, to update the
-     * property value that relates to the given constant.
+     * Meant to be called by <code>Constant</code> class, to update the property
+     * value that relates to the given constant.
      *
      * @param qualifiedName name of the constant
      * @param val           the new value
@@ -159,7 +158,8 @@ public class ConstantManager
     static void setProperty (String qualifiedName,
                              String val)
     {
-        getUserProperties().setProperty(qualifiedName, val);
+        getUserProperties()
+            .setProperty(qualifiedName, val);
     }
 
     //-------------//
@@ -175,7 +175,8 @@ public class ConstantManager
      */
     static String getProperty (String qualifiedName)
     {
-        return getUserProperties().getProperty(qualifiedName);
+        return getUserProperties()
+                   .getProperty(qualifiedName);
     }
 
     //----------------//
@@ -183,7 +184,8 @@ public class ConstantManager
     //----------------//
     static void removeProperty (String qualifiedName)
     {
-        getUserProperties().remove(qualifiedName);
+        getUserProperties()
+            .remove(qualifiedName);
     }
 
     //-------------------//
@@ -207,22 +209,21 @@ public class ConstantManager
     // loadResource //
     //--------------//
     /**
-     * Triggers the loading of property files, first the default, then the
-     * user values if any. Any modification made at run-time will be saved
-     * in the user part.
+     * Triggers the loading of property files, first the default, then the user
+     * values if any. Any modification made at run-time will be saved in the
+     * user part.
      */
     private static void loadResource ()
     {
         // Load DEFAULT properties from the distribution
         try {
-            FileInputStream in = new FileInputStream
-                (new File(Main.getConfigFolder(),
-                          DEFAULT_FILE_NAME));
+            FileInputStream in = new FileInputStream(
+                new File(Main.getConfigFolder(), DEFAULT_FILE_NAME));
             defaultProperties.load(in);
             in.close();
         } catch (Exception ex) {
-            logger.severe("Error while loading DEFAULT resource as "
-                          + DEFAULT_FILE_NAME);
+            logger.severe(
+                "Error while loading DEFAULT resource as " + DEFAULT_FILE_NAME);
         }
 
         // Create program properties with default properties as default
@@ -235,11 +236,11 @@ public class ConstantManager
             in.close();
         } catch (FileNotFoundException ex) {
             // This is not at all a fatal error, let the user know this.
-            logger.info("[" + UNIT + "] No User property file "
-                        + USER_FILE_NAME);
+            logger.info(
+                "[" + UNIT + "] No User property file " + USER_FILE_NAME);
         } catch (IOException ex) {
-            logger.severe("Error while loading the User property file "
-                          + USER_FILE_NAME);
+            logger.severe(
+                "Error while loading the User property file " + USER_FILE_NAME);
         }
     }
 
@@ -260,9 +261,10 @@ public class ConstantManager
             if (defaultValue != null) {
                 if (value.equals(defaultValue)) {
                     if (logger.isFineEnabled()) {
-                        logger.fine("Removing identical User" +
-                                     " and Default value for key : " + key +
-                                     " = " + value);
+                        logger.fine(
+                            "Removing identical User" +
+                            " and Default value for key : " + key + " = " +
+                            value);
                     }
 
                     userProperties.remove(key);

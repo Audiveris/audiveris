@@ -7,12 +7,12 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.view;
 
 import omr.util.Logger;
 
 import java.awt.*;
+
 import javax.swing.*;
 
 /**
@@ -31,19 +31,19 @@ import javax.swing.*;
  */
 public class ScrollView
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(ScrollView.class);
 
-    //~ Instance variables ------------------------------------------------
-
-    // The concrete UI component
-    private JScrollPane component = new JScrollPane();
+    //~ Instance fields --------------------------------------------------------
 
     /** Current view inside the scrolled pane */
     protected RubberZoomedPanel view;
 
-    //~ Constructors ------------------------------------------------------
+    // The concrete UI component
+    private JScrollPane component = new JScrollPane();
+
+    //~ Constructors -----------------------------------------------------------
 
     //------------//
     // ScrollView //
@@ -70,7 +70,7 @@ public class ScrollView
         setView(view);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //--------------//
     // getComponent //
@@ -80,9 +80,42 @@ public class ScrollView
      *
      * @return the concrete component
      */
-    public JScrollPane getComponent()
+    public JScrollPane getComponent ()
     {
         return component;
+    }
+
+    //----------------//
+    // getRubberFocus //
+    //----------------//
+    /**
+     * Retrieve the coordinates of what is currently the focus point of the
+     * display.  Typically, this is the center of the rubber rectangle.
+     *
+     * @return the focus point
+     */
+    public Point getRubberFocus ()
+    {
+        Point center = view.rubber.getCenter();
+
+        if (center != null) {
+            if (logger.isFineEnabled()) {
+                logger.fine("getRubberFocus rubber center=" + center);
+            }
+
+            return center; // Of rubber band
+        } else if (view != null) {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "getRubberFocus panelcenter=" + view.getPanelCenter());
+            }
+
+            return view.getPanelCenter(); // Of visible rectangle
+        } else {
+            logger.warning("getRubberFocus : no rubber, no view ???");
+
+            return null;
+        }
     }
 
     //---------//
@@ -110,42 +143,9 @@ public class ScrollView
      *
      * @return the view
      */
-    public RubberZoomedPanel getView()
+    public RubberZoomedPanel getView ()
     {
         return view;
-    }
-
-    //----------------//
-    // getRubberFocus //
-    //----------------//
-    /**
-     * Retrieve the coordinates of what is currently the focus point of the
-     * display.  Typically, this is the center of the rubber rectangle.
-     *
-     * @return the focus point
-     */
-    public Point getRubberFocus ()
-    {
-        Point center = view.rubber.getCenter();
-
-        if (center != null) {
-            if (logger.isFineEnabled()) {
-                logger.fine("getRubberFocus rubber center=" + center);
-            }
-
-            return center; // Of rubber band
-        } else if (view != null) {
-            if (logger.isFineEnabled()) {
-                logger.fine("getRubberFocus panelcenter="
-                             + view.getPanelCenter());
-            }
-
-            return view.getPanelCenter(); // Of visible rectangle
-        } else {
-            logger.warning("getRubberFocus : no rubber, no view ???");
-
-            return null;
-        }
     }
 
     //--------------//
@@ -164,7 +164,8 @@ public class ScrollView
         }
 
         if (view.getZoom() != null) {
-            view.getZoom().setRatio(zoomRatio);
+            view.getZoom()
+                .setRatio(zoomRatio);
         } else {
             logger.warning("setZoomRatio. No zoom assigned");
         }
@@ -206,8 +207,10 @@ public class ScrollView
             logger.fine("fitWhole vr=" + vr + " dim=" + dim);
         }
 
-        setZoomRatio(Math.min((double) (vr.width) / (double) dim.width,
-                              (double) (vr.height) / (double) dim.height));
+        setZoomRatio(
+            Math.min(
+                (double) (vr.width) / (double) dim.width,
+                (double) (vr.height) / (double) dim.height));
     }
 
     //----------//

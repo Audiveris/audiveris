@@ -1,19 +1,21 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                          P i x e l B o a r d                          //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            P i x e l B o a r d                             //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.ui;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
+
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
+
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
@@ -21,52 +23,60 @@ import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 
 /**
- * Class <code>PixelBoard</code> is a board that displays pixel information
- * as provided by other entities (output side), and which can also be used
- * by a user to directly specify pixel coordinate values by entering
- * numerical values in the fields (input side).
- * 
+ * Class <code>PixelBoard</code> is a board that displays pixel information as
+ * provided by other entities (output side), and which can also be used by a
+ * user to directly specify pixel coordinate values by entering numerical values
+ * in the fields (input side).
+ *
  * <dl>
  * <dt><b>Selection Inputs:</b></dt><ul>
  * <li>PIXEL
  * <li>LEVEL
  * </ul>
- * 
+ *
  * <dt><b>Selection Outputs:</b></dt><ul>
  * <li>PIXEL Location (flagged with LOCATION_INIT hint)
  * </ul>
  * </dl>
- * 
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class PixelBoard
     extends Board
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(PixelBoard.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    // Upper Left point
-    private final LIntegerField x = new LIntegerField
-        ("X", "Abscissa of upper left corner");
-    private final LIntegerField y = new LIntegerField
-        ("Y", "Ordinate of upper left corner");
-    private final LIntegerField level = new LIntegerField
-        (false, "Level", "Pixel level");
+    private final LIntegerField height = new LIntegerField(
+        "Height",
+        "Height of rectangle");
+    private final LIntegerField level = new LIntegerField(
+        false,
+        "Level",
+        "Pixel level");
 
     // Lower Right point
-    private final LIntegerField width = new LIntegerField
-        ("Width", "Width of rectangle");
-    private final LIntegerField height = new LIntegerField
-        ("Height", "Height of rectangle");
+    private final LIntegerField width = new LIntegerField(
+        "Width",
+        "Width of rectangle");
 
-    //~ Constructors ------------------------------------------------------
+    // Upper Left point
+    private final LIntegerField x = new LIntegerField(
+        "X",
+        "Abscissa of upper left corner");
+    private final LIntegerField y = new LIntegerField(
+        "Y",
+        "Ordinate of upper left corner");
+
+    //~ Constructors -----------------------------------------------------------
 
     //------------//
     // PixelBoard //
@@ -81,53 +91,17 @@ public class PixelBoard
         super(Board.Tag.PIXEL, unitName + "-PixelBoard");
 
         // Needed to process user input when RETURN/ENTER is pressed
-        getComponent().getInputMap
-            (JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put
-            (KeyStroke.getKeyStroke("ENTER"),
-             "ParamAction");
-        getComponent().getActionMap().put("ParamAction", new ParamAction());
+        getComponent()
+            .getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+            .put(KeyStroke.getKeyStroke("ENTER"), "ParamAction");
+        getComponent()
+            .getActionMap()
+            .put("ParamAction", new ParamAction());
 
         defineLayout();
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout()
-    {
-        FormLayout layout = Panel.makeFormLayout(3, 3);
-
-        // Specify that columns 1 & 5 as well as 3 & 7 have equal widths.
-        layout.setColumnGroups(new int[][]{{1, 5, 9}, {3, 7, 11}});
-
-        PanelBuilder builder = new PanelBuilder(layout, getComponent());
-        builder.setDefaultDialogBorder();
-
-        CellConstraints cst = new CellConstraints();
-
-        int r = 1;                      // --------------------------------
-        builder.addSeparator("Pixel",   cst.xyw(1,  r, 11));
-
-        r += 2;                         // --------------------------------
-        builder.add(x.getLabel(),       cst.xy (1,  r));
-        builder.add(x.getField(),       cst.xy (3,  r));
-        x.getField().setColumns(5);
-
-        builder.add(width.getLabel(),   cst.xy (5,  r));
-        builder.add(width.getField(),   cst.xy (7,  r));
-
-        builder.add(level.getLabel(),   cst.xy (9,  r));
-        builder.add(level.getField(),   cst.xy (11, r));
-
-        r += 2;                         // --------------------------------
-        builder.add(y.getLabel(),       cst.xy (1,  r));
-        builder.add(y.getField(),       cst.xy (3,  r));
-
-        builder.add(height.getLabel(),  cst.xy (5,  r));
-        builder.add(height.getField(),  cst.xy (7,  r));
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //--------//
     // update //
@@ -138,44 +112,94 @@ public class PixelBoard
      * @param selection the notified Selection
      * @param hint potential notification hint
      */
-    public void update(Selection selection,
-                       SelectionHint hint)
+    public void update (Selection     selection,
+                        SelectionHint hint)
     {
         Object entity = selection.getEntity();
-        if (logger.isFineEnabled()){
+
+        if (logger.isFineEnabled()) {
             logger.fine("PixelBoard " + selection.getTag() + ": " + entity);
         }
+
         switch (selection.getTag()) {
-            case PIXEL:                 // Display rectangle characteristics
-                Rectangle rect = (Rectangle) entity;
-                if (rect != null) {
-                    x.setValue(rect.x);
-                    y.setValue(rect.y);
-                    width.setValue(rect.width);
-                    height.setValue(rect.height);
-                } else {
-                    x.setText("");
-                    y.setText("");
-                    width.setText("");
-                    height.setText("");
-                }
-                break;
+        case PIXEL : // Display rectangle characteristics
 
-            case LEVEL:                 // Display pixel grey level
-                Integer val = (Integer) entity;
-                if (val != null && val != -1) {
-                    level.setValue(val);
-                } else {
-                    level.setText("");
-                }
-                break;
+            Rectangle rect = (Rectangle) entity;
 
-            default:
-                logger.severe("Unexpected selection event from " + selection);
+            if (rect != null) {
+                x.setValue(rect.x);
+                y.setValue(rect.y);
+                width.setValue(rect.width);
+                height.setValue(rect.height);
+            } else {
+                x.setText("");
+                y.setText("");
+                width.setText("");
+                height.setText("");
+            }
+
+            break;
+
+        case LEVEL : // Display pixel grey level
+
+            Integer val = (Integer) entity;
+
+            if ((val != null) && (val != -1)) {
+                level.setValue(val);
+            } else {
+                level.setText("");
+            }
+
+            break;
+
+        default :
+            logger.severe("Unexpected selection event from " + selection);
         }
     }
 
-    //~ Classes -----------------------------------------------------------
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
+    {
+        FormLayout layout = Panel.makeFormLayout(3, 3);
+
+        // Specify that columns 1 & 5 as well as 3 & 7 have equal widths.
+        layout.setColumnGroups(
+            new int[][] {
+                { 1, 5, 9 },
+                { 3, 7, 11 }
+            });
+
+        PanelBuilder builder = new PanelBuilder(layout, getComponent());
+        builder.setDefaultDialogBorder();
+
+        CellConstraints cst = new CellConstraints();
+
+        int             r = 1; // --------------------------------
+        builder.addSeparator("Pixel", cst.xyw(1, r, 11));
+
+        r += 2; // --------------------------------
+        builder.add(x.getLabel(), cst.xy(1, r));
+        builder.add(x.getField(), cst.xy(3, r));
+        x.getField()
+         .setColumns(5);
+
+        builder.add(width.getLabel(), cst.xy(5, r));
+        builder.add(width.getField(), cst.xy(7, r));
+
+        builder.add(level.getLabel(), cst.xy(9, r));
+        builder.add(level.getField(), cst.xy(11, r));
+
+        r += 2; // --------------------------------
+        builder.add(y.getLabel(), cst.xy(1, r));
+        builder.add(y.getField(), cst.xy(3, r));
+
+        builder.add(height.getLabel(), cst.xy(5, r));
+        builder.add(height.getField(), cst.xy(7, r));
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
 
     //-------------//
     // ParamAction //
@@ -183,17 +207,20 @@ public class PixelBoard
     private class ParamAction
         extends AbstractAction
     {
-        // Method run whenever user presses Return/Enter in one of the
-        // parameter fields
+        // Method run whenever user presses Return/Enter in one of the parameter
+        // fields
         public void actionPerformed (ActionEvent e)
         {
             // Remember & forward the new pixel selection
             if (outputSelection != null) {
                 // A rectangle (which can be degenerated to a point)
-                outputSelection.setEntity
-                    (new Rectangle(x.getValue(), y.getValue(),
-                                   width.getValue(), height.getValue()),
-                     SelectionHint.LOCATION_INIT);
+                outputSelection.setEntity(
+                    new Rectangle(
+                        x.getValue(),
+                        y.getValue(),
+                        width.getValue(),
+                        height.getValue()),
+                    SelectionHint.LOCATION_INIT);
             }
         }
     }

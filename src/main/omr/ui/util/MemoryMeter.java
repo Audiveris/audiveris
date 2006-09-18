@@ -7,15 +7,15 @@
 //  License. Please contact the author at herve.bitteur@laposte.net         //
 //  to report bugs & suggestions.                                           //
 //--------------------------------------------------------------------------//
-
 package omr.ui.util;
 
+import omr.util.Memory;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.*;
-import omr.util.Memory;
 
 /**
  * Class <code>MemoryMeter</code> encapsulates the display of a linear memory
@@ -30,7 +30,7 @@ import omr.util.Memory;
  */
 public class MemoryMeter
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     /** Default display period, in milli-seconds : {@value} */
     public static final int DEFAULT_DISPLAY_PERIOD = 2000;
@@ -38,34 +38,34 @@ public class MemoryMeter
     /** Default alarm threshold, in KB : {@value} */
     public static final int DEFAULT_ALARM_THRESHOLD = 40960;
 
-    //~ Instance variables ------------------------------------------------
-
-    // Related concrete component
-    private JPanel component;
-
-    // Progress bar
-    private JProgressBar progressBar = new JProgressBar();
-
-    // Current display period
-    private int displayPeriod = DEFAULT_DISPLAY_PERIOD;
-
-    // Current alarm threshold
-    private int alarmThreshold = DEFAULT_ALARM_THRESHOLD;
-
-    // Last values for used and total memory, in order to save on display
-    private int lastUsed;
-    private int lastTotal;
+    //~ Instance fields --------------------------------------------------------
 
     // Default foreground color, when under alarm threshold
-    private Color defaultForeground;
+    private Color            defaultForeground;
+
+    // Related concrete component
+    private JPanel           component;
+
+    // Progress bar
+    private JProgressBar     progressBar = new JProgressBar();
+
+    // Runnable that displays the memory usage
+    private Runnable         displayer;
 
     // Flag on monitoring activity
     private volatile boolean monitoring;
 
-    // Runnable that displays the memory usage
-    private Runnable displayer;
+    // Current alarm threshold
+    private int alarmThreshold = DEFAULT_ALARM_THRESHOLD;
 
-    //~ Constructors ------------------------------------------------------
+    // Current display period
+    private int displayPeriod = DEFAULT_DISPLAY_PERIOD;
+    private int lastTotal;
+
+    // Last values for used and total memory, in order to save on display
+    private int lastUsed;
+
+    //~ Constructors -----------------------------------------------------------
 
     //-------------//
     // MemoryMeter //
@@ -89,9 +89,7 @@ public class MemoryMeter
      */
     public MemoryMeter (Icon buttonIcon)
     {
-        this(buttonIcon,
-             DEFAULT_DISPLAY_PERIOD,
-             DEFAULT_ALARM_THRESHOLD);
+        this(buttonIcon, DEFAULT_DISPLAY_PERIOD, DEFAULT_ALARM_THRESHOLD);
     }
 
     //-------------//
@@ -121,20 +119,7 @@ public class MemoryMeter
         }
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the UI component
-     *
-     * @return the concrete component
-     */
-    public JComponent getComponent()
-    {
-        return component;
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //-------------------//
     // setAlarmThreshold //
@@ -160,6 +145,19 @@ public class MemoryMeter
     public int getAlarmThreshold ()
     {
         return alarmThreshold;
+    }
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent ()
+    {
+        return component;
     }
 
     //------------------//
@@ -211,59 +209,6 @@ public class MemoryMeter
         monitoring = false;
     }
 
-    //------------//
-    // initialize //
-    //------------//
-    private void initialize ()
-    {
-        // Displayer
-        displayer = new Runnable()
-        {
-            public void run ()
-            {
-                int total = (int) Memory.total()      / 1024;
-                int used  = (int) (Memory.occupied()) / 1024;
-
-                if ((total != lastTotal) || (used != lastUsed)) {
-                    progressBar.setMaximum(total);
-                    progressBar.setValue(used);
-                    progressBar.setString(String.format("%,d KB / %,d KB",
-                                                        used, total));
-                    lastTotal = total;
-                    lastUsed = used;
-
-                    if (used > getAlarmThreshold()) {
-                        progressBar.setForeground(Color.red);
-                    } else {
-                        progressBar.setForeground(defaultForeground);
-                    }
-                }
-            }
-        };
-
-        // Monitoring thread
-        Thread monitorThread = new Thread()
-            {
-                public void run ()
-                {
-                    monitoring = true;
-
-                    while (monitoring) {
-                        displayMemory();
-
-                        try {
-                            sleep(displayPeriod);
-                        } catch (InterruptedException ex1) {
-                            monitoring = false;
-                        }
-                    }
-                }
-            };
-        monitorThread.setName(getClass().getName());
-        monitorThread.setPriority(Thread.MIN_PRIORITY);
-        monitorThread.start();
-    }
-
     //----------//
     // defineUI //
     //----------//
@@ -288,8 +233,8 @@ public class MemoryMeter
             button.setText("GC");
         }
 
-        button.addActionListener
-            (new ActionListener() {
+        button.addActionListener(
+            new ActionListener() {
                     public void actionPerformed (ActionEvent e)
                     {
                         System.gc();
@@ -297,11 +242,62 @@ public class MemoryMeter
                         System.gc();
                         displayMemory();
                     }
-                }
-             );
+                });
         component.add(button, BorderLayout.EAST);
 
         // Remember the default foreground color
         defaultForeground = progressBar.getForeground();
+    }
+
+    //------------//
+    // initialize //
+    //------------//
+    private void initialize ()
+    {
+        // Displayer
+        displayer = new Runnable() {
+                public void run ()
+                {
+                    int total = (int) Memory.total() / 1024;
+                    int used = (int) (Memory.occupied()) / 1024;
+
+                    if ((total != lastTotal) || (used != lastUsed)) {
+                        progressBar.setMaximum(total);
+                        progressBar.setValue(used);
+                        progressBar.setString(
+                            String.format("%,d KB / %,d KB", used, total));
+                        lastTotal = total;
+                        lastUsed = used;
+
+                        if (used > getAlarmThreshold()) {
+                            progressBar.setForeground(Color.red);
+                        } else {
+                            progressBar.setForeground(defaultForeground);
+                        }
+                    }
+                }
+            };
+
+        // Monitoring thread
+        Thread monitorThread = new Thread() {
+            public void run ()
+            {
+                monitoring = true;
+
+                while (monitoring) {
+                    displayMemory();
+
+                    try {
+                        sleep(displayPeriod);
+                    } catch (InterruptedException ex1) {
+                        monitoring = false;
+                    }
+                }
+            }
+        };
+
+        monitorThread.setName(getClass().getName());
+        monitorThread.setPriority(Thread.MIN_PRIORITY);
+        monitorThread.start();
     }
 }

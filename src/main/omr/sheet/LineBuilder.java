@@ -1,25 +1,30 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                         L i n e B u i l d e r                         //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                           L i n e B u i l d e r                            //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.sheet;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
+
 import omr.lag.Lag;
 import omr.lag.Run;
+
 import omr.math.BasicLine;
 import omr.math.Line;
+
 import omr.stick.*;
+
 import omr.util.Logger;
 
 import java.awt.*;
@@ -27,24 +32,22 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Class <code>LineBuilder</code> processes the horizontal area that
- * corresponds to one histogram peak, and thus one staff line. The main
- * purpose of this class is precisely to retrieve and clean up the staff
- * line.
+ * Class <code>LineBuilder</code> processes the horizontal area that corresponds
+ * to one histogram peak, and thus one staff line. The main purpose of this
+ * class is precisely to retrieve and clean up the staff line.
  *
  * <p/> The area for the to-be-retrieved staff line is scanned twice : <ol>
  *
- * <li> At line creation, the whole area is scanned to retrieve core
- * sections then peripheral and internal sections. This is done by the
- * inherited StickArea class. </li>
+ * <li> At line creation, the whole area is scanned to retrieve core sections
+ * then peripheral and internal sections. This is done by the inherited
+ * StickArea class. </li>
  *
- * <li> Then, after all lines of the containing staff have been processed,
- * we have a better knowledge of what left and right extrema should be. We
- * use this information to scan "holes" in the current line, considering
- * that every suitable section found in such holes is actually part of the
- * line. All these hole sections are gathered in a specific stick, called
- * the holeStick, since we don't actually need to separate the connected
- * sections. </li>
+ * <li> Then, after all lines of the containing staff have been processed, we
+ * have a better knowledge of what left and right extrema should be. We use this
+ * information to scan "holes" in the current line, considering that every
+ * suitable section found in such holes is actually part of the line. All these
+ * hole sections are gathered in a specific stick, called the holeStick, since
+ * we don't actually need to separate the connected sections. </li>
  *
  * </ol>
  *
@@ -54,37 +57,38 @@ import java.util.List;
 public class LineBuilder
     extends StickArea
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants constants = new Constants();
-    private static final Logger logger = Logger.getLogger(LineBuilder.class);
+    private static final Constants       constants = new Constants();
+    private static final Logger          logger = Logger.getLogger(
+        LineBuilder.class);
     private static final StickComparator stickComparator = new StickComparator();
-    private static int globalId = 0;
+    private static int                   globalId = 0;
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    private int id; // Just a sequential id for debug
+    private GlyphLag        hLag;
+
+    // Best line equation
+    private Line            line = null;
 
     // Source for sections in this area
-    private LineSource source;
+    private LineSource      source;
 
     // Hole areas
     private List<StickArea> holeAreas = new ArrayList<StickArea>();
-
-    // Best line equation
-    private Line line = null;
-    private int left = Integer.MAX_VALUE;
-    private int right = Integer.MIN_VALUE;
-
-    // Max Thickness for the various staff line chunks
-    private int maxThickness;
+    private Scale           staffScale;
 
     // Cached data
     private Sheet sheet;
-    private Scale staffScale;
-    private GlyphLag hLag;
+    private int   id; // Just a sequential id for debug
+    private int   left = Integer.MAX_VALUE;
 
-    //~ Constructors ------------------------------------------------------
+    // Max Thickness for the various staff line chunks
+    private int maxThickness;
+    private int right = Integer.MIN_VALUE;
+
+    //~ Constructors -----------------------------------------------------------
 
     //-------------//
     // LineBuilder //
@@ -99,12 +103,12 @@ public class LineBuilder
      * @param sheet      the sheet on which the analysis is performed
      * @param staffScale the specific scale of the containing staff
      */
-    public LineBuilder (GlyphLag hLag,
-                        int yTop,
-                        int yBottom,
+    public LineBuilder (GlyphLag                   hLag,
+                        int                        yTop,
+                        int                        yBottom,
                         ListIterator<GlyphSection> vi,
-                        Sheet sheet,
-                        Scale staffScale)
+                        Sheet                      sheet,
+                        Scale                      staffScale)
     {
         this.sheet = sheet;
         this.staffScale = staffScale;
@@ -115,7 +119,7 @@ public class LineBuilder
         source = new LineSource(yTop - yMargin, yBottom + yMargin, vi);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //-----------//
     // buildInfo //
@@ -138,19 +142,20 @@ public class LineBuilder
         maxThickness = staffScale.toPixels(constants.maxThickness);
 
         // Initialize the line area
-        initialize
-            (hLag,
-             null, // No pre-candidates
-             source, // Source for sections
-             sheet.getScale().toPixels(constants.coreSectionLength), // minCoreLength
-             constants.maxAdjacency.getValue(), // maxAdjacency
-             maxThickness,
-             constants.maxSlope.getValue(), // max stick slope
-             true); // closeTest
+        initialize(
+            hLag,
+            null, // No pre-candidates
+            source, // Source for sections
+            sheet.getScale().toPixels(constants.coreSectionLength), // minCoreLength
+            constants.maxAdjacency.getValue(), // maxAdjacency
+            maxThickness,
+            constants.maxSlope.getValue(), // max stick slope
+            true); // closeTest
 
         if (logger.isFineEnabled()) {
-            logger.fine("End of scanning LineBuilder #" + id + ", found "
-                         + sticks.size() + " stick(s)");
+            logger.fine(
+                "End of scanning LineBuilder #" + id + ", found " +
+                sticks.size() + " stick(s)");
         }
 
         // Sort sticks found according to their starting abscissa
@@ -177,8 +182,9 @@ public class LineBuilder
         }
 
         if (logger.isFineEnabled()) {
-            logger.fine("End of LineBuilder #" + id + ", left=" + left
-                         + " right=" + right);
+            logger.fine(
+                "End of LineBuilder #" + id + ", left=" + left + " right=" +
+                right);
         }
 
         // Return the info just built
@@ -209,10 +215,11 @@ public class LineBuilder
     public void cleanup ()
     {
         for (Stick stick : sticks) {
-            StickUtil.cleanup(stick,
-                              hLag,
-                              constants.extensionMinPointNb.getValue(),
-                              sheet.getPicture());
+            StickUtil.cleanup(
+                stick,
+                hLag,
+                constants.extensionMinPointNb.getValue(),
+                sheet.getPicture());
         }
     }
 
@@ -235,10 +242,10 @@ public class LineBuilder
     // scanHoles //
     //-----------//
     /**
-     * This method is meant to be called when significant information on
-     * line has already been retrieved. The purpose is to scan every
-     * potential hole in this line, and gather sections found within such
-     * holes in a virtual "holeStick".
+     * This method is meant to be called when significant information on line
+     * has already been retrieved. The purpose is to scan every potential hole
+     * in this line, and gather sections found within such holes in a virtual
+     * "holeStick".
      *
      * @param xMin left abscissa of the region
      * @param xMax right abscissa of the region
@@ -252,10 +259,11 @@ public class LineBuilder
         // First compute the line equation with the known sticks
         computeLine();
 
-        final int yMargin = staffScale.toPixels(constants.yHoleMargin);
+        final int           yMargin = staffScale.toPixels(
+            constants.yHoleMargin);
 
         ListIterator<Stick> si = sticks.listIterator();
-        Stick leftStick = si.next();
+        Stick               leftStick = si.next();
 
         if (leftStick == null) { // Safer
 
@@ -308,19 +316,19 @@ public class LineBuilder
         int lastIdx = -1;
 
         while (si.hasNext()) {
-            Stick rightStick = si.next();
-            int gapStart = leftStick.getStop() + 1;
+            Stick     rightStick = si.next();
+            int       gapStart = leftStick.getStop() + 1;
             final int gapStop = rightStick.getStart() - 1;
 
             if ((gapStop - gapStart) > maxGapWidth) {
                 // Look for presence of runs in this wide gap
                 final int yLeft = leftStick.getStoppingPos();
                 final int yRight = rightStick.getStartingPos();
-                final int yMin = (int) Math.rint(Math.min(yLeft, yRight)
-                                                 - yMargin);
-                final int yMax = (int) Math.rint(Math.max(yLeft, yRight)
-                                                 + yMargin);
-                Run run = null;
+                final int yMin = (int) Math.rint(
+                    Math.min(yLeft, yRight) - yMargin);
+                final int yMax = (int) Math.rint(
+                    Math.max(yLeft, yRight) + yMargin);
+                Run       run = null;
 
                 do {
                     run = hLag.getFirstRectRun(gapStart, gapStop, yMin, yMax); // HB : check order TBD
@@ -332,8 +340,7 @@ public class LineBuilder
 
                         gapStart = run.getStop() + 1;
                     }
-                } while (((gapStop - gapStart) > maxGapWidth)
-                         && (run != null));
+                } while (((gapStop - gapStart) > maxGapWidth) && (run != null));
 
                 if ((gapStop - gapStart) > maxGapWidth) {
                     // Which ones to keep ?
@@ -342,20 +349,20 @@ public class LineBuilder
                         firstIdx = si.previousIndex();
 
                         if (logger.isFineEnabled()) {
-                            logger.fine("Discarding before " + firstIdx
-                                         + " left=" + left + " stop="
-                                         + leftStick.getStop() + " start="
-                                         + rightStick.getStart());
+                            logger.fine(
+                                "Discarding before " + firstIdx + " left=" +
+                                left + " stop=" + leftStick.getStop() +
+                                " start=" + rightStick.getStart());
                         }
                     } else if (rightStick.getStart() >= right) {
                         // We are on right of the staff, remove everything after
                         lastIdx = si.previousIndex() - 1;
 
                         if (logger.isFineEnabled()) {
-                            logger.fine("Discarding after " + lastIdx
-                                         + " right=" + right + " stop="
-                                         + leftStick.getStop() + " start="
-                                         + rightStick.getStart());
+                            logger.fine(
+                                "Discarding after " + lastIdx + " right=" +
+                                right + " stop=" + leftStick.getStop() +
+                                " start=" + rightStick.getStart());
                         }
 
                         break;
@@ -368,8 +375,9 @@ public class LineBuilder
                             left = rightStick.getStart();
 
                             if (logger.isFineEnabled()) {
-                                logger.fine("Discarding left stick before "
-                                             + firstIdx + " now left=" + left);
+                                logger.fine(
+                                    "Discarding left stick before " + firstIdx +
+                                    " now left=" + left);
                             }
                         } else {
                             // Move right side to the left, if not already moved
@@ -378,9 +386,9 @@ public class LineBuilder
                                 right = leftStick.getStop();
 
                                 if (logger.isFineEnabled()) {
-                                    logger.fine("Discarding right stick after "
-                                                 + lastIdx + " now right="
-                                                 + right);
+                                    logger.fine(
+                                        "Discarding right stick after " +
+                                        lastIdx + " now right=" + right);
                                 }
                             }
                         }
@@ -401,12 +409,13 @@ public class LineBuilder
             }
 
             if (logger.isFineEnabled()) {
-                logger.fine("Discarding sticks firstIdx=" + firstIdx
-                             + " lastIdx=" + lastIdx + " (out of "
-                             + sticks.size() + ")");
+                logger.fine(
+                    "Discarding sticks firstIdx=" + firstIdx + " lastIdx=" +
+                    lastIdx + " (out of " + sticks.size() + ")");
             }
 
-            sticks = new ArrayList<Stick>(sticks.subList(firstIdx, lastIdx + 1));
+            sticks = new ArrayList<Stick>(
+                sticks.subList(firstIdx, lastIdx + 1));
         }
     }
 
@@ -425,14 +434,17 @@ public class LineBuilder
     //----------//
     // scanHole //
     //----------//
-    private void scanHole (int left,
+    private void scanHole (int   left,
                            Stick rightStick)
     {
         int right = rightStick.getStart();
 
         if ((right - left) > 1) {
-            scanRect(left, right, line.yAt((double) left), // Line equation
-                     rightStick.getLine().yAt((double) right));
+            scanRect(
+                left,
+                right,
+                line.yAt((double) left), // Line equation
+                rightStick.getLine().yAt((double) right));
         }
     }
 
@@ -440,13 +452,16 @@ public class LineBuilder
     // scanHole //
     //----------//
     private void scanHole (Stick leftStick,
-                           int right)
+                           int   right)
     {
         int left = leftStick.getStop();
 
         if ((right - left) > 1) {
-            scanRect(left, right, leftStick.getLine().yAt((double) left),
-                     line.yAt((double) right)); // Line equation
+            scanRect(
+                left,
+                right,
+                leftStick.getLine().yAt((double) left),
+                line.yAt((double) right)); // Line equation
         }
     }
 
@@ -460,16 +475,19 @@ public class LineBuilder
         int right = rightStick.getStart();
 
         if ((right - left) > 1) {
-            scanRect(left, right, leftStick.getLine().yAt((double) left),
-                     rightStick.getLine().yAt((double) right));
+            scanRect(
+                left,
+                right,
+                leftStick.getLine().yAt((double) left),
+                rightStick.getLine().yAt((double) right));
         }
     }
 
     //----------//
     // scanRect //
     //----------//
-    private void scanRect (int xMin,
-                           int xMax,
+    private void scanRect (int    xMin,
+                           int    xMax,
                            double yLeft,
                            double yRight)
     {
@@ -491,9 +509,12 @@ public class LineBuilder
         final int yMax = (int) Math.rint(Math.max(yLeft, yRight) + yMargin);
 
         // Beware : x & y are swapped for horizontal section !!!
-        Rectangle holeRect = new Rectangle(yMin, xMin, yMax - yMin,
-                                           xMax - xMin);
-        int sectionNb = 0;
+        Rectangle holeRect = new Rectangle(
+            yMin,
+            xMin,
+            yMax - yMin,
+            xMax - xMin);
+        int       sectionNb = 0;
 
         // Browse through our sections
         while (source.hasNext()) {
@@ -508,7 +529,8 @@ public class LineBuilder
 
             // Available ?
             if (!section.isGlyphMember() // Not too thick ?
-                && (section.getRunNb() <= maxThickness)) {
+                 &&
+                (section.getRunNb() <= maxThickness)) {
                 // Within the limits ?
                 if (holeRect.contains(section.getBounds())) {
                     section.setParams(SectionRole.HOLE, 0, 0);
@@ -525,15 +547,60 @@ public class LineBuilder
         // Have we found anything ?
         if (holeCandidates != null) {
             StickArea holeArea = new StickArea();
-            holeArea.initialize(hLag, holeCandidates, source, 0,
-                                constants.maxAdjacency.getValue(), // maxAdjacency
-                                maxThickness, constants.maxSlope.getValue(), // max stick slope
-                                true); // closeTest
+            holeArea.initialize(
+                hLag,
+                holeCandidates,
+                source,
+                0,
+                constants.maxAdjacency.getValue(), // maxAdjacency
+                maxThickness,
+                constants.maxSlope.getValue(), // max stick slope
+                true); // closeTest
             holeAreas.add(holeArea);
         }
     }
 
-    //~ Classes --------------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+        extends ConstantSet
+    {
+        Scale.Fraction   coreSectionLength = new Scale.Fraction(
+            10d,
+            "Minimum section length to be considered a staff line core section");
+        Constant.Integer extensionMinPointNb = new Constant.Integer(
+            4,
+            "Minimum number of points to compute extension of crossing objects during cleanup");
+        Constant.Double  maxAdjacency = new Constant.Double(
+            0.5d,
+            "Maximum adjacency ratio to flag a section as peripheral to a staff line");
+        Scale.Fraction   maxGapWidth = new Scale.Fraction(
+            1.0d,
+            "Maximum value for horizontal gap between 2 sticks");
+        Constant.Double  maxSlope = new Constant.Double(
+            0.04d,
+            "Maximum difference in slope to allow merging of two sticks");
+        Scale.Fraction   maxThickness = new Scale.Fraction(
+            0.3d,
+            "Maximum value for staff line thickness ");
+        Scale.Fraction   xHoleMargin = new Scale.Fraction(
+            0.2d,
+            "Margin on hole abscissa to define the area where hole sections are searched");
+        Scale.Fraction   yHoleMargin = new Scale.Fraction(
+            0.1d,
+            "Margin on hole ordinates to define the area where hole sections are searched");
+        Scale.Fraction   yMargin = new Scale.Fraction(
+            0.2d,
+            "Margin on peak ordinates to define the area where line sections are searched ");
+
+        Constants ()
+        {
+            initialize();
+        }
+    }
 
     //------------//
     // LineSource //
@@ -541,21 +608,16 @@ public class LineBuilder
     private static class LineSource
         extends StickArea.Source
     {
-        //~ Instance variables --------------------------------------------
-
         // My private list of sections in related area
-        private final List<GlyphSection> sections
-            = new ArrayList<GlyphSection>();
-        private final int yMin;
-        private final int yMax;
-
-        //~ Constructors --------------------------------------------------
+        private final List<GlyphSection> sections = new ArrayList<GlyphSection>();
+        private final int                yMax;
+        private final int                yMin;
 
         //------------//
         // LineSource //
         //------------//
-        public LineSource (int yMin,
-                           int yMax,
+        public LineSource (int                        yMin,
+                           int                        yMax,
                            ListIterator<GlyphSection> it)
         {
             this.yMin = yMin;
@@ -580,29 +642,27 @@ public class LineBuilder
             }
 
             // Sort my list on starting abscissa
-            Collections.sort(sections,
-                             new Comparator<GlyphSection>()
-                             {
-                                 public int compare (GlyphSection s1,
-                                                     GlyphSection s2)
-                                 {
-                                     return s1.getStart() - s2.getStart();
-                                 }
-                             });
+            Collections.sort(
+                sections,
+                new Comparator<GlyphSection>() {
+                        public int compare (GlyphSection s1,
+                                            GlyphSection s2)
+                        {
+                            return s1.getStart() - s2.getStart();
+                        }
+                    });
 
             // Define an iterator
             reset();
         }
-
-        //~ Methods -------------------------------------------------------
 
         //----------//
         // isInArea //
         //----------//
         public boolean isInArea (GlyphSection section)
         {
-            return (section.getFirstPos() >= yMin)
-                   && (section.getLastPos() <= yMax);
+            return (section.getFirstPos() >= yMin) &&
+                   (section.getLastPos() <= yMax);
         }
 
         //--------//
@@ -646,60 +706,10 @@ public class LineBuilder
     private static class StickComparator
         implements Comparator<Stick>
     {
-        //~ Methods -------------------------------------------------------
-
         public int compare (Stick s1,
                             Stick s2)
         {
             return s1.getStart() - s2.getStart();
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-        extends ConstantSet
-    {
-        Scale.Fraction coreSectionLength = new Scale.Fraction
-                (10d,
-                 "Minimum section length to be considered a staff line core section");
-
-        Constant.Integer extensionMinPointNb = new Constant.Integer
-                (4,
-                 "Minimum number of points to compute extension of crossing objects during cleanup");
-
-        Constant.Double maxAdjacency = new Constant.Double
-                (0.5d,
-                 "Maximum adjacency ratio to flag a section as peripheral to a staff line");
-
-        Scale.Fraction yMargin = new Scale.Fraction
-                (0.2d,
-                 "Margin on peak ordinates to define the area where line sections are searched ");
-
-        Scale.Fraction xHoleMargin = new Scale.Fraction
-                (0.2d,
-                 "Margin on hole abscissa to define the area where hole sections are searched");
-
-        Scale.Fraction yHoleMargin = new Scale.Fraction
-                (0.1d,
-                 "Margin on hole ordinates to define the area where hole sections are searched");
-
-        Scale.Fraction maxGapWidth = new Scale.Fraction
-                (1.0d,
-                 "Maximum value for horizontal gap between 2 sticks");
-
-        Scale.Fraction maxThickness = new Scale.Fraction
-                (0.3d,
-                 "Maximum value for staff line thickness ");
-
-        Constant.Double maxSlope = new Constant.Double
-                (0.04d,
-                 "Maximum difference in slope to allow merging of two sticks");
-
-        Constants ()
-        {
-            initialize();
         }
     }
 }

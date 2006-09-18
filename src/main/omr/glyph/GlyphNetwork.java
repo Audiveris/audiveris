@@ -1,36 +1,41 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                        G l y p h N e t w o r k                        //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                          G l y p h N e t w o r k                           //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.glyph;
 
 import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.math.NeuralNetwork;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
 import omr.stick.StickSection;
+
 import omr.util.Logger;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 
 /**
- * Class <code>GlyphNetwork</code> encapsulates a neural network dedicated
- * to glyph recognition
+ * Class <code>GlyphNetwork</code> encapsulates a neural network dedicated to
+ * glyph recognition
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -38,20 +43,21 @@ import java.io.InputStream;
 public class GlyphNetwork
     extends Evaluator
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Constants constants = new Constants();
-    private static final Logger logger = Logger.getLogger(GlyphNetwork.class);
+    private static final Logger    logger = Logger.getLogger(
+        GlyphNetwork.class);
 
     // The singleton
     private static GlyphNetwork INSTANCE;
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // The underlying neural network
     private NeuralNetwork network;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //--------------//
     // GlyphNetwork //
@@ -65,25 +71,29 @@ public class GlyphNetwork
         try {
             // First, look for a custom version
             File customFile = getCustomFile();
-            if (customFile.exists()){
-                logger.info ("Deserializing GlyphNetwork from custom"
-                             + " file " + customFile);
-                network = NeuralNetwork.deserialize
-                    (new FileInputStream(customFile));
+
+            if (customFile.exists()) {
+                logger.info(
+                    "Deserializing GlyphNetwork from custom" + " file " +
+                    customFile);
+                network = NeuralNetwork.deserialize(
+                    new FileInputStream(customFile));
             }
         } catch (FileNotFoundException ex) {
-            logger.warning ("Cannot find or read custom backup " +
-                            getCustomFile());
+            logger.warning(
+                "Cannot find or read custom backup " + getCustomFile());
         }
 
         // Second, use the system default
-        if (network == null){
+        if (network == null) {
             File defaultFile = getDefaultFile();
+
             try {
-                logger.info ("Deserializing GlyphNetwork from default"
-                             + " file " + defaultFile);
-                network = NeuralNetwork.deserialize
-                    (new FileInputStream(defaultFile));
+                logger.info(
+                    "Deserializing GlyphNetwork from default" + " file " +
+                    defaultFile);
+                network = NeuralNetwork.deserialize(
+                    new FileInputStream(defaultFile));
             } catch (FileNotFoundException ex) {
                 logger.severe("Cannot find default backup " + defaultFile);
             }
@@ -92,36 +102,26 @@ public class GlyphNetwork
         // Basic check
         if (network != null) {
             if (network.getOutputSize() != outSize) {
-                logger.warning("Obsolete Network data," +
-                               " reconstructing from scratch");
+                logger.warning(
+                    "Obsolete Network data," + " reconstructing from scratch");
                 network = null;
             }
         }
 
         if (network == null) {
             // Get a brand new one
-            logger.info ("Creating a brand new GlyphNetwork");
+            logger.info("Creating a brand new GlyphNetwork");
             network = createNetwork();
         }
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //------//
-    // dump //
-    //------//
-    @Override
-        public void dump ()
-    {
-        network.dump();
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //-------------//
     // getInstance //
     //-------------//
     /**
-     * Report the single instance of GlyphNetwork in the Audiveris
-     * application
+     * Report the single instance of GlyphNetwork in the Audiveris application
      *
      * @return the instance
      */
@@ -142,7 +142,7 @@ public class GlyphNetwork
      *
      * @param amplitude
      */
-    public void setAmplitude(double amplitude)
+    public void setAmplitude (double amplitude)
     {
         constants.amplitude.setValue(amplitude);
     }
@@ -155,9 +155,45 @@ public class GlyphNetwork
      *
      * @return the amplitude value
      */
-    public double getAmplitude()
+    public double getAmplitude ()
     {
         return constants.amplitude.getValue();
+    }
+
+    //----------------//
+    // getEvaluations //
+    //----------------//
+    /**
+     * Report the results of evaluating a glyph
+     *
+     * @param glyph the glyph to evaluate
+     *
+     * @return the ordered array of evaluations
+     */
+    @Override
+    public Evaluation[] getEvaluations (Glyph glyph)
+    {
+        // If too small, it's just NOISE
+        if (!isBigEnough(glyph)) {
+            return noiseEvaluations;
+        }
+
+        double[]     ins = feedInput(glyph, null);
+        double[]     outs = new double[outSize];
+        Evaluation[] evals = new Evaluation[outSize];
+
+        network.run(ins, null, outs);
+
+        for (int s = 0; s < outSize; s++) {
+            evals[s] = new Evaluation();
+            evals[s].shape = Shape.values()[s];
+            evals[s].grade = 1d / outs[s];
+        }
+
+        // Order the evals from best to worst
+        Arrays.sort(evals, comparator);
+
+        return evals;
     }
 
     //-----------------//
@@ -188,6 +224,34 @@ public class GlyphNetwork
         return constants.learningRate.getValue();
     }
 
+    //---------------//
+    // setListEpochs //
+    //---------------//
+    /**
+     * Modify the upper limit on the number of epochs (training iterations) for
+     * the training process
+     *
+     * @param listEpochs new value for iteration limit
+     */
+    public void setListEpochs (int listEpochs)
+    {
+        constants.listEpochs.setValue(listEpochs);
+        network.setEpochs(listEpochs);
+    }
+
+    //---------------//
+    // getListEpochs //
+    //---------------//
+    /**
+     * Selector on the maximum numner of training iterations
+     *
+     * @return the upper limit on iteration counter
+     */
+    public int getListEpochs ()
+    {
+        return constants.listEpochs.getValue();
+    }
+
     //-------------//
     // setMaxError //
     //-------------//
@@ -196,7 +260,7 @@ public class GlyphNetwork
      *
      * @param maxError the new threshold value to use
      */
-    public void  setMaxError (double maxError)
+    public void setMaxError (double maxError)
     {
         constants.maxError.setValue(maxError);
         network.setMaxError(maxError);
@@ -242,32 +306,18 @@ public class GlyphNetwork
         return constants.momentum.getValue();
     }
 
-    //---------------//
-    // setListEpochs //
-    //---------------//
+    //---------//
+    // getName //
+    //---------//
     /**
-     * Modify the upper limit on the number of epochs (training iterations)
-     * for the training process
+     * Report a name for this network
      *
-     * @param listEpochs new value for iteration limit
+     * @return a simple name
      */
-    public void setListEpochs (int listEpochs)
+    @Override
+    public String getName ()
     {
-        constants.listEpochs.setValue(listEpochs);
-        network.setEpochs(listEpochs);
-    }
-
-    //---------------//
-    // getListEpochs //
-    //---------------//
-    /**
-     * Selector on the maximum numner of training iterations
-     *
-     * @return the upper limit on iteration counter
-     */
-    public int getListEpochs ()
-    {
-        return constants.listEpochs.getValue();
+        return "Neural";
     }
 
     //------------//
@@ -278,72 +328,35 @@ public class GlyphNetwork
      *
      * @return the neural network
      */
-    public NeuralNetwork getNetwork()
+    public NeuralNetwork getNetwork ()
     {
         return network;
-    }
-
-    //----------------//
-    // getEvaluations //
-    //----------------//
-    @Override
-        public Evaluation[] getEvaluations (Glyph glyph)
-    {
-        // If too small, it's just NOISE
-        if (!isBigEnough(glyph)) {
-            return noiseEvaluations;
-        }
-
-        double[] ins = feedInput(glyph, null);
-        double[] outs = new double[outSize];
-        Evaluation[] evals = new Evaluation[outSize];
-
-        network.run(ins, null, outs);
-
-        for (int s = 0; s < outSize; s++) {
-            evals[s] = new Evaluation();
-            evals[s].shape = Shape.values()[s];
-            evals[s].grade = 1d / outs[s];
-        }
-
-        // Order the evals from best to worst
-        Arrays.sort(evals, comparator);
-
-        return evals;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    @Override
-        public String getName()
-    {
-        return "Neural";
     }
 
     //-----------//
     // isTrained //
     //-----------//
+    /**
+     * Predicate on whether the network has been trained
+     *
+     * @return true if trained
+     */
     @Override
-        public boolean isTrained ()
+    public boolean isTrained ()
     {
-        return true;                    // TBD ////
+        return true; // TBD ////
     }
 
-    //---------------//
-    // createNetwork //
-    //---------------//
-    private NeuralNetwork createNetwork ()
+    //------//
+    // dump //
+    //------//
+    /**
+     * Dump the internals of the neural network to the standard output
+     */
+    @Override
+    public void dump ()
     {
-        // Note : We allocate a hidden layer with as many cells as the
-        // output layer
-        NeuralNetwork nn =  new NeuralNetwork(inSize, outSize, outSize,
-                                              getAmplitude(),
-                                              getLearningRate(),
-                                              getMomentum(),
-                                              getMaxError(),
-                                              getListEpochs());
-        return nn;
+        network.dump();
     }
 
     //------//
@@ -353,7 +366,7 @@ public class GlyphNetwork
      * Forward s "Stop" order to the network neing trained
      */
     @Override
-    public void stop()
+    public void stop ()
     {
         network.stop();
     }
@@ -375,24 +388,28 @@ public class GlyphNetwork
     {
         if (glyphs.size() == 0) {
             logger.warning("No glyph to retrain Network Evaluator");
+
             return;
         }
 
         // Starting options
-        switch (mode){
+        switch (mode) {
         case SCRATCH :
             network = createNetwork();
-          break;
+
+            break;
 
         case INCREMENTAL :
             break;
         }
+
         Collections.shuffle(glyphs);
 
-        double[][] inputs         = new double[glyphs.size()][];
+        double[][] inputs = new double[glyphs.size()][];
         double[][] desiredOutputs = new double[glyphs.size()][];
 
-        int ig = 0;
+        int        ig = 0;
+
         for (Glyph glyph : glyphs) {
             double[] ins = new double[inSize];
             feedInput(glyph, ins);
@@ -400,7 +417,9 @@ public class GlyphNetwork
 
             double[] des = new double[outSize];
             Arrays.fill(des, 0);
-            des[glyph.getShape().ordinal()] = 1;
+
+            des[glyph.getShape()
+                     .ordinal()] = 1;
             desiredOutputs[ig] = des;
 
             ig++;
@@ -413,32 +432,46 @@ public class GlyphNetwork
         network.serialize(getCustomFile());
     }
 
-    //~ Classes -----------------------------------------------------------
+    //---------------//
+    // createNetwork //
+    //---------------//
+    private NeuralNetwork createNetwork ()
+    {
+        // Note : We allocate a hidden layer with as many cells as the output
+        // layer
+        NeuralNetwork nn = new NeuralNetwork(
+            inSize,
+            outSize,
+            outSize,
+            getAmplitude(),
+            getLearningRate(),
+            getMomentum(),
+            getMaxError(),
+            getListEpochs());
+
+        return nn;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
 
     private static class Constants
         extends ConstantSet
     {
-        //~ Instance variables --------------------------------------------
-
-        Constant.Integer listEpochs = new Constant.Integer
-                (2000,
-                 "Number of epochs for training on list of glyphs");
-
-        Constant.Double amplitude = new Constant.Double
-                (0.5,
-                 "Initial weight amplitude");
-
-        Constant.Double learningRate = new Constant.Double
-                (0.25,
-                 "Learning Rate");
-
-        Constant.Double momentum = new Constant.Double
-                (0.02,
-                 "Training momentum");
-
-        Constant.Double maxError = new Constant.Double
-                (1E-4,
-                 "Threshold to stop training");
+        Constant.Double  amplitude = new Constant.Double(
+            0.5,
+            "Initial weight amplitude");
+        Constant.Double  learningRate = new Constant.Double(
+            0.25,
+            "Learning Rate");
+        Constant.Integer listEpochs = new Constant.Integer(
+            2000,
+            "Number of epochs for training on list of glyphs");
+        Constant.Double  maxError = new Constant.Double(
+            1E-4,
+            "Threshold to stop training");
+        Constant.Double  momentum = new Constant.Double(
+            0.02,
+            "Training momentum");
 
         Constants ()
         {

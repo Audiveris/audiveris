@@ -1,18 +1,20 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                                C l e f                                //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                  C l e f                                   //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.score;
 
 import omr.glyph.Shape;
+
 import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
+
 import omr.util.Logger;
 
 import java.awt.*;
@@ -26,31 +28,30 @@ import java.awt.*;
 public class Clef
     extends StaffNode
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(Clef.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // Precise clef shape, from Clefs range in Shape class
-    private Shape shape;
+    private Shape      shape;
 
     // Location of the clef center WRT staff top-left corner
     private StaffPoint center;
 
-    // Step line of the clef : -4 for top line (Baritone), -2 for Bass, 0
-    // for Alto, +2 for Treble and Mezzo-Soprano, +4 for bottom line
-    // (Soprano).
+    // Step line of the clef : -4 for top line (Baritone), -2 for Bass, 0 for
+    // Alto, +2 for Treble and Mezzo-Soprano, +4 for bottom line (Soprano).
     private int pitchPosition;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //------//
     // Clef //
     //------//
     /**
      * Create a Clef instance
-     * 
+     *
      * @param container the container (the measure clef list)
      * @param staff containing staff
      * @param shape precise clef shape
@@ -64,25 +65,27 @@ public class Clef
                  int        pitchPosition)
     {
         super(container, staff);
-        this.shape    = shape;
-        this.center   = center;
+        this.shape = shape;
+        this.center = center;
         this.pitchPosition = pitchPosition;
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //-----------//
     // paintNode //
     //-----------//
     @Override
-        protected boolean paintNode (Graphics  g,
-                                     Zoom      zoom)
+    protected boolean paintNode (Graphics g,
+                                 Zoom     zoom)
     {
         // Draw the clef symbol
-        staff.paintSymbol(g, zoom,
-                    (SymbolIcon) shape.getIcon(),
-                    center,
-                    pitchPosition);
+        staff.paintSymbol(
+            g,
+            zoom,
+            (SymbolIcon) shape.getIcon(),
+            center,
+            pitchPosition);
 
         return true;
     }

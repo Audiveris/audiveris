@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                             D i g r a p h                             //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                               D i g r a p h                                //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.graph;
 
 import omr.util.Logger;
@@ -15,18 +15,18 @@ import omr.util.Logger;
 import java.util.*;
 
 /**
- * Class <code>Digraph</code> handles a directed graph, a structure
- * containing an <b>homogeneous</b> collection of instances of Vertex (or a
- * collection of homogeneous types derived from Vertex), potentially linked
- * by directed edges.  <p/>
+ * Class <code>Digraph</code> handles a directed graph, a structure containing
+ * an <b>homogeneous</b> collection of instances of Vertex (or a collection of
+ * homogeneous types derived from Vertex), potentially linked by directed edges.
+ * <p/>
  *
- * <p> Vertices can exist in isolation, but an edge can exist only from a
- * vertex to another vertex. Thus, removing a vertex implies removing all
- * its incoming and outgoing edges.
+ * <p> Vertices can exist in isolation, but an edge can exist only from a vertex
+ * to another vertex. Thus, removing a vertex implies removing all its incoming
+ * and outgoing edges.
  *
  * <p><b>NOTA</b>: Since we have no data to carry in edges, there is no
- * <code>Edge</code> type per se, links between vertices are implemented
- * simply by Lists of Vertex.
+ * <code>Edge</code> type per se, links between vertices are implemented simply
+ * by Lists of Vertex.
  *
  * @param <D> precise (sub)type for the graph
  * @param <V> precise type for handled vertices
@@ -34,31 +34,20 @@ import java.util.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class Digraph <D extends Digraph <D, V>,
-                      V extends Vertex>
+public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     implements java.io.Serializable
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(Digraph.class);
+    private static final Logger           logger = Logger.getLogger(
+        Digraph.class);
 
-    //~ Instance variables ------------------------------------------------
-
-    /**
-     * Related Vertex (sub)class, to create vertices of the proper type
-     */
-    private Class<? extends V> vertexClass;
+    //~ Instance fields --------------------------------------------------------
 
     /**
      * All Vertices of the graph
      */
-    protected final SortedMap<Integer, V> vertices
-        = new TreeMap<Integer, V>();
-
-    /**
-     * Global id to uniquely identify a vertex
-     */
-    protected int globalVertexId = 0;
+    protected final SortedMap<Integer, V> vertices = new TreeMap<Integer, V>();
 
     /**
      * All Views on this graph
@@ -70,7 +59,17 @@ public class Digraph <D extends Digraph <D, V>,
      */
     protected String name;
 
-    //~ Constructors ------------------------------------------------------
+    /**
+     * Global id to uniquely identify a vertex
+     */
+    protected int globalVertexId = 0;
+
+    /**
+     * Related Vertex (sub)class, to create vertices of the proper type
+     */
+    private Class<?extends V> vertexClass;
+
+    //~ Constructors -----------------------------------------------------------
 
     //---------//
     // Digraph //
@@ -82,7 +81,23 @@ public class Digraph <D extends Digraph <D, V>,
     {
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
+
+    //-----------------//
+    // getLastVertexId //
+    //-----------------//
+    /**
+     * Give access to the last id assigned to a vertex in this graph. This may
+     * be greater than the number of vertices currently in the graph, because of
+     * potential deletion of vertices (Vertex Id is never reused).
+     *
+     * @return id of the last vertex created
+     * @see #getVertexCount
+     */
+    public int getLastVertexId ()
+    {
+        return globalVertexId;
+    }
 
     //---------//
     // setName //
@@ -105,44 +120,9 @@ public class Digraph <D extends Digraph <D, V>,
      *
      * @return the readable name
      */
-    public String getName()
+    public String getName ()
     {
         return name;
-    }
-
-    //----------------//
-    // setVertexClass //
-    //----------------//
-    /**
-     * Assigned the vertexClass (needed to create new vertices in the
-     * graph).  This is meant to complement the default constructor.
-     *
-     * @param vertexClass the class to be used when instantiating vertices
-     */
-    public void setVertexClass (Class<? extends V> vertexClass)
-    {
-        if (vertexClass == null) {
-            throw new IllegalArgumentException("null vertex class");
-        } else {
-            this.vertexClass = vertexClass;
-        }
-    }
-
-    //-----------------//
-    // getLastVertexId //
-    //-----------------//
-    /**
-     * Give access to the last id assigned to a vertex in this graph. This
-     * may be greater than the number of vertices currently in the graph,
-     * because of potential deletion of vertices (Vertex Id is never
-     * reused).
-     *
-     * @return id of the last vertex created
-     * @see #getVertexCount
-     */
-    public int getLastVertexId ()
-    {
-        return globalVertexId;
     }
 
     //---------------//
@@ -154,9 +134,27 @@ public class Digraph <D extends Digraph <D, V>,
      * @param id the vertex id
      * @return the vertex found, or null
      */
-    public V getVertexById(int id)
+    public V getVertexById (int id)
     {
         return vertices.get(id);
+    }
+
+    //----------------//
+    // setVertexClass //
+    //----------------//
+    /**
+     * Assigned the vertexClass (needed to create new vertices in the graph).
+     * This is meant to complement the default constructor.
+     *
+     * @param vertexClass the class to be used when instantiating vertices
+     */
+    public void setVertexClass (Class<?extends V> vertexClass)
+    {
+        if (vertexClass == null) {
+            throw new IllegalArgumentException("null vertex class");
+        } else {
+            this.vertexClass = vertexClass;
+        }
     }
 
     //----------------//
@@ -171,6 +169,19 @@ public class Digraph <D extends Digraph <D, V>,
     public int getVertexCount ()
     {
         return vertices.size();
+    }
+
+    //-------------//
+    // getVertices //
+    //-------------//
+    /**
+     * Export the vertices of the graph. TBD: should be unmutable ?
+     *
+     * @return the collection of vertices
+     */
+    public Collection<V> getVertices ()
+    {
+        return vertices.values();
     }
 
     //----------//
@@ -190,6 +201,27 @@ public class Digraph <D extends Digraph <D, V>,
         return views;
     }
 
+    //-----------//
+    // addVertex //
+    //-----------//
+    /**
+     * (package access from {@link Vertex}) to add a vertex in the graph, the
+     * vertex is being assigned a unique id by the graph.
+     *
+     * @param vertex the newly created vertex
+     */
+    public void addVertex (V vertex) // HB PUBLIC just for Verifier
+
+    {
+        if (vertex == null) {
+            throw new IllegalArgumentException("Cannot add a null vertex");
+        }
+
+        vertices.put(++globalVertexId, vertex);
+        vertex.setId(globalVertexId);
+        vertex.setGraph(this); // Compiler warning here
+    }
+
     //---------//
     // addView //
     //---------//
@@ -200,7 +232,37 @@ public class Digraph <D extends Digraph <D, V>,
      */
     public void addView (DigraphView view)
     {
-        getViews().add(view);
+        getViews()
+            .add(view);
+    }
+
+    //--------------//
+    // createVertex //
+    //--------------//
+    /**
+     * Create a new vertex in the graph, using the provided vertex class
+     *
+     * @return the vertex created
+     */
+    public V createVertex ()
+    {
+        V vertex;
+
+        try {
+            vertex = vertexClass.newInstance();
+            addVertex(vertex);
+
+            return vertex;
+        } catch (NullPointerException ex) {
+            throw new RuntimeException(
+                "Digraph cannot create vertex, vertexClass not set");
+        } catch (InstantiationException ex) {
+            throw new RuntimeException(
+                "Cannot createVertex with an abstract class or interface: " +
+                vertexClass);
+        } catch (IllegalAccessException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     //------//
@@ -233,19 +295,25 @@ public class Digraph <D extends Digraph <D, V>,
      * @return the string
      */
     @Override
-        public String toString ()
+    public String toString ()
     {
         StringBuffer sb = new StringBuffer(25);
 
-        sb.append("{").append(getPrefix());
+        sb.append("{")
+          .append(getPrefix());
 
         if (name != null) {
-            sb.append("#").append(name);
+            sb.append("#")
+              .append(name);
         }
 
-        sb.append(" ").append(getVertexCount()).append(" vertices");
+        sb.append(" ")
+          .append(getVertexCount())
+          .append(" vertices");
 
-        if (this.getClass().getName().equals (Digraph.class.getName())) {
+        if (this.getClass()
+                .getName()
+                .equals(Digraph.class.getName())) {
             sb.append("}");
         }
 
@@ -256,73 +324,14 @@ public class Digraph <D extends Digraph <D, V>,
     // getPrefix //
     //-----------//
     /**
-     * Return a distinctive string, to be used as a prefix in toString()
-     * for example.
+     * Return a distinctive string, to be used as a prefix in toString() for
+     * example.
      *
      * @return the prefix string
      */
     protected String getPrefix ()
     {
         return "Digraph";
-    }
-
-    //-------------//
-    // getVertices //
-    //-------------//
-    /**
-     * Export the vertices of the graph. TBD: should be unmutable ?
-     *
-     * @return the collection of vertices
-     */
-    public Collection<V> getVertices ()
-    {
-        return vertices.values();
-    }
-
-    //-----------//
-    // addVertex //
-    //-----------//
-    /**
-     * (package access from {@link Vertex}) to add a vertex in the graph,
-     * the vertex is being assigned a unique id by the graph.
-     *
-     * @param vertex the newly created vertex
-     */
-    public void addVertex (V vertex)     // HB PUBLIC just for Verifier
-    {
-        if (vertex == null) {
-            throw new IllegalArgumentException("Cannot add a null vertex");
-        }
-
-        vertices.put(++globalVertexId, vertex);
-        vertex.setId(globalVertexId);
-        vertex.setGraph(this);          // Compiler warning here
-    }
-
-    //--------------//
-    // createVertex //
-    //--------------//
-    /**
-     * Create a new vertex in the graph, using the provided vertex class
-     *
-     * @return the vertex created
-     */
-    public V createVertex ()
-    {
-        V vertex;
-        try {
-            vertex = vertexClass.newInstance();
-            addVertex(vertex);
-            return vertex;
-        } catch (NullPointerException ex) {
-            throw new RuntimeException
-                ("Digraph cannot create vertex, vertexClass not set");
-        } catch (InstantiationException ex) {
-            throw new RuntimeException
-                ("Cannot createVertex with an abstract class or interface: " + vertexClass);
-        } catch (IllegalAccessException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     //--------------//
@@ -340,13 +349,13 @@ public class Digraph <D extends Digraph <D, V>,
         }
 
         if (vertex == null) {
-            throw new IllegalArgumentException
-                ("Trying to remove a null vertex");
+            throw new IllegalArgumentException(
+                "Trying to remove a null vertex");
         }
 
         if (vertices.remove(vertex.getId()) == null) {
-            throw new RuntimeException
-                ("Trying to remove an unknown vertex: " + vertex);
+            throw new RuntimeException(
+                "Trying to remove an unknown vertex: " + vertex);
         }
     }
 }

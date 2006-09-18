@@ -1,18 +1,19 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                              R e s u l t                              //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                R e s u l t                                 //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.check;
 
+
 /**
- * Class <code>Result</code> is the root of all result information stored
- * while processing processing checks.
+ * Class <code>Result</code> is the root of all result information stored while
+ * processing processing checks.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -20,14 +21,14 @@ package omr.check;
 public abstract class Result
     implements java.io.Serializable
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     /**
      * A readable comment about the result.
      */
     public final String comment;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //--------//
     // Result //
@@ -42,7 +43,7 @@ public abstract class Result
         this.comment = comment;
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //----------//
     // toString //

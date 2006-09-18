@@ -1,19 +1,20 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                 J u n c t i o n D e l t a P o l i c y                 //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                   J u n c t i o n D e l t a P o l i c y                    //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.lag;
 
+
 /**
- * Class <code>JunctionDeltaPolicy</code> defined a junction policy based
- * on the delta between the length of the candidate run and the length of
- * the last run of the section.
+ * Class <code>JunctionDeltaPolicy</code> defined a junction policy based on the
+ * delta between the length of the candidate run and the length of the last run
+ * of the section.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -21,14 +22,14 @@ package omr.lag;
 public class JunctionDeltaPolicy
     extends JunctionPolicy
 {
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     /**
      * Maximum value acceptable for delta length, for a delta criteria
      */
     private final int maxDeltaLength;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //---------------------//
     // JunctionDeltaPolicy //
@@ -44,12 +45,21 @@ public class JunctionDeltaPolicy
         this.maxDeltaLength = maxDeltaLength;
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //---------------//
     // consistentRun //
     //---------------//
-    public boolean consistentRun (Run run,
+    /**
+     * Check whether the Run is consistent with the provided Section, according
+     * to this junction policy, based on run length and last section run length
+     *
+     * @param run the Run candidate
+     * @param section the potentially hosting Section
+     *
+     * @return true if consistent, false otherwise
+     */
+    public boolean consistentRun (Run     run,
                                   Section section)
     {
         // Check based on absolute differences between the two runs
@@ -69,7 +79,7 @@ public class JunctionDeltaPolicy
     @Override
     public String toString ()
     {
-        return "{JunctionDeltaPolicy" + " maxDeltaLength=" + maxDeltaLength
-               + "}";
+        return "{JunctionDeltaPolicy" + " maxDeltaLength=" + maxDeltaLength +
+               "}";
     }
 }

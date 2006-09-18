@@ -7,57 +7,57 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.icon;
 
 import java.awt.*;
 import java.awt.image.*;
+
 import javax.swing.*;
 
 /**
  * Class <code>SymbolIcon</code> is an icon, built from a provided image,
  * with consistent width among all defined symbol icons to ease their
  * presentation in menus.
- * 
- * 
+ *
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class SymbolIcon
     implements Icon
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     // The same width for all such icons (to be improved)
-    private static int standardWidth = -1;
+    private static int    standardWidth = -1;
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
+
+    // Connected to Ledger ?
+    private Boolean       hasLedger;
 
     // Related image
     private BufferedImage image;
 
-    // Related name
-    private String name;
-
     // Symbol size (which must be consistent with image dimensions)
     private Dimension dimension;
 
-    // Mass center
-    private Point centroid;
-
-    // Reference point, if any
-    private Point refPoint;
-
     // Pitch position within staff lines
-    private Double pitchPosition;
-
-    // Connected to Ledger ?
-    private Boolean hasLedger;
+    private Double  pitchPosition;
 
     // How many stems is it connected to ?
     private Integer stemNumber;
 
-    //~ Constructors ------------------------------------------------------
+    // Mass center
+    private Point  centroid;
+
+    // Reference point, if any
+    private Point  refPoint;
+
+    // Related name
+    private String name;
+
+    //~ Constructors -----------------------------------------------------------
 
     //------------//
     // SymbolIcon //
@@ -82,7 +82,7 @@ public class SymbolIcon
         setImage(image);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //----------------//
     // getActualWidth //
@@ -92,79 +92,32 @@ public class SymbolIcon
      *
      * @return the real icon width in pixels
      */
-    public int getActualWidth()
+    public int getActualWidth ()
     {
         if (getImage() != null) {
-            return getImage().getWidth();
+            return getImage()
+                       .getWidth();
         } else {
             return 0;
         }
     }
 
-    //--------------//
-    // getIconWidth //
-    //--------------//
-    /**
-     * Report the STANDARD width of the icon (used by swing when painting)
-     *
-     * @return the standard width in pixels
-     */
-    public int getIconWidth()
-    {
-        return standardWidth;
-    }
-
-    //---------------//
-    // getIconHeight //
-    //---------------//
-    public int getIconHeight()
-    {
-        if (getImage() != null) {
-            return getImage().getHeight();
-        } else {
-            return -1;
-        }
-    }
-
     //-----------//
-    // paintIcon //
+    // getBitmap //
     //-----------//
-    public void paintIcon(Component c,
-                          Graphics  g,
-                          int       x,
-                          int       y)
-    {
-        g.drawImage(image, x, y, c);
-    }
-
-    //----------//
-    // getImage //
-    //----------//
-    public BufferedImage getImage()
-    {
-        return image;
-    }
-
-    //----------//
-    // setImage //
-    //----------//
     /**
-     * Assign the image
+     * Report an array of strings that describe the bitmap
      *
-     * @param image the icon image
+     * @return the array of strings for file storing
      */
-    public void setImage(BufferedImage image)
+    public String[] getBitmap ()
     {
-        this.image = image;
-
-        // Invalidate cached data
-        dimension = null;
-        centroid  = null;
-
-        // Gradually update the common standard width
-        if (getActualWidth() > getIconWidth()) {
-            setStandardWidth(getActualWidth());
+        if (getIconHeight() == -1) {
+            return null;
         }
+
+        // Generate the string array from the icon image
+        return IconManager.encodeImage(this);
     }
 
     //-------------//
@@ -180,30 +133,34 @@ public class SymbolIcon
             if (getImage() == null) {
                 return null;
             }
-            final int width  = getDimension().width;
-            final int height = getDimension().height;
-            int[] argbs = new int[width * height];
-            image.getRGB(0,0,width,height,argbs,0,width);
 
-            int sw = 0;           // Total weight of non transparent points
-            int sx = 0;           // x moment
-            int sy = 0;           // y moment
+            final int width = getDimension().width;
+            final int height = getDimension().height;
+            int[]     argbs = new int[width * height];
+            image.getRGB(0, 0, width, height, argbs, 0, width);
+
+            int sw = 0; // Total weight of non transparent points
+            int sx = 0; // x moment
+            int sy = 0; // y moment
+
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
-                    int argb = argbs[x + y*width];
+                    int argb = argbs[x + (y * width)];
                     int a = (argb & 0xff000000) >>> 24; // Alpha
+
                     if (a != 0) {
-                        int b = (argb & 0x000000ff);    // Blue
-                        int w = 255 - b;                // Darker = heavier
+                        int b = (argb & 0x000000ff); // Blue
+                        int w = 255 - b; // Darker = heavier
                         sw += w;
-                        sx += x * w;
-                        sy += y * w;
+                        sx += (x * w);
+                        sy += (y * w);
                     }
                 }
             }
 
-            centroid = new Point((int) Math.rint((double) sx/sw),
-                                 (int) Math.rint((double) sy/sw));
+            centroid = new Point(
+                (int) Math.rint((double) sx / sw),
+                (int) Math.rint((double) sy / sw));
         }
 
         return centroid;
@@ -219,15 +176,93 @@ public class SymbolIcon
     public Dimension getDimension ()
     {
         if (dimension == null) {
-            if (image != null &&
-                image.getWidth() != 0 &&
-                image.getHeight() != 0 ) {
-                dimension = new Dimension(image.getWidth(),
-                                          image.getHeight());
+            if ((image != null) &&
+                (image.getWidth() != 0) &&
+                (image.getHeight() != 0)) {
+                dimension = new Dimension(image.getWidth(), image.getHeight());
             }
         }
 
         return dimension;
+    }
+
+    //--------------//
+    // setHasLedger //
+    //--------------//
+    /**
+     * Assign the connection to a ledger
+     *
+     * @param hasLedger true if there is a connected ledger
+     */
+    public void setHasLedger (boolean hasLedger)
+    {
+        this.hasLedger = hasLedger;
+    }
+
+    //---------------//
+    // getIconHeight //
+    //---------------//
+    /**
+     * Report the icon height
+     *
+     * @return the height of the underlying image
+     */
+    public int getIconHeight ()
+    {
+        if (getImage() != null) {
+            return getImage()
+                       .getHeight();
+        } else {
+            return -1;
+        }
+    }
+
+    //--------------//
+    // getIconWidth //
+    //--------------//
+    /**
+     * Report the STANDARD width of the icon (used by swing when painting)
+     *
+     * @return the standard width in pixels
+     */
+    public int getIconWidth ()
+    {
+        return standardWidth;
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    /**
+     * Assign the image
+     *
+     * @param image the icon image
+     */
+    public void setImage (BufferedImage image)
+    {
+        this.image = image;
+
+        // Invalidate cached data
+        dimension = null;
+        centroid = null;
+
+        // Gradually update the common standard width
+        if (getActualWidth() > getIconWidth()) {
+            setStandardWidth(getActualWidth());
+        }
+    }
+
+    //----------//
+    // getImage //
+    //----------//
+    /**
+     * Report the underlying image
+     *
+     * @return the underlying image
+     */
+    public BufferedImage getImage ()
+    {
+        return image;
     }
 
     //------------------//
@@ -254,37 +289,7 @@ public class SymbolIcon
     public void setBitmap (String[] rows)
     {
         // Elaborate the image from the string array
-        setImage(IconManager.decodeImage (rows));
-    }
-
-    //-----------//
-    // getBitmap //
-    //-----------//
-    /**
-     * Report an array of strings that describe the bitmap
-     *
-     * @return the array of strings for file storing
-     */
-    public String[] getBitmap()
-    {
-        if (getIconHeight() == -1) {
-            return null;
-        }
-        // Generate the string array from the icon image
-        return IconManager.encodeImage (this);
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name (generally the shape name) of the symbol
-     *
-     * @return the symbol name
-     */
-    public String getName ()
-    {
-        return name;
+        setImage(IconManager.decodeImage(rows));
     }
 
     //---------//
@@ -300,43 +305,17 @@ public class SymbolIcon
         this.name = name;
     }
 
-    //-------------//
-    // getRefPoint //
-    //-------------//
+    //---------//
+    // getName //
+    //---------//
     /**
-     * Report the assigned reference point
+     * Report the name (generally the shape name) of the symbol
      *
-     * @return the ref point, which may be null
+     * @return the symbol name
      */
-    public Point getRefPoint()
+    public String getName ()
     {
-        return refPoint;
-    }
-
-    //-------------//
-    // setRefPoint //
-    //-------------//
-    /**
-     * Assign a reference point to the symbol
-     *
-     * @param refPoint the reference point
-     */
-    public void setRefPoint(Point refPoint)
-    {
-        this.refPoint = refPoint;
-    }
-
-    //------------------//
-    // getPitchPosition //
-    //------------------//
-    /**
-     * Report the pitch position within the staff lines
-     *
-     * @return the pitch position
-     */
-    public Double getPitchPosition()
-    {
-        return pitchPosition;
+        return name;
     }
 
     //------------------//
@@ -347,48 +326,48 @@ public class SymbolIcon
      *
      * @param pitchPosition the position relative to the staff lines
      */
-    public void setPitchPosition(Double pitchPosition)
+    public void setPitchPosition (Double pitchPosition)
     {
         this.pitchPosition = pitchPosition;
     }
 
-    //-----------//
-    // hasLedger //
-    //-----------//
+    //------------------//
+    // getPitchPosition //
+    //------------------//
     /**
-     * Is this entity connected to a ledger
+     * Report the pitch position within the staff lines
      *
-     * @return true if ther is at least one ledger
+     * @return the pitch position
      */
-    public boolean hasLedger()
+    public Double getPitchPosition ()
     {
-        return hasLedger;
+        return pitchPosition;
     }
 
-    //--------------//
-    // setHasLedger //
-    //--------------//
+    //-------------//
+    // setRefPoint //
+    //-------------//
     /**
-     * Assign the connection to a ledger
+     * Assign a reference point to the symbol
      *
-     * @param hasLedger true if there is a connected ledger
+     * @param refPoint the reference point
      */
-    public void setHasLedger(boolean hasLedger)
+    public void setRefPoint (Point refPoint)
     {
-        this.hasLedger = hasLedger;
+        this.refPoint = refPoint;
     }
 
-    //---------------//
-    // getStemNumber //
-    //---------------//
+    //-------------//
+    // getRefPoint //
+    //-------------//
     /**
-     * Report the number of stems this entity is connected to
+     * Report the assigned reference point
      *
-     * @return the number of stems
+     * @return the ref point, which may be null
      */
-    public int getStemNumber()
+    public Point getRefPoint ()
     {
-        return stemNumber;
+        return refPoint;
     }
 
     //---------------//
@@ -399,8 +378,53 @@ public class SymbolIcon
      *
      * @param stemNumber the number of stems
      */
-    public void setStemNumber(int stemNumber)
+    public void setStemNumber (int stemNumber)
     {
         this.stemNumber = stemNumber;
+    }
+
+    //---------------//
+    // getStemNumber //
+    //---------------//
+    /**
+     * Report the number of stems this entity is connected to
+     *
+     * @return the number of stems
+     */
+    public int getStemNumber ()
+    {
+        return stemNumber;
+    }
+
+    //-----------//
+    // hasLedger //
+    //-----------//
+    /**
+     * Is this entity connected to a ledger
+     *
+     * @return true if ther is at least one ledger
+     */
+    public boolean hasLedger ()
+    {
+        return hasLedger;
+    }
+
+    //-----------//
+    // paintIcon //
+    //-----------//
+    /**
+     * Implements Icon interface paintIcon() method
+     *
+     * @param c containing component (???)
+     * @param g graphic context
+     * @param x abscissa
+     * @param y ordinate
+     */
+    public void paintIcon (Component c,
+                           Graphics  g,
+                           int       x,
+                           int       y)
+    {
+        g.drawImage(image, x, y, c);
     }
 }

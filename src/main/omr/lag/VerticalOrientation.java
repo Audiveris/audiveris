@@ -1,21 +1,21 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                 V e r t i c a l O r i e n t a t i o n                 //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                   V e r t i c a l O r i e n t a t i o n                    //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.lag;
 
 import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class <code>VerticalOrientation</code> defines an orientation where
- * sections are vertical (coord is y, pos is x)
+ * Class <code>VerticalOrientation</code> defines an orientation where sections
+ * are vertical (coord is y, pos is x)
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -24,9 +24,16 @@ public class VerticalOrientation
     implements Oriented,
                java.io.Serializable
 {
+    //~ Methods ----------------------------------------------------------------
+
     //------------//
     // isVertical //
     //------------//
+    /**
+     * A vertical lag IS indeed vertical !
+     *
+     * @return true
+     */
     public boolean isVertical ()
     {
         return true;
@@ -35,6 +42,16 @@ public class VerticalOrientation
     //-----------//
     // switchRef //
     //-----------//
+    /**
+     * Retrieve absolute coordinates of a point relative to the (horizontal)
+     * lag. Based on current lag implementation, this method implies to switch
+     * coordinates values
+     *
+     * @param cp the relative coordinates
+     * @param xy variable for the absolute coordinates, or null
+     *
+     * @return the absolute coordinates
+     */
     public Point switchRef (Point cp,
                             Point xy)
     {
@@ -52,6 +69,16 @@ public class VerticalOrientation
     //-----------//
     // switchRef //
     //-----------//
+    /**
+     * Retrieve absolute coordinates of a rectangle relative to the (horizontal)
+     * lag. Based on current lag implementation, this method implies to switch
+     * coordinates values
+     *
+     * @param cplt the relative coordinates
+     * @param xywh variable for the absolute coordinates, or null
+     *
+     * @return the absolute coordinates
+     */
     public Rectangle switchRef (Rectangle cplt,
                                 Rectangle xywh)
     {

@@ -7,12 +7,13 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-
 package omr.ui.view;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.ui.*;
+
 import omr.util.Logger;
 
 import java.awt.Dimension;
@@ -20,6 +21,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.swing.event.*;
 
 /**
@@ -49,21 +51,18 @@ import javax.swing.event.*;
  */
 public class Zoom
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger    logger    = Logger.getLogger(Zoom.class);
-    private static final Constants constants = new Constants();
+    private static final Constants  constants = new Constants();
+    private static final Logger     logger = Logger.getLogger(Zoom.class);
 
     // To assign a unique Id
-    private static int globalId;
+    private static int              globalId;
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    // Unique Id (to ease debugging)
-    private int id = ++globalId;
-
-    /** Current ratio value */
-    protected double ratio;
+    /** Unique event, created lazily */
+    protected transient ChangeEvent changeEvent = null;
 
     /** Potential logarithmic slider to drive this zoom */
     protected LogSlider slider;
@@ -71,10 +70,13 @@ public class Zoom
     /** Collection of event listeners */
     protected Set<ChangeListener> listeners = new HashSet<ChangeListener>();
 
-    /** Unique event, created lazily */
-    protected transient ChangeEvent changeEvent = null;
+    /** Current ratio value */
+    protected double ratio;
 
-    //~ Constructors ------------------------------------------------------
+    // Unique Id (to ease debugging)
+    private int id = ++globalId;
+
+    //~ Constructors -----------------------------------------------------------
 
     //------//
     // Zoom //
@@ -118,16 +120,15 @@ public class Zoom
                  double    ratio)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("Zoom created" +
-                         " slider=" + slider +
-                         " ratio=" + ratio);
+            logger.fine(
+                "Zoom created" + " slider=" + slider + " ratio=" + ratio);
         }
 
         setSlider(slider);
         setRatio(ratio);
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //----------//
     // setRatio //
@@ -152,26 +153,6 @@ public class Zoom
         } else {
             forceRatio(ratio);
         }
-    }
-
-    //------------//
-    // forceRatio //
-    //------------//
-    /**
-     * Impose and propagate the new ratio
-     *
-     * @param ratio the new ratio
-     */
-    private void forceRatio (double ratio)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("forceRatio ratio=" + ratio);
-        }
-
-        this.ratio = ratio;
-
-        // Propagate to listeners
-        fireStateChanged();
     }
 
     //----------//
@@ -207,26 +188,29 @@ public class Zoom
         if (slider != null) {
             slider.setDoubleValue(ratio);
 
-            slider.addChangeListener(new ChangeListener() {
-                    public void stateChanged (ChangeEvent e)
-                    {
-                        // Forward the new zoom ratio
-                        if (constants.continuousSliderReading.getValue()
-                            || ! slider.getValueIsAdjusting()) {
-                            double newRatio = slider.getDoubleValue();
+            slider.addChangeListener(
+                new ChangeListener() {
+                        public void stateChanged (ChangeEvent e)
+                        {
+                            // Forward the new zoom ratio
+                            if (constants.continuousSliderReading.getValue() ||
+                                !slider.getValueIsAdjusting()) {
+                                double newRatio = slider.getDoubleValue();
 
-                            if (logger.isFineEnabled()) {
-                                logger.fine("Slider firing zoom newRatio=" + newRatio);
-                            }
+                                if (logger.isFineEnabled()) {
+                                    logger.fine(
+                                        "Slider firing zoom newRatio=" +
+                                        newRatio);
+                                }
 
-                            // Stop condition to avoid endless loop between
-                            // slider and zoom
-                            if (newRatio != ratio) {
-                                forceRatio(newRatio);
+                                // Stop condition to avoid endless loop between
+                                // slider and zoom
+                                if (newRatio != ratio) {
+                                    forceRatio(newRatio);
+                                }
                             }
                         }
-                    }
-                });
+                    });
         }
     }
 
@@ -244,8 +228,38 @@ public class Zoom
         listeners.add(listener);
 
         if (logger.isFineEnabled()) {
-            logger.fine("addChangeListener " + listener +
-                         " -> " + listeners.size());
+            logger.fine(
+                "addChangeListener " + listener + " -> " + listeners.size());
+        }
+    }
+
+    //------------------//
+    // fireStateChanged //
+    //------------------//
+    /**
+     * In charge of forwarding the change notification to all registered
+     * listeners
+     */
+    public void fireStateChanged ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Listeners= " + listeners.size());
+
+            for (ChangeListener listener : listeners) {
+                logger.fine(this + " will Fire " + listener);
+            }
+        }
+
+        for (ChangeListener listener : listeners) {
+            if (changeEvent == null) {
+                changeEvent = new ChangeEvent(this);
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine(this + " Firing " + listener);
+            }
+
+            listener.stateChanged(changeEvent);
         }
     }
 
@@ -286,7 +300,7 @@ public class Zoom
      */
     public void scale (Dimension dim)
     {
-        dim.width  = scaled(dim.width);
+        dim.width = scaled(dim.width);
         dim.height = scaled(dim.height);
     }
 
@@ -300,9 +314,9 @@ public class Zoom
      */
     public void scale (Rectangle rect)
     {
-        rect.x      = scaled(rect.x);
-        rect.y      = scaled(rect.y);
-        rect.width  = scaled(rect.width);
+        rect.x = scaled(rect.x);
+        rect.y = scaled(rect.y);
+        rect.width = scaled(rect.width);
         rect.height = scaled(rect.height);
     }
 
@@ -357,6 +371,21 @@ public class Zoom
         return r;
     }
 
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Report a quick description
+     *
+     * @return the zoom information
+     */
+    @Override
+    public String toString ()
+    {
+        return "{Zoom#" + id + " listeners=" + listeners.size() + " ratio=" +
+               ratio + "}";
+    }
+
     //-------------//
     // truncScaled //
     //-------------//
@@ -404,51 +433,27 @@ public class Zoom
         return (int) Math.rint(val / ratio);
     }
 
-    //------------------//
-    // fireStateChanged //
-    //------------------//
+    //------------//
+    // forceRatio //
+    //------------//
     /**
-     * In charge of forwarding the change notification to all registered
-     * listeners
+     * Impose and propagate the new ratio
+     *
+     * @param ratio the new ratio
      */
-    public void fireStateChanged ()
+    private void forceRatio (double ratio)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("Listeners= " + listeners.size());
-
-            for (ChangeListener listener : listeners) {
-                logger.fine(this + " will Fire " + listener);
-            }
+            logger.fine("forceRatio ratio=" + ratio);
         }
 
-        for (ChangeListener listener : listeners) {
-            if (changeEvent == null) {
-                changeEvent = new ChangeEvent(this);
-            }
-            if (logger.isFineEnabled()) {
-                logger.fine(this + " Firing " + listener);
-            }
+        this.ratio = ratio;
 
-            listener.stateChanged(changeEvent);
-        }
+        // Propagate to listeners
+        fireStateChanged();
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Report a quick description
-     *
-     * @return the zoom information
-     */
-    @Override
-        public String toString()
-    {
-        return "{Zoom#" + id + " listeners=" + listeners.size() +
-            " ratio=" + ratio + "}";
-    }
-
-    //~ Classes -----------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
     // Constants //
@@ -456,10 +461,9 @@ public class Zoom
     private static class Constants
         extends ConstantSet
     {
-        Constant.Boolean continuousSliderReading
-            = new Constant.Boolean
-            (true,
-             "Should we allow continuous reading of the zoom slider");
+        Constant.Boolean continuousSliderReading = new Constant.Boolean(
+            true,
+            "Should we allow continuous reading of the zoom slider");
 
         Constants ()
         {

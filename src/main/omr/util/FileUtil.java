@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                            F i l e U t i l                            //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                              F i l e U t i l                               //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.util;
 
 import java.io.File;
@@ -25,10 +25,14 @@ import java.nio.channels.FileChannel;
  */
 public class FileUtil
 {
+    //~ Constructors -----------------------------------------------------------
+
     // Not meant to be instantiated
-    private FileUtil()
+    private FileUtil ()
     {
     }
+
+    //~ Methods ----------------------------------------------------------------
 
     //--------------//
     // getExtension //
@@ -52,7 +56,7 @@ public class FileUtil
     public static String getExtension (File file)
     {
         String name = file.getName();
-        int i = name.lastIndexOf('.');
+        int    i = name.lastIndexOf('.');
 
         if (i >= 0) {
             return name.substring(i);
@@ -74,7 +78,7 @@ public class FileUtil
     public static String getNameSansExtension (File file)
     {
         String name = file.getName();
-        int i = name.lastIndexOf('.');
+        int    i = name.lastIndexOf('.');
 
         if (i >= 0) {
             return name.substring(0, i);
@@ -115,12 +119,15 @@ public class FileUtil
     {
         FileChannel input = null;
         FileChannel output = null;
+
         try {
             input = new FileInputStream(source).getChannel();
             output = new FileOutputStream(target).getChannel();
 
-            MappedByteBuffer buffer = input.map
-                (FileChannel.MapMode.READ_ONLY, 0, input.size());
+            MappedByteBuffer buffer = input.map(
+                FileChannel.MapMode.READ_ONLY,
+                0,
+                input.size());
             output.write(buffer);
         } finally {
             if (input != null) {
@@ -147,9 +154,8 @@ public class FileUtil
             if (file.isDirectory()) {
                 deleteAll(file.listFiles());
             }
+
             file.delete();
         }
     }
 }
-
-

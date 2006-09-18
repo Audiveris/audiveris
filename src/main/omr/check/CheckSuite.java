@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                          C h e c k S u i t e                          //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            C h e c k S u i t e                             //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.check;
 
 import omr.util.Logger;
@@ -17,9 +17,9 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class <code>CheckSuite</code> represents a suite of homogeneous checks,
- * that is checks working on the same type. Every check in the suite is
- * assigned a weight, to represent its relative importance in the suite.
+ * Class <code>CheckSuite</code> represents a suite of homogeneous checks, that
+ * is checks working on the same type. Every check in the suite is assigned a
+ * weight, to represent its relative importance in the suite.
  *
  * @param <C> the subtype of Checkable-compatible objects used in the
  * homogeneous collection of checks in this suite
@@ -27,16 +27,16 @@ import java.util.List;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class CheckSuite <C extends Checkable>
+public class CheckSuite<C extends Checkable>
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(CheckSuite.class);
-    private static final String RED_COLOR = "#FF0000";
-    private static final String ORANGE_COLOR = "#FFAA00";
-    private static final String GREEN_COLOR = "#00FF00";
+    private static final Logger  logger = Logger.getLogger(CheckSuite.class);
+    private static final String  RED_COLOR = "#FF0000";
+    private static final String  ORANGE_COLOR = "#FFAA00";
+    private static final String  GREEN_COLOR = "#00FF00";
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     /** Name of this suite */
     protected String name;
@@ -53,7 +53,7 @@ public class CheckSuite <C extends Checkable>
     // Total checks weight
     private double totalWeight = 0.0d;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //------------//
     // CheckSuite //
@@ -71,30 +71,19 @@ public class CheckSuite <C extends Checkable>
         this.threshold = threshold;
     }
 
-    //~ Methods -----------------------------------------------------------
-
-    //---------//
-    // getName //
-    //---------//
-    public String getName()
-    {
-        return name;
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //-----------//
     // getChecks //
     //-----------//
-    public List<Check<C>> getChecks()
+    /**
+     * Report the collection of checks that compose this suite
+     *
+     * @return the collection of checks
+     */
+    public List<Check<C>> getChecks ()
     {
         return checks;
-    }
-
-    //-----------//
-    // getWeights //
-    //-----------//
-    public List<Double> getWeights()
-    {
-        return weights;
     }
 
     //---------//
@@ -108,6 +97,19 @@ public class CheckSuite <C extends Checkable>
     public void setName (String name)
     {
         this.name = name;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name of this suite
+     *
+     * @return suite name
+     */
+    public String getName ()
+    {
+        return name;
     }
 
     //--------------//
@@ -149,6 +151,20 @@ public class CheckSuite <C extends Checkable>
         return totalWeight;
     }
 
+    //------------//
+    // getWeights //
+    //------------//
+    /**
+     * Report the weights of the checks (collection parallel to the suite
+     * checks)
+     *
+     * @return the collection of checks weights
+     */
+    public List<Double> getWeights ()
+    {
+        return weights;
+    }
+
     //-----//
     // add //
     //-----//
@@ -158,7 +174,7 @@ public class CheckSuite <C extends Checkable>
      * @param weight the weight of this check in the suite
      * @param check  the check to add to the suite
      */
-    public void add (double weight,
+    public void add (double   weight,
                      Check<C> check)
     {
         checks.add(check);
@@ -177,6 +193,7 @@ public class CheckSuite <C extends Checkable>
     public CheckSuite addAll (CheckSuite<C> suite)
     {
         int index = 0;
+
         for (Check<C> check : suite.checks) {
             double weight = suite.weights.get(index++);
             add(weight, check);
@@ -202,18 +219,22 @@ public class CheckSuite <C extends Checkable>
 
         System.out.println(" Check Suite: threshold=" + threshold);
 
-        System.out.println("Weight    Name             Covariant    Low       High");
-        System.out.println("------    ----                ------    ---       ----");
+        System.out.println(
+            "Weight    Name             Covariant    Low       High");
+        System.out.println(
+            "------    ----                ------    ---       ----");
 
         int index = 0;
+
         for (Check check : checks) {
             //   %[argument_index$][flags][width][.precision]conversion
-            System.out.printf("%4.1f      %-19s  %5b  % 6.2f    % 6.2f \n",
-                              weights.get(index++),
-                              check.getName(),
-                              check.isCovariant(),
-                              check.getLow(),
-                              check.getHigh());
+            System.out.printf(
+                "%4.1f      %-19s  %5b  % 6.2f    % 6.2f \n",
+                weights.get(index++),
+                check.getName(),
+                check.isCovariant(),
+                check.getLow(),
+                check.getHigh());
         }
     }
 
@@ -221,28 +242,31 @@ public class CheckSuite <C extends Checkable>
     // pass //
     //------//
     /**
-     * Pass sequentially the checks in the suite, stopping at the first
-     * test with red result.
+     * Pass sequentially the checks in the suite, stopping at the first test
+     * with red result.
      *
      * @return the computed grade.
      */
     public double pass (C object)
     {
-        double grade = 0.0d;
-        CheckResult result = new CheckResult();
+        double       grade = 0.0d;
+        CheckResult  result = new CheckResult();
         StringBuffer sb = null;
 
         if (logger.isFineEnabled()) {
             sb = new StringBuffer(512);
-            sb.append(name).append(" ");
+            sb.append(name)
+              .append(" ");
         }
 
         int index = 0;
+
         for (Check<C> check : checks) {
             check.pass(object, result, true);
 
             if (logger.isFineEnabled()) {
-                sb.append(String.format("%15s :%5.2f", check.getName(), result.value));
+                sb.append(
+                    String.format("%15s :%5.2f", check.getName(), result.value));
             }
 
             if (result.flag == Check.RED) {
@@ -257,6 +281,7 @@ public class CheckSuite <C extends Checkable>
                 double weight = weights.get(index);
                 grade += (result.flag * weight);
             }
+
             index++;
         }
 
@@ -275,17 +300,15 @@ public class CheckSuite <C extends Checkable>
     // passCollection //
     //----------------//
     /**
-     * Pass the whole collection of suites in a row and return the global
-     * result
+     * Pass the whole collection of suites in a row and return the global result
      *
      * @param object the object to be checked
      * @param suites the collection of check suites to pass
      *
      * @return the global result
      */
-    public static <T extends Checkable>
-            double passCollection (T object,
-                                   Collection<CheckSuite<T>> suites)
+    public static <T extends Checkable> double passCollection (T                         object,
+                                                               Collection<CheckSuite<T>> suites)
     {
         double totalWeight = 0.0d;
         double grade = 0.0d;
@@ -308,122 +331,122 @@ public class CheckSuite <C extends Checkable>
         return grade / totalWeight;
     }
 
-//     //----------//
-//     // passHtml //
-//     //----------//
-//     /**
-//      * Pass all the test in the suite, even over totally failed ones, and
-//      * return detailed result in html
-//      *
-//      * @param prolog a potential html prolog (such as head), null otherwise
-//      * @param object the object to check
-//      *
-//      * @return the resulting html stream
-//      */
-//     public String passHtml (String prolog,
-//                             T      object)
-//     {
-//         CheckResult result = new CheckResult();
-//         double grade = 0.0d;
-//         boolean failed = false;
+    //     //----------//
+    //     // passHtml //
+    //     //----------//
+    //     /**
+    //      * Pass all the test in the suite, even over totally failed ones, and
+    //      * return detailed result in html
+    //      *
+    //      * @param prolog a potential html prolog (such as head), null otherwise
+    //      * @param object the object to check
+    //      *
+    //      * @return the resulting html stream
+    //      */
+    //     public String passHtml (String prolog,
+    //                             T      object)
+    //     {
+    //         CheckResult result = new CheckResult();
+    //         double grade = 0.0d;
+    //         boolean failed = false;
 
-//         StringBuffer sb = new StringBuffer(4096);
-//         if (prolog != null) {
-//             sb.append(prolog);
-//         } else {
-//             // Head Style
-//             sb.append("<head>");
-//             sb.append("<style type=\"text/css\">");
-//             sb.append("BODY {margin: 0; padding: 0;font-family: sans-serif}");
-//             sb.append("TH {background-color: #DDDDDD; font-size: 11pt}");
-//             sb.append("TD {font-size: 11pt}");
-//             sb.append("</style>");
-//             sb.append("</head>");
-//         }
+    //         StringBuffer sb = new StringBuffer(4096);
+    //         if (prolog != null) {
+    //             sb.append(prolog);
+    //         } else {
+    //             // Head Style
+    //             sb.append("<head>");
+    //             sb.append("<style type=\"text/css\">");
+    //             sb.append("BODY {margin: 0; padding: 0;font-family: sans-serif}");
+    //             sb.append("TH {background-color: #DDDDDD; font-size: 11pt}");
+    //             sb.append("TD {font-size: 11pt}");
+    //             sb.append("</style>");
+    //             sb.append("</head>");
+    //         }
 
-//         //sb.append("<body>");
-//         sb.append("<table border=0 cellspacing=1 cellpadding=0 width=280>");
+    //         //sb.append("<body>");
+    //         sb.append("<table border=0 cellspacing=1 cellpadding=0 width=280>");
 
-//         // First line: Titles
-//         sb.append("<tr>");
-//         sb.append("<th>W</th><th>Name</th><th>X</th><th>L</th><th>L</th><th>X</th><th>Result</th>");
-//         sb.append("</tr>");
+    //         // First line: Titles
+    //         sb.append("<tr>");
+    //         sb.append("<th>W</th><th>Name</th><th>X</th><th>L</th><th>L</th><th>X</th><th>Result</th>");
+    //         sb.append("</tr>");
 
-//         // One line per check
-//         int index = 0;
-//         for (Check<T> check : checks) {
-//             Double weight = weights.get(index++);
-//             sb.append("<tr>");
-//             // Weight
-//             sb.append("<td>").append(weight.intValue()).append("</td>");
-//             // Name
-//             sb.append("<td>").append(check.getName()).append("</td>");
-//             // Lower range ?
-//             sb.append("<td>");
-//             if (!check.isCovariant()) {
-//                 sb.append("X");
-//             }
-//             sb.append("</td>");
-//             // Low limit
-//             sb.append("<td>");
-//             sb.append(String.format("%.2f", check.getLow()));
-//             sb.append("</td>");
-//             // High Limit
-//             sb.append("<td>");
-//             sb.append(String.format("%.2f", check.getHigh()));
-//             sb.append("</td>");
-//             // Higher range ?
-//             sb.append("<td>");
-//             if (check.isCovariant()) {
-//                 sb.append("X");
-//             }
-//             sb.append("</td>");
-//             // Result
-//             check.pass(object, result, false);
-//             sb.append("<td align=right>").append("<font color=\"");
-//             if (result.flag == Check.RED) {
-//                 failed = true;
-//                 sb.append(RED_COLOR);
-//             } else {
-//                 // Aggregate results
-//                 grade += result.flag * weight;
-//                 if (result.flag == Check.ORANGE) {
-//                     sb.append(ORANGE_COLOR);
-//                 } else {
-//                     sb.append(GREEN_COLOR);
-//                 }
-//             }
-//             sb.append("\">");
-//             sb.append(String.format("%5.2f", result.value));
-//             sb.append("</font></td></tr>");
-//         }
+    //         // One line per check
+    //         int index = 0;
+    //         for (Check<T> check : checks) {
+    //             Double weight = weights.get(index++);
+    //             sb.append("<tr>");
+    //             // Weight
+    //             sb.append("<td>").append(weight.intValue()).append("</td>");
+    //             // Name
+    //             sb.append("<td>").append(check.getName()).append("</td>");
+    //             // Lower range ?
+    //             sb.append("<td>");
+    //             if (!check.isCovariant()) {
+    //                 sb.append("X");
+    //             }
+    //             sb.append("</td>");
+    //             // Low limit
+    //             sb.append("<td>");
+    //             sb.append(String.format("%.2f", check.getLow()));
+    //             sb.append("</td>");
+    //             // High Limit
+    //             sb.append("<td>");
+    //             sb.append(String.format("%.2f", check.getHigh()));
+    //             sb.append("</td>");
+    //             // Higher range ?
+    //             sb.append("<td>");
+    //             if (check.isCovariant()) {
+    //                 sb.append("X");
+    //             }
+    //             sb.append("</td>");
+    //             // Result
+    //             check.pass(object, result, false);
+    //             sb.append("<td align=right>").append("<font color=\"");
+    //             if (result.flag == Check.RED) {
+    //                 failed = true;
+    //                 sb.append(RED_COLOR);
+    //             } else {
+    //                 // Aggregate results
+    //                 grade += result.flag * weight;
+    //                 if (result.flag == Check.ORANGE) {
+    //                     sb.append(ORANGE_COLOR);
+    //                 } else {
+    //                     sb.append(GREEN_COLOR);
+    //                 }
+    //             }
+    //             sb.append("\">");
+    //             sb.append(String.format("%5.2f", result.value));
+    //             sb.append("</font></td></tr>");
+    //         }
 
-//         // Global result
-//         sb.append("<tr>");
-//         sb.append("<td></td><td></td><td></td><td></td><td></td><td></td><td ");
-//         sb.append(" align=right");
-//         sb.append(" bgcolor=\"");
-//         if (failed) {
-//             sb.append(RED_COLOR).append("\">");
-//             sb.append(Check.RED);
-//         } else {
-//             grade /= totalWeight;
-//             if (grade >= threshold) {
-//                 sb.append(GREEN_COLOR);
-//             } else {
-//                 sb.append(ORANGE_COLOR);
-//             }
-//             sb.append("\">");
-//             sb.append(String.format("%3.1f", grade));
-//         }
-//         sb.append("</td>");
-//         sb.append("</tr>");
-//         sb.append("</table>");
+    //         // Global result
+    //         sb.append("<tr>");
+    //         sb.append("<td></td><td></td><td></td><td></td><td></td><td></td><td ");
+    //         sb.append(" align=right");
+    //         sb.append(" bgcolor=\"");
+    //         if (failed) {
+    //             sb.append(RED_COLOR).append("\">");
+    //             sb.append(Check.RED);
+    //         } else {
+    //             grade /= totalWeight;
+    //             if (grade >= threshold) {
+    //                 sb.append(GREEN_COLOR);
+    //             } else {
+    //                 sb.append(ORANGE_COLOR);
+    //             }
+    //             sb.append("\">");
+    //             sb.append(String.format("%3.1f", grade));
+    //         }
+    //         sb.append("</td>");
+    //         sb.append("</tr>");
+    //         sb.append("</table>");
 
-//         if (logger.isFineEnabled()) {
-//             logger.debug(sb.toString());
-//         }
+    //         if (logger.isFineEnabled()) {
+    //             logger.debug(sb.toString());
+    //         }
 
-//         return sb.toString();
-//     }
+    //         return sb.toString();
+    //     }
 }

@@ -1,23 +1,27 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                               S t i c k                               //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                 S t i c k                                  //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 package omr.stick;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
+
 import omr.lag.Lag;
 import omr.lag.Run;
 import omr.lag.SectionView;
+
 import omr.math.BasicLine;
 import omr.math.Line;
+
 import omr.ui.view.Zoom;
+
 import omr.util.Logger;
 
 import java.awt.*;
@@ -25,14 +29,13 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class <code>Stick</code> describes a stick, a special kind of glyph,
- * either horizontal or vertical, as an aggregation of sections. Besides
- * usual positions and coordinates, a stick exhibits its approximating Line
- * which is the least-square fitted line on all points contained in the
- * stick.
+ * Class <code>Stick</code> describes a stick, a special kind of glyph, either
+ * horizontal or vertical, as an aggregation of sections. Besides usual
+ * positions and coordinates, a stick exhibits its approximating Line which is
+ * the least-square fitted line on all points contained in the stick.
  *
- * <ul> <li> Staff lines, ledgers, alternate ends are examples of
- * horizontal sticks </li>
+ * <ul> <li> Staff lines, ledgers, alternate ends are examples of horizontal
+ * sticks </li>
  *
  * <li> Bar lines, stems are examples of vertical sticks </li> </ul>
  *
@@ -42,16 +45,16 @@ import java.util.List;
 public class Stick
     extends Glyph
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(Stick.class);
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     // Best line equation
     private Line line;
 
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     /**
      * Default constructor
@@ -60,31 +63,32 @@ public class Stick
     {
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //------------------//
     // getAlienPixelsIn //
     //------------------//
     /**
-     * Report the number of pixels found in the specified rectangle that do
-     * not belong to the stick.
+     * Report the number of pixels found in the specified rectangle that do not
+     * belong to the stick.
      *
-     * @param area the rectangular area to investigate, in (coord, pos)
-     *             form of course!
+     * @param area the rectangular area to investigate, in (coord, pos) form of
+     *             course!
      *
      * @return the number of alien pixels found
      */
     public int getAlienPixelsIn (Rectangle area)
     {
-        int count = 0;
-        final int posMin = area.y;
-        final int posMax = (area.y + area.height) - 1;
+        int                      count = 0;
+        final int                posMin = area.y;
+        final int                posMax = (area.y + area.height) - 1;
         final List<GlyphSection> neighbors = lag.getSectionsIn(area);
 
         for (GlyphSection section : neighbors) {
             // Keep only sections that are not part of the stick
             if (section.getGlyph() != this) {
-                int pos = section.getFirstPos() - 1; // Ordinate for horizontal, Abscissa for vertical
+                int pos = section.getFirstPos() - 1; // Ordinate for horizontal,
+                                                     // Abscissa for vertical
 
                 for (Run run : section.getRuns()) {
                     pos++;
@@ -99,8 +103,9 @@ public class Stick
 
                     int stop = run.getStop();
                     int coordMin = Math.max(area.x, run.getStart());
-                    int coordMax = Math.min((area.x + area.width) - 1,
-                                            run.getStop());
+                    int coordMax = Math.min(
+                        (area.x + area.width) - 1,
+                        run.getStop());
 
                     if (coordMax >= coordMin) {
                         count += (coordMax - coordMin + 1);
@@ -110,8 +115,8 @@ public class Stick
         }
 
         if (logger.isFineEnabled()) {
-            logger.fine("Stick" + id + " " + area + " getAlienPixelsIn="
-                         + count);
+            logger.fine(
+                "Stick" + id + " " + area + " getAlienPixelsIn=" + count);
         }
 
         return count;
@@ -138,9 +143,12 @@ public class Stick
     public int getAliensAtStart (int dCoord,
                                  int dPos)
     {
-        return getAlienPixelsIn(new Rectangle(getStart(),
-                                              getStartingPos() - dPos,
-                                              dCoord, 2 * dPos));
+        return getAlienPixelsIn(
+            new Rectangle(
+                getStart(),
+                getStartingPos() - dPos,
+                dCoord,
+                2 * dPos));
     }
 
     //-----------------------//
@@ -162,9 +170,8 @@ public class Stick
     public int getAliensAtStartFirst (int dCoord,
                                       int dPos)
     {
-        return getAlienPixelsIn(new Rectangle(getStart(),
-                                              getStartingPos() - dPos,
-                                              dCoord, dPos));
+        return getAlienPixelsIn(
+            new Rectangle(getStart(), getStartingPos() - dPos, dCoord, dPos));
     }
 
     //----------------------//
@@ -186,8 +193,8 @@ public class Stick
     public int getAliensAtStartLast (int dCoord,
                                      int dPos)
     {
-        return getAlienPixelsIn(new Rectangle(getStart(), getStartingPos(),
-                                              dCoord, dPos));
+        return getAlienPixelsIn(
+            new Rectangle(getStart(), getStartingPos(), dCoord, dPos));
     }
 
     //-----------------//
@@ -211,9 +218,12 @@ public class Stick
     public int getAliensAtStop (int dCoord,
                                 int dPos)
     {
-        return getAlienPixelsIn(new Rectangle(getStop() - dCoord,
-                                              getStoppingPos() - dPos,
-                                              dCoord, 2 * dPos));
+        return getAlienPixelsIn(
+            new Rectangle(
+                getStop() - dCoord,
+                getStoppingPos() - dPos,
+                dCoord,
+                2 * dPos));
     }
 
     //----------------------//
@@ -235,9 +245,12 @@ public class Stick
     public int getAliensAtStopFirst (int dCoord,
                                      int dPos)
     {
-        return getAlienPixelsIn(new Rectangle(getStop() - dCoord,
-                                              getStoppingPos() - dPos,
-                                              dCoord, dPos));
+        return getAlienPixelsIn(
+            new Rectangle(
+                getStop() - dCoord,
+                getStoppingPos() - dPos,
+                dCoord,
+                dPos));
     }
 
     //---------------------//
@@ -259,8 +272,8 @@ public class Stick
     public int getAliensAtStopLast (int dCoord,
                                     int dPos)
     {
-        return getAlienPixelsIn(new Rectangle(getStop() - dCoord,
-                                              getStoppingPos(), dCoord, dPos));
+        return getAlienPixelsIn(
+            new Rectangle(getStop() - dCoord, getStoppingPos(), dCoord, dPos));
     }
 
     //-----------//
@@ -280,15 +293,15 @@ public class Stick
     // getDensity //
     //------------//
     /**
-     * Report the density of the stick, that is its weight divided by the
-     * area of its bounding rectangle
+     * Report the density of the stick, that is its weight divided by the area
+     * of its bounding rectangle
      *
      * @return the density
      */
     public double getDensity ()
     {
         Rectangle rect = getBounds();
-        int surface = (rect.width + 1) * (rect.height + 1);
+        int       surface = (rect.width + 1) * (rect.height + 1);
 
         return (double) getWeight() / (double) surface;
     }
@@ -297,8 +310,8 @@ public class Stick
     // getFirstPos //
     //-------------//
     /**
-     * Return the first position (ordinate for stick of horizontal
-     * sections, abscissa for stick of vertical sections and runs)
+     * Return the first position (ordinate for stick of horizontal sections,
+     * abscissa for stick of vertical sections and runs)
      *
      * @return the position at the beginning
      */
@@ -322,7 +335,8 @@ public class Stick
         for (GlyphSection section : members) {
             for (GlyphSection sct : section.getSources()) {
                 if (!sct.isGlyphMember() || (sct.getGlyph() != this)) {
-                    stuck += sct.getLastRun().getLength();
+                    stuck += sct.getLastRun()
+                                .getLength();
                 }
             }
         }
@@ -359,7 +373,8 @@ public class Stick
         for (GlyphSection section : members) {
             for (GlyphSection sct : section.getTargets()) {
                 if (!sct.isGlyphMember() || (sct.getGlyph() != this)) {
-                    stuck += sct.getFirstRun().getLength();
+                    stuck += sct.getFirstRun()
+                                .getLength();
                 }
             }
         }
@@ -401,15 +416,15 @@ public class Stick
     // getMidPos //
     //-----------//
     /**
-     * Return the position (ordinate for horizontal stick, abscissa for
-     * vertical stick) at the middle of the stick
+     * Return the position (ordinate for horizontal stick, abscissa for vertical
+     * stick) at the middle of the stick
      *
      * @return the position of the midle of the stick
      */
     public int getMidPos ()
     {
-        return (int) Math.rint
-            (getLine().yAt((double) (getStart() + getStop()) / 2));
+        return (int) Math.rint(
+            getLine().yAt((double) (getStart() + getStop()) / 2));
     }
 
     //----------//
@@ -437,7 +452,8 @@ public class Stick
     public int getStartingPos ()
     {
         if (getThickness() >= 2) {
-            return getLine().yAt(getStart());
+            return getLine()
+                       .yAt(getStart());
         } else {
             return getFirstPos() + (getThickness() / 2);
         }
@@ -467,7 +483,8 @@ public class Stick
     public int getStoppingPos ()
     {
         if (getThickness() >= 2) {
-            return getLine().yAt(getStop());
+            return getLine()
+                       .yAt(getStop());
         } else {
             return getFirstPos() + (getThickness() / 2);
         }
@@ -497,10 +514,12 @@ public class Stick
     public void addSection (StickSection section,
                             boolean      link)
     {
-        super.addSection(section, /* link => */ true);
+        super.addSection(section, /* link => */
+                         true);
 
         // Include the section points
-        getLine().includeLine(section.getLine());
+        getLine()
+            .includeLine(section.getLine());
     }
 
     //----------//
@@ -512,8 +531,8 @@ public class Stick
      * @param viewIndex index in the view list
      * @param color     color for the whole stick
      */
-    public void colorize (Lag lag,
-                          int viewIndex,
+    public void colorize (Lag   lag,
+                          int   viewIndex,
                           Color color)
     {
         if (lag == this.lag) {
@@ -531,12 +550,13 @@ public class Stick
      * @param sections  the collection of sections
      * @param color     the display color
      */
-    public void colorize (int viewIndex,
+    public void colorize (int                      viewIndex,
                           Collection<GlyphSection> sections,
-                          Color color)
+                          Color                    color)
     {
         for (GlyphSection section : sections) {
-            SectionView view = (SectionView) section.getViews().get(viewIndex);
+            SectionView view = (SectionView) section.getViews()
+                                                    .get(viewIndex);
             view.setColor(color);
         }
     }
@@ -588,7 +608,7 @@ public class Stick
 
         System.out.println("computeDensities for Stick #" + id);
 
-        int length = getLength();
+        int     length = getLength();
         boolean started = false;
         boolean stopped = false;
 
@@ -598,8 +618,7 @@ public class Stick
             }
 
             if (started) {
-                System.out.println(i + " : "
-                                   + ((histoLeft[i] * 100) / length));
+                System.out.println(i + " : " + ((histoLeft[i] * 100) / length));
             }
         }
 
@@ -609,8 +628,8 @@ public class Stick
             }
 
             if (!stopped) {
-                System.out.println(i + " : "
-                                   + ((histoRight[-i] * 100) / length));
+                System.out.println(
+                    i + " : " + ((histoRight[-i] * 100) / length));
             }
         }
 
@@ -632,8 +651,8 @@ public class Stick
     // computeLine //
     //-------------//
     /**
-     * Computes the least-square fitted line among all the section points
-     * of the stick.
+     * Computes the least-square fitted line among all the section points of the
+     * stick.
      */
     public void computeLine ()
     {
@@ -645,8 +664,9 @@ public class Stick
         }
 
         if (logger.isFineEnabled()) {
-            logger.fine(line + " pointNb=" + line.getNumberOfPoints()
-                         + " meanDistance=" + (float) line.getMeanDistance());
+            logger.fine(
+                line + " pointNb=" + line.getNumberOfPoints() +
+                " meanDistance=" + (float) line.getMeanDistance());
         }
     }
 
@@ -664,9 +684,9 @@ public class Stick
             System.out.println();
         }
 
-        System.out.println(toString() + " pointNb=" + line.getNumberOfPoints()
-                           + " start=" + getStart() + " stop=" + getStop()
-                           + " midPos=" + getMidPos());
+        System.out.println(
+            toString() + " pointNb=" + line.getNumberOfPoints() + " start=" +
+            getStart() + " stop=" + getStop() + " midPos=" + getMidPos());
 
         if (withContent) {
             System.out.println("-members:" + members.size());
@@ -687,28 +707,28 @@ public class Stick
      * @param z the display zoom
      */
     public void renderChunk (Graphics g,
-                             Zoom z,
-                             int length,
-                             int thickness)
+                             Zoom     z,
+                             int      length,
+                             int      thickness)
     {
         Rectangle box = z.scaled(getContourBox());
 
         if (box.intersects(g.getClipBounds())) {
-            Line line = getLine();
+            Line      line = getLine();
             Rectangle rect = new Rectangle();
-            Rectangle rect1 = new Rectangle(z.scaled(getStart()),
-                                            z.scaled(line.yAt(getStart())
-                                                     - thickness),
-                                            z.scaled(length),
-                                            z.scaled(2 * thickness));
+            Rectangle rect1 = new Rectangle(
+                z.scaled(getStart()),
+                z.scaled(line.yAt(getStart()) - thickness),
+                z.scaled(length),
+                z.scaled(2 * thickness));
             lag.switchRef(rect1, rect);
             g.drawRect(rect.x, rect.y, rect.width, rect.height);
 
-            Rectangle rect2 = new Rectangle(z.scaled((getStop() + 1) - length),
-                                            z.scaled(line.yAt(getStop() + 1)
-                                                     - thickness),
-                                            z.scaled(length),
-                                            z.scaled(2 * thickness));
+            Rectangle rect2 = new Rectangle(
+                z.scaled((getStop() + 1) - length),
+                z.scaled(line.yAt(getStop() + 1) - thickness),
+                z.scaled(length),
+                z.scaled(2 * thickness));
             lag.switchRef(rect2, rect);
             g.drawRect(rect.x, rect.y, rect.width, rect.height);
         }
@@ -718,27 +738,29 @@ public class Stick
     // renderLine //
     //------------//
     /**
-     * Render the main guiding line of the stick, using the current
-     * foreground color.
+     * Render the main guiding line of the stick, using the current foreground
+     * color.
      *
      * @param g the graphic context
      * @param z the display zoom
      */
     public void renderLine (Graphics g,
-                            Zoom z)
+                            Zoom     z)
     {
         Rectangle box = z.scaled(getContourBox());
 
         if (box.intersects(g.getClipBounds())) {
-            Line line = getLine();
-            Point start = lag.switchRef
-                    (new Point(z.scaled(getStart()),
-                               z.scaled(line.yAt((double) getStart()) + 0.5)),
-                     null);
-            Point stop = lag.switchRef
-                    (new Point(z.scaled(getStop() + 1),
-                               z.scaled(line.yAt((double) getStop() + 1) + 0.5)),
-                     null);
+            Line  line = getLine();
+            Point start = lag.switchRef(
+                new Point(
+                    z.scaled(getStart()),
+                    z.scaled(line.yAt((double) getStart()) + 0.5)),
+                null);
+            Point stop = lag.switchRef(
+                new Point(
+                    z.scaled(getStop() + 1),
+                    z.scaled(line.yAt((double) getStop() + 1) + 0.5)),
+                null);
             g.drawLine(start.x, start.y, stop.x, stop.y);
         }
     }
@@ -752,28 +774,37 @@ public class Stick
      * @return The image string
      */
     @Override
-        public String toString ()
+    public String toString ()
     {
         StringBuffer sb = new StringBuffer(256);
         sb.append(super.toString());
 
         if (result != null) {
-            sb.append(" ").append(result);
+            sb.append(" ")
+              .append(result);
         }
 
-        sb.append(" th=").append(getThickness());
-        sb.append(" lg=").append(getLength());
-        sb.append(" l/t=").append(String.format("%.2f", getAspect()));
-        sb.append(" fa=").append((100 * getFirstStuck()) / getLength())
-                .append("%");
-        sb.append(" la=").append((100 * getLastStuck()) / getLength())
-                .append("%");
+        sb.append(" th=")
+          .append(getThickness());
+        sb.append(" lg=")
+          .append(getLength());
+        sb.append(" l/t=")
+          .append(String.format("%.2f", getAspect()));
+        sb.append(" fa=")
+          .append((100 * getFirstStuck()) / getLength())
+          .append("%");
+        sb.append(" la=")
+          .append((100 * getLastStuck()) / getLength())
+          .append("%");
 
         if (line != null) {
-            sb.append(" ").append(line);
+            sb.append(" ")
+              .append(line);
         }
 
-        if (this.getClass().getName().equals (Stick.class.getName())) {
+        if (this.getClass()
+                .getName()
+                .equals(Stick.class.getName())) {
             sb.append("}");
         }
 
@@ -784,8 +815,8 @@ public class Stick
     // getPrefix //
     //-----------//
     /**
-     * Return a distinctive string, to be used as a prefix in toString()
-     * for example.
+     * Return a distinctive string, to be used as a prefix in toString() for
+     * example.
      *
      * @return the prefix string
      */
