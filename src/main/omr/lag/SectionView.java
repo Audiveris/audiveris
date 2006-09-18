@@ -17,6 +17,7 @@ import omr.graph.VertexView;
 
 import omr.ui.view.Zoom;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.Color;
@@ -169,6 +170,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
      *
      * @return the properly oriented display rectangle that fits to the section
      */
+    @Implement(VertexView.class)
     public Rectangle getRectangle ()
     {
         return dspRectangle;
@@ -274,6 +276,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
      * @return true if the section is concerned by the clipping rectangle, which
      * means if (part of) the section has been drawn
      */
+    @Implement(VertexView.class)
     public boolean render (Graphics g)
     {
         // Has zoom been modified?

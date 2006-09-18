@@ -12,6 +12,7 @@ package omr.ui;
 
 import omr.lag.LagView;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.event.ActionEvent;
@@ -34,8 +35,7 @@ import javax.swing.event.AncestorListener;
  * @version $Id$
  */
 public class ToggleHandler
-    implements ActionListener,
-               AncestorListener
+    implements ActionListener, AncestorListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -81,6 +81,7 @@ public class ToggleHandler
      *
      * @param e the action event
      */
+    @Implement(ActionListener.class)
     public void actionPerformed (ActionEvent e)
     {
         lagView.toggle();
@@ -94,6 +95,7 @@ public class ToggleHandler
      *
      * @param event
      */
+    @Implement(AncestorListener.class)
     public void ancestorAdded (AncestorEvent event)
     {
         useButton();
@@ -107,6 +109,7 @@ public class ToggleHandler
      *
      * @param event
      */
+    @Implement(AncestorListener.class)
     public void ancestorMoved (AncestorEvent event)
     {
     }
@@ -119,6 +122,7 @@ public class ToggleHandler
      *
      * @param event
      */
+    @Implement(AncestorListener.class)
     public void ancestorRemoved (AncestorEvent event)
     {
         discardButton();

@@ -18,10 +18,9 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
-
-import omr.lag.Lag;
 import static omr.stick.SectionRole.*;
 
+import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Predicate;
 
@@ -770,6 +769,7 @@ public class StickArea
     public static class SectionPredicate
         implements Predicate<StickSection>
     {
+        @Implement(Predicate.class)
         public boolean check (StickSection section)
         {
             // Check whether this section is not already assigned to a

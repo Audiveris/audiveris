@@ -12,6 +12,7 @@ package omr.lag;
 
 import omr.sheet.Picture;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.*;
@@ -102,6 +103,7 @@ public class LagReader
      *
      * @return true if foreground, false if background
      */
+    @Implement(Run.Reader.class)
     public boolean isFore (int level)
     {
         return level <= maxLevel;
@@ -118,6 +120,7 @@ public class LagReader
      *
      * @return pixel grey level
      */
+    @Implement(Run.Reader.class)
     public int getLevel (int coord,
                          int pos)
     {
@@ -138,6 +141,7 @@ public class LagReader
      * @param pos position of run start
      * @param length run length
      */
+    @Implement(Run.Reader.class)
     public void backRun (int coord,
                          int pos,
                          int length)
@@ -155,6 +159,7 @@ public class LagReader
      * @param length run length
      * @param cumul cumulated pixel grey levels on all run points
      */
+    @Implement(Run.Reader.class)
     public void foreRun (int coord,
                          int pos,
                          int length,
@@ -174,6 +179,7 @@ public class LagReader
     /**
      * Method called-back when all runs have been read
      */
+    @Implement(Run.Reader.class)
     public void terminate ()
     {
         if (logger.isFineEnabled()) {

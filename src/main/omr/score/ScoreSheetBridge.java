@@ -18,6 +18,7 @@ import omr.selection.SelectionTag;
 import omr.sheet.PixelPoint;
 import omr.sheet.Sheet;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.Rectangle;
@@ -94,6 +95,7 @@ public class ScoreSheetBridge
      *
      * @return name of the bridge
      */
+    @Implement(SelectionObserver.class)
     public String getName ()
     {
         return "Score-Sheet-Bridge";
@@ -109,6 +111,7 @@ public class ScoreSheetBridge
      * @param selection the originating selection object
      * @param hint processing hint, if any
      */
+    @Implement(SelectionObserver.class)
     public void update (Selection     selection,
                         SelectionHint hint)
     {

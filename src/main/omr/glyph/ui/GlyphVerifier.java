@@ -16,7 +16,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
-import omr.glyph.ui.GlyphLagView;
 
 import omr.lag.ScrollLagView;
 import omr.lag.VerticalOrientation;
@@ -27,6 +26,7 @@ import omr.ui.view.LogSlider;
 import omr.ui.view.Rubber;
 import omr.ui.view.Zoom;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
@@ -785,6 +785,7 @@ public class GlyphVerifier
                     super("Load");
                 }
 
+                @Implement(ActionListener.class)
                 public void actionPerformed (ActionEvent e)
                 {
                     names = glyphSelector.list.getSelectedItems();
@@ -816,6 +817,7 @@ public class GlyphVerifier
         }
 
         // Triggered by the load button
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             String[]           sheets = sheetSelector.list.getSelectedItems();
@@ -878,6 +880,7 @@ public class GlyphVerifier
         }
 
         // Triggered by load button
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             // To avoid duplicates, and to get a sorted list
@@ -909,6 +912,7 @@ public class GlyphVerifier
         }
 
         // Triggered by load button
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             // Populate with all existing sheets

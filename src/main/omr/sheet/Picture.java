@@ -14,6 +14,7 @@ import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.*;
@@ -345,6 +346,7 @@ public class Picture
      *
      * @return Observer name
      */
+    @Implement(SelectionObserver.class)
     public String getName ()
     {
         return "Picture";
@@ -614,8 +616,9 @@ public class Picture
      * @param selection the (Pixel) Selection
      * @param hint potential notification hint
      */
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    @Implement(SelectionObserver.class)
+    public void update(Selection     selection,
+                   SelectionHint hint)
     {
         switch (selection.getTag()) {
         case PIXEL :

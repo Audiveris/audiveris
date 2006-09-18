@@ -23,6 +23,7 @@ import omr.sheet.PixelPoint;
 
 import omr.ui.view.Zoom;
 
+import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Predicate;
 
@@ -433,6 +434,7 @@ public class Glyph
      *
      * @param result the assigned result
      */
+    @Implement(Checkable.class)
     public void setResult (Result result)
     {
         this.result = result;
@@ -684,6 +686,7 @@ public class Glyph
      * @param other the other glyph to compare to
      * @return th result of ordering
      */
+    @Implement(Comparable.class)
     public int compareTo (Glyph other)
     {
         // Are x values different?

@@ -21,6 +21,7 @@ import omr.ui.field.SField;
 import omr.ui.field.SpinnerUtilities;
 import omr.ui.util.Panel;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
@@ -283,6 +284,7 @@ public class GlyphBoard
      * @param e the change event, this allows to retrieve the originating
      *          spinner
      */
+    @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
         JSpinner spinner = (JSpinner) e.getSource();
@@ -520,7 +522,8 @@ public class GlyphBoard
             super("Deassign");
         }
 
-        public void actionPerformed (ActionEvent e)
+        @Implement(ChangeListener.class)
+        public void actionPerformed(ActionEvent e)
         {
             Selection glyphSelection = GlyphBoard.this.inputSelectionList.get(
                 0);

@@ -10,7 +10,6 @@
 //
 package omr.util;
 
-
 /**
  * Interface <code>Predicate</code> is used to specify a filter on a provided
  * entity

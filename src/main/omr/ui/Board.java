@@ -16,6 +16,7 @@ import omr.selection.SelectionObserver;
 
 import omr.ui.util.Panel;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.*;
@@ -138,6 +139,7 @@ public abstract class Board
      *
      * @return an instance name
      */
+    @Implement(SelectionObserver.class)
     public String getName ()
     {
         return name;
@@ -227,6 +229,7 @@ public abstract class Board
      * @param selection the Selection object which emits this notification
      * @param hint a potential notification hint
      */
+    @Implement(SelectionObserver.class)
     public void update (Selection     selection,
                         SelectionHint hint)
     {
@@ -241,23 +244,23 @@ public abstract class Board
     /**
      * Enum <code>Tag</code> is used to refer to the various user boards.
      */
-    public enum Tag
+    public enum Tag 
     {
         /** Board for check results */
-        CHECK("Check"),
-
+        CHECK("Check"), 
+        
         /** Custom board */
-        CUSTOM("Custom"),
-
+        CUSTOM("Custom"), 
+        
         /** Board for glyph info */
-        GLYPH("Glyph"),
-
+        GLYPH("Glyph"), 
+        
         /** Board for pixel info (coordinates, pixel grey level) */
-        PIXEL("Pixel"),
-
+        PIXEL("Pixel"), 
+        
         /** Board for run info */
-        RUN("Run"),
-
+        RUN("Run"), 
+        
         /** Board for section info */
         SECTION("Section");
 

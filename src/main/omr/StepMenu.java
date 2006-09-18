@@ -14,6 +14,8 @@ import omr.sheet.InstanceStep;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
+import omr.util.Implement;
+
 import java.awt.event.*;
 
 import javax.swing.*;
@@ -137,14 +139,17 @@ public class StepMenu
     private class Listener
         implements MenuListener
     {
+        @Implement(MenuListener.class)
         public void menuCanceled (MenuEvent e)
         {
         }
 
+        @Implement(MenuListener.class)
         public void menuDeselected (MenuEvent e)
         {
         }
 
+        @Implement(MenuListener.class)
         public void menuSelected (MenuEvent e)
         {
             Sheet sheet = SheetManager.getSelectedSheet();
@@ -171,6 +176,7 @@ public class StepMenu
         //------------------//
         // itemStateChanged //
         //------------------//
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             StepItem item = (StepItem) e.getSource();

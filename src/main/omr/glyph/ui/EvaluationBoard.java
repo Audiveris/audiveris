@@ -28,6 +28,7 @@ import omr.sheet.SystemInfo;
 import omr.ui.Board;
 import omr.ui.util.Panel;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
@@ -299,6 +300,7 @@ public class EvaluationBoard
         }
 
         // Triggered by button
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             // Assign current glyph with selected shape
@@ -399,6 +401,7 @@ public class EvaluationBoard
             super("Global");
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             int          ok = 0;

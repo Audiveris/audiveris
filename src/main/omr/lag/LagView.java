@@ -320,11 +320,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     //--------//
     // render //
     //--------//
-    /**
-     * Actually render the whole lag on the provided graphics
-     *
-     * @param g the graphic context
-     */
     @Override
     public void render (Graphics g)
     {

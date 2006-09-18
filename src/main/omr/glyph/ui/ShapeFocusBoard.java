@@ -28,12 +28,12 @@ import omr.ui.Board.Tag;
 import omr.ui.field.SpinnerUtilities;
 import omr.ui.util.Panel;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
-import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -341,6 +341,7 @@ public class ShapeFocusBoard
         //--------------//
         // stateChanged //
         //--------------//
+        @Implement(ChangeListener.class)
         public void stateChanged (ChangeEvent e)
         {
             int id = (Integer) spinner.getValue();
@@ -358,7 +359,7 @@ public class ShapeFocusBoard
         /** Display all symbols */
         ALL,
         /** Display only known symbols */
-        KNOWN,
+        KNOWN, 
         /** Display only unknown symbols */
         UNKNOWN;
     }

@@ -17,6 +17,7 @@ import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionObserver;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.*;
@@ -237,6 +238,7 @@ public class ZoomedPanel
     //-----------------//
     // contextSelected //
     //-----------------//
+    @Implement(MouseMonitor.class)
     public void contextSelected (MouseEvent e,
                                  Point      pt)
     {
@@ -246,6 +248,7 @@ public class ZoomedPanel
     //------------//
     // pointAdded //
     //------------//
+    @Implement(MouseMonitor.class)
     public void pointAdded (MouseEvent e,
                             Point      pt)
     {
@@ -255,6 +258,7 @@ public class ZoomedPanel
     //---------------//
     // pointSelected //
     //---------------//
+    @Implement(MouseMonitor.class)
     public void pointSelected (MouseEvent e,
                                Point      pt)
     {
@@ -264,6 +268,7 @@ public class ZoomedPanel
     //-------------------//
     // rectangleSelected //
     //-------------------//
+    @Implement(MouseMonitor.class)
     public void rectangleSelected (MouseEvent e,
                                    Rectangle  rect)
     {
@@ -273,6 +278,7 @@ public class ZoomedPanel
     //-----------------//
     // rectangleZoomed //
     //-----------------//
+    @Implement(MouseMonitor.class)
     public void rectangleZoomed (MouseEvent      e,
                                  final Rectangle rect)
     {
@@ -348,6 +354,7 @@ public class ZoomedPanel
      *
      * @param e the zoom event
      */
+    @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
         // Force a redisplay
@@ -367,6 +374,7 @@ public class ZoomedPanel
      * @param selection the selection object
      * @param hint processing hint (not used)
      */
+    @Implement(SelectionObserver.class)
     public void update (Selection     selection,
                         SelectionHint hint)
     {

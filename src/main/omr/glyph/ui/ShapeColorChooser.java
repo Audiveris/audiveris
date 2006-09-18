@@ -12,6 +12,8 @@ package omr.glyph.ui;
 
 import omr.glyph.Shape;
 
+import omr.util.Implement;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.EnumSet;
@@ -126,6 +128,7 @@ public class ShapeColorChooser
      *
      * @param e not used
      */
+    @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
         chosenColor = colorChooser.getColor();

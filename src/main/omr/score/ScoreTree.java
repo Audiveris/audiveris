@@ -11,9 +11,9 @@
 package omr.score;
 
 import omr.util.Dumper;
+import omr.util.Implement;
 
 import java.awt.*;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -189,6 +189,7 @@ public class ScoreTree
         //----------//
         // getChild //
         //----------//
+        @Implement(TreeModel.class)
         public Object getChild (Object parent,
                                 int    index)
         {
@@ -201,6 +202,7 @@ public class ScoreTree
         //---------------//
         // getChildCount //
         //---------------//
+        @Implement(TreeModel.class)
         public int getChildCount (Object parent)
         {
             MusicNode node = (MusicNode) parent;
@@ -212,6 +214,7 @@ public class ScoreTree
         //-----------------//
         // getIndexOfChild //
         //-----------------//
+        @Implement(TreeModel.class)
         public int getIndexOfChild (Object parent,
                                     Object child)
         {
@@ -224,6 +227,7 @@ public class ScoreTree
         //--------//
         // isLeaf //
         //--------//
+        @Implement(TreeModel.class)
         public boolean isLeaf (Object node)
         {
             // Determines whether the icon shows up to the left.
@@ -236,6 +240,7 @@ public class ScoreTree
         //---------//
         // getRoot //
         //---------//
+        @Implement(TreeModel.class)
         public Object getRoot ()
         {
             return score;
@@ -249,6 +254,7 @@ public class ScoreTree
         //----------------------//
         // addTreeModelListener //
         //----------------------//
+        @Implement(TreeModel.class)
         public void addTreeModelListener (TreeModelListener listener)
         {
             if ((listener != null) && !listeners.contains(listener)) {
@@ -259,6 +265,7 @@ public class ScoreTree
         //-------------------------//
         // removeTreeModelListener //
         //-------------------------//
+        @Implement(TreeModel.class)
         public void removeTreeModelListener (TreeModelListener listener)
         {
             if (listener != null) {
@@ -269,6 +276,7 @@ public class ScoreTree
         //---------------------//
         // valueForPathChanged //
         //---------------------//
+        @Implement(TreeModel.class)
         public void valueForPathChanged (TreePath path,
                                          Object   newValue)
         {

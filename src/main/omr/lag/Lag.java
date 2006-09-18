@@ -16,6 +16,7 @@ import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
 
+import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Predicate;
 
@@ -237,6 +238,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      *
      * @return true if vertical, false if horizontal
      */
+    @Implement(Oriented.class)
     public boolean isVertical ()
     {
         return orientation.isVertical();
@@ -440,6 +442,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      *
      * @return the absolute abscissa and ordinate values
      */
+    @Implement(Oriented.class)
     public Point switchRef (Point cp,
                             Point xy)
     {
@@ -459,6 +462,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      *
      * @return the absolute rectangle values
      */
+    @Implement(Oriented.class)
     public Rectangle switchRef (Rectangle cplt,
                                 Rectangle xywh)
     {
@@ -499,6 +503,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      * @param selection the notified Selection
      * @param hint potential notification hint
      */
+    @Implement(SelectionObserver.class)
     public void update (Selection     selection,
                         SelectionHint hint)
     {

@@ -17,6 +17,8 @@ import omr.lag.Run;
 import omr.lag.Run;
 import omr.lag.Section;
 
+import omr.util.Implement;
+
 /**
  * Class <code>GlyphSection</code> implements a specific class of section, meant
  * for easy glyph elaboration.
@@ -120,6 +122,7 @@ public class GlyphSection
      * @param other the other section to compare to
      * @return the result of ordering
      */
+    @Implement(Comparable.class)
     public int compareTo (GlyphSection other)
     {
         // Are pos values different?

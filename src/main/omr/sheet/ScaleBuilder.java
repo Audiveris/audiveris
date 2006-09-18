@@ -14,8 +14,6 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.lag.Run;
-
-import omr.util.Clock;
 import omr.util.Logger;
 
 import org.jfree.chart.ChartFactory;
@@ -29,6 +27,7 @@ import org.jfree.ui.RefineryUtilities;
 import java.awt.Rectangle;
 
 import javax.swing.WindowConstants;
+import omr.util.Implement;
 
 /**
  * Class <code>ScaleBuilder</code> encapsulates the computation of a sheet
@@ -191,6 +190,7 @@ public class ScaleBuilder
         //--------//
         // isFore //
         //--------//
+        @Implement(Run.Reader.class)
         public boolean isFore (int level)
         {
             // Assuming black=0, white=255
@@ -200,6 +200,7 @@ public class ScaleBuilder
         //----------//
         // getLevel //
         //----------//
+        @Implement(Run.Reader.class)
         public int getLevel (int coord,
                              int pos)
         {
@@ -209,6 +210,7 @@ public class ScaleBuilder
         //---------//
         // backRun //
         //---------//
+        @Implement(Run.Reader.class)
         public void backRun (int w,
                              int h,
                              int length)
@@ -219,6 +221,7 @@ public class ScaleBuilder
         //---------//
         // foreRun //
         //---------//
+        @Implement(Run.Reader.class)
         public void foreRun (int w,
                              int h,
                              int length,
@@ -230,6 +233,7 @@ public class ScaleBuilder
         //-----------//
         // terminate //
         //-----------//
+        @Implement(Run.Reader.class)
         public void terminate ()
         {
             // Determine the biggest buckets

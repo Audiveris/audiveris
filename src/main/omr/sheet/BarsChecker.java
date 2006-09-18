@@ -22,9 +22,6 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
-import omr.glyph.Shape;
-
 import omr.score.Barline;
 import omr.score.Measure;
 import omr.score.Score;
@@ -34,6 +31,7 @@ import omr.score.System;
 import omr.stick.Stick;
 
 import omr.util.Dumper;
+import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
@@ -554,6 +552,7 @@ public class BarsChecker
             this.stick = stick;
         }
 
+        @Implement(Checkable.class)
         public void setResult (Result result)
         {
             stick.setResult(result);
@@ -607,6 +606,7 @@ public class BarsChecker
 
         // Make sure that at least top or bottom are staff anchors, and that
         // both are staff anchors in the case of thick bars.
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -645,6 +645,7 @@ public class BarsChecker
         }
 
         // Retrieve the distance with proper staff border
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -710,6 +711,7 @@ public class BarsChecker
                 area * constants.chunkRatioHigh.getValue());
         }
 
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -784,6 +786,7 @@ public class BarsChecker
         }
 
         // Retrieve the adjacency value
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -812,6 +815,7 @@ public class BarsChecker
         }
 
         // Retrieve the stick abscissa
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -849,6 +853,7 @@ public class BarsChecker
         }
 
         // Retrieve the length data
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -886,6 +891,7 @@ public class BarsChecker
         }
 
         // Retrieve the adjacency value
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -914,6 +920,7 @@ public class BarsChecker
         }
 
         // Retrieve the stick abscissa
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -951,6 +958,7 @@ public class BarsChecker
         }
 
         // Retrieve the distance with proper staff border
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -1016,6 +1024,7 @@ public class BarsChecker
                 area * constants.chunkRatioHigh.getValue());
         }
 
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;

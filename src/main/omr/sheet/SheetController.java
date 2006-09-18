@@ -35,6 +35,8 @@ import java.util.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.tree.TreeModel;
+import omr.util.Implement;
 
 /**
  * Class <code>SheetController</code> encapsulates the display of (possibly
@@ -314,7 +316,8 @@ public class SheetController
      * <p> Set the state (enabled or disabled) of all menu items that depend on
      * status of current sheet.
      */
-    public void stateChanged (ChangeEvent e)
+    @Implement(ChangeListener.class)
+    public void stateChanged(ChangeEvent e)
     {
         final int index = component.getSelectedIndex();
 
@@ -503,6 +506,7 @@ public class SheetController
     private static class HistoryListener
         implements ActionListener
     {
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             String fileName = e.getActionCommand();
@@ -582,8 +586,9 @@ public class SheetController
                 IconManager.buttonIconOf("general/Remove"),
                 true);
         }
-
-        public void actionPerformed (ActionEvent e)
+        
+        @Implement(ActionListener.class)
+        public void actionPerformed(ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
 
@@ -615,6 +620,7 @@ public class SheetController
                 .setToolTipText(tiptext);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             SheetManager.getInstance()
@@ -642,6 +648,7 @@ public class SheetController
                 false);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -678,6 +685,7 @@ public class SheetController
                 false);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -709,6 +717,7 @@ public class SheetController
                 true);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             selectSheet();
@@ -735,6 +744,7 @@ public class SheetController
                 false);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -771,6 +781,7 @@ public class SheetController
                 true);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             SheetAssembly assembly = getSelectedAssembly();
@@ -799,6 +810,7 @@ public class SheetController
                 true);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             SheetAssembly assembly = getSelectedAssembly();

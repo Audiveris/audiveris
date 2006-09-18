@@ -36,6 +36,7 @@ import omr.ui.util.MemoryMeter;
 import omr.ui.util.Panel;
 import static omr.ui.util.UIUtilities.*;
 
+import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Memory;
 
@@ -271,6 +272,7 @@ public class Jui
      *
      * @return observer name
      */
+    @Implement(SelectionObserver.class)
     public String getName ()
     {
         return "JUI";
@@ -443,6 +445,7 @@ public class Jui
      * @param selection the selection object (SHEET)
      * @param hint processing hint (not used)
      */
+    @Implement(SelectionObserver.class)
     public void update (Selection     selection,
                         SelectionHint hint)
     {
@@ -555,6 +558,7 @@ public class Jui
             this.frame = frame;
         }
 
+        @Implement(Runnable.class)
         public void run ()
         {
             frame.pack();
@@ -587,6 +591,7 @@ public class Jui
             button.setToolTipText(tiptext);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             exit();
@@ -610,6 +615,7 @@ public class Jui
             button.setToolTipText(tiptext);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             Logger.getLogger(omr.selection.Selection.class)
@@ -633,6 +639,7 @@ public class Jui
                 .setToolTipText(tiptext);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             logger.info("Occupied memory is " + Memory.getValue() + " bytes");
@@ -652,6 +659,7 @@ public class Jui
                 .setToolTipText("Constants tree for all units");
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             // Preload constant units
@@ -702,6 +710,7 @@ public class Jui
                 .setToolTipText("Clear the whole log display");
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             logPane.clearLog();
@@ -723,6 +732,7 @@ public class Jui
                 .setToolTipText("Verify training material");
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             GlyphVerifier.getInstance()
@@ -746,6 +756,7 @@ public class Jui
                 .setToolTipText(tiptext);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             StringBuffer sb = new StringBuffer();
@@ -822,6 +833,7 @@ public class Jui
                 .setToolTipText("Manage colors of all shapes");
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             if (shapeColorFrame == null) {
@@ -858,6 +870,7 @@ public class Jui
             button.setToolTipText(tiptext);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             UITest.test();
@@ -879,6 +892,7 @@ public class Jui
                 .setToolTipText(tiptext);
         }
 
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             GlyphTrainer.launch();

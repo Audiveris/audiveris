@@ -26,6 +26,7 @@ import omr.ui.view.RubberZoomedPanel;
 import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.*;
@@ -397,6 +398,7 @@ public class SheetAssembly
      *
      * @param e the originating change event (not used actually)
      */
+    @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
         if (previousIndex != -1) {

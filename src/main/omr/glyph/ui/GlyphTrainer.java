@@ -30,6 +30,7 @@ import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
@@ -336,15 +337,18 @@ public class GlyphTrainer
             falsePositiveAction.setEnabled(falsePositives.size() > 0);
         }
 
-        public void epochEnded (int    epochIndex,
+        @Implement(NeuralNetwork.Monitor.class)
+        public void epochEnded(int    epochIndex,
                                 double mse)
         {
         }
 
+        @Implement(Evaluator.Monitor.class)
         public void glyphProcessed (final Glyph glyph)
         {
         }
 
+        @Implement(NeuralNetwork.Monitor.class)
         public void trainingStarted (final int    epochIndex,
                                      final double mse)
         {
@@ -495,7 +499,8 @@ public class GlyphTrainer
                 super("Core");
             }
 
-            public void actionPerformed (ActionEvent e)
+            @Implement(ActionListener.class)
+            public void actionPerformed(ActionEvent e)
             {
                 useWhole = false;
             }
@@ -509,6 +514,7 @@ public class GlyphTrainer
                 super("Dump");
             }
 
+            @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
                 evaluator.dump();
@@ -523,6 +529,7 @@ public class GlyphTrainer
                 super("Verify");
             }
 
+            @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
                 GlyphVerifier.getInstance()
@@ -541,6 +548,7 @@ public class GlyphTrainer
                 super("Verify");
             }
 
+            @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
                 GlyphVerifier.getInstance()
@@ -563,6 +571,7 @@ public class GlyphTrainer
                 super(title);
             }
 
+            @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
                 // Ask user confirmation
@@ -645,6 +654,7 @@ public class GlyphTrainer
                 super("Validate");
             }
 
+            @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
                 executor.execute(
@@ -670,6 +680,7 @@ public class GlyphTrainer
                 super("Whole");
             }
 
+            @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
                 useWhole = true;
@@ -940,6 +951,7 @@ public class GlyphTrainer
                 super("Use Last");
             }
 
+            @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
                 if (JOptionPane.showConfirmDialog(
@@ -1001,6 +1013,7 @@ public class GlyphTrainer
             // Purpose is just to read and remember the data from the various
             // input fields. Triggered when user presses Enter in one of these
             // fields.
+            @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
                 inputParams();
@@ -1016,6 +1029,7 @@ public class GlyphTrainer
                 super("Use Snap");
             }
 
+            @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
                 NeuralNetwork network = ((GlyphNetwork) evaluator).getNetwork();
@@ -1033,6 +1047,7 @@ public class GlyphTrainer
                 super("Stop");
             }
 
+            @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
                 evaluator.stop();
@@ -1090,7 +1105,8 @@ public class GlyphTrainer
          *
          * @param selected number of selected glyphs
          */
-        public void setSelectedGlyphs (int selected)
+        @Implement(GlyphRepository.Monitor.class)
+        public void setSelectedGlyphs(int selected) 
         {
             nbSelectedFiles.setValue(selected);
         }
@@ -1100,6 +1116,7 @@ public class GlyphTrainer
          *
          * @param total the total number of glyphs available
          */
+        @Implement(GlyphRepository.Monitor.class)
         public void setTotalGlyphs (int total)
         {
             totalFiles.setValue(total);
@@ -1123,6 +1140,7 @@ public class GlyphTrainer
          *
          * @param glyph the loaded glyph
          */
+        @Implement(GlyphRepository.Monitor.class)
         public void loadedGlyph (Glyph glyph)
         {
             nbLoadedFiles.setValue(++nbLoaded);
@@ -1315,7 +1333,8 @@ public class GlyphTrainer
             // Purpose is just to read and remember the data from the various
             // input fields. Triggered when user presses Enter in one of these
             // fields.
-            public void actionPerformed (ActionEvent e)
+            @Implement(ActionListener.class)
+            public void actionPerformed(ActionEvent e)
             {
                 inputParams();
                 displayParams();
@@ -1330,6 +1349,7 @@ public class GlyphTrainer
                 super("Select Core");
             }
 
+            @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
                 executor.execute(

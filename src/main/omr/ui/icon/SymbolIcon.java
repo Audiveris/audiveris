@@ -9,6 +9,8 @@
 //-----------------------------------------------------------------------//
 package omr.ui.icon;
 
+import omr.util.Implement;
+
 import java.awt.*;
 import java.awt.image.*;
 
@@ -207,6 +209,7 @@ public class SymbolIcon
      *
      * @return the height of the underlying image
      */
+    @Implement(Icon.class)
     public int getIconHeight ()
     {
         if (getImage() != null) {
@@ -225,6 +228,7 @@ public class SymbolIcon
      *
      * @return the standard width in pixels
      */
+    @Implement(Icon.class)
     public int getIconWidth ()
     {
         return standardWidth;
@@ -420,6 +424,7 @@ public class SymbolIcon
      * @param x abscissa
      * @param y ordinate
      */
+    @Implement(Icon.class)
     public void paintIcon (Component c,
                            Graphics  g,
                            int       x,

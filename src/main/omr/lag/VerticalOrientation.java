@@ -10,6 +10,8 @@
 //
 package omr.lag;
 
+import omr.util.Implement;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 
@@ -21,8 +23,7 @@ import java.awt.Rectangle;
  * @version $Id$
  */
 public class VerticalOrientation
-    implements Oriented,
-               java.io.Serializable
+    implements Oriented, java.io.Serializable
 {
     //~ Methods ----------------------------------------------------------------
 
@@ -34,6 +35,7 @@ public class VerticalOrientation
      *
      * @return true
      */
+    @Implement(Oriented.class)
     public boolean isVertical ()
     {
         return true;
@@ -52,6 +54,7 @@ public class VerticalOrientation
      *
      * @return the absolute coordinates
      */
+    @Implement(Oriented.class)
     public Point switchRef (Point cp,
                             Point xy)
     {
@@ -79,6 +82,7 @@ public class VerticalOrientation
      *
      * @return the absolute coordinates
      */
+    @Implement(Oriented.class)
     public Rectangle switchRef (Rectangle cplt,
                                 Rectangle xywh)
     {

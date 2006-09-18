@@ -45,8 +45,8 @@ import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import omr.ui.view.Zoom;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.*;
@@ -317,6 +317,7 @@ public class VerticalsBuilder
             this.system = system;
         }
 
+        @Implement(Checkable.class)
         public void setResult (Result result)
         {
             stick.setResult(result);
@@ -341,6 +342,7 @@ public class VerticalsBuilder
         }
 
         // Retrieve the adjacency value
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -368,6 +370,7 @@ public class VerticalsBuilder
         }
 
         // Retrieve the adjacency value
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -396,6 +399,7 @@ public class VerticalsBuilder
         }
 
         // Retrieve the ratio length / thickness
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             return context.stick.getAspect();
@@ -421,6 +425,7 @@ public class VerticalsBuilder
         }
 
         // Retrieve the stick abscissa
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
@@ -450,6 +455,7 @@ public class VerticalsBuilder
         }
 
         // Retrieve the density
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick     stick = context.stick;
@@ -479,6 +485,7 @@ public class VerticalsBuilder
         }
 
         // Retrieve the length data
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             return sheet.getScale()
@@ -499,6 +506,7 @@ public class VerticalsBuilder
             super(unit, suite, inputSelection);
         }
 
+        @Override
         public void update (Selection     selection,
                             SelectionHint hint)
         {
@@ -653,6 +661,7 @@ public class VerticalsBuilder
         }
 
         // Retrieve the stick abscissa
+        @Implement(Check.class)
         protected double getValue (Context context)
         {
             Stick stick = context.stick;

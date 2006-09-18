@@ -10,6 +10,8 @@
 //
 package omr.math;
 
+import omr.util.Implement;
+
 import static java.lang.Math.*;
 
 /**
@@ -144,6 +146,7 @@ public class BasicLine
     //------//
     // getA //
     //------//
+    @Implement(Line.class)
     public double getA ()
     {
         checkLineParameters();
@@ -154,6 +157,7 @@ public class BasicLine
     //------//
     // getB //
     //------//
+    @Implement(Line.class)
     public double getB ()
     {
         checkLineParameters();
@@ -164,6 +168,7 @@ public class BasicLine
     //------//
     // getC //
     //------//
+    @Implement(Line.class)
     public double getC ()
     {
         checkLineParameters();
@@ -174,6 +179,7 @@ public class BasicLine
     //------------------//
     // getInvertedSlope //
     //------------------//
+    @Implement(Line.class)
     public double getInvertedSlope ()
     {
         checkLineParameters();
@@ -184,6 +190,7 @@ public class BasicLine
     //-----------------//
     // getMeanDistance //
     //-----------------//
+    @Implement(Line.class)
     public double getMeanDistance ()
     {
         // Check we have at least 2 points
@@ -204,6 +211,7 @@ public class BasicLine
     //-------------------//
     // getNumberOfPoints //
     //-------------------//
+    @Implement(Line.class)
     public int getNumberOfPoints ()
     {
         return n;
@@ -212,6 +220,7 @@ public class BasicLine
     //----------//
     // getSlope //
     //----------//
+    @Implement(Line.class)
     public double getSlope ()
     {
         checkLineParameters();
@@ -222,6 +231,7 @@ public class BasicLine
     //------------//
     // distanceOf //
     //------------//
+    @Implement(Line.class)
     public double distanceOf (double x,
                               double y)
     {
@@ -233,6 +243,7 @@ public class BasicLine
     //-------------//
     // includeLine //
     //-------------//
+    @Implement(Line.class)
     public Line includeLine (Line other)
     {
         if (other instanceof BasicLine) {
@@ -255,6 +266,7 @@ public class BasicLine
     //--------------//
     // includePoint //
     //--------------//
+    @Implement(Line.class)
     public void includePoint (double x,
                               double y)
     {
@@ -275,6 +287,7 @@ public class BasicLine
     //-------//
     // reset //
     //-------//
+    @Implement(Line.class)
     public void reset ()
     {
         a = b = c = Double.NaN;
@@ -330,6 +343,7 @@ public class BasicLine
     //-----//
     // xAt //
     //-----//
+    @Implement(Line.class)
     public double xAt (double y)
     {
         checkLineParameters();
@@ -344,6 +358,7 @@ public class BasicLine
     //-----//
     // xAt //
     //-----//
+    @Implement(Line.class)
     public int xAt (int y)
     {
         return (int) rint(xAt((double) y));
@@ -352,6 +367,7 @@ public class BasicLine
     //-----//
     // yAt //
     //-----//
+    @Implement(Line.class)
     public double yAt (double x)
     {
         checkLineParameters();
@@ -366,6 +382,7 @@ public class BasicLine
     //-----//
     // yAt //
     //-----//
+    @Implement(Line.class)
     public int yAt (int x)
     {
         return (int) rint(yAt((double) x));

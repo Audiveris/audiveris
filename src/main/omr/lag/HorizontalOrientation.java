@@ -10,6 +10,8 @@
 //
 package omr.lag;
 
+import omr.util.Implement;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 
@@ -34,6 +36,7 @@ public class HorizontalOrientation
      *
      * @return false
      */
+    @Implement(Oriented.class)
     public boolean isVertical ()
     {
         return false;
@@ -51,6 +54,7 @@ public class HorizontalOrientation
      *
      * @return the absolute coordinates
      */
+    @Implement(Oriented.class)
     public Point switchRef (Point cp,
                             Point xy)
     {
@@ -77,6 +81,7 @@ public class HorizontalOrientation
      *
      * @return the absolute coordinates
      */
+    @Implement(Oriented.class)
     public Rectangle switchRef (Rectangle cplt,
                                 Rectangle xywh)
     {

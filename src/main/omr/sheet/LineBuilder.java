@@ -17,7 +17,6 @@ import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 
-import omr.lag.Lag;
 import omr.lag.Run;
 
 import omr.math.BasicLine;
@@ -25,6 +24,7 @@ import omr.math.Line;
 
 import omr.stick.*;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.*;
@@ -706,6 +706,7 @@ public class LineBuilder
     private static class StickComparator
         implements Comparator<Stick>
     {
+        @Implement(Comparator.class)
         public int compare (Stick s1,
                             Stick s2)
         {
