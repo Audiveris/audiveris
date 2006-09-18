@@ -1,23 +1,24 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                           A u d i v e r i s                           //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             A u d i v e r i s                              //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
 
 /**
-* Class <code>Audiveris</code> is simply the entry point to OMR, which
-* delegates the call to {@link omr.Main#main}.
-*
-* @author Herv&eacute; Bitteur
-* @version $Id$
-*/
+ * Class <code>Audiveris</code> is simply the entry point to OMR, which
+ * delegates the call to {@link omr.Main#main}.
+ *
+ * @author Herv&eacute; Bitteur
+ * @version $Id$
+ */
 public final class Audiveris
 {
-    //~ Constructors ------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
     //-----------//
     // Audiveris //
@@ -27,7 +28,7 @@ public final class Audiveris
     {
     }
 
-    //~ Methods -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
     //------//
     // main //
