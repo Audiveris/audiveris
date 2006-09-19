@@ -70,6 +70,19 @@ public abstract class GlyphModel
         return lag.getGlyph(id);
     }
 
+    //--------//
+    // getLag //
+    //--------//
+    /**
+     * Report the underlying glyph lag
+     *
+     * @return the related glyph lag
+     */
+    public GlyphLag getLag ()
+    {
+        return lag;
+    }
+
     //------------------------//
     // getLatestShapeAssigned //
     //------------------------//
@@ -129,7 +142,8 @@ public abstract class GlyphModel
     public void deassignGlyphShape (Glyph glyph)
     {
         // Empty by default
-        logger.warning("deassignGlyphShape not implemented for this glyph model");
+        logger.warning(
+            "deassignGlyphShape not implemented for this glyph model");
     }
 
     //------------------//
