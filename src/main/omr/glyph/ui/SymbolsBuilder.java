@@ -132,7 +132,6 @@ public class SymbolsBuilder
         glyphBoard = new SymbolGlyphBoard(
             this,
             sheet.getFirstSymbolId(),
-            lag,
             sheet.getSelection(VERTICAL_GLYPH),
             sheet.getSelection(VERTICAL_GLYPH_ID),
             sheet.getSelection(GLYPH_SET));
@@ -300,8 +299,7 @@ public class SymbolsBuilder
         case THICK_BAR_LINE :
         case THIN_BAR_LINE :
             sheet.getBarsBuilder()
-                 .deassignBarGlyph(glyph);
-            assignGlyphShape(glyph, null);
+                 .deassignGlyphShape(glyph);
 
             break;
 
@@ -505,7 +503,7 @@ public class SymbolsBuilder
         @Override
         public void deassignGlyph (Glyph glyph)
         {
-            deassignGlyphShape(glyph);
+            super.deassignGlyph(glyph);
             refresh();
         }
 

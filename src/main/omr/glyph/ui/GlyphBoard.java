@@ -11,6 +11,7 @@
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
+import omr.glyph.GlyphModel;
 import omr.glyph.Shape;
 
 import omr.selection.Selection;
@@ -66,8 +67,6 @@ import javax.swing.event.*;
  * </ul>
  * </dl>
  *
- *
- *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -81,6 +80,9 @@ public class GlyphBoard
     private static final Logger logger = Logger.getLogger(GlyphBoard.class);
 
     //~ Instance fields --------------------------------------------------------
+
+    /** The related glyph model */
+    protected final GlyphModel glyphModel;
 
     /** A dump action */
     protected final JButton dump = new JButton("Dump");
@@ -132,6 +134,7 @@ public class GlyphBoard
      * Create a Glyph Board
      *
      * @param unitName name of the owning unit
+     * @param glyphModel the related glyph model, if any
      * @param maxGlyphId the upper bound for glyph id
      * @param knownIds   the extended list of ids for known glyphs
      * @param glyphSelection input glyph selection
@@ -139,6 +142,7 @@ public class GlyphBoard
      * @param glyphSetSelection input glyph set selection
      */
     public GlyphBoard (String        unitName,
+                       GlyphModel    glyphModel,
                        int           maxGlyphId,
                        List<Integer> knownIds,
                        Selection     glyphSelection,
@@ -147,6 +151,7 @@ public class GlyphBoard
     {
         this(
             unitName + "-GlyphBoard",
+            glyphModel,
             maxGlyphId,
             glyphSelection,
             glyphIdSelection,
@@ -168,18 +173,20 @@ public class GlyphBoard
      * Create a Glyph Board
      *
      * @param unitName name of the owning unit
+     * @param glyphModel the related glyph model, if any
      * @param maxGlyphId the upper bound for glyph id
      * @param glyphSelection input glyph selection
      * @param glyphIdSelection output glyph Id selection
      * @param glyphSetSelection input glyph set selection
      */
-    protected GlyphBoard (String    unitName,
-                          int       maxGlyphId,
-                          Selection glyphSelection,
-                          Selection glyphIdSelection,
-                          Selection glyphSetSelection)
+    protected GlyphBoard (String     unitName,
+                          GlyphModel glyphModel,
+                          int        maxGlyphId,
+                          Selection  glyphSelection,
+                          Selection  glyphIdSelection,
+                          Selection  glyphSetSelection)
     {
-        this(unitName);
+        this(unitName, glyphModel);
 
         ArrayList<Selection> inputs = new ArrayList<Selection>();
 
@@ -224,10 +231,14 @@ public class GlyphBoard
      * Basic constructor, to set common characteristics
      *
      * @param name the name assigned to this board instance
+     * @param glyphModel the related glyph model, if any
      */
-    protected GlyphBoard (String name)
+    protected GlyphBoard (String     name,
+                          GlyphModel glyphModel)
     {
         super(Board.Tag.GLYPH, name);
+
+        this.glyphModel = glyphModel;
 
         // Dump action
         dump.setToolTipText("Dump this glyph");
@@ -292,14 +303,11 @@ public class GlyphBoard
         //  Nota: this method is automatically called whenever the spinner value
         //  is changed, including when a GLYPH selection notification is
         //  received leading to such selfUpdating. So the check.
-        if (!selfUpdating) {
-            ///logger.info("GB stateChanged. proceeding... " + spinner.getName());
-            if (outputSelection != null) {
-                // Notify the new glyph id
-                outputSelection.setEntity(
-                    (Integer) spinner.getValue(),
-                    SelectionHint.GLYPH_INIT);
-            }
+        if (!selfUpdating && (outputSelection != null)) {
+            // Notify the new glyph id
+            outputSelection.setEntity(
+                (Integer) spinner.getValue(),
+                SelectionHint.GLYPH_INIT);
         }
     }
 
@@ -394,8 +402,13 @@ public class GlyphBoard
     }
 
     //--------------//
-    // alterSpinner //
-    //--------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param spinner DOCUMENT ME!
+     * @param glyph DOCUMENT ME!
+     * @param modified DOCUMENT ME!
+     */
     protected void alterSpinner (JSpinner spinner,
                                  Glyph    glyph,
                                  boolean  modified)
@@ -523,16 +536,16 @@ public class GlyphBoard
         }
 
         @Implement(ChangeListener.class)
-        public void actionPerformed(ActionEvent e)
+        public void actionPerformed (ActionEvent e)
         {
-            Selection glyphSelection = GlyphBoard.this.inputSelectionList.get(
-                0);
+            Selection glyphSelection = inputSelectionList.get(0);
             Glyph     glyph = (Glyph) glyphSelection.getEntity();
 
-            if ((glyph != null) && glyph.isKnown()) {
-                // Notify the new glyph info
-                glyph.setShape(null);
-                glyphSelection.setEntity(glyph, SelectionHint.GLYPH_MODIFIED);
+            if ((glyphModel != null) && (glyph != null) && glyph.isKnown()) {
+                glyphModel.deassignGlyphShape(glyph);
+
+                //  glyph.setShape(null);
+                //  glyphSelection.setEntity(glyph, SelectionHint.GLYPH_MODIFIED);
             }
         }
     }

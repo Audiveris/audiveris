@@ -208,9 +208,9 @@ public class BarsBuilder
         }
     }
 
-    //------------------//
-    // deassignBarGlyph //
-    //------------------//
+    //--------------------//
+    // deassignGlyphShape //
+    //--------------------//
     /**
      * Remove a bar together with all its related entities. This means removing
      * reference in the bars list of this builder, reference in the containing
@@ -220,75 +220,84 @@ public class BarsBuilder
      *
      * @param glyph the (false) bar glyph to deassign
      */
-    public void deassignBarGlyph (Glyph glyph)
+    @Override
+    public void deassignGlyphShape (Glyph glyph)
     {
-        Stick bar = getBarOf(glyph);
+        if ((glyph.getShape() == Shape.THICK_BAR_LINE) ||
+            (glyph.getShape() == Shape.THIN_BAR_LINE)) {
+            Stick bar = getBarOf(glyph);
 
-        if (bar == null) {
-            return;
-        } else {
-            logger.info("Removing a " + glyph.getShape());
-        }
+            if (bar == null) {
+                return;
+            } else {
+                logger.info("Removing a " + glyph.getShape());
+            }
 
-        // Related stick has to be freed
-        bar.setShape(null);
-        bar.setResult(CANCELLED);
+            // Related stick has to be freed
+            bar.setShape(null);
+            bar.setResult(CANCELLED);
 
-        // Remove from the internal all-bars list
-        bars.remove(bar);
+            // Remove from the internal all-bars list
+            bars.remove(bar);
 
-        // Remove from the containing SystemInfo
-        SystemInfo system = checker.getSystemOf(bar, sheet);
+            // Remove from the containing SystemInfo
+            SystemInfo system = checker.getSystemOf(bar, sheet);
 
-        if (system == null) {
-            return;
-        } else {
-            system.getBars()
-                  .remove(bar);
-        }
+            if (system == null) {
+                return;
+            } else {
+                system.getBars()
+                      .remove(bar);
+            }
 
-        // Remove from the containing Measure
-        System scoreSystem = system.getScoreSystem();
+            // Remove from the containing Measure
+            System scoreSystem = system.getScoreSystem();
 
-        for (Iterator it = scoreSystem.getStaves()
-                                      .iterator(); it.hasNext();) {
-            Staff staff = (Staff) it.next();
+            for (Iterator it = scoreSystem.getStaves()
+                                          .iterator(); it.hasNext();) {
+                Staff staff = (Staff) it.next();
 
-            if (checker.isStaffEmbraced(staff, bar)) {
-                for (Iterator mit = staff.getMeasures()
-                                         .iterator(); mit.hasNext();) {
-                    Measure measure = (Measure) mit.next();
+                if (checker.isStaffEmbraced(staff, bar)) {
+                    for (Iterator mit = staff.getMeasures()
+                                             .iterator(); mit.hasNext();) {
+                        Measure measure = (Measure) mit.next();
 
-                    //                    for (Iterator bit = measure.getInfos().iterator();
-                    //                         bit.hasNext();) {
-                    //                        BarInfo info = (BarInfo) bit.next();
-                    //                        if (info == bar) {
-                    //                            // Remove the bar info
-                    //                            if (logger.isFineEnabled()) {
-                    //                                logger.fine("Removing " + info +
-                    //                                             " from " + measure);
-                    //                            }
-                    //                            bit.remove();
-                    //
-                    //                            // Remove measure as well ?
-                    //                            if (measure.getInfos().size() == 0) {
-                    //                                if (logger.isFineEnabled()) {
-                    //                                    logger.fine("Removing " + measure);
-                    //                                }
-                    //                                mit.remove();
-                    //                            }
-                    //
-                    //                            break;
-                    //                        }
-                    //                    }
+                        //                    for (Iterator bit = measure.getInfos().iterator();
+                        //                         bit.hasNext();) {
+                        //                        BarInfo info = (BarInfo) bit.next();
+                        //                        if (info == bar) {
+                        //                            // Remove the bar info
+                        //                            if (logger.isFineEnabled()) {
+                        //                                logger.fine("Removing " + info +
+                        //                                             " from " + measure);
+                        //                            }
+                        //                            bit.remove();
+                        //
+                        //                            // Remove measure as well ?
+                        //                            if (measure.getInfos().size() == 0) {
+                        //                                if (logger.isFineEnabled()) {
+                        //                                    logger.fine("Removing " + measure);
+                        //                                }
+                        //                                mit.remove();
+                        //                            }
+                        //
+                        //                            break;
+                        //                        }
+                        //                    }
+                    }
                 }
             }
-        }
 
-        // Update the view accordingly
-        if (lagView != null) {
-            lagView.colorize();
-            lagView.repaint();
+            ///assignGlyphShape(glyph, null);
+
+            // Update the view accordingly
+            if (lagView != null) {
+                lagView.colorize();
+                lagView.repaint();
+            }
+        } else {
+            BarsBuilder.logger.warning(
+                "No deassign meant for " + glyph.getShape() + " glyph");
         }
     }
 
@@ -501,6 +510,7 @@ public class BarsBuilder
                 sheet.getSelection(VERTICAL_SECTION_ID)),
             new GlyphBoard(
                 unit,
+                this,
                 lag.getLastGlyphId(),
                 knownIds,
                 sheet.getSelection(VERTICAL_GLYPH),
@@ -576,8 +586,7 @@ public class BarsBuilder
      * bar of a staff does not end a measure, we thus have to remove the measure
      * that we first had associated with it.
      *
-     * @param system the system whose staves starting measure has to be
-     *               checked
+     * @param system the system whose staves starting measure has to be checked
      */
     private void removeStartingBar (omr.score.System system)
     {
@@ -731,21 +740,6 @@ public class BarsBuilder
             // Recognized bar lines
             for (Stick stick : bars) {
                 stick.colorize(lag, viewIndex, Color.yellow);
-            }
-        }
-
-        //---------------//
-        // deassignGlyph //
-        //---------------//
-        @Override
-        public void deassignGlyph (Glyph glyph)
-        {
-            if ((glyph.getShape() == Shape.THICK_BAR_LINE) ||
-                (glyph.getShape() == Shape.THIN_BAR_LINE)) {
-                deassignBarGlyph(glyph);
-            } else {
-                BarsBuilder.logger.warning(
-                    "No deassign meant for " + glyph.getShape() + " glyph");
             }
         }
 

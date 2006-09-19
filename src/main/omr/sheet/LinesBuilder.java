@@ -262,6 +262,7 @@ public class LinesBuilder
                 sheet.getSelection(HORIZONTAL_SECTION_ID)),
             new GlyphBoard(
                 unit,
+                this,
                 lag.getLastGlyphId(),
                 knownIds,
                 sheet.getSelection(HORIZONTAL_GLYPH),

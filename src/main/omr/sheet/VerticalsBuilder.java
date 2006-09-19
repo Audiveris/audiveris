@@ -152,6 +152,31 @@ public class VerticalsBuilder
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------------------//
+    // deassignGlyphShape //
+    //--------------------//
+    /**
+     * This method is limited to deassignment of stems
+     *
+     * @param glyph the glyph to deassign
+     */
+    @Override
+    public void deassignGlyphShape (Glyph glyph)
+    {
+        Shape shape = glyph.getShape();
+
+        switch (shape) {
+        case COMBINING_STEM :
+            logger.info("Deassign a " + shape);
+            sheet.getSymbolsBuilder()
+                 .cancelStems(Collections.singletonList(glyph));
+
+            break;
+
+        default :
+        }
+    }
+
     //--------------//
     // displayFrame //
     //--------------//
@@ -191,6 +216,7 @@ public class VerticalsBuilder
                     sheet.getSelection(VERTICAL_SECTION_ID)),
                 new GlyphBoard(
                     unit,
+                    this,
                     lag.getLastGlyphId(),
                     knownIds,
                     sheet.getSelection(VERTICAL_GLYPH),
@@ -589,26 +615,6 @@ public class VerticalsBuilder
                         stick.colorize(lag, viewIndex, Color.yellow);
                     }
                 }
-            }
-        }
-
-        //---------------//
-        // deassignGlyph //
-        //---------------//
-        @Override
-        public void deassignGlyph (Glyph glyph)
-        {
-            Shape shape = glyph.getShape();
-
-            switch (shape) {
-            case COMBINING_STEM :
-                VerticalsBuilder.logger.info("Deassign a " + shape);
-                sheet.getSymbolsBuilder()
-                     .cancelStems(Collections.singletonList(glyph));
-
-                break;
-
-            default :
             }
         }
 
