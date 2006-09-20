@@ -55,8 +55,7 @@ import java.util.List;
  */
 public class Lag<L extends Lag<L, S>, S extends Section>
     extends Digraph<L, S>
-    implements Oriented,
-               SelectionObserver
+    implements Oriented, SelectionObserver
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -303,7 +302,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         Point target = switchRef(pt, null); // Involutive!
 
         // Just in case...
-        S foundSection = (S) sectionSelection.getEntity();
+        S foundSection = (S) sectionSelection.getEntity(); // Compiler warning
 
         if ((foundSection != null) &&
             foundSection.contains(target.x, target.y)) {
@@ -347,7 +346,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         Rectangle target = switchRef(rect, null); // Involutive!
 
         // Just in case...
-        S foundSection = (S) sectionSelection.getEntity();
+        S foundSection = (S) sectionSelection.getEntity(); // Compiler warning
 
         if ((foundSection != null) &&
             target.contains(foundSection.getContourBox())) {
@@ -550,7 +549,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
 
             if (hint == SelectionHint.SECTION_INIT) {
                 // Display section contour
-                S section = (S) selection.getEntity();
+                S section = (S) selection.getEntity(); // Compiler warning
                 locationSelection.setEntity(
                     (section != null) ? section.getContourBox() : null,
                     hint);

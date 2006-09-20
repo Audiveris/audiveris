@@ -17,6 +17,7 @@ import omr.stick.StickSection;
 
 import omr.ui.Board;
 import omr.ui.field.LIntegerField;
+import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
 
 import omr.util.Logger;
