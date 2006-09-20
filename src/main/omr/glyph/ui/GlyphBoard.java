@@ -49,10 +49,8 @@ import javax.swing.event.*;
  * lines. For other instances (such as for HorizontalsBuilder), these would be
  * horizontal sticks.
  *
- * <li>The <b>knownSpinner</b> for known symbols (that is with a defined shape)
- * that are of interest for the board (e.g. just the lines for LinesBuider, and
- * just the stems for VerticalsBuilder). This spinner is a subset of the
- * globalSpinner.
+ * <li>The <b>knownSpinner</b> for known symbols (that is with a defined
+ * shape). This spinner is a subset of the globalSpinner.
  *
  * </ol>The ids handled by each of these spinners can dynamically vary, since
  * glyphs can change their status.
