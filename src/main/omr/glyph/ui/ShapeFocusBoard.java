@@ -23,9 +23,9 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.ui.Board;
-import static omr.ui.Board.NO_VALUE;
 import omr.ui.Board.Tag;
 import omr.ui.field.SpinnerUtilities;
+import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;

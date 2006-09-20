@@ -206,11 +206,6 @@ public class GlyphBuilder
             compound.getContourBox().x);
         system.getGlyphs()
               .add(loc, compound);
-
-        // Update glyph board accordingly
-        if (glyphBoard != null) {
-            glyphBoard.addGlyphId(compound);
-        }
     }
 
     //----------------------//
@@ -499,11 +494,6 @@ public class GlyphBuilder
 
         // Remove from lag
         glyph.destroy(cutSections);
-
-        // Remove from glyph board
-        if (glyphBoard != null) {
-            glyphBoard.removeGlyphId(glyph.getId());
-        }
     }
 
     //--------------//
