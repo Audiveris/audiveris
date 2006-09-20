@@ -24,7 +24,30 @@ import javax.swing.*;
  */
 public class SpinnerUtilities
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** To indicate that spinner value is invalid */
+    public static final int NO_VALUE = 0;
+
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // setEditable //
+    //-------------//
+    /**
+     * Make the spinner text field editable, or not
+     *
+     * @param spinner the spinner to update
+     * @param bool true if editable, false otherwise
+     */
+    public static void setEditable (JSpinner spinner,
+                                    boolean  bool)
+    {
+        JSpinner.DefaultEditor editor;
+        editor = (JSpinner.DefaultEditor) spinner.getEditor();
+        editor.getTextField()
+              .setEditable(bool);
+    }
 
     //---------//
     // setList //
