@@ -109,60 +109,57 @@ public class Sheet
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Step to initially load a sheet picture */
-    public transient LoadStep LOAD;
-
     // A bar line extractor for this sheet
     private transient BarsBuilder              barsBuilder;
 
-    /**
-     * Step to retrieve all bar lines. This allocates and links the sheet
-     * related score.
-     */
-    public final InstanceStep<Boolean> BARS = new InstanceStep<Boolean>(
-        "Detect vertical Bar lines") {
-        public void doit ()
-            throws ProcessingException
-        {
-            barsBuilder = new BarsBuilder(Sheet.this);
-            barsBuilder.buildInfo();
-            result = Boolean.valueOf(true);
+    // Link with sheet original image file. Set by constructor.
+    private File                               imageFile;
 
-            // Display the resulting score, if sheet is currently
-            // displayed
-            Jui jui = Main.getJui();
+    // A glyph extractor for this sheet
+    private transient GlyphBuilder             glyphBuilder;
 
-            if (jui != null) {
-                jui.scoreController.setScoreView(score);
-            }
-        }
-    };
+    // A glyph inspector for this sheet
+    private transient GlyphInspector           glyphInspector;
 
-    /**
-     * Step to retrieve all horizontal dashes
-     */
-    public final InstanceStep<Horizontals> HORIZONTALS = new InstanceStep<Horizontals>(
-        "Retrieve horizontal Dashes") {
-        public void doit ()
-            throws ProcessingException
-        {
-            HorizontalsBuilder builder = new HorizontalsBuilder(Sheet.this);
-            result = builder.buildInfo();
-        }
-    };
+    // Horizontal lag (built by LINES/LinesBuilder)
+    private transient GlyphLag                 hLag;
 
-    /**
-     * Step to retrieve all staff lines, and remove them from the picture
-     */
-    public final InstanceStep<List<StaffInfo>> LINES = new InstanceStep<List<StaffInfo>>(
-        "Detect & remove all Staff Lines") {
-        public void doit ()
-            throws ProcessingException
-        {
-            linesBuilder = new LinesBuilder(Sheet.this);
-            result = linesBuilder.getStaves();
-        }
-    };
+    // Vertical lag (built by BARS/BarsBuilder)
+    private GlyphLag                           vLag;
+
+    // A staff line extractor for this sheet
+    private transient LinesBuilder             linesBuilder;
+
+    // Retrieved systems. Set by BARS.
+    private List<SystemInfo>                   systems;
+
+    // Link with related score. Set by BARS.
+    private Score                              score;
+
+    // All Current selections for this sheet
+    private final transient SelectionManager   selectionManager;
+
+    // Related assembly instance
+    private transient SheetAssembly            assembly;
+    private transient SkewBuilder              skewBuilder;
+
+    // Specific pane dealing with glyphs
+    private transient SymbolsBuilder           symbolsBuilder;
+
+    // To avoid concurrent modifications
+    private transient volatile boolean         busy = false;
+
+    // Glyph id of the first symbol
+    private int                                firstSymbolId = -1;
+    private int                                height = -1;
+
+    // Sheet dimension in pixels
+    private int                                width = -1;
+
+    // InstanceStep Definitions (in proper order) ------------------------------
+
+    /** Step to initially load a sheet picture */
+    public transient LoadStep LOAD;
 
     /**
      * Step to determine the main scale of the sheet. The scale is the mean
@@ -218,6 +215,55 @@ public class Sheet
                         .getWidth();
             height = getPicture()
                          .getHeight();
+        }
+    };
+
+    /**
+     * Step to retrieve all staff lines, and remove them from the picture
+     */
+    public final InstanceStep<List<StaffInfo>> LINES = new InstanceStep<List<StaffInfo>>(
+        "Detect & remove all Staff Lines") {
+        public void doit ()
+            throws ProcessingException
+        {
+            linesBuilder = new LinesBuilder(Sheet.this);
+            result = linesBuilder.getStaves();
+        }
+    };
+
+    /**
+     * Step to retrieve all horizontal dashes
+     */
+    public final InstanceStep<Horizontals> HORIZONTALS = new InstanceStep<Horizontals>(
+        "Retrieve horizontal Dashes") {
+        public void doit ()
+            throws ProcessingException
+        {
+            HorizontalsBuilder builder = new HorizontalsBuilder(Sheet.this);
+            result = builder.buildInfo();
+        }
+    };
+
+    /**
+     * Step to retrieve all bar lines. This allocates and links the sheet
+     * related score.
+     */
+    public final InstanceStep<Boolean> BARS = new InstanceStep<Boolean>(
+        "Detect vertical Bar lines") {
+        public void doit ()
+            throws ProcessingException
+        {
+            barsBuilder = new BarsBuilder(Sheet.this);
+            barsBuilder.buildInfo();
+            result = Boolean.valueOf(true);
+
+            // Display the resulting score, if sheet is currently
+            // displayed
+            Jui jui = Main.getJui();
+
+            if (jui != null) {
+                jui.scoreController.setScoreView(score);
+            }
         }
     };
 
@@ -393,49 +439,6 @@ public class Sheet
         }
     };
 
-    // Link with sheet original image file. Set by constructor.
-    private File                             imageFile;
-
-    // A glyph extractor for this sheet
-    private transient GlyphBuilder           glyphBuilder;
-
-    // A glyph inspector for this sheet
-    private transient GlyphInspector         glyphInspector;
-
-    // Horizontal lag (built by LINES/LinesBuilder)
-    private transient GlyphLag               hLag;
-
-    // Vertical lag (built by BARS/BarsBuilder)
-    private GlyphLag                         vLag;
-
-    // A staff line extractor for this sheet
-    private transient LinesBuilder           linesBuilder;
-
-    // Retrieved systems. Set by BARS.
-    private List<SystemInfo>                 systems;
-
-    // Link with related score. Set by BARS.
-    private Score                            score;
-
-    // All Current selections for this sheet
-    private final transient SelectionManager selectionManager;
-
-    // Related assembly instance
-    private transient SheetAssembly    assembly;
-    private transient SkewBuilder      skewBuilder;
-
-    // Specific pane dealing with glyphs
-    private transient SymbolsBuilder   symbolsBuilder;
-
-    // To avoid concurrent modifications
-    private transient volatile boolean busy = false;
-
-    // Glyph id of the first symbol
-    private int firstSymbolId = -1;
-    private int height = -1;
-
-    // Sheet dimension in pixels
-    private int width = -1;
 
     //~ Constructors -----------------------------------------------------------
 
