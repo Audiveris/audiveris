@@ -131,7 +131,7 @@ public class ScoreController
      */
     public Score getCurrentScore ()
     {
-        Sheet sheet = (Sheet) SheetManager.getSelectedSheet();
+        Sheet sheet = SheetManager.getSelectedSheet();
 
         if (sheet != null) {
             return sheet.getScore();
