@@ -307,9 +307,8 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
               .append(name);
         }
 
-        sb.append(" ")
-          .append(getVertexCount())
-          .append(" vertices");
+        sb.append(" vertices=")
+          .append(getVertexCount());
 
         if (this.getClass()
                 .getName()
