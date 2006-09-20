@@ -99,7 +99,6 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
             logger.fine("new vertex in graph " + graph);
         }
 
-        //this.graph = graph;
         graph.addVertex(this); // Compiler warning here
     }
 
