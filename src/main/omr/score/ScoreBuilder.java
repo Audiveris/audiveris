@@ -139,7 +139,7 @@ public class ScoreBuilder
         }
 
         sheet.getSymbolsBuilder()
-             .assignGlyphShape(glyph, null);
+             .deassignGlyphShape(glyph);
     }
 
     //-------------//
