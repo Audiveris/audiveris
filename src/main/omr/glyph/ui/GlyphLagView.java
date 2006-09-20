@@ -185,11 +185,6 @@ public class GlyphLagView
     {
         if (model != null) {
             model.deassignGlyphShape(glyph);
-        } else {
-            // Defaut (void) behavior
-            logger.warning(
-                "Deassign action is not yet implemented for a " +
-                glyph.getShape() + " glyph.");
         }
     }
 
@@ -273,7 +268,7 @@ public class GlyphLagView
 
         // Mark the current members of the glyph set
         if (glyphSetSelection != null) {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
 
             if ((glyphs != null) && (glyphs.size() > 0)) {
                 g.setColor(Color.black);
