@@ -13,7 +13,6 @@ import omr.Main;
 
 import omr.glyph.Shape;
 
-import omr.ui.*;
 import omr.ui.field.IntegerListSpinner;
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerSpinner;
@@ -31,12 +30,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.*;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.*;
-import javax.swing.border.*;
 import javax.swing.event.*;
 
 /**
