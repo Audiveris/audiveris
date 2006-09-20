@@ -96,7 +96,7 @@ public class CheckBoard<C extends Checkable>
     public void update (Selection     selection,
                         SelectionHint hint)
     {
-        tellObject((C) selection.getEntity());
+        tellObject((C) selection.getEntity()); // Compiler warning
     }
 
     //------------//
