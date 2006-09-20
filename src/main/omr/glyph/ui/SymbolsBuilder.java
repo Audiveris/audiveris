@@ -86,9 +86,6 @@ public class SymbolsBuilder
     // Repository of known glyphs
     private final GlyphRepository  repository = GlyphRepository.getInstance();
 
-    // Sheet with Loaded glyphs
-    private final Sheet            sheet;
-
     // Pointer to glyph board
     private final SymbolGlyphBoard glyphBoard;
 
@@ -108,9 +105,7 @@ public class SymbolsBuilder
      */
     public SymbolsBuilder (Sheet sheet)
     {
-        super(sheet.getVerticalLag());
-
-        this.sheet = sheet;
+        super(sheet, sheet.getVerticalLag());
 
         // Allocation of components
         view = new MyView(lag);
@@ -169,34 +164,6 @@ public class SymbolsBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------------------//
-    // assignGlyphShape //
-    //------------------//
-    /**
-     * Assign a shape to a glyph
-     *
-     * @param glyph the glyph at hand
-     * @param shape the shape to assign to the glyph
-     */
-    @Override
-    public void assignGlyphShape (Glyph glyph,
-                                  Shape shape)
-    {
-        if (glyph != null) {
-            // First, do assign the shape to the glyph
-            glyph.setShape(shape);
-
-            // Remember the latest shape assigned
-            if (shape != null) {
-                latestShapeAssigned = shape;
-            }
-
-            // Update immediately the glyph info as displayed
-            sheet.getSelection(VERTICAL_GLYPH)
-                 .setEntity(glyph, SelectionHint.GLYPH_MODIFIED);
-        }
-    }
 
     //----------------//
     // assignSetShape //
@@ -268,6 +235,7 @@ public class SymbolsBuilder
             SystemInfo system = sheet.getSystemAtY(stem.getContourBox().y);
             inspector.removeGlyph(stem, system, /* cutSections => */
                                   true);
+            assignGlyphShape(stem, null);
             systems.add(system);
         }
 
@@ -292,7 +260,6 @@ public class SymbolsBuilder
     public void deassignGlyphShape (Glyph glyph)
     {
         Shape shape = glyph.getShape();
-        logger.info("Deassign a " + shape + " symbol");
 
         // Processing depends on shape at hand
         switch (shape) {
@@ -304,11 +271,13 @@ public class SymbolsBuilder
             break;
 
         case COMBINING_STEM :
+            logger.info("Deassigning a " + shape);
             cancelStems(Collections.singletonList(glyph));
 
             break;
 
         default :
+            logger.info("Deassigning a " + shape + " symbol");
             assignGlyphShape(glyph, null);
 
             break;
@@ -328,7 +297,7 @@ public class SymbolsBuilder
     {
         // First phase, putting the stems apart
         List<Glyph> stems = new ArrayList<Glyph>();
-        List<Glyph> glyphsCopy = new ArrayList(glyphs);
+        List<Glyph> glyphsCopy = new ArrayList<Glyph>(glyphs);
 
         for (Glyph glyph : glyphsCopy) {
             if (glyph.getShape() == Shape.COMBINING_STEM) {
@@ -355,7 +324,6 @@ public class SymbolsBuilder
      */
     public void refresh ()
     {
-        glyphBoard.resetSpinners();
         view.colorizeAllGlyphs();
     }
 
@@ -474,12 +442,12 @@ public class SymbolsBuilder
         public void contextSelected (MouseEvent e,
                                      Point      pt)
         {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
 
             // To display point information
             if ((glyphs == null) || (glyphs.size() == 0)) {
                 pointSelected(e, pt);
-                glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // modified?
+                glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
             }
 
             if ((glyphs != null) && (glyphs.size() > 0)) {
