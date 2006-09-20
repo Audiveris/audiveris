@@ -236,7 +236,8 @@ public class GlyphMenu
         int knownNb = 0;
         int stemNb = 0;
 
-        for (Glyph glyph : (List<Glyph>) glyphSetSelection.getEntity()) {
+        for (Glyph glyph : (List<Glyph>) glyphSetSelection.getEntity()) { // Compiler warning
+
             if (glyph.isKnown()) {
                 knownNb++;
 
@@ -264,7 +265,7 @@ public class GlyphMenu
     //------------------//
     private List<Glyph> getCurrentGlyphs ()
     {
-        return (List<Glyph>) glyphSetSelection.getEntity();
+        return (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
     }
 
     //--------------------//
@@ -314,7 +315,7 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            for (Glyph glyph : (List<Glyph>) glyphSetSelection.getEntity()) {
+            for (Glyph glyph : (List<Glyph>) glyphSetSelection.getEntity()) { // Compiler warning
                 Dumper.dump(glyph);
             }
         }
@@ -333,7 +334,7 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
 
             if ((glyphs != null) && (glyphs.size() == 1)) {
                 Glyph glyph = glyphs.get(0);
