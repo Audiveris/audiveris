@@ -23,9 +23,9 @@ import javax.swing.*;
 /**
  * Class <code>SpinnerGlyphModel</code> is a spinner model backed by a {@link
  * GlyphLag}. Any modification in the lag is thus transparently handled, since
- * the lag IS the model. <p>A glyph {@link Predicate} can be assigned to this
- * SpinnerGlyphModel at construction time in order to restrict the population of
- * glyphs in the spinner.
+ * the lag <b>is</b> the model. <p>A glyph {@link Predicate} can be assigned to
+ * this SpinnerGlyphModel at construction time in order to restrict the
+ * population of glyphs in the spinner.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
