@@ -14,8 +14,6 @@ import omr.Main;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-
-import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphSection;
@@ -39,6 +37,7 @@ import omr.stick.StickSection;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 import omr.ui.ToggleHandler;
+import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Logger;
 
@@ -82,7 +81,6 @@ public class LinesBuilder
 
     // Cached data
     private final Scale  scale;
-    private final Sheet  sheet;
 
     // Lag view on staff lines, if so desired
     private GlyphLagView lagView;
@@ -104,10 +102,9 @@ public class LinesBuilder
     public LinesBuilder (Sheet sheet)
         throws omr.ProcessingException
     {
-        super(new GlyphLag(new HorizontalOrientation()));
+        super(sheet, new GlyphLag(new HorizontalOrientation()));
 
         // Check output needed from previous steps
-        this.sheet = sheet;
         this.scale = sheet.getScale(); // Will run Scale if not yet done
         sheet.getSkew(); // Will run Skew  if not yet done
 
@@ -228,17 +225,12 @@ public class LinesBuilder
         List<GlyphSection> members = new ArrayList<GlyphSection>();
 
         // Populate the lineMembers
-        List<Integer>      knownIds = new ArrayList<Integer>();
-        knownIds.add(GlyphBoard.NO_VALUE);
-
         // Browse StaffInfos
         for (StaffInfo staff : staves) {
             // Browse LineInfos
             for (LineInfo line : staff.getLines()) {
                 // Browse Sticks
                 for (Stick stick : line.getSticks()) {
-                    knownIds.add(new Integer(stick.getId()));
-
                     // Browse member sections
                     for (GlyphSection section : stick.getMembers()) {
                         members.add(section);
@@ -263,8 +255,6 @@ public class LinesBuilder
             new GlyphBoard(
                 unit,
                 this,
-                lag.getLastGlyphId(),
-                knownIds,
                 sheet.getSelection(HORIZONTAL_GLYPH),
                 sheet.getSelection(HORIZONTAL_GLYPH_ID),
                 null));

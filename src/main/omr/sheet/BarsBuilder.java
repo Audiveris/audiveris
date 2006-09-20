@@ -53,7 +53,7 @@ import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import omr.ui.view.Zoom;
+import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Dumper;
 import omr.util.Logger;
@@ -110,7 +110,6 @@ public class BarsBuilder
     private List<Stick>  clutter;
 
     // Cached data
-    private final Sheet  sheet;
     private Scale        scale;
     private Score        score;
 
@@ -129,8 +128,7 @@ public class BarsBuilder
      */
     public BarsBuilder (Sheet sheet)
     {
-        super(new GlyphLag(new VerticalOrientation()));
-        this.sheet = sheet;
+        super(sheet, new GlyphLag(new VerticalOrientation()));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -230,7 +228,7 @@ public class BarsBuilder
             if (bar == null) {
                 return;
             } else {
-                logger.info("Removing a " + glyph.getShape());
+                logger.info("Deassigning a " + glyph.getShape());
             }
 
             // Related stick has to be freed
@@ -288,7 +286,7 @@ public class BarsBuilder
                 }
             }
 
-            ///assignGlyphShape(glyph, null);
+            assignGlyphShape(glyph, null);
 
             // Update the view accordingly
             if (lagView != null) {
@@ -481,21 +479,11 @@ public class BarsBuilder
     //--------------//
     private void displayFrame ()
     {
+        Selection glyphSelection = sheet.getSelection(VERTICAL_GLYPH);
         lagView = new MyLagView(lag);
-
-        Selection glyphSelection = sheet.getSelection(
-            SelectionTag.VERTICAL_GLYPH);
         lagView.setGlyphSelection(glyphSelection);
         glyphSelection.addObserver(lagView);
         lagView.colorize();
-
-        // Ids of recognized glyphs
-        List<Integer> knownIds = new ArrayList<Integer>(bars.size() + 1);
-        knownIds.add(GlyphBoard.NO_VALUE);
-
-        for (Stick stick : bars) {
-            knownIds.add(new Integer(stick.getId()));
-        }
 
         final String  unit = "BarsBuilder";
         BoardsPane    boardsPane = new BoardsPane(
@@ -511,8 +499,6 @@ public class BarsBuilder
             new GlyphBoard(
                 unit,
                 this,
-                lag.getLastGlyphId(),
-                knownIds,
                 sheet.getSelection(VERTICAL_GLYPH),
                 sheet.getSelection(VERTICAL_GLYPH_ID),
                 sheet.getSelection(GLYPH_SET)),
@@ -675,9 +661,9 @@ public class BarsBuilder
     private class MyCheckBoard
         extends CheckBoard<BarsChecker.Context>
     {
-        public MyCheckBoard (String     unit,
-                             CheckSuite suite,
-                             Selection  inputSelection)
+        public MyCheckBoard (String                          unit,
+                             CheckSuite<BarsChecker.Context> suite,
+                             Selection                       inputSelection)
         {
             super(unit, suite, inputSelection);
         }

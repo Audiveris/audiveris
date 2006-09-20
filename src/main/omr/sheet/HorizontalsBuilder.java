@@ -21,8 +21,6 @@ import omr.check.SuccessResult;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-
-import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphSection;
@@ -44,6 +42,7 @@ import omr.stick.StickUtil;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 import omr.ui.ToggleHandler;
+import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.view.Zoom;
 
 import omr.util.Logger;
@@ -132,7 +131,7 @@ public class HorizontalsBuilder
     public HorizontalsBuilder (Sheet sheet)
     {
         // Reuse the horizontal lag of runs (from staff lines)
-        super(sheet.getHorizontalLag());
+        super(sheet, sheet.getHorizontalLag());
 
         this.sheet = sheet;
         info = new Horizontals();
@@ -267,14 +266,6 @@ public class HorizontalsBuilder
         // Specific rubber display
         lagView = new MyView(lag, members);
 
-        // Ids of recognized glyphs
-        List<Integer> knownIds = new ArrayList<Integer>(allDashes.size() + 1);
-        knownIds.add(GlyphBoard.NO_VALUE);
-
-        for (Dash dash : allDashes) {
-            knownIds.add(new Integer(dash.getStick().getId()));
-        }
-
         final String  unit = "HorizontalsBuilder";
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
@@ -289,8 +280,6 @@ public class HorizontalsBuilder
             new GlyphBoard(
                 unit,
                 this,
-                lag.getLastGlyphId(),
-                knownIds,
                 sheet.getSelection(HORIZONTAL_GLYPH),
                 sheet.getSelection(HORIZONTAL_GLYPH_ID),
                 null),

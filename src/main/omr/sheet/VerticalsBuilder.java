@@ -45,13 +45,12 @@ import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
+import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -93,9 +92,6 @@ public class VerticalsBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    // The containing sheet
-    private final Sheet        sheet;
-
     // Area of vertical runs
     private final VerticalArea verticalsArea;
     private GlyphLagView       view;
@@ -117,9 +113,7 @@ public class VerticalsBuilder
         throws ProcessingException
     {
         // We re-use the same vertical lag (but not the sticks) from Bars.
-        super(sheet.getVerticalLag());
-
-        this.sheet = sheet;
+        super(sheet, sheet.getVerticalLag());
 
         Scale scale = sheet.getScale();
 
@@ -167,9 +161,8 @@ public class VerticalsBuilder
 
         switch (shape) {
         case COMBINING_STEM :
-            logger.info("Deassign a " + shape);
             sheet.getSymbolsBuilder()
-                 .cancelStems(Collections.singletonList(glyph));
+                 .deassignGlyphShape(glyph);
 
             break;
 
@@ -185,18 +178,6 @@ public class VerticalsBuilder
         // Specific rubber display
         view = new MyGlyphLagView(lag);
         view.colorize();
-
-        // Ids of recognized glyphs
-        List<Integer> knownIds = new ArrayList<Integer>();
-        knownIds.add(GlyphBoard.NO_VALUE);
-
-        for (SystemInfo system : sheet.getSystems()) {
-            for (Glyph glyph : system.getGlyphs()) {
-                if (glyph.isStem()) {
-                    knownIds.add(new Integer(glyph.getId()));
-                }
-            }
-        }
 
         // Create a hosting frame for the view
         final String unit = "VerticalsBuilder";
@@ -217,8 +198,6 @@ public class VerticalsBuilder
                 new GlyphBoard(
                     unit,
                     this,
-                    lag.getLastGlyphId(),
-                    knownIds,
                     sheet.getSelection(VERTICAL_GLYPH),
                     sheet.getSelection(VERTICAL_GLYPH_ID),
                     sheet.getSelection(GLYPH_SET)),
@@ -525,9 +504,9 @@ public class VerticalsBuilder
     private class MyCheckBoard
         extends CheckBoard<Context>
     {
-        public MyCheckBoard (String     unit,
-                             CheckSuite suite,
-                             Selection  inputSelection)
+        public MyCheckBoard (String              unit,
+                             CheckSuite<Context> suite,
+                             Selection           inputSelection)
         {
             super(unit, suite, inputSelection);
         }
