@@ -10,12 +10,24 @@
 //
 package omr.glyph;
 
+import omr.selection.SelectionHint;
+import omr.selection.SelectionTag;
+import static omr.selection.SelectionTag.*;
+
+import omr.sheet.Sheet;
+
 import omr.util.Logger;
 
 import java.util.List;
 
 /**
  * Class <code>GlyphModel</code> is a common basis for glyph handling.
+ *
+ * <dl>
+ * <dt><b>Selection Outputs:</b></dt><ul>
+ * <li>*_GLYPH (flagged with GLYPH_INIT hint)
+ * </ul>
+ * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -31,6 +43,9 @@ public abstract class GlyphModel
     /** Underlying lag (vertical or horizontal) */
     protected final GlyphLag lag;
 
+    /** Related Sheet */
+    protected final Sheet sheet;
+
     /** Latest shape assigned if any */
     protected Shape latestShapeAssigned;
 
@@ -42,10 +57,14 @@ public abstract class GlyphModel
     /**
      * Create an instance of GlyphModel, with its underlying glyph lag
      *
+     * @param sheet the related sheet
      * @param lag the related lag
      */
-    public GlyphModel (GlyphLag lag)
+    public GlyphModel (Sheet    sheet,
+                       GlyphLag lag)
     {
+        this.sheet = sheet;
+
         if (lag == null) {
             throw new IllegalArgumentException(
                 "Attempt to create a GlyphModel with null underlying Lag");
@@ -108,8 +127,20 @@ public abstract class GlyphModel
     public void assignGlyphShape (Glyph glyph,
                                   Shape shape)
     {
-        // Empty by default
-        logger.warning("assignGlyphShape not implemented for this glyph model");
+        if (glyph != null) {
+            // First, do assign the shape to the glyph
+            glyph.setShape(shape);
+
+            // Remember the latest shape assigned
+            if (shape != null) {
+                latestShapeAssigned = shape;
+            }
+
+            // Update immediately the glyph info as displayed
+            sheet.getSelection(
+                lag.isVertical() ? VERTICAL_GLYPH : HORIZONTAL_GLYPH)
+                 .setEntity(glyph, SelectionHint.GLYPH_MODIFIED);
+        }
     }
 
     //----------------//
@@ -128,7 +159,7 @@ public abstract class GlyphModel
                                 boolean     compound)
     {
         // Empty by default
-        logger.warning("assignSetShape not implemented for this glyph model");
+        logger.warning("No assignSetShape in current model for " + shape);
     }
 
     //--------------------//
@@ -143,7 +174,7 @@ public abstract class GlyphModel
     {
         // Empty by default
         logger.warning(
-            "deassignGlyphShape not implemented for this glyph model");
+            "No deassignGlyphShape in current model for " + glyph.getShape());
     }
 
     //------------------//
@@ -157,6 +188,6 @@ public abstract class GlyphModel
     public void deassignSetShape (List<Glyph> glyphs)
     {
         // Empty by default
-        logger.warning("deassignSetShape not implemented for this glyph model");
+        logger.warning("No deassignSetShape in current model");
     }
 }
