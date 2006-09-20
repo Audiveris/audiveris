@@ -47,9 +47,6 @@ public abstract class Board
 
     private static final Logger logger = Logger.getLogger(Board.class);
 
-    /** To indicate that value is invalid */
-    public static final int NO_VALUE = 0;
-
     //~ Instance fields --------------------------------------------------------
 
     /**
@@ -244,23 +241,23 @@ public abstract class Board
     /**
      * Enum <code>Tag</code> is used to refer to the various user boards.
      */
-    public enum Tag 
+    public enum Tag
     {
         /** Board for check results */
-        CHECK("Check"), 
-        
+        CHECK("Check"),
+
         /** Custom board */
-        CUSTOM("Custom"), 
-        
+        CUSTOM("Custom"),
+
         /** Board for glyph info */
-        GLYPH("Glyph"), 
-        
+        GLYPH("Glyph"),
+
         /** Board for pixel info (coordinates, pixel grey level) */
-        PIXEL("Pixel"), 
-        
+        PIXEL("Pixel"),
+
         /** Board for run info */
-        RUN("Run"), 
-        
+        RUN("Run"),
+
         /** Board for section info */
         SECTION("Section");
 
