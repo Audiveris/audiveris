@@ -151,6 +151,14 @@ public class GlyphInspector
      */
     public void evaluateGlyphs (double maxGrade)
     {
+        // For temporary use only ...
+        if (constants.inspectorDisabled.getValue()) {
+            logger.warning(
+                "GlyphInspector is disabled. Check Tools|Options menu");
+
+            return;
+        }
+
         int       acceptNb = 0;
         int       knownNb = 0;
         int       noiseNb = 0;
@@ -592,16 +600,19 @@ public class GlyphInspector
     private static class Constants
         extends ConstantSet
     {
-        Scale.Fraction  boxWiden = new Scale.Fraction(
+        Constant.Boolean inspectorDisabled = new Constant.Boolean(
+            false,
+            "Should we (temporarily) disable glyph recognition?");
+        Scale.Fraction   boxWiden = new Scale.Fraction(
             0.15,
             "Box widening to check intersection with compound");
-        Constant.Double cleanupMaxGrade = new Constant.Double(
+        Constant.Double  cleanupMaxGrade = new Constant.Double(
             1.2,
             "Maximum grade for cleanup phase");
-        Constant.Double leafMaxGrade = new Constant.Double(
+        Constant.Double  leafMaxGrade = new Constant.Double(
             1.01,
             "Maximum acceptance grade for a leaf");
-        Constant.Double symbolMaxGrade = new Constant.Double(
+        Constant.Double  symbolMaxGrade = new Constant.Double(
             1.0001,
             "Maximum acceptance grade for a symbol");
 
