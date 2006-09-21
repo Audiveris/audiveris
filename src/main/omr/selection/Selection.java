@@ -27,7 +27,7 @@ import java.util.Iterator;
  * been rewritten here, in a non thread-safe manner, with better handling of
  * observer identities.
  *
- * <p>The collection of instances of {@link SelectionObserver} is constrained by
+ * <p>The collection of instances of {@link Selection} class is constrained by
  * the enumeration {@link SelectionTag}.
  *
  * <p>Notification can be flagged by a {@link SelectionHint} to provide
