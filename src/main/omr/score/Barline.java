@@ -23,15 +23,8 @@ import omr.ui.view.Zoom;
 
 import omr.util.Logger;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.awt.*;
+import java.util.*;
 
 /**
  * Class <code>Barline</code> encapsulates a logical bar line, that may be
