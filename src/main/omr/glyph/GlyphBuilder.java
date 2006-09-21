@@ -98,20 +98,6 @@ public class GlyphBuilder
         this.glyphBoard = glyphBoard;
     }
 
-    //-----------------//
-    // getFirstGlyphId //
-    //-----------------//
-    /**
-     * Report the id of the first glyph that will be built (so that they can be
-     * differentiated from the pre-existing ones)
-     *
-     * @return the starting value of the id series
-     */
-    public int getFirstGlyphId ()
-    {
-        return firstGlyphId;
-    }
-
     //---------------//
     // buildCompound //
     //---------------//
