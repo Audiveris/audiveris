@@ -60,7 +60,7 @@ public enum ScoreFormat
         this.extension = extension;
 
         folder = new Constant.String(
-            getClass().toString(),
+            getClass().getName(),
             "score" + name + "Folder",
             "c:/",
             "Default directory for " + name + " score files");
