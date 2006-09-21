@@ -46,26 +46,26 @@ public class Score
     // File of the related sheet image
     private File                imageFile;
 
-    // The view on this score if any
-    private transient ScoreView view;
-
     // Link with image
-    private Sheet            sheet;
+    private Sheet               sheet;
 
     // The related file radix (name w/o extension)
-    private String           radix;
-
-    // The most recent system pointed at
-    private transient System recentSystem = null;
+    private String              radix;
 
     // Sheet dimension in units
-    private UnitDimension dimension = new UnitDimension(0, 0);
+    private UnitDimension       dimension = new UnitDimension(0, 0);
 
     // Sheet skew angle in radians
-    private int skewAngle;
+    private int                 skewAngle;
 
     // Sheet global line spacing expressed in pixels * BASE
-    private int spacing;
+    private int                 spacing;
+
+    // The most recent system pointed at
+    private transient System    recentSystem = null;
+
+    // The view on this score if any
+    private transient ScoreView view;
 
     //~ Constructors -----------------------------------------------------------
 
