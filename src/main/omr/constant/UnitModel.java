@@ -47,6 +47,74 @@ public class UnitModel
 
     private static final Logger logger = Logger.getLogger(UnitModel.class);
 
+    //~ Enumerations -----------------------------------------------------------
+
+    /**
+     * Enumeration type to describe each column of the JTreeTable
+     */
+    private static enum Column {
+        /**
+         * The left column, assigned to tree structure, allows expansion and
+         * collapsing of sub-tree portions
+         */
+        TREE("Unit", 250, TreeTableModel.class),
+
+        /**
+         * Editable column dedicated to {@link omr.util.Logger} entity if any
+         */
+        LOGGER("Logger", 30, String.class), 
+        /**
+         * Editable column for constant current value, with related tool tip
+         * retrieved from the constant declaration
+         */
+        VALUE("Value", 100, String.class), 
+        /**
+         * Column that recalls the constant type, and thus the possible range of
+         * valued
+         */
+        TYPE("Type", 40, String.class), 
+        /**
+         * Column relevant only for constants which are fractions of interline,
+         * as defined by {@link omr.sheet.Scale.Fraction} : the equivalent
+         * number of pixels is displayed, according to the scale of the
+         * currently selected Sheet. If there is no current Sheet, then just a
+         * question mark (?)  is displayed
+         */
+        PIXEL("Pixels", 20, String.class), 
+        /**
+         * Column containing a flag to indicate whether the constant value has
+         * been modified or not. If modified, a click in this column resets the
+         * constant to its original value
+         */
+        MODIF("Modif", 20, Boolean.class);
+        /**
+         * Java class to handle column content
+         */
+        final Class type;
+
+        /**
+         * Header for the column
+         */
+        final String header;
+
+        /**
+         * Width for column display
+         */
+        final int width;
+
+        //--------//
+        // Column //
+        //--------//
+        Column (String header,
+                int    width,
+                Class  type)
+        {
+            this.header = header;
+            this.width = width;
+            this.type = type;
+        }
+    }
+
     //~ Constructors -----------------------------------------------------------
 
     //-----------//
@@ -366,7 +434,7 @@ public class UnitModel
                     // Compute the equivalent in pixels of this interline
                     // fraction, provided that we have a current sheet and its
                     // scale is available.
-                    Sheet sheet = (Sheet) SheetManager.getSelectedSheet();
+                    Sheet sheet = SheetManager.getSelectedSheet();
 
                     if ((sheet != null) && sheet.SCALE.isDone()) {
                         Scale          scale = sheet.getScale();
@@ -393,76 +461,5 @@ public class UnitModel
         }
 
         return null; // For the compiler
-    }
-
-    //~ Enumerations -----------------------------------------------------------
-
-    /**
-     * Enumeration type to describe each column of the JTreeTable
-     */
-    enum Column 
-    {
-
-        /**
-         * Editable column dedicated to {@link omr.util.Logger} entity if any
-         */
-        LOGGER("Logger", 30, String.class), 
-        /**
-         * Column containing a flag to indicate whether the constant value has
-         * been modified or not. If modified, a click in this column resets the
-         * constant to its original value
-         */
-        MODIF("Modif", 20, Boolean.class), 
-        /**
-         * Column relevant only for constants which are fractions of interline,
-         * as defined by {@link omr.sheet.Scale.Fraction} : the equivalent
-         * number of pixels is displayed, according to the scale of the
-         * currently selected Sheet. If there is no current Sheet, then just a
-         * question mark (?)  is displayed
-         */
-        PIXEL("Pixels", 20, String.class), 
-
-        /**
-         * The left column, assigned to tree structure, allows expansion and
-         * collapsing of sub-tree portions
-         */
-        TREE("Unit", 250, TreeTableModel.class), 
-        /**
-         * Column that recalls the constant type, and thus the possible range of
-         * valued
-         */
-        TYPE("Type", 40, String.class), 
-        /**
-         * Editable column for constant current value, with related tool tip
-         * retrieved from the constant declaration
-         */
-        VALUE("Value", 100, String.class);
-        
-        /**
-         * Java class to handle column content
-         */
-        final Class type;
-
-        /**
-         * Header for the column
-         */
-        final String header;
-
-        /**
-         * Width for column display
-         */
-        final int width;
-
-        //--------//
-        // Column //
-        //--------//
-        Column (String header,
-                int    width,
-                Class  type)
-        {
-            this.header = header;
-            this.width = width;
-            this.type = type;
-        }
     }
 }
