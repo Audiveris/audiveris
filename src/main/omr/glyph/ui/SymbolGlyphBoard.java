@@ -93,14 +93,14 @@ public class SymbolGlyphBoard
     /**
      * Create the symbol glyph board
      *
-     * @param pane the companion pane which handles the other UI entities
+     *
+     * @param builder the companion builder which handles the other UI entities
      * @param firstSymbolId id of the first glyph made as a symbol (as opposed
      *                      to sticks/glyphs elaborated during previous steps)
-     * @param vLag the related vertical glyph lag
      * @param glyphSelection glyph selection as input
      * @param glyphIdSelection glyph_id selection as output
      */
-    public SymbolGlyphBoard (SymbolsBuilder pane,
+    public SymbolGlyphBoard (SymbolsBuilder builder,
                              int            firstSymbolId,
                              Selection      glyphSelection,
                              Selection      glyphIdSelection,
@@ -109,7 +109,7 @@ public class SymbolGlyphBoard
         // For all glyphs
         super(
             "SymbolGlyphBoard",
-            pane,
+            builder,
             glyphSelection,
             glyphIdSelection,
             glyphSetSelection);
@@ -118,7 +118,7 @@ public class SymbolGlyphBoard
         this.firstSymbolId = firstSymbolId;
 
         // Symbols spinner
-        symbolSpinner = makeGlyphSpinner(pane.getLag(), symbolPredicate);
+        symbolSpinner = makeGlyphSpinner(builder.getLag(), symbolPredicate);
         symbolSpinner.setName("symbolSpinner");
         symbolSpinner.setToolTipText("Specific spinner for symbol glyphs");
 
