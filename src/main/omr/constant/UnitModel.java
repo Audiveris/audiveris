@@ -52,7 +52,7 @@ public class UnitModel
     /**
      * Enumeration type to describe each column of the JTreeTable
      */
-    private static enum Column {
+    public static enum Column {
         /**
          * The left column, assigned to tree structure, allows expansion and
          * collapsing of sub-tree portions
