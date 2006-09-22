@@ -186,6 +186,7 @@ public class XmlMapper
                 logger.fine("Entity written to output stream " + os);
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
             logger.warning(ex.toString());
             logger.warning("Cannot marshall entity to output stream  " + os);
 

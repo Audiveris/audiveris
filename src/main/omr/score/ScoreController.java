@@ -603,6 +603,7 @@ public class ScoreController
                             break;
                         }
                     } catch (Exception ex) {
+                        ex.printStackTrace();
                         logger.warning("Could not store score");
                         logger.warning(ex.toString());
                     }
