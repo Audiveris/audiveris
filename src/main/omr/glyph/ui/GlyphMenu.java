@@ -50,7 +50,7 @@ public class GlyphMenu
     private final Selection       glyphSetSelection;
     private final ShapeFocusBoard shapeFocus;
     private final SimilarAction   similarAction = new SimilarAction();
-    private final SymbolsBuilder  symbolsBuilder;
+    private final SymbolsEditor  symbolsBuilder;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -64,7 +64,7 @@ public class GlyphMenu
      * @param shapeFocus the current shape focus
      * @param glyphSetSelection the currently selected glyphs
      */
-    public GlyphMenu (final SymbolsBuilder symbolsBuilder,
+    public GlyphMenu (final SymbolsEditor symbolsBuilder,
                       ShapeFocusBoard      shapeFocus,
                       Selection            glyphSetSelection)
     {

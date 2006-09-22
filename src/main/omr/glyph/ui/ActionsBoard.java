@@ -31,8 +31,9 @@ import javax.swing.*;
 
 /**
  * Class <code>ActionsBoard</code> is just a collection of buttons whose related
- * action deal with glyph processing in SymbolsBuilder.
- *
+ * action deal with glyph processing in SymbolsEditor.
+ * 
+ * 
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
@@ -53,7 +54,7 @@ public class ActionsBoard
 
     // Sheet with Loaded glyphs
     private final Sheet          sheet;
-    private final SymbolsBuilder symbolsBuilder;
+    private final SymbolsEditor symbolsBuilder;
 
     // Various actions (for menus, popup, toolbar, ...)
     private RecordAction  recordAction = new RecordAction();
@@ -71,7 +72,7 @@ public class ActionsBoard
      * @param symbolsBuilder the symbol processing entity
      */
     public ActionsBoard (Sheet          sheet,
-                         SymbolsBuilder symbolsBuilder)
+                         SymbolsEditor symbolsBuilder)
     {
         super(Board.Tag.CUSTOM, "Actions");
 

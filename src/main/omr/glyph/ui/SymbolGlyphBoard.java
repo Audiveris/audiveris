@@ -100,7 +100,7 @@ public class SymbolGlyphBoard
      * @param glyphSelection glyph selection as input
      * @param glyphIdSelection glyph_id selection as output
      */
-    public SymbolGlyphBoard (SymbolsBuilder builder,
+    public SymbolGlyphBoard (SymbolsEditor builder,
                              int            firstSymbolId,
                              Selection      glyphSelection,
                              Selection      glyphIdSelection,
