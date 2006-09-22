@@ -19,7 +19,7 @@ import omr.glyph.GlyphBuilder;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
-import omr.glyph.ui.SymbolsBuilder;
+import omr.glyph.ui.SymbolsEditor;
 
 import omr.score.Score;
 import omr.score.ScoreBuilder;
@@ -101,60 +101,63 @@ public class Sheet
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger                logger = Logger.getLogger(
-        Sheet.class);
+    private static final Logger logger = Logger.getLogger(Sheet.class);
 
-    // List of steps
-    private static List<Step>                  steps;
+    /** List of steps */
+    private static List<Step> steps;
 
     //~ Instance fields --------------------------------------------------------
 
-    // A bar line extractor for this sheet
-    private transient BarsBuilder              barsBuilder;
+    /** A bar line extractor for this sheet */
+    private transient BarsBuilder barsBuilder;
 
-    // Link with sheet original image file. Set by constructor.
-    private File                               imageFile;
+    /** Link with sheet original image file. Set by constructor. */
+    private File imageFile;
 
-    // A glyph extractor for this sheet
-    private transient GlyphBuilder             glyphBuilder;
+    /** A glyph extractor for this sheet */
+    private transient GlyphBuilder glyphBuilder;
 
-    // A glyph inspector for this sheet
-    private transient GlyphInspector           glyphInspector;
+    /** A glyph inspector for this sheet */
+    private transient GlyphInspector glyphInspector;
 
-    // Horizontal lag (built by LINES/LinesBuilder)
-    private transient GlyphLag                 hLag;
+    /** Horizontal lag (built by LINES/LinesBuilder) */
+    private transient GlyphLag hLag;
 
-    // Vertical lag (built by BARS/BarsBuilder)
-    private GlyphLag                           vLag;
+    /** Vertical lag (built by BARS/BarsBuilder) */
+    private GlyphLag vLag;
 
-    // A staff line extractor for this sheet
-    private transient LinesBuilder             linesBuilder;
+    /** A staff line extractor for this sheet */
+    private transient LinesBuilder linesBuilder;
 
-    // Retrieved systems. Set by BARS.
-    private List<SystemInfo>                   systems;
+    /** Retrieved systems. Set by BARS. */
+    private List<SystemInfo> systems;
 
-    // Link with related score. Set by BARS.
-    private Score                              score;
+    /** Link with related score. Set by BARS. */
+    private Score score;
 
-    // All Current selections for this sheet
-    private final transient SelectionManager   selectionManager;
+    /** All Current selections for this sheet */
+    private final transient SelectionManager selectionManager;
 
-    // Related assembly instance
-    private transient SheetAssembly            assembly;
-    private transient SkewBuilder              skewBuilder;
+    /** Related assembly instance */
+    private transient SheetAssembly assembly;
 
-    // Specific pane dealing with glyphs
-    private transient SymbolsBuilder           symbolsBuilder;
+    /** Dedicated skew builder */
+    private transient SkewBuilder skewBuilder;
 
-    // To avoid concurrent modifications
-    private transient volatile boolean         busy = false;
+    /** Specific pane dealing with glyphs */
+    private transient SymbolsEditor symbolsEditor;
 
-    // Glyph id of the first symbol
-    private int                                firstSymbolId = -1;
-    private int                                height = -1;
+    /** To avoid concurrent modifications */
+    private transient volatile boolean busy = false;
 
-    // Sheet dimension in pixels
-    private int                                width = -1;
+    /** Glyph id of the first symbol */
+    private int firstSymbolId = -1;
+
+    /** Sheet height in pixels */
+    private int height = -1;
+
+    /** Sheet width in pixels */
+    private int width = -1;
 
     // InstanceStep Definitions (in proper order) ------------------------------
 
@@ -291,7 +294,7 @@ public class Sheet
 
         public void displayUI ()
         {
-            getSymbolsBuilder()
+            getSymbolsEditor()
                 .refresh();
         }
     };
@@ -315,7 +318,7 @@ public class Sheet
 
         public void displayUI ()
         {
-            getSymbolsBuilder()
+            getSymbolsEditor()
                 .refresh();
         }
     };
@@ -339,7 +342,7 @@ public class Sheet
 
         public void displayUI ()
         {
-            getSymbolsBuilder()
+            getSymbolsEditor()
                 .refresh();
         }
     };
@@ -364,7 +367,7 @@ public class Sheet
 
         public void displayUI ()
         {
-            getSymbolsBuilder()
+            getSymbolsEditor()
                 .refresh();
         }
     };
@@ -389,7 +392,7 @@ public class Sheet
 
         public void displayUI ()
         {
-            getSymbolsBuilder()
+            getSymbolsEditor()
                 .refresh();
         }
     };
@@ -413,7 +416,7 @@ public class Sheet
 
         public void displayUI ()
         {
-            getSymbolsBuilder()
+            getSymbolsEditor()
                 .refresh();
         }
     };
@@ -434,7 +437,7 @@ public class Sheet
 
         public void displayUI ()
         {
-            getSymbolsBuilder()
+            getSymbolsEditor()
                 .refresh();
         }
     };
@@ -1140,21 +1143,21 @@ public class Sheet
         }
     }
 
-    //-------------------//
-    // getSymbolsBuilder //
-    //-------------------//
+    //------------------//
+    // getSymbolsEditor //
+    //------------------//
     /**
      * Give access to the module dealing with symbol recognition
      *
      * @return the instance of glyph pane
      */
-    public SymbolsBuilder getSymbolsBuilder ()
+    public SymbolsEditor getSymbolsEditor ()
     {
-        if (symbolsBuilder == null) {
-            symbolsBuilder = new SymbolsBuilder(this);
+        if (symbolsEditor == null) {
+            symbolsEditor = new SymbolsEditor(this);
         }
 
-        return symbolsBuilder;
+        return symbolsEditor;
     }
 
     //--------------//
