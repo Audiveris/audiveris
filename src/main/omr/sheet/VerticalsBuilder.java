@@ -161,7 +161,7 @@ public class VerticalsBuilder
 
         switch (shape) {
         case COMBINING_STEM :
-            sheet.getSymbolsBuilder()
+            sheet.getSymbolsEditor()
                  .deassignGlyphShape(glyph);
 
             break;
