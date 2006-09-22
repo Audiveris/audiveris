@@ -138,7 +138,7 @@ public class ScoreBuilder
             logger.fine("Deassigning " + glyph);
         }
 
-        sheet.getSymbolsBuilder()
+        sheet.getSymbolsEditor()
              .deassignGlyphShape(glyph);
     }
 
