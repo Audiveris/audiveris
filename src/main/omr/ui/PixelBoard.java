@@ -55,26 +55,31 @@ public class PixelBoard
 
     //~ Instance fields --------------------------------------------------------
 
-    private final LIntegerField height = new LIntegerField(
-        "Height",
-        "Height of rectangle");
-    private final LIntegerField level = new LIntegerField(
-        false,
-        "Level",
-        "Pixel level");
+    /** Abscissa of upper Left point */
+    private final LIntegerField x = new LIntegerField(
+        "X",
+        "Abscissa of upper left corner");
 
-    // Lower Right point
+    /** Ordinate of upper Left point */
+    private final LIntegerField y = new LIntegerField(
+        "Y",
+        "Ordinate of upper left corner");
+
+    /** Width of rectangle */
     private final LIntegerField width = new LIntegerField(
         "Width",
         "Width of rectangle");
 
-    // Upper Left point
-    private final LIntegerField x = new LIntegerField(
-        "X",
-        "Abscissa of upper left corner");
-    private final LIntegerField y = new LIntegerField(
-        "Y",
-        "Ordinate of upper left corner");
+    /** Height of rectangle */
+    private final LIntegerField height = new LIntegerField(
+        "Height",
+        "Height of rectangle");
+
+    /** Pixel grey level */
+    private final LIntegerField level = new LIntegerField(
+        false,
+        "Level",
+        "Pixel level");
 
     //~ Constructors -----------------------------------------------------------
 

@@ -64,17 +64,17 @@ public class SheetAssembly
 
     //~ Instance fields --------------------------------------------------------
 
-    // My parallel list of Tab
+    /** My parallel list of Tab */
     private final ArrayList<Tab> tabs = new ArrayList<Tab>();
 
-    // Split pane for score and sheet views
-    private final JSplitPane  splitPane = new JSplitPane(
+    /** Split pane for score and sheet views */
+    private final JSplitPane splitPane = new JSplitPane(
         JSplitPane.VERTICAL_SPLIT);
 
-    // Tabbed container for all views of the sheet
+    /** Tabbed container for all views of the sheet */
     private final JTabbedPane tabbedPane = new JTabbedPane();
 
-    // To manually control the zoom ratio
+    /** To manually control the zoom ratio */
     private final LogSlider slider = new LogSlider(
         2,
         5,
@@ -83,24 +83,26 @@ public class SheetAssembly
         4,
         0);
 
-    // The concrete UI component
-    private Panel        component;
+    /** The concrete UI component */
+    private Panel component;
 
-    // Link with sheet
-    private final Sheet  sheet;
+    /** Link with sheet */
+    private final Sheet sheet;
 
-    // Zoom , with default ratio set to 1
-    private final Zoom   zoom = new Zoom(slider, 1);
+    /** Zoom , with default ratio set to 1 */
+    private final Zoom zoom = new Zoom(slider, 1);
 
-    // Mouse adapter
+    /** Mouse adapter */
     private final Rubber rubber = new Rubber(zoom);
 
-    // Related Score view
+    /** Related Score view */
     private ScoreView scoreView;
 
-    // Selection of pixel location
+    /** Selection of pixel location */
     private Selection locationSelection;
-    private int       previousIndex = -1;
+
+    /** Index of previously selected tab */
+    private int previousIndex = -1;
 
     //~ Constructors -----------------------------------------------------------
 

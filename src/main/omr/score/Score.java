@@ -43,28 +43,28 @@ public class Score
 
     //~ Instance fields --------------------------------------------------------
 
-    // File of the related sheet image
+    /** File of the related sheet image */
     private File                imageFile;
 
-    // Link with image
+    /** Link with image */
     private Sheet               sheet;
 
-    // The related file radix (name w/o extension)
+    /** The related file radix (name w/o extension) */
     private String              radix;
 
-    // Sheet dimension in units
+    /** Sheet dimension in units */
     private UnitDimension       dimension = new UnitDimension(0, 0);
 
-    // Sheet skew angle in radians
+    /** Sheet skew angle in radians */
     private int                 skewAngle;
 
-    // Sheet global line spacing expressed in pixels * BASE
+    /** Sheet global line spacing expressed in pixels * BASE */
     private int                 spacing;
 
-    // The most recent system pointed at
+    /** The most recent system pointed at */
     private transient System    recentSystem = null;
 
-    // The view on this score if any
+    /** The view on this score if any */
     private transient ScoreView view;
 
     //~ Constructors -----------------------------------------------------------

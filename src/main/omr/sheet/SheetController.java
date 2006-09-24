@@ -27,6 +27,7 @@ import omr.ui.icon.IconManager;
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.event.*;
@@ -36,7 +37,6 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.TreeModel;
-import omr.util.Implement;
 
 /**
  * Class <code>SheetController</code> encapsulates the display of (possibly
@@ -70,27 +70,29 @@ public class SheetController
 
     //~ Instance fields --------------------------------------------------------
 
-    // Ordered list of sheet assemblies
-    private final ArrayList<SheetAssembly>   assemblies;
+    /** Ordered list of sheet assemblies */
+    private final ArrayList<SheetAssembly> assemblies;
 
-    // Collection of sheet-dependent actions
+    /** Collection of sheet-dependent actions */
     private final Collection<AbstractAction> sheetDependentActions = new ArrayList<AbstractAction>();
 
-    // General purpose toggle
-    private final JButton     toggleButton;
+    /** General purpose toggle */
+    private final JButton toggleButton;
 
-    // Menu dedicated to sheet-related actions
-    private final JMenu       menu = new JMenu("Sheet");
+    /** Menu dedicated to sheet-related actions */
+    private final JMenu menu = new JMenu("Sheet");
 
-    // The concrete tabbed pane, one tab per sheet
+    /** The concrete tabbed pane, one tab per sheet */
     private final JTabbedPane component;
 
-    // Ref of toolbar where buttons are inserted
+    /** Ref of toolbar where buttons are inserted */
     private final JToolBar toolBar;
 
-    // Should we synchronize the (score) pane on the other side ?
+    /** Should we synchronize the (score) pane on the other side ? */
     private boolean synchroWanted = true;
-    private int     previousIndex = -1;
+
+    /** Index of previously selected tab */
+    private int previousIndex = -1;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -317,7 +319,7 @@ public class SheetController
      * status of current sheet.
      */
     @Implement(ChangeListener.class)
-    public void stateChanged(ChangeEvent e)
+    public void stateChanged (ChangeEvent e)
     {
         final int index = component.getSelectedIndex();
 
@@ -586,9 +588,9 @@ public class SheetController
                 IconManager.buttonIconOf("general/Remove"),
                 true);
         }
-        
+
         @Implement(ActionListener.class)
-        public void actionPerformed(ActionEvent e)
+        public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
 

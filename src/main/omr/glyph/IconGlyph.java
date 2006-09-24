@@ -38,7 +38,7 @@ public class IconGlyph
 {
     //~ Instance fields --------------------------------------------------------
 
-    // The underlying icon
+    /** The underlying icon */
     private SymbolIcon icon;
 
     //~ Constructors -----------------------------------------------------------

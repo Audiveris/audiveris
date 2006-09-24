@@ -11,7 +11,6 @@
 package omr.math;
 
 import omr.util.Implement;
-
 import static java.lang.Math.*;
 
 /**
@@ -27,35 +26,37 @@ public class BasicLine
 {
     //~ Instance fields --------------------------------------------------------
 
-    // Flag to indicate that data needs to be recomputed */
+    /** Flag to indicate that data needs to be recomputed */
     private boolean dirty;
 
-    // Orientation indication
+    /** Orientation indication */
     private boolean isRatherVertical = false;
 
-    // Line equation
+    /** x coeff in Line equation */
     private double a;
+
+    /** y coeff in Line equation */
     private double b;
+
+    /** 1 coeff in Line equation */
     private double c;
 
-    // Sigma (x) */
+    /** Sigma (x) */
     private double sx;
 
-    // Sigma (x**2) */
+    /** Sigma (x**2) */
     private double sx2;
 
-    // Sigma (x*y) */
+    /** Sigma (x*y) */
     private double sxy;
 
-    // Sigma (y) */
+    /** Sigma (y) */
     private double sy;
 
-    // Sigma (y**2) */
+    /** Sigma (y**2) */
     private double sy2;
 
-    // For regression
-
-    // Number of points */
+    /** For regression : Number of points */
     private int n;
 
     //~ Constructors -----------------------------------------------------------

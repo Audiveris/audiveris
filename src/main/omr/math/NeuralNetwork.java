@@ -32,29 +32,34 @@ public class NeuralNetwork
 
     //~ Instance fields --------------------------------------------------------
 
-    private final int                  hiddenSize;
+    /** Size of input layer */
+    private final int inputSize;
 
-    // Dimensions
-    private final int                  inputSize;
-    private final int                  outputSize;
+    /** Size of hidden layer */
+    private final int hiddenSize;
 
-    // Weights
-    private double[][]                 hiddenWeights;
-    private double[][]                 outputWeights;
+    /** Size of output layer */
+    private final int outputSize;
 
-    // Flag to stop training
+    /** Weights for hidden layer */
+    private double[][] hiddenWeights;
+
+    /** Weights for output layer */
+    private double[][] outputWeights;
+
+    /** Flag to stop training */
     private transient volatile boolean stopping = false;
 
-    // Learning Rate parameter
+    /** Learning Rate parameter */
     private transient volatile double learningRate = 0.40;
 
-    // Max Error parameter
+    /** Max Error parameter */
     private transient volatile double maxError = 1E-4;
 
-    // Momentum for faster convergence
+    /** Momentum for faster convergence */
     private transient volatile double momentum = 0.25;
 
-    // Number of epochs when training
+    /** Number of epochs when training */
     private transient volatile int epochs = 100;
 
     //~ Constructors -----------------------------------------------------------

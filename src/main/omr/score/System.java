@@ -39,26 +39,28 @@ public class System
 
     //~ Instance fields --------------------------------------------------------
 
-    // Specific Child : list of slurs
+    /** Specific Child : list of slurs */
     private final SlurList  slurs;
 
-    // Specific Child : list of staves
+    /** Specific Child : list of staves */
     private final StaffList staves;
 
-    // Top left corner of the system
+    /** Top left corner of the system */
     private PagePoint     topLeft;
 
-    // Actual display origin
+    /** Actual display origin */
     private ScorePoint    origin;
 
-    // Related info from sheet analysis
+    /** Related info from sheet analysis */
     private SystemInfo    info;
 
-    // System dimensions, expressed in units
+    /** System dimensions, expressed in units */
     private UnitDimension dimension;
 
-    // First, and last measure ids
+    /** Id of first measure */
     private int firstMeasureId = 0;
+
+    /** Id of last measure */
     private int lastMeasureId = 0;
 
     //~ Constructors -----------------------------------------------------------

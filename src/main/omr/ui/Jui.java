@@ -75,8 +75,8 @@ public class Jui
      */
     public final SheetController sheetPane;
 
-    // The related concrete frame
-    private JFrame           frame;
+    /** The related concrete frame */
+    private JFrame frame;
 
     // Menus & tools in the frame
     private final JMenu      fileMenu = new JMenu("File");
@@ -85,14 +85,16 @@ public class Jui
     private final JMenu      toolMenu = new JMenu("Tool");
     private final JSplitPane bigSplitPane;
 
-    // The splitted panes
+    /** The splitted panes */
     private final JSplitPane splitPane;
-    private final JToolBar   toolBar;
 
-    // Color chooser for shapes
+    /** The tool bar */
+    private final JToolBar toolBar;
+
+    /** Color chooser for shapes */
     private JFrame shapeColorFrame;
 
-    // Used to remember the current user desired target
+    /** Used to remember the current user desired target */
     private Object target;
 
     /**

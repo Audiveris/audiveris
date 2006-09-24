@@ -62,44 +62,64 @@ public class SectionBoard
     //~ Instance fields --------------------------------------------------------
 
     // Section input devices
-    private final JButton       dump = new JButton("Dump");
-    private final JSpinner      id = new JSpinner();
-    private final JTextField    role = new JTextField();
-    private final LIntegerField direction = new LIntegerField(
-        false,
-        "Dir",
-        "Direction from the stick core");
-    private final LIntegerField height = new LIntegerField(
-        false,
-        "Height",
-        "Vertical height in pixels");
+    //
+    /** Button for section dump */
+    private final JButton dump = new JButton("Dump");
 
-    // Additional output for StickSection
-    private final LIntegerField layer = new LIntegerField(
+    /** Spinner for section id */
+    private final JSpinner id = new JSpinner();
+
+    // Output for plain Section
+    //
+    /** Field for left abscissa */
+    private final LIntegerField x = new LIntegerField(
         false,
-        "Layer",
-        "Layer number for this stick section");
-    private final LIntegerField weight = new LIntegerField(
+        "X",
+        "Left abscissa in pixels");
+
+    /** Field for top ordinate */
+    private final LIntegerField y = new LIntegerField(
         false,
-        "Weight",
-        "Number of pixels in this section");
+        "Y",
+        "Top ordinate in pixels");
+
+    /** Field for width */
     private final LIntegerField width = new LIntegerField(
         false,
         "Width",
         "Horizontal width in pixels");
 
-    // Output for plain Section
-    private final LIntegerField x = new LIntegerField(
+    /** Field for height */
+    private final LIntegerField height = new LIntegerField(
         false,
-        "X",
-        "Left abscissa in pixels");
-    private final LIntegerField y = new LIntegerField(
-        false,
-        "Y",
-        "Top ordinate in pixels");
-    private boolean             idSelecting = false;
+        "Height",
+        "Vertical height in pixels");
 
-    // To avoid loop, indicate that update() method id being processed
+    /** Field for weight */
+    private final LIntegerField weight = new LIntegerField(
+        false,
+        "Weight",
+        "Number of pixels in this section");
+
+    // Additional output for StickSection
+    //
+    /** Field for role in stick building */
+    private final JTextField role = new JTextField();
+    private final LIntegerField direction = new LIntegerField(
+        false,
+        "Dir",
+        "Direction from the stick core");
+
+    /** Field for layer number */
+    private final LIntegerField layer = new LIntegerField(
+        false,
+        "Layer",
+        "Layer number for this stick section");
+
+    /** To avoid loop, indicate that selecting is being done by the spinner */
+    private boolean idSelecting = false;
+
+    /** To avoid loop, indicate that update() method id being processed */
     private boolean updating = false;
 
     //~ Constructors -----------------------------------------------------------

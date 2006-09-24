@@ -34,18 +34,18 @@ public class Step
 
     private static final Logger logger = Logger.getLogger(Step.class);
 
-    // Related UI when used in interactive mode
+    /** Related UI when used in interactive mode */
     private static StepMonitor monitor;
 
-    // The most popular step, so it's easier to get it directly
+    /** The most popular step, so it's easier to get it directly */
     private static Step  LOAD;
 
     //~ Instance fields --------------------------------------------------------
 
-    // Reflection field to the corresponding sheet InstanceStep
+    /** Reflection field to the corresponding sheet InstanceStep */
     private final Field  field;
 
-    // Readable description
+    /** Readable description */
     private final String description;
 
     //~ Constructors -----------------------------------------------------------

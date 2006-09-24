@@ -49,12 +49,12 @@ public class GlyphNetwork
     private static final Logger    logger = Logger.getLogger(
         GlyphNetwork.class);
 
-    // The singleton
+    /** The singleton */
     private static GlyphNetwork INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
 
-    // The underlying neural network
+    /** The underlying neural network */
     private NeuralNetwork network;
 
     //~ Constructors -----------------------------------------------------------

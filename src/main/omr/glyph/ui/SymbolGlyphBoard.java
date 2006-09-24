@@ -55,27 +55,31 @@ public class SymbolGlyphBoard
 
     //~ Instance fields --------------------------------------------------------
 
-    // Spinner just for symbol glyphs
-    private JSpinner         symbolSpinner;
+    /** Spinner just for symbol glyphs */
+    private JSpinner symbolSpinner;
 
-    // Glyph characteristics
-    private LField           ledger = new LField(
+    /** Glyph characteristics : is there a ledger */
+    private LField ledger = new LField(
         false,
         "Ledger",
         "Does this glyph intersect a legder");
-    private LIntegerField    pitchPosition = new LIntegerField(
+
+    /** Glyph characteristics : position wrt staff */
+    private LIntegerField pitchPosition = new LIntegerField(
         false,
         "Pitch",
         "Logical pitch position");
-    private LIntegerField    stems = new LIntegerField(
+
+    /** Glyph characteristics : how many stems */
+    private LIntegerField stems = new LIntegerField(
         false,
         "Stems",
         "Number of stems connected to this glyph");
 
-    // Glyph id for the very first symbol
-    private int              firstSymbolId;
+    /** Glyph id for the very first symbol */
+    private int firstSymbolId;
 
-    // Predicate for symbol glyphs
+    /** Predicate for symbol glyphs */
     private Predicate<Glyph> symbolPredicate = new Predicate<Glyph>() {
         public boolean check (Glyph glyph)
         {
@@ -101,10 +105,10 @@ public class SymbolGlyphBoard
      * @param glyphIdSelection glyph_id selection as output
      */
     public SymbolGlyphBoard (SymbolsEditor builder,
-                             int            firstSymbolId,
-                             Selection      glyphSelection,
-                             Selection      glyphIdSelection,
-                             Selection      glyphSetSelection)
+                             int           firstSymbolId,
+                             Selection     glyphSelection,
+                             Selection     glyphIdSelection,
+                             Selection     glyphSetSelection)
     {
         // For all glyphs
         super(

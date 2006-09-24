@@ -49,37 +49,43 @@ public class Staff
 
     //~ Instance fields --------------------------------------------------------
 
-    // Starting bar line (the others are linked to measures)
+    /** Starting bar line (the others are linked to measures) */
     private Barline     startingBarline;
+
+    /** List of dynamics if any */
     private DynamicList dynamics;
+
+    /** List of lyrics if any */
     private LyricList   lyriclines;
 
-    // Specific children
+    /** Specific children */
     private MeasureList measures;
 
-    // Top left corner of the staff (relative to the system top left corner)
+    /** Top left corner of the staff (relative to the system top left corner) */
     private PagePoint  topLeft;
 
-    // Actual cached display origin
+    /** Actual cached display origin */
     private ScorePoint origin;
 
-    // Related info from sheet analysis
+    /** Related info from sheet analysis */
     private StaffInfo info;
+
+    /** List of tests if any */
     private TextList  texts;
 
-    // First, and last measure ids
+    /** Id of first measure */
     private int firstMeasureId;
 
-    // First, and last measure ids
+    /** Id of last measure */
     private int lastMeasureId;
 
-    // Attributes
-    private int size;
-
-    // Attributes
+    /** Index of staff in containing system */
     private int stafflink;
 
-    // Attributes
+    /** Staff height (units) */
+    private int size;
+
+    /** Staff width (units) */
     private int width;
 
     //~ Constructors -----------------------------------------------------------

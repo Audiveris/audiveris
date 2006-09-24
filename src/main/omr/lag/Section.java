@@ -53,26 +53,34 @@ public class Section<L extends Lag, S extends Section<L, S>>
 
     //~ Instance fields --------------------------------------------------------
 
-    // Cached data
-    //
     /**
      * Bounding rectangle (regardless of orientation)
      */
     protected Rectangle bounds;
 
-    // The collection of runs that make up the section
+    /** The collection of runs that make up the section */
     private final List<Run> runs = new ArrayList<Run>();
-    private Point           centroid; // Mass center
 
-    // Model(unzoomed) display contour points, which depend on orientation
+    /** Mass center */
+    private Point           centroid;
+
+    /** Model(unzoomed) contour points, which depend on orientation */
     private Polygon   contour;
+
+    /** Display contour points, which do not depend on orientation */
     private Rectangle contourBox;
 
-    // Position of first run
+    /** Position of first run */
     private int firstPos;
-    private int foreWeight; // Contribution to the foreground
-    private int maxRunLength; // Length of longest run
-    private int weight; // Number of pixels, whatever the grey level
+
+    /** Contribution to the foreground */
+    private int foreWeight;
+
+    /** Length of longest run */
+    private int maxRunLength;
+
+    /** Number of pixels, whatever the grey level */
+    private int weight;
 
     //~ Constructors -----------------------------------------------------------
 

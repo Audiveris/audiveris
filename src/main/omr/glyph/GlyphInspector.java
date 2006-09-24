@@ -60,10 +60,16 @@ public class GlyphInspector
 
     //~ Instance fields --------------------------------------------------------
 
-    private final GlyphBuilder     builder;
-    private final GlyphLag         vLag;
+    /** Related sheet */
+    private final Sheet sheet;
 
-    // Predicate to filter only reliable symbols attached to a stem
+    /** Related glyph builder */
+    private final GlyphBuilder builder;
+
+    /** Underlying lag */
+    private final GlyphLag vLag;
+
+    /** Predicate to filter only reliable symbols attached to a stem */
     private final Predicate<Glyph> reliableStemSymbols = new Predicate<Glyph>() {
         public boolean check (Glyph glyph)
         {
@@ -77,7 +83,6 @@ public class GlyphInspector
         }
     };
 
-    private final Sheet sheet;
 
     //~ Constructors -----------------------------------------------------------
 

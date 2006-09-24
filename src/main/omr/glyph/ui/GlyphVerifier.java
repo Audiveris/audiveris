@@ -70,34 +70,30 @@ public class GlyphVerifier
     private static final Logger    logger = Logger.getLogger(
         GlyphVerifier.class);
 
-    // To differentiate the exit action
-    private static boolean        standAlone = false;
+    /** To differentiate the exit action */
+    private static boolean standAlone = false;
 
-    // The unique instance
-    private static GlyphVerifier  INSTANCE;
+    /** The unique instance */
+    private static GlyphVerifier INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
 
-    // Repository of known glyphs
+    /** Repository of known glyphs */
     private final GlyphRepository repository = GlyphRepository.getInstance();
 
-    // The dedicated frame
-    private final JFrame  frame;
+    /** The dedicated frame */
+    private final JFrame frame;
 
-    // Panel of glyph evaluators
-    //    private EvaluatorsPanel evaluatorsPanel
-    //        = new EvaluatorsPanel(null, null);
+    /** The panel in charge of the current glyph */
+    private GlyphBrowser glyphBrowser;
 
-    // The panel in charge of the current glyph
-    private GlyphBrowser  glyphBrowser;
-
-    // The panel in charge of the glyphs selection
+    /** The panel in charge of the glyphs selection */
     private GlyphSelector glyphSelector = new GlyphSelector();
 
-    // The panel in charge of the shape selection
+    /** The panel in charge of the shape selection */
     private ShapeSelector shapeSelector = new ShapeSelector();
 
-    // The panel in charge of the sheets selection
+    /** The panel in charge of the sheets selection */
     private SheetSelector sheetSelector = new SheetSelector();
 
     //~ Constructors -----------------------------------------------------------

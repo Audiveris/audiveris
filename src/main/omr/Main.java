@@ -84,49 +84,51 @@ public class Main
     private static final Constants constants = new Constants();
     private static final Logger    logger = Logger.getLogger(Main.class);
 
-    // Installation container and folder
-    private static File        container;
-    private static File        homeFolder;
+    /** Installation container and folder */
+    private static File container;
 
-    // Singleton
-    private static Main        INSTANCE;
+    /** Installation container and folder */
+    private static File homeFolder;
+
+    /** Singleton */
+    private static Main INSTANCE;
 
     /** Specific forlder name for icons */
     public static final String ICONS_NAME = "icons";
 
     //~ Instance fields --------------------------------------------------------
 
-    // Build reference of the application as displayed to the user
+    /** Build reference of the application as displayed to the user */
     private final String toolBuild;
 
-    // Name of the application as displayed to the user
+    /** Name of the application as displayed to the user */
     private final String toolName;
 
-    // Version of the application as displayed to the user
+    /** Version of the application as displayed to the user */
     private final String toolVersion;
 
-    // Master View
-    private Jui          jui;
+    /** Master View */
+    private Jui jui;
 
-    // List of score file names to process
+    /** List of score file names to process */
     private List<String> scoreNames = new ArrayList<String>();
 
-    // List of sheet file names to process
+    /** List of sheet file names to process */
     private List<String> sheetNames = new ArrayList<String>();
 
-    // Target step
-    private Step    targetStep;
+    /** Target step */
+    private Step targetStep;
 
-    // Batch mode if any
+    /** Batch mode if any */
     private boolean batchMode = false;
 
-    // Request to write score if any
+    /** Request to write score if any */
     private boolean writeScore = false;
 
     //~ Constructors -----------------------------------------------------------
 
     //------//
-    // Main //
+    // qMain //
     //------//
     private Main (String[] args,
                   Class    caller)

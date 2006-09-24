@@ -92,8 +92,10 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
      */
     protected int colorIndex = -1;
 
-    // Last zoom ratio. The value is cached to save on the computation of
-    // the display polygon.
+    /**
+     * Last zoom ratio. The value is cached to save on the computation of the
+     * display polygon.
+     */
     private transient double lastZoomRatio;
 
     //~ Constructors -----------------------------------------------------------

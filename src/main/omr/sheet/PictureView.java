@@ -29,7 +29,7 @@ public class PictureView
 {
     //~ Instance fields --------------------------------------------------------
 
-    // Link with sheet
+    /** Link with sheet */
     private final Sheet sheet;
 
     //~ Constructors -----------------------------------------------------------

@@ -30,33 +30,33 @@ public class SymbolIcon
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    // The same width for all such icons (to be improved)
+    /** The same width for all such icons (to be improved) */
     private static int    standardWidth = -1;
 
     //~ Instance fields --------------------------------------------------------
 
-    // Connected to Ledger ?
+    /** Connected to Ledger ? */
     private Boolean       hasLedger;
 
-    // Related image
+    /** Related image */
     private BufferedImage image;
 
-    // Symbol size (which must be consistent with image dimensions)
+    /** Symbol size (which must be consistent with image dimensions) */
     private Dimension dimension;
 
-    // Pitch position within staff lines
+    /** Pitch position within staff lines */
     private Double  pitchPosition;
 
-    // How many stems is it connected to ?
+    /** How many stems is it connected to ? */
     private Integer stemNumber;
 
-    // Mass center
+    /** Mass center */
     private Point  centroid;
 
-    // Reference point, if any
+    /** Reference point, if any */
     private Point  refPoint;
 
-    // Related name
+    /** Related name */
     private String name;
 
     //~ Constructors -----------------------------------------------------------

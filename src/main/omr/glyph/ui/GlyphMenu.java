@@ -43,14 +43,15 @@ public class GlyphMenu
     private final JMenuItem       latestAssign;
     private final JMenuItem       similarItem;
 
-    // Concrete popup menu
+    /** Concrete popup menu */
     private final JPopupMenu      popup;
 
-    // Current selection of glyphs
+    /** Current selection of glyphs */
     private final Selection       glyphSetSelection;
+
     private final ShapeFocusBoard shapeFocus;
     private final SimilarAction   similarAction = new SimilarAction();
-    private final SymbolsEditor  symbolsBuilder;
+    private final SymbolsEditor   symbolsBuilder;
 
     //~ Constructors -----------------------------------------------------------
 

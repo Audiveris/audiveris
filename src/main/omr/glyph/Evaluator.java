@@ -46,7 +46,7 @@ public abstract class Evaluator
     private static final Logger                   logger = Logger.getLogger(
         Evaluator.class);
 
-    // Extension used by evaluator backup files
+    /** Extension used by evaluator backup files */
     private static final String                   BACKUP_EXTENSION = ".def";
 
     /**

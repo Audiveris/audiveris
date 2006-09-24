@@ -25,10 +25,10 @@ public class UnitNode
 {
     //~ Instance fields --------------------------------------------------------
 
-    // The contained Constant set if any
+    /** The contained Constant set if any */
     private ConstantSet set;
 
-    // The logger if any
+    /** The logger if any */
     private Logger logger;
 
     //~ Constructors -----------------------------------------------------------

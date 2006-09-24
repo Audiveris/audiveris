@@ -41,7 +41,6 @@ public class VerticalArea
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    // Class usual stuff
     private static final Constants constants = new Constants();
     private static final Logger    logger = Logger.getLogger(
         VerticalArea.class);

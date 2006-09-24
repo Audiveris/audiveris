@@ -76,17 +76,19 @@ public class LinesBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    // Series of horizontal peaks that signal staff areas
+    /** Series of horizontal peaks that signal staff areas */
     private List<StaffInfo> staves = new ArrayList<StaffInfo>();
 
-    // Cached data
+    /** Related scale */
     private final Scale  scale;
 
-    // Lag view on staff lines, if so desired
+    /** Lag view on staff lines, if so desired */
     private GlyphLagView lagView;
 
-    // Needed for displayChart
+    /** Histogram eeded for displayChart */
     private int[] histo;
+
+    /** Threshold eeded for displayChart */
     private int   threshold;
 
     //~ Constructors -----------------------------------------------------------

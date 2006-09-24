@@ -37,7 +37,7 @@ public class XmlMapper
 
     //~ Instance fields --------------------------------------------------------
 
-    // The JiBX factory for loading and storing from/to an XML file
+    /** The JiBX factory for loading and storing from/to an XML file */
     private final IBindingFactory factory;
 
     //~ Constructors -----------------------------------------------------------

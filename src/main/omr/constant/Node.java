@@ -22,7 +22,7 @@ public abstract class Node
 {
     //~ Instance fields --------------------------------------------------------
 
-    // (Fully qualified) name of the node
+    /** (Fully qualified) name of the node */
     private final String name;
 
     //~ Constructors -----------------------------------------------------------

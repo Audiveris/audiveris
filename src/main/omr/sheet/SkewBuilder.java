@@ -67,24 +67,28 @@ public class SkewBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    // Lag of horizontal significant runs
-    private GlyphLag    sLag; // A skewed (horizontal) lag
+    /** (Skewed) lag of horizontal significant runs */
+    private GlyphLag sLag;
 
-    // Sticks
+    /** Sticks */
     private List<Stick> sticks = new ArrayList<Stick>();
 
-    // Sheet for which computation is to be done
-    private Sheet  sheet;
+    /** Sheet for which computation is to be done */
+    private Sheet sheet;
 
-    // The target of this computation
+    /** The target of this computation */
     private double angle;
 
-    // Skew slope as computed
+    /** Skew slope as computed */
     private double slope;
 
-    // Length Threshold, for slope computation
+    /** Length Threshold, for slope computation */
     private int lengthThreshold;
+
+    /** Maximum accetable section thickness */
     private int maxThickness;
+
+    /** Minimum acceptable section length */
     private int minSectionLength;
 
     //~ Constructors -----------------------------------------------------------

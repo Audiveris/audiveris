@@ -23,9 +23,17 @@ public class Population
 {
     //~ Instance fields --------------------------------------------------------
 
-    private double s = 0d; // Sum of measured values
-    private double s2 = 0d; // Sum of squared measured values
-    private int    n = 0; // Number of measurements
+    /** Size of hidden layer */
+    private final int hiddenSize;
+
+    /** Sum of measured values */
+    private double s = 0d;
+
+    /** Sum of squared measured values */
+    private double s2 = 0d;
+
+    /** Number of measurements */
+    private int n = 0;
 
     //~ Constructors -----------------------------------------------------------
 

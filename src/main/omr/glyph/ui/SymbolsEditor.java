@@ -72,25 +72,25 @@ public class SymbolsEditor
 
     //~ Instance fields --------------------------------------------------------
 
-    // Glyph builder
-    private final GlyphBuilder     builder;
+    /** Glyph builder */
+    private final GlyphBuilder builder;
 
-    // Glyph inspector
-    private final GlyphInspector   inspector;
+    /** Glyph inspector */
+    private final GlyphInspector inspector;
 
-    // Related Lag view
-    private final GlyphLagView     view;
+    /** Related Lag view */
+    private final GlyphLagView view;
 
-    // Popup menu related to glyph selection
-    private final GlyphMenu        glyphMenu;
+    /** Popup menu related to glyph selection */
+    private final GlyphMenu glyphMenu;
 
-    // Repository of known glyphs
-    private final GlyphRepository  repository = GlyphRepository.getInstance();
+    /** Repository of known glyphs */
+    private final GlyphRepository repository = GlyphRepository.getInstance();
 
-    // Pointer to glyph board
+    /** Pointer to glyph board */
     private final SymbolGlyphBoard glyphBoard;
 
-    // The entity used for display focus
+    /** The entity used for display focus */
     private ShapeFocusBoard focus;
 
     //~ Constructors -----------------------------------------------------------

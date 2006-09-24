@@ -54,25 +54,25 @@ public class ScoreView
 
     //~ Instance fields --------------------------------------------------------
 
-    // The info zone
+    /** The info zone */
     private final JLabel     info = new JLabel("Score");
 
-    // The displayed panel
+    /** The displayed panel */
     private final MyPanel    panel;
 
-    // The scroll pane + info zone
+    /** The scroll pane + info zone */
     private final Panel      compound = new Panel();
 
-    // The related score
+    /** The related score */
     private final Score      score;
 
-    // The scroll pane
+    /** The scroll pane */
     private final ScrollView pane;
 
-    // Display zoom
+    /** Display zoom */
     private final Zoom   zoom = new Zoom(0.5d);
 
-    // Mouse rubber
+    /** Mouse rubber */
     private final Rubber rubber = new Rubber(zoom);
 
     //~ Constructors -----------------------------------------------------------

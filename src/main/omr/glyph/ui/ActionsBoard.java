@@ -32,8 +32,8 @@ import javax.swing.*;
 /**
  * Class <code>ActionsBoard</code> is just a collection of buttons whose related
  * action deal with glyph processing in SymbolsEditor.
- * 
- * 
+ *
+ *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
@@ -46,18 +46,22 @@ public class ActionsBoard
 
     //~ Instance fields --------------------------------------------------------
 
-    // Glyph inspector
-    private final GlyphInspector  inspector;
+    /** Glyph inspector */
+    private final GlyphInspector inspector;
 
-    // Repository of known glyphs
+    /** Repository of known glyphs */
     private final GlyphRepository repository = GlyphRepository.getInstance();
 
-    // Sheet with Loaded glyphs
-    private final Sheet          sheet;
+    /** Sheet with Loaded glyphs */
+    private final Sheet sheet;
+
+    /** Related symbols editor */
     private final SymbolsEditor symbolsBuilder;
 
-    // Various actions (for menus, popup, toolbar, ...)
-    private RecordAction  recordAction = new RecordAction();
+    /** Action for recording glyph descriptions */
+    private RecordAction recordAction = new RecordAction();
+
+    /** Action for refreshing the display */
     private RefreshAction refreshAction = new RefreshAction();
 
     //~ Constructors -----------------------------------------------------------
@@ -71,7 +75,7 @@ public class ActionsBoard
      * @param sheet the related sheet
      * @param symbolsBuilder the symbol processing entity
      */
-    public ActionsBoard (Sheet          sheet,
+    public ActionsBoard (Sheet         sheet,
                          SymbolsEditor symbolsBuilder)
     {
         super(Board.Tag.CUSTOM, "Actions");
@@ -258,7 +262,9 @@ public class ActionsBoard
             final SwingWorker worker = new SwingWorker() {
                 public Object construct ()
                 {
-                    repository.recordSheetGlyphs(sheet, /* emptyStructures => */ sheet.isOnSymbols());
+                    repository.recordSheetGlyphs(
+                        sheet, /* emptyStructures => */
+                        sheet.isOnSymbols());
 
                     return null;
                 }

@@ -53,49 +53,66 @@ public class BarsChecker
     private static final Logger        logger = Logger.getLogger(
         BarsChecker.class);
 
-    // Success
+    /** Successful bar that embraces a whole system */
     private static final SuccessResult BAR_SYSTEM_DEFINING = new SuccessResult(
         "Bar-SystemDefining");
+
+    /** Successful bar that embraces only part of a system */
     private static final SuccessResult BAR_NOT_SYSTEM_DEFINING = new SuccessResult(
         "Bar-NotSystemDefining");
 
-    // Failure
+    /** Failure, since bar is shorter than staff height */
     private static final FailureResult TOO_SHORT_BAR = new FailureResult(
         "Bar-TooShort");
+
+    /** Failure, since bar is on left or right side of the staff area */
     private static final FailureResult OUTSIDE_STAFF_WIDTH = new FailureResult(
         "Bar-OutsideStaffWidth");
+
+    /** Failure, since bar has no end aligned with a staff */
     private static final FailureResult NOT_STAFF_ANCHORED = new FailureResult(
         "Bar-NotStaffAnchored");
+
+    /** Failure, since bar goes higher or lower than the system area */
     private static final FailureResult NOT_WITHIN_SYSTEM = new FailureResult(
         "Bar-NotWithinSystem");
+
+    /** Failure, since bar has too many glyphs stuck on it */
     private static final FailureResult TOO_HIGH_ADJACENCY = new FailureResult(
         "Bar-TooHighAdjacency");
+
+    /** Failure, since bar has a large chunk stuck at the top (a hote head?) */
     private static final FailureResult CHUNK_AT_TOP = new FailureResult(
         "Bar-ChunkAtTop");
+
+    /** Failure, since bar has a large chunk stuck at the bottom (a hote head?) */
     private static final FailureResult CHUNK_AT_BOTTOM = new FailureResult(
         "Bar-ChunkAtBottom");
 
     //~ Instance fields --------------------------------------------------------
 
-    private final Scale         scale;
-    private final Score         score;
+    /** Related sheet */
+    private final Sheet sheet;
 
-    // Cached data
-    private final Sheet         sheet;
+    /** Related scale */
+    private final Scale scale;
 
-    // Suite of checks to be performed
-    private BarCheckSuite       suite;
+    /** Related score */
+    private final Score score;
 
-    // List of found bar sticks
-    private List<Stick>         bars;
+    /** Suite of checks to be performed */
+    private BarCheckSuite suite;
 
-    // Vertical sticks, unused so far
-    private List<Stick>         clutter;
+    /** List of found bar sticks */
+    private List<Stick> bars;
 
-    // Retrieved systems
-    private List<SystemInfo>    systems = new ArrayList<SystemInfo>();
+    /** Vertical sticks, unused so far */
+    private List<Stick> clutter;
 
-    // Related staff indices (top and bottom of a bar stick)
+    /** Retrieved systems */
+    private List<SystemInfo> systems = new ArrayList<SystemInfo>();
+
+    /** Related staff indices (top and bottom of a bar stick) */
     private Map<Stick, Context> contexts = new HashMap<Stick, Context>();
 
     //~ Constructors -----------------------------------------------------------

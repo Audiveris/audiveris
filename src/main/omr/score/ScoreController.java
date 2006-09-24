@@ -63,20 +63,20 @@ public class ScoreController
 
     //~ Instance fields --------------------------------------------------------
 
-    // Map format -> history
+    /** Map format -> history */
     private final HashMap<ScoreFormat, History> historyMap = new HashMap<ScoreFormat, History>();
 
-    // Menu for score actions
+    /** Menu for score actions */
     private final JMenu        scoreMenu = new JMenu("Score");
 
-    // Toolbar needed to add buttons in it
+    /** Toolbar needed to add buttons in it */
     private final JToolBar     toolBar;
 
-    // Collection of score-dependent actions, that are enabled only if
-    // there is a current score.
+    /** Collection of score-dependent actions, that are enabled only if there is
+        a current score. */
     private final List<Object> scoreDependentActions = new ArrayList<Object>();
 
-    // Should we synchronize the sheet view
+    /** Should we synchronize the sheet view */
     private boolean synchroWanted = true;
 
     //~ Constructors -----------------------------------------------------------

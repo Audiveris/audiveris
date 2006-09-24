@@ -388,17 +388,19 @@ public enum Shape
 
     //~ Instance variables -----------------------------------------------------
 
-    // Explanation of the glyph shape
+    /** Explanation of the glyph shape */
     private final String   description;
 
-    // Related display color
+    /** Related temporary display color */
     private Color          color;
+
+    /** Related permanent display color */
     private Constant.Color constantColor;
 
-    // Potential related icon
+    /** Potential related icon */
     private Icon    icon;
 
-    // Remember the fact that this shape has no related icon
+    /** Remember the fact that this shape has no related icon */
     private boolean hasNoIcon;
 
     //~ Constructors -----------------------------------------------------------

@@ -68,34 +68,42 @@ public class EvaluationBoard
     private static final Logger logger = Logger.getLogger(
         EvaluationBoard.class);
 
-    // Max number of buttons in the shape selector
-    private static final int   EVAL_NB = 3;
+    /** Max number of buttons in the shape selector */
+    private static final int EVAL_NB = 3;
+
+    /** Color for well recognized glyphs */
     private static final Color EVAL_GOOD_COLOR = new Color(100, 150, 0);
+
+    /** Color for hardly recognized glyphs */
     private static final Color EVAL_SOSO_COLOR = new Color(255, 100, 150);
 
     //~ Instance fields --------------------------------------------------------
 
-    // The evaluator this display is related to
-    private final Evaluator  evaluator = GlyphNetwork.getInstance();
+    /** The evaluator this display is related to */
+    private final Evaluator evaluator = GlyphNetwork.getInstance();
+
+    /** Related glyph model */
     private final GlyphModel glyphModel;
-    private final JButton    testButton = new JButton(new TestAction());
 
-    // Numeric result of whole sheet test
-    private final JLabel   testPercent = new JLabel(
-        "0%",
-        SwingConstants.CENTER);
-    private final JLabel   testResult = new JLabel("", SwingConstants.CENTER);
+    /** Button for testing ratio of recognized glyphs */
+    private final JButton testButton = new JButton(new TestAction());
 
-    // Pane for detailed info display about the glyph evaluation
+    /** Numeric result of whole sheet test */
+    private final JLabel testPercent = new JLabel("0%", SwingConstants.CENTER);
+
+    /** Percentage result of whole sheet test */
+    private final JLabel testResult = new JLabel("", SwingConstants.CENTER);
+
+    /** Pane for detailed info display about the glyph evaluation */
     private final Selector selector;
 
-    // Related sheet & GlyphModel
-    private final Sheet   sheet;
+    /** Related sheet & GlyphModel */
+    private final Sheet sheet;
 
-    // Should we use buttons (or plain output fields) ?
+    /** Should we use buttons (or plain output fields) ? */
     private final boolean useButtons;
 
-    // Lag view (if any)
+    /** Lag view (if any) */
     private GlyphLagView view;
 
     //~ Constructors -----------------------------------------------------------

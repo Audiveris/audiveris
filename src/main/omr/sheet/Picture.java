@@ -89,27 +89,28 @@ public class Picture
 
     //~ Instance fields --------------------------------------------------------
 
-    // Transformation used for display
+    /** Transformation used for display */
     private final AffineTransform scaleTransform = AffineTransform.getScaleInstance(
         1d,
         1d);
     private DataBuffer            dataBuffer;
     private Dimension             dimension;
 
-    // Original image dimension
-    private Dimension   originalDimension;
+    /** Original image dimension */
+    private Dimension originalDimension;
 
-    // Current image
-    ////private RenderedOp image;
+    /** Current image */
     private PlanarImage image;
 
-    // Selection objects where grey level of pixel is to be written to when so
-    // asked for by calling the update method
+    /** Selection objects where grey level of pixel is to be written to when so
+       asked for by calling the update method */
     private Selection levelSelection;
 
-    // Remember if we have actually rotated the image
+    /** Remember if we have actually rotated the image */
     private boolean rotated = false;
-    private int     dimensionWidth; // To speedup ...
+
+    /** To speedup ... */
+    private int dimensionWidth;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -617,8 +618,8 @@ public class Picture
      * @param hint potential notification hint
      */
     @Implement(SelectionObserver.class)
-    public void update(Selection     selection,
-                   SelectionHint hint)
+    public void update (Selection     selection,
+                        SelectionHint hint)
     {
         switch (selection.getTag()) {
         case PIXEL :

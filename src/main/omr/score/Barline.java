@@ -40,25 +40,27 @@ public class Barline
 
     private static final Logger       logger = Logger.getLogger(Barline.class);
 
-    // Map of signature -> bar shape
+    /** Map of signature -> bar shape */
     private static Map<String, Shape> sigs;
 
     //~ Instance fields --------------------------------------------------------
 
-    // Sheet global scale
-    private Scale            scale;
+    /** Sheet global scale */
+    private Scale scale;
 
-    // Precise bar line shape
-    private Shape            shape;
+    /** Precise bar line shape */
+    private Shape shape;
 
-    // Related physical sticks (bar sticks and dots), which is kept sorted on
-    // stick abscissa
+    /**
+     * Related physical sticks (bar sticks and dots), which is kept sorted on
+     * stick abscissa
+     */
     private SortedSet<Stick> sticks = new TreeSet<Stick>();
 
-    // Bounding center within staff (counted in units since staff (top)left)
+    /** Bounding center within staff (counted in units since staff (top)left) */
     private StaffPoint center;
 
-    // Signature of this bar line, as abstracted from its constituents
+    /** Signature of this bar line, as abstracted from its constituents */
     private String signature;
 
     //~ Constructors -----------------------------------------------------------

@@ -37,54 +37,60 @@ public class SystemInfo
 {
     //~ Instance fields --------------------------------------------------------
 
-    // Retrieved bar lines in this system
-    private List<Stick>                  bars = new ArrayList<Stick>();
+    /** Retrieved bar lines in this system */
+    private List<Stick> bars = new ArrayList<Stick>();
 
-    // Retrieved endings in this system
-    private List<Ending>                 endings = new ArrayList<Ending>();
+    /** Retrieved endings in this system */
+    private List<Ending> endings = new ArrayList<Ending>();
 
-    // Sections
+    /** Sections */
     private transient List<GlyphSection> hSections = new ArrayList<GlyphSection>();
 
-    // Glyphs & Sticks
-    private List<Glyph>           glyphs = new ArrayList<Glyph>();
+    /** Glyphs & Sticks */
+    private List<Glyph> glyphs = new ArrayList<Glyph>();
     private transient List<Stick> hSticks = new ArrayList<Stick>();
 
-    // Retrieved ledgers in this system
-    private List<Ledger>       ledgers = new ArrayList<Ledger>();
+    /** Retrieved ledgers in this system */
+    private List<Ledger> ledgers = new ArrayList<Ledger>();
 
-    // Staves of this system
-    private List<StaffInfo>    staves;
+    /** Staves of this system */
+    private List<StaffInfo> staves;
+
+    /** Vertical sections of this system */
     private List<GlyphSection> vSections = new ArrayList<GlyphSection>();
-    private List<Stick>        vSticks = new ArrayList<Stick>();
 
-    // Related System in Score hierarchy
+    /** Vertical sticks of this system */
+    private List<Stick> vSticks = new ArrayList<Stick>();
+
+    /** Related System in Score hierarchy */
     private System scoreSystem;
 
     // SYSTEMS step
     // ============
     //
-    // Bottom of system related area
+    /** Bottom of system related area */
     private int areaBottom = -1;
 
-    // Top of system related area
+    /** Top of system related area */
     private int areaTop = -1;
 
-    // Ordinate of bottom of last staff of the system.
+    /** Ordinate of bottom of last staff of the system. */
     private int bottom;
 
-    // Delta ordinate between first line of first staff & first line of
-    // last staff.
+    /** Delta ordinate between first line of first staff & first line of last
+       staff. */
     private int deltaY;
 
-    // Unique Id for this system (in the sheet)
+    /** Unique Id for this system (in the sheet) */
     private int id;
 
-    // Abscissa of beginning of system.
+    /** Abscissa of beginning of system. */
     private int left = -1;
 
-    // Width of widest glyph in this system
+    /** Width of widest glyph in this system */
     private int maxGlyphWidth = -1;
+
+    /** Width of widest Ledger in this system */
     private int maxLedgerWidth = -1;
 
     // NOTA: Following items are listed in the chronological order of their
@@ -94,17 +100,17 @@ public class SystemInfo
     // =========
     //
 
-    // Index of first staff of the system, counted from 0 within all staves of
-    // the score
+    /** Index of first staff of the system, counted from 0 within all staves of
+       the score */
     private int startIdx;
 
-    // Index of last staff of the system, also counted from 0.
+    /** Index of last staff of the system, also counted from 0. */
     private int stopIdx;
 
-    // Ordinate of top of first staff of the system.
+    /** Ordinate of top of first staff of the system. */
     private int top;
 
-    // Width of the system.
+    /** Width of the system. */
     private int width = -1;
 
     //~ Constructors -----------------------------------------------------------

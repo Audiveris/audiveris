@@ -14,6 +14,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.lag.Run;
+
+import omr.util.Implement;
 import omr.util.Logger;
 
 import org.jfree.chart.ChartFactory;
@@ -27,7 +29,6 @@ import org.jfree.ui.RefineryUtilities;
 import java.awt.Rectangle;
 
 import javax.swing.WindowConstants;
-import omr.util.Implement;
 
 /**
  * Class <code>ScaleBuilder</code> encapsulates the computation of a sheet
@@ -49,13 +50,20 @@ public class ScaleBuilder
 
     //~ Instance fields --------------------------------------------------------
 
+    /** ADapter for reading runs */
     private Adapter adapter;
-    private Sheet   sheet;
-    private int     mainBack = -1;
 
-    // Most frequent run lengths for foreground & background runs as read from
-    // the sheet picture. They are initialized to -1, so as to detect if they
-    // have been computed or not.
+    /** Related sheet */
+    private Sheet sheet;
+
+    /** Most frequent background vertical run */
+    private int mainBack = -1;
+
+    /**
+     * Most frequent run lengths for foreground & background runs as read from
+     * the sheet picture. They are initialized to -1, so as to detect if they
+     * have been computed or not.
+     */
     private int mainFore = -1;
 
     //~ Constructors -----------------------------------------------------------

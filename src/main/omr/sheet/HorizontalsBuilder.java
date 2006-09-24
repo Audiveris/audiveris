@@ -21,6 +21,7 @@ import omr.check.SuccessResult;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphSection;
@@ -67,12 +68,12 @@ public class HorizontalsBuilder
     private static final Logger          logger = Logger.getLogger(
         HorizontalsBuilder.class);
 
-    // Success codes
-    private static final SuccessResult   LEDGER = new SuccessResult("Ledger");
+    /** Success codes */
+    private static final SuccessResult LEDGER = new SuccessResult("Ledger");
     private static final SuccessResult   ENDING = new SuccessResult("Ending");
 
-    // Failure codes
-    private static final FailureResult   TOO_SHORT = new FailureResult(
+    /** Failure codes */
+    private static final FailureResult TOO_SHORT = new FailureResult(
         "Hori-TooShort");
     private static final FailureResult   TOO_LONG = new FailureResult(
         "Hori-TooLong");
@@ -95,29 +96,34 @@ public class HorizontalsBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    private ArrayList<CheckSuite<Stick>> endingList;
-
-    // And the suite collections
-    private ArrayList<CheckSuite<Stick>> ledgerList;
-
-    // The various check suites
+    /** Check suite for common tests */
     private CheckSuite<Stick> commonSuite;
+
+    /** Check suite for Additional tests for endings */
     private CheckSuite<Stick> endingSuite;
+
+    /** Check suite for Additional tests for ledgers */
     private CheckSuite<Stick> ledgerSuite;
 
-    // The related view if any
-    private GlyphLagView      lagView;
+    /** Total check suite for ending */
+    private ArrayList<CheckSuite<Stick>> endingList;
 
-    // Horizontals area, with retrieved horizontal sticks
-    private HorizontalArea    horizontalsArea;
+    /** Total check suite for ledger */
+    private ArrayList<CheckSuite<Stick>> ledgerList;
 
-    // The whole list of horizontals (ledgers, legato signs, endings) found
+    /** The related view if any */
+    private GlyphLagView lagView;
+
+    /** Horizontals area, with retrieved horizontal sticks */
+    private HorizontalArea horizontalsArea;
+
+    /** The whole list of horizontals (ledgers, legato signs, endings) found */
     private final Horizontals info;
 
-    // The collection of all horizontal items
+    /** The collection of all horizontal items */
     private final List<Dash> allDashes = new ArrayList<Dash>();
 
-    // The containing sheet
+    /** The containing sheet */
     private Sheet sheet;
 
     //~ Constructors -----------------------------------------------------------

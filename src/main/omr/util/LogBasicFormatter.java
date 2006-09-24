@@ -31,8 +31,10 @@ public class LogBasicFormatter
 
     private static final Constants constants = new Constants();
 
-    // Line separator string.  This is the value of the line.separator
+    /** Line separator string.  This is the value of the line.separator */
     private static String       lineSeparator = "\n";
+
+    /** Standard format */
     private static final String format = "{0,time}";
 
     //~ Instance fields --------------------------------------------------------

@@ -34,14 +34,16 @@ public class Clef
 
     //~ Instance fields --------------------------------------------------------
 
-    // Precise clef shape, from Clefs range in Shape class
-    private Shape      shape;
+    /** Precise clef shape, from Clefs range in Shape class */
+    private Shape shape;
 
-    // Location of the clef center WRT staff top-left corner
+    /** Location of the clef center WRT staff top-left corner */
     private StaffPoint center;
 
-    // Step line of the clef : -4 for top line (Baritone), -2 for Bass, 0 for
-    // Alto, +2 for Treble and Mezzo-Soprano, +4 for bottom line (Soprano).
+    /**
+     * Step line of the clef : -4 for top line (Baritone), -2 for Bass, 0 for
+     * Alto, +2 for Treble and Mezzo-Soprano, +4 for bottom line (Soprano).
+     */
     private int pitchPosition;
 
     //~ Constructors -----------------------------------------------------------

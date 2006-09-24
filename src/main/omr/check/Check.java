@@ -49,24 +49,35 @@ public abstract class Check<C extends Checkable>
 
     //~ Instance fields --------------------------------------------------------
 
-    // Specifies the FailureResult to be assigned to the Checkable object, if
-    // the result of the check end in the RED range.
+    /**
+     * Specifies the FailureResult to be assigned to the Checkable object, if
+     * the result of the check end in the RED range.
+     */
     private final FailureResult redResult;
 
-    // Longer description, meant for tips
-    private final String  description;
+    /** Longer description, meant for tips */
+    private final String description;
 
-    // Short name for this test
-    private final String  name;
+    /** Short name for this test */
+    private final String name;
 
-    // Specifies if values are RED,ORANGE,GREEN (higher is better, covariant =
-    // true) or GREEN,ORANGE,RED (lower is better, covariant = false)
+    /**
+     * Specifies if values are RED,ORANGE,GREEN (higher is better, covariant =
+     * true) or GREEN,ORANGE,RED (lower is better, covariant = false)
+     */
     private final boolean covariant;
-    private double        high;
 
-    // Values that embrace the ORANGE range. Whatever the value of 'covariant',
-    // we must always have low <= high
+    /**
+     * Lower bound for ORANGE range. Whatever the value of 'covariant', we must
+     * always have low <= high
+     */
     private double low;
+
+    /**
+     * Higher bound for ORANGE range. Whatever the value of 'covariant', we must
+     * always have low <= high
+     */
+    private double high;
 
     //~ Constructors -----------------------------------------------------------
 

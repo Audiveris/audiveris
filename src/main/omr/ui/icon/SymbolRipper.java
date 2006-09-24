@@ -55,14 +55,14 @@ public class SymbolRipper
 
     //~ Instance fields --------------------------------------------------------
 
-    // Related frame
-    private final JFrame       frame;
+    /** Related frame */
+    private final JFrame frame;
 
-    // Drawing transform
-    private AffineTransform    scaleXform;
+    /** Drawing transform */
+    private AffineTransform scaleXform;
 
-    // Image being built
-    private BufferedImage      image;
+    /** Image being built */
+    private BufferedImage image;
 
     //---------------//
     // paramListener //

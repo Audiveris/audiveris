@@ -53,16 +53,16 @@ public class GlyphBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    // The containing sheet
+    /** The containing sheet */
     private final Sheet      sheet;
 
-    // Lag of vertical runs
+    /** Lag of vertical runs */
     private GlyphLag         vLag;
 
-    // Pointer to glyph board
+    /** Pointer to glyph board */
     private SymbolGlyphBoard glyphBoard;
 
-    // First glyph id as built by this builder
+    /** First glyph id as built by this builder */
     private int firstGlyphId;
 
     //~ Constructors -----------------------------------------------------------

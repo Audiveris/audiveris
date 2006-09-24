@@ -35,26 +35,26 @@ public class StaffInfo
 
     //~ Instance fields --------------------------------------------------------
 
-    // Lines of the set
+    /** Lines of the set */
     private List<LineInfo> lines;
 
-    // Scale specific to this staff, since staves in a page may exhibit
-    // different scales.
+    /** Scale specific to this staff, since staves in a page may exhibit
+        different scales. */
     private Scale specificScale;
 
-    // Bottom of staff related area
+    /** Bottom of staff related area */
     private int areaBottom = -1;
 
-    // Top of staff related area
+    /** Top of staff related area */
     private int areaTop = -1;
 
-    // For debug only
+    /** For debug only */
     private int id;
 
-    // Left extrema
+    /** Left extrema */
     private int left;
 
-    // Right extrema
+    /** Right extrema */
     private int right;
 
     //~ Constructors -----------------------------------------------------------

@@ -24,9 +24,14 @@ public class Peak
 {
     //~ Instance fields --------------------------------------------------------
 
-    private final int yTop; // Y value at top of the peak
-    private int       max; // Histogram maximum within this peak
-    private int       yBottom; // Y value at bottom of the peak
+    /** Y value at top of the peak */
+    private final int yTop;
+
+    /** Histogram maximum within this peak */
+    private int max;
+
+    /** Y value at bottom of the peak */
+    private int yBottom;
 
     //~ Constructors -----------------------------------------------------------
 

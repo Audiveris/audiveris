@@ -32,22 +32,22 @@ public class Slur
 
     //~ Instance fields --------------------------------------------------------
 
-    // Additional drawing data
+    /** Additional drawing data */
     private Arc arc;
 
-    // Cached attributes
+    /** Column for left point */
     private int leftcolumn;
 
-    // Cached attributes
+    /** Row for left point */
     private int leftrow;
 
-    // Cached attributes
+    /** Value of circle radius */
     private int radius;
 
-    // Cached attributes
+    /** Column for right point */
     private int rightcolumn;
 
-    // Cached attributes
+    /** Row for right point */
     private int rightrow;
 
     //~ Constructors -----------------------------------------------------------

@@ -87,18 +87,21 @@ public class ConstantManager
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String UNIT = ConstantManager.class.getName();
     private static final Logger logger = Logger.getLogger(
         ConstantManager.class);
 
-    // Default properties
+    /** Default properties */
     private static Properties defaultProperties = new Properties();
-    private static String     DEFAULT_FILE_NAME = "run.default.properties";
 
-    // User properties
+    /** Default properties file name */
+    private static String DEFAULT_FILE_NAME = "run.default.properties";
+
+    /** User properties */
     private static Properties userProperties = null;
-    private static String     USER_FILE_NAME = System.getProperty("user.home") +
-                                               "/.audiveris/run.properties";
+
+    /** User properties file name */
+    private static String USER_FILE_NAME = System.getProperty("user.home") +
+                                           "/.audiveris/run.properties";
 
     //~ Constructors -----------------------------------------------------------
 
@@ -237,7 +240,8 @@ public class ConstantManager
         } catch (FileNotFoundException ex) {
             // This is not at all a fatal error, let the user know this.
             logger.info(
-                "[" + UNIT + "] No User property file " + USER_FILE_NAME);
+                "[" + ConstantManager.class.getName() + "]" +
+                " No User property file " + USER_FILE_NAME);
         } catch (IOException ex) {
             logger.severe(
                 "Error while loading the User property file " + USER_FILE_NAME);

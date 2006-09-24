@@ -36,10 +36,10 @@ public class StepMonitor
 
     //~ Instance fields --------------------------------------------------------
 
-    // Single threaded executor for lengthy tasks
+    /** Single threaded executor for lengthy tasks */
     private final ExecutorService executor;
 
-    // Progress bar for actions performed on sheet
+    /** Progress bar for actions performed on sheet */
     private final JProgressBar bar = new JProgressBar();
 
     //~ Constructors -----------------------------------------------------------

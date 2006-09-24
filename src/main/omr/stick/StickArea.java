@@ -51,14 +51,14 @@ public class StickArea
     private static final Logger        logger = Logger.getLogger(
         StickArea.class);
 
-    // Unique identifier for debugging
-    private static int                 globalId = 0;
+    /** Unique identifier for debugging */
+    private static int globalId = 0;
 
-    // A stick whose slope is not correct
+    /** A stick whose slope is not correct */
     private static final FailureResult NOT_STRAIGHT = new FailureResult(
         "StickArea-NotStraight");
 
-    // A stick correctly assigned
+    /** A stick correctly assigned */
     private static final SuccessResult ASSIGNED = new SuccessResult(
         "StickArea-Assigned");
 
@@ -67,32 +67,32 @@ public class StickArea
     /** The <b>sorted</b> collection of sticks found in this area */
     protected List<Stick> sticks = new ArrayList<Stick>();
 
-    // Sections which are potential future members
+    /** Sections which are potential future members */
     private List<GlyphSection> candidates = new ArrayList<GlyphSection>();
 
-    // Sections recognized as members of sticks
+    /** Sections recognized as members of sticks */
     private List<GlyphSection> members = new ArrayList<GlyphSection>();
 
-    // The source adapter to retrieve sections from
-    private Source  source;
+    /** The source adapter to retrieve sections from */
+    private Source source;
 
-    // Used to flag sections already visited wrt a given stick
-    private int[]   visited;
+    /** Used to flag sections already visited wrt a given stick */
+    private int[] visited;
 
-    //  A flag used to trigger processing specific to very long (and not totally
-    //  straight) alignments.
+    /** A flag used to trigger processing specific to very long (and not totally
+       straight) alignments. */
     private boolean longAlignment;
 
-    // Maximum value for adjacency
+    /** Maximum value for adjacency */
     private double maxAdjacency;
 
-    // Minimum aspect (length / thickness) for a section
+    /** Minimum aspect (length / thickness) for a section */
     private double minSectionAspect = constants.minSectionAspect.getValue();
 
-    // Instance data for the area
+    /** Instance data for the area */
     private int id = ++globalId;
 
-    // Maximum thickness value for sticks to be recognized as such
+    /** Maximum thickness value for sticks to be recognized as such */
     private int maxThickness;
 
     //~ Constructors -----------------------------------------------------------

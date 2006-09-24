@@ -38,11 +38,16 @@ public class StaffBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    private GlyphLag                   hLag;
-    private ListIterator<GlyphSection> vi;
-    private Sheet                      sheet;
+    /** Related sheet */
+    private Sheet sheet;
 
-    // To allow unique identifiers to staves (for debug only)
+    /** Related lag */
+    private GlyphLag hLag;
+
+    /** Vertex iterator */
+    private ListIterator<GlyphSection> vi;
+
+    /** To allow unique identifiers to staves (for debug only) */
     private int id;
 
     //~ Constructors -----------------------------------------------------------

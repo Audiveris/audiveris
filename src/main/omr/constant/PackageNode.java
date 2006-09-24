@@ -28,8 +28,10 @@ public class PackageNode
 {
     //~ Instance fields --------------------------------------------------------
 
-    // The children, composed of either other <code>PackageNode</code> or
-    // <code>ConstantSet</code>.
+    /**
+     * The children, composed of either other <code>PackageNode</code> or
+     * <code>ConstantSet</code>.
+     */
     private final SortedSet<Node> children = new TreeSet<Node>(
         new Comparator<Node>() {
                 public int compare (Node n1,

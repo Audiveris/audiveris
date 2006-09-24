@@ -42,6 +42,7 @@ public class ScoreBuilder
 
     //~ Instance fields --------------------------------------------------------
 
+    // TBD comments please
     private Measure    measure;
     private Scale      scale;
     private Score      score;

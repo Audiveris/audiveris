@@ -53,44 +53,50 @@ public class GlyphRepository
     private static final Logger    logger = Logger.getLogger(
         GlyphRepository.class);
 
-    // Specific glyph and icon XML mappers
-    private static XmlMapper       glyphXmlMapper;
-    private static XmlMapper       iconXmlMapper;
+    /** Specific glyph XML mappers */
+    private static XmlMapper glyphXmlMapper;
 
-    // The single instance of this class
+    /** Specific icon XML mappers */
+    private static XmlMapper iconXmlMapper;
+
+    /** The single instance of this class */
     private static GlyphRepository INSTANCE;
 
-    // Extension for training files
+    /** Extension for training files */
     private static final String FILE_EXTENSION = ".xml";
 
-    // Name of Structures sub-directory
+    /** Name of Structures sub-directory */
     private static final String STRUCTURES_NAME = ".structures";
 
-    // Specific subdirectories for training files
-    private static final File   sheetsFolder = new File(
+    /** Specific subdirectories for training files */
+    private static final File sheetsFolder = new File(
         Main.getTrainFolder(),
         "sheets");
-    private static final File   coreFolder = new File(
+    private static final File      coreFolder = new File(
         Main.getTrainFolder(),
         "core");
-    private static final File   iconsFolder = Main.getIconsFolder();
+    private static final File      iconsFolder = Main.getIconsFolder();
 
-    // Name of the file where glyph blacklist is kept. These glyphs must be
-    // ignored when training the evaluator, they are used only as UI icons in
-    // menus and buttons. The scope of this blacklist is the directory that
-    // contains the blacklist file.
+    /**
+     * Name of the file where glyph blacklist is kept. These glyphs must be
+     * ignored when training the evaluator, they are used only as UI icons in
+     * menus and buttons. The scope of this blacklist is the directory that
+     * contains the blacklist file.
+     */
     private static final String BLACK_LIST_NAME = ".glyphignore";
 
     //~ Instance fields --------------------------------------------------------
 
-    // Core collection of glyphs
+    /** Core collection of glyphs */
     private Collection<String> coreBase;
 
-    // Whole collection of glyphs
+    /** Whole collection of glyphs */
     private Collection<String> wholeBase;
 
-    // Map of all glyphs deserialized so far, using full glyph name as key. Full
-    // glyph name format is : sheetName/Shape.id.xml
+    /**
+     * Map of all glyphs deserialized so far, using full glyph name as key. Full
+     * glyph name format is : sheetName/Shape.id.xml
+     */
     private Map<String, Glyph> glyphsMap = new TreeMap<String, Glyph>();
 
     //~ Constructors -----------------------------------------------------------

@@ -44,13 +44,13 @@ public class CheckSuite<C extends Checkable>
     /** Minimum threshold for final grade */
     protected double threshold;
 
-    // List of checks in the suite
+    /** List of checks in the suite */
     private final List<Check<C>> checks = new ArrayList<Check<C>>();
 
-    // List of related weights in the suite
+    /** List of related weights in the suite */
     private final List<Double> weights = new ArrayList<Double>();
 
-    // Total checks weight
+    /** Total checks weight */
     private double totalWeight = 0.0d;
 
     //~ Constructors -----------------------------------------------------------

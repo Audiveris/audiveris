@@ -29,12 +29,10 @@ public abstract class InstanceStep<R>
 {
     //~ Instance fields --------------------------------------------------------
 
-    /**
-     * Cache the result of the step
-     */
+    /** Cache the result of the step */
     protected R result;
 
-    // A readable description for this step
+    /** A readable description for this step */
     private String description;
 
     //~ Constructors -----------------------------------------------------------

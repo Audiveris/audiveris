@@ -40,20 +40,21 @@ public class NameSet
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String   SEPARATOR = ";"; // Separator
+    /** Separator */
+    private static final String   SEPARATOR = ";";
 
     //~ Instance fields --------------------------------------------------------
 
-    // Backing constant
+    /** Backing constant */
     private final Constant.String constant;
 
-    // List of names in this set
+    /** List of names in this set */
     private final List<String> names = new ArrayList<String>();
 
-    // Name of this set
+    /** Name of this set */
     private final String setName;
 
-    // Max number of names in this set
+    /** Max number of names in this set */
     private final int maxNameNb;
 
     //~ Constructors -----------------------------------------------------------

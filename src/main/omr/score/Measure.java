@@ -37,25 +37,25 @@ public class Measure
 
     //~ Instance fields --------------------------------------------------------
 
-    // Ending bar line
-    private Barline       barline;
+    /** Ending bar line */
+    private Barline barline;
 
-    // Specific children
-    private ClefList      clefs;
+    /** Specific children */
+    private ClefList clefs;
 
-    // Left abscissa (in units) of this measure
-    private Integer       leftX;
+    /** Left abscissa (in units) of this measure */
+    private Integer leftX;
 
     //     private KeysigList keysigs;
     //     private ChordList chords;
 
-    // Potential time signature
+    /** Potential time signature */
     private TimeSignature timeSignature;
 
-    // For measure with no physical ending bar line
+    /** For measure with no physical ending bar line */
     private boolean lineinvented;
 
-    // Measure Id
+    /** Measure Id */
     private int id = 0;
 
     //~ Constructors -----------------------------------------------------------

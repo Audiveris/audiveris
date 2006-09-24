@@ -28,23 +28,23 @@ public class Clock
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    // To have a reference time
-    private static long          startTime = System.currentTimeMillis();
+    /** To have a reference time */
+    private static long startTime = System.currentTimeMillis();
 
-    // General date formatting
-    private static DateFormat    dateFormatter = DateFormat.getDateTimeInstance(
+    /** General date formatting */
+    private static DateFormat dateFormatter = DateFormat.getDateTimeInstance(
         DateFormat.FULL,
         DateFormat.FULL,
         Locale.US);
 
-    // General time formatting
-    // Locale to be used, could be:  //Locale.US;   //Locale.FRANCE;
-    private static Locale        locale = Locale.getDefault();
+    /** General time formatting. Locale to be used, could be:  //Locale.US;
+       //Locale.FRANCE; */
+    private static Locale locale = Locale.getDefault();
 
-    // Corresponding number format
-    private static NumberFormat  nf = NumberFormat.getNumberInstance(locale);
+    /** Corresponding number format */
+    private static NumberFormat nf = NumberFormat.getNumberInstance(locale);
 
-    // Decimal format
+    /** Decimal format */
     private static DecimalFormat timeFormatter = (DecimalFormat) nf;
 
     static {

@@ -39,9 +39,14 @@ public class Dash
 {
     //~ Instance fields --------------------------------------------------------
 
-    private Line            line; // Approximating line
-    private Rectangle       box; // Contour box
-    private transient Stick stick; // The underlying stick if any
+    /** Approximating line */
+    private Line line;
+
+    /** Contour box */
+    private Rectangle box;
+
+    /** The underlying stick if any */
+    private transient Stick stick;
 
     //~ Constructors -----------------------------------------------------------
 

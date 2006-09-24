@@ -37,24 +37,27 @@ public class LagBuilder<L extends Lag<L, S>, S extends Section<L, S>>
 
     //~ Instance fields --------------------------------------------------------
 
-    // Policy for detection of junctions
+    /** Policy for detection of junctions */
     private JunctionPolicy  junctionPolicy;
 
-    // The lag to populate
+    /** The lag to populate */
     private L               lag;
 
-    // All Active sections in the next column
+    /** All Active sections in the next column */
     private List<S>         nextActives = new ArrayList<S>();
 
-    // List of sections in prev column that overlap given run in next
-    // column
+    /**
+     * List of sections in prev column that overlap given run in next column
+     */
     private List<S>         overlappingSections = new ArrayList<S>();
 
-    // All Active sections in the previous column, i.e. only sections
-    // that have a run in prev column
+    /**
+     * All Active sections in the previous column, i.e. only sections that have
+     * a run in prev column
+     */
     private List<S>         prevActives = new ArrayList<S>();
 
-    // The section runs
+    /** The section runs */
     private List<List<Run>> runs;
 
     //~ Constructors -----------------------------------------------------------

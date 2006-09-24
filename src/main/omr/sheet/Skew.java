@@ -25,7 +25,7 @@ public class Skew
 {
     //~ Instance fields --------------------------------------------------------
 
-    // Skew angle as computed
+    /** Skew angle as computed */
     private double angle;
 
     //~ Constructors -----------------------------------------------------------

@@ -54,12 +54,16 @@ public class Scale
 
     //~ Instance fields --------------------------------------------------------
 
-    // The utility to compute the scale
+    /** The utility to compute the scale */
     private transient ScaleBuilder builder;
-    private int                    interline;
-    private int                    mainBack;
 
-    // Most frequent run lengths for foreground & background runs.
+    /** Most frequent vertical distance in pixels from one line to the other*/
+    private int interline;
+
+    /** Most frequent background height */
+    private int mainBack;
+
+    /** Most frequent run lengths for foreground & background runs. */
     private int mainFore;
 
     //~ Constructors -----------------------------------------------------------

@@ -48,13 +48,13 @@ public class BoardsPane
 
     //~ Instance fields --------------------------------------------------------
 
-    // The concrete UI component
-    private Panel   component;
+    /** The concrete UI component */
+    private Panel component;
 
-    // Unique (application-wide) name for this pane.
-    private String  name;
+    /** Unique (application-wide) name for this pane. */
+    private String name;
 
-    // Collection of boards
+    /** Collection of boards */
     private Board[] boards;
 
     //~ Constructors -----------------------------------------------------------

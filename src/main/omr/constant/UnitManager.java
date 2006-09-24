@@ -36,10 +36,10 @@ public class UnitManager
 
     private static final String           UNIT = UnitManager.class.getName();
 
-    // The single instance of this class
+    /** The single instance of this class */
     private static UnitManager            INSTANCE;
 
-    // Separator used in property that concatenates all unit names
+    /** Separator used in property that concatenates all unit names */
     private static final String           SEPARATOR = ";";
     private static final Logger           logger = Logger.getLogger(
         UnitManager.class);
@@ -50,14 +50,16 @@ public class UnitManager
         "<root>",
         null);
 
-    // Map of PackageNodes and UnitNodes
+    /** Map of PackageNodes and UnitNodes */
     private final SortedMap<String, Node> mapOfNodes = new TreeMap<String, Node>();
 
-    // Lists of all units known as containing a constantset
-    // This is kept up-to-date and saved as a property.
+    /**
+     * Lists of all units known as containing a constantset This is kept
+     * up-to-date and saved as a property.
+     */
     private Constant.String  units;
 
-    // Flag to avoid storing units being pre-loaded
+    /** Flag to avoid storing units being pre-loaded */
     private volatile boolean storeIt = false;
 
     //~ Constructors -----------------------------------------------------------

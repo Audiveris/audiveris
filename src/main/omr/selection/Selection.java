@@ -44,21 +44,21 @@ public class Selection
     private static final Logger            logger = Logger.getLogger(
         Selection.class);
 
-    // Attempt to debug choreography of messages ...
+    /** Attempt to debug choreography of messages ... */
     private static int                     level = 0;
 
     //~ Instance fields --------------------------------------------------------
 
-    // Collection of (named) selection observers
+    /** Collection of (named) selection observers */
     private final ArrayList<NamedObserver> observers = new ArrayList<NamedObserver>();
 
-    // The qualifying tag (better than mere class name)
+    /** The qualifying tag (better than mere class name) */
     private final SelectionTag tag;
 
-    // The entity designated by this selection
+    /** The entity designated by this selection */
     private Object  entity;
 
-    // Indicate if entity has changed
+    /** Indicate if entity has changed */
     private boolean changed = false;
 
     //~ Constructors -----------------------------------------------------------

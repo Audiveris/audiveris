@@ -35,15 +35,15 @@ public class ScoreManager
 
     private static final Logger logger = Logger.getLogger(ScoreManager.class);
 
-    // Specific glyph XML mapper
+    /** Specific glyph XML mapper */
     private static XmlMapper    xmlMapper;
 
-    // The single instance of this class
+    /** The single instance of this class */
     private static ScoreManager INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
 
-    // Instances of score
+    /** Instances of score */
     private List<Score> instances = new ArrayList<Score>();
 
     //~ Constructors -----------------------------------------------------------

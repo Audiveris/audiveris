@@ -85,7 +85,7 @@ public class BarsBuilder
     private static final Logger        logger = Logger.getLogger(
         BarsBuilder.class);
 
-    // Failure
+    /** Failure */
     private static final FailureResult NOT_SYSTEM_ALIGNED = new FailureResult(
         "Bar-NotSystemAligned");
     private static final FailureResult SHORTER_THAN_STAFF_HEIGHT = new FailureResult(
@@ -97,23 +97,25 @@ public class BarsBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    // Companion physical stick checker
-    private BarsChecker  checker;
+    /** Companion physical stick checker */
+    private BarsChecker checker;
 
-    // Lag view on bars, if so desired
+    /** Lag view on bars, if so desired */
     private GlyphLagView lagView;
 
-    // List of found bar sticks
-    private List<Stick>  bars = new ArrayList<Stick>();
+    /** List of found bar sticks */
+    private List<Stick> bars = new ArrayList<Stick>();
 
-    // Unused vertical sticks
-    private List<Stick>  clutter;
+    /** Unused vertical sticks */
+    private List<Stick> clutter;
 
-    // Cached data
-    private Scale        scale;
-    private Score        score;
+    /** Sheet scale */
+    private Scale scale;
 
-    // Bars area, with retrieved vertical sticks
+    /** Related score */
+    private Score score;
+
+    /** Bars area, with retrieved vertical sticks */
     private VerticalArea barsArea;
 
     //~ Constructors -----------------------------------------------------------

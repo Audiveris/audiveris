@@ -32,18 +32,18 @@ public class SheetManager
     private static final Logger    logger = Logger.getLogger(
         SheetManager.class);
 
-    // The single instance of this class
-    private static SheetManager    INSTANCE;
+    /** The single instance of this class */
+    private static SheetManager INSTANCE;
 
-    // Current sheet selection
+    /** Current sheet selection */
     private static final Selection selection = Selection.makeSheetSelection();
 
     //~ Instance fields --------------------------------------------------------
 
-    // Instances of sheet
+    /** Instances of sheet */
     private List<Sheet> instances = new ArrayList<Sheet>();
 
-    // Sheet file history
+    /** Sheet file history */
     private NameSet history;
 
     //~ Constructors -----------------------------------------------------------

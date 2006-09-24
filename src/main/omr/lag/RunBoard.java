@@ -45,14 +45,19 @@ public class RunBoard
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Field for run length */
     private final LIntegerField rLength = new LIntegerField(
         false,
         "Length",
         "Length of run in pixels");
+
+    /** Field for run level */
     private final LIntegerField rLevel = new LIntegerField(
         false,
         "Level",
         "Average pixel level on this run");
+
+    /** Field for run start */
     private final LIntegerField rStart = new LIntegerField(
         false,
         "Start",

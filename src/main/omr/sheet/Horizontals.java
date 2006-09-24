@@ -30,7 +30,7 @@ public class Horizontals
 
     private final List<Ending> endings = new ArrayList<Ending>();
 
-    // The whole list of horizontals (ledgers, legato signs, endings) found
+    /** The whole list of horizontals (ledgers, legato signs, endings) found */
     private final List<Ledger> ledgers = new ArrayList<Ledger>();
 
     //~ Constructors -----------------------------------------------------------

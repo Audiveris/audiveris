@@ -30,14 +30,20 @@ public class LineInfo
 {
     //~ Instance fields --------------------------------------------------------
 
-    // Best line equation
-    private Line                  line;
-
-    // Related Builder
+    /** Related Builder */
     private transient LineBuilder builder;
-    private int                   id; // Just a sequential id for debug
-    private int                   left;
-    private int                   right;
+
+    /** Best line equation */
+    private Line line;
+
+    /** Just a sequential id for debug */
+    private int id;
+
+    /** Abscissa of left edge */
+    private int left;
+
+    /** Abscissa of right edge */
+    private int right;
 
     //~ Constructors -----------------------------------------------------------
 

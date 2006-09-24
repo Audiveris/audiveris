@@ -51,7 +51,7 @@ public class Stick
 
     //~ Instance fields --------------------------------------------------------
 
-    // Best line equation
+    /** Best line equation */
     private Line line;
 
     //~ Constructors -----------------------------------------------------------

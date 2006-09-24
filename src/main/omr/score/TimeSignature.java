@@ -42,24 +42,29 @@ public class TimeSignature
 
     //~ Instance fields --------------------------------------------------------
 
-    private Integer          denominator;
+    /** Rational component : numerator */
+    private Integer numerator;
 
-    // Rational components
-    private Integer          numerator;
+    /** Rational component : denominator */
+    private Integer denominator;
 
-    // Sheet global scale
-    private Scale            scale;
+    /** Sheet global scale */
+    private Scale scale;
 
-    // Precise time signature shape (if any, since we may have no redefined
-    // shape for complex time signatures)
-    private Shape            shape;
+    /**
+     * Precise time signature shape (if any, since we may have no redefined
+     * shape for complex time signatures)
+     */
+    private Shape shape;
 
-    // The glyph(s) that compose the time signature, a collection which is kept
-    // sorted on glyph abscissa This can be just one : e.g. TIME_SIX_EIGHT for
-    // 6/8 Or several : e.g. TIME_SIX + TIME_TWELVE for 6/12
+    /**
+     * The glyph(s) that compose the time signature, a collection which is kept
+     * sorted on glyph abscissa This can be just one : e.g. TIME_SIX_EIGHT for
+     * 6/8 Or several : e.g. TIME_SIX + TIME_TWELVE for 6/12
+     */
     private SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
 
-    // Location of the time signature center WRT staff top-left corner
+    /** Location of the time signature center WRT staff top-left corner */
     private StaffPoint center;
 
     //~ Constructors -----------------------------------------------------------

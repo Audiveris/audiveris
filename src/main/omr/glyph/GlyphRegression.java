@@ -43,12 +43,12 @@ public class GlyphRegression
     private static final Logger    logger = Logger.getLogger(
         GlyphRegression.class);
 
-    // The singleton
+    /** The singleton */
     private static GlyphRegression INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
 
-    // All shape descriptions
+    /** All shape descriptions */
     private ShapeDesc[] shapeDescs;
 
     //~ Constructors -----------------------------------------------------------

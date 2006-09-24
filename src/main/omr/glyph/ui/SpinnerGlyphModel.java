@@ -40,13 +40,13 @@ public class SpinnerGlyphModel
 
     //~ Instance fields --------------------------------------------------------
 
-    // Underlying glyph lag
-    private final GlyphLag         lag;
+    /** Underlying glyph lag */
+    private final GlyphLag lag;
 
-    // Additionnal predicate if any
+    /** Additionnal predicate if any */
     private final Predicate<Glyph> predicate;
 
-    // Current glyph id
+    /** Current glyph id */
     private Integer currentId;
 
     //~ Constructors -----------------------------------------------------------

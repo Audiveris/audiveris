@@ -25,7 +25,10 @@ public class FileFilter
 {
     //~ Instance fields --------------------------------------------------------
 
-    private final String   description;
+    /** User readable description */
+    private final String description;
+
+    /** Array of accepted file extensions */
     private final String[] extensions;
 
     //~ Constructors -----------------------------------------------------------

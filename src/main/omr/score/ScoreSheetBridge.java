@@ -53,12 +53,19 @@ public class ScoreSheetBridge
 
     //~ Instance fields --------------------------------------------------------
 
-    private Score            score;
-    private final Selection  pixelSelection;
-    private final Selection  scoreSelection;
-    private Sheet            sheet;
+    /** The sheet instance */
+    private Sheet sheet;
 
-    // Needed to force only one-way sync at a time
+    /** The score instance */
+    private Score score;
+
+    /** The sheet location selection */
+    private final Selection pixelSelection;
+
+    /** The score location selection */
+    private final Selection scoreSelection;
+
+    /** Needed to force only one-way sync at a time */
     private volatile boolean bridging;
 
     //~ Constructors -----------------------------------------------------------

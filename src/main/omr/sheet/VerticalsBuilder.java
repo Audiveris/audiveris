@@ -92,10 +92,14 @@ public class VerticalsBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    // Area of vertical runs
+    /** Area of vertical runs */
     private final VerticalArea verticalsArea;
-    private GlyphLagView       view;
-    private StemCheckSuite     suite = new StemCheckSuite();
+
+    /** Related user display if any */
+    private GlyphLagView view;
+
+    /** Suite of checks for a stem glyph */
+    private StemCheckSuite suite = new StemCheckSuite();
 
     //~ Constructors -----------------------------------------------------------
 

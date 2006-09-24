@@ -44,25 +44,25 @@ public class IconManager
     private static final Constants constants = new Constants();
     private static final Logger    logger = Logger.getLogger(IconManager.class);
 
-    // mapper for XML persistency
-    private static XmlMapper    xmlMapper;
+    /** Mapper for XML persistency */
+    private static XmlMapper xmlMapper;
 
-    // Dedicated file extension for our icon files
+    /** Dedicated file extension for our icon files */
     private static final String FILE_EXTENSION = ".xml";
 
-    // Characters used for encoding bitmaps with 8 levels of gray (this is
-    // sufficient for our symbol display)
-    private static char   WHITE = '-'; // And transparent
-    private static char[] charTable = new char[] {
-                                          '#', // 0 Black
-    '$', // 1
-    '*', // 2
-    '0', // 3
-    'o', // 4
-    '+', // 5
-    '.', // 6
-    WHITE // 7
-                                      };
+    /** Characters used for encoding bitmaps with 8 levels of gray (this is
+       sufficient for our symbol display) */
+    private static char WHITE = '-'; // And transparent
+    private static char[]          charTable = new char[] {
+        '#', // 0 Black
+        '$', // 1
+        '*', // 2
+        '0', // 3
+        'o', // 4
+        '+', // 5
+        '.', // 6
+        WHITE // 7
+    };
 
     //~ Constructors -----------------------------------------------------------
 

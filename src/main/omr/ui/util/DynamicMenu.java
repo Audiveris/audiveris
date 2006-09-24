@@ -25,7 +25,7 @@ public abstract class DynamicMenu
 {
     //~ Instance fields --------------------------------------------------------
 
-    // The concrete UI menu
+    /** The concrete UI menu */
     private final JMenu menu;
 
     //~ Constructors -----------------------------------------------------------

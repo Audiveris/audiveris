@@ -40,29 +40,31 @@ public class MemoryMeter
 
     //~ Instance fields --------------------------------------------------------
 
-    // Default foreground color, when under alarm threshold
-    private Color            defaultForeground;
+    /** Default foreground color, when under alarm threshold */
+    private Color defaultForeground;
 
-    // Related concrete component
-    private JPanel           component;
+    /** Related concrete component */
+    private JPanel component;
 
-    // Progress bar
-    private JProgressBar     progressBar = new JProgressBar();
+    /** Progress bar */
+    private JProgressBar progressBar = new JProgressBar();
 
-    // Runnable that displays the memory usage
-    private Runnable         displayer;
+    /** Runnable that displays the memory usage */
+    private Runnable displayer;
 
-    // Flag on monitoring activity
+    /** Flag on monitoring activity */
     private volatile boolean monitoring;
 
-    // Current alarm threshold
+    /** Current alarm threshold */
     private int alarmThreshold = DEFAULT_ALARM_THRESHOLD;
 
-    // Current display period
+    /** Current display period */
     private int displayPeriod = DEFAULT_DISPLAY_PERIOD;
+
+    /** Last value for global memory */
     private int lastTotal;
 
-    // Last values for used and total memory, in order to save on display
+    /** Last value for used memory, in order to save on display */
     private int lastUsed;
 
     //~ Constructors -----------------------------------------------------------

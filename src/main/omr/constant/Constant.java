@@ -39,14 +39,29 @@ public abstract class Constant
 
     //~ Instance fields --------------------------------------------------------
 
-    private java.lang.String currentString; // Current Value
-    private java.lang.String defaultString; // Value to be used if needed
-    private java.lang.String description; // Semantic
-    private java.lang.String initialString; // Initial Value (for reset)
-    private java.lang.String name; // Constant name
-    private java.lang.String qualifiedName; // Fully qualified Constant name
-    private java.lang.String unit; // Requiring unit
-    private Object           cachedValue; // Current Value (optimized)
+    /** Current Value */
+    private java.lang.String currentString;
+
+    /** Value to be used if needed */
+    private java.lang.String defaultString;
+
+    /** Semantic */
+    private java.lang.String description;
+
+    /** Initial Value (for reset) */
+    private java.lang.String initialString;
+
+    /** Constant name */
+    private java.lang.String name;
+
+    /** Fully qualified Constant name */
+    private java.lang.String qualifiedName;
+
+    /** Requiring unit */
+    private java.lang.String unit;
+
+    /** Current Value (optimized) */
+    private Object cachedValue;
 
     //~ Constructors -----------------------------------------------------------
 

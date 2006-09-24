@@ -33,14 +33,21 @@ public class ScoreTree
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Default window height in pixels */
     private static final int WINDOW_HEIGHT = 550;
+
+    /** Default width in pixels for the left part (the tree) */
     private static final int LEFT_WIDTH = 300;
+
+    /** Default width in pixels for the right part (the detail) */
     private static final int RIGHT_WIDTH = 340;
+
+    /** Default windows width in pixels */
     private static final int WINDOW_WIDTH = LEFT_WIDTH + RIGHT_WIDTH;
 
     //~ Instance fields --------------------------------------------------------
 
-    // Concrete UI component
+    /** Concrete UI component */
     private JPanel component;
 
     //~ Constructors -----------------------------------------------------------

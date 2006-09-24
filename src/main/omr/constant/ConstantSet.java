@@ -37,12 +37,14 @@ public abstract class ConstantSet
 
     //~ Instance fields --------------------------------------------------------
 
-    // The mapping between constant name & constant object. We use a sorted map
-    // to allow access by constant index in constant set, as required by
-    // ConstantTreeTable.
+    /**
+     * The mapping between constant name & constant object. We use a sorted map
+     * to allow access by constant index in constant set, as required by
+     * ConstantTreeTable.
+     */
     private final SortedMap<String, Constant> map = new TreeMap<String, Constant>();
 
-    // The containing unit/class
+    /**  The containing unit/class */
     private final String unit;
 
     //~ Constructors -----------------------------------------------------------

@@ -67,23 +67,37 @@ public class ShapeFocusBoard
     private static final Logger logger = Logger.getLogger(
         ShapeFocusBoard.class);
 
+    //~ Enumerations -----------------------------------------------------------
+
+    /** Filter on which symbols should be displayed */
+    public static enum Filter {
+        /** Display all symbols */
+        ALL,
+        /** Display only known symbols */
+        KNOWN, 
+        /** Display only unknown symbols */
+        UNKNOWN;
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     private final GlyphLagView view;
     private final GlyphModel   glyphModel;
     private final Sheet        sheet;
 
-    // Counter on symbols assigned to the current shape
-    private Counter    assignedCounter = new Counter();
-    private JButton    selectButton = new JButton();
+    /** Counter on symbols assigned to the current shape */
+    private Counter assignedCounter = new Counter();
 
-    // Filter for known / unknown symbol display
-    private JComboBox  filterButton = new JComboBox(Filter.values());
+    /** Button to select the shape focus */
+    private JButton selectButton = new JButton();
 
-    // Popup menu to allow shape selection
+    /** Filter for known / unknown symbol display */
+    private JComboBox filterButton = new JComboBox(Filter.values());
+
+    /** Popup menu to allow shape selection */
     private JPopupMenu pm = new JPopupMenu();
 
-    // The current shape used for display focus
+    /** The current shape used for display focus */
     private Shape currentShape;
 
     //~ Constructors -----------------------------------------------------------
@@ -350,17 +364,5 @@ public class ShapeFocusBoard
                 outputSelection.setEntity(id, SelectionHint.GLYPH_INIT);
             }
         }
-    }
-
-    //~ Enumerations -----------------------------------------------------------
-
-    /** Filter on which symbols should be displayed */
-    public static enum Filter {
-        /** Display all symbols */
-        ALL,
-        /** Display only known symbols */
-        KNOWN, 
-        /** Display only unknown symbols */
-        UNKNOWN;
     }
 }

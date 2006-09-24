@@ -61,7 +61,7 @@ public class LagReader
      */
     protected final int minLength;
 
-    // To avoid too many allocations
+    // To avoid too many allocations (beware : non-reentrant)
     private Point cp = new Point();
     private Point xy = new Point();
 

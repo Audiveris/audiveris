@@ -24,10 +24,13 @@ public class Run
 {
     //~ Instance fields --------------------------------------------------------
 
+    /** Number of pixels */
     private int length;
+
+    /** Average pixel level along the run */
     private int level;
 
-    // Run characteristics
+    /** Abscissa (for horizontal) / ordinate (for vertical) of first pixel */
     private int start;
 
     //~ Constructors -----------------------------------------------------------

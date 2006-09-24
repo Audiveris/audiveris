@@ -67,25 +67,34 @@ public class LineBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    private GlyphLag        hLag;
+    /** Related lag */
+    private GlyphLag hLag;
 
-    // Best line equation
-    private Line            line = null;
+    /** Best line equation */
+    private Line line = null;
 
-    // Source for sections in this area
-    private LineSource      source;
+    /** Source for sections in this area */
+    private LineSource source;
 
-    // Hole areas
+    /** Hole areas */
     private List<StickArea> holeAreas = new ArrayList<StickArea>();
-    private Scale           staffScale;
 
-    // Cached data
+    /** (local) scale at staff level */
+    private Scale staffScale;
+
+    /** FRelated sheet */
     private Sheet sheet;
-    private int   id; // Just a sequential id for debug
-    private int   left = Integer.MAX_VALUE;
 
-    // Max Thickness for the various staff line chunks
+    /** Just a sequential id for debug */
+    private int id;
+
+    /** Max Thickness for the various staff line chunks */
     private int maxThickness;
+
+    /** Abscissa of left side */
+    private int left = Integer.MAX_VALUE;
+
+    /** Abscissa of right side */
     private int right = Integer.MIN_VALUE;
 
     //~ Constructors -----------------------------------------------------------

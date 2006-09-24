@@ -68,36 +68,38 @@ public class GlyphTrainer
     private static final Logger    logger = Logger.getLogger(
         GlyphTrainer.class);
 
-    // The single instance of this class
-    private static GlyphTrainer   INSTANCE;
+    /** The single instance of this class */
+    private static GlyphTrainer INSTANCE;
 
-    // Width of the various vertical panels of the display
-    private static final int      SAME_WIDTH = 450;
+    /** Width of the various vertical panels of the display */
+    private static final int SAME_WIDTH = 450;
 
-    // To differentiate the exit action, according to the launch context
-    private static boolean        standAlone = false;
-    private static final String   standardWidth = "50dlu";
-    private static final String   frameTitle = "Trainer";
+    /** To differentiate the exit action, according to the launch context */
+    private static boolean standAlone = false;
+    private static final String    standardWidth = "50dlu";
+    private static final String    frameTitle = "Trainer";
 
     //~ Instance fields --------------------------------------------------------
 
-    // Related frame
-    private final JFrame          frame;
+    /** Related frame */
+    private final JFrame frame;
 
-    // The Neural Network evaluator
-    private GlyphNetwork          network = GlyphNetwork.getInstance();
+    /** The Neural Network evaluator */
+    private GlyphNetwork network = GlyphNetwork.getInstance();
 
-    // Repository of known glyphs
+    /** Repository of known glyphs */
     private final GlyphRepository repository = GlyphRepository.getInstance();
-    private final NetworkPanel    networkPanel;
 
-    // The various panels
+    /** Panel for Neural network evaluator */
+    private final NetworkPanel networkPanel;
+
+    /** Panel for repository */
     private final RepositoryPanel repositoryPanel;
 
-    // Counter on trained glyphs
+    /** Counter on trained glyphs */
     private int glyphNb;
 
-    // Counter on loaded glyphs
+    /** Counter on loaded glyphs */
     private int nbLoaded;
 
     //~ Constructors -----------------------------------------------------------
@@ -338,7 +340,7 @@ public class GlyphTrainer
         }
 
         @Implement(NeuralNetwork.Monitor.class)
-        public void epochEnded(int    epochIndex,
+        public void epochEnded (int    epochIndex,
                                 double mse)
         {
         }
@@ -500,7 +502,7 @@ public class GlyphTrainer
             }
 
             @Implement(ActionListener.class)
-            public void actionPerformed(ActionEvent e)
+            public void actionPerformed (ActionEvent e)
             {
                 useWhole = false;
             }
@@ -1106,7 +1108,7 @@ public class GlyphTrainer
          * @param selected number of selected glyphs
          */
         @Implement(GlyphRepository.Monitor.class)
-        public void setSelectedGlyphs(int selected) 
+        public void setSelectedGlyphs (int selected)
         {
             nbSelectedFiles.setValue(selected);
         }
@@ -1334,7 +1336,7 @@ public class GlyphTrainer
             // input fields. Triggered when user presses Enter in one of these
             // fields.
             @Implement(ActionListener.class)
-            public void actionPerformed(ActionEvent e)
+            public void actionPerformed (ActionEvent e)
             {
                 inputParams();
                 displayParams();

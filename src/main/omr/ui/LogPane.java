@@ -39,11 +39,13 @@ public class LogPane
 
     //~ Instance fields --------------------------------------------------------
 
-    // Mail box for incoming messages
+    /** Mail box for incoming messages */
     private final ArrayBlockingQueue<String> logMbx;
-    private JScrollPane                      component;
 
-    // Status/log area
+    /** The scrolling text area */
+    private JScrollPane component;
+
+    /** Status/log area */
     private final JTextArea logArea;
 
     //~ Constructors -----------------------------------------------------------

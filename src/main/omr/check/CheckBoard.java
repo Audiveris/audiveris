@@ -40,7 +40,7 @@ public class CheckBoard<C extends Checkable>
 {
     //~ Instance fields --------------------------------------------------------
 
-    // For display of check suite results
+    /** For display of check suite results */
     private final CheckPanel<C> checkPanel;
 
     //~ Constructors -----------------------------------------------------------
