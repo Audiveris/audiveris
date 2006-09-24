@@ -23,9 +23,6 @@ public class Population
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Size of hidden layer */
-    private final int hiddenSize;
-
     /** Sum of measured values */
     private double s = 0d;
 
