@@ -29,8 +29,10 @@ public class UIUtilities
 
     private static final Logger logger = Logger.getLogger(UIUtilities.class);
 
-    // Customized border for tool buttons, to use consistently in all UI
-    // components
+    /**
+     * Customized border for tool buttons, to use consistently in all UI
+     * components
+     */
     private static Border toolBorder;
 
     //~ Methods ----------------------------------------------------------------

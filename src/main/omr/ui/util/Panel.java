@@ -50,7 +50,7 @@ public class Panel
 
     //~ Instance fields --------------------------------------------------------
 
-    // Room for potential specific insets
+    /** Room for potential specific insets */
     private Insets insets;
 
     //~ Constructors -----------------------------------------------------------

@@ -12,16 +12,13 @@ package omr.ui.util;
 import javax.swing.SwingUtilities;
 
 /**
- * This is the 3rd version of SwingWorker (also known as
- * SwingWorker 3), an abstract class that you subclass to
- * perform GUI-related work in a dedicated thread.  For
- * instructions on and examples of using this class, see:
- *
+ * This is the 3rd version of SwingWorker (also known as SwingWorker 3), an
+ * abstract class that you subclass to perform GUI-related work in a dedicated
+ * thread.  For instructions on and examples of using this class, see:
  * http://java.sun.com/docs/books/tutorial/uiswing/misc/threads.html
  *
- * Note that the API changed slightly in the 3rd version:
- * You must now invoke start() on the SwingWorker after
- * creating it.
+ * Note that the API changed slightly in the 3rd version: You must now invoke
+ * start() on the SwingWorker after creating it.
  *
  * <p> This is a generic version by H.Bitteur
  * @param <T> the type used to convey the result of the worker
@@ -33,7 +30,9 @@ public abstract class SwingWorker<T>
 {
     //~ Instance fields --------------------------------------------------------
 
-    private T         value; // see getValue(), setValue()
+    /** Used by getValue() & setValue() */
+    private T         value;
+
     private ThreadVar threadVar;
 
     //~ Constructors -----------------------------------------------------------
