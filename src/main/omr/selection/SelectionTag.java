@@ -18,41 +18,42 @@ package omr.selection;
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public enum SelectionTag {
+public enum SelectionTag
+{
     /** Current Sheet, entity type is a Sheet. */
     SHEET,
     /** Rectangle in Score display, entity type is a Rectangle. */
-    SCORE, 
+    SCORE,
     /** Rectangle in Sheet display, entity type is a Rectangle. */
-    PIXEL, 
+    PIXEL,
     /** Pixel grey level, entity type is an Integer. */
-    LEVEL, 
+    LEVEL,
     /** Run of initial skewed lag, entity type is a Run. */
-    SKEW_RUN, 
+    SKEW_RUN,
     /** Section of initial skewed lag, entity type is a Section. */
-    SKEW_SECTION, 
+    SKEW_SECTION,
     /** Section Id of initial skewed lag, entity type is an Integer. */
-    SKEW_SECTION_ID, 
+    SKEW_SECTION_ID,
     /** Run of horizontal lag, entity type is a Run. */
-    HORIZONTAL_RUN, 
+    HORIZONTAL_RUN,
     /** Section of horizontal lag, entity type is a Section. */
-    HORIZONTAL_SECTION, 
+    HORIZONTAL_SECTION,
     /** Section Id of horizontal lag, entity type is an Integer. */
-    HORIZONTAL_SECTION_ID, 
+    HORIZONTAL_SECTION_ID,
     /** A horizontal glyph, entity type is a Glyph. */
-    HORIZONTAL_GLYPH, 
+    HORIZONTAL_GLYPH,
     /** A horizontal glyph id, entity type is an Integer. */
-    HORIZONTAL_GLYPH_ID, 
+    HORIZONTAL_GLYPH_ID,
     /** Run of vertical lag, entity type is a Run. */
-    VERTICAL_RUN, 
+    VERTICAL_RUN,
     /** Section of vertical lag, entity type is a Section. */
-    VERTICAL_SECTION, 
+    VERTICAL_SECTION,
     /** Section Id of vertical lag, entity type is an Integer. */
-    VERTICAL_SECTION_ID, 
+    VERTICAL_SECTION_ID,
     /** A vertical glyph, entity type is a Glyph. */
-    VERTICAL_GLYPH, 
+    VERTICAL_GLYPH,
     /** A vertical glyph id, entity type is an Integer. */
-    VERTICAL_GLYPH_ID, 
+    VERTICAL_GLYPH_ID,
     /** Set of (vertical) glyphs, entity type is a Collection of Glyphs. */
     GLYPH_SET;
 }

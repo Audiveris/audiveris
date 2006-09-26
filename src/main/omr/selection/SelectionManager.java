@@ -26,10 +26,10 @@ public class SelectionManager
 {
     //~ Instance fields --------------------------------------------------------
 
-    // All current selections
+    /** All current selections */
     private final transient Map<SelectionTag, Selection> selections = new HashMap<SelectionTag, Selection>();
 
-    // Related sheet
+    /** Related sheet */
     private Sheet sheet;
 
     //~ Constructors -----------------------------------------------------------
