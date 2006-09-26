@@ -16,7 +16,7 @@ import omr.selection.SelectionManager;
 import omr.util.Logger;
 
 /**
- * DOCUMENT ME!
+ * A utility class, just used for small test action triggered from UI
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -39,6 +39,7 @@ public class UITest
     {
         SelectionManager.dumpAllSelections();
         GlyphVerifier.getInstance()
+                     .getGlyphBrowser()
                      .dumpSelections();
     }
 }
