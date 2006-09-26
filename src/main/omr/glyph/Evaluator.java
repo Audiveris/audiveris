@@ -47,21 +47,21 @@ public abstract class Evaluator
         Evaluator.class);
 
     /** Extension used by evaluator backup files */
-    private static final String                   BACKUP_EXTENSION = ".def";
+    private static final String BACKUP_EXTENSION = ".def";
 
     /**
-     * Number of useful moments
+     * Number of useful moments : {@value}
      */
     public static final int inMoments = 10;
 
     /**
-     * Number of useful input parameters : 10 moments +
-     * stemNumber, hasLedger, pitchPosition
+     * Number of useful input parameters : nb of moments +
+     * stemNumber, hasLedger, pitchPosition = {@value}
      */
     public static final int inSize = inMoments + 3;
 
     /**
-     * Number of shapes to differentiate
+     * Number of shapes to differentiate : {@value}
      */
     public static final int outSize = Shape.LastPhysicalShape.ordinal() + 1;
 
@@ -96,6 +96,16 @@ public abstract class Evaluator
 
     /** Descriptive labels for glyph characteristics */
     static String[] labels;
+
+    //~ Enumerations -----------------------------------------------------------
+
+    /** Describes the various modes for starting the training of an evaluator */
+    public static enum StartingMode {
+        /** Start with the current values */
+        INCREMENTAL,
+        /** Start from scratch, with new initial values */
+        SCRATCH;
+    }
 
     //~ Methods ----------------------------------------------------------------
 
@@ -347,11 +357,9 @@ public abstract class Evaluator
 
             // We append flags and step position
             int i = inMoments;
-            /* 10 */ labels[i++] = "leftMg";
-            /* 11 */ labels[i++] = "rightMg";
-            /* 12 */ labels[i++] = "ledger";
-            /* 13 */ labels[i++] = "stemNb";
-            /* 14 */ labels[i++] = "pitch";
+            /* 10 */ labels[i++] = "ledger";
+            /* 11 */ labels[i++] = "stemNb";
+            /* 12 */ labels[i++] = "pitch";
         }
 
         return labels;
@@ -409,15 +417,5 @@ public abstract class Evaluator
         {
             initialize();
         }
-    }
-
-    //~ Enumerations -----------------------------------------------------------
-
-    /** Describes the various modes for starting the training of an evaluator */
-    public static enum StartingMode {
-        /** Start with the current values */
-        INCREMENTAL,
-        /** Start from scratch, with new initial values */
-        SCRATCH;
     }
 }
