@@ -32,7 +32,7 @@ import java.util.List;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public abstract class GlyphModel
+public class GlyphModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -63,6 +63,7 @@ public abstract class GlyphModel
     public GlyphModel (Sheet    sheet,
                        GlyphLag lag)
     {
+        // Null sheet is allowed (for GlyphVerifier use)
         this.sheet = sheet;
 
         if (lag == null) {
@@ -137,9 +138,11 @@ public abstract class GlyphModel
             }
 
             // Update immediately the glyph info as displayed
-            sheet.getSelection(
-                lag.isVertical() ? VERTICAL_GLYPH : HORIZONTAL_GLYPH)
-                 .setEntity(glyph, SelectionHint.GLYPH_MODIFIED);
+            if (sheet != null) {
+                sheet.getSelection(
+                    lag.isVertical() ? VERTICAL_GLYPH : HORIZONTAL_GLYPH)
+                     .setEntity(glyph, SelectionHint.GLYPH_MODIFIED);
+            }
         }
     }
 

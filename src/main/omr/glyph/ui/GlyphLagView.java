@@ -100,7 +100,11 @@ public class GlyphLagView
      */
     public Glyph getGlyphById (int id)
     {
-        return model.getGlyphById(id);
+        if (model != null) {
+            return model.getGlyphById(id);
+        } else {
+            return null;
+        }
     }
 
     //-------------------//

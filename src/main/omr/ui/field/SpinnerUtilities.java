@@ -26,7 +26,7 @@ public class SpinnerUtilities
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** To indicate that spinner value is invalid */
+    /** Specific value to indicate that spinner value is invalid : {@value} */
     public static final int NO_VALUE = 0;
 
     //~ Methods ----------------------------------------------------------------

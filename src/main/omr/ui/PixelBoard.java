@@ -169,7 +169,7 @@ public class PixelBoard
     {
         FormLayout layout = Panel.makeFormLayout(3, 3);
 
-        // Specify that columns 1 & 5 as well as 3 & 7 have equal widths.
+        // Specify that columns 1, 5 & 9 as well as 3, 7 & 11 have equal widths
         layout.setColumnGroups(
             new int[][] {
                 { 1, 5, 9 },

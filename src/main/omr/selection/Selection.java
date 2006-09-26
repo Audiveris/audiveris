@@ -208,6 +208,10 @@ public class Selection
      */
     public void addObserver (SelectionObserver observer)
     {
+        if (observer == null) {
+            throw new IllegalArgumentException("adding a null observer");
+        }
+        
         String name = observer.getName();
 
         if (name == null) {

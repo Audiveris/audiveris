@@ -296,6 +296,7 @@ public class GlyphBoard
         switch (selection.getTag()) {
         case VERTICAL_GLYPH :
         case HORIZONTAL_GLYPH :
+        case TRAINING_GLYPH :
             // Display Glyph parameters (while preventing circular updates)
             selfUpdating = true;
 
@@ -316,14 +317,23 @@ public class GlyphBoard
                 deassignButton.setIcon(null);
             }
 
-            // Global & Known Spinners
-            if (glyph != null) {
-                globalSpinner.setValue(glyph.getId());
-                knownSpinner.setValue(
-                    knownPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
-            } else {
-                globalSpinner.setValue(NO_VALUE);
-                knownSpinner.setValue(NO_VALUE);
+            // Global Spinner
+            if (globalSpinner != null) {
+                if (glyph != null) {
+                    globalSpinner.setValue(glyph.getId());
+                } else {
+                    globalSpinner.setValue(NO_VALUE);
+                }
+            }
+
+            // Known Spinner
+            if (knownSpinner != null) {
+                if (glyph != null) {
+                    knownSpinner.setValue(
+                        knownPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
+                } else {
+                    knownSpinner.setValue(NO_VALUE);
+                }
             }
 
             selfUpdating = false;
@@ -357,7 +367,7 @@ public class GlyphBoard
     protected void defineLayout ()
     {
         int r = 1; // --------------------------------
-        builder.addSeparator("Glyph", cst.xyw(1, r, 7));
+        builder.addSeparator("Glyph", cst.xyw(1, r, 9));
         builder.add(count, cst.xy(9, r));
         builder.add(dump, cst.xy(11, r));
 
@@ -388,7 +398,6 @@ public class GlyphBoard
         spinner.setModel(new SpinnerGlyphModel(lag, predicate));
         spinner.addChangeListener(this);
         SpinnerUtilities.setRightAlignment(spinner);
-        ///SpinnerUtilities.fixIntegerList(spinner); // for swing bug fix ???
         SpinnerUtilities.setEditable(spinner, true);
 
         return spinner;

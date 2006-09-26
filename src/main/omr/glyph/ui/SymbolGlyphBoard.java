@@ -11,6 +11,7 @@
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
+import omr.glyph.GlyphModel;
 import omr.glyph.Shape;
 
 import omr.selection.Selection;
@@ -98,22 +99,22 @@ public class SymbolGlyphBoard
      * Create the symbol glyph board
      *
      *
-     * @param builder the companion builder which handles the other UI entities
+     * @param glyphModel the companion builder which handles the other UI entities
      * @param firstSymbolId id of the first glyph made as a symbol (as opposed
      *                      to sticks/glyphs elaborated during previous steps)
      * @param glyphSelection glyph selection as input
      * @param glyphIdSelection glyph_id selection as output
      */
-    public SymbolGlyphBoard (SymbolsEditor builder,
-                             int           firstSymbolId,
-                             Selection     glyphSelection,
-                             Selection     glyphIdSelection,
-                             Selection     glyphSetSelection)
+    public SymbolGlyphBoard (GlyphModel glyphModel,
+                             int        firstSymbolId,
+                             Selection  glyphSelection,
+                             Selection  glyphIdSelection,
+                             Selection  glyphSetSelection)
     {
         // For all glyphs
         super(
             "SymbolGlyphBoard",
-            builder,
+            glyphModel,
             glyphSelection,
             glyphIdSelection,
             glyphSetSelection);
@@ -122,7 +123,7 @@ public class SymbolGlyphBoard
         this.firstSymbolId = firstSymbolId;
 
         // Symbols spinner
-        symbolSpinner = makeGlyphSpinner(builder.getLag(), symbolPredicate);
+        symbolSpinner = makeGlyphSpinner(glyphModel.getLag(), symbolPredicate);
         symbolSpinner.setName("symbolSpinner");
         symbolSpinner.setToolTipText("Specific spinner for symbol glyphs");
 

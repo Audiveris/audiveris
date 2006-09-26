@@ -15,13 +15,21 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
+import omr.glyph.GlyphModel;
 import omr.glyph.GlyphSection;
 
 import omr.lag.ScrollLagView;
 import omr.lag.VerticalOrientation;
 
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
+import static omr.selection.SelectionHint.*;
+import omr.selection.SelectionTag;
+
+import omr.ui.Board;
 import omr.ui.field.SField;
 import omr.ui.util.Panel;
+import omr.ui.util.UILookAndFeel;
 import omr.ui.view.LogSlider;
 import omr.ui.view.Rubber;
 import omr.ui.view.Zoom;
@@ -37,6 +45,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -58,7 +67,6 @@ import javax.swing.border.*;
  * the user wants to discard the glyph, it can be removed from the repository of
  * training material.
  *
- *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -78,6 +86,21 @@ public class GlyphVerifier
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Local glyph selection */
+    private Selection localGlyphSelection = new Selection(
+        SelectionTag.TRAINING_GLYPH);
+
+    /** Local section selection */
+    private Selection localSectionSelection = new Selection(
+        SelectionTag.HORIZONTAL_SECTION);
+
+    /** Local run selection */
+    private Selection localRunSelection = new Selection(
+        SelectionTag.HORIZONTAL_RUN);
+
+    /** Local pixel selection */
+    private Selection localPixelSelection = new Selection(SelectionTag.PIXEL);
+
     /** Repository of known glyphs */
     private final GlyphRepository repository = GlyphRepository.getInstance();
 
@@ -90,7 +113,7 @@ public class GlyphVerifier
     /** The panel in charge of the glyphs selection */
     private GlyphSelector glyphSelector = new GlyphSelector();
 
-    /** The panel in charge of the shape selection */
+    /** The panel in charge of the shapes selection */
     private ShapeSelector shapeSelector = new ShapeSelector();
 
     /** The panel in charge of the sheets selection */
@@ -159,6 +182,20 @@ public class GlyphVerifier
         return INSTANCE;
     }
 
+    //----------------//
+    // dumpSelections //
+    //----------------//
+    /**
+     * Dump the current state of all (local) selections
+     */
+    public void dumpSelections ()
+    {
+        System.out.println("\nSelections for GlyphVerifier :");
+
+        localPixelSelection.dump();
+        localGlyphSelection.dump();
+    }
+
     //------//
     // main //
     //------//
@@ -170,6 +207,10 @@ public class GlyphVerifier
     public static void main (String... args)
     {
         standAlone = true;
+
+        // UI Look and Feel
+        UILookAndFeel.setUI(null);
+
         new GlyphVerifier();
     }
 
@@ -180,7 +221,7 @@ public class GlyphVerifier
      * Focus the verifier on a provided collection of glyphs (typically, such
      * glyphs that are not recognized, or mistaken, by the evaluators)
      *
-     * @param glyphNames the specific glyphs to inspect
+     * @param glyphNames the names of the specific glyphs to inspect
      */
     public void verify (Collection<String> glyphNames)
     {
@@ -214,13 +255,13 @@ public class GlyphVerifier
         glyphBrowser.navigator.loadAction.actionPerformed(null);
     }
 
-    //--------------//
-    // defineLayout //
-    //--------------//
+    //-------------------//
+    // getSelectorsPanel //
+    //-------------------//
     private JPanel getSelectorsPanel ()
     {
         FormLayout   layout = new FormLayout(
-            "max(150dlu;pref),max(200dlu;pref),max(300dlu;pref):grow",
+            "max(100dlu;pref),max(150dlu;pref),max(200dlu;pref):grow",
             "80dlu");
 
         PanelBuilder builder = new PanelBuilder(layout);
@@ -291,6 +332,11 @@ public class GlyphVerifier
     //----------//
     // Selector //
     //----------//
+    /**
+     * Class <code>Selector</code> defines the common properties of sheet, shape
+     * and glyph selectors. Each selector is made of a list of names, which can
+     * be selected and deselected at will.
+     */
     private abstract class Selector
         extends TitledPanel
         implements ActionListener
@@ -301,9 +347,9 @@ public class GlyphVerifier
         protected JLabel  cardinal = new JLabel(
             "* No item selected *",
             SwingConstants.CENTER);
-        protected List    list = new List( /* rows => */
-        5, /* multipleMode => */
-        true);
+        protected List    list = new List(
+            5, // nb of rows
+            true); // multipleMode allowed ?
 
         public Selector (String title)
         {
@@ -321,27 +367,21 @@ public class GlyphVerifier
                         }
                     });
 
-            // Same action, whatever the subclass
+            // Same action whatever the subclass : select all items
             selectAll.addActionListener(
                 new ActionListener() {
                         public void actionPerformed (ActionEvent e)
                         {
-                            for (int i = list.getItemCount() - 1; i >= 0;
-                                 i--) {
-                                list.select(i);
-                            }
-
-                            updateCardinal();
+                            selectAll();
                         }
                     });
 
-            // Same action, whatever the subclass
+            // Same action whatever the subclass : deselect all items
             cancelAll.addActionListener(
                 new ActionListener() {
                         public void actionPerformed (ActionEvent e)
                         {
-                            for (int i = list.getItemCount() - 1; i >= 0;
-                                 i--) {
+                            for (int i = 0; i < list.getItemCount(); i++) {
                                 list.deselect(i);
                             }
 
@@ -400,27 +440,30 @@ public class GlyphVerifier
         }
     }
 
+    //--------------//
+    // GlyphBrowser //
+    //--------------//
     /**
      * Class <code>GlyphBrowser</code> gathers a navigator to move between
-     * selected glyphs, a blyph board for glyph details, and a display for
-     * graphical glyph display
+     * selected glyphs, a glyph board for glyph details, and a display for
+     * graphical glyph lag view
      */
     private class GlyphBrowser
         extends JPanel
     {
-        Dimension        modelSize;
-        Display          display;
+        Dimension    modelSize;
+        Display      display;
 
         // Glyph designated by simple mouse pointing. This is just a trick to
         // highlight the glyph. See index variable instead.
-        Glyph            pointedGlyph;
+        Glyph        pointedGlyph;
 
         // Hosting GlyphLag
-        GlyphLag         vLag;
-        GlyphLagView     view;
-        Navigator        navigator = new Navigator();
-        Rectangle        modelRectangle;
-        SymbolGlyphBoard board;
+        GlyphLag     vLag;
+        GlyphLagView view;
+        Navigator    navigator = new Navigator();
+        Rectangle    modelRectangle;
+        GlyphBoard   board;
 
         // Array of glyphs file names
         String[] names;
@@ -429,25 +472,41 @@ public class GlyphVerifier
         // an index in the 'names' array.
         int glyphIndex;
 
+        //--------------//
+        // GlyphBrowser //
+        //--------------//
         GlyphBrowser ()
         {
-            board = new SymbolGlyphBoard();
-            board.getDeassignButton()
-                 .setToolTipText("Remove that glyph from training material");
-
-            JPanel left = getLeftPanel();
-
             // Layout
             setLayout(new BorderLayout());
-            add(left, BorderLayout.WEST);
-
             resetBrowser();
+            add(getLeftPanel(), BorderLayout.WEST);
         }
 
+        //--------------//
+        // resetBrowser //
+        //--------------//
         public void resetBrowser ()
         {
+            if (vLag != null) {
+                // Placeholder for some cleanup
+                localPixelSelection.deleteObserver(vLag);
+                localSectionSelection.deleteObserver(vLag);
+            }
+
             // Reset model
             vLag = new GlyphLag(new VerticalOrientation());
+            vLag.setName("TrainingLag");
+            vLag.setSectionSelection(localSectionSelection);
+            localSectionSelection.addObserver(vLag);
+            vLag.setRunSelection(localRunSelection);
+
+            // Input
+            localPixelSelection.addObserver(vLag);
+
+            // Output
+            vLag.setLocationSelection(localPixelSelection);
+            vLag.setGlyphSelection(localGlyphSelection);
 
             // Reset display
             if (display != null) {
@@ -458,17 +517,30 @@ public class GlyphVerifier
             add(display, BorderLayout.CENTER);
         }
 
+        //--------------//
+        // getLeftPanel //
+        //--------------//
         private JPanel getLeftPanel ()
         {
+            // Basic glyph model
+            GlyphModel glyphModel = new BasicGlyphModel();
+
+            // Specific glyph board
+            board = new GlyphBoard("TrainingBoard", glyphModel);
+            board.setInputSelectionList(
+                Collections.singletonList(localGlyphSelection));
+            board.boardShown();
+            board.getDeassignButton()
+                 .setToolTipText("Remove that glyph from training material");
+
             FormLayout      layout = new FormLayout("pref", "pref,pref,pref");
             PanelBuilder    builder = new PanelBuilder(layout);
             CellConstraints cst = new CellConstraints();
             builder.setDefaultDialogBorder();
 
-            builder.add(navigator, cst.xy(1, 1));
+            builder.add(navigator.getComponent(), cst.xy(1, 1));
             builder.add(board.getComponent(), cst.xy(1, 2));
 
-            ///builder.add(evaluatorsPanel.getComponent(), cst.xy (1, 3));
             return builder.getPanel();
         }
 
@@ -513,10 +585,10 @@ public class GlyphVerifier
 
             // Set next index ?
             if (glyphIndex < names.length) {
-                navigator.setIndex(glyphIndex, true, true); // Next
+                navigator.setIndex(glyphIndex, GLYPH_INIT); // Next
             } else {
                 glyphIndex--;
-                navigator.setIndex(glyphIndex, true, true); // Prev/Reset
+                navigator.setIndex(glyphIndex, GLYPH_INIT); // Prev/Reset
             }
 
             // Perform file deletion
@@ -529,6 +601,9 @@ public class GlyphVerifier
             }
         }
 
+        //---------//
+        // Display //
+        //---------//
         private class Display
             extends JPanel
         {
@@ -539,6 +614,10 @@ public class GlyphVerifier
 
             Display ()
             {
+                if (view != null) {
+                    localPixelSelection.deleteObserver(view);
+                }
+
                 view = new MyView();
                 modelRectangle = new Rectangle();
                 modelSize = new Dimension(0, 0);
@@ -547,6 +626,7 @@ public class GlyphVerifier
                 rubber = new Rubber(view, zoom);
                 rubber.setMouseMonitor(view);
                 view.setZoom(zoom);
+                view.setRubber(rubber);
                 slv = new ScrollLagView(view);
 
                 // Layout
@@ -556,12 +636,21 @@ public class GlyphVerifier
             }
         }
 
+        //--------//
+        // MyView //
+        //--------//
         private class MyView
             extends GlyphLagView
         {
             public MyView ()
             {
                 super(vLag, null, null);
+
+                setName("GlyphVerifier-View");
+
+                setLocationSelection(localPixelSelection);
+                localPixelSelection.addObserver(this);
+                localGlyphSelection.addObserver(this);
             }
 
             //---------------//
@@ -570,46 +659,8 @@ public class GlyphVerifier
             @Override
             public void deassignGlyph (Glyph glyph)
             {
-                deleteGlyph(); // Current glyph
+                deleteGlyph();          // Current glyph
             }
-
-            //            //---------------//
-            //            // setFocusPoint //
-            //            //---------------//
-            //            /**
-            //             * Selection of a glyph by point designation.
-            //             *
-            //             * @param pt the selected point in model pixel coordinates
-            //             */
-            //            @Override
-            //                public void setFocusPoint (Point pt)
-            //            {
-            //                ///logger.info(getClass() + " setFocusPoint " + pt);
-            //                super.setFocusPoint(pt);
-            //
-            //                // Brute force
-            //                if (names != null) {
-            //                    for (int i = 0; i < names.length; i++) {
-            //                        String gName = names[i];
-            //                        Glyph glyph = repository.getGlyph(gName);
-            //                        if (glyph.getLag() == vLag) {
-            //                            for (GlyphSection section : glyph.getMembers()) {
-            //                                // Swap of x & y,  this is a vertical lag
-            //                                if (section.contains(pt.y, pt.x)) {
-            //                                    board.update(glyph);
-            //                                    navigator.setIndex(i, true, false);
-            //                                    pointedGlyph = glyph;
-            //                                    return;
-            //                                }
-            //                            }
-            //                        }
-            //                    }
-            //                }
-            //
-            //                // No glyph found
-            //                pointedGlyph = null;
-            //                view.repaint(); // ????
-            //            }
 
             //-------------//
             // renderItems //
@@ -622,61 +673,130 @@ public class GlyphVerifier
                 // Mark the current glyph
                 if (pointedGlyph != null) {
                     g.setColor(Color.black);
-                    g.setXORMode(Color.white);
+                    g.setXORMode(Color.darkGray);
                     pointedGlyph.renderBoxArea(g, z);
                 }
             }
+
+            //--------//
+            // update //
+            //--------//
+            /**
+             * Call-back triggered on selection notification.  We forward glyph
+             * information.
+             *
+             * @param selection the notified Selection
+             * @param hint potential notification hint
+             */
+            @Override
+            public void update (Selection     selection,
+                                SelectionHint hint)
+            {
+                // Keep normal view behavior (rubber, etc...)
+                super.update(selection, hint);
+
+                // Additional tasks
+                switch (selection.getTag()) {
+                case PIXEL :
+
+                    if ((hint == LOCATION_ADD) || (hint == LOCATION_INIT)) {
+                        Rectangle rect = (Rectangle) selection.getEntity();
+
+                        if (rect != null) {
+                            if ((rect.width > 0) || (rect.height > 0)) {
+                                // Look for enclosed glyphs
+                            } else {
+                                Glyph glyph = glyphLookup(rect);
+                                localGlyphSelection.setEntity(glyph, hint);
+                            }
+                        }
+                    }
+
+                    break;
+
+                case TRAINING_GLYPH :
+
+                    Glyph glyph = (Glyph) selection.getEntity();
+
+                    if ((hint == GLYPH_INIT) || (hint == GLYPH_MODIFIED)) {
+                        // Display glyph contour
+                        if (glyph != null) {
+                            locationSelection.setEntity(
+                                glyph.getContourBox(),
+                                hint);
+                        }
+                    }
+
+                    break;
+
+                default :
+                }
+            }
+
+            //-------------//
+            // glyphLookup //
+            //-------------//
+            private Glyph glyphLookup (Rectangle rect)
+            {
+                // Brute force
+                if (names != null) {
+                    for (int i = 0; i < names.length; i++) {
+                        String gName = names[i];
+                        Glyph  glyph = repository.getGlyph(gName);
+
+                        if (glyph.getLag() == vLag) {
+                            for (GlyphSection section : glyph.getMembers()) {
+                                // Swap of x & y,  this is a vertical lag
+                                if (section.contains(rect.y, rect.x)) {
+                                    pointedGlyph = glyph;
+
+                                    return glyph;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                pointedGlyph = null;
+
+                return null;
+            }
         }
 
+        //-----------//
+        // Navigator //
+        //-----------//
         private class Navigator
-            extends Panel
+            extends Board
         {
-            JButton    all = new JButton("All");
-            JTextField name = new SField(false, "File where glyph is stored");
             LoadAction loadAction = new LoadAction();
             JButton    load = new JButton(loadAction);
+            JButton    all = new JButton("All");
             JButton    next = new JButton("Next");
             JButton    prev = new JButton("Prev");
+            JTextField name = new SField(
+                false, // editable
+                "File where glyph is stored");
 
+            //-----------//
+            // Navigator //
+            //-----------//
             Navigator ()
             {
-                FormLayout   layout = new FormLayout(
-                    "32dlu,2dlu,32dlu,27dlu,32dlu,2dlu,32dlu,2dlu,32dlu",
-                    "pref,2dlu,pref,2dlu,max(20dlu;pref)");
+                super(Board.Tag.CUSTOM, "Glyph-Navigator");
 
-                //layout.setColumnGroups(new int[][] {{1, 3, 5, 7, 9}});
-                PanelBuilder builder = new PanelBuilder(layout, this);
-                builder.setDefaultDialogBorder();
-
-                CellConstraints cst = new CellConstraints();
-
-                int             r = 1; // --------------------------------
-                builder.addSeparator("Navigator", cst.xyw(1, r, 9));
-
-                r += 2; // --------------------------------
-                builder.add(load, cst.xy(1, r));
-                builder.add(all, cst.xy(3, r));
-                builder.add(prev, cst.xy(7, r));
-                builder.add(next, cst.xy(9, r));
-
-                r += 2; // --------------------------------
-
-                JLabel file = new JLabel("File", SwingConstants.RIGHT);
-                builder.add(file, cst.xy(1, r));
-
-                name.setHorizontalAlignment(JTextField.LEFT);
-                builder.add(name, cst.xyw(3, r, 7));
+                defineLayout();
 
                 all.addActionListener(
                     new ActionListener() {
                             public void actionPerformed (ActionEvent e)
                             {
-                                for (int i = 0; i < names.length; i++) {
-                                    setIndex(i, false, false);
+                                for (String gName : names) {
+                                    loadGlyph(gName);
                                 }
 
                                 if (names.length > 0) {
-                                    setIndex(0, true, true);
+                                    setIndex(0, GLYPH_INIT);
                                 }
                             }
                         });
@@ -685,7 +805,7 @@ public class GlyphVerifier
                     new ActionListener() {
                             public void actionPerformed (ActionEvent e)
                             {
-                                setIndex(glyphIndex - 1, true, true);
+                                setIndex(glyphIndex - 1, GLYPH_INIT);
                             }
                         });
 
@@ -693,7 +813,7 @@ public class GlyphVerifier
                     new ActionListener() {
                             public void actionPerformed (ActionEvent e)
                             {
-                                setIndex(glyphIndex + 1, true, true);
+                                setIndex(glyphIndex + 1, GLYPH_INIT);
                             }
                         });
 
@@ -710,9 +830,8 @@ public class GlyphVerifier
             //----------//
             // setIndex //
             //----------//
-            public void setIndex (int     glyphIndex,
-                                  boolean updateUI,
-                                  boolean focus)
+            public void setIndex (int glyphIndex,
+                                  SelectionHint hint)
             {
                 GlyphBrowser.this.glyphIndex = glyphIndex;
                 pointedGlyph = null;
@@ -724,21 +843,7 @@ public class GlyphVerifier
                     name.setText(gName);
 
                     // Load the glyph if needed
-                    glyph = repository.getGlyph(gName);
-
-                    if (glyph.getLag() != vLag) {
-                        glyph.setLag(vLag);
-
-                        for (GlyphSection section : glyph.getMembers()) {
-                            section.getViews()
-                                   .clear();
-                            vLag.addVertex(section); // Trick!
-                            section.setGraph(vLag);
-                            section.complete();
-                        }
-
-                        view.colorizeGlyph(glyph);
-                    }
+                    glyph = loadGlyph(gName);
 
                     // Extend view model size if needed
                     Rectangle box = glyph.getContourBox();
@@ -754,20 +859,63 @@ public class GlyphVerifier
                     name.setText("");
                 }
 
-                if (updateUI) {
-                    all.setEnabled(names.length > 0);
-                    prev.setEnabled(glyphIndex > 0);
-                    next.setEnabled(glyphIndex < (names.length - 1));
+                localGlyphSelection.setEntity(glyph, hint);
 
-                    // Forward to board panel
-                    ///board.update(glyph);
-                    ///evaluatorsPanel.evaluate(glyph);
+                // Update buttons
+                all.setEnabled(names.length > 0);
+                prev.setEnabled(glyphIndex > 0);
+                next.setEnabled(glyphIndex < (names.length - 1));
+            }
+
+            public Glyph loadGlyph (String gName)
+            {
+                Glyph glyph = repository.getGlyph(gName);
+
+                if (glyph.getLag() != vLag) {
+                    glyph.setLag(vLag);
+
+                    for (GlyphSection section : glyph.getMembers()) {
+                        section.getViews()
+                               .clear();
+                        vLag.addVertex(section); // Trick!
+                        section.setGraph(vLag);
+                        section.complete();
+                    }
+
+                    view.colorizeGlyph(glyph);
                 }
 
-                if (focus) {
-                    ///view.setFocusGlyph(glyph);
-                    view.repaint();
-                }
+                return glyph;
+            }
+
+            //--------------//
+            // defineLayout //
+            //--------------//
+            private void defineLayout ()
+            {
+                CellConstraints cst = new CellConstraints();
+                FormLayout      layout = Panel.makeFormLayout(4, 3);
+                PanelBuilder    builder = new PanelBuilder(
+                    layout,
+                    getComponent());
+                builder.setDefaultDialogBorder();
+
+                int r = 1; // --------------------------------
+                builder.addSeparator("Navigator", cst.xyw(1, r, 9));
+                builder.add(load, cst.xy(11, r));
+
+                r += 2; // --------------------------------
+                builder.add(all, cst.xy(3, r));
+                builder.add(prev, cst.xy(7, r));
+                builder.add(next, cst.xy(11, r));
+
+                r += 2; // --------------------------------
+
+                JLabel file = new JLabel("File", SwingConstants.RIGHT);
+                builder.add(file, cst.xy(1, r));
+
+                name.setHorizontalAlignment(JTextField.LEFT);
+                builder.add(name, cst.xyw(3, r, 9));
             }
 
             //------------//
@@ -794,9 +942,27 @@ public class GlyphVerifier
 
                     // Set navigator on first glyph, if any
                     if (names.length > 0) {
-                        setIndex(0, true, true);
+                        setIndex(0, GLYPH_INIT);
                     }
                 }
+            }
+        }
+
+        //-----------------//
+        // BasicGlyphModel //
+        //-----------------//
+        private class BasicGlyphModel
+            extends GlyphModel
+        {
+            public BasicGlyphModel()
+            {
+                super(null, vLag);
+            }
+
+            @Override
+                public void deassignGlyphShape (Glyph glyph)
+            {
+                deleteGlyph();          // Current glyph
             }
         }
     }
@@ -807,11 +973,17 @@ public class GlyphVerifier
     private class GlyphSelector
         extends Selector
     {
+        //---------------//
+        // GlyphSelector //
+        //---------------//
         public GlyphSelector ()
         {
             super("Glyph Selector");
         }
 
+        //-----------------//
+        // actionPerformed //
+        //-----------------//
         // Triggered by the load button
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)

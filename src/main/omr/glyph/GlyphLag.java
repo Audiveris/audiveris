@@ -325,7 +325,7 @@ public class GlyphLag
                         if ((glyphSelection != null) &&
                             (glyphSelection.countObservers() > 0) &&
                             (sectionSelection != null) &&
-                            (sectionSelection.countObservers() > 1)) { // GlyphLag itself
+                            (sectionSelection.countObservers() > 0)) { // TBD GlyphLag itself
 
                             Glyph        glyph = null;
                             GlyphSection section = (GlyphSection) sectionSelection.getEntity();
