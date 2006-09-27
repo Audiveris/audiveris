@@ -217,7 +217,10 @@ public class GlyphBoard
                         }
                     }
                 });
-        dump.setEnabled(false); // Until a glyph selection is made
+
+        // Until a glyph selection is made
+        dump.setEnabled(false);
+        deassignButton.setEnabled(false);
 
         // Precise layout
         layout.setColumnGroups(
@@ -296,6 +299,7 @@ public class GlyphBoard
         switch (selection.getTag()) {
         case VERTICAL_GLYPH :
         case HORIZONTAL_GLYPH :
+
             // Display Glyph parameters (while preventing circular updates)
             selfUpdating = true;
 
@@ -303,7 +307,7 @@ public class GlyphBoard
 
             // Dump button and deassign button
             dump.setEnabled(glyph != null);
-            deassignAction.setEnabled((glyph != null) && glyph.isKnown());
+            deassignButton.setEnabled((glyph != null) && glyph.isKnown());
 
             // Shape text and icon
             Shape shape = (glyph != null) ? glyph.getShape() : null;

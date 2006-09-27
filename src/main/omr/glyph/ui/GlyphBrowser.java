@@ -47,6 +47,8 @@ import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>GlyphBrowser</code> gathers a navigator to move between selected
@@ -58,6 +60,7 @@ import javax.swing.*;
  */
 class GlyphBrowser
     extends JPanel
+    implements ChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -113,6 +116,9 @@ class GlyphBrowser
     /** Navigator instance to navigate through all glyphs names */
     private Navigator navigator = new Navigator();
 
+    /** Glyph board with ability to delete a training glyph */
+    private GlyphBoard board;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -131,9 +137,6 @@ class GlyphBrowser
         setLayout(new BorderLayout());
         resetBrowser();
         add(buildLeftPanel(), BorderLayout.WEST);
-
-        // Init
-        navigator.loadAction.actionPerformed(null);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -152,6 +155,15 @@ class GlyphBrowser
         localGlyphSelection.dump();
     }
 
+    //--------------//
+    // stateChanged //
+    //--------------//
+    public void stateChanged (ChangeEvent e)
+    {
+        int selNb = verifier.getGlyphNames().length;
+        navigator.loadAction.setEnabled(selNb > 0);
+    }
+
     //----------------//
     // buildLeftPanel //
     //----------------//
@@ -161,12 +173,14 @@ class GlyphBrowser
         final GlyphModel glyphModel = new BasicGlyphModel();
 
         // Specific glyph board
-        final GlyphBoard board = new GlyphBoard("TrainingBoard", glyphModel);
+        board = new GlyphBoard("TrainingBoard", glyphModel);
         board.setInputSelectionList(
             Collections.singletonList(localGlyphSelection));
         board.boardShown();
         board.getDeassignButton()
              .setToolTipText("Remove that glyph from training material");
+        board.getDeassignButton()
+             .setEnabled(false);
 
         FormLayout      layout = new FormLayout("pref", "pref,pref,pref");
         PanelBuilder    builder = new PanelBuilder(layout);
@@ -508,9 +522,7 @@ class GlyphBrowser
                                 loadGlyph(gName);
                             }
 
-                            if (names.size() > 0) {
-                                setIndex(0, GLYPH_INIT);
-                            }
+                            setIndex(0, GLYPH_INIT); // To first
                         }
                     });
 
@@ -518,7 +530,7 @@ class GlyphBrowser
                 new ActionListener() {
                         public void actionPerformed (ActionEvent e)
                         {
-                            setIndex(nameIndex - 1, GLYPH_INIT);
+                            setIndex(nameIndex - 1, GLYPH_INIT); // To prev
                         }
                     });
 
@@ -526,7 +538,7 @@ class GlyphBrowser
                 new ActionListener() {
                         public void actionPerformed (ActionEvent e)
                         {
-                            setIndex(nameIndex + 1, GLYPH_INIT);
+                            setIndex(nameIndex + 1, GLYPH_INIT); // To next
                         }
                     });
 
@@ -534,6 +546,11 @@ class GlyphBrowser
             all.setToolTipText("Display all glyphs");
             prev.setToolTipText("Go to previous glyph");
             next.setToolTipText("Go to next glyph");
+
+            loadAction.setEnabled(false);
+            all.setEnabled(false);
+            prev.setEnabled(false);
+            next.setEnabled(false);
         }
 
         //----------//
@@ -541,7 +558,6 @@ class GlyphBrowser
         //----------//
         /**
          * Only method allowed to designate a glyph
-         *
          *
          * @param index index of new current glyph
          * @param hint related processing hint
@@ -661,12 +677,9 @@ class GlyphBrowser
             @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
-                // Get a (modifiable) list of glyph names
+                // Get a (shrinkable, to allow deletions) list of glyph names
                 names = new ArrayList<String>(
                     Arrays.asList(verifier.getGlyphNames()));
-
-                prev.setEnabled(false);
-                next.setEnabled(false);
 
                 // Reset lag & display
                 resetBrowser();
@@ -674,6 +687,14 @@ class GlyphBrowser
                 // Set navigator on first glyph, if any
                 if (names.size() > 0) {
                     setIndex(0, GLYPH_INIT);
+                } else {
+                    if (e != null) {
+                        logger.warning("No glyphs selected in Glyph Selector");
+                    }
+
+                    all.setEnabled(false);
+                    prev.setEnabled(false);
+                    next.setEnabled(false);
                 }
             }
         }

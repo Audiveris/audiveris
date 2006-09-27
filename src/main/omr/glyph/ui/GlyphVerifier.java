@@ -28,6 +28,7 @@ import java.util.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.event.*;
 
 /**
  * Class <code>GlyphVerifier</code> provides a user interface to browse through
@@ -69,16 +70,16 @@ public class GlyphVerifier
     private final JFrame frame;
 
     /** The panel in charge of the current glyph */
-    private GlyphBrowser glyphBrowser;
+    private GlyphBrowser glyphBrowser = new GlyphBrowser(this);
 
     /** The panel in charge of the glyphs selection */
-    private GlyphSelector glyphSelector = new GlyphSelector();
+    private GlyphSelector glyphSelector = new GlyphSelector(glyphBrowser);
 
     /** The panel in charge of the shapes selection */
-    private ShapeSelector shapeSelector = new ShapeSelector();
+    private ShapeSelector shapeSelector = new ShapeSelector(glyphSelector);
 
     /** The panel in charge of the sheets selection */
-    private SheetSelector sheetSelector = new SheetSelector();
+    private SheetSelector sheetSelector = new SheetSelector(shapeSelector);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -90,8 +91,6 @@ public class GlyphVerifier
      */
     private GlyphVerifier ()
     {
-        glyphBrowser = new GlyphBrowser(this);
-
         frame = new JFrame();
         frame.setTitle("Glyph Verifier");
         frame.getContentPane()
@@ -270,26 +269,49 @@ public class GlyphVerifier
      */
     private abstract static class Selector
         extends TitledPanel
-        implements ActionListener
+        implements ActionListener, ChangeListener
     {
+        /** Other entity interested in items selected by this selector */
+        private ChangeListener listener;
+
+        /** Change event, lazily created */
+        private ChangeEvent changeEvent;
+
+        // Buttons
         protected JButton cancelAll = new JButton("Cancel All");
         protected JButton load = new JButton("Load");
         protected JButton selectAll = new JButton("Select All");
-        protected JLabel  cardinal = new JLabel(
+
+        // Label
+        protected JLabel cardinal = new JLabel(
             "* No item selected *",
             SwingConstants.CENTER);
-        protected List    list = new List(
+
+        // List of items
+        protected List list = new List(
             5, // nb of rows
             true); // multipleMode allowed ?
 
-        public Selector (String title)
+        /**
+         * Create a selector
+         *
+         * @param title label for this selector
+         * @param listener potential (external) listener for changes
+         */
+
+        //----------//
+        // Selector //
+        //----------//
+        public Selector (String         title,
+                         ChangeListener listener)
         {
             super(title);
+            this.listener = listener;
 
             // Precise action to be specified in each subclass
             load.addActionListener(this);
 
-            // To be informed of (de)selections
+            // To be informed of mouse (de)selections (not programmatic)
             list.addItemListener(
                 new ItemListener() {
                         public void itemStateChanged (ItemEvent e)
@@ -325,6 +347,11 @@ public class GlyphVerifier
             buttons.add(selectAll);
             buttons.add(cancelAll);
 
+            // All buttons are initially disabled
+            load.setEnabled(false);
+            selectAll.setEnabled(false);
+            cancelAll.setEnabled(false);
+
             add(buttons, BorderLayout.WEST);
             add(list, BorderLayout.CENTER);
             add(cardinal, BorderLayout.SOUTH);
@@ -356,6 +383,16 @@ public class GlyphVerifier
             updateCardinal();
         }
 
+        //--------------//
+        // stateChanged //
+        //--------------//
+        public void stateChanged (ChangeEvent e)
+        {
+            Selector selector = (Selector) e.getSource();
+            int      selNb = selector.list.getSelectedItems().length;
+            load.setEnabled(selNb > 0);
+        }
+
         //----------------//
         // updateCardinal //
         //----------------//
@@ -367,6 +404,19 @@ public class GlyphVerifier
                 cardinal.setText(selectNb + " item(s) selected");
             } else {
                 cardinal.setText("* No item selected *");
+            }
+
+            // Buttons
+            selectAll.setEnabled(list.getItemCount() > 0);
+            cancelAll.setEnabled(list.getSelectedItems().length > 0);
+
+            // Notify other entity
+            if (listener != null) {
+                if (changeEvent == null) {
+                    changeEvent = new ChangeEvent(this);
+                }
+
+                listener.stateChanged(changeEvent);
             }
         }
     }
@@ -399,15 +449,14 @@ public class GlyphVerifier
         //---------------//
         // GlyphSelector //
         //---------------//
-        public GlyphSelector ()
+        public GlyphSelector (ChangeListener listener)
         {
-            super("Glyph Selector");
+            super("Glyph Selector", listener);
         }
 
         //-----------------//
-        // actionPerformed //
+        // actionPerformed // Triggered by the load button
         //-----------------//
-        // Triggered by the load button
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -430,23 +479,29 @@ public class GlyphVerifier
                 }
             }
 
-            // Populate with all possible glyphs
-            list.removeAll();
+            if (shapes.length == 0) {
+                logger.warning("No shapes selected in Shape Selector");
+            } else {
+                // Populate with all possible glyphs
+                list.removeAll();
 
-            for (String sheetName : sheets) {
-                File dir = new File(repository.getSheetsFolder(), sheetName);
+                for (String sheetName : sheets) {
+                    File dir = new File(
+                        repository.getSheetsFolder(),
+                        sheetName);
 
-                // Add proper glyphs files from this directory
-                for (File file : repository.getSheetGlyphs(dir)) {
-                    String shapeName = radixOf(file.getName());
+                    // Add proper glyphs files from this directory
+                    for (File file : repository.getSheetGlyphs(dir)) {
+                        String shapeName = radixOf(file.getName());
 
-                    if (shapeList.contains(shapeName)) {
-                        list.add(dir.getName() + "/" + file.getName());
+                        if (shapeList.contains(shapeName)) {
+                            list.add(dir.getName() + "/" + file.getName());
+                        }
                     }
                 }
-            }
 
-            updateCardinal();
+                updateCardinal();
+            }
         }
 
         //--------//
@@ -465,29 +520,37 @@ public class GlyphVerifier
     private class ShapeSelector
         extends Selector
     {
-        public ShapeSelector ()
+        public ShapeSelector (ChangeListener listener)
         {
-            super("Shape Selector");
+            super("Shape Selector", listener);
         }
 
         // Triggered by load button
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            // To avoid duplicates, and to get a sorted list
-            SortedSet<String> shapeSet = new TreeSet<String>();
-
             // Populate with shape names found in selected sheets
-            for (String sheetName : sheetSelector.list.getSelectedItems()) {
-                File dir = new File(repository.getSheetsFolder(), sheetName);
+            String[] sheetNames = sheetSelector.list.getSelectedItems();
 
-                // Add all glyphs files from this directory
-                for (File file : repository.getSheetGlyphs(dir)) {
-                    shapeSet.add(radixOf(file.getName()));
+            if (sheetNames.length == 0) {
+                logger.warning("No sheets selected in Sheet Selector");
+            } else {
+                // To avoid duplicates, and to get a sorted list
+                SortedSet<String> shapeSet = new TreeSet<String>();
+
+                for (String sheetName : sheetSelector.list.getSelectedItems()) {
+                    File dir = new File(
+                        repository.getSheetsFolder(),
+                        sheetName);
+
+                    // Add all glyphs files from this directory
+                    for (File file : repository.getSheetGlyphs(dir)) {
+                        shapeSet.add(radixOf(file.getName()));
+                    }
                 }
-            }
 
-            populateWith(shapeSet);
+                populateWith(shapeSet);
+            }
         }
     }
 
@@ -497,9 +560,10 @@ public class GlyphVerifier
     private class SheetSelector
         extends Selector
     {
-        public SheetSelector ()
+        public SheetSelector (ChangeListener listener)
         {
-            super("Sheet Selector");
+            super("Sheet Selector", listener);
+            load.setEnabled(true);
         }
 
         // Triggered by load button
