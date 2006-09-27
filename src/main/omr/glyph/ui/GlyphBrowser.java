@@ -42,8 +42,9 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.util.Collections;
+import java.io.*;
+import java.util.*;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -51,6 +52,9 @@ import javax.swing.*;
  * Class <code>GlyphBrowser</code> gathers a navigator to move between selected
  * glyphs, a glyph board for glyph details, and a display for graphical glyph
  * lag view. This is a (package private) companion of {@link GlyphVerifier}.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
  */
 class GlyphBrowser
     extends JPanel
@@ -60,6 +64,12 @@ class GlyphBrowser
     private static final Constants constants = new Constants();
     private static final Logger    logger = Logger.getLogger(
         GlyphBrowser.class);
+
+    /**
+     * Field constant <code>NO_INDEX</code> is a specific value {@value} to
+     * indicate absence of index
+     */
+    private static final int NO_INDEX = -1;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -77,45 +87,52 @@ class GlyphBrowser
     private final Selection localRunSelection = new Selection(HORIZONTAL_RUN);
 
     /** Local glyph selection */
-    private final Selection localGlyphSelection = new Selection(TRAINING_GLYPH);
+    private final Selection localGlyphSelection = new Selection(VERTICAL_GLYPH);
 
     /** Repository of known glyphs */
     private final GlyphRepository repository = GlyphRepository.getInstance();
 
-    // Comment ??
-    private Dimension    modelSize;
-    private Display      display;
+    /** Size of the lag display */
+    private Dimension modelSize;
 
-    /** Glyph designated by simple mouse pointing. This is just a trick to
-       highlight the glyph. See index variable instead */
-    private Glyph pointedGlyph;
+    /** Contour of the lag display */
+    private Rectangle modelRectangle;
+
+    /** Composite display (view + zoom slider) */
+    private Display display;
 
     /** Hosting GlyphLag */
     private GlyphLag vLag;
+
+    /** The lag view */
     private GlyphLagView view;
-    private Navigator    navigator = new Navigator();
-    private Rectangle    modelRectangle;
-    private GlyphBoard   board;
 
-    /** Array of glyphs file names */
-    private String[] names;
+    /** Population of glyphs file names */
+    private List<String> names;
 
-    /** This defines the current glyph, designated by whatever means. It is an
-       index in the 'names' array. */
-    private int nameIndex;
+    /** Navigator instance to navigate through all glyphs names */
+    private Navigator navigator = new Navigator();
 
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
     // GlyphBrowser //
     //--------------//
-    GlyphBrowser (GlyphVerifier verifier)
+    /**
+     * Create an instance, with back-reference to GlyphVerifier
+     *
+     * @param verifier ref back to verifier
+     */
+    public GlyphBrowser (GlyphVerifier verifier)
     {
         this.verifier = verifier;
+
         // Layout
         setLayout(new BorderLayout());
         resetBrowser();
-        add(getLeftPanel(), BorderLayout.WEST);
+        add(buildLeftPanel(), BorderLayout.WEST);
+
+        // Init
         navigator.loadAction.actionPerformed(null);
     }
 
@@ -135,16 +152,16 @@ class GlyphBrowser
         localGlyphSelection.dump();
     }
 
-    //--------------//
-    // getLeftPanel //
-    //--------------//
-    private JPanel getLeftPanel ()
+    //----------------//
+    // buildLeftPanel //
+    //----------------//
+    private JPanel buildLeftPanel ()
     {
         // Basic glyph model
-        GlyphModel glyphModel = new BasicGlyphModel();
+        final GlyphModel glyphModel = new BasicGlyphModel();
 
         // Specific glyph board
-        board = new GlyphBoard("TrainingBoard", glyphModel);
+        final GlyphBoard board = new GlyphBoard("TrainingBoard", glyphModel);
         board.setInputSelectionList(
             Collections.singletonList(localGlyphSelection));
         board.boardShown();
@@ -167,54 +184,52 @@ class GlyphBrowser
     //-------------//
     private void deleteGlyph ()
     {
-        // Delete glyph designated by nameIndex
-        String gName = names[nameIndex];
-        Glyph  glyph = repository.getGlyph(gName);
+        int index = navigator.getIndex();
 
-        // User confirmation is required ?
-        if (constants.confirmDeletions.getValue()) {
-            if (JOptionPane.showConfirmDialog(
-                null,
-                "Delete glyph '" + gName + "' ?") != JOptionPane.YES_OPTION) {
-                return;
+        if (index >= 0) {
+            // Delete glyph designated by index
+            String gName = names.get(index);
+            Glyph  glyph = navigator.loadGlyph(gName);
+
+            // User confirmation is required ?
+            if (constants.confirmDeletions.getValue()) {
+                if (JOptionPane.showConfirmDialog(
+                    null,
+                    "Delete glyph '" + gName + "' ?") != JOptionPane.YES_OPTION) {
+                    return;
+                }
             }
-        }
 
-        // Shrink names array
-        String[] old = names;
-        names = new String[old.length - 1];
-        System.arraycopy(old, 0, names, 0, nameIndex);
-        System.arraycopy(
-            old,
-            nameIndex + 1,
-            names,
-            nameIndex,
-            old.length - nameIndex - 1);
+            // Shrink names list
+            names.remove(index);
 
-        // Update model & display
-        repository.removeGlyph(gName);
+            // Update model & display
+            repository.removeGlyph(gName);
 
-        for (GlyphSection section : glyph.getMembers()) {
-            section.delete();
-        }
+            for (GlyphSection section : glyph.getMembers()) {
+                section.delete();
+            }
 
-        // Update the Glyph selector also !
-        verifier.deleteGlyphName(gName);
+            // Update the Glyph selector also !
+            verifier.deleteGlyphName(gName);
 
-        // Set next index ?
-        if (nameIndex < names.length) {
-            navigator.setIndex(nameIndex, GLYPH_INIT); // Next
+            // Perform file deletion
+            File file = new File(repository.getSheetsFolder(), gName);
+
+            if (file.delete()) {
+                logger.info("Glyph " + gName + " deleted");
+            } else {
+                logger.warning("Could not delete file " + file);
+            }
+
+            // Set new index ?
+            if (index < names.size()) {
+                navigator.setIndex(index, GLYPH_INIT); // Next
+            } else {
+                navigator.setIndex(index - 1, GLYPH_INIT); // Prev/None
+            }
         } else {
-            navigator.setIndex(nameIndex - 1, GLYPH_INIT); // Prev
-        }
-
-        // Perform file deletion
-        File file = new File(repository.getSheetsFolder(), gName);
-
-        if (file.delete()) {
-            logger.info("Glyph " + gName + " deleted");
-        } else {
-            logger.warning("Could not delete file " + file);
+            logger.warning("No selected glyph to delete!");
         }
     }
 
@@ -355,10 +370,14 @@ class GlyphBrowser
         public void renderItems (Graphics g)
         {
             // Mark the current glyph
-            if (pointedGlyph != null) {
+            int index = navigator.getIndex();
+
+            if (index >= 0) {
+                String gName = names.get(index);
+                Glyph  glyph = navigator.loadGlyph(gName);
                 g.setColor(Color.black);
                 g.setXORMode(Color.darkGray);
-                pointedGlyph.renderBoxArea(g, getZoom());
+                glyph.renderBoxArea(g, getZoom());
             }
         }
 
@@ -382,26 +401,24 @@ class GlyphBrowser
             switch (selection.getTag()) {
             case PIXEL : // Triggered by mouse
 
-                if ((hint == LOCATION_ADD) || (hint == LOCATION_INIT)) {
+                if (hint == LOCATION_INIT) {
                     Rectangle rect = (Rectangle) selection.getEntity();
 
-                    if (rect != null) {
-                        if ((rect.width > 0) || (rect.height > 0)) {
-                            // Look for rectangle enclosed glyphs TBD
-                        } else {
-                            Glyph glyph = glyphLookup(rect);
-                            localGlyphSelection.setEntity(glyph, hint);
-                        }
+                    if ((rect != null) &&
+                        (rect.width == 0) &&
+                        (rect.height == 0)) {
+                        // Look for pointed glyph
+                        navigator.setIndex(glyphLookup(rect), hint);
                     }
                 }
 
                 break;
 
-            case TRAINING_GLYPH : // Triggered by (local) lookup
+            case VERTICAL_GLYPH : // Triggered by (local) lookup
 
                 Glyph glyph = (Glyph) selection.getEntity();
 
-                if ((hint == GLYPH_INIT) || (hint == GLYPH_MODIFIED)) {
+                if (hint == GLYPH_INIT) {
                     // Display glyph contour
                     if (glyph != null) {
                         locationSelection.setEntity(
@@ -419,42 +436,52 @@ class GlyphBrowser
         //-------------//
         // glyphLookup //
         //-------------//
-        private Glyph glyphLookup (Rectangle rect)
+        /**
+         * Lookup for a glyph that is pointed by rectangle location. This is a
+         * very specific glyph lookup, for which we cannot rely on GlyphLag
+         * usual features. So we simply browse through the collection of glyphs
+         * (names).
+         *
+         * @param rect location (upper left corner)
+         * @return index in names collection if found, NO_INDEX otherwise
+         */
+        private int glyphLookup (Rectangle rect)
         {
-            // Brute force
-            if (names != null) {
-                for (int i = 0; i < names.length; i++) {
-                    String gName = names[i];
-                    Glyph  glyph = repository.getGlyph(gName);
+            int index = -1;
 
-                    if (glyph.getLag() == vLag) {
-                        for (GlyphSection section : glyph.getMembers()) {
-                            // Swap of x & y,  this is a vertical lag
-                            if (section.contains(rect.y, rect.x)) {
-                                pointedGlyph = glyph;
-                                nameIndex = i;
-                                navigator.enableButtons();
+            for (String gName : names) {
+                index++;
 
-                                return glyph;
-                            }
+                Glyph glyph = navigator.loadGlyph(gName);
+
+                if (glyph.getLag() == vLag) {
+                    for (GlyphSection section : glyph.getMembers()) {
+                        // Swap x & y,  since this is a vertical lag
+                        if (section.contains(rect.y, rect.x)) {
+                            return index;
                         }
                     }
                 }
             }
 
-            pointedGlyph = null;
-            nameIndex = 0;
-
-            return null;
+            return NO_INDEX; // Not found
         }
     }
 
     //-----------//
     // Navigator // ------------------------------------------------------------
     //-----------//
-    private class Navigator
+    /**
+     * Class <code>Navigator</code> handles the navigation through the
+     * collection of glyphs (names)
+     */
+    private final class Navigator
         extends Board
     {
+        /** Current index in names collection (NO_INDEX if none) */
+        private int nameIndex = NO_INDEX;
+
+        // Navigation actions & buttons
         LoadAction loadAction = new LoadAction();
         JButton    load = new JButton(loadAction);
         JButton    all = new JButton("All");
@@ -481,7 +508,7 @@ class GlyphBrowser
                                 loadGlyph(gName);
                             }
 
-                            if (names.length > 0) {
+                            if (names.size() > 0) {
                                 setIndex(0, GLYPH_INIT);
                             }
                         }
@@ -507,25 +534,27 @@ class GlyphBrowser
             all.setToolTipText("Display all glyphs");
             prev.setToolTipText("Go to previous glyph");
             next.setToolTipText("Go to next glyph");
-
-            all.setEnabled(false);
-            prev.setEnabled(false);
-            next.setEnabled(false);
         }
 
         //----------//
         // setIndex //
         //----------//
-        public void setIndex (int           nameIndex,
+        /**
+         * Only method allowed to designate a glyph
+         *
+         *
+         * @param index index of new current glyph
+         * @param hint related processing hint
+         */
+        public void setIndex (int           index,
                               SelectionHint hint)
         {
-            GlyphBrowser.this.nameIndex = nameIndex;
-            pointedGlyph = null;
+            nameIndex = index;
 
             Glyph glyph = null;
 
-            if (nameIndex >= 0) {
-                String gName = names[nameIndex];
+            if (index >= 0) {
+                String gName = names.get(index);
                 nameField.setText(gName);
 
                 // Load the glyph if needed
@@ -545,8 +574,25 @@ class GlyphBrowser
                 nameField.setText("");
             }
 
-            enableButtons();
             localGlyphSelection.setEntity(glyph, hint);
+
+            // Enable buttons according to glyph selection
+            all.setEnabled(names.size() > 0);
+            prev.setEnabled(index > 0);
+            next.setEnabled((index >= 0) && (index < (names.size() - 1)));
+        }
+
+        //----------//
+        // getIndex //
+        //----------//
+        /**
+         * Report the current glyph index in the names collection
+         *
+         * @return the current index, which may be NO_INDEX
+         */
+        public final int getIndex ()
+        {
+            return nameIndex;
         }
 
         //-----------//
@@ -601,16 +647,6 @@ class GlyphBrowser
             builder.add(nameField, cst.xyw(3, r, 9));
         }
 
-        //---------------//
-        // enableButtons //
-        //---------------//
-        private void enableButtons ()
-        {
-            all.setEnabled(names.length > 0);
-            prev.setEnabled(nameIndex > 0);
-            next.setEnabled(nameIndex < (names.length - 1));
-        }
-
         //------------//
         // LoadAction //
         //------------//
@@ -625,7 +661,10 @@ class GlyphBrowser
             @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)
             {
-                names = verifier.getGlyphNames();
+                // Get a (modifiable) list of glyph names
+                names = new ArrayList<String>(
+                    Arrays.asList(verifier.getGlyphNames()));
+
                 prev.setEnabled(false);
                 next.setEnabled(false);
 
@@ -633,7 +672,7 @@ class GlyphBrowser
                 resetBrowser();
 
                 // Set navigator on first glyph, if any
-                if (names.length > 0) {
+                if (names.size() > 0) {
                     setIndex(0, GLYPH_INIT);
                 }
             }
