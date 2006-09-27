@@ -10,7 +10,6 @@
 //
 package omr.ui;
 
-import omr.selection.Selection;
 import omr.selection.SelectionTag;
 
 import omr.sheet.Sheet;
@@ -23,8 +22,7 @@ import omr.util.Logger;
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import javax.swing.*;
 
@@ -113,12 +111,12 @@ public class BoardsPane
             switch (board.getTag()) {
             case PIXEL :
 
-                PixelBoard      pixelBoard = (PixelBoard) board;
+                PixelBoard pixelBoard = (PixelBoard) board;
                 // inputs
-                List<Selection> inputs = new ArrayList<Selection>();
-                inputs.add(sheet.getSelection(SelectionTag.PIXEL));
-                inputs.add(sheet.getSelection(SelectionTag.LEVEL));
-                pixelBoard.setInputSelectionList(inputs);
+                pixelBoard.setInputSelectionList(
+                    Arrays.asList(
+                        sheet.getSelection(SelectionTag.PIXEL),
+                        sheet.getSelection(SelectionTag.LEVEL)));
                 // output
                 pixelBoard.setOutputSelection(
                     sheet.getSelection(SelectionTag.PIXEL));
