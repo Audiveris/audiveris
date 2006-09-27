@@ -738,7 +738,6 @@ public class Jui
         public void actionPerformed (ActionEvent e)
         {
             GlyphVerifier.getInstance()
-                         .getFrame()
                          .setVisible(true);
         }
     }

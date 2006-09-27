@@ -38,14 +38,13 @@ import omr.util.TreeNode;
 import java.util.*;
 
 /**
- * Class <code>BarsChecker</code> is a companion of {@link BarsBuilder},
- * dedicated to physical checks. This is the reason why all methods are either
- * private or package private.
+ * Class <code>BarsChecker</code> is a (package private) companion of class
+ * {@link BarsBuilder}, dedicated to physical checks.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class BarsChecker
+class BarsChecker
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -125,7 +124,7 @@ public class BarsChecker
      *
      * @param sheet the sheet to process
      */
-    BarsChecker (Sheet sheet)
+    public BarsChecker (Sheet sheet)
     {
         this.sheet = sheet;
 
@@ -146,8 +145,8 @@ public class BarsChecker
      * @param bar the given bar
      * @return true if staff is embraced by the bar
      */
-    boolean isStaffEmbraced (Staff staff,
-                             Stick bar)
+    public boolean isStaffEmbraced (Staff staff,
+                                    Stick bar)
     {
         // Extrema of bar, units
         int       topUnit = scale.pixelsToUnits(bar.getStart());
@@ -167,7 +166,7 @@ public class BarsChecker
      *
      * @return the check suite
      */
-    BarCheckSuite getSuite ()
+    public BarCheckSuite getSuite ()
     {
         return suite;
     }
@@ -182,8 +181,8 @@ public class BarsChecker
      * @param sheet the sheet context
      * @return the containing SystemInfo, null if not found
      */
-    SystemInfo getSystemOf (Stick bar,
-                            Sheet sheet)
+    public SystemInfo getSystemOf (Stick bar,
+                                   Sheet sheet)
     {
         Context context = contexts.get(bar);
 
@@ -233,7 +232,7 @@ public class BarsChecker
      *
      * @return true if thick
      */
-    boolean isThickBar (Stick stick)
+    public boolean isThickBar (Stick stick)
     {
         // Max width of a thin bar line, otherwise this must be a thick bar
         final int maxThinWidth = scale.toPixels(constants.maxThinWidth);
@@ -243,17 +242,6 @@ public class BarsChecker
             (double) stick.getWeight() / (double) stick.getLength());
 
         return meanWidth > maxThinWidth;
-    }
-
-    //-------------//
-    // createSuite //
-    //-------------//
-    /**
-     * Create a brand new check suite, with current value of constant parameters
-     */
-    void createSuite ()
-    {
-        suite = new BarCheckSuite();
     }
 
     //------------------//
@@ -267,8 +255,8 @@ public class BarsChecker
      * @param bars the resulting collection of bar sticks
      * @exception omr.ProcessingException raised if processing has been stoppped
      */
-    void retrieveMeasures (List<Stick> clutter,
-                           List<Stick> bars)
+    public void retrieveMeasures (List<Stick> clutter,
+                                  List<Stick> bars)
         throws omr.ProcessingException
     {
         // Cache parameters
@@ -449,6 +437,17 @@ public class BarsChecker
                     staffLink++);
             }
         }
+    }
+
+    //-------------//
+    // createSuite //
+    //-------------//
+    /**
+     * Create a brand new check suite, with current value of constant parameters
+     */
+    private void createSuite ()
+    {
+        suite = new BarCheckSuite();
     }
 
     //------------------//

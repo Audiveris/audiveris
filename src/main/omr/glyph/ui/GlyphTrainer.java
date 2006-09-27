@@ -537,7 +537,6 @@ public class GlyphTrainer
                 GlyphVerifier.getInstance()
                              .verify(falsePositives);
                 GlyphVerifier.getInstance()
-                             .getFrame()
                              .setVisible(true);
             }
         }
@@ -556,7 +555,6 @@ public class GlyphTrainer
                 GlyphVerifier.getInstance()
                              .verify(negatives);
                 GlyphVerifier.getInstance()
-                             .getFrame()
                              .setVisible(true);
             }
         }

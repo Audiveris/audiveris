@@ -48,11 +48,11 @@ import java.util.Collections;
 import javax.swing.*;
 
 /**
- * Class <code>GlyphBrowser</code> gathers a navigator to move between
- * selected glyphs, a glyph board for glyph details, and a display for
- * graphical glyph lag view
+ * Class <code>GlyphBrowser</code> gathers a navigator to move between selected
+ * glyphs, a glyph board for glyph details, and a display for graphical glyph
+ * lag view. This is a (package private) companion of {@link GlyphVerifier}.
  */
-public class GlyphBrowser
+class GlyphBrowser
     extends JPanel
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -136,40 +136,6 @@ public class GlyphBrowser
     }
 
     //--------------//
-    // resetBrowser //
-    //--------------//
-    public void resetBrowser ()
-    {
-        if (vLag != null) {
-            // Placeholder for some cleanup
-            localPixelSelection.deleteObserver(vLag);
-            localSectionSelection.deleteObserver(vLag);
-        }
-
-        // Reset model
-        vLag = new GlyphLag(new VerticalOrientation());
-        vLag.setName("TrainingLag");
-        vLag.setSectionSelection(localSectionSelection);
-        localSectionSelection.addObserver(vLag);
-        vLag.setRunSelection(localRunSelection);
-
-        // Input
-        localPixelSelection.addObserver(vLag);
-
-        // Output
-        vLag.setLocationSelection(localPixelSelection);
-        vLag.setGlyphSelection(localGlyphSelection);
-
-        // Reset display
-        if (display != null) {
-            remove(display);
-        }
-
-        display = new Display();
-        add(display, BorderLayout.CENTER);
-    }
-
-    //--------------//
     // getLeftPanel //
     //--------------//
     private JPanel getLeftPanel ()
@@ -239,8 +205,7 @@ public class GlyphBrowser
         if (nameIndex < names.length) {
             navigator.setIndex(nameIndex, GLYPH_INIT); // Next
         } else {
-            nameIndex--;
-            navigator.setIndex(nameIndex, GLYPH_INIT); // Prev/Reset
+            navigator.setIndex(nameIndex - 1, GLYPH_INIT); // Prev
         }
 
         // Perform file deletion
@@ -251,6 +216,40 @@ public class GlyphBrowser
         } else {
             logger.warning("Could not delete file " + file);
         }
+    }
+
+    //--------------//
+    // resetBrowser //
+    //--------------//
+    private void resetBrowser ()
+    {
+        if (vLag != null) {
+            // Placeholder for some cleanup
+            localPixelSelection.deleteObserver(vLag);
+            localSectionSelection.deleteObserver(vLag);
+        }
+
+        // Reset model
+        vLag = new GlyphLag(new VerticalOrientation());
+        vLag.setName("TrainingLag");
+        vLag.setSectionSelection(localSectionSelection);
+        localSectionSelection.addObserver(vLag);
+        vLag.setRunSelection(localRunSelection);
+
+        // Input
+        localPixelSelection.addObserver(vLag);
+
+        // Output
+        vLag.setLocationSelection(localPixelSelection);
+        vLag.setGlyphSelection(localGlyphSelection);
+
+        // Reset display
+        if (display != null) {
+            remove(display);
+        }
+
+        display = new Display();
+        add(display, BorderLayout.CENTER);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -273,7 +272,7 @@ public class GlyphBrowser
     }
 
     //-----------------//
-    // BasicGlyphModel //
+    // BasicGlyphModel // ------------------------------------------------------
     //-----------------//
     private class BasicGlyphModel
         extends GlyphModel
@@ -291,7 +290,7 @@ public class GlyphBrowser
     }
 
     //---------//
-    // Display //
+    // Display // --------------------------------------------------------------
     //---------//
     private class Display
         extends JPanel
@@ -326,7 +325,7 @@ public class GlyphBrowser
     }
 
     //--------//
-    // MyView //
+    // MyView // ---------------------------------------------------------------
     //--------//
     private class MyView
         extends GlyphLagView
@@ -334,9 +333,7 @@ public class GlyphBrowser
         public MyView ()
         {
             super(vLag, null, null);
-
             setName("GlyphVerifier-View");
-
             setLocationSelection(localPixelSelection);
             localPixelSelection.addObserver(this);
             localGlyphSelection.addObserver(this);
@@ -357,13 +354,11 @@ public class GlyphBrowser
         @Override
         public void renderItems (Graphics g)
         {
-            Zoom z = getZoom();
-
             // Mark the current glyph
             if (pointedGlyph != null) {
                 g.setColor(Color.black);
                 g.setXORMode(Color.darkGray);
-                pointedGlyph.renderBoxArea(g, z);
+                pointedGlyph.renderBoxArea(g, getZoom());
             }
         }
 
@@ -371,8 +366,7 @@ public class GlyphBrowser
         // update //
         //--------//
         /**
-         * Call-back triggered on selection notification.  We forward glyph
-         * information.
+         * Call-back triggered from (local) selection objects
          *
          * @param selection the notified Selection
          * @param hint potential notification hint
@@ -456,7 +450,7 @@ public class GlyphBrowser
     }
 
     //-----------//
-    // Navigator //
+    // Navigator // ------------------------------------------------------------
     //-----------//
     private class Navigator
         extends Board
@@ -466,7 +460,7 @@ public class GlyphBrowser
         JButton    all = new JButton("All");
         JButton    next = new JButton("Next");
         JButton    prev = new JButton("Prev");
-        JTextField name = new SField(
+        JTextField nameField = new SField(
             false, // editable
             "File where glyph is stored");
 
@@ -522,17 +516,17 @@ public class GlyphBrowser
         //----------//
         // setIndex //
         //----------//
-        public void setIndex (int           glyphIndex,
+        public void setIndex (int           nameIndex,
                               SelectionHint hint)
         {
-            nameIndex = glyphIndex;
+            GlyphBrowser.this.nameIndex = nameIndex;
             pointedGlyph = null;
 
             Glyph glyph = null;
 
-            if (glyphIndex >= 0) {
-                String gName = names[glyphIndex];
-                name.setText(gName);
+            if (nameIndex >= 0) {
+                String gName = names[nameIndex];
+                nameField.setText(gName);
 
                 // Load the glyph if needed
                 glyph = loadGlyph(gName);
@@ -548,11 +542,11 @@ public class GlyphBrowser
                     view.setModelSize(modelSize);
                 }
             } else {
-                name.setText("");
+                nameField.setText("");
             }
 
-            localGlyphSelection.setEntity(glyph, hint);
             enableButtons();
+            localGlyphSelection.setEntity(glyph, hint);
         }
 
         //-----------//
@@ -603,8 +597,8 @@ public class GlyphBrowser
             JLabel file = new JLabel("File", SwingConstants.RIGHT);
             builder.add(file, cst.xy(1, r));
 
-            name.setHorizontalAlignment(JTextField.LEFT);
-            builder.add(name, cst.xyw(3, r, 9));
+            nameField.setHorizontalAlignment(JTextField.LEFT);
+            builder.add(nameField, cst.xyw(3, r, 9));
         }
 
         //---------------//

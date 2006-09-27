@@ -90,18 +90,16 @@ public class GlyphVerifier
      */
     private GlyphVerifier ()
     {
-        frame = new JFrame();
-        frame.setTitle("Glyph Verifier");
-
         glyphBrowser = new GlyphBrowser(this);
 
+        frame = new JFrame();
+        frame.setTitle("Glyph Verifier");
         frame.getContentPane()
              .setLayout(new BorderLayout());
         frame.getContentPane()
              .add(getSelectorsPanel(), BorderLayout.NORTH);
         frame.getContentPane()
              .add(glyphBrowser, BorderLayout.CENTER);
-
         frame.pack();
         frame.setBounds(new Rectangle(20, 20, 1000, 600));
         frame.setVisible(true);
@@ -112,27 +110,6 @@ public class GlyphVerifier
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //----------//
-    // getFrame //
-    //----------//
-    /**
-     * Report the UI frame of glyph verifier
-     *
-     * @return the related frame
-     */
-    public JFrame getFrame ()
-    {
-        return frame;
-    }
-
-    //-----------------//
-    // getGlyphBrowser //
-    //-----------------//
-    public GlyphBrowser getGlyphBrowser ()
-    {
-        return glyphBrowser;
-    }
 
     //-------------//
     // getInstance //
@@ -149,6 +126,27 @@ public class GlyphVerifier
         }
 
         return INSTANCE;
+    }
+
+    //------------//
+    // setVisible //
+    //------------//
+    /**
+     * Make the UI frame visible or not
+     *
+     * @param bool true for visible, false for hidden
+     */
+    public void setVisible (boolean bool)
+    {
+        frame.setVisible(bool);
+    }
+
+    //----------------//
+    // dumpSelections //
+    //----------------//
+    public void dumpSelections ()
+    {
+        glyphBrowser.dumpSelections();
     }
 
     //------//
@@ -262,25 +260,6 @@ public class GlyphVerifier
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-------------//
-    // TitledPanel //
-    //-------------//
-    private static class TitledPanel
-        extends JPanel
-    {
-        public TitledPanel (String title)
-        {
-            setBorder(
-                BorderFactory.createTitledBorder(
-                    new EtchedBorder(),
-                    title,
-                    TitledBorder.CENTER,
-                    TitledBorder.TOP));
-            setLayout(new BorderLayout());
-            setMinimumSize(new Dimension(200, 200));
-        }
-    }
-
     //----------//
     // Selector //
     //----------//
@@ -289,7 +268,7 @@ public class GlyphVerifier
      * and glyph selectors. Each selector is made of a list of names, which can
      * be selected and deselected at will.
      */
-    private abstract class Selector
+    private abstract static class Selector
         extends TitledPanel
         implements ActionListener
     {
@@ -389,6 +368,25 @@ public class GlyphVerifier
             } else {
                 cardinal.setText("* No item selected *");
             }
+        }
+    }
+
+    //-------------//
+    // TitledPanel //
+    //-------------//
+    private static class TitledPanel
+        extends JPanel
+    {
+        public TitledPanel (String title)
+        {
+            setBorder(
+                BorderFactory.createTitledBorder(
+                    new EtchedBorder(),
+                    title,
+                    TitledBorder.CENTER,
+                    TitledBorder.TOP));
+            setLayout(new BorderLayout());
+            setMinimumSize(new Dimension(200, 200));
         }
     }
 

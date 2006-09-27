@@ -39,7 +39,6 @@ public class UITest
     {
         SelectionManager.dumpAllSelections();
         GlyphVerifier.getInstance()
-                     .getGlyphBrowser()
                      .dumpSelections();
     }
 }
