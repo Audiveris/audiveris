@@ -296,7 +296,6 @@ public class GlyphBoard
         switch (selection.getTag()) {
         case VERTICAL_GLYPH :
         case HORIZONTAL_GLYPH :
-        case TRAINING_GLYPH :
             // Display Glyph parameters (while preventing circular updates)
             selfUpdating = true;
 
