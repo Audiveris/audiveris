@@ -47,8 +47,7 @@ import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.event.*;
 
 /**
  * Class <code>GlyphBrowser</code> gathers a navigator to move between selected
@@ -114,7 +113,7 @@ class GlyphBrowser
     private List<String> names;
 
     /** Navigator instance to navigate through all glyphs names */
-    private Navigator navigator = new Navigator();
+    private final Navigator navigator = new Navigator();
 
     /** Glyph board with ability to delete a training glyph */
     private GlyphBoard board;
@@ -314,7 +313,7 @@ class GlyphBrowser
         @Override
         public void deassignGlyphShape (Glyph glyph)
         {
-            deleteGlyph(); // Current glyph
+            deleteGlyph(); // Using current glyph
         }
     }
 
