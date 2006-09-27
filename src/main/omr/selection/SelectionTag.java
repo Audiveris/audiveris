@@ -55,7 +55,5 @@ public enum SelectionTag
     /** A vertical glyph id, entity type is an Integer. */
     VERTICAL_GLYPH_ID,
     /** Set of (vertical) glyphs, entity type is a Collection of Glyphs. */
-    GLYPH_SET,
-    /** A vertical glyph used for training, entity type is a Glyph */
-    TRAINING_GLYPH;
+    GLYPH_SET;
 }
