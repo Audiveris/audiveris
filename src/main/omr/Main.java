@@ -93,7 +93,7 @@ public class Main
     /** Singleton */
     private static Main INSTANCE;
 
-    /** Specific forlder name for icons */
+    /** Specific folder name for icons */
     public static final String ICONS_NAME = "icons";
 
     //~ Instance fields --------------------------------------------------------
