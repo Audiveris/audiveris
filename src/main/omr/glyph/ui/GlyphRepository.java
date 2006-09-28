@@ -21,6 +21,7 @@ import omr.sheet.SystemInfo;
 
 import omr.ui.icon.SymbolIcon;
 
+import omr.util.BlackList;
 import omr.util.FileUtil;
 import omr.util.Logger;
 import omr.util.XmlMapper;
@@ -77,15 +78,17 @@ public class GlyphRepository
         "core");
     private static final File      iconsFolder = Main.getIconsFolder();
 
-    /**
-     * Name of the file where glyph blacklist is kept. These glyphs must be
-     * ignored when training the evaluator, they are used only as UI icons in
-     * menus and buttons. The scope of this blacklist is the directory that
-     * contains the blacklist file.
-     */
-    private static final String BLACK_LIST_NAME = ".glyphignore";
-
     //~ Instance fields --------------------------------------------------------
+
+    /** Specific filter for glyph files */
+    private final FileFilter glyphFilter = new FileFilter() {
+        public boolean accept (File file)
+        {
+            return file.isDirectory() ||
+                   FileUtil.getExtension(file)
+                           .equals(FILE_EXTENSION);
+        }
+    };
 
     /** Core collection of glyphs */
     private Collection<String> coreBase;
@@ -123,6 +126,14 @@ public class GlyphRepository
         }
 
         return INSTANCE;
+    }
+
+    //--------//
+    // isIcon //
+    //--------//
+    public boolean isIcon (String gName)
+    {
+        return isIcon(new File(gName));
     }
 
     //-------------//
@@ -212,6 +223,40 @@ public class GlyphRepository
         }
     }
 
+    //-------------//
+    // getGlyphsIn //
+    //-------------//
+    /**
+     * Report the list of glyph files that are contained within a given
+     * directory
+     *
+     * @param dir the containing directory
+     * @return the list of glyph files
+     */
+    synchronized List<File> getGlyphsIn (File dir)
+    {
+        List<File> glyphFiles = new ArrayList<File>();
+        File[]     files = listLegalFiles(dir);
+
+        if (files != null) {
+            for (File file : files) {
+                glyphFiles.add(file);
+            }
+        } else {
+            logger.warning("Cannot get files list from dir " + dir);
+        }
+
+        return glyphFiles;
+    }
+
+    //---------------//
+    // isIconsFolder //
+    //---------------//
+    boolean isIconsFolder (String folder)
+    {
+        return folder.equals(Main.ICONS_NAME);
+    }
+
     //---------------------//
     // getSheetDirectories //
     //---------------------//
@@ -224,9 +269,7 @@ public class GlyphRepository
     {
         // One directory per sheet
         List<File> dirs = new ArrayList<File>();
-
-        File[]     files = getSheetsFolder()
-                               .listFiles();
+        File[]     files = listLegalFiles(getSheetsFolder());
 
         for (File file : files) {
             if (file.isDirectory()) {
@@ -235,35 +278,6 @@ public class GlyphRepository
         }
 
         return dirs;
-    }
-
-    //----------------//
-    // getSheetGlyphs //
-    //----------------//
-    /**
-     * Report the list of glyph files that are contained within a given
-     * directory
-     *
-     * @param dir the containing directory
-     * @return the list of glyph files
-     */
-    synchronized List<File> getSheetGlyphs (File dir)
-    {
-        List<File> glyphFiles = new ArrayList<File>();
-        File[]     files = dir.listFiles();
-
-        for (File file : files) {
-            if (FileUtil.getExtension(file)
-                        .equals(FILE_EXTENSION)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Adding " + file);
-                }
-
-                glyphFiles.add(file);
-            }
-        }
-
-        return glyphFiles;
     }
 
     //-----------------//
@@ -481,43 +495,6 @@ public class GlyphRepository
             coreBase.size() + " glyphs copied as core training material");
     }
 
-    //--------------//
-    // getBlackList //
-    //--------------//
-    private Set<String> getBlackList (File dir)
-    {
-        Set<String> bl = new HashSet<String>();
-
-        File        file = new File(dir, BLACK_LIST_NAME);
-
-        if (file.exists()) {
-            try {
-                BufferedReader br = new BufferedReader(new FileReader(file));
-                String         fileName;
-
-                try {
-                    // Expect one file name per line
-                    while ((fileName = br.readLine()) != null) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine("Black listing : " + fileName);
-                        }
-
-                        bl.add(fileName.trim());
-                    }
-
-                    br.close();
-                } catch (IOException ex) {
-                    logger.warning(
-                        "IO error while reading file '" + file + "'");
-                }
-            } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find file '" + file + "'");
-            }
-        }
-
-        return bl;
-    }
-
     //-------------------//
     // getGlyphXmlMapper //
     //-------------------//
@@ -533,20 +510,12 @@ public class GlyphRepository
     //--------//
     // isIcon //
     //--------//
-    private boolean isIcon (String gName)
-    {
-        return isIcon(new File(gName));
-    }
-
-    //--------//
-    // isIcon //
-    //--------//
     private boolean isIcon (File file)
     {
         String folder = file.getParentFile()
                             .getName();
 
-        return folder.equals(Main.ICONS_NAME);
+        return isIconsFolder(folder);
     }
 
     //------------------//
@@ -590,6 +559,14 @@ public class GlyphRepository
     {
         return file.getParentFile()
                    .getName() + File.separator + file.getName();
+    }
+
+    //----------------//
+    // listLegalFiles //
+    //----------------//
+    private File[] listLegalFiles (File dir)
+    {
+        return new BlackList(dir).listFiles(glyphFilter);
     }
 
     //----------//
@@ -650,6 +627,15 @@ public class GlyphRepository
     //---------------//
     // loadDirectory //
     //---------------//
+    /**
+     * Retrieve recursively all files in the hierarchy starting at given
+     * directory, and append them in the provided file list. If a black list
+     * exists in a directory, then all black-listed files (and direct
+     * sub-directories) hosted in this directory are skipped.
+     *
+     * @param dir the top directory where search is launched
+     * @param all the list to be augmented by found files
+     */
     private void loadDirectory (File       dir,
                                 List<File> all)
     {
@@ -657,37 +643,18 @@ public class GlyphRepository
             logger.fine("Recursing through directory " + dir);
         }
 
-        // Is there a black list in this directory ?
-        Set<String> blackList = getBlackList(dir);
+        File[] files = listLegalFiles(dir);
 
-        File[]      files = dir.listFiles();
-
-        if (files == null) {
-            logger.warning("Directory " + dir + " is empty");
-
-            return;
-        }
-
-        for (File file : files) {
-            // Black listed ?
-            if (blackList.contains(file.getName())) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Skipping black listed file : " + file.getName());
-                }
-            } else {
+        if (files != null) {
+            for (File file : files) {
                 if (file.isDirectory()) {
-                    // Recurse through it
-                    loadDirectory(file, all);
-                } else if (FileUtil.getExtension(file)
-                                   .equals(FILE_EXTENSION)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Adding " + file);
-                    }
-
+                    loadDirectory(file, all); // Recurse through it
+                } else {
                     all.add(file);
                 }
             }
+        } else {
+            logger.warning("Directory " + dir + " is empty");
         }
     }
 

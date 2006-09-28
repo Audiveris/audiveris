@@ -10,6 +10,8 @@
 //
 package omr.glyph.ui;
 
+import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -48,6 +50,7 @@ import java.util.List;
 
 import javax.swing.*;
 import javax.swing.event.*;
+import omr.util.BlackList;
 
 /**
  * Class <code>GlyphBrowser</code> gathers a navigator to move between selected
@@ -207,7 +210,7 @@ class GlyphBrowser
             // User confirmation is required ?
             if (constants.confirmDeletions.getValue()) {
                 if (JOptionPane.showConfirmDialog(
-                    null,
+                    GlyphBrowser.this,
                     "Delete glyph '" + gName + "' ?") != JOptionPane.YES_OPTION) {
                     return;
                 }
@@ -227,13 +230,13 @@ class GlyphBrowser
             verifier.deleteGlyphName(gName);
 
             // Perform file deletion
-            File file = new File(repository.getSheetsFolder(), gName);
-
-            if (file.delete()) {
-                logger.info("Glyph " + gName + " deleted");
+            if (repository.isIcon(gName)) {
+                new BlackList(Main.getIconsFolder()).add(new File(gName));
             } else {
-                logger.warning("Could not delete file " + file);
+                File file = new File(repository.getSheetsFolder(), gName);
+                new BlackList(file.getParentFile()).add(new File(gName));
             }
+            logger.info("Removed " + gName);
 
             // Set new index ?
             if (index < names.size()) {
@@ -278,6 +281,11 @@ class GlyphBrowser
 
         display = new Display();
         add(display, BorderLayout.CENTER);
+
+        // Check if all this is really needed ... TBD
+        invalidate();
+        validate();
+        repaint();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -615,6 +623,7 @@ class GlyphBrowser
         //-----------//
         public Glyph loadGlyph (String gName)
         {
+            ///logger.info("Loading " + gName);
             Glyph glyph = repository.getGlyph(gName);
 
             if (glyph.getLag() != vLag) {
