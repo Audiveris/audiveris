@@ -85,26 +85,23 @@ public class EvaluationBoard
     /** Related glyph model */
     private final GlyphModel glyphModel;
 
-    /** Button for testing ratio of recognized glyphs */
-    private final JButton testButton = new JButton(new TestAction());
+    /** Related sheet & GlyphModel */
+    private final Sheet sheet;
 
-    /** Numeric result of whole sheet test */
-    private final JLabel testPercent = new JLabel("0%", SwingConstants.CENTER);
-
-    /** Percentage result of whole sheet test */
-    private final JLabel testResult = new JLabel("", SwingConstants.CENTER);
+    /** Lag view (if any) */
+    private final GlyphLagView view;
 
     /** Pane for detailed info display about the glyph evaluation */
     private final Selector selector;
 
-    /** Related sheet & GlyphModel */
-    private final Sheet sheet;
+    /** Button for testing ratio of recognized glyphs */
+    private JButton testButton;
 
-    /** Should we use buttons (or plain output fields) ? */
-    private final boolean useButtons;
+    /** Numeric result of whole sheet test */
+    private JLabel testPercent;
 
-    /** Lag view (if any) */
-    private GlyphLagView view;
+    /** Percentage result of whole sheet test */
+    private JLabel testResult;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -112,26 +109,49 @@ public class EvaluationBoard
     // EvaluationBoard //
     //-----------------//
     /**
-     * Create a board with one neural network evaluator
+     * Create a simplified passive evaluation board with one neural network
+     * evaluator
      *
-     * @param sheet the related sheet, or null
      * @param glyphModel the related glyph model
-     * @param view the related symbol glyph view
      * @param inputSelection the Glyph input to evaluate
      */
-    public EvaluationBoard (Sheet        sheet,
-                            GlyphModel   glyphModel,
-                            boolean      useButtons,
-                            GlyphLagView view,
-                            Selection    inputSelection)
+    public EvaluationBoard (String     name,
+                            GlyphModel glyphModel,
+                            Selection  inputSelection)
     {
-        super(Board.Tag.CUSTOM, "EvaluationBoard");
+        this(name, glyphModel, inputSelection, null, null);
+    }
 
-        // Useful ??? TBD
-        this.sheet = sheet;
+    //-----------------//
+    // EvaluationBoard //
+    //-----------------//
+    /**
+     * Create an evaluation board with one neural network evaluator, ability to
+     * force glyph shape, and test buttons
+     *
+     * @param glyphModel the related glyph model
+     * @param inputSelection the Glyph input to evaluate
+     * @param sheet the related sheet, or null
+     * @param view the related symbol glyph view
+     */
+    public EvaluationBoard (String       name,
+                            GlyphModel   glyphModel,
+                            Selection    inputSelection,
+                            Sheet        sheet,
+                            GlyphLagView view)
+    {
+        super(Board.Tag.CUSTOM, name);
+
         this.glyphModel = glyphModel;
-        this.useButtons = useButtons;
+        this.sheet = sheet;
         this.view = view;
+
+        // Buttons
+        if (sheet != null) {
+            testButton = new JButton(new TestAction());
+            testPercent = new JLabel("0%", SwingConstants.CENTER);
+            testResult = new JLabel("", SwingConstants.CENTER);
+        }
 
         selector = new Selector();
         defineLayout();
@@ -229,7 +249,7 @@ public class EvaluationBoard
             r = i + 3; // --------------------------------
             builder.add(selector.buttons[i].grade, cst.xy(1, r));
 
-            if (useButtons) {
+            if (sheet != null) {
                 builder.add(selector.buttons[i].button, cst.xyw(3, r, 5));
             } else {
                 builder.add(selector.buttons[i].field, cst.xyw(3, r, 5));
@@ -258,7 +278,7 @@ public class EvaluationBoard
         {
             grade.setToolTipText("Grade of the evaluation");
 
-            if (useButtons) {
+            if (sheet != null) {
                 button = new JButton();
                 button.addActionListener(this);
                 button.setToolTipText("Assignable shape");
@@ -277,14 +297,14 @@ public class EvaluationBoard
         {
             JComponent comp;
 
-            if (useButtons) {
+            if (sheet != null) {
                 comp = button;
             } else {
                 comp = field;
             }
 
             if (eval != null) {
-                if (useButtons) {
+                if (sheet != null) {
                     button.setText(eval.shape.toString());
                     button.setIcon(eval.shape.getIcon());
                 } else {

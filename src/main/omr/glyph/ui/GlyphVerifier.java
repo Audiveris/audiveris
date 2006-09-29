@@ -502,19 +502,26 @@ public class GlyphVerifier
             if (shapes.length == 0) {
                 logger.warning("No shapes selected in Shape Selector");
             } else {
-                // Populate with all possible glyphs
                 list.removeAll();
 
+                // Populate with all possible glyphs, sorted by gName
                 for (String folder : folders) {
-                    File dir = getActualDir(folder);
-
                     // Add proper glyphs files from this directory
+                    ArrayList<String> gNames = new ArrayList<String>();
+                    File              dir = getActualDir(folder);
+
                     for (File file : repository.getGlyphsIn(dir)) {
                         String shapeName = radixOf(file.getName());
 
                         if (shapeList.contains(shapeName)) {
-                            list.add(dir.getName() + "/" + file.getName());
+                            gNames.add(dir.getName() + "/" + file.getName());
                         }
+                    }
+
+                    Collections.sort(gNames);
+
+                    for (String gName : gNames) {
+                        list.add(gName);
                     }
                 }
 
@@ -591,9 +598,17 @@ public class GlyphVerifier
             // First insert the dedicated icons folder
             list.add(Main.getIconsFolder().getName());
 
-            // Then populate with all existing sheets folders
+            // Then populate with all sorted existing sheets folders
+            ArrayList<String> folders = new ArrayList<String>();
+
             for (File file : repository.getSheetDirectories()) {
-                list.add(file.getName());
+                folders.add(file.getName());
+            }
+
+            Collections.sort(folders);
+
+            for (String folder : folders) {
+                list.add(folder);
             }
 
             updateCardinal();

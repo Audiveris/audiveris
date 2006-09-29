@@ -147,11 +147,11 @@ public class SymbolsEditor
             new ActionsBoard(sheet, this),
             focus,
             new EvaluationBoard(
-                sheet,
+                "Evaluation-ActiveBoard",
                 this,
-                true, // useButtons
-                view,
-                sheet.getSelection(VERTICAL_GLYPH)));
+                sheet.getSelection(VERTICAL_GLYPH),
+                sheet,
+                view));
 
         // Link with glyph builder & glyph inspector
         builder = sheet.getGlyphBuilder();

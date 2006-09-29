@@ -35,6 +35,7 @@ import omr.ui.view.LogSlider;
 import omr.ui.view.Rubber;
 import omr.ui.view.Zoom;
 
+import omr.util.BlackList;
 import omr.util.Implement;
 import omr.util.Logger;
 
@@ -50,7 +51,6 @@ import java.util.List;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import omr.util.BlackList;
 
 /**
  * Class <code>GlyphBrowser</code> gathers a navigator to move between selected
@@ -119,7 +119,7 @@ class GlyphBrowser
     private final Navigator navigator = new Navigator();
 
     /** Glyph board with ability to delete a training glyph */
-    private GlyphBoard board;
+    private GlyphBoard glyphBoard;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -169,28 +169,43 @@ class GlyphBrowser
     //----------------//
     // buildLeftPanel //
     //----------------//
+    /**
+     * Build a panel composed vertically of a Navigator, a GlyphBoard and an
+     * EvaluationBoard
+     *
+     * @return the UI component, ready to be inserted in Swing hierarchy
+     */
     private JPanel buildLeftPanel ()
     {
         // Basic glyph model
         final GlyphModel glyphModel = new BasicGlyphModel();
 
         // Specific glyph board
-        board = new GlyphBoard("TrainingBoard", glyphModel);
-        board.setInputSelectionList(
+        glyphBoard = new GlyphBoard("TrainingBoard", glyphModel);
+        glyphBoard.setInputSelectionList(
             Collections.singletonList(localGlyphSelection));
-        board.boardShown();
-        board.getDeassignButton()
-             .setToolTipText("Remove that glyph from training material");
-        board.getDeassignButton()
-             .setEnabled(false);
+        glyphBoard.boardShown();
+        glyphBoard.getDeassignButton()
+                  .setToolTipText("Remove that glyph from training material");
+        glyphBoard.getDeassignButton()
+                  .setEnabled(false);
 
+        // Passive evaluation board
+        EvaluationBoard evalBoard = new EvaluationBoard(
+            "Evaluation-PassiveBoard",
+            glyphModel,
+            localGlyphSelection);
+        localGlyphSelection.addObserver(evalBoard);
+
+        // Layout
         FormLayout      layout = new FormLayout("pref", "pref,pref,pref");
         PanelBuilder    builder = new PanelBuilder(layout);
         CellConstraints cst = new CellConstraints();
         builder.setDefaultDialogBorder();
 
         builder.add(navigator.getComponent(), cst.xy(1, 1));
-        builder.add(board.getComponent(), cst.xy(1, 2));
+        builder.add(glyphBoard.getComponent(), cst.xy(1, 2));
+        builder.add(evalBoard.getComponent(), cst.xy(1, 3));
 
         return builder.getPanel();
     }
@@ -205,7 +220,7 @@ class GlyphBrowser
         if (index >= 0) {
             // Delete glyph designated by index
             String gName = names.get(index);
-            Glyph  glyph = navigator.loadGlyph(gName);
+            Glyph  glyph = navigator.getGlyph(gName);
 
             // User confirmation is required ?
             if (constants.confirmDeletions.getValue()) {
@@ -236,6 +251,7 @@ class GlyphBrowser
                 File file = new File(repository.getSheetsFolder(), gName);
                 new BlackList(file.getParentFile()).add(new File(gName));
             }
+
             logger.info("Removed " + gName);
 
             // Set new index ?
@@ -246,6 +262,29 @@ class GlyphBrowser
             }
         } else {
             logger.warning("No selected glyph to delete!");
+        }
+    }
+
+    //-----------//
+    // hideIcons //
+    //-----------//
+    private void hideIcons ()
+    {
+        // Brute force, to be improved TBD
+        for (String gName : names) {
+            if (repository.isIcon(gName)) {
+                if (repository.isLoaded(gName)) {
+                    Glyph glyph = repository.getGlyph(gName);
+
+                    for (GlyphSection section : glyph.getMembers()) {
+                        section.getViews()
+                               .clear();
+                        section.delete();
+                    }
+                }
+
+                repository.unloadGlyph(gName);
+            }
         }
     }
 
@@ -338,8 +377,10 @@ class GlyphBrowser
 
         Display ()
         {
+            // Some house keeping about previous view
             if (view != null) {
                 localPixelSelection.deleteObserver(view);
+                localGlyphSelection.deleteObserver(view);
             }
 
             view = new MyView();
@@ -395,7 +436,7 @@ class GlyphBrowser
 
             if (index >= 0) {
                 String gName = names.get(index);
-                Glyph  glyph = navigator.loadGlyph(gName);
+                Glyph  glyph = navigator.getGlyph(gName);
                 g.setColor(Color.black);
                 g.setXORMode(Color.darkGray);
                 glyph.renderBoxArea(g, getZoom());
@@ -473,13 +514,15 @@ class GlyphBrowser
             for (String gName : names) {
                 index++;
 
-                Glyph glyph = navigator.loadGlyph(gName);
+                if (repository.isLoaded(gName)) {
+                    Glyph glyph = navigator.getGlyph(gName);
 
-                if (glyph.getLag() == vLag) {
-                    for (GlyphSection section : glyph.getMembers()) {
-                        // Swap x & y,  since this is a vertical lag
-                        if (section.contains(rect.y, rect.x)) {
-                            return index;
+                    if (glyph.getLag() == vLag) {
+                        for (GlyphSection section : glyph.getMembers()) {
+                            // Swap x & y,  since this is a vertical lag
+                            if (section.contains(rect.y, rect.x)) {
+                                return index;
+                            }
                         }
                     }
                 }
@@ -525,11 +568,17 @@ class GlyphBrowser
                 new ActionListener() {
                         public void actionPerformed (ActionEvent e)
                         {
+                            // Load all (non icon) glyphs
+                            int index = -1;
                             for (String gName : names) {
-                                loadGlyph(gName);
+                                index++;
+                                if (!repository.isIcon(gName)) {
+                                    setIndex(index, GLYPH_INIT);
+                                }
                             }
 
-                            setIndex(0, GLYPH_INIT); // To first
+                            // Load & point to first icon
+                            setIndex(0, GLYPH_INIT);
                         }
                     });
 
@@ -580,8 +629,14 @@ class GlyphBrowser
                 String gName = names.get(index);
                 nameField.setText(gName);
 
-                // Load the glyph if needed
-                glyph = loadGlyph(gName);
+                // Special case for icon : if we point to an icon, we have to
+                // get rid of all other icons (standard glyphs can be kept)
+                if (repository.isIcon(gName)) {
+                    hideIcons();
+                }
+
+                // Load the desired glyph if needed
+                glyph = getGlyph(gName);
 
                 // Extend view model size if needed
                 Rectangle box = glyph.getContourBox();
@@ -621,7 +676,7 @@ class GlyphBrowser
         //-----------//
         // loadGlyph //
         //-----------//
-        public Glyph loadGlyph (String gName)
+        public Glyph getGlyph (String gName)
         {
             ///logger.info("Loading " + gName);
             Glyph glyph = repository.getGlyph(gName);

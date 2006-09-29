@@ -257,6 +257,14 @@ public class GlyphRepository
         return folder.equals(Main.ICONS_NAME);
     }
 
+    //----------//
+    // isLoaded //
+    //----------//
+    boolean isLoaded (String gName)
+    {
+        return glyphsMap.get(gName) != null;
+    }
+
     //---------------------//
     // getSheetDirectories //
     //---------------------//
@@ -493,6 +501,16 @@ public class GlyphRepository
 
         logger.info(
             coreBase.size() + " glyphs copied as core training material");
+    }
+
+    //-------------//
+    // unloadGlyph //
+    //-------------//
+    void unloadGlyph (String gName)
+    {
+        if (glyphsMap.containsKey(gName)) {
+            glyphsMap.remove(gName);
+        }
     }
 
     //-------------------//
