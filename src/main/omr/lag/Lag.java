@@ -49,9 +49,6 @@ import java.util.List;
  * @version $Id$
  * @param <L> precise lag (sub)type
  * @param <S> precise section (sub)type
- * @see #setRunSelection
- * @see #setSectionSelection
- * @see #setLocationSelection
  */
 public class Lag<L extends Lag<L, S>, S extends Section>
     extends Digraph<L, S>
