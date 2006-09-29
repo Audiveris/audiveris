@@ -13,6 +13,7 @@ package omr.glyph.ui;
 import omr.Main;
 
 import omr.glyph.Glyph;
+import omr.glyph.GlyphSection;
 import omr.glyph.IconGlyph;
 import omr.glyph.Shape;
 
@@ -510,6 +511,28 @@ public class GlyphRepository
     {
         if (glyphsMap.containsKey(gName)) {
             glyphsMap.remove(gName);
+        }
+    }
+
+    //-----------------//
+    // unloadIconsFrom //
+    //-----------------//
+    void unloadIconsFrom (List<String> names)
+    {
+        for (String gName : names) {
+            if (isIcon(gName)) {
+                if (isLoaded(gName)) {
+                    Glyph glyph = getGlyph(gName);
+
+                    for (GlyphSection section : glyph.getMembers()) {
+                        section.getViews()
+                               .clear();
+                        section.delete();
+                    }
+                }
+
+                unloadGlyph(gName);
+            }
         }
     }
 

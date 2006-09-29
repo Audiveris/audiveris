@@ -265,29 +265,6 @@ class GlyphBrowser
         }
     }
 
-    //-----------//
-    // hideIcons //
-    //-----------//
-    private void hideIcons ()
-    {
-        // Brute force, to be improved TBD
-        for (String gName : names) {
-            if (repository.isIcon(gName)) {
-                if (repository.isLoaded(gName)) {
-                    Glyph glyph = repository.getGlyph(gName);
-
-                    for (GlyphSection section : glyph.getMembers()) {
-                        section.getViews()
-                               .clear();
-                        section.delete();
-                    }
-                }
-
-                repository.unloadGlyph(gName);
-            }
-        }
-    }
-
     //--------------//
     // resetBrowser //
     //--------------//
@@ -632,7 +609,7 @@ class GlyphBrowser
                 // Special case for icon : if we point to an icon, we have to
                 // get rid of all other icons (standard glyphs can be kept)
                 if (repository.isIcon(gName)) {
-                    hideIcons();
+                    repository.unloadIconsFrom(names);
                 }
 
                 // Load the desired glyph if needed
