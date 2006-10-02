@@ -370,7 +370,7 @@ public class GlyphBoard
     protected void defineLayout ()
     {
         int r = 1; // --------------------------------
-        builder.addSeparator("Glyph", cst.xyw(1, r, 9));
+        builder.addSeparator("Glyph", cst.xyw(1, r, 8));
         builder.add(count, cst.xy(9, r));
         builder.add(dump, cst.xy(11, r));
 
