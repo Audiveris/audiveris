@@ -38,7 +38,7 @@ import javax.swing.event.*;
  * <p>The frame is divided vertically in 3 parts:
  * <ol>
  * <li>The selection in repository of known glyphs ({@link SelectionPanel})
- * <li>The training of the neural network evaluator ({@link Trainingpanel})
+ * <li>The training of the neural network evaluator ({@link TrainingPanel})
  * <li>The validation of the neural network evaluator ({@link ValidationPanel})
  * </ol>
  *
@@ -229,11 +229,15 @@ public class GlyphTrainer
     //------//
     /**
      * Class <code>Task</code> handles which activity is currently being carried
-     * out
+     * out, only one being current at any time.
      */
     static class Task
         extends Observable
     {
+        /**
+         * Enum <code>Activity</code> defines the possible activities in
+         * training.
+         */
         static enum Activity {
             /** No ongoing activity */
             INACTIVE,
@@ -249,6 +253,11 @@ public class GlyphTrainer
         //-------------//
         // setActivity //
         //-------------//
+        /**
+         * Assign a new current activity and notify all observers
+         *
+         * @param activity
+         */
         public void setActivity (Activity activity)
         {
             this.activity = activity;
@@ -259,6 +268,11 @@ public class GlyphTrainer
         //-------------//
         // getActivity //
         //-------------//
+        /**
+         * Report the current training activity
+         *
+         * @return current activity
+         */
         public Activity getActivity ()
         {
             return activity;
