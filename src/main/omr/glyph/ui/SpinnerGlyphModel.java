@@ -25,7 +25,8 @@ import javax.swing.*;
  * GlyphLag}. Any modification in the lag is thus transparently handled, since
  * the lag <b>is</b> the model. <p>A glyph {@link Predicate} can be assigned to
  * this SpinnerGlyphModel at construction time in order to restrict the
- * population of glyphs in the spinner.
+ * population of glyphs in the spinner. This class is used by {@link GlyphBoard}
+ * only, but is not coupled with it.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -213,7 +214,6 @@ public class SpinnerGlyphModel
             currentId = id;
             fireStateChanged();
         } else {
-            ///logger.warning("invalid element : " + id);
             throw new IllegalArgumentException("invalid element : " + id);
         }
     }

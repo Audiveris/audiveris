@@ -156,7 +156,6 @@ public class SymbolsEditor
         // Link with glyph builder & glyph inspector
         builder = sheet.getGlyphBuilder();
         inspector = sheet.getGlyphInspector();
-        builder.setBoard(glyphBoard);
 
         // Create a hosting pane for the view
         ScrollLagView slv = new ScrollLagView(view);

@@ -59,7 +59,7 @@ import javax.swing.event.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class ShapeFocusBoard
+class ShapeFocusBoard
     extends Board
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -74,7 +74,7 @@ public class ShapeFocusBoard
         /** Display all symbols */
         ALL,
         /** Display only known symbols */
-        KNOWN, 
+        KNOWN,
         /** Display only unknown symbols */
         UNKNOWN;
     }

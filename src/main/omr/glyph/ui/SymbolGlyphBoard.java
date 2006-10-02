@@ -46,7 +46,7 @@ import javax.swing.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class SymbolGlyphBoard
+class SymbolGlyphBoard
     extends GlyphBoard
 {
     //~ Static fields/initializers ---------------------------------------------
