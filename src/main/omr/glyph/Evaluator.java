@@ -61,7 +61,7 @@ public abstract class Evaluator
     public static final int inSize = inMoments + 3;
 
     /**
-     * Number of shapes to differentiate : {@value}
+     * Number of shapes to differentiate
      */
     public static final int outSize = Shape.LastPhysicalShape.ordinal() + 1;
 
