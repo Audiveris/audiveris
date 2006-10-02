@@ -12,8 +12,6 @@ package omr.glyph;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.ui.SymbolGlyphBoard;
-
 import omr.score.Measure;
 import omr.score.PagePoint;
 import omr.score.Staff;
@@ -54,13 +52,10 @@ public class GlyphBuilder
     //~ Instance fields --------------------------------------------------------
 
     /** The containing sheet */
-    private final Sheet      sheet;
+    private final Sheet sheet;
 
     /** Lag of vertical runs */
-    private GlyphLag         vLag;
-
-    /** Pointer to glyph board */
-    private SymbolGlyphBoard glyphBoard;
+    private GlyphLag vLag;
 
     /** First glyph id as built by this builder */
     private int firstGlyphId;
@@ -84,19 +79,6 @@ public class GlyphBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //----------//
-    // setBoard //
-    //----------//
-    /**
-     * Assign a related board (TBD: Useful???)
-     *
-     * @param glyphBoard the related board
-     */
-    public void setBoard (SymbolGlyphBoard glyphBoard)
-    {
-        this.glyphBoard = glyphBoard;
-    }
 
     //---------------//
     // buildCompound //
