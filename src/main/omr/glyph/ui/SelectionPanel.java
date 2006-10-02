@@ -34,13 +34,14 @@ import java.util.concurrent.*;
 import javax.swing.*;
 
 /**
- * Class <code>SelectionPanel</code>
- *
+ * Class <code>SelectionPanel</code> handles a user panel to select names from
+ * glyph repository, either the whole population or a core set of glyphs. This
+ * class is a dedicated companion of {@link GlyphTrainer}.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class SelectionPanel
+class SelectionPanel
     extends Panel
     implements GlyphRepository.Monitor, Observer
 {

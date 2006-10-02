@@ -38,12 +38,12 @@ import javax.swing.*;
 /**
  * Class <code>ValidationPanel</code> handles the validation of an evaluator
  * against the selected population of glyphs (either the whole base or the core
- * base)
+ * base). It is a dedicated companion of class {@link GlyphTrainer}.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class ValidationPanel
+class ValidationPanel
     extends Panel
     implements Observer
 {

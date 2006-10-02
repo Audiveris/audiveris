@@ -36,12 +36,12 @@ import javax.swing.*;
  * Class <code>TrainingPanel</code> is a panel dedicated to the training of an
  * evaluator. This class was common to several evaluators, it is now used only
  * through its subclass {@link NetworkPanel} to train just the neural network
- * evaluator.
+ * evaluator. It is a dedicated companion of class {@link GlyphTrainer}.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class TrainingPanel
+class TrainingPanel
     extends Panel
     implements Evaluator.Monitor, Observer
 {

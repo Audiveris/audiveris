@@ -30,12 +30,13 @@ import javax.swing.event.*;
 
 /**
  * Class <code>NetworkPanel</code> is the user interface that handles the
- * training of the neural network evaluator
+ * training of the neural network evaluator. It is a dedicated companion of
+ * class {@link GlyphTrainer}.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class NetworkPanel
+class NetworkPanel
     extends TrainingPanel
 {
     //~ Instance fields --------------------------------------------------------

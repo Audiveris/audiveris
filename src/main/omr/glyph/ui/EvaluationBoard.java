@@ -60,7 +60,7 @@ import javax.swing.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class EvaluationBoard
+class EvaluationBoard
     extends Board
 {
     //~ Static fields/initializers ---------------------------------------------
