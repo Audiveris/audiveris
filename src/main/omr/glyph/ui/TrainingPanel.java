@@ -42,7 +42,6 @@ import javax.swing.*;
  * @version $Id$
  */
 class TrainingPanel
-    extends Panel
     implements Evaluator.Monitor, Observer
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -51,6 +50,9 @@ class TrainingPanel
         TrainingPanel.class);
 
     //~ Instance fields --------------------------------------------------------
+
+    /** The swing component */
+    protected final Panel component;
 
     /** Current activity (selecting the population, or training the evaluator on
        the selected population */
@@ -108,6 +110,9 @@ class TrainingPanel
         this.task = task;
         this.selectionPanel = selectionPanel;
 
+        component = new Panel();
+        component.setNoInsets();
+
         FormLayout layout = Panel.makeFormLayout(
             totalRows,
             4,
@@ -115,13 +120,26 @@ class TrainingPanel
             standardWidth,
             standardWidth);
 
-        builder = new PanelBuilder(layout, this);
+        builder = new PanelBuilder(layout, component);
         builder.setDefaultDialogBorder(); // Useful ?
 
         defineLayout();
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Give access to the encapsulated swing component
+     *
+     * @return the user panel
+     */
+    public JComponent getComponent ()
+    {
+        return component;
+    }
 
     @Implement(NeuralNetwork.Monitor.class)
     public void epochEnded (int    epochIndex,
@@ -143,6 +161,13 @@ class TrainingPanel
     //--------//
     // update //
     //--------//
+    /**
+     * Method triggered by new task activity : thte train action is enabled only
+     * when no activity is going on.
+     *
+     * @param obs the task object
+     * @param unused not used
+     */
     @Implement(Observer.class)
     public void update (Observable obs,
                         Object     unused)
@@ -181,6 +206,10 @@ class TrainingPanel
     //--------------//
     // defineLayout //
     //--------------//
+    /**
+     * Define the common part of the layout, each subclass being able to augment
+     * this layout from its constructor
+     */
     protected void defineLayout ()
     {
         // Buttons to select just the core glyphs, or the whole population
@@ -282,7 +311,7 @@ class TrainingPanel
             // Ask user confirmation
             if (confirmationRequired) {
                 int answer = JOptionPane.showConfirmDialog(
-                    TrainingPanel.this,
+                    component,
                     "Do you really want to retrain from scratch ?");
 
                 if (answer != JOptionPane.YES_OPTION) {

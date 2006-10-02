@@ -211,13 +211,13 @@ public class GlyphTrainer
         builder.setDefaultDialogBorder();
 
         int r = 1; // --------------------------------
-        builder.add(selectionPanel, cst.xy(1, r));
+        builder.add(selectionPanel.getComponent(), cst.xy(1, r));
 
         r += 2; // --------------------------------
-        builder.add(networkPanel, cst.xy(1, r));
+        builder.add(networkPanel.getComponent(), cst.xy(1, r));
 
         r += 2; // --------------------------------
-        builder.add(validationPanel, cst.xy(1, r));
+        builder.add(validationPanel.getComponent(), cst.xy(1, r));
 
         return builder.getPanel();
     }

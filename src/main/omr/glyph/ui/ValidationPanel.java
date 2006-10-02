@@ -44,7 +44,6 @@ import javax.swing.*;
  * @version $Id$
  */
 class ValidationPanel
-    extends Panel
     implements Observer
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -55,14 +54,17 @@ class ValidationPanel
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Swing component */
+    private final Panel component;
+
     /** Dedicated executor for validation */
-    protected ExecutorService executor = Executors.newSingleThreadExecutor();
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     /** The evaluator to validate */
     private final Evaluator evaluator;
 
     /** User progress bar to visualize the validation process */
-    protected JProgressBar progressBar = new JProgressBar();
+    private JProgressBar progressBar = new JProgressBar();
 
     /** Repository of known glyphs */
     private final GlyphRepository repository = GlyphRepository.getInstance();
@@ -74,43 +76,43 @@ class ValidationPanel
     private final TrainingPanel trainingPanel;
 
     /** User action to validate the evaluator against whole or core base */
-    protected ValidateAction validateAction = new ValidateAction();
+    private ValidateAction validateAction = new ValidateAction();
 
     /** Display percentage of glyphs correctly recognized */
-    protected LDoubleField pcValue = new LDoubleField(
+    private LDoubleField pcValue = new LDoubleField(
         false,
         "% OK",
         "Percentage of recognized glyphs");
 
     /** Display number of glyphs correctly recognized */
-    protected LIntegerField positiveValue = new LIntegerField(
+    private LIntegerField positiveValue = new LIntegerField(
         false,
         "Glyphs OK",
         "Number of glyphs correctly recognized");
 
     /** Display number of glyphs mistaken with some other shape */
-    protected LIntegerField falsePositiveValue = new LIntegerField(
+    private LIntegerField falsePositiveValue = new LIntegerField(
         false,
         "False Pos.",
         "Number of glyphs incorrectly recognized");
 
     /** Collection of glyph names leading to false positives */
-    protected List<String> falsePositives = new ArrayList<String>();
+    private List<String> falsePositives = new ArrayList<String>();
 
     /** User action to investigate on false positives */
-    protected FalsePositiveAction falsePositiveAction = new FalsePositiveAction();
+    private FalsePositiveAction falsePositiveAction = new FalsePositiveAction();
 
     /** Display number of glyphs not recognized */
-    protected LIntegerField negativeValue = new LIntegerField(
+    private LIntegerField negativeValue = new LIntegerField(
         false,
         "Negative",
         "Number of glyphs not recognized");
 
     /** Collection of glyph names not recognized (negatives) */
-    protected List<String> negatives = new ArrayList<String>();
+    private List<String> negatives = new ArrayList<String>();
 
     /** User action to investigate on negatives */
-    protected NegativeAction negativeAction = new NegativeAction();
+    private NegativeAction negativeAction = new NegativeAction();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -134,14 +136,38 @@ class ValidationPanel
         this.trainingPanel = trainingPanel;
         task.addObserver(this);
 
+        component = new Panel();
+        component.setNoInsets();
+
         defineLayout(standardWidth);
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Give access to the encapsulated swing component
+     *
+     * @return the user panel
+     */
+    public JComponent getComponent ()
+    {
+        return component;
+    }
+
     //--------//
     // update //
     //--------//
+    /**
+     * A degenerated version, just to disable by default the verification
+     * actions whenever a new task activity is notified. These actions are then
+     * re-enabled only at the end of the validation run.
+     *
+     * @param obs not used
+     * @param unused not used
+     */
     @Implement(Observer.class)
     public void update (Observable obs,
                         Object     unused)
@@ -165,7 +191,9 @@ class ValidationPanel
             "",
             standardWidth,
             standardWidth);
-        PanelBuilder               builder = new PanelBuilder(layout, this);
+        PanelBuilder               builder = new PanelBuilder(
+            layout,
+            component);
 
         // Validation title & progress bar
         int r = 1;
@@ -231,8 +259,10 @@ class ValidationPanel
         progressBar.setMaximum(gNames.size());
 
         int index = 0;
+
         for (String gName : gNames) {
             index++;
+
             Glyph glyph = repository.getGlyph(gName);
 
             if (glyph != null) {

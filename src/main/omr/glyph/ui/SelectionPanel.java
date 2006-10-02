@@ -42,7 +42,6 @@ import javax.swing.*;
  * @version $Id$
  */
 class SelectionPanel
-    extends Panel
     implements GlyphRepository.Monitor, Observer
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -52,6 +51,9 @@ class SelectionPanel
         GlyphRepository.class);
 
     //~ Instance fields --------------------------------------------------------
+
+    /** Swing component */
+    private final Panel component;
 
     /** Current activity */
     private final GlyphTrainer.Task task;
@@ -113,10 +115,13 @@ class SelectionPanel
         this.task = task;
         task.addObserver(this);
 
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-            .put(KeyStroke.getKeyStroke("ENTER"), "readParams");
-        getActionMap()
-            .put("readParams", new ParamAction());
+        component = new Panel();
+        component.setNoInsets();
+
+        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                 .put(KeyStroke.getKeyStroke("ENTER"), "readParams");
+        component.getActionMap()
+                 .put("readParams", new ParamAction());
 
         displayParams();
 
@@ -145,6 +150,19 @@ class SelectionPanel
         } else {
             return repository.getCoreBase(this);
         }
+    }
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Give access to the encapsulated swinb component
+     *
+     * @return the user panel
+     */
+    public JComponent getComponent ()
+    {
+        return component;
     }
 
     //-------------------//
@@ -355,7 +373,7 @@ class SelectionPanel
             "",
             standardWidth,
             standardWidth);
-        PanelBuilder    builder = new PanelBuilder(layout, this);
+        PanelBuilder    builder = new PanelBuilder(layout, component);
         CellConstraints cst = new CellConstraints();
         JButton         refreshButton = new JButton(refreshAction);
         JButton         selectButton = new JButton(selectAction);

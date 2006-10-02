@@ -165,10 +165,10 @@ class NetworkPanel
         eta.getField()
            .setEditable(false); // ETA is just an output
 
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-            .put(KeyStroke.getKeyStroke("ENTER"), "readParams");
-        getActionMap()
-            .put("readParams", new ParamAction());
+        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                 .put(KeyStroke.getKeyStroke("ENTER"), "readParams");
+        component.getActionMap()
+                 .put("readParams", new ParamAction());
 
         trainAction = new NetworkTrainAction(
             "Re-Train",
@@ -251,7 +251,7 @@ class NetworkPanel
                         Date etaDate = new Date(startTime + total);
                         eta.setText(dateFormat.format(etaDate));
 
-                        repaint();
+                        component.repaint();
                     }
                 });
     }
@@ -292,6 +292,14 @@ class NetworkPanel
     //--------//
     // update //
     //--------//
+    /**
+     * Specific behavior when a new task activity is notified. In addition to 
+     * {@link TrainingPanel#update}, actions specific to training a neural 
+     * network are handled here.
+     *
+     * @param obs the task object
+     * @param unused not used
+     */
     @Implement(Observer.class)
     public void update (Observable obs,
                         Object     unused)
@@ -439,7 +447,7 @@ class NetworkPanel
         {
             // Ask user confirmation
             final int answer = JOptionPane.showConfirmDialog(
-                NetworkPanel.this,
+                component,
                 "Do you want to switch to this non-optimal network ?");
 
             if (answer == JOptionPane.YES_OPTION) {
