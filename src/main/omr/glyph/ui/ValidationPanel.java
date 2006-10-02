@@ -61,6 +61,9 @@ public class ValidationPanel
     /** The evaluator to validate */
     private final Evaluator evaluator;
 
+    /** User progress bar to visualize the validation process */
+    protected JProgressBar progressBar = new JProgressBar();
+
     /** Repository of known glyphs */
     private final GlyphRepository repository = GlyphRepository.getInstance();
 
@@ -113,7 +116,7 @@ public class ValidationPanel
 
     /**
      * Creates a new ValidationPanel object.
-     * 
+     *
      * @param task the current training activity
      * @param standardWidth standard width for fields & buttons
      * @param evaluator the evaluator to validate
@@ -164,9 +167,10 @@ public class ValidationPanel
             standardWidth);
         PanelBuilder               builder = new PanelBuilder(layout, this);
 
-        // Validation part
+        // Validation title & progress bar
         int r = 1;
         builder.addSeparator("Validation", cst.xyw(1, r, 7));
+        builder.add(progressBar, cst.xyw(9, r, 7));
 
         r += 2; // ----------------------------
 
@@ -223,7 +227,12 @@ public class ValidationPanel
         Collection<String> gNames = selectionPanel.getBase(
             trainingPanel.useWhole());
 
+        progressBar.setValue(0);
+        progressBar.setMaximum(gNames.size());
+
+        int index = 0;
         for (String gName : gNames) {
+            index++;
             Glyph glyph = repository.getGlyph(gName);
 
             if (glyph != null) {
@@ -239,6 +248,9 @@ public class ValidationPanel
                     System.out.printf("%-35s: Mistaken as %s%n", gName, vote);
                 }
             }
+
+            // Update progress bar
+            progressBar.setValue(index);
         }
 
         int    total = gNames.size();
