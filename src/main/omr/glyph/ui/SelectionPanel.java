@@ -60,39 +60,39 @@ class SelectionPanel
     private final GlyphRepository repository = GlyphRepository.getInstance();
 
     /** For asynchronous execution of the glyph selection */
-    protected ExecutorService executor = Executors.newSingleThreadExecutor();
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     /** Visual progression of the selection */
-    protected JProgressBar progressBar = new JProgressBar();
+    private JProgressBar progressBar = new JProgressBar();
 
     /** To refresh the application wrt to the training material on disk */
-    RefreshAction refreshAction = new RefreshAction();
+    private RefreshAction refreshAction = new RefreshAction();
 
     /** To select a core out of whole base */
-    SelectAction selectAction = new SelectAction();
+    private SelectAction selectAction = new SelectAction();
 
     /** Counter on loaded glyphs */
     private int nbLoaded;
 
     /** Input/output on maximum number of glyphs with same shape */
-    LIntegerField similar = new LIntegerField(
+    private LIntegerField similar = new LIntegerField(
         "Max Similar",
         "Max number of similar shapes");
 
     /** Displayed counter on existing glyph files */
-    LIntegerField totalFiles = new LIntegerField(
+    private LIntegerField totalFiles = new LIntegerField(
         false,
         "Total",
         "Total number of glyph files");
 
     /** Displayed counter on loaded glyphs */
-    LIntegerField nbLoadedFiles = new LIntegerField(
+    private LIntegerField nbLoadedFiles = new LIntegerField(
         false,
         "Loaded",
         "Number of glyph files loaded so far");
 
     /** Displayed counter on selected glyphs */
-    LIntegerField nbSelectedFiles = new LIntegerField(
+    private LIntegerField nbSelectedFiles = new LIntegerField(
         false,
         "Selected",
         "Number of selected glyph files to load");
@@ -194,6 +194,12 @@ class SelectionPanel
     //--------//
     // update //
     //--------//
+    /**
+     * Method triggered whenever the activity changes
+     *
+     * @param obs the new current task activity
+     * @param unused not used
+     */
     @Implement(Observer.class)
     public void update (Observable obs,
                         Object     unused)
