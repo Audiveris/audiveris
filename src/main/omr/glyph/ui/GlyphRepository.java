@@ -52,7 +52,7 @@ public class GlyphRepository
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger    logger = Logger.getLogger(
+    private static final Logger      logger = Logger.getLogger(
         GlyphRepository.class);
 
     /** Specific glyph XML mappers */
@@ -74,10 +74,10 @@ public class GlyphRepository
     private static final File sheetsFolder = new File(
         Main.getTrainFolder(),
         "sheets");
-    private static final File      coreFolder = new File(
+    private static final File        coreFolder = new File(
         Main.getTrainFolder(),
         "core");
-    private static final File      iconsFolder = Main.getIconsFolder();
+    private static final File        iconsFolder = Main.getIconsFolder();
 
     //~ Instance fields --------------------------------------------------------
 
@@ -101,7 +101,7 @@ public class GlyphRepository
      * Map of all glyphs deserialized so far, using full glyph name as key. Full
      * glyph name format is : sheetName/Shape.id.xml
      */
-    private Map<String, Glyph> glyphsMap = new TreeMap<String, Glyph>();
+    private final Map<String, Glyph> glyphsMap = new TreeMap<String, Glyph>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -135,6 +135,15 @@ public class GlyphRepository
     public boolean isIcon (String gName)
     {
         return isIcon(new File(gName));
+    }
+
+    //--------------//
+    // refreshBases //
+    //--------------//
+    public void refreshBases ()
+    {
+        wholeBase = null;
+        coreBase = null;
     }
 
     //-------------//
@@ -404,6 +413,9 @@ public class GlyphRepository
                 }
             }
 
+            // Refresh glyph populations
+            refreshBases();
+
             logger.info(
                 glyphNb + " glyphs stored from " + sheet.getRadix() +
                 ((structuresNb == 0) ? ""
@@ -426,14 +438,7 @@ public class GlyphRepository
     synchronized void removeGlyph (String gName)
     {
         glyphsMap.remove(gName);
-
-        if (wholeBase != null) {
-            wholeBase.remove(gName);
-        }
-
-        if (coreBase != null) {
-            coreBase.remove(gName);
-        }
+        refreshBases();
     }
 
     //---------//
@@ -472,6 +477,8 @@ public class GlyphRepository
         FileUtil.deleteAll(coreDir.listFiles());
 
         // Copy the glyph and icon files into the core directory
+        int copyNb = 0;
+
         for (String gName : coreBase) {
             File          source;
             final boolean isIcon = isIcon(gName);
@@ -495,13 +502,13 @@ public class GlyphRepository
 
             try {
                 FileUtil.copy(source, target);
+                copyNb++;
             } catch (IOException ex) {
                 logger.warning("Cannot copy " + source + " to " + target);
             }
         }
 
-        logger.info(
-            coreBase.size() + " glyphs copied as core training material");
+        logger.info(copyNb + " glyphs copied as core training material");
     }
 
     //-------------//
