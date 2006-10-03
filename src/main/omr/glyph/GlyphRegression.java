@@ -106,22 +106,22 @@ public class GlyphRegression
         // If too small, it's just NOISE
         if (!isBigEnough(glyph)) {
             return noiseEvaluations;
+        } else {
+            double[]     ins = feedInput(glyph, null);
+            Evaluation[] evals = new Evaluation[outSize];
+
+            for (int s = 0; s < outSize; s++) {
+                ShapeDesc desc = shapeDescs[s];
+                evals[s] = new Evaluation();
+                evals[s].shape = desc.shape;
+                evals[s].grade = desc.distance(ins);
+            }
+
+            // Order the evals from best to worst
+            Arrays.sort(evals, comparator);
+
+            return evals;
         }
-
-        double[]     ins = feedInput(glyph, null);
-        Evaluation[] evals = new Evaluation[outSize];
-
-        for (int s = 0; s < outSize; s++) {
-            ShapeDesc desc = shapeDescs[s];
-            evals[s] = new Evaluation();
-            evals[s].shape = desc.shape;
-            evals[s].grade = desc.distance(ins);
-        }
-
-        // Order the evals from best to worst
-        Arrays.sort(evals, comparator);
-
-        return evals;
     }
 
     //---------//

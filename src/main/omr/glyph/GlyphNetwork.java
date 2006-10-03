@@ -176,24 +176,24 @@ public class GlyphNetwork
         // If too small, it's just NOISE
         if (!isBigEnough(glyph)) {
             return noiseEvaluations;
+        } else {
+            double[]     ins = feedInput(glyph, null);
+            double[]     outs = new double[outSize];
+            Evaluation[] evals = new Evaluation[outSize];
+
+            network.run(ins, null, outs);
+
+            for (int s = 0; s < outSize; s++) {
+                evals[s] = new Evaluation();
+                evals[s].shape = Shape.values()[s];
+                evals[s].grade = 1d / outs[s];
+            }
+
+            // Order the evals from best to worst
+            Arrays.sort(evals, comparator);
+
+            return evals;
         }
-
-        double[]     ins = feedInput(glyph, null);
-        double[]     outs = new double[outSize];
-        Evaluation[] evals = new Evaluation[outSize];
-
-        network.run(ins, null, outs);
-
-        for (int s = 0; s < outSize; s++) {
-            evals[s] = new Evaluation();
-            evals[s].shape = Shape.values()[s];
-            evals[s].grade = 1d / outs[s];
-        }
-
-        // Order the evals from best to worst
-        Arrays.sort(evals, comparator);
-
-        return evals;
     }
 
     //-----------------//
