@@ -10,6 +10,9 @@
 //
 package omr.glyph;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.lag.JunctionAllPolicy;
 import omr.lag.LagBuilder;
 import omr.lag.VerticalOrientation;
@@ -22,6 +25,8 @@ import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
 
 import omr.ui.icon.SymbolIcon;
+
+import omr.util.Logger;
 
 import java.awt.Rectangle;
 
@@ -36,6 +41,17 @@ import java.awt.Rectangle;
 public class IconGlyph
     extends Glyph
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final Constants constants = new Constants();
+    private static final Logger    logger = Logger.getLogger(IconGlyph.class);
+
+    /**
+     * Reduction of icon image versus normal glyph size. The ascii descriptions
+     * are half the size of their real glyph equivalent, so reduction is 2
+     */
+    private static final double descReduction = 2f;
+
     //~ Instance fields --------------------------------------------------------
 
     /** The underlying icon */
@@ -58,8 +74,10 @@ public class IconGlyph
                       Shape      shape)
     {
         try {
+            final int displayFactor = constants.displayFactor.getValue();
+
             // Build a picture
-            Picture  picture = new Picture(icon.getImage(), 2.0f);
+            Picture  picture = new Picture(icon.getImage(), 2f * displayFactor);
 
             // Build related vertical lag
             GlyphLag vLag = new GlyphLag(new VerticalOrientation());
@@ -90,11 +108,12 @@ public class IconGlyph
             int       y = box.y;
 
             // Staff interline value
-            setInterline(2 * ScoreConstants.INTER_LINE);
+            int interline = displayFactor * ScoreConstants.INTER_LINE;
+            setInterline(interline);
 
             // Mass center
             PixelPoint centroid = getCentroid();
-            Scale      scale = new Scale(2 * ScoreConstants.INTER_LINE, 1);
+            Scale      scale = new Scale(interline, 1);
             PagePoint  pgCentroid = scale.toPagePoint(centroid);
 
             // Number of connected stems
@@ -106,7 +125,9 @@ public class IconGlyph
             // Vertical position wrt staff
             setPitchPosition(icon.getPitchPosition());
 
-            //glyph.dump();
+            if (logger.isFineEnabled()) {
+                dump();
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -138,5 +159,25 @@ public class IconGlyph
     public SymbolIcon getIcon ()
     {
         return icon;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+        extends ConstantSet
+    {
+        /** This ratio has no impact on glyph moments, it is meant only for
+            display of the icon glyph in utilities such as the GlyphVerifier */
+        Constant.Integer displayFactor = new Constant.Integer(
+            4,
+            "Scaling factor for IconGlyph display");
+
+        Constants ()
+        {
+            initialize();
+        }
     }
 }
