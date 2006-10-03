@@ -254,6 +254,32 @@ public class Moments
     }
 
     //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the width of the glyph, normalized by unit
+     *
+     * @return the normalized width
+     */
+    public Double getWidth ()
+    {
+        return k[1];
+    }
+
+    //-----------//
+    // getHeight //
+    //-----------//
+    /**
+     * Report the height of the glyph, normalized by unit
+     *
+     * @return the normalized height
+     */
+    public Double getHeight()
+    {
+        return k[2];
+    }
+
+    //----------//
     // toString //
     //----------//
     /**
