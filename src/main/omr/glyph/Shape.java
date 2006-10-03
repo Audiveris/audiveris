@@ -68,10 +68,10 @@ public enum Shape
         /*1D10E*/ // REPEATED_FIGURE_2,
         /*1D10F*/ // REPEATED_FIGURE_3,
 
-        /*1D112*/ BREATH_MARK,
-        /*1D113*/ CAESURA,
-        /*1D114*/ BRACE,
-        /*1D115*/ BRACKET,
+        /*1D112*/ BREATH_MARK("Breath Mark"),
+        /*1D113*/ CAESURA("Caesura"),
+        /*1D114*/ BRACE("Brace"),
+        /*1D115*/ BRACKET("Bracket"),
 
         // Staves
         //
@@ -94,8 +94,8 @@ public enum Shape
         /*1D120*/ G_CLEF_OTTAVA_BASSA("Ottava Bassa"),
         /*1D121*/ C_CLEF("Ut Clef"),
         /*1D122*/ F_CLEF("Bass Clef"),
-        /*1D123*/ F_CLEF_OTTAVA_ALTA,
-        /*1D124*/ F_CLEF_OTTAVA_BASSA,
+        /*1D123*/ F_CLEF_OTTAVA_ALTA("Bass Clef Ottava Alta"),
+        /*1D124*/ F_CLEF_OTTAVA_BASSA("Bass Clef Ottava Bassa"),
         /*1D125*/ // DRUM_CLEF_1,
         /*1D126*/ // DRUM_CLEF_2,
 
@@ -139,16 +139,16 @@ public enum Shape
 
         // Octaves
         //
-        /*1D136*/ OTTAVA_ALTA,
-        /*1D137*/ OTTAVA_BASSA,
+        /*1D136*/ OTTAVA_ALTA("8 va"),
+        /*1D137*/ OTTAVA_BASSA("8 vb"),
         /*1D138*/ // QUINDICESIMA_ALTA,
         /*1D139*/ // QUINDICESIMA_BASSA,
 
         // Rests
         //
-        /*1D13A*/ MULTI_REST,
-        /*1D13B*/ WHOLE_REST,
-        /*1D13C*/ HALF_REST,
+        /*1D13A*/ MULTI_REST("Rest for multiple measures"),
+        /*1D13B*/ WHOLE_REST("Rest for whole measure"),
+        /*1D13C*/ HALF_REST("Rest for a 1/2"),
         /*1D13D*/ QUARTER_REST("Rest for a 1/4"),
         /*1D13E*/ EIGHTH_REST("Rest for a 1/8"),
         /*1D13F*/ SIXTEENTH_REST("Rest for a 1/16"),
@@ -190,7 +190,7 @@ public enum Shape
 
         // Notes
         //
-        /*1D15C*/ BREVE,
+        /*1D15C*/ BREVE("Double Whole"), // ||O||
         /*1D15D*/ WHOLE_NOTE("Hollow node head for wholes"),
         /*-----*/ WHOLE_NOTE_2("Pack of two hollow node heads for wholes"),
         /*-----*/ WHOLE_NOTE_3("Pack of three hollow node heads for wholes"),
@@ -238,16 +238,17 @@ public enum Shape
 
         // Articulation
         //
-        /*1D17B*/ COMBINING_ACCENT,
-        /*1D17C*/ COMBINING_STACCATO,
-        /*1D17D*/ COMBINING_TENUTO,
-        /*1D17E*/ COMBINING_STACCATISSIMO,
-        /*1D17F*/ COMBINING_MARCATO,
-        /*1D180*/ COMBINING_MARCATO_STACCATO,
-        /*1D181*/ COMBINING_ACCENT_STACCATO,
-        /*1D182*/ COMBINING_LOURE,
+        /*1D17B*/ // COMBINING_ACCENT,
+        /*1D17C*/ // COMBINING_STACCATO,
+        /*1D17D*/ // COMBINING_TENUTO,
+        /*1D17E*/ // COMBINING_STACCATISSIMO,
+        /*1D17F*/ // COMBINING_MARCATO,
+        /*1D180*/ // COMBINING_MARCATO_STACCATO,
+        /*1D181*/ // COMBINING_ACCENT_STACCATO,
+        /*1D182*/ // COMBINING_LOURE,
         /*1D183*/ ARPEGGIATO_UP,
         /*1D184*/ ARPEGGIATO_DOWN,
+        
         /*1D185*/ // COMBINING_DOIT,
         /*1D186*/ // COMBINING_RIP,
         /*1D187*/ // COMBINING_FLIP,
@@ -270,13 +271,13 @@ public enum Shape
         /*1D191*/ FORTE,                                // F
         /*-----*/ FORTISSIMO,                           // FF
         /*-----*/ FORTISSISSIMO,                        // FFF
-        /*1D192*/ CRESCENDO,
-        /*1D193*/ DECRESCENDO,
+        /*1D192*/ CRESCENDO,                            // <
+        /*1D193*/ DECRESCENDO,                          // >
 
         // Ornaments
         //
-        /*1D194*/ GRACE_NOTE_SLASH,
-        /*1D195*/ GRACE_NOTE_NO_SLASH,
+        /*1D194*/ GRACE_NOTE_SLASH("Grace Note with a Slash"),
+        /*1D195*/ GRACE_NOTE_NO_SLASH("Grace Note with no Slash"),
         /*1D196*/ TR,
         /*1D197*/ TURN,
         /*1D198*/ INVERTED_TURN,
@@ -336,7 +337,7 @@ public enum Shape
         /*1D108*/ REPEAT_DOTS("Vertical dots"),
 
         // Augmentation dot
-        /*1D16D*/ COMBINING_AUGMENTATION_DOT,
+        /*1D16D*/ COMBINING_AUGMENTATION_DOT("Augmentation Dot"),
 
         // Alternate ending indication
         /*-----*/ ENDING("Alternate ending"),
@@ -354,7 +355,7 @@ public enum Shape
         /*-----*/ ENDING_VERTICAL("Vertical part of ending"),
 
         /*1D110*/ FERMATA("Fermata"),
-        /*1D111*/ FERMATA_BELOW,
+        /*1D111*/ FERMATA_BELOW("Fermata Below"),
 
         // Stems
         //
@@ -876,7 +877,7 @@ public enum Shape
     public static final Range Notes         = new Range(EnumSet.range(BREVE, WHOLE_NOTE_3));
     public static final Range Stems         = new Range(EnumSet.range(COMBINING_STEM, COMBINING_STEM));
     public static final Range Flags         = new Range(EnumSet.range(COMBINING_FLAG_1, COMBINING_FLAG_5_UP));
-    public static final Range Articulations = new Range(EnumSet.range(COMBINING_ACCENT, ARPEGGIATO_DOWN));
+    public static final Range Articulations = new Range(EnumSet.range(ARPEGGIATO_UP, ARPEGGIATO_DOWN));
     public static final Range Dynamics      = new Range(EnumSet.range(PIANISSISSIMO, DECRESCENDO));
     public static final Range Ornaments     = new Range(EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
     public static final Range Pedals        = new Range(EnumSet.range(PEDAL_MARK, PEDAL_UP_MARK));
