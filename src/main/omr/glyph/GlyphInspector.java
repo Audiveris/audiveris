@@ -30,17 +30,10 @@ import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.Predicate;
 
-import java.awt.Rectangle;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.awt.*;
+import java.io.*;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Class <code>GlyphInspector</code> is dedicated to processing of retrieved
