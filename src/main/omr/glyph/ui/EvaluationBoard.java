@@ -265,11 +265,9 @@ class EvaluationBoard
     private class EvalButton
         implements ActionListener
     {
-        final JButton    button;
-
-        // A shape button or text field. Only one of them will be allocated and
-        // used
-        final JTextField field;
+        // Shape button or text field. Only one of them will be created and used
+        final JButton button;
+        final JLabel  field;
 
         // The related grade
         JLabel grade = new JLabel("", SwingConstants.RIGHT);
@@ -285,10 +283,10 @@ class EvaluationBoard
                 button.setHorizontalAlignment(SwingConstants.LEFT);
                 field = null;
             } else {
-                field = new JTextField();
+                field = new JLabel();
                 field.setHorizontalAlignment(JTextField.CENTER);
-                field.setEditable(false);
                 field.setToolTipText("Evaluated shape");
+                field.setHorizontalAlignment(SwingConstants.LEFT);
                 button = null;
             }
         }
@@ -309,6 +307,7 @@ class EvaluationBoard
                     button.setIcon(eval.shape.getIcon());
                 } else {
                     field.setText(eval.shape.toString());
+                    field.setIcon(eval.shape.getIcon());
                 }
 
                 comp.setVisible(true);
