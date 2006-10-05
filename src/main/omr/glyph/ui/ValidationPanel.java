@@ -82,7 +82,8 @@ class ValidationPanel
     private LDoubleField pcValue = new LDoubleField(
         false,
         "% OK",
-        "Percentage of recognized glyphs");
+        "Percentage of recognized glyphs",
+        " %5.2f%%");
 
     /** Display number of glyphs correctly recognized */
     private LIntegerField positiveValue = new LIntegerField(
@@ -290,7 +291,7 @@ class ValidationPanel
             evaluator.getName() + "Evaluator. Ratio=" + pcStr + " : " +
             positives + "/" + total);
         positiveValue.setValue(positives);
-        pcValue.setValue(pc, " %5.2f%%");
+        pcValue.setValue(pc);
         negativeValue.setValue(negatives.size());
         falsePositiveValue.setValue(falsePositives.size());
     }
