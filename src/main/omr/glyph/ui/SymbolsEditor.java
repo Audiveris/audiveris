@@ -10,6 +10,7 @@
 //
 package omr.glyph.ui;
 
+import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphBuilder;
 import omr.glyph.GlyphInspector;
@@ -22,21 +23,16 @@ import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 
-import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.ui.Board;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 
 import omr.util.Logger;
-
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -72,6 +68,9 @@ public class SymbolsEditor
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Evaluator to check for NOISE glyphs */
+    private final Evaluator evaluator = GlyphNetwork.getInstance();
+
     /** Glyph builder */
     private final GlyphBuilder builder;
 
@@ -91,7 +90,7 @@ public class SymbolsEditor
     private final SymbolGlyphBoard glyphBoard;
 
     /** The entity used for display focus */
-    private ShapeFocusBoard focus;
+    private final ShapeFocusBoard focus;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -126,6 +125,7 @@ public class SymbolsEditor
         glyphMenu = new GlyphMenu(this, focus, sheet.getSelection(GLYPH_SET));
 
         glyphBoard = new SymbolGlyphBoard(
+            "Editor-SymbolGlyphBoard",
             this,
             sheet.getFirstSymbolId(),
             sheet.getSelection(VERTICAL_GLYPH),
@@ -165,12 +165,36 @@ public class SymbolsEditor
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------------//
+    // assignGlyphShape //
+    //------------------//
+    /**
+     * Assign a Shape to a glyph, but preventing to assign a non-noise shape to
+     * a noise glyph
+     *
+     * @param glyph the glyph to be assigned
+     * @param shape the assigned shape, which may be null
+     */
+    @Override
+    public void assignGlyphShape (Glyph glyph,
+                                  Shape shape)
+    {
+        if (glyph != null) {
+            if ((shape == Shape.NOISE) || evaluator.isBigEnough(glyph)) {
+                super.assignGlyphShape(glyph, shape);
+            } else {
+                logger.warning(
+                    "Attempt to assign " + shape + " to a tiny glyph");
+            }
+        }
+    }
+
     //----------------//
     // assignSetShape //
     //----------------//
     /**
      * Assign a shape to a set of glyphs, either to each glyph individually, or
-     * to a compund glyph built from the glyph set
+     * to a compound glyph built from the glyph set
      *
      * @param glyphs the collection of glyphs
      * @param shape the shape to be assigned
@@ -277,6 +301,11 @@ public class SymbolsEditor
         case COMBINING_STEM :
             logger.info("Deassigning a " + shape);
             cancelStems(Collections.singletonList(glyph));
+
+            break;
+
+        case NOISE :
+            logger.info("Skipping a " + shape);
 
             break;
 
