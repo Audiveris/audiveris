@@ -231,10 +231,10 @@ class TrainingPanel
         builder.add(progressBar, cst.xyw(9, r, 7));
 
         r += 2; // ----------------------------
-        builder.add(wholeButton, cst.xy(1, r));
+        builder.add(wholeButton, cst.xy(3, r));
 
         r += 2; // ----------------------------
-        builder.add(coreButton, cst.xy(1, r));
+        builder.add(coreButton, cst.xy(3, r));
     }
 
     //-----------------//
@@ -251,8 +251,8 @@ class TrainingPanel
 
         for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
             Glyph glyph = it.next();
-            int   index = glyph.getShape()
-                               .ordinal();
+            int index = glyph.getShape()
+                             .ordinal();
 
             if (index >= present.length) {
                 logger.warning(
@@ -347,7 +347,13 @@ class TrainingPanel
             List<Glyph> glyphs = new ArrayList<Glyph>();
 
             for (String gName : gNames) {
-                glyphs.add(repository.getGlyph(gName));
+                Glyph glyph = repository.getGlyph(gName);
+
+                if (glyph != null) {
+                    glyphs.add(glyph);
+                } else {
+                    logger.warning("Cannot get glyph " + gName);
+                }
             }
 
             // Check that all trainable shapes (and only those ones) are
