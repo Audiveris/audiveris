@@ -55,12 +55,14 @@ class NetworkPanel
     /** Input field for Learning rate of the neural network */
     private LDoubleField learningRate = new LDoubleField(
         "Learning Rate",
-        "Learning rate of the neural network");
+        "Learning rate of the neural network",
+        "%.2f");
 
     /** Input field for Momentum value of the neural network */
     private LDoubleField momentum = new LDoubleField(
         "Momentum",
-        "Momentum value for the neural network");
+        "Momentum value for the neural network",
+        "%.2f");
 
     /** Output of Estimated time for end of training */
     private LField eta = new LField(
