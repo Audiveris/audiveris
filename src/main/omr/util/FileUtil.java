@@ -87,21 +87,6 @@ public class FileUtil
         }
     }
 
-    //----------------------//
-    // getPathSansExtension //
-    //----------------------//
-    /**
-     * From a file "path/name.ext", return the "path/name"
-     *
-     * @param file the file to process
-     *
-     * @return path + name, w/o extension
-     */
-    public static String getPathSansExtension (File file)
-    {
-        return file.getParent() + File.separator + getNameSansExtension(file);
-    }
-
     //------//
     // copy //
     //------//
