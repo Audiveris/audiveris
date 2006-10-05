@@ -181,7 +181,10 @@ class GlyphBrowser
         final GlyphModel glyphModel = new BasicGlyphModel();
 
         // Specific glyph board
-        glyphBoard = new GlyphBoard("TrainingBoard", glyphModel);
+        glyphBoard = new SymbolGlyphBoard(
+            "Browser-SymbolGlyphBoard",
+            glyphModel);
+
         glyphBoard.setInputSelectionList(
             Collections.singletonList(localGlyphSelection));
         glyphBoard.boardShown();
@@ -547,8 +550,10 @@ class GlyphBrowser
                         {
                             // Load all (non icon) glyphs
                             int index = -1;
+
                             for (String gName : names) {
                                 index++;
+
                                 if (!repository.isIcon(gName)) {
                                     setIndex(index, GLYPH_INIT);
                                 }
@@ -598,8 +603,6 @@ class GlyphBrowser
         public void setIndex (int           index,
                               SelectionHint hint)
         {
-            nameIndex = index;
-
             Glyph glyph = null;
 
             if (index >= 0) {
@@ -614,6 +617,10 @@ class GlyphBrowser
 
                 // Load the desired glyph if needed
                 glyph = getGlyph(gName);
+
+                if (glyph == null) {
+                    return;
+                }
 
                 // Extend view model size if needed
                 Rectangle box = glyph.getContourBox();
@@ -630,6 +637,7 @@ class GlyphBrowser
             }
 
             localGlyphSelection.setEntity(glyph, hint);
+            nameIndex = index;
 
             // Enable buttons according to glyph selection
             all.setEnabled(names.size() > 0);
@@ -658,7 +666,7 @@ class GlyphBrowser
             ///logger.info("Loading " + gName);
             Glyph glyph = repository.getGlyph(gName);
 
-            if (glyph.getLag() != vLag) {
+            if (glyph != null && glyph.getLag() != vLag) {
                 glyph.setLag(vLag);
 
                 for (GlyphSection section : glyph.getMembers()) {
