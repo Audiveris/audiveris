@@ -10,6 +10,9 @@
 //
 package omr.glyph.ui;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
@@ -31,6 +34,7 @@ import omr.util.Predicate;
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
+import java.awt.Dimension;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +82,8 @@ public class GlyphBoard
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(GlyphBoard.class);
+    private static final Constants constants = new Constants();
+    private static final Logger    logger = Logger.getLogger(GlyphBoard.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -96,6 +101,9 @@ public class GlyphBoard
 
     /** Button to trigger deassignAction */
     protected JButton deassignButton = new JButton(deassignAction);
+
+    /** Output : glyph shape icon */
+    protected JLabel shapeIcon = new JLabel();
 
     /** Input / Output : spinner of all glyphs */
     protected JSpinner globalSpinner;
@@ -120,7 +128,7 @@ public class GlyphBoard
     protected CellConstraints cst = new CellConstraints();
 
     /** The JGoodies/Form layout to be used by all subclasses  */
-    protected FormLayout layout = Panel.makeFormLayout(4, 3);
+    protected FormLayout layout = Panel.makeFormLayout(5, 3);
 
     /** The JGoodies/Form builder to be used by all subclasses  */
     protected PanelBuilder builder;
@@ -222,6 +230,15 @@ public class GlyphBoard
         dump.setEnabled(false);
         deassignButton.setEnabled(false);
 
+        // Force a constant height for the shapeIcon field, despite the 
+        // variation in size of the icon
+        Dimension dim = new Dimension(
+            constants.shapeIconWidth.getValue(),
+            constants.shapeIconHeight.getValue());
+        shapeIcon.setPreferredSize(dim);
+        shapeIcon.setMaximumSize(dim);
+        shapeIcon.setMinimumSize(dim);
+
         // Precise layout
         layout.setColumnGroups(
             new int[][] {
@@ -299,7 +316,6 @@ public class GlyphBoard
         switch (selection.getTag()) {
         case VERTICAL_GLYPH :
         case HORIZONTAL_GLYPH :
-
             // Display Glyph parameters (while preventing circular updates)
             selfUpdating = true;
 
@@ -314,10 +330,10 @@ public class GlyphBoard
 
             if (shape != null) {
                 shapeField.setText(shape.toString());
-                deassignButton.setIcon(shape.getIcon());
+                shapeIcon.setIcon(shape.getIcon());
             } else {
                 shapeField.setText("");
-                deassignButton.setIcon(null);
+                shapeIcon.setIcon(null);
             }
 
             // Global Spinner
@@ -377,7 +393,8 @@ public class GlyphBoard
         r += 2; // --------------------------------
         r += 2; // --------------------------------
 
-        builder.add(deassignButton, cst.xyw(1, r, 3));
+        builder.add(shapeIcon, cst.xy(1, r));
+        builder.add(deassignButton, cst.xy(3, r));
         builder.add(shapeField, cst.xyw(5, r, 7));
 
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -407,6 +424,28 @@ public class GlyphBoard
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+        extends ConstantSet
+    {
+        /** Exact pixel height for the shape icon field */
+        Constant.Integer shapeIconHeight = new Constant.Integer(
+            70,
+            "Exact pixel height for the shape icon field");
+
+        /** Exact pixel width for the shape icon field */
+        Constant.Integer shapeIconWidth = new Constant.Integer(
+            50,
+            "Exact pixel width for the shape icon field");
+
+        Constants ()
+        {
+            initialize();
+        }
+    }
 
     //----------------//
     // DeassignAction //
