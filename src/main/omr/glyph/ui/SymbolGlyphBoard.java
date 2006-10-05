@@ -14,9 +14,12 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphModel;
 import omr.glyph.Shape;
 
+import omr.math.Moments;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
+import omr.ui.field.LDoubleField;
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
 import static omr.ui.field.SpinnerUtilities.*;
@@ -27,8 +30,9 @@ import omr.util.Predicate;
 import javax.swing.*;
 
 /**
- * Class <code>SymbolGlyphBoard</code> defines an extended glyph board, with an
- * additional symbol glyph spinner : <ul>
+ * Class <code>SymbolGlyphBoard</code> defines an extended glyph board, with
+ * characteristics (pitch position, stem number, etc) that are specific to a
+ * symbol, and an additional symbol glyph spinner : <ul>
  *
  * <li>A <b>symbolSpinner</b> to browse through all glyphs that are considered
  * as symbols, that is built from aggregation of contiguous sections, or by
@@ -59,23 +63,45 @@ class SymbolGlyphBoard
     /** Spinner just for symbol glyphs */
     private JSpinner symbolSpinner;
 
+    /** Glyph characteristics : position wrt staff */
+    private LDoubleField pitchPosition = new LDoubleField(
+        false,
+        "Pitch",
+        "Logical pitch position",
+        "%.3f");
+
     /** Glyph characteristics : is there a ledger */
     private LField ledger = new LField(
         false,
         "Ledger",
         "Does this glyph intersect a legder");
 
-    /** Glyph characteristics : position wrt staff */
-    private LIntegerField pitchPosition = new LIntegerField(
-        false,
-        "Pitch",
-        "Logical pitch position");
-
     /** Glyph characteristics : how many stems */
     private LIntegerField stems = new LIntegerField(
         false,
         "Stems",
         "Number of stems connected to this glyph");
+
+    /** Glyph characteristics : normalized weight */
+    private LDoubleField weight = new LDoubleField(
+        false,
+        "Weight",
+        "Normalized weight",
+        "%.3f");
+
+    /** Glyph characteristics : normalized width */
+    private LDoubleField width = new LDoubleField(
+        false,
+        "Width",
+        "Normalized width",
+        "%.3f");
+
+    /** Glyph characteristics : normalized height */
+    private LDoubleField height = new LDoubleField(
+        false,
+        "Height",
+        "Normalized height",
+        "%.3f");
 
     /** Glyph id for the very first symbol */
     private int firstSymbolId;
@@ -99,13 +125,16 @@ class SymbolGlyphBoard
      * Create the symbol glyph board
      *
      *
-     * @param glyphModel the companion builder which handles the other UI entities
+     * @param unitName name of the owning unit
+     * @param glyphModel the companion which handles glyph (de)assignments
      * @param firstSymbolId id of the first glyph made as a symbol (as opposed
      *                      to sticks/glyphs elaborated during previous steps)
      * @param glyphSelection glyph selection as input
      * @param glyphIdSelection glyph_id selection as output
+     * @param glyphSetSelection input glyph set selection
      */
-    public SymbolGlyphBoard (GlyphModel glyphModel,
+    public SymbolGlyphBoard (String     unitName,
+                             GlyphModel glyphModel,
                              int        firstSymbolId,
                              Selection  glyphSelection,
                              Selection  glyphIdSelection,
@@ -113,7 +142,7 @@ class SymbolGlyphBoard
     {
         // For all glyphs
         super(
-            "SymbolGlyphBoard",
+            unitName,
             glyphModel,
             glyphSelection,
             glyphIdSelection,
@@ -122,12 +151,16 @@ class SymbolGlyphBoard
         // Cache info
         this.firstSymbolId = firstSymbolId;
 
-        // Symbols spinner
-        symbolSpinner = makeGlyphSpinner(glyphModel.getLag(), symbolPredicate);
-        symbolSpinner.setName("symbolSpinner");
-        symbolSpinner.setToolTipText("Specific spinner for symbol glyphs");
+        // Additional spinner for symbols
+        if (glyphModel != null) {
+            symbolSpinner = makeGlyphSpinner(
+                glyphModel.getLag(),
+                symbolPredicate);
+            symbolSpinner.setName("symbolSpinner");
+            symbolSpinner.setToolTipText("Specific spinner for symbol glyphs");
+        }
 
-        defineSpecificLayout();
+        defineSpecificLayout(true); // use of spinners
     }
 
     //------------------//
@@ -135,11 +168,15 @@ class SymbolGlyphBoard
     //------------------//
     /**
      * Create a simplified symbol glyph board
+     * @param unitName name of the owning unit
+     * @param glyphModel the companion which handles glyph (de)assignments
      */
-    public SymbolGlyphBoard ()
+    public SymbolGlyphBoard (String     unitName,
+                             GlyphModel glyphModel)
     {
-        super("SymbolSimpleBoard", null);
-        defineSpecificLayout();
+        super(unitName, glyphModel);
+
+        defineSpecificLayout(false); // no use of spinners
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -168,19 +205,29 @@ class SymbolGlyphBoard
             Glyph glyph = (Glyph) selection.getEntity();
 
             // Set symbolSpinner accordingly
-            symbolSpinner.setValue(
-                symbolPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
+            if (symbolSpinner != null) {
+                symbolSpinner.setValue(
+                    symbolPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
+            }
 
             // Fill symbol characteristics
             if (glyph != null) {
-                pitchPosition.setValue(
-                    (int) Math.rint(glyph.getPitchPosition()));
+                pitchPosition.setValue(glyph.getPitchPosition());
                 ledger.setText(Boolean.toString(glyph.hasLedger()));
                 stems.setValue(glyph.getStemNumber());
+
+                Moments moments = glyph.getMoments();
+                weight.setValue(moments.getWeight());
+                width.setValue(moments.getWidth());
+                height.setValue(moments.getHeight());
             } else {
                 ledger.setText("");
                 pitchPosition.setText("");
                 stems.setText("");
+
+                weight.setText("");
+                width.setText("");
+                height.setText("");
             }
 
             selfUpdating = false;
@@ -196,14 +243,16 @@ class SymbolGlyphBoard
     //----------------------//
     /**
      * Define a specific layout for this Symbol GlyphBoard
+     *
+     * @param useSpinners true if spinners must be created
      */
-    protected void defineSpecificLayout ()
+    protected void defineSpecificLayout (boolean useSpinners)
     {
         int r = 1; // --------------------------------
 
         r += 2; // --------------------------------
 
-        if (glyphModel != null) {
+        if (useSpinners) {
             builder.addLabel("Id", cst.xy(1, r));
             builder.add(globalSpinner, cst.xy(3, r));
 
@@ -216,7 +265,7 @@ class SymbolGlyphBoard
 
         r += 2; // --------------------------------
 
-        // For glyph characteristics
+        // For glyph characteristics, first line
         r += 2; // --------------------------------
         builder.add(pitchPosition.getLabel(), cst.xy(1, r));
         builder.add(pitchPosition.getField(), cst.xy(3, r));
@@ -226,5 +275,16 @@ class SymbolGlyphBoard
 
         builder.add(stems.getLabel(), cst.xy(9, r));
         builder.add(stems.getField(), cst.xy(11, r));
+
+        // For glyph characteristics, second line
+        r += 2; // --------------------------------
+        builder.add(weight.getLabel(), cst.xy(1, r));
+        builder.add(weight.getField(), cst.xy(3, r));
+
+        builder.add(width.getLabel(), cst.xy(5, r));
+        builder.add(width.getField(), cst.xy(7, r));
+
+        builder.add(height.getLabel(), cst.xy(9, r));
+        builder.add(height.getField(), cst.xy(11, r));
     }
 }
