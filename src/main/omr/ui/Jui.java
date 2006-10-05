@@ -221,7 +221,8 @@ public class Jui
             Step.createMonitor().getComponent(),
             BorderLayout.CENTER);
         toolKeyPanel.add(
-            new MemoryMeter(IconManager.buttonIconOf("general/Delete")).getComponent(),
+            new MemoryMeter(
+                IconManager.getInstance().loadImageIcon("general/Delete")).getComponent(),
             BorderLayout.EAST);
 
         // Boards
@@ -582,7 +583,9 @@ public class Jui
     {
         public ExitAction (JMenu menu)
         {
-            super("Exit", IconManager.buttonIconOf("general/Stop"));
+            super(
+                "Exit",
+                IconManager.getInstance().loadImageIcon("general/Stop"));
 
             final String tiptext = "Exit the program";
             menu.add(this)
@@ -608,7 +611,9 @@ public class Jui
     {
         public FineAction ()
         {
-            super("Fine", IconManager.buttonIconOf("general/Find"));
+            super(
+                "Fine",
+                IconManager.getInstance().loadImageIcon("general/Find"));
 
             final String  tiptext = "Generic Fine Action";
 
@@ -633,7 +638,9 @@ public class Jui
     {
         public MemoryAction (JMenu menu)
         {
-            super("Memory", IconManager.buttonIconOf("general/Find"));
+            super(
+                "Memory",
+                IconManager.getInstance().loadImageIcon("general/Find"));
 
             final String tiptext = "Show occupied memory";
 
@@ -656,7 +663,9 @@ public class Jui
     {
         public OptionAction (JMenu menu)
         {
-            super("Options", IconManager.buttonIconOf("general/Properties"));
+            super(
+                "Options",
+                IconManager.getInstance().loadImageIcon("general/Properties"));
             menu.add(this)
                 .setToolTipText("Constants tree for all units");
         }
@@ -707,7 +716,9 @@ public class Jui
     {
         public ClearLogAction (JMenu menu)
         {
-            super("Clear Log", IconManager.buttonIconOf("general/Cut"));
+            super(
+                "Clear Log",
+                IconManager.getInstance().loadImageIcon("general/Cut"));
             menu.add(this)
                 .setToolTipText("Clear the whole log display");
         }
@@ -729,7 +740,7 @@ public class Jui
         {
             super(
                 "Training Material",
-                IconManager.buttonIconOf("general/Properties"));
+                IconManager.getInstance().loadImageIcon("general/Properties"));
             menu.add(this)
                 .setToolTipText("Verify training material");
         }
@@ -750,7 +761,9 @@ public class Jui
     {
         public AboutAction (JMenu menu)
         {
-            super("About", IconManager.buttonIconOf("general/About"));
+            super(
+                "About",
+                IconManager.getInstance().loadImageIcon("general/About"));
 
             final String tiptext = "About " + Main.getToolName();
             menu.add(this)
@@ -829,7 +842,7 @@ public class Jui
         {
             super(
                 "Shape Colors",
-                IconManager.buttonIconOf("general/Properties"));
+                IconManager.getInstance().loadImageIcon("general/Properties"));
             menu.add(this)
                 .setToolTipText("Manage colors of all shapes");
         }
@@ -862,7 +875,9 @@ public class Jui
     {
         public TestAction ()
         {
-            super("Test", IconManager.buttonIconOf("general/TipOfTheDay"));
+            super(
+                "Test",
+                IconManager.getInstance().loadImageIcon("general/TipOfTheDay"));
 
             final String  tiptext = "Generic Test Action";
 
@@ -886,7 +901,9 @@ public class Jui
     {
         public TrainerAction (JMenu menu)
         {
-            super("Trainer", IconManager.buttonIconOf("media/Movie"));
+            super(
+                "Trainer",
+                IconManager.getInstance().loadImageIcon("media/Movie"));
 
             final String tiptext = "Launch trainer interface";
             menu.add(this)

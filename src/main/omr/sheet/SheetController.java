@@ -122,7 +122,8 @@ public class SheetController
             "History",
             new HistoryListener());
         historyMenu.setToolTipText("List of previous sheet files");
-        historyMenu.setIcon(IconManager.buttonIconOf("general/History"));
+        historyMenu.setIcon(
+            IconManager.getInstance().loadImageIcon("general/History"));
         menu.add(historyMenu);
         menu.addSeparator();
 
@@ -133,7 +134,8 @@ public class SheetController
         new ZoomHeightAction();
 
         // Toggle button
-        toggleButton = new JButton(IconManager.buttonIconOf("general/Refresh"));
+        toggleButton = new JButton(
+            IconManager.getInstance().loadImageIcon("general/Refresh"));
         toolBar.add(toggleButton);
         toggleButton.setBorder(UIUtilities.getToolBorder());
         toggleButton.setEnabled(false);
@@ -585,7 +587,7 @@ public class SheetController
                 false,
                 "Close Sheet",
                 "Close the current sheet",
-                IconManager.buttonIconOf("general/Remove"),
+                IconManager.getInstance().loadImageIcon("general/Remove"),
                 true);
         }
 
@@ -614,7 +616,9 @@ public class SheetController
     {
         public DumpAllAction ()
         {
-            super("Dump all sheets", IconManager.buttonIconOf("general/Find"));
+            super(
+                "Dump all sheets",
+                IconManager.getInstance().loadImageIcon("general/Find"));
 
             final String tiptext = "Dump all sheet instances";
 
@@ -646,7 +650,7 @@ public class SheetController
                 false,
                 "Line Plot",
                 "Display chart from Line builder",
-                IconManager.buttonIconOf("general/PrintPreview"),
+                IconManager.getInstance().loadImageIcon("general/PrintPreview"),
                 false);
         }
 
@@ -683,7 +687,7 @@ public class SheetController
                 false,
                 "Scale Plot",
                 "Display chart from Scale builder",
-                IconManager.buttonIconOf("general/PrintPreview"),
+                IconManager.getInstance().loadImageIcon("general/PrintPreview"),
                 false);
         }
 
@@ -715,7 +719,7 @@ public class SheetController
                 true,
                 "Open Sheet",
                 "Open a sheet file",
-                IconManager.buttonIconOf("general/Open"),
+                IconManager.getInstance().loadImageIcon("general/Open"),
                 true);
         }
 
@@ -742,7 +746,7 @@ public class SheetController
                 false,
                 "Skew Plot",
                 "Display chart from Skew builder",
-                IconManager.buttonIconOf("general/PrintPreview"),
+                IconManager.getInstance().loadImageIcon("general/PrintPreview"),
                 false);
         }
 
@@ -779,7 +783,8 @@ public class SheetController
                 false,
                 "Height Fit",
                 "Fit image to window height",
-                IconManager.buttonIconOf("general/AlignJustifyVertical"),
+                IconManager.getInstance().loadImageIcon(
+                    "general/AlignJustifyVertical"),
                 true);
         }
 
@@ -808,7 +813,8 @@ public class SheetController
                 false,
                 "Width Fit",
                 "Fit image to window width",
-                IconManager.buttonIconOf("general/AlignJustifyHorizontal"),
+                IconManager.getInstance().loadImageIcon(
+                    "general/AlignJustifyHorizontal"),
                 true);
         }
 
