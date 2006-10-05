@@ -20,6 +20,7 @@ import omr.glyph.Shape;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.ui.icon.IconManager;
 import omr.ui.icon.SymbolIcon;
 
 import omr.util.BlackList;
@@ -34,9 +35,12 @@ import java.util.*;
  * Class <code>GlyphRepository</code> handles the store of known glyphs, across
  * multiple sheets (and possibly multiple runs).
  *
- * <p> A glyph is known by its full name, whose format is
+ * <p> A glyph is known by its full name, whose standard format is
  * <B>sheetName/Shape.id.xml</B>, regardless of the area it is stored (this may
- * be the <I>core</I> area or the global <I>sheets</I> area)
+ * be the <I>core</I> area or the global <I>sheets</I> area). It can also be an
+ * <I>artificial</I> glyph built from a symbol icon, in that case its full name
+ * is the similar formats <B>icons/Shape.xml</B> or <B>icons/Shape.nn.xml</B>
+ * where "nn" is a differentiating number.
  *
  * <p> The repository handles a private map of all deserialized glyphs so far,
  * since the deserialization is a rather expensive operation.
@@ -55,14 +59,11 @@ public class GlyphRepository
     private static final Logger      logger = Logger.getLogger(
         GlyphRepository.class);
 
-    /** Specific glyph XML mappers */
-    private static XmlMapper glyphXmlMapper;
-
-    /** Specific icon XML mappers */
-    private static XmlMapper iconXmlMapper;
-
     /** The single instance of this class */
     private static GlyphRepository INSTANCE;
+
+    /** Specific glyph XML mapper */
+    private static XmlMapper glyphXmlMapper;
 
     /** Extension for training files */
     private static final String FILE_EXTENSION = ".xml";
@@ -70,19 +71,21 @@ public class GlyphRepository
     /** Name of Structures sub-directory */
     private static final String STRUCTURES_NAME = ".structures";
 
-    /** Specific subdirectories for training files */
+    /** Specific subdirectory for sheet glyphs */
     private static final File sheetsFolder = new File(
         Main.getTrainFolder(),
         "sheets");
-    private static final File        coreFolder = new File(
+
+    /** Specific subdirectory for core glyphs */
+    private static final File coreFolder = new File(
         Main.getTrainFolder(),
         "core");
-    private static final File        iconsFolder = Main.getIconsFolder();
 
-    //~ Instance fields --------------------------------------------------------
+    /** Specific subdirectory for icons */
+    private static final File iconsFolder = Main.getIconsFolder();
 
     /** Specific filter for glyph files */
-    private final FileFilter glyphFilter = new FileFilter() {
+    private static final FileFilter glyphFilter = new FileFilter() {
         public boolean accept (File file)
         {
             return file.isDirectory() ||
@@ -90,6 +93,9 @@ public class GlyphRepository
                            .equals(FILE_EXTENSION);
         }
     };
+
+
+    //~ Instance fields --------------------------------------------------------
 
     /** Core collection of glyphs */
     private Collection<String> coreBase;
@@ -105,7 +111,7 @@ public class GlyphRepository
 
     //~ Constructors -----------------------------------------------------------
 
-    // Private (singleton)
+    /** Private singleton constructor */
     private GlyphRepository ()
     {
     }
@@ -151,6 +157,7 @@ public class GlyphRepository
     //-------------//
     /**
      * Define the provided collection as the core training material
+     *
      * @param base the provided collection
      */
     synchronized void setCoreBase (Collection<String> base)
@@ -175,27 +182,14 @@ public class GlyphRepository
         return coreBase;
     }
 
-    //---------------//
-    // getCoreFolder //
-    //---------------//
-    /**
-     * Report the folder where selected core glyphs are stored
-     *
-     * @return the directory of core material
-     */
-    static File getCoreFolder ()
-    {
-        return coreFolder;
-    }
-
     //----------//
     // getGlyph //
     //----------//
     /**
      * Return a glyph knowing its full glyph name, which is the name of the
      * corresponding training material. If not already done, the glyph is
-     * deserialized from the training file, searching first in the core area,
-     * then in the global sheets area.
+     * deserialized from the training file, searching first in the icons area,
+     * then the core area, then in the global sheets area.
      *
      * @param gName the full glyph name (format is: sheetName/Shape.id.xml)
      *
@@ -206,16 +200,12 @@ public class GlyphRepository
         // First, try the map of glyphs
         Glyph glyph = glyphsMap.get(gName);
 
-        // If failed, actually load the glyph from XML backup file
-        if (glyph != null) {
-            return glyph;
-        } else {
-            // We try to load from the core repository first, then from the
-            // builtin icons, finally from the sheets repository
-            File file = new File(getCoreFolder(), gName);
-
-            if (!file.exists()) {
-                file = new File(iconsFolder.getParentFile(), gName);
+        if (glyph == null) {
+            // If failed, actually load the glyph from XML backup file.
+            if (isIcon(gName)) {
+                glyph = buildIconGlyph(gName);
+            } else {
+                File file = new File(coreFolder, gName);
 
                 if (!file.exists()) {
                     file = new File(getSheetsFolder(), gName);
@@ -227,10 +217,16 @@ public class GlyphRepository
                         return null;
                     }
                 }
+
+                glyph = buildGlyph(gName, file);
             }
 
-            return loadGlyph(gName, file);
+            if (glyph != null) {
+                glyphsMap.put(gName, glyph);
+            }
         }
+
+        return glyph;
     }
 
     //-------------//
@@ -306,7 +302,7 @@ public class GlyphRepository
      *
      * @return the directory of all sheets material
      */
-    static File getSheetsFolder ()
+    File getSheetsFolder ()
     {
         return sheetsFolder;
     }
@@ -470,7 +466,7 @@ public class GlyphRepository
         }
 
         // Create the core directory if needed
-        File coreDir = getCoreFolder();
+        File coreDir = coreFolder;
         coreDir.mkdirs();
 
         // Empty the directory
@@ -480,10 +476,9 @@ public class GlyphRepository
         int copyNb = 0;
 
         for (String gName : coreBase) {
-            File          source;
-            final boolean isIcon = isIcon(gName);
+            File source;
 
-            if (isIcon) {
+            if (isIcon(gName)) {
                 source = new File(Main.getIconsFolder().getParentFile(), gName);
             } else {
                 source = new File(getSheetsFolder(), gName);
@@ -566,16 +561,46 @@ public class GlyphRepository
         return isIconsFolder(folder);
     }
 
-    //------------------//
-    // getIconXmlMapper //
-    //------------------//
-    private XmlMapper getIconXmlMapper ()
+    //------------//
+    // buildGlyph //
+    //------------//
+    private Glyph buildGlyph (String gName,
+                              File   file)
     {
-        if (iconXmlMapper == null) {
-            iconXmlMapper = new XmlMapper(SymbolIcon.class);
+        if (logger.isFineEnabled()) {
+            logger.fine("Loading glyph " + file);
         }
 
-        return iconXmlMapper;
+        Glyph glyph = null;
+
+        try {
+            glyph = (Glyph) getGlyphXmlMapper()
+                                .load(file);
+        } catch (Exception ex) {
+            // User already informed
+        }
+
+        return glyph;
+    }
+
+    //----------------//
+    // buildIconGlyph //
+    //----------------//
+    private Glyph buildIconGlyph (String gName)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Loading icon " + gName);
+        }
+
+        Glyph      glyph = null;
+        SymbolIcon icon = IconManager.getInstance()
+                                     .loadSymbolIcon(fileNameOf(gName));
+
+        if (icon != null) {
+            glyph = new IconGlyph(icon, shapeOf(gName));
+        }
+
+        return glyph;
     }
 
     //----------------//
@@ -593,6 +618,29 @@ public class GlyphRepository
         }
     }
 
+    //------------//
+    // fileNameOf //
+    //------------//
+    /**
+     * Report the file name w/o extension of a gName.
+     *
+     * @param gName glyph name, using format "folder/name.number.xml" or "folder/name.xml"
+     * @return the 'name' part of the format
+     */
+    private String fileNameOf (String gName)
+    {
+        int    slash = gName.indexOf("/");
+        String nameWithExt = gName.substring(slash + 1);
+
+        int    lastDot = nameWithExt.lastIndexOf(".");
+
+        if (lastDot != -1) {
+            return nameWithExt.substring(0, lastDot);
+        } else {
+            return nameWithExt;
+        }
+    }
+
     //-------------//
     // glyphNameOf //
     //-------------//
@@ -603,10 +651,10 @@ public class GlyphRepository
      * @param file the glyph backup file
      * @return the unique glyph name
      */
-    private static String glyphNameOf (File file)
+    private String glyphNameOf (File file)
     {
         return file.getParentFile()
-                   .getName() + File.separator + file.getName();
+                   .getName() + "/" + file.getName();
     }
 
     //----------------//
@@ -669,7 +717,7 @@ public class GlyphRepository
      */
     private Collection<String> loadCoreBase (Monitor monitor)
     {
-        return loadBase(new File[] { getCoreFolder() }, monitor);
+        return loadBase(new File[] { coreFolder }, monitor);
     }
 
     //---------------//
@@ -704,43 +752,6 @@ public class GlyphRepository
         } else {
             logger.warning("Directory " + dir + " is empty");
         }
-    }
-
-    //-----------//
-    // loadGlyph //
-    //-----------//
-    private Glyph loadGlyph (String gName,
-                             File   file)
-    {
-        final boolean isIcon = isIcon(gName);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Loading " + (isIcon ? "icon " : "glyph ") + file);
-        }
-
-        Glyph glyph = null;
-
-        try {
-            if (isIcon) {
-                SymbolIcon icon = (SymbolIcon) getIconXmlMapper()
-                                                   .load(file);
-
-                if (icon != null) {
-                    glyph = new IconGlyph(icon, shapeOf(gName));
-                }
-            } else {
-                glyph = (Glyph) getGlyphXmlMapper()
-                                    .load(file);
-            }
-        } catch (Exception ex) {
-            // User already informed
-        }
-
-        if (glyph != null) {
-            glyphsMap.put(gName, glyph);
-        }
-
-        return glyph;
     }
 
     //---------------//
