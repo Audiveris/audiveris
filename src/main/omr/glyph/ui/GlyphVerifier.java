@@ -79,8 +79,8 @@ public class GlyphVerifier
     /** The panel in charge of the shapes selection */
     private ShapeSelector shapeSelector = new ShapeSelector(glyphSelector);
 
-    /** The panel in charge of the sheets selection */
-    private SheetSelector sheetSelector = new SheetSelector(shapeSelector);
+    /** The panel in charge of the sheets (or icons folder) selection */
+    private FolderSelector folderSelector = new FolderSelector(shapeSelector);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -194,15 +194,15 @@ public class GlyphVerifier
         shapeSelector.selectAll();
 
         // Sheets / Icons folder
-        SortedSet<String> sheetSet = new TreeSet<String>();
+        SortedSet<String> folderSet = new TreeSet<String>();
 
         for (String gName : glyphNames) {
             File file = new File(gName);
-            sheetSet.add(file.getParent());
+            folderSet.add(file.getParent());
         }
 
-        sheetSelector.populateWith(sheetSet);
-        sheetSelector.selectAll();
+        folderSelector.populateWith(folderSet);
+        folderSelector.selectAll();
     }
 
     //---------------//
@@ -256,7 +256,7 @@ public class GlyphVerifier
         CellConstraints cst = new CellConstraints();
 
         int             r = 1; // --------------------------------
-        builder.add(sheetSelector, cst.xy(1, r));
+        builder.add(folderSelector, cst.xy(1, r));
         builder.add(shapeSelector, cst.xy(2, r));
         builder.add(glyphSelector, cst.xy(3, r));
 
@@ -460,6 +460,44 @@ public class GlyphVerifier
         }
     }
 
+    //----------------//
+    // FolderSelector // -------------------------------------------------------
+    //----------------//
+    private class FolderSelector
+        extends Selector
+    {
+        public FolderSelector (ChangeListener listener)
+        {
+            super("Folder Selector", listener);
+            load.setEnabled(true);
+        }
+
+        // Triggered by load button
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            list.removeAll();
+
+            // First insert the dedicated icons folder
+            list.add(Main.getIconsFolder().getName());
+
+            // Then populate with all sorted existing sheets folders
+            ArrayList<String> folders = new ArrayList<String>();
+
+            for (File file : repository.getSheetDirectories()) {
+                folders.add(file.getName());
+            }
+
+            Collections.sort(folders);
+
+            for (String folder : folders) {
+                list.add(folder);
+            }
+
+            updateCardinal();
+        }
+    }
+
     //---------------//
     // GlyphSelector // --------------------------------------------------------
     //---------------//
@@ -480,7 +518,7 @@ public class GlyphVerifier
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            String[]           folders = sheetSelector.list.getSelectedItems();
+            String[]           folders = folderSelector.list.getSelectedItems();
             String[]           shapes = shapeSelector.list.getSelectedItems();
             Collection<String> shapeList = Arrays.asList(shapes);
 
@@ -555,7 +593,7 @@ public class GlyphVerifier
         public void actionPerformed (ActionEvent e)
         {
             // Populate with shape names found in selected sheets
-            String[] sheetNames = sheetSelector.list.getSelectedItems();
+            String[] sheetNames = folderSelector.list.getSelectedItems();
 
             if (sheetNames.length == 0) {
                 logger.warning("No sheets selected in Sheet Selector");
@@ -563,7 +601,7 @@ public class GlyphVerifier
                 // To avoid duplicates, and to get a sorted list
                 SortedSet<String> shapeSet = new TreeSet<String>();
 
-                for (String folder : sheetSelector.list.getSelectedItems()) {
+                for (String folder : folderSelector.list.getSelectedItems()) {
                     File dir = getActualDir(folder);
 
                     // Add all glyphs files from this directory
@@ -574,44 +612,6 @@ public class GlyphVerifier
 
                 populateWith(shapeSet);
             }
-        }
-    }
-
-    //---------------//
-    // SheetSelector // --------------------------------------------------------
-    //---------------//
-    private class SheetSelector
-        extends Selector
-    {
-        public SheetSelector (ChangeListener listener)
-        {
-            super("Sheet Selector", listener);
-            load.setEnabled(true);
-        }
-
-        // Triggered by load button
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            list.removeAll();
-
-            // First insert the dedicated icons folder
-            list.add(Main.getIconsFolder().getName());
-
-            // Then populate with all sorted existing sheets folders
-            ArrayList<String> folders = new ArrayList<String>();
-
-            for (File file : repository.getSheetDirectories()) {
-                folders.add(file.getName());
-            }
-
-            Collections.sort(folders);
-
-            for (String folder : folders) {
-                list.add(folder);
-            }
-
-            updateCardinal();
         }
     }
 }
