@@ -9,6 +9,9 @@
 //-----------------------------------------------------------------------//
 package omr.ui.icon;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.util.Implement;
 
 import java.awt.*;
@@ -30,13 +33,15 @@ public class SymbolIcon
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     /** The same width for all such icons (to be improved) */
-    private static int    standardWidth = -1;
+    private static int standardWidth = -1;
 
     //~ Instance fields --------------------------------------------------------
 
     /** Connected to Ledger ? */
-    private Boolean       hasLedger;
+    private Boolean hasLedger;
 
     /** Related image */
     private BufferedImage image;
@@ -45,16 +50,16 @@ public class SymbolIcon
     private Dimension dimension;
 
     /** Pitch position within staff lines */
-    private Double  pitchPosition;
+    private Double pitchPosition;
 
     /** How many stems is it connected to ? */
     private Integer stemNumber;
 
     /** Mass center */
-    private Point  centroid;
+    private Point centroid;
 
     /** Reference point, if any */
-    private Point  refPoint;
+    private Point refPoint;
 
     /** Related name */
     private String name;
@@ -108,7 +113,7 @@ public class SymbolIcon
     // getBitmap //
     //-----------//
     /**
-     * Report an array of strings that describe the bitmap
+     * Report an array of strings that describe the bitmap (meant for JiBX)
      *
      * @return the array of strings for file storing
      */
@@ -119,7 +124,8 @@ public class SymbolIcon
         }
 
         // Generate the string array from the icon image
-        return IconManager.encodeImage(this);
+        return IconManager.getInstance()
+                          .encodeImage(this);
     }
 
     //-------------//
@@ -224,14 +230,19 @@ public class SymbolIcon
     // getIconWidth //
     //--------------//
     /**
-     * Report the STANDARD width of the icon (used by swing when painting)
+     * Report the actual or the STANDARD width of the icon (used by swing when 
+     * painting), depending on the current value of constant useConstantWidth
      *
      * @return the standard width in pixels
      */
     @Implement(Icon.class)
     public int getIconWidth ()
     {
-        return standardWidth;
+        if (constants.useConstantWidth.getValue()) {
+            return standardWidth;
+        } else {
+            return getActualWidth();
+        }
     }
 
     //----------//
@@ -286,14 +297,14 @@ public class SymbolIcon
     // setBitmap //
     //-----------//
     /**
-     * Allows to define the bitmap, from an array of strings
+     * Allows to define the bitmap, from an array of strings (meant for JiBX)
      *
      * @param rows the array of strings which describe the bitmap
      */
     public void setBitmap (String[] rows)
     {
         // Elaborate the image from the string array
-        setImage(IconManager.decodeImage(rows));
+        setImage(IconManager.getInstance().decodeImage(rows));
     }
 
     //---------//
@@ -431,5 +442,23 @@ public class SymbolIcon
                            int       y)
     {
         g.drawImage(image, x, y, c);
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+        extends ConstantSet
+    {
+        Constant.Boolean useConstantWidth = new Constant.Boolean(
+            false,
+            "Should all music icons use the same width in menus ?");
+
+        Constants ()
+        {
+            initialize();
+        }
     }
 }
