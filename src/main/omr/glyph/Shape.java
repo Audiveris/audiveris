@@ -580,7 +580,7 @@ public enum Shape
         }
 
         if (icon == null) {
-            setIcon(IconManager.loadIcon(toString()));
+            setIcon(IconManager.getInstance().loadSymbolIcon(toString()));
 
             if (icon == null) {
                 hasNoIcon = true;

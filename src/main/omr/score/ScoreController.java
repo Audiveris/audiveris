@@ -67,13 +67,13 @@ public class ScoreController
     private final HashMap<ScoreFormat, History> historyMap = new HashMap<ScoreFormat, History>();
 
     /** Menu for score actions */
-    private final JMenu        scoreMenu = new JMenu("Score");
+    private final JMenu scoreMenu = new JMenu("Score");
 
     /** Toolbar needed to add buttons in it */
-    private final JToolBar     toolBar;
+    private final JToolBar toolBar;
 
     /** Collection of score-dependent actions, that are enabled only if there is
-        a current score. */
+       a current score. */
     private final List<Object> scoreDependentActions = new ArrayList<Object>();
 
     /** Should we synchronize the sheet view */
@@ -321,7 +321,7 @@ public class ScoreController
                 false,
                 "Browse Score",
                 "Browse through the score document",
-                IconManager.buttonIconOf("general/PrintPreview"));
+                IconManager.getInstance().loadImageIcon("general/PrintPreview"));
         }
 
         public void actionPerformed (ActionEvent e)
@@ -445,7 +445,8 @@ public class ScoreController
 
             historyMenu.setToolTipText(
                 "History of " + format.name + " score files");
-            historyMenu.setIcon(IconManager.buttonIconOf("general/History"));
+            historyMenu.setIcon(
+                IconManager.getInstance().loadImageIcon("general/History"));
             scoreMenu.add(historyMenu);
         }
     }
@@ -504,7 +505,7 @@ public class ScoreController
                 false,
                 "Close Score",
                 "Close the current score",
-                IconManager.buttonIconOf("general/Remove"));
+                IconManager.getInstance().loadImageIcon("general/Remove"));
         }
 
         public void actionPerformed (ActionEvent e)
@@ -536,7 +537,7 @@ public class ScoreController
                 true,
                 "Open " + format.name + " Score",
                 "Open a score " + format.name + " file",
-                IconManager.buttonIconOf("general/Import"));
+                IconManager.getInstance().loadImageIcon("general/Import"));
         }
 
         public void actionPerformed (ActionEvent e)
@@ -580,7 +581,7 @@ public class ScoreController
                 false,
                 "Store in " + format.name,
                 "Store current score in " + format.name + " format",
-                IconManager.buttonIconOf("general/Export"));
+                IconManager.getInstance().loadImageIcon("general/Export"));
         }
 
         public void actionPerformed (ActionEvent e)
