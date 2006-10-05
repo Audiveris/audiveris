@@ -14,25 +14,40 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.ui.*;
-
-import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.XmlMapper;
 
-import java.awt.*;
 import java.awt.image.*;
-import java.awt.image.MemoryImageSource;
 import java.io.*;
-import java.net.URL;
+import java.net.*;
+import java.util.*;
 
 import javax.swing.*;
 
 /**
- * Class <code>IconManager</code> manages icons in their loading and
- * storing. It thus handles the location where icon definition files are
- * kept, as well as the marshalling and unmarshalling to and from these
- * files. The binding is implemented by means of JiBX.
+ * Class <code>IconManager</code> manages icons in their loading and storing. It
+ * thus handles the location where icon definitions are kept, as well as (if
+ * needed) the marshalling and unmarshalling to and from these definitions.
+ *
+ * <p>There are two populations of icons:<ul>
+ *
+ * <li>The predefined image icons used for user interface buttons in various
+ * toolbars. These icons come from the <b>Java Look and Feel Graphics
+ * Repository</b> and are kept in binary (.gif) form in the <b>jlfgr-1_0.jar</b>
+ * archive. There is no custom (un)marshalling per se. They are instances of
+ * standard class {@link ImageIcon}. Access to these image icons is provided
+ * via {@link #loadImageIcon}.
+ *
+ * <li>The custom symbol icons which represent music symbols. Purpose of these
+ * icons is twofold: they are used in menus and other UI artifacts which need
+ * such music icons, they are used also to build <i>artificial glyphs</i>,
+ * instances of the {@link omr.glyph.IconGlyph} class, which can be used to
+ * train the evaluator when no other real glyph is available for a given
+ * shape. These symbol icons use a custom (un)marshalling technique (using JiBX)
+ * to ASCII descriptions that can be edited manually. They are loaded as
+ * instances of specific class {@link SymbolIcon}. Access to these symbol icons
+ * is provided via {@link #loadSymbolIcon} and {@link #storeSymbolIcon}. This
+ * symbol population is cached in a dedicated map, to speed up subsequent access
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -41,66 +56,206 @@ public class IconManager
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(IconManager.class);
+    private static final Constants        constants = new Constants();
+    private static final Logger           logger = Logger.getLogger(
+        IconManager.class);
 
     /** Mapper for XML persistency */
     private static XmlMapper xmlMapper;
 
-    /** Dedicated file extension for our icon files */
+    /** Dedicated file extension for our symbol icon files */
     private static final String FILE_EXTENSION = ".xml";
 
-    /** Characters used for encoding bitmaps with 8 levels of gray (this is
-       sufficient for our symbol display) */
-    private static char WHITE = '-'; // And transparent
-    private static char[]          charTable = new char[] {
-        '#', // 0 Black
-        '$', // 1
-        '*', // 2
-        '0', // 3
-        'o', // 4
-        '+', // 5
-        '.', // 6
-        WHITE // 7
-    };
+    /**
+     * Characters used for encoding bitmaps with 8 levels of gray (this is
+     * sufficient for our symbol display)
+     */
+    private static final char WHITE = '-'; // And transparent
+    private static final char[]           charTable = new char[] {
+                                                          '#', // 0 Black
+    '$', // 1
+    '*', // 2
+    '0', // 3
+    'o', // 4
+    '+', // 5
+    '.', // 6
+    WHITE // 7
+                                                      };
+
+    /** The single class instance */
+    private static IconManager INSTANCE;
+
+    //~ Instance fields --------------------------------------------------------
+
+    /** Map for symbol icons */
+    private final Map<String, SymbolIcon> symbolIcons = new HashMap<String, SymbolIcon>();
 
     //~ Constructors -----------------------------------------------------------
 
-    // Not meant to be instantiated
+    /** Not meant to be instantiated */
     private IconManager ()
     {
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // buttonIconOf //
-    //--------------//
+    //-------------//
+    // getInstance //
+    //-------------//
     /**
-     * Build an icon, searched in the button directory.
+     * Report the single instance of this singleton class
      *
-     * @param fname name of the icon
+     * @return the icon manager
+     */
+    public static IconManager getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new IconManager();
+        }
+
+        return INSTANCE;
+    }
+
+    //---------------//
+    // loadImageIcon //
+    //---------------//
+    /**
+     * Load an icon from the toolbarButtonGraphics resource.
      *
+     * @param fname name of the icon, using format "category/Name". For example
+     *              loadImageIcon("general/Find") will return the "Find icon"
+     *              located in the "general" category of the Java Look and Feel
+     *              Graphics Repository
      * @return the newly built icon
      */
-    public static Icon buttonIconOf (String fname)
+    public Icon loadImageIcon (String fname)
     {
-        return iconOf(
-            "/toolbarButtonGraphics",
-            fname + constants.buttonIconSize.getValue());
+        final String resName = "/toolbarButtonGraphics/" + fname +
+                               constants.buttonIconSize.getValue() + ".gif";
+        final URL    iconUrl = IconManager.class.getResource(resName);
+
+        if (iconUrl == null) {
+            logger.warning("Could not load icon from " + resName);
+
+            return null;
+        } else {
+            return new ImageIcon(iconUrl);
+        }
+    }
+
+    //----------------//
+    // loadSymbolIcon //
+    //----------------//
+    /**
+     * Load a symbol icon from its textual representation in the Audiveris music
+     * icons resource
+     *
+     * @param name the icon name, using formats such as "HALF_REST.02" or
+     *             "HALF_REST"
+     * @return the icon built, or null if failed
+     */
+    public SymbolIcon loadSymbolIcon (String name)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Asking for SymbolIcon '" + name + "'");
+        }
+
+        // Do we have a loaded instance yet?
+        SymbolIcon icon = symbolIcons.get(name);
+
+        if (icon == null) {
+            // Look for description file
+            String resName = "/icons/" + name + FILE_EXTENSION;
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Trying to load Icon '" + name + "' from resource " +
+                    resName);
+            }
+
+            InputStream is = Main.class.getResourceAsStream(resName);
+
+            if (is != null) {
+                // Then we de-serialize the icon description
+                icon = loadFromXmlStream(is);
+
+                try {
+                    is.close();
+                } catch (IOException ignored) {
+                }
+
+                if (icon == null) {
+                    logger.warning("Could not load icon '" + name + "'");
+                } else {
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Icon '" + name + "' loaded");
+                    }
+
+                    // Cache the icon for future reuse
+                    symbolIcons.put(name, icon);
+                }
+            } else {
+                if (logger.isFineEnabled()) {
+                    logger.fine("No resource file for icon " + name);
+                }
+            }
+        }
+
+        return icon;
+    }
+
+    //-----------------//
+    // storeSymbolIcon //
+    //-----------------//
+    /**
+     * Store the textual representation of a symbol icon, using the internal
+     * icon name
+     *
+     * @param icon the icon to store
+     */
+    public void storeSymbolIcon (SymbolIcon icon)
+    {
+        String name = icon.getName();
+
+        if ((name == null) || name.equals("")) {
+            logger.warning("Cannot store icon with no name defined");
+        } else {
+            OutputStream os;
+
+            // We store only into the local dir
+            try {
+                os = getIconOutputStream(name);
+            } catch (FileNotFoundException ex) {
+                logger.warning("Cannot store icon " + name);
+
+                return;
+            }
+
+            // Just serialize into this stream
+            if (storeToXmlStream(icon, os)) {
+                logger.info("Icon '" + name + "' successfully stored");
+            } else {
+                logger.warning("Could not store icon " + name);
+            }
+
+            try {
+                os.close();
+            } catch (IOException ignored) {
+            }
+        }
     }
 
     //-------------//
     // decodeImage //
     //-------------//
     /**
-     * Build an image out of an array of strings. This is meant for JiBX
+     * Build an image out of an array of strings. This is meant to ease JiBX
      * unmarshalling.
      *
      * @param rows the lines of characters
      * @return the decoded image
      */
-    public static BufferedImage decodeImage (String[] rows)
+    BufferedImage decodeImage (String[] rows)
     {
         // Create the DataBuffer to hold the pixel samples
         final int  width = rows[0].length();
@@ -138,13 +293,13 @@ public class IconManager
     // encodeImage //
     //-------------//
     /**
-     * Build an array of strings from a given image. This is meant for JiBX
+     * Build an array of strings from a given image. This is meant to ease JiBX
      * marshalling.
      *
      * @param icon the icon, whose image is to be used
      * @return the array of strings
      */
-    public static String[] encodeImage (SymbolIcon icon)
+    String[] encodeImage (SymbolIcon icon)
     {
         BufferedImage image = icon.getImage();
 
@@ -173,148 +328,25 @@ public class IconManager
         return rows;
     }
 
-    //--------//
-    // iconOf //
-    //--------//
-    /**
-     * Build an icon, given its name and size.
-     *
-     * @param path the directory path where the image is to be found
-     * @param fname name of the icon
-     *
-     * @return the newly built icon
-     */
-    public static Icon iconOf (String path,
-                               String fname)
-    {
-        final String resName = path + "/" + fname + ".gif";
-        final URL    iconUrl = IconManager.class.getResource(resName);
-
-        if (iconUrl == null) {
-            logger.warning("iconOf. Could not load icon from " + resName);
-
-            return null;
-        }
-
-        return new ImageIcon(iconUrl);
-    }
-
     //-------------------//
     // loadFromXmlStream //
     //-------------------//
     /**
-     * Load an icon description from an XML stream
+     * Load an icon description from an XML stream.
+     * This private method is declared package private to allow its unitary test
      *
      * @param is the input stream
      *
      * @return a new SymbolIcon, or null if loading has failed
      */
-    public static SymbolIcon loadFromXmlStream (InputStream is)
+    SymbolIcon loadFromXmlStream (InputStream is)
     {
         try {
             return (SymbolIcon) getXmlMapper()
                                     .load(is);
         } catch (Exception ex) {
-            ex.printStackTrace();
-
+            // User already notified
             return null;
-        }
-    }
-
-    //----------//
-    // loadIcon //
-    //----------//
-    /**
-     * Load an icon from its textual representation
-     *
-     * @param name the icon name
-     * @return the icon built, or null if failed
-     */
-    public static SymbolIcon loadIcon (String name)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Trying to load Icon '" + name + "'");
-        }
-
-        InputStream is = Main.class.getResourceAsStream(
-            "/icons/" + name + FILE_EXTENSION);
-
-        if (is == null) {
-            if (logger.isFineEnabled()) {
-                logger.fine("No file for icon " + name);
-            }
-
-            return null;
-        }
-
-        // Then we de-serialize the icon
-        SymbolIcon icon = loadFromXmlStream(is);
-
-        try {
-            is.close();
-        } catch (IOException ignored) {
-        }
-
-        if (icon == null) {
-            logger.warning("Could not load icon '" + name + "'");
-        } else {
-            icon.setName(name);
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Icon '" + name + "' loaded");
-            }
-        }
-
-        return icon;
-    }
-
-    //-----------//
-    // storeIcon //
-    //-----------//
-    /**
-     * Store the textual representation of an icon, using the internal icon
-     * name
-     *
-     * @param icon the icon to store
-     */
-    public static void storeIcon (SymbolIcon icon)
-    {
-        storeIcon(icon, icon.getName());
-    }
-
-    //-----------//
-    // storeIcon //
-    //-----------//
-    /**
-     * Store the textual representation of an icon
-     *
-     * @param icon the icon to store
-     * @param name the icon name
-     */
-    public static void storeIcon (SymbolIcon icon,
-                                  String     name)
-    {
-        OutputStream os;
-
-        // We store only into the local dir
-        try {
-            os = getIconOutputStream(name);
-        } catch (FileNotFoundException ex) {
-            logger.warning("Cannot store icon " + name);
-
-            return;
-        }
-
-        // Just serialize into this stream
-        if (storeToXmlStream(icon, os)) {
-            logger.info("Icon '" + name + "' successfully stored");
-        } else {
-            logger.warning("Could not store icon " + name);
-        }
-
-        try {
-            os.close();
-        } catch (IOException ignored) {
         }
     }
 
@@ -323,14 +355,15 @@ public class IconManager
     //------------------//
     /**
      * Store an icon description to an XML stream
+     * This private method is declared package private to allow its unitary test
      *
      * @param icon the icon to store
      * @param os the output stream
      *
      * @return true if successful, false otherwise
      */
-    public static boolean storeToXmlStream (SymbolIcon   icon,
-                                            OutputStream os)
+    boolean storeToXmlStream (SymbolIcon   icon,
+                              OutputStream os)
     {
         try {
             getXmlMapper()
@@ -347,7 +380,7 @@ public class IconManager
     //---------------------//
     // getIconOutputStream //
     //---------------------//
-    private static OutputStream getIconOutputStream (String name)
+    private OutputStream getIconOutputStream (String name)
         throws FileNotFoundException
     {
         File folder = Main.getIconsFolder();
@@ -370,7 +403,7 @@ public class IconManager
     //--------------//
     // getXmlMapper //
     //--------------//
-    private static XmlMapper getXmlMapper ()
+    private XmlMapper getXmlMapper ()
     {
         if (xmlMapper == null) {
             xmlMapper = new XmlMapper(SymbolIcon.class);
@@ -389,7 +422,7 @@ public class IconManager
      * @param argb the pixel value, in the ARGB format
      * @return the proper char
      */
-    private static char ARGBtoChar (int argb)
+    private char ARGBtoChar (int argb)
     {
         int a = (argb & 0xff000000) >>> 24; // Alpha
 
@@ -414,7 +447,7 @@ public class IconManager
      * @param c the char
      * @return the corresponding pixel value (ARGB format)
      */
-    private static int toARGB (char c)
+    private int toARGB (char c)
     {
         final int level = toGray(c);
 
@@ -437,7 +470,7 @@ public class IconManager
      * @param c the char
      * @return the corresponding pixel value ( 0 .. 255)
      */
-    private static int toGray (char c)
+    private int toGray (char c)
     {
         // Check the char
         if (c == WHITE) {
@@ -463,7 +496,7 @@ public class IconManager
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Integer buttonIconSize = new Constant.Integer(
