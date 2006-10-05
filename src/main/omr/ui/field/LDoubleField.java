@@ -24,7 +24,35 @@ import javax.swing.JTextField;
 public class LDoubleField
     extends LField
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Default format for display in the field : {@value} */
+    public static final String DEFAULT_FORMAT = "%.5f";
+
+    //~ Instance fields --------------------------------------------------------
+
+    /** Specific display format, if any */
+    private final String format;
+
     //~ Constructors -----------------------------------------------------------
+
+    //--------------//
+    // LDoubleField //
+    //--------------//
+    /**
+     * Create an (initially) editable double labelled field with proper
+     * characteristics
+     *
+     * @param label string for the label text
+     * @param tip related tool tip text
+     * @param format specific display format
+     */
+    public LDoubleField (String label,
+                         String tip,
+                         String format)
+    {
+        this(true, label, tip, format);
+    }
 
     //--------------//
     // LDoubleField //
@@ -39,7 +67,7 @@ public class LDoubleField
     public LDoubleField (String label,
                          String tip)
     {
-        this(true, label, tip);
+        this(label, tip, null);
     }
 
     //--------------//
@@ -56,7 +84,27 @@ public class LDoubleField
                          String  label,
                          String  tip)
     {
+        this(editable, label, tip, null);
+    }
+
+    //--------------//
+    // LDoubleField //
+    //--------------//
+    /**
+     * Create a double labelled field with proper characteristics
+     *
+     * @param editable tells whether the field must be editable
+     * @param label string for the label text
+     * @param tip related tool tip text
+     * @param format specific display format
+     */
+    public LDoubleField (boolean editable,
+                         String  label,
+                         String  tip,
+                         String  format)
+    {
         super(editable, label, tip);
+        this.format = format;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -65,13 +113,14 @@ public class LDoubleField
     // setValue //
     //----------//
     /**
-     * Set the field value with a double, using predefined format
+     * Set the field value with a double, using the assigned format
      *
      * @param val the new value
      */
     public void setValue (double val)
     {
-        field.setText(String.format("%.5f", val));
+        field.setText(
+            String.format((format != null) ? format : DEFAULT_FORMAT, val));
     }
 
     //----------//
