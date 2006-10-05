@@ -28,7 +28,7 @@ import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
+import java.awt.geom.*;
 import java.awt.image.*;
 
 import javax.swing.*;
@@ -229,8 +229,8 @@ public class SymbolRipper
                 GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
 
         // Initial values
-        fontName.getSpinner()
-                .setValue("Maestro");
+//        fontName.getSpinner()
+//                .setValue("Maestro");
         fontSize.setValue(31);
         pointCode.setModel(new SpinnerNumberModel(38, 0, 255, 1));
         width.setValue(23);
@@ -505,7 +505,8 @@ public class SymbolRipper
         {
             // Populate with defined symbols
             for (Shape shape : Shape.values()) {
-                shape.setIcon(IconManager.loadIcon(shape.toString()));
+                shape.setIcon(
+                    IconManager.getInstance().loadSymbolIcon(shape.toString()));
             }
 
             // Update the shape menu accordingly
@@ -548,13 +549,18 @@ public class SymbolRipper
             if (!output.getText()
                        .equals("")) {
                 // Store the new icon definition
-                IconManager.storeIcon(new SymbolIcon(image), output.getText());
+                SymbolIcon icon = new SymbolIcon(image);
+                icon.setName(output.getText());
+                IconManager.getInstance()
+                           .storeSymbolIcon(icon);
 
-                // Try to load this new definition as a shape
+                // Try to load this new icon definition as a shape icon
                 try {
                     // This may fail
                     Shape shape = Shape.valueOf(output.getText());
-                    shape.setIcon(IconManager.loadIcon(shape.toString()));
+                    shape.setIcon(
+                        IconManager.getInstance().loadSymbolIcon(
+                            shape.toString()));
 
                     // Update the shape menu accordingly
                     menu.removeAll();
@@ -563,7 +569,7 @@ public class SymbolRipper
                     logger.info("Symbol just stored is not a known shape");
                 }
 
-                // Dsable new storing
+                // Disable new storing
                 disableStore();
             } else {
                 logger.warning("No name defined for symbol output");
