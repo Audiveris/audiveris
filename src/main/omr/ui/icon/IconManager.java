@@ -126,7 +126,7 @@ public class IconManager
      *              loadImageIcon("general/Find") will return the "Find icon"
      *              located in the "general" category of the Java Look and Feel
      *              Graphics Repository
-     * @return the newly built icon
+     * @return the newly built icon, or null if load failure
      */
     public Icon loadImageIcon (String fname)
     {
@@ -354,7 +354,7 @@ public class IconManager
     // storeToXmlStream //
     //------------------//
     /**
-     * Store an icon description to an XML stream
+     * Store an icon description to an XML stream.
      * This private method is declared package private to allow its unitary test
      *
      * @param icon the icon to store
