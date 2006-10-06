@@ -363,7 +363,7 @@ public class NeuralNetwork
     public void stop ()
     {
         stopping = true;
-        logger.fine("Stopping Network training ...");
+        logger.fine("Network training being stopped ...");
     }
 
     //-------//
@@ -428,10 +428,11 @@ public class NeuralNetwork
             monitor.trainingStarted(0, mse);
         }
 
-        for (int ie = 0; ie < epochs; ie++) {
+        int ie = 0;
+        for (; ie < epochs; ie++) {
             // Have we been told to stop ?
             if (stopping) {
-                logger.info("Network stopped.");
+                logger.fine("Network stopped.");
 
                 break;
             }
@@ -518,8 +519,8 @@ public class NeuralNetwork
 
             if (mse <= maxError) {
                 logger.info(
-                    "Exiting Network training, remaining error limit reached");
-                logger.info("Remaining error was : " + mse);
+                    "Network exiting training, remaining error limit reached");
+                logger.info("Network remaining error was : " + mse);
 
                 break;
             }
@@ -531,7 +532,7 @@ public class NeuralNetwork
                 String.format(
                     "Duration  %,d seconds, %d epochs on %d patterns",
                     (stopTime - startTime) / 1000,
-                    epochs,
+                    ie,
                     patternNb));
         }
 
