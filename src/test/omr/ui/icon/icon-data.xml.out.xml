@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="ARPEGGIATO_DOWN">
+    <dimension width="4" height="35"/>
+    <centroid x="2" y="16"/>
+    <pitch-position>0.0</pitch-position>
+    <bitmap>
+        <row>--$-</row>
+        <row>--#*</row>
+        <row>-*##</row>
+        <row>0##o</row>
+        <row>##o-</row>
+        <row>0#--</row>
+        <row>-$o-</row>
+        <row>-.#.</row>
+        <row>-.#$</row>
+        <row>-$#$</row>
+        <row>*##.</row>
+        <row>##+-</row>
+        <row>o#--</row>
+        <row>-*0-</row>
+        <row>--#o</row>
+        <row>-+##</row>
+        <row>.##*</row>
+        <row>$#$-</row>
+        <row>$#.-</row>
+        <row>.#.-</row>
+        <row>-o$-</row>
+        <row>--#0</row>
+        <row>-o##</row>
+        <row>+##0</row>
+        <row>##*-</row>
+        <row>*#--</row>
+        <row>-*.-</row>
+        <row>0.#-</row>
+        <row>+##$</row>
+        <row>-##$</row>
+        <row>-0#o</row>
+        <row>-.#.</row>
+        <row>--#-</row>
+        <row>--o-</row>
+        <row>--.-</row>
+    </bitmap>
+</icon>
