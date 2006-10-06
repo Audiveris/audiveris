@@ -230,7 +230,7 @@ public class SymbolIcon
     // getIconWidth //
     //--------------//
     /**
-     * Report the actual or the STANDARD width of the icon (used by swing when 
+     * Report the actual or the STANDARD width of the icon (used by swing when
      * painting), depending on the current value of constant useConstantWidth
      *
      * @return the standard width in pixels
@@ -449,7 +449,7 @@ public class SymbolIcon
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Boolean useConstantWidth = new Constant.Boolean(
