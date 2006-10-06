@@ -12,6 +12,7 @@ package omr.glyph.ui;
 
 import omr.glyph.Evaluator;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.ui.TrainingPanel.DumpAction;
 
 import omr.math.NeuralNetwork;
 
@@ -20,6 +21,7 @@ import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
 
 import omr.util.Implement;
+import omr.util.Logger;
 
 import java.awt.event.*;
 import java.text.*;
@@ -39,6 +41,10 @@ import javax.swing.event.*;
 class NetworkPanel
     extends TrainingPanel
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final Logger  logger = Logger.getLogger(NetworkPanel.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /** Best neural weights so far */
@@ -75,9 +81,9 @@ class NetworkPanel
         "Maximum number of iterations to perform");
 
     /** Output for Index of best configuration so far */
-    private LIntegerField snapIndex = new LIntegerField(
+    private LIntegerField bestIndex = new LIntegerField(
         false,
-        "Snap Index",
+        "Best Index",
         "Index of best configuration so far");
 
     /** Output for Number of iterations performed so far */
@@ -92,9 +98,9 @@ class NetworkPanel
         "Error threshold to stop learning");
 
     /** Output for Best recorded value of remaining error */
-    private LDoubleField snapError = new LDoubleField(
+    private LDoubleField bestError = new LDoubleField(
         false,
-        "Snap Error",
+        "Best Error",
         "Best recorded value of remaining error");
 
     /** Output for Last value of remaining error */
@@ -110,7 +116,7 @@ class NetworkPanel
     private NetworkTrainAction incrementalTrainAction;
 
     /** User action to pick the best recorded weights */
-    private SnapAction snapAction = new SnapAction();
+    private BestAction bestAction = new BestAction();
 
     /** User action to gracefully stop the training */
     private StopAction stopAction = new StopAction();
@@ -233,10 +239,10 @@ class NetworkPanel
                         trainIndex.setValue(index);
                         trainError.setValue(mse);
 
-                        // Update snap values
+                        // Update best values
                         if (snapTaken) {
-                            snapIndex.setValue(index);
-                            snapError.setValue(mse);
+                            bestIndex.setValue(index);
+                            bestError.setValue(mse);
 
                             if (errorListener != null) {
                                 errorListener.stateChanged(errorEvent);
@@ -276,9 +282,9 @@ class NetworkPanel
                     // This part is run on swing thread
                     public void run ()
                     {
-                        // Update snap values
-                        snapIndex.setValue(index);
-                        snapError.setValue(mse);
+                        // Update best values
+                        bestIndex.setValue(index);
+                        bestError.setValue(mse);
 
                         ///setFrameTitle(mse);
                         if (errorListener != null) {
@@ -295,8 +301,8 @@ class NetworkPanel
     // update //
     //--------//
     /**
-     * Specific behavior when a new task activity is notified. In addition to 
-     * {@link TrainingPanel#update}, actions specific to training a neural 
+     * Specific behavior when a new task activity is notified. In addition to
+     * {@link TrainingPanel#update}, actions specific to training a neural
      * network are handled here.
      *
      * @param obs the task object
@@ -332,7 +338,7 @@ class NetworkPanel
             break;
         }
 
-        snapAction.setEnabled(false);
+        bestAction.setEnabled(false);
         lastAction.setEnabled(false);
     }
 
@@ -370,18 +376,18 @@ class NetworkPanel
         JButton trainButton = new JButton(trainAction);
         trainButton.setToolTipText("Re-Train the evaluator from scratch");
 
-        JButton snapButton = new JButton(snapAction);
-        snapButton.setToolTipText("Use the weights of best snap");
+        JButton bestButton = new JButton(bestAction);
+        bestButton.setToolTipText("Use the weights of best snap");
 
         builder.add(dumpButton, cst.xy(3, r));
         builder.add(trainButton, cst.xy(5, r));
-        builder.add(snapButton, cst.xy(7, r));
+        builder.add(bestButton, cst.xy(7, r));
 
-        builder.add(snapIndex.getLabel(), cst.xy(9, r));
-        builder.add(snapIndex.getField(), cst.xy(11, r));
+        builder.add(bestIndex.getLabel(), cst.xy(9, r));
+        builder.add(bestIndex.getField(), cst.xy(11, r));
 
-        builder.add(snapError.getLabel(), cst.xy(13, r));
-        builder.add(snapError.getField(), cst.xy(15, r));
+        builder.add(bestError.getLabel(), cst.xy(13, r));
+        builder.add(bestError.getField(), cst.xy(15, r));
 
         r += 2; // ----------------------------
 
@@ -434,6 +440,32 @@ class NetworkPanel
     //~ Inner Classes ----------------------------------------------------------
 
     //------------//
+    // BestAction //
+    //------------//
+    private class BestAction
+        extends AbstractAction
+    {
+        public BestAction ()
+        {
+            super("Use Best");
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            GlyphNetwork  glyphNetwork = (GlyphNetwork) evaluator;
+            NeuralNetwork network = glyphNetwork.getNetwork();
+            network.restore(bestSnap);
+            logger.info("Network remaining error : " + (float) bestMse);
+            glyphNetwork.serialize();
+
+            // Let the user choose the other possibility
+            setEnabled(false);
+            lastAction.setEnabled(true);
+        }
+    }
+
+    //------------//
     // LastAction //
     //------------//
     private class LastAction
@@ -447,17 +479,26 @@ class NetworkPanel
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            // Ask user confirmation
-            final int answer = JOptionPane.showConfirmDialog(
-                component,
-                "Do you want to switch to this non-optimal network ?");
+            // Ask user confirmation if needed
+            if (lastMse > bestMse) {
+                final int answer = JOptionPane.showConfirmDialog(
+                    component,
+                    "Do you want to switch to this non-optimal network ?");
 
-            if (answer == JOptionPane.YES_OPTION) {
-                NeuralNetwork network = ((GlyphNetwork) evaluator).getNetwork();
-                network.restore(lastSnap);
-                setEnabled(false);
-                snapAction.setEnabled(true);
+                if (answer != JOptionPane.YES_OPTION) {
+                    return;
+                }
             }
+
+            GlyphNetwork  glyphNetwork = (GlyphNetwork) evaluator;
+            NeuralNetwork network = glyphNetwork.getNetwork();
+            network.restore(lastSnap);
+            logger.info("Network remaining error : " + (float) lastMse);
+            glyphNetwork.serialize();
+
+            // Let the user choose the other possibility
+            setEnabled(false);
+            bestAction.setEnabled(true);
         }
     }
 
@@ -487,13 +528,12 @@ class NetworkPanel
             NeuralNetwork network = ((GlyphNetwork) evaluator).getNetwork();
             lastSnap = network.backup();
 
-            // By default, use snap stuff
-            if (bestMse <= lastMse) {
-                snapAction.actionPerformed(null);
+            // By default, keep the better between best recorded and last
+            if (lastMse <= bestMse) {
+                lastAction.actionPerformed(null);
+            } else {
+                bestAction.actionPerformed(null);
             }
-
-            // Let the user choose the other possibility
-            lastAction.setEnabled(true);
         }
     }
 
@@ -511,27 +551,6 @@ class NetworkPanel
         {
             inputParams();
             displayParams();
-        }
-    }
-
-    //------------//
-    // SnapAction //
-    //------------//
-    private class SnapAction
-        extends AbstractAction
-    {
-        public SnapAction ()
-        {
-            super("Use Snap");
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            NeuralNetwork network = ((GlyphNetwork) evaluator).getNetwork();
-            network.restore(bestSnap);
-            setEnabled(false);
-            lastAction.setEnabled(true);
         }
     }
 
