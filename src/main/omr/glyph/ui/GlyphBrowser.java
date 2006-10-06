@@ -312,7 +312,7 @@ class GlyphBrowser
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Boolean confirmDeletions = new Constant.Boolean(

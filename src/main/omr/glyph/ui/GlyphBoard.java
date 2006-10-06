@@ -230,7 +230,7 @@ public class GlyphBoard
         dump.setEnabled(false);
         deassignButton.setEnabled(false);
 
-        // Force a constant height for the shapeIcon field, despite the 
+        // Force a constant height for the shapeIcon field, despite the
         // variation in size of the icon
         Dimension dim = new Dimension(
             constants.shapeIconWidth.getValue(),
@@ -428,7 +428,7 @@ public class GlyphBoard
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         /** Exact pixel height for the shape icon field */

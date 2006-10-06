@@ -301,7 +301,7 @@ class ValidationPanel
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Double maxGrade = new Constant.Double(

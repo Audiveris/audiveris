@@ -425,7 +425,7 @@ class SelectionPanel
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Integer maxSimilar = new Constant.Integer(

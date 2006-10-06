@@ -91,7 +91,8 @@ public class ScoreBuilder
 
                 if (glyph.isWellKnown() && (shape != CLUTTER)) {
                     if (logger.isFineEnabled()) {
-                        logger.fine(glyph.toString());
+                        logger.fine(
+                            "ScoreBuilder translating " + glyph.toString());
                     }
 
                     Rectangle  box = glyph.getContourBox();
@@ -272,7 +273,7 @@ public class ScoreBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Scale.Fraction maxTimeDistance = new Scale.Fraction(

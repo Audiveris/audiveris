@@ -72,7 +72,7 @@ public class ScoreConstants
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Integer interPage = new Constant.Integer(
