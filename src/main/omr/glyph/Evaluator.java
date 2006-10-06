@@ -400,7 +400,7 @@ public abstract class Evaluator
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Double maxDistance = new Constant.Double(
