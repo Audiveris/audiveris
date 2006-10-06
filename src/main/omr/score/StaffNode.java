@@ -106,4 +106,17 @@ public abstract class StaffNode
         this.staff = staff;
         setChildrenStaff(staff);
     }
+
+    //----------//
+    // getStaff //
+    //----------//
+    /**
+     * Report the containing staff
+     *
+     * @return the containint staff entity
+     */
+    public Staff getStaff ()
+    {
+        return staff;
+    }
 }

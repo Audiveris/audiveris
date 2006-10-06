@@ -91,4 +91,34 @@ public class Clef
 
         return true;
     }
+
+    //----------//
+    // populate //
+    //----------//
+    static boolean populate (Shape      shape,
+                             Measure    measure,
+                             Staff      staff,
+                             StaffPoint staffPoint)
+    {
+        switch (shape) {
+        case G_CLEF :
+        case G_CLEF_OTTAVA_ALTA :
+        case G_CLEF_OTTAVA_BASSA :
+            new Clef(measure, staff, shape, staffPoint, 2);
+
+            return true;
+
+        case F_CLEF :
+        case F_CLEF_OTTAVA_ALTA :
+        case F_CLEF_OTTAVA_BASSA :
+            new Clef(measure, staff, shape, staffPoint, -2);
+
+            return true;
+
+        default :
+            logger.warning("No implementation yet for " + shape);
+
+            return false;
+        }
+    }
 }

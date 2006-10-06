@@ -10,6 +10,8 @@
 //
 package omr.score;
 
+import omr.constant.ConstantSet;
+
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
@@ -36,7 +38,9 @@ public class TimeSignature
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(TimeSignature.class);
+    private static final Constants constants = new Constants();
+    private static final Logger    logger = Logger.getLogger(
+        TimeSignature.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -73,14 +77,13 @@ public class TimeSignature
     /**
      * Create a time signature, with related sheet scale and containing staff
      *
+     * @param measure the containing measure
      * @param scale the sheet global scale
-     * @param staff the containing staff
      */
     public TimeSignature (Measure measure,
-                          Staff   staff,
                           Scale   scale)
     {
-        super(measure, staff);
+        super(measure, measure.getStaff());
         this.scale = scale;
     }
 
@@ -272,6 +275,38 @@ public class TimeSignature
         return true;
     }
 
+    //----------//
+    // populate //
+    //----------//
+    static boolean populate (Shape   shape,
+                             Measure measure,
+                             Staff   staff,
+                             Scale   scale,
+                             Glyph   glyph)
+    {
+        // First, some basic tests
+        // Horizontal distance since beginning of measure
+        StaffPoint center = staff.computeGlyphCenter(glyph, scale);
+        int        unitDx = center.x - measure.getLeftX();
+
+        if (unitDx < scale.toUnits(constants.minTimeOffset)) {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Too small offset for time signature" + " (glyph#" +
+                    glyph.getId() + ")");
+            }
+
+            return false;
+        }
+
+        // Then, processing depends on single/multi time signature
+        if (SingleTimes.contains(shape)) {
+            return populateSingleTime(shape, glyph, measure, scale);
+        } else {
+            return populateMultiTime(shape, glyph, measure, scale);
+        }
+    }
+
     //-----------------//
     // getNumericValue //
     //-----------------//
@@ -434,6 +469,102 @@ public class TimeSignature
                 logger.fine(
                     "numerator=" + numerator + " denominator=" + denominator);
             }
+        }
+    }
+
+    //-------------------//
+    // populateMultiTime //
+    //-------------------//
+    private static boolean populateMultiTime (Shape   shape,
+                                              Glyph   glyph,
+                                              Measure measure,
+                                              Scale   scale)
+    {
+        TimeSignature ts = measure.getTimeSignature();
+
+        if (ts == null) {
+            ts = new TimeSignature(measure, scale);
+            ts.addGlyph(glyph);
+            measure.setTimeSignature(ts);
+        } else {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Second whole time signature" + " (glyph#" + glyph.getId() +
+                    ")" + " in the same measure");
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    //--------------------//
+    // populateSingleTime //
+    //--------------------//
+    private static boolean populateSingleTime (Shape   shape,
+                                               Glyph   glyph,
+                                               Measure measure,
+                                               Scale   scale)
+    {
+        TimeSignature ts = measure.getTimeSignature();
+
+        if (ts != null) {
+            // Check we are not too far from this first time signature part
+            StaffPoint center = measure.getStaff()
+                                       .computeGlyphCenter(glyph, scale);
+            double     unitDist = center.distance(ts.getCenter());
+            double     unitMax = scale.toUnitsDouble(constants.maxTimeDistance);
+
+            if (unitDist <= unitMax) {
+                ts.addGlyph(glyph);
+            } else {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Time signature part" + " (glyph#" + glyph.getId() +
+                        ")" + " too far from previous one");
+                }
+
+                return false;
+            }
+        } else {
+            ts = new TimeSignature(measure, scale);
+            ts.addGlyph(glyph);
+            measure.setTimeSignature(ts);
+        }
+
+        return true;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        /**
+         * Maximum euclidian distance (in interline fraction) between two parts
+         * of a time signature
+         */
+        Scale.Fraction maxTimeDistance = new Scale.Fraction(
+            4d,
+            "Maximum euclidian distance (in interline fraction) between two" +
+            " parts of a time signature");
+
+        /**
+         * Minimum horizontal offset (in interline fraction) for a time
+         * signature since start of measure
+         */
+        Scale.Fraction minTimeOffset = new Scale.Fraction(
+            3d,
+            "Minimum horizontal offset (in interline fraction) for a time" +
+            " signature since start of measure");
+
+        Constants ()
+        {
+            initialize();
         }
     }
 }

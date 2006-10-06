@@ -10,8 +10,6 @@
 //
 package omr.score;
 
-import omr.constant.ConstantSet;
-
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
@@ -36,19 +34,27 @@ public class ScoreBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(
-        ScoreBuilder.class);
+    private static final Logger logger = Logger.getLogger(ScoreBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    // TBD comments please
-    private Measure    measure;
-    private Scale      scale;
-    private Score      score;
-    private Sheet      sheet;
-    private Staff      staff;
+    /** The score we are populating */
+    private Score score;
+
+    /** The related sheet */
+    private Sheet sheet;
+
+    /** The sheet mean scale */
+    private Scale scale;
+
+    /** The current staff */
+    private Staff staff;
+
+    /** The current point in current staff */
     private StaffPoint staffPoint;
+
+    /** The current measure */
+    private Measure measure;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -65,6 +71,7 @@ public class ScoreBuilder
     {
         this.score = score;
         this.sheet = sheet;
+
         scale = sheet.getScale();
     }
 
@@ -91,10 +98,10 @@ public class ScoreBuilder
 
                 if (glyph.isWellKnown() && (shape != CLUTTER)) {
                     if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "ScoreBuilder translating " + glyph.toString());
+                        logger.fine("Translating " + glyph.toString());
                     }
 
+                    // Retrieve related score items
                     Rectangle  box = glyph.getContourBox();
                     PixelPoint pp = new PixelPoint(
                         box.x + (box.width / 2),
@@ -106,11 +113,22 @@ public class ScoreBuilder
 
                     boolean success = true;
 
-                    // Processing based on shape
+                    // Processing is based on shape
                     if (Shape.Clefs.contains(shape)) {
-                        success = processClef(shape);
+                        // Clef
+                        success = Clef.populate(
+                            shape,
+                            measure,
+                            staff,
+                            staffPoint);
                     } else if (Shape.Times.contains(shape)) {
-                        success = processTime(shape, glyph);
+                        // Time
+                        success = TimeSignature.populate(
+                            shape,
+                            measure,
+                            staff,
+                            scale,
+                            glyph);
                     } else {
                         // Basic processing
                         switch (shape) {
@@ -125,6 +143,7 @@ public class ScoreBuilder
             }
         }
 
+        // Update score view
         score.getView()
              .getScrollPane()
              .getComponent()
@@ -144,121 +163,6 @@ public class ScoreBuilder
              .deassignGlyphShape(glyph);
     }
 
-    //-------------//
-    // processClef //
-    //-------------//
-    private boolean processClef (Shape shape)
-    {
-        switch (shape) {
-        case G_CLEF :
-        case G_CLEF_OTTAVA_ALTA :
-        case G_CLEF_OTTAVA_BASSA :
-            new Clef(measure, staff, shape, staffPoint, 2);
-
-            return true;
-
-        case F_CLEF :
-        case F_CLEF_OTTAVA_ALTA :
-        case F_CLEF_OTTAVA_BASSA :
-            new Clef(measure, staff, shape, staffPoint, -2);
-
-            return true;
-
-        default :
-            logger.warning("No implementation yet for " + shape);
-
-            return false;
-        }
-    }
-
-    //------------------//
-    // processMultiTime //
-    //------------------//
-    private boolean processMultiTime (Shape shape,
-                                      Glyph glyph)
-    {
-        TimeSignature ts = measure.getTimeSignature();
-
-        if (ts == null) {
-            ts = new TimeSignature(measure, staff, scale);
-            ts.addGlyph(glyph);
-            measure.setTimeSignature(ts);
-        } else {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Second whole time signature" + " (glyph#" + glyph.getId() +
-                    ")" + " in the same measure");
-            }
-
-            return false;
-        }
-
-        return true;
-    }
-
-    //-------------------//
-    // processSingleTime //
-    //-------------------//
-    private boolean processSingleTime (Shape shape,
-                                       Glyph glyph)
-    {
-        TimeSignature ts = measure.getTimeSignature();
-
-        if (ts != null) {
-            // Check we are not too far from this first time signature part
-            StaffPoint center = staff.computeGlyphCenter(glyph, scale);
-            double     unitDist = center.distance(ts.getCenter());
-            double     unitMax = scale.toUnitsDouble(constants.maxTimeDistance);
-
-            if (unitDist <= unitMax) {
-                ts.addGlyph(glyph);
-            } else {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Time signature part" + " (glyph#" + glyph.getId() +
-                        ")" + " too far from previous one");
-                }
-
-                return false;
-            }
-        } else {
-            ts = new TimeSignature(measure, staff, scale);
-            ts.addGlyph(glyph);
-            measure.setTimeSignature(ts);
-        }
-
-        return true;
-    }
-
-    //-------------//
-    // processTime //
-    //-------------//
-    private boolean processTime (Shape shape,
-                                 Glyph glyph)
-    {
-        // First, some basic tests
-        // Horizontal distance since beginning of measure
-        StaffPoint center = staff.computeGlyphCenter(glyph, scale);
-        int        unitDx = center.x - measure.getLeftX();
-
-        if (unitDx < scale.toUnits(constants.minTimeOffset)) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Too small offset for time signature" + " (glyph#" +
-                    glyph.getId() + ")");
-            }
-
-            return false;
-        }
-
-        // Then, processing depends on single/multi time signature
-        if (SingleTimes.contains(shape)) {
-            return processSingleTime(shape, glyph);
-        } else {
-            return processMultiTime(shape, glyph);
-        }
-    }
-
     //--------------//
     // scoreCleanup //
     //--------------//
@@ -266,26 +170,5 @@ public class ScoreBuilder
     {
         // Keep only the systems, slurs, staves, measures, barlines
         score.cleanupChildren();
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        Scale.Fraction maxTimeDistance = new Scale.Fraction(
-            4d,
-            "Maximum distance between two parts of a time signature");
-        Scale.Fraction minTimeOffset = new Scale.Fraction(
-            3d,
-            "Minimum offset for a time signature since start of measure");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }
