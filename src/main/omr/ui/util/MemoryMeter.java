@@ -9,17 +9,19 @@
 //--------------------------------------------------------------------------//
 package omr.ui.util;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.util.Memory;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
 import javax.swing.*;
 
 /**
  * Class <code>MemoryMeter</code> encapsulates the display of a linear memory
- * meter in KB (both used and total), together with a garbage-collection
+ * meter in MB (both used and total), together with a garbage-collection
  * button.
  *
  * <P>There is a alarm threshold that triggers a color switch to red whenever
@@ -32,11 +34,7 @@ public class MemoryMeter
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Default display period, in milli-seconds : {@value} */
-    public static final int DEFAULT_DISPLAY_PERIOD = 2000;
-
-    /** Default alarm threshold, in KB : {@value} */
-    public static final int DEFAULT_ALARM_THRESHOLD = 40960;
+    private static final Constants constants = new Constants();
 
     //~ Instance fields --------------------------------------------------------
 
@@ -54,12 +52,6 @@ public class MemoryMeter
 
     /** Flag on monitoring activity */
     private volatile boolean monitoring;
-
-    /** Current alarm threshold */
-    private int alarmThreshold = DEFAULT_ALARM_THRESHOLD;
-
-    /** Current display period */
-    private int displayPeriod = DEFAULT_DISPLAY_PERIOD;
 
     /** Last value for global memory */
     private int lastTotal;
@@ -91,27 +83,7 @@ public class MemoryMeter
      */
     public MemoryMeter (Icon buttonIcon)
     {
-        this(buttonIcon, DEFAULT_DISPLAY_PERIOD, DEFAULT_ALARM_THRESHOLD);
-    }
-
-    //-------------//
-    // MemoryMeter //
-    //-------------//
-    /**
-     * Memory Meter, with all parameters.
-     *
-     * @param buttonIcon     Specific icon for garbage collector
-     * @param displayPeriod  Time period, in milliseconds, between displays
-     * @param alarmThreshold Memory threshold to trigger alarm
-     */
-    public MemoryMeter (Icon buttonIcon,
-                        int  displayPeriod,
-                        int  alarmThreshold)
-    {
         component = new JPanel();
-
-        setDisplayPeriod(displayPeriod);
-        setAlarmThreshold(alarmThreshold);
 
         try {
             defineUI(buttonIcon);
@@ -122,32 +94,6 @@ public class MemoryMeter
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------------//
-    // setAlarmThreshold //
-    //-------------------//
-    /**
-     * Modify the alarm threshold
-     *
-     * @param alarmThreshold the new alarm threshold, expressed in KB
-     */
-    public void setAlarmThreshold (int alarmThreshold)
-    {
-        this.alarmThreshold = alarmThreshold;
-    }
-
-    //-------------------//
-    // getAlarmThreshold //
-    //-------------------//
-    /**
-     * Report the current alarm threshold
-     *
-     * @return the current alarm threshold
-     */
-    public int getAlarmThreshold ()
-    {
-        return alarmThreshold;
-    }
 
     //--------------//
     // getComponent //
@@ -160,33 +106,6 @@ public class MemoryMeter
     public JComponent getComponent ()
     {
         return component;
-    }
-
-    //------------------//
-    // setDisplayPeriod //
-    //------------------//
-    /**
-     * Modify the current display period
-     *
-     * @param displayPeriod the new display period, expressed in
-     * milliseconds
-     */
-    public void setDisplayPeriod (int displayPeriod)
-    {
-        this.displayPeriod = displayPeriod;
-    }
-
-    //------------------//
-    // getDisplayPeriod //
-    //------------------//
-    /**
-     * Report the current display period
-     *
-     * @return the current display period
-     */
-    public int getDisplayPeriod ()
-    {
-        return displayPeriod;
     }
 
     //---------------//
@@ -260,18 +179,21 @@ public class MemoryMeter
         displayer = new Runnable() {
                 public void run ()
                 {
-                    int total = (int) Memory.total() / 1024;
-                    int used = (int) (Memory.occupied()) / 1024;
+                    int total = ((int) Memory.total() * 10) / (1024 * 1024);
+                    int used = ((int) (Memory.occupied()) * 10) / (1024 * 1024);
 
                     if ((total != lastTotal) || (used != lastUsed)) {
                         progressBar.setMaximum(total);
                         progressBar.setValue(used);
                         progressBar.setString(
-                            String.format("%,d KB / %,d KB", used, total));
+                            String.format(
+                                "%,.1f/%,.1f MB",
+                                used / 10f,
+                                total / 10f));
                         lastTotal = total;
                         lastUsed = used;
 
-                        if (used > getAlarmThreshold()) {
+                        if (used > 10 * constants.alarmThreshold.getValue()) {
                             progressBar.setForeground(Color.red);
                         } else {
                             progressBar.setForeground(defaultForeground);
@@ -290,7 +212,7 @@ public class MemoryMeter
                     displayMemory();
 
                     try {
-                        sleep(displayPeriod);
+                        sleep(constants.displayPeriod.getValue());
                     } catch (InterruptedException ex1) {
                         monitoring = false;
                     }
@@ -301,5 +223,29 @@ public class MemoryMeter
         monitorThread.setName(getClass().getName());
         monitorThread.setPriority(Thread.MIN_PRIORITY);
         monitorThread.start();
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        /** Display period, in milli-seconds */
+        Constant.Integer displayPeriod = new Constant.Integer(
+            2000,
+            "Display period, in milli-seconds");
+
+        /** Alarm threshold, in MB */
+        Constant.Integer alarmThreshold = new Constant.Integer(
+            70,
+            "Alarm threshold, in MB");
+
+        Constants ()
+        {
+            initialize();
+        }
     }
 }
