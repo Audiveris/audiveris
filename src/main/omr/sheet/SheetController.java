@@ -484,7 +484,7 @@ public class SheetController
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.String initImgDir = new Constant.String(

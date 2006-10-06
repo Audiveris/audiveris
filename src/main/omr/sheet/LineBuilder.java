@@ -574,7 +574,7 @@ public class LineBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Scale.Fraction   coreSectionLength = new Scale.Fraction(

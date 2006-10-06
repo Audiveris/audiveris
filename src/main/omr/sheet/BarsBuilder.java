@@ -629,7 +629,7 @@ public class BarsBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Boolean displayFrame = new Constant.Boolean(
