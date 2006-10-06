@@ -10,11 +10,9 @@
 //
 package omr.score;
 
-import omr.glyph.*;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
-import omr.glyph.Shape.Range;
 
 import omr.sheet.Scale;
 
@@ -230,10 +228,10 @@ public class TimeSignature
     protected boolean paintNode (Graphics g,
                                  Zoom     zoom)
     {
-        // Draw the time symbol
         Shape shape = getShape();
 
         if (shape != null) {
+            // Is it a complete (one-symbol) time signature ?
             switch (shape) {
             case TIME_FOUR_FOUR :
             case TIME_TWO_TWO :
@@ -254,7 +252,7 @@ public class TimeSignature
                 logger.warning("Weird time signature shape : " + shape);
             }
         } else {
-            // Perhaps a multi-part signature
+            // Assume a multi-symbol signature
             for (Glyph glyph : glyphs) {
                 Shape s = glyph.getShape();
 
@@ -318,13 +316,22 @@ public class TimeSignature
 
             case TIME_SIXTEEN :
                 return 16;
-
-            default :
-                return null;
             }
         }
 
         return null;
+    }
+
+    //----------------//
+    // assignRational //
+    //----------------//
+    private void assignRational (Shape shape,
+                                 int   numerator,
+                                 int   denominator)
+    {
+        this.shape = shape;
+        this.numerator = numerator;
+        this.denominator = denominator;
     }
 
     //-----------------//
@@ -332,114 +339,101 @@ public class TimeSignature
     //-----------------//
     private void computeRational ()
     {
-        if (glyphs.size() == 0) { // No component
+        if (glyphs.size() > 0) {
+            if (glyphs.size() == 1) {
+                // Just one symbol
+                Shape shape = glyphs.first()
+                                    .getShape();
 
-            return;
-        } else if (glyphs.size() == 1) { // Just one component
+                if (shape != null) {
+                    switch (shape) {
+                    case TIME_FOUR_FOUR :
+                        assignRational(shape, 4, 4);
 
-            Shape shape = glyphs.first()
-                                .getShape();
+                        return;
 
-            if (shape != null) {
-                switch (shape) {
-                case TIME_FOUR_FOUR :
-                    this.shape = shape;
-                    numerator = 4;
-                    denominator = 4;
+                    case TIME_TWO_TWO :
+                        assignRational(shape, 2, 2);
 
-                    return;
+                        return;
 
-                case TIME_TWO_TWO :
-                    this.shape = shape;
-                    numerator = 2;
-                    denominator = 2;
+                    case TIME_TWO_FOUR :
+                        assignRational(shape, 2, 4);
 
-                    return;
+                        return;
 
-                case TIME_TWO_FOUR :
-                    this.shape = shape;
-                    numerator = 2;
-                    denominator = 4;
+                    case TIME_THREE_FOUR :
+                        assignRational(shape, 3, 4);
 
-                    return;
+                        return;
 
-                case TIME_THREE_FOUR :
-                    this.shape = shape;
-                    numerator = 3;
-                    denominator = 4;
+                    case TIME_SIX_EIGHT :
+                        assignRational(shape, 6, 8);
 
-                    return;
+                        return;
 
-                case TIME_SIX_EIGHT :
-                    this.shape = shape;
-                    numerator = 6;
-                    denominator = 8;
+                    case COMMON_TIME :
+                        assignRational(shape, 4, 4);
 
-                    return;
+                        return;
 
-                case COMMON_TIME :
-                    this.shape = shape;
-                    numerator = 4;
-                    denominator = 4;
+                    case CUT_TIME :
+                        assignRational(shape, 2, 4);
 
-                    return;
+                        return;
 
-                case CUT_TIME :
-                    this.shape = shape;
-                    numerator = 2;
-                    denominator = 4;
-
-                    return;
-
-                default :
-                    logger.warning(
-                        "Weird single time component : " + shape +
-                        " for glyph#" + glyphs.first().getId());
+                    default :
+                        logger.warning(
+                            "Weird single time component : " + shape +
+                            " for glyph#" + glyphs.first().getId());
+                    }
                 }
-            }
-        } else { // Several components
-                 // Dispatch glyphs on top and bottom parts
-            numerator = denominator = null;
+            } else {
+                // Several symbols
+                // Dispatch symbols on top and bottom parts
+                numerator = denominator = null;
 
-            for (Glyph glyph : glyphs) {
-                int     pitch = staff.unitToPitch(
-                    staff.computeGlyphCenter(glyph, scale).y);
-                Integer value = getNumericValue(glyph);
+                for (Glyph glyph : glyphs) {
+                    int     pitch = staff.unitToPitch(
+                        staff.computeGlyphCenter(glyph, scale).y);
+                    Integer value = getNumericValue(glyph);
 
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "pitch=" + pitch + " value=" + value + " glyph=" +
-                        glyph);
-                }
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "pitch=" + pitch + " value=" + value + " glyph=" +
+                            glyph);
+                    }
 
-                if (value != null) {
-                    if (pitch < 0) {
-                        if (numerator == null) {
-                            numerator = 0;
+                    if (value != null) {
+                        if (pitch < 0) {
+                            if (numerator == null) {
+                                numerator = 0;
+                            }
+
+                            numerator = (10 * numerator) + value;
+                        } else if (pitch > 0) {
+                            if (denominator == null) {
+                                denominator = 0;
+                            }
+
+                            denominator = (10 * denominator) + value;
+                        } else {
+                            logger.warning(
+                                "Multi-symbol time signature" +
+                                " with a component of pitch position 0");
                         }
-
-                        numerator = (10 * numerator) + value;
-                    } else if (pitch > 0) {
-                        if (denominator == null) {
-                            denominator = 0;
-                        }
-
-                        denominator = (10 * denominator) + value;
                     } else {
                         logger.warning(
-                            "Multi-part time signature" +
-                            " with a component of pitch position 0");
+                            "Time signature component" +
+                            " with no numeric value");
                     }
-                } else {
-                    logger.warning(
-                        "Time signature component" + " with no numeric value");
                 }
             }
-        }
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "numerator=" + numerator + " denominator=" + denominator);
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "numerator=" + numerator + " denominator=" + denominator);
+            }
         }
     }
 }
