@@ -167,6 +167,18 @@ class GlyphBrowser
     }
 
     //----------------//
+    // loadGlyphNames //
+    //----------------//
+    /**
+     * Programmatic use of Load action in Navigator : load the glyph names as
+     * selected, and focus on first glyph
+     */
+    public void loadGlyphNames ()
+    {
+        navigator.loadAction.actionPerformed(null);
+    }
+
+    //----------------//
     // buildLeftPanel //
     //----------------//
     /**
@@ -666,7 +678,7 @@ class GlyphBrowser
             ///logger.info("Loading " + gName);
             Glyph glyph = repository.getGlyph(gName);
 
-            if (glyph != null && glyph.getLag() != vLag) {
+            if ((glyph != null) && (glyph.getLag() != vLag)) {
                 glyph.setLag(vLag);
 
                 for (GlyphSection section : glyph.getMembers()) {

@@ -203,6 +203,9 @@ public class GlyphVerifier
 
         folderSelector.populateWith(folderSet);
         folderSelector.selectAll();
+        
+        // Load the first glyph in the browser
+        glyphBrowser.loadGlyphNames();
     }
 
     //---------------//
