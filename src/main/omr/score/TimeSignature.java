@@ -278,15 +278,23 @@ public class TimeSignature
     //----------//
     // populate //
     //----------//
-    static boolean populate (Shape   shape,
+    /**
+     * Populate the score with a time signature built from the provided glyph
+     *
+     * @param glyph the source glyph
+     * @param measure containing measure
+     * @param scale sheet scale
+     *
+     * @return true if population is successful, false otherwise
+     */
+    static boolean populate (Glyph   glyph,
                              Measure measure,
-                             Staff   staff,
-                             Scale   scale,
-                             Glyph   glyph)
+                             Scale   scale)
     {
         // First, some basic tests
         // Horizontal distance since beginning of measure
-        StaffPoint center = staff.computeGlyphCenter(glyph, scale);
+        StaffPoint center = measure.getStaff()
+                                   .computeGlyphCenter(glyph, scale);
         int        unitDx = center.x - measure.getLeftX();
 
         if (unitDx < scale.toUnits(constants.minTimeOffset)) {
@@ -300,10 +308,12 @@ public class TimeSignature
         }
 
         // Then, processing depends on single/multi time signature
+        Shape shape = glyph.getShape();
+
         if (SingleTimes.contains(shape)) {
-            return populateSingleTime(shape, glyph, measure, scale);
+            return populateSingleTime(glyph, measure, scale);
         } else {
-            return populateMultiTime(shape, glyph, measure, scale);
+            return populateMultiTime(glyph, measure, scale);
         }
     }
 
@@ -475,8 +485,7 @@ public class TimeSignature
     //-------------------//
     // populateMultiTime //
     //-------------------//
-    private static boolean populateMultiTime (Shape   shape,
-                                              Glyph   glyph,
+    private static boolean populateMultiTime (Glyph   glyph,
                                               Measure measure,
                                               Scale   scale)
     {
@@ -502,8 +511,7 @@ public class TimeSignature
     //--------------------//
     // populateSingleTime //
     //--------------------//
-    private static boolean populateSingleTime (Shape   shape,
-                                               Glyph   glyph,
+    private static boolean populateSingleTime (Glyph   glyph,
                                                Measure measure,
                                                Scale   scale)
     {

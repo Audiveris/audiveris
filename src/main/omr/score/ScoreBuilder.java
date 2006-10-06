@@ -116,19 +116,10 @@ public class ScoreBuilder
                     // Processing is based on shape
                     if (Shape.Clefs.contains(shape)) {
                         // Clef
-                        success = Clef.populate(
-                            shape,
-                            measure,
-                            staff,
-                            staffPoint);
+                        success = Clef.populate(glyph, measure, staffPoint);
                     } else if (Shape.Times.contains(shape)) {
                         // Time
-                        success = TimeSignature.populate(
-                            shape,
-                            measure,
-                            staff,
-                            scale,
-                            glyph);
+                        success = TimeSignature.populate(glyph, measure, scale);
                     } else {
                         // Basic processing
                         switch (shape) {

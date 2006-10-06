@@ -10,6 +10,7 @@
 //
 package omr.score;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
 import omr.ui.icon.SymbolIcon;
@@ -55,7 +56,7 @@ public class Clef
      * Create a Clef instance
      *
      * @param container the container (the measure clef list)
-     * @param staff containing staff
+     * @param staff the containing staff
      * @param shape precise clef shape
      * @param center center wrt staff (in units)
      * @param pitchPosition pitch position
@@ -95,23 +96,24 @@ public class Clef
     //----------//
     // populate //
     //----------//
-    static boolean populate (Shape      shape,
+    static boolean populate (Glyph      glyph,
                              Measure    measure,
-                             Staff      staff,
                              StaffPoint staffPoint)
     {
+        Shape shape = glyph.getShape();
+
         switch (shape) {
         case G_CLEF :
         case G_CLEF_OTTAVA_ALTA :
         case G_CLEF_OTTAVA_BASSA :
-            new Clef(measure, staff, shape, staffPoint, 2);
+            new Clef(measure, measure.getStaff(), shape, staffPoint, 2);
 
             return true;
 
         case F_CLEF :
         case F_CLEF_OTTAVA_ALTA :
         case F_CLEF_OTTAVA_BASSA :
-            new Clef(measure, staff, shape, staffPoint, -2);
+            new Clef(measure, measure.getStaff(), shape, staffPoint, -2);
 
             return true;
 
