@@ -359,11 +359,23 @@ public class GlyphNetwork
         network.dump();
     }
 
+    //-----------//
+    // serialize //
+    //-----------//
+    /**
+     * Store the neural network
+     */
+    public void serialize ()
+    {
+        // Store the network as a custom file
+        network.serialize(getCustomFile());
+    }
+
     //------//
     // stop //
     //------//
     /**
-     * Forward s "Stop" order to the network neing trained
+     * Forward "Stop" order to the network being trained
      */
     @Override
     public void stop ()
@@ -427,9 +439,6 @@ public class GlyphNetwork
 
         // Train
         network.train(inputs, desiredOutputs, monitor);
-
-        // Store the trained network as a custom file
-        network.serialize(getCustomFile());
     }
 
     //---------------//
@@ -454,7 +463,7 @@ public class GlyphNetwork
 
     //~ Inner Classes ----------------------------------------------------------
 
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Double  amplitude = new Constant.Double(
