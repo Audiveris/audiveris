@@ -901,7 +901,7 @@ public class StickArea
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Double  minSectionAspect = new Constant.Double(
