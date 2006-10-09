@@ -238,6 +238,7 @@ public class VerticalsBuilder
             if (res >= minResult) {
                 stick.setResult(STEM);
                 stick.setShape(Shape.COMBINING_STEM);
+                stick.setInterline(sheet.getScale().interline());
                 system.getGlyphs()
                       .add(stick);
                 stemNb++;
