@@ -431,8 +431,12 @@ public class Sheet
         {
             CLEANUP.getResult();
 
+            // Perform the glyphs translation
             ScoreBuilder builder = new ScoreBuilder(score, Sheet.this);
             builder.buildInfo();
+            
+            // Perform global checks recursively
+            score.checkNode();
         }
 
         public void displayUI ()
@@ -1407,7 +1411,7 @@ public class Sheet
     {
         if (score != null) {
             // Colorization of all known score items
-            score.colorizeChildren(lag, viewIndex, color);
+            score.colorizeNode(lag, viewIndex, color);
         } else {
             // Nothing to colorize ? TBD
         }
@@ -1543,7 +1547,7 @@ public class Sheet
         if ((score != null) && (score.getSystems()
                                      .size() > 0)) {
             // Normal (full) rendering of the score
-            score.renderChildren(g, z);
+            score.renderNode(g, z);
         } else {
             // Render what we have got so far
             if (LINES.isDone()) {

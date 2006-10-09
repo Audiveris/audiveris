@@ -191,7 +191,7 @@ public class BarsBuilder
         //////eraseBars();
 
         // Update score internal data
-        score.computeChildren();
+        score.computeNode();
 
         // Report number of measures retrieved
         logger.info(
