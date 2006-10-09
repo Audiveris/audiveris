@@ -50,9 +50,6 @@ public class TimeSignature
     /** Rational component : denominator */
     private Integer denominator;
 
-    /** Sheet global scale */
-    private Scale scale;
-
     /**
      * Precise time signature shape (if any, since we may have no redefined
      * shape for complex time signatures). Since a time signature may be
@@ -71,9 +68,6 @@ public class TimeSignature
      */
     private SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
 
-    /** Location of the time signature center WRT staff top-left corner */
-    private StaffPoint center;
-
     //~ Constructors -----------------------------------------------------------
 
     //---------------//
@@ -89,27 +83,9 @@ public class TimeSignature
                           Scale   scale)
     {
         super(measure, measure.getStaff());
-        this.scale = scale;
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------//
-    // getCenter //
-    //-----------//
-    /**
-     * Report the bounding center of the time signature
-     *
-     * @return the bounding center (in units wrt staff topleft)
-     */
-    public StaffPoint getCenter ()
-    {
-        if (center == null) {
-            center = staff.computeGlyphsCenter(glyphs, scale);
-        }
-
-        return center;
-    }
 
     //----------------//
     // getDenominator //
@@ -262,6 +238,15 @@ public class TimeSignature
         return false;
     }
 
+    //---------------//
+    // computeCenter //
+    //---------------//
+    @Override
+    protected void computeCenter ()
+    {
+        center = computeGlyphsCenter(glyphs);
+    }
+
     //-----------//
     // paintNode //
     //-----------//
@@ -300,7 +285,7 @@ public class TimeSignature
                 Shape s = glyph.getShape();
 
                 if (s != null) {
-                    StaffPoint center = staff.computeGlyphCenter(glyph, scale);
+                    StaffPoint center = computeGlyphCenter(glyph);
                     int        pitch = staff.unitToPitch(center.y);
                     staff.paintSymbol(
                         g,
@@ -333,8 +318,7 @@ public class TimeSignature
     {
         // First, some basic tests
         // Horizontal distance since beginning of measure
-        StaffPoint center = measure.getStaff()
-                                   .computeGlyphCenter(glyph, scale);
+        StaffPoint center = measure.computeGlyphCenter(glyph);
         int        unitDx = center.x - measure.getLeftX();
 
         if (unitDx < scale.toUnits(constants.minTimeOffset)) {
@@ -481,7 +465,7 @@ public class TimeSignature
 
                 for (Glyph glyph : glyphs) {
                     int     pitch = staff.unitToPitch(
-                        staff.computeGlyphCenter(glyph, scale).y);
+                        computeGlyphCenter(glyph).y);
                     Integer value = getNumericValue(glyph);
 
                     if (logger.isFineEnabled()) {
@@ -560,8 +544,7 @@ public class TimeSignature
 
         if (ts != null) {
             // Check we are not too far from this first time signature part
-            StaffPoint center = measure.getStaff()
-                                       .computeGlyphCenter(glyph, scale);
+            StaffPoint center = measure.computeGlyphCenter(glyph);
             double     unitDist = center.distance(ts.getCenter());
             double     unitMax = scale.toUnitsDouble(constants.maxTimeDistance);
 

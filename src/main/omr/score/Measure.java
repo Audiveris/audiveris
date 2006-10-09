@@ -23,7 +23,9 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class <code>Measure</code> handles a measure of a staff.
+ * Class <code>Measure</code> handles a measure of a staff. As a MusicNode, the
+ * children of a Measure are : Barline, TimeSignature, list of Clef(s), list of
+ * KeySignature(s), list of Chord(s).
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -37,20 +39,23 @@ public class Measure
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Ending bar line */
+    /** Child: Ending bar line */
     private Barline barline;
 
-    /** Specific children */
+    /** Child: Potential time signature */
+    private TimeSignature timeSignature;
+
+    /** Child: possibly several clefs */
     private ClefList clefs;
+
+    /** Child: possibly several KeySignature's */
+    //     private KeysigList keysigs;
+
+    /** Child: possibly several Chord's */
+    //     private ChordList chords;
 
     /** Left abscissa (in units) of this measure */
     private Integer leftX;
-
-    //     private KeysigList keysigs;
-    //     private ChordList chords;
-
-    /** Potential time signature */
-    private TimeSignature timeSignature;
 
     /** For measure with no physical ending bar line */
     private boolean lineinvented;
@@ -279,7 +284,7 @@ public class Measure
     @Override
     public String toString ()
     {
-        return "{Measure id=" + id + " bar=" + barline + "}";
+        return "{Measure id=" + id + "}";
     }
 
     //-------------//

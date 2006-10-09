@@ -10,15 +10,16 @@
 //
 package omr.score;
 
+import omr.glyph.Glyph;
 import static omr.score.ScoreConstants.*;
 
-import omr.ui.icon.SymbolIcon;
-import omr.ui.view.Zoom;
+import omr.sheet.Scale;
 
 import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.awt.*;
+import java.util.Collection;
 
 /**
  * Class <code>StaffNode</code> is an abstract class that is subclassed for any
@@ -37,10 +38,11 @@ public abstract class StaffNode
 
     //~ Instance fields --------------------------------------------------------
 
-    /**
-     * Containing staff
-     */
+    /** Containing staff */
     protected Staff staff;
+
+    /** Location of the center of this entity WRT staff top-left corner */
+    protected StaffPoint center;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -62,6 +64,23 @@ public abstract class StaffNode
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------//
+    // getCenter //
+    //-----------//
+    /**
+     * Report the center of this entity, wrt to the staff top-left corner.
+     *
+     * @return the center, in units, wrt to staff top-left
+     */
+    public StaffPoint getCenter ()
+    {
+        if (center == null) {
+            computeCenter();
+        }
+
+        return center;
+    }
 
     //------------------//
     // setChildrenStaff //
@@ -118,5 +137,77 @@ public abstract class StaffNode
     public Staff getStaff ()
     {
         return staff;
+    }
+
+    //--------------------//
+    // computeGlyphCenter //
+    //--------------------//
+    /**
+     * Compute the bounding center of a glyph
+     *
+     * @param glyph the glyph
+     *
+     * @return the glyph center
+     */
+    public StaffPoint computeGlyphCenter (Glyph glyph)
+    {
+        // We compute the bounding center of all glyphs
+        Rectangle  rect = new Rectangle(glyph.getContourBox());
+        Scale      scale = staff.getInfo()
+                                .getScale();
+        StaffPoint p = new StaffPoint(
+            scale.pixelsToUnits(rect.x + (rect.width / 2)) -
+            staff.getTopLeft().x,
+            scale.pixelsToUnits(rect.y + (rect.height / 2)) -
+            staff.getTopLeft().y);
+
+        return p;
+    }
+
+    //---------------------//
+    // computeGlyphsCenter //
+    //---------------------//
+    /**
+     * Compute the bounding center of a collection of glyphs
+     *
+     * @param glyphs the collection of glyph components
+     *
+     * @return the area center
+     */
+    public StaffPoint computeGlyphsCenter (Collection<?extends Glyph> glyphs)
+    {
+        // We compute the bounding center of all glyphs
+        Rectangle rect = null;
+
+        for (Glyph glyph : glyphs) {
+            if (rect == null) {
+                rect = new Rectangle(glyph.getContourBox());
+            } else {
+                rect = rect.union(glyph.getContourBox());
+            }
+        }
+
+        Scale      scale = staff.getInfo()
+                                .getScale();
+        StaffPoint p = new StaffPoint(
+            scale.pixelsToUnits(rect.x + (rect.width / 2)) -
+            staff.getTopLeft().x,
+            scale.pixelsToUnits(rect.y + (rect.height / 2)) -
+            staff.getTopLeft().y);
+
+        return p;
+    }
+
+    //---------------//
+    // computeCenter //
+    //---------------//
+    /**
+     * Compute the center of this entity, wrt to the staff top-left corner.
+     * Unless overridden, this method raises an exception.
+     */
+    protected void computeCenter ()
+    {
+        throw new RuntimeException(
+            "computeCenter() not implemented in " + getClass().getName());
     }
 }

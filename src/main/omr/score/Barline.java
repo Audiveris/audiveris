@@ -57,9 +57,6 @@ public class Barline
      */
     private SortedSet<Stick> sticks = new TreeSet<Stick>();
 
-    /** Bounding center within staff (counted in units since staff (top)left) */
-    private StaffPoint center;
-
     /** Signature of this bar line, as abstracted from its constituents */
     private String signature;
 
@@ -94,23 +91,6 @@ public class Barline
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------//
-    // getCenter //
-    //-----------//
-    /**
-     * Report the bounding center of the bar line
-     *
-     * @return the bounding center (in units wrt staff topleft)
-     */
-    public StaffPoint getCenter ()
-    {
-        if (center == null) {
-            center = staff.computeGlyphsCenter(sticks, scale);
-        }
-
-        return center;
-    }
 
     //----------//
     // getLeftX //
@@ -326,6 +306,15 @@ public class Barline
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //---------------//
+    // computeCenter //
+    //---------------//
+    @Override
+    protected void computeCenter ()
+    {
+        center = computeGlyphsCenter(sticks);
     }
 
     //-----------//

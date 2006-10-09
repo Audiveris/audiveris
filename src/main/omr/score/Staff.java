@@ -50,19 +50,19 @@ public class Staff
     //~ Instance fields --------------------------------------------------------
 
     /** Starting bar line (the others are linked to measures) */
-    private Barline     startingBarline;
+    private Barline startingBarline;
 
     /** List of dynamics if any */
     private DynamicList dynamics;
 
     /** List of lyrics if any */
-    private LyricList   lyriclines;
+    private LyricList lyriclines;
 
     /** Specific children */
     private MeasureList measures;
 
     /** Top left corner of the staff (relative to the system top left corner) */
-    private PagePoint  topLeft;
+    private PagePoint topLeft;
 
     /** Actual cached display origin */
     private ScorePoint origin;
@@ -71,7 +71,7 @@ public class Staff
     private StaffInfo info;
 
     /** List of tests if any */
-    private TextList  texts;
+    private TextList texts;
 
     /** Id of first measure */
     private int firstMeasureId;
@@ -636,60 +636,6 @@ public class Staff
     public static int unitToPitch (int unit)
     {
         return (int) Math.rint(((2D * unit) - (4D * INTER_LINE)) / INTER_LINE);
-    }
-
-    //--------------------//
-    // computeGlyphCenter //
-    //--------------------//
-    /**
-     * Compute the bounding center of a glyph
-     *
-     * @param glyph the glyph
-     *
-     * @return the glyph center
-     */
-    public StaffPoint computeGlyphCenter (Glyph glyph,
-                                          Scale scale)
-    {
-        // We compute the bounding center of all glyphs
-        Rectangle  rect = new Rectangle(glyph.getContourBox());
-
-        StaffPoint p = new StaffPoint(
-            scale.pixelsToUnits(rect.x + (rect.width / 2)) - getTopLeft().x,
-            scale.pixelsToUnits(rect.y + (rect.height / 2)) - getTopLeft().y);
-
-        return p;
-    }
-
-    //---------------------//
-    // computeGlyphsCenter //
-    //---------------------//
-    /**
-     * Compute the bounding center of a collection of glyphs
-     *
-     * @param glyphs the collection of glyph components
-     *
-     * @return the area center
-     */
-    public StaffPoint computeGlyphsCenter (Collection<?extends Glyph> glyphs,
-                                           Scale                      scale)
-    {
-        // We compute the bounding center of all glyphs
-        Rectangle rect = null;
-
-        for (Glyph glyph : glyphs) {
-            if (rect == null) {
-                rect = new Rectangle(glyph.getContourBox());
-            } else {
-                rect = rect.union(glyph.getContourBox());
-            }
-        }
-
-        StaffPoint p = new StaffPoint(
-            scale.pixelsToUnits(rect.x + (rect.width / 2)) - getTopLeft().x,
-            scale.pixelsToUnits(rect.y + (rect.height / 2)) - getTopLeft().y);
-
-        return p;
     }
 
     //-------------//
