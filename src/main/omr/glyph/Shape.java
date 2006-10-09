@@ -362,7 +362,13 @@ public enum Shape
         /*1D165*/ COMBINING_STEM,
         /*1D166*/ // COMBINING_SPRECHGESANG_STEM,
 
-        /*-----*/ CHARACTER("A letter");
+        /*-----*/ CHARACTER("A letter"),
+        
+        /** 
+         * Specific value, meaning that we have not been able to determined a 
+         * legal shape 
+         */
+        /*-----*/ NO_LEGAL_SHAPE("No Legal Shape");
 
     /**
      * First physical shape an evaluator should be able to recognize based on
@@ -906,15 +912,15 @@ public enum Shape
     }
 
     /** Symbols that can be attached to a stem */
-    public static final EnumSet<Shape> stemSymbols = EnumSet.noneOf(
+    public static final EnumSet<Shape> StemSymbols = EnumSet.noneOf(
         Shape.class);
 
     static {
-        stemSymbols.add(Shape.BEAM);
-        stemSymbols.add(Shape.BEAM_CHUNK);
+        StemSymbols.add(Shape.BEAM);
+        StemSymbols.add(Shape.BEAM_CHUNK);
 
-        stemSymbols.addAll(NoteHeads.getShapes());
-        stemSymbols.addAll(Flags.getShapes());
+        StemSymbols.addAll(NoteHeads.getShapes());
+        StemSymbols.addAll(Flags.getShapes());
     }
 
     /** Specific single symbol for part of time signature (such as 4) */
