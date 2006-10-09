@@ -69,7 +69,7 @@ public class GlyphInspector
             Shape   shape = glyph.getShape();
 
             boolean res = glyph.isWellKnown() &&
-                          Shape.stemSymbols.contains(shape) &&
+                          Shape.StemSymbols.contains(shape) &&
                           (shape != Shape.BEAM_CHUNK);
 
             return res;
@@ -345,7 +345,7 @@ public class GlyphInspector
 
             // Consider neighboring glyphs, which are glyphs whose contour
             // intersect the extended contour of glyph at hand
-            SUB_GLYPHS: 
+            SUB_GLYPHS:
             for (Glyph g : glyphs.subList(index + 1, glyphs.size())) {
                 if (g.isKnown()) {
                     continue;
@@ -595,7 +595,7 @@ public class GlyphInspector
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Boolean inspectorDisabled = new Constant.Boolean(
