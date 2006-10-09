@@ -10,13 +10,19 @@
 //
 package omr.score;
 
+import omr.lag.Lag;
+
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
+
+import omr.ui.view.Zoom;
 
 import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -44,25 +50,25 @@ public class Score
     //~ Instance fields --------------------------------------------------------
 
     /** File of the related sheet image */
-    private File                imageFile;
+    private File imageFile;
 
     /** Link with image */
-    private Sheet               sheet;
+    private Sheet sheet;
 
     /** The related file radix (name w/o extension) */
-    private String              radix;
+    private String radix;
 
     /** Sheet dimension in units */
-    private UnitDimension       dimension = new UnitDimension(0, 0);
+    private UnitDimension dimension = new UnitDimension(0, 0);
 
     /** Sheet skew angle in radians */
-    private int                 skewAngle;
+    private int skewAngle;
 
     /** Sheet global line spacing expressed in pixels * BASE */
-    private int                 spacing;
+    private int spacing;
 
     /** The most recent system pointed at */
-    private transient System    recentSystem = null;
+    private transient System recentSystem = null;
 
     /** The view on this score if any */
     private transient ScoreView view;
@@ -115,9 +121,9 @@ public class Score
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // getDimension//
-    //----------//
+    //--------------//
+    // getDimension //
+    //--------------//
     /**
      * Report the dimension of the sheet/score
      *
@@ -357,6 +363,25 @@ public class Score
                     .checkInserted(this);
     }
 
+    //-----------//
+    // checkNode //
+    //-----------//
+    /**
+     * Perform checks on the whole score hierarchy
+     *
+     * @return false
+     */
+    @Override
+    public boolean checkNode ()
+    {
+        // No specific checks (yet) for the score itself
+
+        // Delegate to contained children
+        checkChildren();
+
+        return false;
+    }
+
     //-------//
     // close //
     //-------//
@@ -374,6 +399,44 @@ public class Score
         }
     }
 
+    //--------------//
+    // colorizeNode //
+    //--------------//
+    /**
+     * Starting point for colorizing every node in the score hierarchy
+     *
+     * @param lag       the lag to be colorized
+     * @param viewIndex the provided lag view index
+     * @param color     the color to be used
+     *
+     * @return false
+     */
+    @Override
+    public boolean colorizeNode (Lag   lag,
+                                 int   viewIndex,
+                                 Color color)
+    {
+        colorizeChildren(lag, viewIndex, color);
+
+        return false;
+    }
+
+    //-------------//
+    // computeNode //
+    //-------------//
+    /**
+     * Starting point for computing every node in the score hierarchy
+     *
+     * @return false
+     */
+    @Override
+    public boolean computeNode ()
+    {
+        computeChildren();
+
+        return false;
+    }
+
     //------//
     // dump //
     //------//
@@ -382,7 +445,7 @@ public class Score
      *
      * @return true
      */
-    public boolean dump ()
+    public void dump ()
     {
         java.lang.System.out.println(
             "-----------------------------------------------------------------------");
@@ -393,8 +456,6 @@ public class Score
 
         java.lang.System.out.println(
             "-----------------------------------------------------------------------");
-
-        return true;
     }
 
     //---------------//
@@ -528,6 +589,24 @@ public class Score
 
         // Return the last system in the score
         return recentSystem = system;
+    }
+
+    //------------//
+    // renderNode //
+    //------------//
+    /**
+     * Starting point for rendering all score items in the sheet view
+     *
+     * @param g the graphics context
+     * @param z the display zoom
+     *
+     * @return false
+     */
+    @Override
+    public boolean renderNode (Graphics g,
+                               Zoom     z)
+    {
+        return false;
     }
 
     //-------------------//
