@@ -442,8 +442,6 @@ public class Score
     //------//
     /**
      * Dump a whole score hierarchy
-     *
-     * @return true
      */
     public void dump ()
     {
