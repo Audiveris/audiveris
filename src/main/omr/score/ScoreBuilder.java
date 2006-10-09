@@ -81,7 +81,11 @@ public class ScoreBuilder
     // buildInfo //
     //-----------//
     /**
-     * Build the score information
+     * Build the score information, system after system, glyph after glyph. 
+     * Nota: Only local tests can be performed here, global ones are performed 
+     * via checkNode() and checkChildren() navigating methods
+     * @see MusicNode#checkNode
+     * @see MusicNode#checkChildren
      */
     public void buildInfo ()
     {
