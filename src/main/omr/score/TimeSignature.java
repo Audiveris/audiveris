@@ -55,14 +55,19 @@ public class TimeSignature
 
     /**
      * Precise time signature shape (if any, since we may have no redefined
-     * shape for complex time signatures)
+     * shape for complex time signatures). Since a time signature may be
+     * composed incrementally through several glyphs, its shape is determined
+     * only when needed. In case of failure, a NO_LEGAL_SHAPE is assigned,
+     * preventing any further computation until a reset is performed on this
+     * item (such a reset is performed for example when an additional glyph is
+     * added to the item).
      */
     private Shape shape;
 
     /**
      * The glyph(s) that compose the time signature, a collection which is kept
-     * sorted on glyph abscissa This can be just one : e.g. TIME_SIX_EIGHT for
-     * 6/8 Or several : e.g. TIME_SIX + TIME_TWELVE for 6/12
+     * sorted on glyph abscissa. This can be just one : e.g. TIME_SIX_EIGHT for
+     * 6/8, or several : e.g. TIME_SIX + TIME_TWELVE for 6/12
      */
     private SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
 
@@ -117,7 +122,9 @@ public class TimeSignature
     public Integer getDenominator ()
     {
         if (denominator == null) {
-            computeRational();
+            if (shape != NO_LEGAL_SHAPE) {
+                computeRational();
+            }
         }
 
         return denominator;
@@ -134,7 +141,9 @@ public class TimeSignature
     public Integer getNumerator ()
     {
         if (numerator == null) {
-            computeRational();
+            if (shape != NO_LEGAL_SHAPE) {
+                computeRational();
+            }
         }
 
         return numerator;
@@ -225,6 +234,35 @@ public class TimeSignature
     }
 
     //-----------//
+    // checkNode //
+    //-----------//
+    /**
+     * Perform tests on this time signature
+     *
+     * @return false (no further children)
+     */
+    @Override
+    protected boolean checkNode ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Checking " + this);
+        }
+
+        Shape shape = getShape();
+
+        if (shape == null) {
+            logger.warning("CheckNode. Time signature with no assigned shape");
+        } else if (shape == NO_LEGAL_SHAPE) {
+            logger.warning("CheckNode. Illegal " + this);
+        } else if (Shape.SingleTimes.contains(shape)) {
+            logger.warning("CheckNode. Orphan time signature shape : " + shape);
+        }
+
+        // No further children
+        return false;
+    }
+
+    //-----------//
     // paintNode //
     //-----------//
     @Override
@@ -234,8 +272,13 @@ public class TimeSignature
         Shape shape = getShape();
 
         if (shape != null) {
-            // Is it a complete (one-symbol) time signature ?
             switch (shape) {
+            // If this is an illegal shape, do not draw anything.
+            // TBD: we could draw a special sign for this
+            case NO_LEGAL_SHAPE :
+                break;
+
+            // Is it a complete (one-symbol) time signature ?
             case TIME_FOUR_FOUR :
             case TIME_TWO_TWO :
             case TIME_TWO_FOUR :
@@ -250,12 +293,9 @@ public class TimeSignature
                     getCenter());
 
                 break;
-
-            default :
-                logger.warning("Weird time signature shape : " + shape);
             }
         } else {
-            // Assume a multi-symbol signature
+            // Assume a (legal) multi-symbol signature
             for (Glyph glyph : glyphs) {
                 Shape s = glyph.getShape();
 
@@ -431,6 +471,7 @@ public class TimeSignature
                         logger.warning(
                             "Weird single time component : " + shape +
                             " for glyph#" + glyphs.first().getId());
+                        this.shape = NO_LEGAL_SHAPE;
                     }
                 }
             } else {
