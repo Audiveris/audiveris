@@ -299,18 +299,19 @@ public class SymbolsEditor
             break;
 
         case COMBINING_STEM :
-            logger.info("Deassigning a " + shape);
+            logger.info("Deassigning a Stem as glyph " + glyph.getId());
             cancelStems(Collections.singletonList(glyph));
 
             break;
 
         case NOISE :
-            logger.info("Skipping a " + shape);
+            logger.info("Skipping Noise as glyph " + glyph.getId());
 
             break;
 
         default :
-            logger.info("Deassigning a " + shape + " symbol");
+            logger.info(
+                "Deassigning a " + shape + " symbol as glyph " + glyph.getId());
             assignGlyphShape(glyph, null);
 
             break;
