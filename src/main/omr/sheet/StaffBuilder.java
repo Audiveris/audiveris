@@ -132,6 +132,6 @@ public class StaffBuilder
         }
 
         // Allocate the staff info
-        return new StaffInfo(left, right, scale, lines);
+        return new StaffInfo(left, right, scale, sheet.getScale(),lines);
     }
 }
