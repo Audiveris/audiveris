@@ -347,6 +347,7 @@ class BarsChecker
 
                     Measure measure = new Measure(staff, false); // invented ?
                     Barline barline = new Barline(measure, staff, scale);
+                    bar.setInterline(scale.interline()); // Safer
                     barline.addStick(bar);
                     measure.setBarline(barline);
                 }
