@@ -39,8 +39,11 @@ public class StaffInfo
     private List<LineInfo> lines;
 
     /** Scale specific to this staff, since staves in a page may exhibit
-        different scales. */
+       different scales. */
     private Scale specificScale;
+
+    /** Global sheet scale, needed for many computations */
+    private Scale scale;
 
     /** Bottom of staff related area */
     private int areaBottom = -1;
@@ -68,16 +71,19 @@ public class StaffInfo
      * @param left abscissa of the left side
      * @param right abscissa of the right side
      * @param specificScale specific scale detected for this staff
+     * @param scale global sheet scale
      * @param lines the collection of contained staff lines
      */
     public StaffInfo (int            left,
                       int            right,
                       Scale          specificScale,
+                      Scale          scale,
                       List<LineInfo> lines)
     {
         this.left = left;
         this.right = right;
         this.specificScale = specificScale;
+        this.scale = scale;
         this.lines = lines;
     }
 
@@ -212,6 +218,19 @@ public class StaffInfo
     public int getRight ()
     {
         return right;
+    }
+
+    //----------//
+    // getScale //
+    //---------//
+    /**
+     * Report the global sheet scale.
+     *
+     * @return the sheet global scale
+     */
+    public Scale getScale ()
+    {
+        return scale;
     }
 
     //------------------//
