@@ -70,7 +70,7 @@ public class GlyphInspector
 
             boolean res = glyph.isWellKnown() &&
                           Shape.StemSymbols.contains(shape) &&
-                          (shape != Shape.BEAM_CHUNK);
+                          (shape != Shape.BEAM_HOOK);
 
             return res;
         }
