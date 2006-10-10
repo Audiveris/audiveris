@@ -211,7 +211,7 @@ public class Selection
         if (observer == null) {
             throw new IllegalArgumentException("adding a null observer");
         }
-        
+
         String name = observer.getName();
 
         if (name == null) {
@@ -524,7 +524,7 @@ public class Selection
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Integer maxNotificationLevel = new Constant.Integer(

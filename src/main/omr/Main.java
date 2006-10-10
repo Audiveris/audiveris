@@ -663,7 +663,7 @@ public class Main
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.String savePath = new Constant.String(
