@@ -171,7 +171,9 @@ class EvaluationBoard
      */
     public void evaluate (Glyph glyph)
     {
-        if ((glyph == null) || (glyph.getShape() == Shape.COMBINING_STEM)) {
+        if ((glyph == null) ||
+            (glyph.getShape() == Shape.COMBINING_STEM) ||
+            Shape.Barlines.contains(glyph.getShape())) {
             // Blank the output
             selector.setEvals(null);
         } else {
