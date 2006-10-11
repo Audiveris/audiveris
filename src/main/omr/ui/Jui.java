@@ -73,7 +73,7 @@ public class Jui
     /**
      * Sheet tabbed pane, which may contain several views
      */
-    public final SheetController sheetPane;
+    public final SheetController sheetController;
 
     /** The related concrete frame */
     private JFrame frame;
@@ -132,7 +132,7 @@ public class Jui
         new ExitAction(fileMenu);
 
         // Sheet actions
-        sheetPane = new SheetController(this, toolBar);
+        sheetController = new SheetController(this, toolBar);
 
         // Score actions
         toolBar.addSeparator();
@@ -164,7 +164,7 @@ public class Jui
         JMenuBar menuBar = new JMenuBar();
         frame.setJMenuBar(menuBar);
         menuBar.add(fileMenu);
-        menuBar.add(sheetPane.getMenu());
+        menuBar.add(sheetController.getMenu());
         menuBar.add(stepMenu);
         menuBar.add(scoreController.getMenu());
         menuBar.add(toolMenu);
@@ -180,7 +180,7 @@ public class Jui
            +=================================================+============+
            | bigSplitPane                                    |            |
            | +=============================================+ |            |
-           | | sheetPane                                   | | boardsPane |
+           | | sheetController                                   | | boardsPane |
            | |                                             | |            |
            | |                                             | |            |
            | |                                             | |            |
@@ -207,7 +207,7 @@ public class Jui
         logPane = new LogPane();
         splitPane = new JSplitPane(
             JSplitPane.VERTICAL_SPLIT,
-            sheetPane.getComponent(),
+            sheetController.getComponent(),
             logPane.getComponent());
         splitPane.setBorder(null);
         splitPane.setDividerSize(2);

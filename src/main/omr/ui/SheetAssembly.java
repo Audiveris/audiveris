@@ -351,7 +351,7 @@ public class SheetAssembly
     {
         Jui jui = Main.getJui();
 
-        jui.sheetPane.close(this);
+        jui.sheetController.close(this);
 
         // Disconnect all keyboard bindings from PixelBoard's (as a workaround
         // for a Swing memory leak)

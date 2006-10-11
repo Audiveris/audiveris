@@ -67,7 +67,7 @@ public class ToggleHandler
         this.title = title;
         this.lagView = lagView;
         this.tip = tip;
-        button = omr.Main.getJui().sheetPane.getToggleButton();
+        button = omr.Main.getJui().sheetController.getToggleButton();
         useButton();
     }
 
