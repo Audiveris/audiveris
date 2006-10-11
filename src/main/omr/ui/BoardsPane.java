@@ -108,9 +108,7 @@ public class BoardsPane
         for (Board board : boards) {
             builder.add(board.getComponent(), cst.xy(1, r));
 
-            switch (board.getTag()) {
-            case PIXEL :
-
+            if (board.getTag() == PIXEL) {
                 PixelBoard pixelBoard = (PixelBoard) board;
                 // inputs
                 pixelBoard.setInputSelectionList(
@@ -120,26 +118,6 @@ public class BoardsPane
                 // output
                 pixelBoard.setOutputSelection(
                     sheet.getSelection(SelectionTag.PIXEL));
-
-                break;
-
-            case RUN :
-            case SECTION :
-
-                // Connections done by constructor, since they depend on Lag
-                break;
-
-            case GLYPH :
-                break;
-
-            case CHECK :
-                break;
-
-            case CUSTOM :
-                break;
-
-            default :
-                logger.severe("Unexpected Board Tag : " + board.getTag());
             }
 
             r += 2;
