@@ -11,11 +11,13 @@
 package omr.score;
 
 import omr.Main;
+import omr.Step;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import static omr.score.ScoreFormat.*;
 
+import omr.sheet.InstanceStep;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
@@ -25,18 +27,17 @@ import omr.ui.util.FileFilter;
 import omr.ui.util.SwingWorker;
 import static omr.ui.util.UIUtilities.*;
 
+import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.NameSet;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.awt.event.*;
+import java.io.*;
+import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.event.*;
 
 /**
  * Class <code>ScoreController</code> encapsulates a set of user interface means
@@ -54,6 +55,7 @@ import javax.swing.*;
  * @version $Id$
  */
 public class ScoreController
+    implements ChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -75,6 +77,9 @@ public class ScoreController
     /** Collection of score-dependent actions, that are enabled only if there is
        a current score. */
     private final List<Object> scoreDependentActions = new ArrayList<Object>();
+
+    /** Action for dumping all instances */
+    private final DumpAllAction dumpAllAction;
 
     /** Should we synchronize the sheet view */
     private boolean synchroWanted = true;
@@ -105,17 +110,29 @@ public class ScoreController
         new StoreAction(XML);
         scoreMenu.addSeparator();
 
+        // MusicXML Actions
+        new History(MUSIC_XML);
+
+        ///new OpenAction(MUSIC_XML);
+        new StoreAction(MUSIC_XML);
+        scoreMenu.addSeparator();
+
         // Display Actions
         new BrowseAction();
         new DumpAction();
-        new DumpAllAction();
+        dumpAllAction = new DumpAllAction();
         scoreMenu.addSeparator();
 
         // Close
         new CloseAction();
 
         // Initially disabled actions
+        dumpAllAction.setEnabled(false);
         enableActions(scoreDependentActions, false);
+
+        // Register interest in ScoreManager
+        ScoreManager.getInstance()
+                    .setChangeListener(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -165,10 +182,6 @@ public class ScoreController
      */
     public void setScoreView (Score score)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("setScoreView score=" + score);
-        }
-
         if (score != null) {
             // Make sure we have a proper score view
             ScoreView view = score.getView();
@@ -182,19 +195,31 @@ public class ScoreController
             }
 
             // Make sure the view is part of the related sheet assembly
-            Jui jui = Main.getJui();
-
-            if (jui != null) {
-                Sheet sheet = score.getSheet();
-
-                if (sheet != null) {
-                    sheet.getAssembly()
-                         .setScoreView(view);
-                }
-            }
+            Jui   jui = Main.getJui();
+            Sheet sheet = score.getSheet();
+            sheet.getAssembly()
+                 .setScoreView(view);
         }
 
         enableActions(scoreDependentActions, score != null);
+    }
+
+    //--------------//
+    // stateChanged //
+    //--------------//
+    /**
+     * Called when a change event arrives (from ScoreManager)
+     *
+     * @param e the event
+     */
+    @Implement(ChangeListener.class)
+    public void stateChanged (ChangeEvent e)
+    {
+        // Event from ScoreManager ?
+        if (e.getSource() instanceof ScoreManager) {
+            dumpAllAction.setEnabled(
+                ScoreManager.getInstance().getScores().size() > 0);
+        }
     }
 
     //------------------//
@@ -237,8 +262,15 @@ public class ScoreController
             public Score construct ()
             {
                 if (file.exists()) {
-                    return ScoreManager.getInstance()
-                                       .load(file);
+                    Score score = ScoreManager.getInstance()
+                                              .load(file);
+
+                    if (logger.isFineEnabled()) {
+                        score.dump();
+                        omr.util.Dumper.dump(score.getSheet());
+                    }
+
+                    return score;
                 } else {
                     logger.warning("File not found " + file);
 
@@ -258,14 +290,19 @@ public class ScoreController
                     // Insert in (or remove from) history
                     if (score != null) {
                         history.names.add(path);
+
+                        Sheet sheet = score.getSheet();
+
+                        if (sheet != null) {
+                            sheet.checkTransientSteps(); // Useful? TBD
+                            // To connect selections
+                            sheet.setVerticalLag(sheet.getVerticalLag());
+                        }
+
                         setScoreView(score);
-
-                        //  Sheet sheet = score.getSheet();
-                        //  if (sheet != null) {
-                        //      sheet.checkTransientSteps();
-                        //  }
-
-                        ////showScoreView(setScoreView(score), true);
+                        sheet.displayAssembly();
+                        sheet.getInstanceStep(sheet.currentStep())
+                             .displayUI();
                     } else {
                         history.names.remove(path);
                     }
@@ -383,39 +420,6 @@ public class ScoreController
         }
     }
 
-    //     //--------//
-    //     // Format //
-    //     //--------//
-    //     private static enum Format
-    //     {
-    //         BINARY("Binary",                // Binary format
-    //                ".score",
-    //                constants.binaryScoreFolder),
-
-    //             XML("Xml",                  // XML format
-    //                 ".xml",
-    //                 constants.xmlScoreFolder);
-
-    //         public final String          name;
-    //         public final String          extension;
-    //         public final Constant.String folder;
-    //         private      History         history;
-
-    //         Format (String          name,
-    //                 String          extension,
-    //                 Constant.String folder)
-    //         {
-    //             this.name      = name;
-    //             this.extension = extension;
-    //             this.folder    = folder;
-    //         }
-
-    //         public void setHistory (History history)
-    //         {
-    //             this.history = history;
-    //         }
-    //     }
-
     //---------//
     // History //
     //---------//
@@ -514,6 +518,7 @@ public class ScoreController
 
             if (score != null) {
                 score.close();
+                enableActions(scoreDependentActions, false);
             } else {
                 logger.warning("No current score to close");
             }
@@ -589,23 +594,28 @@ public class ScoreController
             final SwingWorker worker = new SwingWorker() {
                 public Object construct ()
                 {
+                    Score score = getCurrentScore();
+
                     try {
                         switch (format) {
                         case BINARY :
-                            getCurrentScore()
-                                .serialize();
+                            score.serialize();
 
                             break;
 
                         case XML :
-                            getCurrentScore()
-                                .store();
+                            score.store();
+
+                            break;
+
+                        case MUSIC_XML :
+                            score.export();
 
                             break;
                         }
                     } catch (Exception ex) {
                         ex.printStackTrace();
-                        logger.warning("Could not store score");
+                        logger.warning("Could not store " + score);
                         logger.warning(ex.toString());
                     }
 
