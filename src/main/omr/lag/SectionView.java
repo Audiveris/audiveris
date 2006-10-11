@@ -328,7 +328,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Double  brightness = new Constant.Double(
