@@ -18,6 +18,7 @@ import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.awt.*;
+import java.util.List;
 
 /**
  * Class <code>MusicNode</code> handles a node in the tree hierarchy of a score
@@ -265,6 +266,36 @@ public class MusicNode
      * @return true if processing must continue
      */
     protected boolean computeNode ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // exportChildren //
+    //----------------//
+    /**
+     * Pattern to export recursively all children of this node
+     */
+    protected void exportChildren (List<Measure> measures)
+    {
+        for (TreeNode node : children) {
+            MusicNode child = (MusicNode) node;
+
+            if (child.exportNode(measures)) {
+                child.exportChildren(measures);
+            }
+        }
+    }
+
+    //------------//
+    // exportNode //
+    //------------//
+    /**
+     * Placeholder for specific export on this node
+     *
+     * @return true if processing must continue
+     */
+    protected boolean exportNode (List<Measure> measures)
     {
         return true;
     }

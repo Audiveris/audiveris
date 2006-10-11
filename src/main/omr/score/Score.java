@@ -456,6 +456,18 @@ public class Score
             "-----------------------------------------------------------------------");
     }
 
+    //--------//
+    // export //
+    //--------//
+    /**
+     * Marshall the score to its MusicXML file
+     */
+    public void export ()
+    {
+        ScoreManager.getInstance()
+                    .export(this);
+    }
+
     //---------------//
     // linkWithSheet //
     //---------------//
@@ -464,9 +476,9 @@ public class Score
      */
     public void linkWithSheet ()
     {
-        if (getSheet() != null) {
-            return;
-        }
+//        if (getSheet() != null) {
+//            return;
+//        }
 
         for (Sheet sheet : SheetManager.getInstance()
                                        .getSheets()) {

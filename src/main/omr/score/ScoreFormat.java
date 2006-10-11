@@ -25,9 +25,14 @@ public enum ScoreFormat
     BINARY("Binary", ".score"),
 
     /**
-     * XML ASCII format, used with an XML mapper
+     * XML proprietary ASCII format, used with an XML mapper
      */
-    XML("Xml", ".xml");
+    XML("Xml", ".xml"),
+
+    /**
+     * MusicXML ASCII format, used with an XML mapper
+     */
+    MUSIC_XML("MusicXML", ".music.xml");
 
     /**
      * Readable name of the format

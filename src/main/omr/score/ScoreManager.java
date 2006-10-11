@@ -12,16 +12,21 @@ package omr.score;
 
 import omr.Main;
 
-import omr.sheet.Sheet;
-
 import omr.util.FileUtil;
 import omr.util.Logger;
 import omr.util.XmlMapper;
 
+import org.jibx.runtime.BindingDirectory;
+import org.jibx.runtime.IBindingFactory;
+import org.jibx.runtime.IMarshallingContext;
+import org.jibx.runtime.IXMLWriter;
+import org.jibx.runtime.JiBXException;
+
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
+import javax.swing.event.*;
+import omr.sheet.Sheet;
 
 /**
  * Class <code>ScoreManager</code> handles a collection of score instances.
@@ -36,12 +41,18 @@ public class ScoreManager
     private static final Logger logger = Logger.getLogger(ScoreManager.class);
 
     /** Specific glyph XML mapper */
-    private static XmlMapper    xmlMapper;
+    private static XmlMapper xmlMapper;
 
     /** The single instance of this class */
     private static ScoreManager INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
+
+    /** Slot for one potential change listener */
+    private ChangeListener changeListener;
+
+    /** Unique change event */
+    private final ChangeEvent changeEvent;
 
     /** Instances of score */
     private List<Score> instances = new ArrayList<Score>();
@@ -56,9 +67,23 @@ public class ScoreManager
      */
     private ScoreManager ()
     {
+        changeEvent = new ChangeEvent(this);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------------//
+    // setChangeListener //
+    //-------------------//
+    /**
+     * Register one change listener
+     *
+     * @param changeListener the entity to be notified of any change
+     */
+    public void setChangeListener (ChangeListener changeListener)
+    {
+        this.changeListener = changeListener;
+    }
 
     //-------------//
     // getInstance //
@@ -118,6 +143,10 @@ public class ScoreManager
         // Remove from list of instance
         if (instances.contains(score)) {
             instances.remove(score);
+
+            if (changeListener != null) {
+                changeListener.stateChanged(changeEvent);
+            }
         }
     }
 
@@ -137,6 +166,10 @@ public class ScoreManager
             Score score = it.next();
             it.remove(); // Done here to avoid concurrent modification
             score.close();
+
+            if (changeListener != null) {
+                changeListener.stateChanged(changeEvent);
+            }
         }
     }
 
@@ -196,6 +229,85 @@ public class ScoreManager
         }
 
         java.lang.System.out.println("------------------------------");
+        logger.info(instances.size() + " score(s) dumped");
+    }
+
+    //--------//
+    // export //
+    //--------//
+    /**
+     * Export a score using the partwise structure of MusicXML, using the
+     * default file for the provided score
+     *
+     * @param score the score to export
+     */
+    public void export (Score score)
+    {
+        export(score, null);
+    }
+
+    //-------//
+    // export //
+    //-------//
+    /**
+     * Export a score using the partwise structure of MusicXML to the provided
+     * file
+     *
+     * @param score the score to export
+     * @param xmlFile the xml file to write, or null
+     */
+    public void export (Score score,
+                        File  xmlFile)
+    {
+        // Where do we write the score xml file?
+        if (xmlFile == null) {
+            xmlFile = new File(
+                Main.getOutputFolder(),
+                score.getRadix() + ScoreFormat.MUSIC_XML.extension);
+        }
+
+        // Make sure the folder exists
+        File folder = new File(xmlFile.getParent());
+
+        if (!folder.exists()) {
+            logger.info("Creating folder " + folder);
+            folder.mkdirs();
+        }
+
+        try {
+            // Prepare the marshalling context
+            IBindingFactory     factory = BindingDirectory.getFactory(
+                ScorePartWise.class);
+            IMarshallingContext mctx = factory.createMarshallingContext();
+
+            // Document prologue
+            mctx.startDocument(
+                "UTF-8", // encoding
+                true, // standalone
+                new FileOutputStream(xmlFile));
+            mctx.setIndent(3);
+
+            IXMLWriter writer = mctx.getXmlWriter();
+            writer.writeDocType(
+                "score-partwise", // root element name
+                "http://www.musicxml.org/dtds/partwise.dtd", // system ID
+                "-//Recordare//DTD MusicXML 1.1 Partwise//EN", //public ID
+                null); // internal subset
+
+            // Marshall the score
+            ScorePartWise scorePartWise = new ScorePartWise(score);
+            mctx.marshalDocument(scorePartWise);
+
+            // Epilogue
+            mctx.endDocument();
+            logger.info("Score exported to " + xmlFile);
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } catch (JiBXException ex) {
+            ex.printStackTrace();
+        }
     }
 
     //---------------//
@@ -230,8 +342,6 @@ public class ScoreManager
      */
     public Score load (File file)
     {
-        logger.info("Loading score from " + file.getPath());
-
         // Make file canonical
         try {
             file = new File(file.getCanonicalPath());
@@ -244,7 +354,6 @@ public class ScoreManager
         }
 
         Score  score = null;
-
         String ext = FileUtil.getExtension(file);
 
         if (ext.equals(ScoreFormat.XML.extension)) {
@@ -252,6 +361,11 @@ public class ScoreManager
                 // This may take a while, and even fail ...
                 score = (Score) getXmlMapper()
                                     .load(file);
+                ////
+                score.dump();
+                omr.util.Dumper.dump(score.getSheet());
+
+                ////
             } catch (Exception ex) {
             }
         } else if (ext.equals(ScoreFormat.BINARY.extension)) {
@@ -273,13 +387,6 @@ public class ScoreManager
 
             // Link with sheet side ?
             score.linkWithSheet();
-
-            // Update UI wrt to the current sheet step
-            //            Sheet sheet = score.getSheet();
-            /// TBD HB
-            //             if (sheet != null) {
-            //                 sheet.getInstanceStep(sheet.currentStep()).displayUI();
-            //             }
         }
 
         return score;
@@ -414,6 +521,10 @@ public class ScoreManager
         // Remove from list of instance
         if (instances.contains(score)) {
             instances.remove(score);
+
+            if (changeListener != null) {
+                changeListener.stateChanged(changeEvent);
+            }
         }
     }
 
@@ -462,6 +573,10 @@ public class ScoreManager
 
             // Insert new score instances
             instances.add(score);
+
+            if (changeListener != null) {
+                changeListener.stateChanged(changeEvent);
+            }
         }
     }
 }

@@ -195,6 +195,20 @@ public class Measure
     }
 
     //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the width, in units, of the measure
+     *
+     * @return the measure width
+     */
+    public int getWidth ()
+    {
+        return getBarline()
+                   .getCenter().x - leftX;
+    }
+
+    //----------//
     // addChild //
     //----------//
     /**
@@ -357,6 +371,27 @@ public class Measure
         id = staff.getLastMeasureId();
 
         return true;
+    }
+
+    //------------//
+    // exportNode //
+    //------------//
+    /**
+     * Let export this measure
+     *
+     * @return false
+     */
+    @Override
+    protected boolean exportNode (List<Measure> measures)
+    {
+        if (leftX != null) {
+            logger.info("Adding " + this);
+            measures.add(this);
+        } else {
+            logger.info("Skipping " + this);
+        }
+
+        return false;
     }
 
     //-----------//
