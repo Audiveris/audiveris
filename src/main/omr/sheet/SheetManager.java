@@ -18,6 +18,8 @@ import omr.util.NameSet;
 
 import java.util.*;
 
+import javax.swing.event.*;
+
 /**
  * Class <code>SheetManager</code> handles the list of sheet instances in memory
  * as well as the related history.
@@ -46,6 +48,12 @@ public class SheetManager
     /** Sheet file history */
     private NameSet history;
 
+    /** Slot for one potential change listener */
+    private ChangeListener changeListener;
+
+    /** Unique change event */
+    private final ChangeEvent changeEvent;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -56,9 +64,23 @@ public class SheetManager
      */
     private SheetManager ()
     {
+        changeEvent = new ChangeEvent(this);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------------//
+    // setChangeListener //
+    //-------------------//
+    /**
+     * Register one change listener
+     *
+     * @param changeListener the entity to be notified of any change
+     */
+    public void setChangeListener (ChangeListener changeListener)
+    {
+        this.changeListener = changeListener;
+    }
 
     //------------//
     // getHistory //
@@ -154,9 +176,13 @@ public class SheetManager
             logger.fine("close " + sheet);
         }
 
-        // Remove from list of instance
+        // Remove from list of instances
         if (instances.contains(sheet)) {
             instances.remove(sheet);
+
+            if (changeListener != null) {
+                changeListener.stateChanged(changeEvent);
+            }
         }
     }
 
@@ -176,6 +202,10 @@ public class SheetManager
             Sheet sheet = it.next();
             it.remove(); // Done here to avoid concurrent modification
             sheet.close();
+
+            if (changeListener != null) {
+                changeListener.stateChanged(changeEvent);
+            }
         }
     }
 
@@ -199,6 +229,7 @@ public class SheetManager
 
         java.lang.System.out.println(
             "-----------------------------------------------------------------------");
+        logger.info(instances.size() + " sheet(s) dumped");
     }
 
     //----------------//
@@ -234,5 +265,9 @@ public class SheetManager
 
         // Insert new sheet instances
         instances.add(sheet);
+
+        if (changeListener != null) {
+            changeListener.stateChanged(changeEvent);
+        }
     }
 }
