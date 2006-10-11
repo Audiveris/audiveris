@@ -38,7 +38,7 @@ public class UITest
     public static void test ()
     {
         SelectionManager.dumpAllSelections();
-        GlyphVerifier.getInstance()
-                     .dumpSelections();
+//        GlyphVerifier.getInstance()
+//                     .dumpSelections();
     }
 }
