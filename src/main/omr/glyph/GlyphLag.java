@@ -67,10 +67,10 @@ public class GlyphLag
     protected final SortedMap<Integer, Glyph> glyphs = new TreeMap<Integer, Glyph>();
 
     /** Selection on glyph, output where found glyph is written */
-    protected Selection glyphSelection;
+    protected transient Selection glyphSelection;
 
     /** Selection on glyphs, output where found glyphs are written */
-    protected Selection glyphSetSelection;
+    protected transient Selection glyphSetSelection;
 
     /** Global id to uniquely identify a glyph */
     protected int globalGlyphId = 0;
