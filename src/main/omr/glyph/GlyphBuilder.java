@@ -190,7 +190,6 @@ public class GlyphBuilder
     {
         // Differentiate new glyphs from existing ones
         int         newGlyphId = vLag.getLastGlyphId() + 1;
-
         List<Glyph> newGlyphs = new ArrayList<Glyph>();
 
         // Browse the various unrecognized sections
@@ -268,6 +267,10 @@ public class GlyphBuilder
     {
         if (section.isKnown() || (section.getGlyph() == glyph)) {
             return;
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Glyph#" + glyph.getId() + " <- " + section);
         }
 
         glyph.addSection(section, /* link => */
@@ -484,7 +487,7 @@ public class GlyphBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Scale.Fraction ledgerHeighten = new Scale.Fraction(
