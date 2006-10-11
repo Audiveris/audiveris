@@ -76,6 +76,9 @@ public class SheetController
     /** Collection of sheet-dependent actions */
     private final Collection<AbstractAction> sheetDependentActions = new ArrayList<AbstractAction>();
 
+    /** Action for dumping all sheet instances */
+    private final DumpAllAction dumpAllAction;
+
     /** General purpose toggle */
     private final JButton toggleButton;
 
@@ -141,7 +144,7 @@ public class SheetController
         toggleButton.setEnabled(false);
 
         menu.addSeparator();
-        new DumpAllAction();
+        dumpAllAction = new DumpAllAction();
 
         // Tool actions
         menu.addSeparator();
@@ -150,11 +153,16 @@ public class SheetController
         new SkewPlotAction();
         new LinePlotAction();
 
+        // Initially disabled actions
+        dumpAllAction.setEnabled(false);
+        UIUtilities.enableActions(sheetDependentActions, false);
+
         // Listener on tab operations
         component.addChangeListener(this);
 
-        // Initially disabled actions
-        UIUtilities.enableActions(sheetDependentActions, false);
+        // Listener on sheet instances
+        SheetManager.getInstance()
+                    .setChangeListener(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -196,17 +204,13 @@ public class SheetController
      *
      * @param sheet the sheet to be viewed. If no sheet is provided, then an
      *              empty assembly is desired.
-     * @param pagPt the eventual focus point desired, null otherwise
      *
      * @return the index in the tabbed pane of the prepared assembly
      */
-    public int setSheetAssembly (Sheet     sheet,
-                                 PagePoint pagPt)
+    public int setSheetAssembly (Sheet sheet)
     {
         if (logger.isFineEnabled()) {
-            logger.fine(
-                "setSheetAssembly for sheet " + sheet.getRadix() + " pagPt=" +
-                pagPt);
+            logger.fine("setSheetAssembly for sheet " + sheet.getRadix());
         }
 
         if (sheet != null) {
@@ -323,18 +327,29 @@ public class SheetController
     @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
-        final int index = component.getSelectedIndex();
+        final Object source = e.getSource();
 
-        ///logger.info("previous=" + previousIndex + " index=" + index);
-        if (index != -1) {
-            if (previousIndex != -1) {
-                tabDeselected(previousIndex);
+        if (source instanceof SheetManager) {
+            // Number of sheet instances has changed
+            dumpAllAction.setEnabled(
+                SheetManager.getInstance().getSheets().size() > 0);
+        } else if (source == component) {
+            // User has selected a new tab
+            final int index = component.getSelectedIndex();
+
+            ///logger.info("previous=" + previousIndex + " index=" + index);
+            if (index != -1) {
+                if (previousIndex != -1) {
+                    tabDeselected(previousIndex);
+                }
+
+                tabSelected(index);
             }
 
-            tabSelected(index);
+            previousIndex = index;
+        } else {
+            logger.warning("Unexpected event from " + source);
         }
-
-        previousIndex = index;
     }
 
     //-----------------//
@@ -604,6 +619,7 @@ public class SheetController
                 }
 
                 sheet.close();
+                UIUtilities.enableActions(sheetDependentActions, false);
             }
         }
     }
