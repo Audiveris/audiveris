@@ -27,7 +27,7 @@ public class SelectionManager
     //~ Instance fields --------------------------------------------------------
 
     /** All current selections */
-    private final transient Map<SelectionTag, Selection> selections = new HashMap<SelectionTag, Selection>();
+    private final Map<SelectionTag, Selection> selections = new HashMap<SelectionTag, Selection>();
 
     /** Related sheet */
     private Sheet sheet;
