@@ -191,9 +191,10 @@ public class TimeSignature
               .append(getDenominator());
         }
 
-        sb.append(" ")
-          .append(getShape())
-          .append(" center=")
+        sb.append(" shape=")
+          .append(shape);
+
+        sb.append(" center=")
           .append(getCenter());
 
         sb.append(" glyphs[");
