@@ -101,18 +101,41 @@ public class Sheet
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(Sheet.class);
+    private static final Logger                logger = Logger.getLogger(
+        Sheet.class);
 
     /** List of steps */
     private static List<Step> steps;
 
     //~ Instance fields --------------------------------------------------------
 
-    /** A bar line extractor for this sheet */
-    private transient BarsBuilder barsBuilder;
+    // First: non-transient members
 
     /** Link with sheet original image file. Set by constructor. */
     private File imageFile;
+
+    /** Vertical lag (built by BARS/BarsBuilder) */
+    private GlyphLag vLag;
+
+    /** Sheet height in pixels */
+    private int height = -1;
+
+    /** Sheet width in pixels */
+    private int width = -1;
+
+    /** Retrieved systems. Set by BARS. */
+    private List<SystemInfo> systems;
+
+    /** Link with related score. Set by BARS. */
+    private Score score;
+
+    /** Glyph id of the first symbol */
+    private int firstSymbolId = -1;
+
+    // Below: transient members
+
+    /** A bar line extractor for this sheet */
+    private transient BarsBuilder barsBuilder;
 
     /** A glyph extractor for this sheet */
     private transient GlyphBuilder glyphBuilder;
@@ -123,20 +146,11 @@ public class Sheet
     /** Horizontal lag (built by LINES/LinesBuilder) */
     private transient GlyphLag hLag;
 
-    /** Vertical lag (built by BARS/BarsBuilder) */
-    private GlyphLag vLag;
-
     /** A staff line extractor for this sheet */
     private transient LinesBuilder linesBuilder;
 
-    /** Retrieved systems. Set by BARS. */
-    private List<SystemInfo> systems;
-
-    /** Link with related score. Set by BARS. */
-    private Score score;
-
     /** All Current selections for this sheet */
-    private final transient SelectionManager selectionManager;
+    private transient SelectionManager selectionManager;
 
     /** Related assembly instance */
     private transient SheetAssembly assembly;
@@ -149,15 +163,6 @@ public class Sheet
 
     /** To avoid concurrent modifications */
     private transient volatile boolean busy = false;
-
-    /** Glyph id of the first symbol */
-    private int firstSymbolId = -1;
-
-    /** Sheet height in pixels */
-    private int height = -1;
-
-    /** Sheet width in pixels */
-    private int width = -1;
 
     // InstanceStep Definitions (in proper order) ------------------------------
 
@@ -260,14 +265,16 @@ public class Sheet
             barsBuilder.buildInfo();
             result = Boolean.valueOf(true);
 
-            // Display the resulting score, if sheet is currently
-            // displayed
-            Jui jui = Main.getJui();
-
-            if (jui != null) {
-                jui.scoreController.setScoreView(score);
+            // Force score view creation if UI is present
+            if (Main.getJui() != null) {
+                Main.getJui().scoreController.setScoreView(score);
             }
         }
+
+//        public void displayUI ()
+//        {
+//            Main.getJui().scoreController.setScoreView(score);
+//        }
     };
 
     /**
@@ -434,7 +441,7 @@ public class Sheet
             // Perform the glyphs translation
             ScoreBuilder builder = new ScoreBuilder(score, Sheet.this);
             builder.buildInfo();
-            
+
             // Perform global checks recursively
             score.checkNode();
         }
@@ -532,7 +539,6 @@ public class Sheet
      */
     private Sheet ()
     {
-        selectionManager = new SelectionManager(this);
         checkTransientSteps();
     }
 
@@ -561,6 +567,10 @@ public class Sheet
      */
     public SheetAssembly getAssembly ()
     {
+        if (assembly == null) {
+            setAssembly(new SheetAssembly(this));
+        }
+
         return assembly;
     }
 
@@ -694,7 +704,8 @@ public class Sheet
         this.hLag = hLag;
 
         // Input
-        selectionManager.addObserver(
+        getSelectionManager()
+            .addObserver(
             hLag,
             PIXEL,
             HORIZONTAL_SECTION,
@@ -925,7 +936,8 @@ public class Sheet
      */
     public Selection getSelection (SelectionTag tag)
     {
-        return selectionManager.getSelection(tag);
+        return getSelectionManager()
+                   .getSelection(tag);
     }
 
     //---------------------//
@@ -937,6 +949,10 @@ public class Sheet
      */
     public SelectionManager getSelectionManager ()
     {
+        if (selectionManager == null) {
+            selectionManager = new SelectionManager(this);
+        }
+
         return selectionManager;
     }
 
@@ -1263,7 +1279,8 @@ public class Sheet
         this.vLag = vLag;
 
         // Input
-        selectionManager.addObserver(
+        getSelectionManager()
+            .addObserver(
             vLag,
             PIXEL,
             VERTICAL_SECTION,
@@ -1455,11 +1472,11 @@ public class Sheet
         if (jui != null) {
             // Prepare a assembly on this sheet, this uses the initial zoom
             // ratio
-            int viewIndex = jui.sheetPane.setSheetAssembly(this, null);
+            int viewIndex = jui.sheetController.setSheetAssembly(this);
 
             // if this is the current target, then show this sheet immediately
             //////if (jui.isTarget(getPath())) {
-            jui.sheetPane.showSheetView(viewIndex, true);
+            jui.sheetController.showSheetView(viewIndex, true);
 
             /////}
         }
