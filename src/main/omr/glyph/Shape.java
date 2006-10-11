@@ -54,7 +54,7 @@ public enum Shape
         /*-----*/ DOT("General dot shape"),
         /*-----*/ DASH("General dash shape"),
         /*-----*/ BEAM("Beam between two stems"),
-        /*-----*/ BEAM_CHUNK("Chunk of a beam attached on one stem"),
+        /*-----*/ BEAM_HOOK("Hook of a beam attached on one stem"),
         /*-----*/ FERMATA_BEND("Bend part of a fermata"),
         /*-----*/ FERMATA_BELOW_BEND("Bend part of a below fermata"),
 
@@ -248,7 +248,7 @@ public enum Shape
         /*1D182*/ // COMBINING_LOURE,
         /*1D183*/ ARPEGGIATO_UP,
         /*1D184*/ ARPEGGIATO_DOWN,
-        
+
         /*1D185*/ // COMBINING_DOIT,
         /*1D186*/ // COMBINING_RIP,
         /*1D187*/ // COMBINING_FLIP,
@@ -334,6 +334,8 @@ public enum Shape
         /*1D106*/ LEFT_REPEAT_SIGN("Thick / Thin bar line + REPEAT_DOTS"),
         /*1D107*/ RIGHT_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick bar line"),
         /*-----*/ BACK_TO_BACK_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick / Thin + REPEAT_DOTS"),
+        /*-----*/ THICK_BAR_LINE("Thick bar line"),
+        /*-----*/ THIN_BAR_LINE("Thin bar line"),
         /*1D108*/ REPEAT_DOTS("Vertical dots"),
 
         // Augmentation dot
@@ -349,8 +351,6 @@ public enum Shape
         //
         /*-----*/ LEDGER("Ledger"),
         /*-----*/ STAFF_LINE("Staff Line"),
-        /*-----*/ THICK_BAR_LINE("Thick bar line"),
-        /*-----*/ THIN_BAR_LINE("Thin bar line"),
         /*-----*/ ENDING_HORIZONTAL("Horizontal part of ending"),
         /*-----*/ ENDING_VERTICAL("Vertical part of ending"),
 
@@ -362,11 +362,29 @@ public enum Shape
         /*1D165*/ COMBINING_STEM,
         /*1D166*/ // COMBINING_SPRECHGESANG_STEM,
 
+        // Key signatures
+        //
+        /*-----*/ KEY_FLAT_7("Seven Flats"),    // -7
+        /*-----*/ KEY_FLAT_6("Six Flats"),      // -6
+        /*-----*/ KEY_FLAT_5("Five Flats"),     // -5
+        /*-----*/ KEY_FLAT_4("Four Flats"),     // -4
+        /*-----*/ KEY_FLAT_3("Three Flats"),    // -3
+        /*-----*/ KEY_FLAT_2("Two Flats"),      // -2
+        /*-----*/ KEY_FLAT_1("One Flat"),       // -1
+        //
+        /*-----*/ KEY_SHARP_1("One Sharp"),     // +1
+        /*-----*/ KEY_SHARP_2("Two Sharps"),    // +2
+        /*-----*/ KEY_SHARP_3("Three Sharps"),  // +3
+        /*-----*/ KEY_SHARP_4("Four Sharps"),   // +4
+        /*-----*/ KEY_SHARP_5("Five Sharps"),   // +5
+        /*-----*/ KEY_SHARP_6("Six Sharps"),    // +6
+        /*-----*/ KEY_SHARP_7("Seven Sharps"),  // +7
+
         /*-----*/ CHARACTER("A letter"),
-        
-        /** 
-         * Specific value, meaning that we have not been able to determined a 
-         * legal shape 
+
+        /**
+         * Specific value, meaning that we have not been able to determined a
+         * legal shape
          */
         /*-----*/ NO_LEGAL_SHAPE("No Legal Shape");
 
@@ -459,8 +477,8 @@ public enum Shape
      */
     public boolean isWellKnown ()
     {
-        return !Garbage.getShapes()
-                       .contains(this);
+       return (this != NO_LEGAL_SHAPE) && !Garbage.getShapes()
+                                                   .contains(this);
     }
 
     //----------------//
@@ -888,7 +906,7 @@ public enum Shape
     public static final Range Ornaments     = new Range(EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
     public static final Range Pedals        = new Range(EnumSet.range(PEDAL_MARK, PEDAL_UP_MARK));
     //
-    public static final Range Barlines      = new Range(EnumSet.range(SINGLE_BARLINE, BACK_TO_BACK_REPEAT_SIGN));
+    public static final Range Barlines      = new Range(EnumSet.range(SINGLE_BARLINE, THIN_BAR_LINE));
     public static final Range Logicals      = new Range(EnumSet.range(REPEAT_DOTS, ENDING));
 
     // Assign proper name to all ranges and proper color to their contained
@@ -917,7 +935,7 @@ public enum Shape
 
     static {
         StemSymbols.add(Shape.BEAM);
-        StemSymbols.add(Shape.BEAM_CHUNK);
+        StemSymbols.add(Shape.BEAM_HOOK);
 
         StemSymbols.addAll(NoteHeads.getShapes());
         StemSymbols.addAll(Flags.getShapes());
