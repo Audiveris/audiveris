@@ -199,39 +199,6 @@ public class GlyphInspector
             knownNb + " as known)");
     }
 
-    //----------------------//
-    // removeSystemUnknowns //
-    //----------------------//
-    /**
-     * On a specified system, look for all unknown glyphs (including glyphs
-     * classified as STRUCTURE shape), and remove them from its glyphs
-     * collection as well as from the containing lag.  Purpose is to prepare
-     * room for a new glyph extraction
-     *
-     * @param system the specified system
-     */
-    public static void removeSystemUnknowns (SystemInfo system)
-    {
-        List<Glyph> toremove = new ArrayList<Glyph>();
-
-        for (Glyph glyph : system.getGlyphs()) {
-            // We remove shapes : null, NOISE, STRUCTURE (not CLUTTER)
-            if (!glyph.isWellKnown()) {
-                toremove.add(glyph);
-            }
-        }
-
-        // Remove from system list
-        system.getGlyphs()
-              .removeAll(toremove);
-
-        // Remove from lag
-        for (Glyph glyph : toremove) {
-            glyph.destroy( /* cutSections => */
-            true);
-        }
-    }
-
     //------------------------//
     // extractNewSystemGlyphs //
     //------------------------//
@@ -257,19 +224,23 @@ public class GlyphInspector
      * glyphs
      *
      * @param maxGrade mamximum acceptance grade
-     * @return the number of successful compounds
      */
-    public int processCompounds (double maxGrade)
+    public void processCompounds (double maxGrade)
     {
-        int compoundNb = 0;
+        List<Glyph> compounds = new ArrayList<Glyph>();
 
         for (SystemInfo system : sheet.getSystems()) {
-            compoundNb += processSystemCompounds(system, maxGrade);
+            processSystemCompounds(system, maxGrade, compounds);
         }
 
-        logger.info(compoundNb + " compound(s) recognized");
+        StringBuilder sb = new StringBuilder();
 
-        return compoundNb;
+        for (Glyph c : compounds) {
+            sb.append(" ")
+              .append(c.getId());
+        }
+
+        logger.info("Built " + compounds.size() + " compound(s)" + sb);
     }
 
     //---------------//
@@ -291,6 +262,133 @@ public class GlyphInspector
         }
     }
 
+    //-------------------//
+    // processUndueStems //
+    //-------------------//
+    /**
+     * Look for all stems that should not be kept, rebuild surrounding glyphs
+     * and try to recognize them
+     *
+     * @return the number of symbols recognized
+     */
+    public int processUndueStems ()
+    {
+        int symbolNb = 0;
+
+        for (SystemInfo system : sheet.getSystems()) {
+            symbolNb += processSystemUndueStems(system);
+        }
+
+        logger.info(symbolNb + " symbol(s) from stem cancellation");
+
+        return symbolNb;
+    }
+
+    //------------------//
+    // processVerticals //
+    //------------------//
+    /**
+     * Look for vertical sticks (stems actually, though we could have endings
+     * verticals as well), and rebuild glyphs after the stem extraction
+     */
+    public void processVerticals ()
+    {
+        // Get rid of former non-recognized symbols
+        for (SystemInfo system : sheet.getSystems()) {
+            removeSystemUnknowns(system);
+        }
+
+        // Retrieve stem/endings vertical candidates
+        try {
+            new VerticalsBuilder(sheet);
+        } catch (ProcessingException ex) {
+            // User has already been warned
+        }
+    }
+
+    //-------------//
+    // removeGlyph //
+    //-------------//
+    /**
+     * Remove a glyph stick
+     *
+     * @param glyph the specified glyph
+     * @param system the system it belongs to
+     * @param cutSections should glyph <- section link be cut
+     */
+    public void removeGlyph (Glyph      glyph,
+                             SystemInfo system,
+                             boolean    cutSections)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Removing glyph " + glyph);
+        }
+
+        // Remove from system glyph list
+        if (!system.getGlyphs()
+                   .remove(glyph)) {
+            logger.warning(
+                "Could not remove glyph from system glyphs" + system.getId());
+        }
+
+        // Remove from lag
+        glyph.destroy(cutSections);
+    }
+
+    //-------------//
+    // compoundBox //
+    //-------------//
+    /**
+     * Build a rectangular box, slightly extended to check intersection with
+     * neighbouring glyphs
+     *
+     * @param rect the specified box
+     * @param dxy the extension on every side side
+     * @return the extended box
+     */
+    private static Rectangle compoundBox (Rectangle rect,
+                                          int       dxy)
+    {
+        return new Rectangle(
+            rect.x - dxy,
+            rect.y - dxy,
+            rect.width + (2 * dxy),
+            rect.height + (2 * dxy));
+    }
+
+    //----------------------//
+    // removeSystemUnknowns //
+    //----------------------//
+    /**
+     * On a specified system, look for all unknown glyphs (including glyphs
+     * classified as STRUCTURE shape), and remove them from its glyphs
+     * collection as well as from the containing lag.  Purpose is to prepare
+     * room for a new glyph extraction
+     *
+     * @param system the specified system
+     */
+    private static void removeSystemUnknowns (SystemInfo system)
+    {
+        List<Glyph> toremove = new ArrayList<Glyph>();
+
+        for (Glyph glyph : system.getGlyphs()) {
+            // We remove shapes : null, NOISE, STRUCTURE (not CLUTTER)
+            if (!glyph.isWellKnown()) {
+                toremove.add(glyph);
+            }
+        }
+
+        // Remove from system list
+        system.getGlyphs()
+              .removeAll(toremove);
+
+        // Remove from lag
+        for (Glyph glyph : toremove) {
+            glyph.destroy( /* cutSections => */
+            true);
+        }
+    }
+
     //------------------------//
     // processSystemCompounds //
     //------------------------//
@@ -300,14 +398,13 @@ public class GlyphInspector
      *
      * @param system the system where splitted glyphs are looked for
      * @param maxGrade mamximum acceptance grade
-     * @return the number of successful compounds
+     * @param compounds global list of compounds to expend
      */
-    public int processSystemCompounds (SystemInfo system,
-                                       double     maxGrade)
+    private void processSystemCompounds (SystemInfo  system,
+                                         double      maxGrade,
+                                         List<Glyph> compounds)
     {
-        int         nb = 0;
-
-        // Sort unknown glyphs by decreasing weight
+        // Collect unknown glyphs
         List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs().size());
 
         for (Glyph glyph : system.getGlyphs()) {
@@ -316,6 +413,7 @@ public class GlyphInspector
             }
         }
 
+        // Sort unknown glyphs by decreasing weight
         Collections.sort(
             glyphs,
             new Comparator<Glyph>() {
@@ -345,7 +443,7 @@ public class GlyphInspector
 
             // Consider neighboring glyphs, which are glyphs whose contour
             // intersect the extended contour of glyph at hand
-            SUB_GLYPHS:
+            SUB_GLYPHS: 
             for (Glyph g : glyphs.subList(index + 1, glyphs.size())) {
                 if (g.isKnown()) {
                     continue;
@@ -365,7 +463,7 @@ public class GlyphInspector
                     if ((vote != null) && vote.isWellKnown()) {
                         compound.setShape(vote);
                         builder.insertCompound(compound, parts);
-                        nb++;
+                        compounds.add(compound);
 
                         if (logger.isFineEnabled()) {
                             logger.fine("Compound " + compound);
@@ -376,8 +474,6 @@ public class GlyphInspector
                 }
             }
         }
-
-        return nb;
     }
 
     //-------------------------//
@@ -391,7 +487,7 @@ public class GlyphInspector
      * @param system the specified system
      * @return the number of symbols recognized
      */
-    public int processSystemUndueStems (SystemInfo system)
+    private int processSystemUndueStems (SystemInfo system)
     {
         logger.fine("processSystemUndueStems " + system);
 
@@ -494,100 +590,6 @@ public class GlyphInspector
         extractNewSystemGlyphs(system);
 
         return nb;
-    }
-
-    //-------------------//
-    // processUndueStems //
-    //-------------------//
-    /**
-     * Look for all stems that should not be kept, rebuild surrounding glyphs
-     * and try to recognize them
-     *
-     * @return the number of symbols recognized
-     */
-    public int processUndueStems ()
-    {
-        int symbolNb = 0;
-
-        for (SystemInfo system : sheet.getSystems()) {
-            symbolNb += processSystemUndueStems(system);
-        }
-
-        logger.info(symbolNb + " symbol(s) from stem cancellation");
-
-        return symbolNb;
-    }
-
-    //------------------//
-    // processVerticals //
-    //------------------//
-    /**
-     * Look for vertical sticks (stems actually, though we could have endings
-     * verticals as well), and rebuild glyphs after the stem extraction
-     */
-    public void processVerticals ()
-    {
-        // Get rid of former non-recognized symbols
-        for (SystemInfo system : sheet.getSystems()) {
-            removeSystemUnknowns(system);
-        }
-
-        // Retrieve stem/endings vertical candidates
-        try {
-            new VerticalsBuilder(sheet);
-        } catch (ProcessingException ex) {
-            // User has already been warned
-        }
-    }
-
-    //-------------//
-    // removeGlyph //
-    //-------------//
-    /**
-     * Remove a glyph stick
-     *
-     * @param glyph the specified glyph
-     * @param system the system it belongs to
-     * @param cutSections should glyph <- section link be cut
-     */
-    public void removeGlyph (Glyph      glyph,
-                             SystemInfo system,
-                             boolean    cutSections)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Removing glyph " + glyph);
-        }
-
-        // Remove from system glyph list
-        if (!system.getGlyphs()
-                   .remove(glyph)) {
-            logger.warning(
-                "Could not remove glyph from system glyphs" + system.getId());
-        }
-
-        // Remove from lag
-        glyph.destroy(cutSections);
-    }
-
-    //-------------//
-    // compoundBox //
-    //-------------//
-    /**
-     * Build a rectangular box, slightly extended to check intersection with
-     * neighbouring glyphs
-     *
-     * @param rect the specified box
-     * @param dxy the extension on every side side
-     * @return the extended box
-     */
-    private static Rectangle compoundBox (Rectangle rect,
-                                          int       dxy)
-    {
-        return new Rectangle(
-            rect.x - dxy,
-            rect.y - dxy,
-            rect.width + (2 * dxy),
-            rect.height + (2 * dxy));
     }
 
     //~ Inner Classes ----------------------------------------------------------
