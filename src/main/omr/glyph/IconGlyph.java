@@ -166,7 +166,7 @@ public class IconGlyph
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         /** This ratio has no impact on glyph moments, it is meant only for
