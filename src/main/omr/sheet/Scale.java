@@ -458,6 +458,25 @@ public class Scale
         return (int) Math.rint(val * val);
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{Scale")
+          .append(" iL=")
+          .append(interline)
+          .append(" mB=")
+          .append(mainBack)
+          .append(" mF=")
+          .append(mainFore)
+          .append("}");
+
+        return sb.toString();
+    }
+
     //---------//
     // toUnits //
     //---------//
