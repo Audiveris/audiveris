@@ -40,19 +40,19 @@ public class System
     //~ Instance fields --------------------------------------------------------
 
     /** Specific Child : list of slurs */
-    private final SlurList  slurs;
+    private final SlurList slurs;
 
     /** Specific Child : list of staves */
     private final StaffList staves;
 
     /** Top left corner of the system */
-    private PagePoint     topLeft;
+    private PagePoint topLeft;
 
     /** Actual display origin */
-    private ScorePoint    origin;
+    private ScorePoint origin;
 
     /** Related info from sheet analysis */
-    private SystemInfo    info;
+    private SystemInfo info;
 
     /** System dimensions, expressed in units */
     private UnitDimension dimension;
@@ -461,8 +461,20 @@ public class System
     @Override
     public String toString ()
     {
-        return "{System" + " topLeft=" + topLeft + " dimension=" + dimension +
-               "}";
+        StringBuilder sb = new StringBuilder();
+        sb.append("{System")
+          .append(" topLeft=[")
+          .append(topLeft.x)
+          .append(",")
+          .append(topLeft.y)
+          .append("]")
+          .append(" dimension=")
+          .append(dimension.width)
+          .append("x")
+          .append(dimension.height)
+          .append("}");
+
+        return sb.toString();
     }
 
     //---------//
