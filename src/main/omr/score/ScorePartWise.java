@@ -59,6 +59,14 @@ public class ScorePartWise
         return String.format("%tF", new Date());
     }
 
+    //-----------//
+    // getSource //
+    //-----------//
+    public String getSource()
+    {
+        return score.getSheet().getPath();
+    }
+
     //-------------//
     // getMeasures //
     //-------------//
