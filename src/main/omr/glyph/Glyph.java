@@ -20,6 +20,7 @@ import omr.math.Moments;
 
 import omr.sheet.Picture;
 import omr.sheet.PixelPoint;
+import omr.sheet.PixelRectangle;
 
 import omr.ui.view.Zoom;
 
@@ -47,9 +48,7 @@ import java.util.Set;
  * @version $Id$
  */
 public class Glyph
-    implements Comparable<Glyph>,
-               Checkable,
-               java.io.Serializable
+    implements Comparable<Glyph>, Checkable, java.io.Serializable
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -188,7 +187,7 @@ public class Glyph
      *
      * @return the bounding contour rectangle box
      */
-    public Rectangle getContourBox ()
+    public PixelRectangle getContourBox ()
     {
         if (contourBox == null) {
             for (Section section : members) {
@@ -200,7 +199,11 @@ public class Glyph
             }
         }
 
-        return contourBox;
+        return new PixelRectangle(
+            contourBox.x,
+            contourBox.y,
+            contourBox.width,
+            contourBox.height);
     }
 
     //------------------//
