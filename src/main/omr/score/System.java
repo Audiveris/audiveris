@@ -540,33 +540,6 @@ public class System
         return sb.toString();
     }
 
-    //------------//
-    // xIntersect //
-    //------------//
-    /**
-     * Check for intersection of a given clip determined by (left, right) with
-     * the system abscissa range. TBD : add some margin on left and right so
-     * that symbols on a system border get correctly drawn.
-     *
-     * @param left  min abscissa
-     * @param right max abscissa
-     *
-     * @return true if overlap, false otherwise
-     */
-    public boolean xIntersect (int left,
-                               int right)
-    {
-        if (left > getRightPosition()) {
-            return false;
-        }
-
-        if (right < origin.x) {
-            return false;
-        }
-
-        return true;
-    }
-
     //---------//
     // xLocate //
     //---------//
