@@ -406,21 +406,23 @@ public class BarsBuilder
             currentEnsemble = ensemble;
         }
 
-        // Dump
-        StringBuilder sb = new StringBuilder();
+        // Dump this system parts
+        if (logger.isFineEnabled()) {
+            StringBuilder sb = new StringBuilder();
 
-        for (SystemPart part : parts) {
-            sb.append("[");
+            for (SystemPart part : parts) {
+                sb.append("[");
 
-            for (Staff staff : part.getStaves()) {
-                sb.append(" ")
-                  .append(staff.getStafflink());
+                for (Staff staff : part.getStaves()) {
+                    sb.append(" ")
+                      .append(staff.getStafflink());
+                }
+
+                sb.append("] ");
             }
 
-            sb.append("] ");
+            logger.fine(system + " Parts: " + sb);
         }
-
-        logger.info(system + " Parts: " + sb);
 
         // Assign the parts to the system
         system.setParts(parts);
