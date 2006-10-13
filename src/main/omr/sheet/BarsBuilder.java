@@ -153,6 +153,16 @@ public class BarsBuilder
         for (SystemInfo systemInfo : sheet.getSystems()) {
             setSystemBraces(systemInfo.getScoreSystem(), braceLists.get(is++));
         }
+
+        // Repaint the score view, if any (TBI)
+        if (sheet.getScore()
+                 .getView() != null) {
+            sheet.getScore()
+                 .getView()
+                 .getScrollPane()
+                 .getView()
+                 .repaint();
+        }
     }
 
     //-----------//
@@ -395,16 +405,21 @@ public class BarsBuilder
 
             currentEnsemble = ensemble;
         }
-        
+
         // Dump
         StringBuilder sb = new StringBuilder();
+
         for (SystemPart part : parts) {
             sb.append("[");
+
             for (Staff staff : part.getStaves()) {
-                sb.append(" ").append(staff.getStafflink());
+                sb.append(" ")
+                  .append(staff.getStafflink());
             }
+
             sb.append("] ");
         }
+
         logger.info(system + " Parts: " + sb);
 
         // Assign the parts to the system
