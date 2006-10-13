@@ -27,6 +27,8 @@ import omr.score.ScoreManager;
 import omr.score.visitor.CheckingVisitor;
 import omr.score.visitor.ColorizingVisitor;
 import omr.score.visitor.RenderingVisitor;
+import omr.score.visitor.Visitable;
+import omr.score.visitor.Visitor;
 
 import omr.selection.Selection;
 import omr.selection.SelectionManager;
@@ -39,7 +41,6 @@ import omr.ui.BoardsPane;
 import omr.ui.Jui;
 import omr.ui.PixelBoard;
 import omr.ui.SheetAssembly;
-import omr.ui.view.Zoom;
 
 import omr.util.FileUtil;
 import omr.util.Logger;
@@ -100,7 +101,7 @@ import java.util.List;
  * @version $Id$
  */
 public class Sheet
-    implements java.io.Serializable
+    implements java.io.Serializable, Visitable
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -1350,6 +1351,33 @@ public class Sheet
         return width;
     }
 
+    // Temporary kludge
+    public boolean BarsAreDone ()
+    {
+        return BARS.isDone();
+    }
+
+    // Temporary kludge
+    public boolean HorizontalsAreDone ()
+    {
+        return HORIZONTALS.isDone();
+    }
+
+    // Temporary kludge
+    public boolean LinesAreDone ()
+    {
+        return LINES.isDone();
+    }
+
+    public boolean accept (Visitor visitor)
+    {
+        if (visitor instanceof RenderingVisitor) {
+            ((RenderingVisitor) visitor).visit(this);
+        }
+
+        return true;
+    }
+
     //-------------------//
     // checkScaleAndSkew //
     //-------------------//
@@ -1546,97 +1574,6 @@ public class Sheet
         }
 
         return null;
-    }
-
-    //--------//
-    // render //
-    //--------//
-    /**
-     * Render all physical info of this sheet into the provided Graphics
-     * environment, at the specified display zoom.
-     *
-     * @param g the graphics context
-     * @param z the display zoom
-     */
-    public void render (Graphics g,
-                        Zoom     z)
-    {
-        // Use specific color
-        g.setColor(Color.lightGray);
-
-        if ((score != null) && (score.getSystems()
-                                     .size() > 0)) {
-            // Normal (full) rendering of the score
-            score.accept(new RenderingVisitor(g, z));
-        } else {
-            // Render what we have got so far
-            if (LINES.isDone()) {
-                for (StaffInfo staff : getStaves()) {
-                    staff.render(g, z);
-                }
-            }
-        }
-
-        if (systems != null) {
-            for (SystemInfo system : getSystems()) {
-                // Check that this system is visible
-                Rectangle box = new Rectangle(
-                    0,
-                    system.getAreaTop(),
-                    Integer.MAX_VALUE,
-                    system.getAreaBottom() - system.getAreaTop() + 1);
-                z.scale(box);
-
-                if (box.intersects(g.getClipBounds())) {
-                    g.setColor(Color.lightGray);
-
-                    // Staff lines
-                    for (StaffInfo staff : system.getStaves()) {
-                        staff.render(g, z);
-                    }
-
-                    // Bar lines
-                    for (Stick bar : system.getBars()) {
-                        bar.renderLine(g, z);
-                    }
-
-                    g.setColor(Color.black);
-
-                    // Stems
-                    for (Glyph glyph : system.getGlyphs()) {
-                        if (glyph.isStem()) {
-                            Stick stick = (Stick) glyph;
-                            stick.renderLine(g, z);
-                        }
-                    }
-
-                    // Ledgers
-                    for (Ledger ledger : system.getLedgers()) {
-                        ledger.render(g, z);
-                    }
-
-                    // Endings
-                    for (Ending ending : system.getEndings()) {
-                        ending.render(g, z);
-                    }
-                }
-            }
-        } else {
-            // Horizontals
-            if (HORIZONTALS.isDone()) {
-                // Ledgers
-                for (Ledger ledger : getHorizontals()
-                                         .getLedgers()) {
-                    ledger.render(g, z);
-                }
-
-                // Endings
-                for (Ending ending : getHorizontals()
-                                         .getEndings()) {
-                    ending.render(g, z);
-                }
-            }
-        }
     }
 
     //----------//
