@@ -216,6 +216,38 @@ public class GlyphInspector
         system.sortGlyphs();
     }
 
+    //---------------//
+    // processBraces //
+    //---------------//
+    /**
+     * Look for braces and get back to the BarsBuilder to organize the score
+     * parts
+     */
+    public void processBraces ()
+    {
+        // Collect braces recognized, system per system
+        List<List<Glyph>> braceLists = new ArrayList<List<Glyph>>();
+        int               nb = 0;
+
+        for (SystemInfo system : sheet.getSystems()) {
+            List<Glyph> braces = new ArrayList<Glyph>();
+
+            for (Glyph glyph : system.getGlyphs()) {
+                if (glyph.getShape() == Shape.BRACE) {
+                    braces.add(glyph);
+                    nb++;
+                }
+            }
+
+            braceLists.add(braces);
+        }
+
+        logger.info("Found " + nb + " brace(s)");
+        
+        // Pass this data to the glyph inspector
+        sheet.getBarsBuilder().setBraces(braceLists);
+    }
+
     //------------------//
     // processCompounds //
     //------------------//
