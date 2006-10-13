@@ -315,52 +315,56 @@ public class StaffInfo
      *
      * @param g the graphics context
      * @param z the display zoom
+     * @return true if something has been drawn
      */
-    public void render (Graphics g,
-                        Zoom     z)
+    public boolean render (Graphics g,
+                           Zoom     z)
     {
-        // Check with the clipping region
-        Rectangle clip = g.getClipBounds();
-        Line      firstLine = getFirstLine()
-                                  .getLine();
-        Line      lastLine = getLastLine()
-                                 .getLine();
+        Line firstLine = getFirstLine()
+                             .getLine();
+        Line lastLine = getLastLine()
+                            .getLine();
 
-        if ((firstLine == null) || (lastLine == null)) {
-            return;
+        if ((firstLine != null) && (lastLine != null)) {
+            final double xl = (double) left;
+            final double xr = (double) right;
+
+            // Check that top of staff is visible
+            final int yTopLeft = z.scaled(firstLine.yAt(xl) + 0.5);
+            final int yTopRight = z.scaled(firstLine.yAt(xr) + 0.5);
+
+            // Check with the clipping region
+            Rectangle clip = g.getClipBounds();
+
+            if ((clip.y + clip.height) < Math.max(yTopLeft, yTopRight)) {
+                return false;
+            }
+
+            // Check that bottom of staff is visible
+            final int yBottomLeft = z.scaled(lastLine.yAt(xl) + 0.5);
+            final int yBottomRight = z.scaled(lastLine.yAt(xr) + 0.5);
+
+            if (clip.y > Math.max(yBottomLeft, yBottomRight)) {
+                return false;
+            }
+
+            // Paint each horizontal line in the set
+            for (LineInfo line : lines) {
+                line.render(g, z, left, right);
+            }
+
+            // Left vertical line
+            final int xLeft = z.scaled(xl + 0.5);
+            g.drawLine(xLeft, yTopLeft, xLeft, yBottomLeft);
+
+            // Right vertical line
+            final int xRight = z.scaled(xr + 0.5);
+            g.drawLine(xRight, yTopRight, xRight, yBottomRight);
+
+            return true;
+        } else {
+            return false;
         }
-
-        final double xl = (double) left;
-        final double xr = (double) right;
-
-        // Check that top of staff is visible
-        final int yTopLeft = z.scaled(firstLine.yAt(xl) + 0.5);
-        final int yTopRight = z.scaled(firstLine.yAt(xr) + 0.5);
-
-        if ((clip.y + clip.height) < Math.max(yTopLeft, yTopRight)) {
-            return;
-        }
-
-        // Check that bottom of staff is visible
-        final int yBottomLeft = z.scaled(lastLine.yAt(xl) + 0.5);
-        final int yBottomRight = z.scaled(lastLine.yAt(xr) + 0.5);
-
-        if (clip.y > Math.max(yBottomLeft, yBottomRight)) {
-            return;
-        }
-
-        // Paint each horizontal line in the set
-        for (LineInfo line : lines) {
-            line.render(g, z, left, right);
-        }
-
-        // Left vertical line
-        final int xLeft = z.scaled(xl + 0.5);
-        g.drawLine(xLeft, yTopLeft, xLeft, yBottomLeft);
-
-        // Right vertical line
-        final int xRight = z.scaled(xr + 0.5);
-        g.drawLine(xRight, yTopRight, xRight, yBottomRight);
     }
 
     //----------//
