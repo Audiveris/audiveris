@@ -29,12 +29,14 @@ import omr.score.SystemPart;
 import omr.score.TimeSignature;
 import omr.score.UnitDimension;
 
+import omr.ui.icon.IconManager;
 import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
 
 import omr.util.Logger;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.util.List;
 
 /**
@@ -49,8 +51,12 @@ public class PaintingVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger     logger = Logger.getLogger(
         PaintingVisitor.class);
+
+    /** Brace icon */
+    private static final SymbolIcon icon = IconManager.getInstance()
+                                                      .loadSymbolIcon("BRACE");
 
     //~ Instance fields --------------------------------------------------------
 
@@ -59,6 +65,9 @@ public class PaintingVisitor
 
     /** Display zoom */
     private final Zoom zoom;
+
+    /** Used for icon image transformation */
+    private final AffineTransform transform = new AffineTransform();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -192,10 +201,12 @@ public class PaintingVisitor
     {
         // Check whether our system is impacted)
         Rectangle clip = g.getClipBounds();
+        int       xMargin = INTER_SYSTEM;
+        int       systemLeft = system.getRightPosition() + xMargin;
+        int       systemRight = system.getOrigin().x - xMargin;
 
-        if (!system.xIntersect(
-            zoom.unscaled(clip.x),
-            zoom.unscaled(clip.x + clip.width))) {
+        if ((zoom.unscaled(clip.x) > systemLeft) ||
+            (zoom.unscaled(clip.x + clip.width) < systemRight)) {
             return false;
         } else {
             UnitDimension dimension = system.getDimension();
@@ -221,18 +232,29 @@ public class PaintingVisitor
                 List<Staff> staves = part.getStaves();
 
                 if (staves.size() > 1) {
-                    int   top = staves.get(0)
-                                      .getOrigin().y;
-                    int   bot = staves.get(staves.size() - 1)
-                                      .getOrigin().y + STAFF_HEIGHT;
-                    int   dx = 5;
+                    // Top & bottom of brace to draw
+                    int        top = staves.get(0)
+                                           .getOrigin().y;
+                    int        bot = staves.get(staves.size() - 1)
+                                           .getOrigin().y + STAFF_HEIGHT;
+                    double     height = zoom.scaled(bot - top + 1);
+
+                    // Vertical ratio to extend the icon */
+                    double     ratio = height / icon.getIconHeight();
+
+                    // Offset on left of system
+                    int        dx = 10;
+
+                    Graphics2D g2 = (Graphics2D) g;
                     g.setColor(Color.black);
-                    // Use a vertical bar, for lack of true brace symbol (TBI)
-                    g.drawLine(
+                    transform.setTransform(
+                        1,
+                        0,
+                        0,
+                        ratio,
                         zoom.scaled(origin.x) - dx,
-                        zoom.scaled(top),
-                        zoom.scaled(origin.x) - dx,
-                        zoom.scaled(bot));
+                        zoom.scaled(top));
+                    g2.drawRenderedImage(icon.getImage(), transform);
                 }
             }
 
