@@ -19,6 +19,7 @@ import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,6 +43,9 @@ public class System
 
     /** Specific Child : list of staves */
     private final StaffList staves;
+
+    /** Parts in this system */
+    private List<SystemPart> parts;
 
     /** Top left corner of the system */
     private PagePoint topLeft;
@@ -258,6 +262,19 @@ public class System
     public ScorePoint getOrigin ()
     {
         return origin;
+    }
+
+    //----------//
+    // setParts //
+    //----------//
+    /**
+     * Assign the parts for this system
+     *
+     * @param parts the ordered parts
+     */
+    public void setParts (List<SystemPart> parts)
+    {
+        this.parts = parts;
     }
 
     //------------------//
