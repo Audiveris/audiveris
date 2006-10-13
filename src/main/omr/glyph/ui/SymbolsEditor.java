@@ -23,6 +23,8 @@ import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 
+import omr.score.visitor.RenderingVisitor;
+
 import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
 
@@ -519,7 +521,7 @@ public class SymbolsEditor
         protected void renderItems (Graphics g)
         {
             // Render all sheet physical info known so far
-            sheet.render(g, getZoom());
+            sheet.accept(new RenderingVisitor(g, getZoom()));
 
             // Normal display of selected items
             super.renderItems(g);

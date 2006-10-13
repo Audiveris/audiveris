@@ -33,6 +33,8 @@ import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 
+import omr.score.visitor.RenderingVisitor;
+
 import omr.selection.Selection;
 import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
@@ -832,7 +834,7 @@ public class HorizontalsBuilder
             Zoom z = getZoom();
 
             // Render all physical info known so far (staff lines)
-            sheet.render(g, z);
+            sheet.accept(new RenderingVisitor(g, z));
 
             // Render the dashes found
             for (Dash dash : allDashes) {

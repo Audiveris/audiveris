@@ -43,6 +43,7 @@ import omr.score.Staff;
 import omr.score.System;
 import omr.score.UnitDimension;
 import omr.score.visitor.ComputingVisitor;
+import omr.score.visitor.RenderingVisitor;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -150,7 +151,6 @@ public class BarsBuilder
     {
         // Stuff to be made available
         scale = sheet.getScale();
-        //sheet.getStaves();
         sheet.getHorizontals();
 
         // Augment the vertical lag of runs
@@ -187,6 +187,9 @@ public class BarsBuilder
 
         // Check Measures using only score parameters
         checkMeasures();
+
+        // With now neat staff measures, let's allocate the systems measure frames
+        //////createMeasureFrames();
 
         // Erase bar pixels from picture
         //////eraseBars();
@@ -739,7 +742,7 @@ public class BarsBuilder
         {
             // Render all physical info known so far, which is just the staff
             // line info, lineset by lineset
-            sheet.render(g, getZoom());
+            sheet.accept(new RenderingVisitor(g, getZoom()));
 
             super.renderItems(g);
         }
