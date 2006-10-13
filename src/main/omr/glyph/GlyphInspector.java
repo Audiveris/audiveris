@@ -242,10 +242,13 @@ public class GlyphInspector
             braceLists.add(braces);
         }
 
-        logger.info("Found " + nb + " brace(s)");
-        
+        if (logger.isFineEnabled()) {
+            logger.fine("Found " + nb + " brace(s)");
+        }
+
         // Pass this data to the glyph inspector
-        sheet.getBarsBuilder().setBraces(braceLists);
+        sheet.getBarsBuilder()
+             .setBraces(braceLists);
     }
 
     //------------------//
