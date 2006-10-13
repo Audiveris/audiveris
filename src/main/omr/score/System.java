@@ -45,7 +45,7 @@ public class System
     private final StaffList staves;
 
     /** Parts in this system */
-    private List<SystemPart> parts;
+    private List<SystemPart> parts = new ArrayList<SystemPart>();
 
     /** Top left corner of the system */
     private PagePoint topLeft;
@@ -275,6 +275,19 @@ public class System
     public void setParts (List<SystemPart> parts)
     {
         this.parts = parts;
+    }
+
+    //----------//
+    // setParts //
+    //----------//
+    /**
+     * Report the parts for this system
+     *
+     * @return the ordered parts
+     */
+    public List<SystemPart> getParts ()
+    {
+        return parts;
     }
 
     //------------------//
