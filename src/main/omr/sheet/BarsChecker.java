@@ -22,11 +22,14 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
+
 import omr.score.Barline;
 import omr.score.Measure;
 import omr.score.Score;
 import omr.score.Staff;
 import omr.score.System;
+import omr.score.UnitRectangle;
 
 import omr.stick.Stick;
 
@@ -35,6 +38,7 @@ import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
+import java.awt.Rectangle;
 import java.util.*;
 
 /**
@@ -139,23 +143,24 @@ class BarsChecker
     //-----------------//
     /**
      * Check whether the given staff is within the vertical range of the given
-     * bar stick
+     * glyph (bar stick or brace glyph)
      *
      * @param staff the given staff
      * @param bar the given bar
      * @return true if staff is embraced by the bar
      */
     public boolean isStaffEmbraced (Staff staff,
-                                    Stick bar)
+                                    Glyph glyph)
     {
-        // Extrema of bar, units
-        int       topUnit = scale.pixelsToUnits(bar.getStart());
-        int       botUnit = scale.pixelsToUnits(bar.getStop());
+        // Extrema of glyph
+        UnitRectangle box = scale.toUnits(glyph.getContourBox());
+        int           top = box.y;
+        int           bot = box.y + box.height;
 
         // Check that middle of staff is within bar top & bottom
         final int midStaff = staff.getTopLeft().y + (staff.getSize() / 2);
 
-        return (midStaff > topUnit) && (midStaff < botUnit);
+        return (midStaff > top) && (midStaff < bot);
     }
 
     //----------//
