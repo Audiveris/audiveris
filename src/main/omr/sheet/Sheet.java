@@ -24,6 +24,9 @@ import omr.glyph.ui.SymbolsEditor;
 import omr.score.Score;
 import omr.score.ScoreBuilder;
 import omr.score.ScoreManager;
+import omr.score.visitor.CheckingVisitor;
+import omr.score.visitor.ColorizingVisitor;
+import omr.score.visitor.RenderingVisitor;
 
 import omr.selection.Selection;
 import omr.selection.SelectionManager;
@@ -271,10 +274,10 @@ public class Sheet
             }
         }
 
-//        public void displayUI ()
-//        {
-//            Main.getJui().scoreController.setScoreView(score);
-//        }
+        //        public void displayUI ()
+        //        {
+        //            Main.getJui().scoreController.setScoreView(score);
+        //        }
     };
 
     /**
@@ -443,7 +446,7 @@ public class Sheet
             builder.buildInfo();
 
             // Perform global checks recursively
-            score.checkNode();
+            score.accept(new CheckingVisitor());
         }
 
         public void displayUI ()
@@ -1428,7 +1431,7 @@ public class Sheet
     {
         if (score != null) {
             // Colorization of all known score items
-            score.colorizeNode(lag, viewIndex, color);
+            score.accept(new ColorizingVisitor(lag, viewIndex, color));
         } else {
             // Nothing to colorize ? TBD
         }
@@ -1564,7 +1567,7 @@ public class Sheet
         if ((score != null) && (score.getSystems()
                                      .size() > 0)) {
             // Normal (full) rendering of the score
-            score.renderNode(g, z);
+            score.accept(new RenderingVisitor(g, z));
         } else {
             // Render what we have got so far
             if (LINES.isDone()) {

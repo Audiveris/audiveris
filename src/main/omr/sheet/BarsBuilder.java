@@ -42,6 +42,7 @@ import omr.score.ScoreConstants;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.UnitDimension;
+import omr.score.visitor.ComputingVisitor;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -191,7 +192,7 @@ public class BarsBuilder
         //////eraseBars();
 
         // Update score internal data
-        score.computeNode();
+        score.accept(new ComputingVisitor());
 
         // Report number of measures retrieved
         logger.info(
@@ -613,7 +614,7 @@ public class BarsBuilder
 
                 // Update abscissa of top-left corner of the staff
                 staff.getTopLeft()
-                     .translate(staff.getStartingBar().getLeftX(), 0);
+                     .translate(staff.getStartingBarline().getLeftX(), 0);
 
                 // Update other bar lines abscissae accordingly
                 for (TreeNode mNode : staff.getMeasures()) {
