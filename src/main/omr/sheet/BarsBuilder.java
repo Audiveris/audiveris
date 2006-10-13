@@ -41,6 +41,7 @@ import omr.score.Score;
 import omr.score.ScoreConstants;
 import omr.score.Staff;
 import omr.score.System;
+import omr.score.SystemPart;
 import omr.score.UnitDimension;
 import omr.score.visitor.ComputingVisitor;
 import omr.score.visitor.RenderingVisitor;
@@ -136,6 +137,23 @@ public class BarsBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------//
+    // setBraces //
+    //-----------//
+    /**
+     * Pass the braces symbols found, so that score parts can be defined
+     *
+     * @param braceLists the braces, system per system
+     */
+    public void setBraces (List<List<Glyph>> braceLists)
+    {
+        int is = 0;
+
+        for (SystemInfo systemInfo : sheet.getSystems()) {
+            setSystemBraces(systemInfo.getScoreSystem(), braceLists.get(is++));
+        }
+    }
 
     //-----------//
     // buildInfo //
@@ -319,6 +337,78 @@ public class BarsBuilder
         logger.warning("Cannot find bar for " + glyph);
 
         return null;
+    }
+
+    //-----------------//
+    // setSystemBraces //
+    //-----------------//
+    /**
+     * Pass the braces symbols found for one system
+     *
+     * @param braces list of braces for this system
+     */
+    private void setSystemBraces (System      system,
+                                  List<Glyph> braces)
+    {
+        // Map Staff -> its containing staves ensemble (= Part)
+        Map<Staff, List<Staff>> ensembles = new HashMap<Staff, List<Staff>>();
+
+        // Inspect each brace in turn
+        for (Glyph brace : braces) {
+            List<Staff> ensemble = new ArrayList<Staff>();
+
+            // Inspect all staves for this brace
+            for (TreeNode node : system.getStaves()) {
+                Staff staff = (Staff) node;
+
+                if (checker.isStaffEmbraced(staff, brace)) {
+                    ensemble.add(staff);
+                    ensembles.put(staff, ensemble);
+                }
+            }
+
+            if (ensemble.size() == 0) {
+                logger.warning(
+                    "Brace with no embraced staves at all: " + brace.getId());
+            }
+        }
+
+        // Now build the parts by looking back at all staves
+        List<SystemPart> parts = new ArrayList<SystemPart>();
+        List<Staff>      currentEnsemble = null;
+
+        for (TreeNode node : system.getStaves()) {
+            Staff       staff = (Staff) node;
+            List<Staff> ensemble = ensembles.get(staff);
+
+            if (ensemble == null) {
+                // Standalone staff, a part by itself
+                parts.add(new SystemPart(Arrays.asList(staff)));
+            } else {
+                // Staff is in a part
+                if (ensemble != currentEnsemble) {
+                    parts.add(new SystemPart(ensemble));
+                } else {
+                    // Nothing to do
+                }
+            }
+
+            currentEnsemble = ensemble;
+        }
+        
+        // Dump
+        StringBuilder sb = new StringBuilder();
+        for (SystemPart part : parts) {
+            sb.append("[");
+            for (Staff staff : part.getStaves()) {
+                sb.append(" ").append(staff.getStafflink());
+            }
+            sb.append("] ");
+        }
+        logger.info(system + " Parts: " + sb);
+
+        // Assign the parts to the system
+        system.setParts(parts);
     }
 
     //--------------------//
