@@ -25,6 +25,7 @@ import omr.score.Staff;
 import omr.score.StaffNode;
 import omr.score.StaffPoint;
 import omr.score.System;
+import omr.score.SystemPart;
 import omr.score.TimeSignature;
 import omr.score.UnitDimension;
 
@@ -34,6 +35,7 @@ import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.*;
+import java.util.List;
 
 /**
  * Class <code>PaintingVisitor</code> defines for every node in Score hierarchy
@@ -213,6 +215,26 @@ public class PaintingVisitor
                 zoom.scaled(origin.y),
                 zoom.scaled(origin.x + dimension.width),
                 zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
+
+            // Draw the braces if any
+            for (SystemPart part : system.getParts()) {
+                List<Staff> staves = part.getStaves();
+
+                if (staves.size() > 1) {
+                    int   top = staves.get(0)
+                                      .getOrigin().y;
+                    int   bot = staves.get(staves.size() - 1)
+                                      .getOrigin().y + STAFF_HEIGHT;
+                    int   dx = 5;
+                    g.setColor(Color.black);
+                    // Use a vertical bar, for lack of true brace symbol (TBI)
+                    g.drawLine(
+                        zoom.scaled(origin.x) - dx,
+                        zoom.scaled(top),
+                        zoom.scaled(origin.x) - dx,
+                        zoom.scaled(bot));
+                }
+            }
 
             return true;
         }
