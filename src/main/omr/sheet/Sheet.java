@@ -298,9 +298,12 @@ public class Sheet
 
             result = Boolean.valueOf(true);
 
-            // Accept consistent votes
+            // Perform the initial recognition of all glyphs built
             GlyphInspector inspector = getGlyphInspector();
             inspector.evaluateGlyphs(inspector.getSymbolMaxGrade());
+            
+            // Determine score parts based on braces found
+            inspector.processBraces();
         }
 
         public void displayUI ()
