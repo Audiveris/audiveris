@@ -12,6 +12,8 @@ package omr.score;
 
 import omr.Main;
 
+import omr.score.visitor.ExportingVisitor;
+
 import omr.util.Logger;
 
 import java.util.ArrayList;
@@ -59,14 +61,6 @@ public class ScorePartWise
         return String.format("%tF", new Date());
     }
 
-    //-----------//
-    // getSource //
-    //-----------//
-    public String getSource()
-    {
-        return score.getSheet().getPath();
-    }
-
     //-------------//
     // getMeasures //
     //-------------//
@@ -77,7 +71,7 @@ public class ScorePartWise
         if (measures == null) {
             // Prepare the measure list
             measures = new ArrayList<Measure>();
-            score.exportChildren(measures);
+            score.accept(new ExportingVisitor(measures));
             logger.info("measures built nb=" + measures.size());
         }
 
@@ -90,5 +84,14 @@ public class ScorePartWise
     public String getSoftware ()
     {
         return Main.getToolName() + " " + Main.getToolVersion();
+    }
+
+    //-----------//
+    // getSource //
+    //-----------//
+    public String getSource ()
+    {
+        return score.getSheet()
+                    .getPath();
     }
 }

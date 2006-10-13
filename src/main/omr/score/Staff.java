@@ -10,13 +10,11 @@
 //
 package omr.score;
 
-import omr.glyph.Glyph;
-
 import omr.lag.Lag;
 import static omr.score.ScoreConstants.*;
+import omr.score.visitor.Visitor;
 
 import omr.sheet.PixelPoint;
-import omr.sheet.Scale;
 import omr.sheet.StaffInfo;
 
 import omr.ui.icon.SymbolIcon;
@@ -27,7 +25,6 @@ import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.awt.*;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -187,6 +184,19 @@ public class Staff
     }
 
     //-------------------//
+    // setFirstMeasureId //
+    //-------------------//
+    /**
+     * Assign id of first measure
+     *
+     * @param firstMeasureId first measure id
+     */
+    public void setFirstMeasureId (int firstMeasureId)
+    {
+        this.firstMeasureId = firstMeasureId;
+    }
+
+    //-------------------//
     // getFirstMeasureId //
     //-------------------//
     /**
@@ -225,6 +235,19 @@ public class Staff
     {
         return (Measure) getMeasures()
                              .get(getMeasures().size() - 1);
+    }
+
+    //------------------//
+    // setLastMeasureId //
+    //------------------//
+    /**
+     * Assign id of last measure
+     *
+     * @param lastMeasureId last measure id
+     */
+    public void setLastMeasureId (int lastMeasureId)
+    {
+        this.lastMeasureId = lastMeasureId;
     }
 
     //------------------//
@@ -403,15 +426,15 @@ public class Staff
         this.startingBarline = startingBarline;
     }
 
-    //----------------//
-    // getStartingBar //
-    //----------------//
+    //--------------------//
+    // getStartingBarline //
+    //--------------------//
     /**
-     * Get the bar line that starts the staff
+     * Get the barline that starts the staff
      *
      * @return barline the starting bar line (which may be null)
      */
-    public Barline getStartingBar ()
+    public Barline getStartingBarline ()
     {
         return startingBarline;
     }
@@ -488,6 +511,15 @@ public class Staff
     public int getWidth ()
     {
         return width;
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (Visitor visitor)
+    {
+        return visitor.visit(this);
     }
 
     //----------//
@@ -638,6 +670,19 @@ public class Staff
         return (int) Math.rint(((2D * unit) - (4D * INTER_LINE)) / INTER_LINE);
     }
 
+    //-----------//
+    // setOrigin //
+    //-----------//
+    /**
+     * Assign proper staff display origin
+     *
+     * @param origin staff display origin
+     */
+    public void setOrigin (ScorePoint origin)
+    {
+        this.origin = origin;
+    }
+
     //-------------//
     // paintSymbol //
     //-------------//
@@ -721,115 +766,6 @@ public class Staff
     public double pitchPositionOf (PixelPoint pt)
     {
         return info.pitchPositionOf(pt);
-    }
-
-    //--------------//
-    // colorizeNode //
-    //--------------//
-    /**
-     * Colorize the physical information of this staff, which is just the
-     * starting bar line if any
-     *
-     * @param lag       the lag to be colorized
-     * @param viewIndex the provided lag view index
-     * @param color     the color to be used
-     *
-     * @return true if processing must continue
-     */
-    protected boolean colorizeNode (Lag   lag,
-                                    int   viewIndex,
-                                    Color color)
-    {
-        // Set color for the starting bar line, if any
-        if (startingBarline != null) {
-            startingBarline.colorize(lag, viewIndex, color);
-        }
-
-        return true;
-    }
-
-    //-------------//
-    // computeNode //
-    //-------------//
-    /**
-     * Override the method, so that internal computation can take place
-     *
-     * @return true
-     */
-    protected boolean computeNode ()
-    {
-        super.computeNode();
-
-        // Display origin for system
-        Point sysorg = getSystem()
-                           .getOrigin();
-
-        // Display origin for the staff
-        origin = new ScorePoint( //sysorg.x + (topLeft.x - getSystem().getTopLeft().x),
-        sysorg.x, sysorg.y + (topLeft.y - getSystem().getTopLeft().y));
-
-        // First/Last measure ids
-        firstMeasureId = lastMeasureId = getSystem()
-                                             .getFirstMeasureId();
-
-        return true;
-    }
-
-    //-----------//
-    // paintNode //
-    //-----------//
-    @Override
-    protected boolean paintNode (Graphics g,
-                                 Zoom     zoom)
-    {
-        g.setColor(Color.black);
-
-        // Draw the staff lines
-        for (int i = 0; i < LINE_NB; i++) {
-            // Y of this staff line
-            int y = zoom.scaled(origin.y + (i * INTER_LINE));
-            g.drawLine(
-                zoom.scaled(origin.x),
-                y,
-                zoom.scaled(origin.x + width),
-                y);
-        }
-
-        // Draw the starting bar line, if any
-        if (startingBarline != null) {
-            startingBarline.paintNode(g, zoom);
-        }
-
-        return true; // Meaning : we've drawn something
-    }
-
-    //------------//
-    // renderNode //
-    //------------//
-    /**
-     * Render the physical information of this staff
-     *
-     * @param g the graphics context
-     * @param z the display zoom
-     *
-     * @return true if rendered
-     */
-    @Override
-    protected boolean renderNode (Graphics g,
-                                  Zoom     z)
-    {
-        // Render the staff lines
-        if (info != null) {
-            info.render(g, z);
-
-            if (startingBarline != null) {
-                startingBarline.render(g, z);
-            }
-
-            return true;
-        }
-
-        return false;
     }
 
     //------------------//

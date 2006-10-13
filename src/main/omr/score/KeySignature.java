@@ -16,14 +16,12 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
-import omr.sheet.Scale;
+import omr.score.visitor.Visitor;
 
-import omr.ui.icon.SymbolIcon;
-import omr.ui.view.Zoom;
+import omr.sheet.Scale;
 
 import omr.util.Logger;
 
-import java.awt.Graphics;
 import java.util.*;
 
 /**
@@ -91,6 +89,15 @@ public class KeySignature
         return key;
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (Visitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // addGlyph //
     //----------//
@@ -150,25 +157,6 @@ public class KeySignature
         return sb.toString();
     }
 
-    //-----------//
-    // checkNode //
-    //-----------//
-    /**
-     * Perform tests on this key signature
-     *
-     * @return false (no further children)
-     */
-    @Override
-    protected boolean checkNode ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Checking " + this);
-        }
-
-        // No further children
-        return false;
-    }
-
     //---------------//
     // computeCenter //
     //---------------//
@@ -176,16 +164,6 @@ public class KeySignature
     protected void computeCenter ()
     {
         center = computeGlyphsCenter(glyphs);
-    }
-
-    //-----------//
-    // paintNode //
-    //-----------//
-    @Override
-    protected boolean paintNode (Graphics g,
-                                 Zoom     zoom)
-    {
-        return true;
     }
 
     //----------//
@@ -211,7 +189,7 @@ public class KeySignature
         StaffPoint center = measure.computeGlyphCenter(glyph);
         int        unitDx = center.x - measure.getLeftX();
 
-        // Then, processing 
+        // Then, processing
         return true;
     }
 

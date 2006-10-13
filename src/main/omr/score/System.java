@@ -11,16 +11,14 @@
 package omr.score;
 
 import static omr.score.ScoreConstants.*;
+import omr.score.visitor.Visitor;
 
 import omr.sheet.SystemInfo;
-
-import omr.ui.view.Zoom;
 
 import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
-import java.awt.*;
 import java.util.List;
 
 /**
@@ -143,6 +141,19 @@ public class System
     }
 
     //-------------------//
+    // setFirstMeasureId //
+    //-------------------//
+    /**
+     * Assign id for first measure
+     *
+     * @param firstMeasureId first measure id
+     */
+    public void setFirstMeasureId (int firstMeasureId)
+    {
+        this.firstMeasureId = firstMeasureId;
+    }
+
+    //-------------------//
     // getFirstMeasureId //
     //-------------------//
     /**
@@ -221,6 +232,19 @@ public class System
     {
         return (Staff) getStaves()
                            .get(getStaves().size() - 1);
+    }
+
+    //-----------//
+    // setOrigin //
+    //-----------//
+    /**
+     * Assign origin for display
+     *
+     * @param origin display origin for this system
+     */
+    public void setOrigin (ScorePoint origin)
+    {
+        this.origin = origin;
     }
 
     //-----------//
@@ -369,6 +393,15 @@ public class System
         return topLeft;
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (Visitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // addChild //
     //----------//
@@ -477,6 +510,33 @@ public class System
         return sb.toString();
     }
 
+    //------------//
+    // xIntersect //
+    //------------//
+    /**
+     * Check for intersection of a given clip determined by (left, right) with
+     * the system abscissa range. TBD : add some margin on left and right so
+     * that symbols on a system border get correctly drawn.
+     *
+     * @param left  min abscissa
+     * @param right max abscissa
+     *
+     * @return true if overlap, false otherwise
+     */
+    public boolean xIntersect (int left,
+                               int right)
+    {
+        if (left > getRightPosition()) {
+            return false;
+        }
+
+        if (right < origin.x) {
+            return false;
+        }
+
+        return true;
+    }
+
     //---------//
     // xLocate //
     //---------//
@@ -521,119 +581,6 @@ public class System
         }
 
         return 0;
-    }
-
-    //-------------//
-    // computeNode //
-    //-------------//
-    /**
-     * The <code>computeNode</code> method overrides the normal routine, for
-     * specific system computation. The various 'systems' are aligned
-     * horizontally, rather than vertically as they were in the original music
-     * sheet.
-     *
-     * @return true
-     */
-    @Override
-    protected boolean computeNode ()
-    {
-        super.computeNode();
-
-        // Is there a Previous System ?
-        System prevSystem = (System) getPreviousSibling();
-
-        if (prevSystem == null) {
-            // Very first system in the score
-            origin = new ScorePoint();
-            origin.move(SCORE_INIT_X, SCORE_INIT_Y);
-            firstMeasureId = 0;
-        } else {
-            // Not the first system
-            origin = new ScorePoint();
-            origin.setLocation(prevSystem.origin);
-            origin.translate(prevSystem.dimension.width - 1 + INTER_SYSTEM, 0);
-            firstMeasureId = prevSystem.lastMeasureId;
-        }
-
-        if (logger.isFineEnabled()) {
-            Dumper.dump(this, "Computed");
-        }
-
-        return true;
-    }
-
-    //-----------//
-    // paintNode //
-    //-----------//
-    /**
-     * Specific <code>paintNode</code> method, just the system left and right
-     * sides are drawn
-     *
-     * @param g the graphic context
-     * @param zoom the display zoom ratio
-     *
-     * @return true if painted was actually done, so that depending entities
-     *         (staff, slurs) are also rendered, false otherwise to stop the
-     *         painting
-     */
-    @Override
-    protected boolean paintNode (Graphics g,
-                                 Zoom     zoom)
-    {
-        // What is the clipping region (to check whether our system is
-        // impacted)
-        Rectangle clip = g.getClipBounds();
-
-        if (!xIntersect(
-            zoom.unscaled(clip.x),
-            zoom.unscaled(clip.x + clip.width))) {
-            return false;
-        }
-
-        g.setColor(Color.lightGray);
-
-        // Draw the system left edge
-        g.drawLine(
-            zoom.scaled(origin.x),
-            zoom.scaled(origin.y),
-            zoom.scaled(origin.x),
-            zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
-
-        // Draw the system right edge
-        g.drawLine(
-            zoom.scaled(origin.x + dimension.width),
-            zoom.scaled(origin.y),
-            zoom.scaled(origin.x + dimension.width),
-            zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
-
-        return true;
-    }
-
-    //------------//
-    // xIntersect //
-    //------------//
-    /**
-     * Check for intersection of a given clip determined by (left, right) with
-     * the system abscissa range. TBD : add some margin on left and right so
-     * that symbols on a system border get correctly drawn.
-     *
-     * @param left  min abscissa
-     * @param right max abscissa
-     *
-     * @return true if overlap, false otherwise
-     */
-    private boolean xIntersect (int left,
-                                int right)
-    {
-        if (left > getRightPosition()) {
-            return false;
-        }
-
-        if (right < origin.x) {
-            return false;
-        }
-
-        return true;
     }
 
     //~ Inner Classes ----------------------------------------------------------

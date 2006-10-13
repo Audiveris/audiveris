@@ -11,6 +11,7 @@
 package omr.score;
 
 import static omr.score.ScoreConstants.*;
+import omr.score.visitor.PaintingVisitor;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -55,22 +56,22 @@ public class ScoreView
     //~ Instance fields --------------------------------------------------------
 
     /** The info zone */
-    private final JLabel     info = new JLabel("Score");
+    private final JLabel info = new JLabel("Score");
 
     /** The displayed panel */
-    private final MyPanel    panel;
+    private final MyPanel panel;
 
     /** The scroll pane + info zone */
-    private final Panel      compound = new Panel();
+    private final Panel compound = new Panel();
 
     /** The related score */
-    private final Score      score;
+    private final Score score;
 
     /** The scroll pane */
     private final ScrollView pane;
 
     /** Display zoom */
-    private final Zoom   zoom = new Zoom(0.5d);
+    private final Zoom zoom = new Zoom(0.5d);
 
     /** Mouse rubber */
     private final Rubber rubber = new Rubber(zoom);
@@ -110,7 +111,7 @@ public class ScoreView
         score.setView(this);
 
         // Compute origin of all members
-        computePositions();
+        computeModelSize();
 
         // Bridge companion between Score and Sheet locations both ways
         new ScoreSheetBridge(score);
@@ -185,20 +186,15 @@ public class ScoreView
     }
 
     //------------------//
-    // computePositions //
+    // computeModelSize //
     //------------------//
     /**
      * Run computations on the tree of score, systems, etc, so that all display
      * data, such as origins and widths are available for display use.
      */
-    public void computePositions ()
+    public void computeModelSize ()
     {
-        if (logger.isFineEnabled()) {
-            score.dump();
-            logger.fine("computePositions");
-        }
-
-        score.computeChildren();
+        // Should be a visitor !!! TBD
 
         // Determine the X value of the whole set of systems
         int totalWidth = 0;
@@ -288,10 +284,7 @@ public class ScoreView
         @Override
         public void render (Graphics g)
         {
-            Graphics2D g2 = (Graphics2D) g;
-
-            // All nodes information
-            score.paintChildren(g2, zoom);
+            score.accept(new PaintingVisitor(g, zoom));
         }
 
         //--------//

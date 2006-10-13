@@ -14,6 +14,8 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
+import omr.score.visitor.CleaningVisitor;
+
 import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -126,9 +128,7 @@ public class ScoreBuilder
     /**
      * Build the score information, system after system, glyph after glyph.
      * Nota: Only local tests can be performed here, global ones are performed
-     * via checkNode() and checkChildren() navigating methods
-     * @see MusicNode#checkNode
-     * @see MusicNode#checkChildren
+     * via the {@link CheckingVisitor}.
      */
     public void buildInfo ()
     {
@@ -197,7 +197,7 @@ public class ScoreBuilder
     private void scoreCleanup ()
     {
         // Keep only the systems, slurs, staves, measures, barlines
-        score.cleanupChildren();
+        score.accept(new CleaningVisitor());
     }
 
     //-----------------//

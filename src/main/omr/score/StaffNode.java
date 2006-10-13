@@ -12,6 +12,7 @@ package omr.score;
 
 import omr.glyph.Glyph;
 import static omr.score.ScoreConstants.*;
+import omr.score.visitor.Visitor;
 
 import omr.sheet.Scale;
 
@@ -139,6 +140,15 @@ public abstract class StaffNode
         return staff;
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (Visitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //--------------------//
     // computeGlyphCenter //
     //--------------------//
@@ -196,6 +206,23 @@ public abstract class StaffNode
             staff.getTopLeft().y);
 
         return p;
+    }
+
+    //----------//
+    // fixStaff //
+    //----------//
+    /**
+     * Fix the staff reference, by walking up the container hierarchy
+     */
+    public void fixStaff ()
+    {
+        for (TreeNode c = getContainer(); c != null; c = c.getContainer()) {
+            if (c instanceof Staff) {
+                setStaff((Staff) c);
+
+                break;
+            }
+        }
     }
 
     //---------------//

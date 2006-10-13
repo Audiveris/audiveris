@@ -13,12 +13,9 @@ package omr.score;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
-import omr.ui.icon.SymbolIcon;
-import omr.ui.view.Zoom;
+import omr.score.visitor.Visitor;
 
 import omr.util.Logger;
-
-import java.awt.*;
 
 /**
  * Class <code>Clef</code> encapsulates a clef.
@@ -72,22 +69,39 @@ public class Clef
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // paintNode //
-    //-----------//
-    @Override
-    protected boolean paintNode (Graphics g,
-                                 Zoom     zoom)
+    //------------------//
+    // getPitchPosition //
+    //------------------//
+    /**
+     * Report the vertical position within the staff
+     *
+     * @return the pitch position
+     */
+    public int getPitchPosition ()
     {
-        // Draw the clef symbol
-        staff.paintSymbol(
-            g,
-            zoom,
-            (SymbolIcon) shape.getIcon(),
-            center,
-            pitchPosition);
+        return pitchPosition;
+    }
 
-        return true;
+    //----------//
+    // getShape //
+    //----------//
+    /**
+     * Report the precise shape of this clef
+     *
+     * @return the clef shape
+     */
+    public Shape getShape ()
+    {
+        return shape;
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (Visitor visitor)
+    {
+        return visitor.visit(this);
     }
 
     //----------//

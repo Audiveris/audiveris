@@ -10,6 +10,8 @@
 //
 package omr.score;
 
+import omr.score.visitor.Visitor;
+
 import omr.ui.view.Zoom;
 
 import omr.util.Dumper;
@@ -103,6 +105,23 @@ public class Slur
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // getArc //
+    //--------//
+    /**
+     * Report the arc of the slur (lazily built)
+     *
+     * @return the arc to draw
+     */
+    public Arc getArc ()
+    {
+        if (arc == null) {
+            arc = new Arc(leftcolumn, leftrow, rightcolumn, rightrow, radius);
+        }
+
+        return arc;
+    }
+
     //---------------//
     // getLeftcolumn //
     //---------------//
@@ -182,6 +201,15 @@ public class Slur
         return rightrow;
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (Visitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -198,29 +226,12 @@ public class Slur
                " radius=" + radius + "}";
     }
 
-    //-----------//
-    // paintNode //
-    //-----------//
-    @Override
-    protected boolean paintNode (Graphics g,
-                                 Zoom     zoom)
-    {
-        // Compute data needed for drawing
-        if (arc == null) {
-            arc = new Arc(leftcolumn, leftrow, rightcolumn, rightrow, radius);
-        }
-
-        arc.draw(g, getOrigin(), zoom);
-
-        return true;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //-----//
     // Arc //
     //-----//
-    private static class Arc
+    public static class Arc
     {
         private final Point upperleft;
         private final int   arcangle;

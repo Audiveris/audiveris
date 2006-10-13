@@ -16,14 +16,12 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
-import omr.sheet.Scale;
+import omr.score.visitor.Visitor;
 
-import omr.ui.icon.SymbolIcon;
-import omr.ui.view.Zoom;
+import omr.sheet.Scale;
 
 import omr.util.Logger;
 
-import java.awt.Graphics;
 import java.util.*;
 
 /**
@@ -106,6 +104,14 @@ public class TimeSignature
         return denominator;
     }
 
+    //-----------//
+    // getGlyphs //
+    //-----------//
+    public Collection<Glyph> getGlyphs ()
+    {
+        return glyphs;
+    }
+
     //--------------//
     // getNumerator //
     //--------------//
@@ -140,6 +146,15 @@ public class TimeSignature
         }
 
         return shape;
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (Visitor visitor)
+    {
+        return visitor.visit(this);
     }
 
     //----------//
@@ -210,35 +225,6 @@ public class TimeSignature
         return sb.toString();
     }
 
-    //-----------//
-    // checkNode //
-    //-----------//
-    /**
-     * Perform tests on this time signature
-     *
-     * @return false (no further children)
-     */
-    @Override
-    protected boolean checkNode ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Checking " + this);
-        }
-
-        Shape shape = getShape();
-
-        if (shape == null) {
-            logger.warning("CheckNode. Time signature with no assigned shape");
-        } else if (shape == NO_LEGAL_SHAPE) {
-            logger.warning("CheckNode. Illegal " + this);
-        } else if (Shape.SingleTimes.contains(shape)) {
-            logger.warning("CheckNode. Orphan time signature shape : " + shape);
-        }
-
-        // No further children
-        return false;
-    }
-
     //---------------//
     // computeCenter //
     //---------------//
@@ -246,59 +232,6 @@ public class TimeSignature
     protected void computeCenter ()
     {
         center = computeGlyphsCenter(glyphs);
-    }
-
-    //-----------//
-    // paintNode //
-    //-----------//
-    @Override
-    protected boolean paintNode (Graphics g,
-                                 Zoom     zoom)
-    {
-        Shape shape = getShape();
-
-        if (shape != null) {
-            switch (shape) {
-            // If this is an illegal shape, do not draw anything.
-            // TBD: we could draw a special sign for this
-            case NO_LEGAL_SHAPE :
-                break;
-
-            // Is it a complete (one-symbol) time signature ?
-            case TIME_FOUR_FOUR :
-            case TIME_TWO_TWO :
-            case TIME_TWO_FOUR :
-            case TIME_THREE_FOUR :
-            case TIME_SIX_EIGHT :
-            case COMMON_TIME :
-            case CUT_TIME :
-                staff.paintSymbol(
-                    g,
-                    zoom,
-                    (SymbolIcon) shape.getIcon(),
-                    getCenter());
-
-                break;
-            }
-        } else {
-            // Assume a (legal) multi-symbol signature
-            for (Glyph glyph : glyphs) {
-                Shape s = glyph.getShape();
-
-                if (s != null) {
-                    StaffPoint center = computeGlyphCenter(glyph);
-                    int        pitch = staff.unitToPitch(center.y);
-                    staff.paintSymbol(
-                        g,
-                        zoom,
-                        (SymbolIcon) s.getIcon(),
-                        center,
-                        pitch);
-                }
-            }
-        }
-
-        return true;
     }
 
     //----------//

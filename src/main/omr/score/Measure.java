@@ -12,7 +12,7 @@ package omr.score;
 
 import omr.lag.Lag;
 
-import omr.ui.view.Zoom;
+import omr.score.visitor.Visitor;
 
 import omr.util.Dumper;
 import omr.util.Logger;
@@ -142,6 +142,32 @@ public class Measure
         return clefs.getChildren();
     }
 
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Assign the proper id to this measure
+     *
+     * @param id the proper measure id
+     */
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the measure id
+     *
+     * @return the measure id
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
     //----------//
     // getLeftX //
     //----------//
@@ -151,7 +177,7 @@ public class Measure
      *
      * @return staff-based abscissa of left side of the measure
      */
-    public int getLeftX ()
+    public Integer getLeftX ()
     {
         if (leftX == null) {
             // Start of the measure
@@ -208,6 +234,15 @@ public class Measure
                    .getCenter().x - leftX;
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (Visitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // addChild //
     //----------//
@@ -242,6 +277,33 @@ public class Measure
             Dumper.dump(node);
             logger.severe("Staff node not known");
         }
+    }
+
+    //-------------//
+    // cleanupNode //
+    //-------------//
+    /**
+     * Get rid of all nodes of this measure, except the barlines
+     */
+    public void cleanupNode ()
+    {
+        // Remove all direct children except barlines
+        for (Iterator it = children.iterator(); it.hasNext();) {
+            MusicNode node = (MusicNode) it.next();
+
+            if (!(node instanceof Barline)) {
+                it.remove();
+            }
+        }
+
+        // Invalidate data
+        timeSignature = null;
+
+        // (Re)Allocate specific children lists
+        clefs = new ClefList(this, staff);
+
+        //         chords = new ChordList(this, staff);
+        //         keysigs = new KeysigList(this, staff);
     }
 
     //--------------//
@@ -299,132 +361,6 @@ public class Measure
     public String toString ()
     {
         return "{Measure id=" + id + "}";
-    }
-
-    //-------------//
-    // cleanupNode //
-    //-------------//
-    /**
-     * Get rid of all nodes of this measure, except the barlines
-     *
-     * @return false, since there is no children left to process
-     */
-    @Override
-    protected boolean cleanupNode ()
-    {
-        // Remove all direct children except barlines
-        for (Iterator it = children.iterator(); it.hasNext();) {
-            MusicNode node = (MusicNode) it.next();
-
-            if (!(node instanceof Barline)) {
-                it.remove();
-            }
-        }
-
-        // Invalidate data
-        timeSignature = null;
-
-        // (Re)Allocate specific children lists
-        clefs = new ClefList(this, staff);
-
-        //         chords = new ChordList(this, staff);
-        //         keysigs = new KeysigList(this, staff);
-        return false;
-    }
-
-    //--------------//
-    // colorizeNode //
-    //--------------//
-    /**
-     * Colorize the physical information of this measure
-     *
-     * @param lag       the lag to be colorized
-     * @param viewIndex the provided lag view index
-     * @param color     the color to be used
-     *
-     * @return true if processing must continue
-     */
-    @Override
-    protected boolean colorizeNode (Lag   lag,
-                                    int   viewIndex,
-                                    Color color)
-    {
-        // Set color for the sections of the ending bar lines
-        barline.colorize(lag, viewIndex, color);
-
-        return true;
-    }
-
-    //-------------//
-    // computeNode //
-    //-------------//
-    @Override
-    protected boolean computeNode ()
-    {
-        super.computeNode();
-
-        // Fix the staff reference
-        setStaff((Staff) container.getContainer());
-
-        // First/Last measure ids
-        staff.incrementLastMeasureId();
-        id = staff.getLastMeasureId();
-
-        return true;
-    }
-
-    //------------//
-    // exportNode //
-    //------------//
-    /**
-     * Let export this measure
-     *
-     * @return false
-     */
-    @Override
-    protected boolean exportNode (List<Measure> measures)
-    {
-        if (leftX != null) {
-            logger.info("Adding " + this);
-            measures.add(this);
-        } else {
-            logger.info("Skipping " + this);
-        }
-
-        return false;
-    }
-
-    //-----------//
-    // paintNode //
-    //-----------//
-    @Override
-    protected boolean paintNode (Graphics g,
-                                 Zoom     zoom)
-    {
-        Point origin = getOrigin();
-
-        // Draw the measure id, if on the first staff only
-        if (staff.getStafflink() == 0) {
-            g.setColor(Color.lightGray);
-            g.drawString(
-                Integer.toString(id),
-                zoom.scaled(origin.x + getLeftX()) - 5,
-                zoom.scaled(origin.y) - 15);
-        }
-
-        return true;
-    }
-
-    //------------//
-    // renderNode //
-    //------------//
-    @Override
-    protected boolean renderNode (Graphics g,
-                                  Zoom     z)
-    {
-        barline.render(g, z);
-
-        return true;
     }
 
     //~ Inner Classes ----------------------------------------------------------

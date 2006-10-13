@@ -12,17 +12,16 @@ package omr.score;
 
 import omr.lag.Lag;
 
+import omr.score.visitor.Visitor;
+
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
-
-import omr.ui.view.Zoom;
 
 import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -346,6 +345,15 @@ public class Score
         return view;
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (Visitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // addChild //
     //----------//
@@ -363,25 +371,6 @@ public class Score
                     .checkInserted(this);
     }
 
-    //-----------//
-    // checkNode //
-    //-----------//
-    /**
-     * Perform checks on the whole score hierarchy
-     *
-     * @return false
-     */
-    @Override
-    public boolean checkNode ()
-    {
-        // No specific checks (yet) for the score itself
-
-        // Delegate to contained children
-        checkChildren();
-
-        return false;
-    }
-
     //-------//
     // close //
     //-------//
@@ -397,44 +386,6 @@ public class Score
         if (view != null) {
             view.close();
         }
-    }
-
-    //--------------//
-    // colorizeNode //
-    //--------------//
-    /**
-     * Starting point for colorizing every node in the score hierarchy
-     *
-     * @param lag       the lag to be colorized
-     * @param viewIndex the provided lag view index
-     * @param color     the color to be used
-     *
-     * @return false
-     */
-    @Override
-    public boolean colorizeNode (Lag   lag,
-                                 int   viewIndex,
-                                 Color color)
-    {
-        colorizeChildren(lag, viewIndex, color);
-
-        return false;
-    }
-
-    //-------------//
-    // computeNode //
-    //-------------//
-    /**
-     * Starting point for computing every node in the score hierarchy
-     *
-     * @return false
-     */
-    @Override
-    public boolean computeNode ()
-    {
-        computeChildren();
-
-        return false;
     }
 
     //------//
@@ -476,10 +427,9 @@ public class Score
      */
     public void linkWithSheet ()
     {
-//        if (getSheet() != null) {
-//            return;
-//        }
-
+        //        if (getSheet() != null) {
+        //            return;
+        //        }
         for (Sheet sheet : SheetManager.getInstance()
                                        .getSheets()) {
             if (sheet.getPath()
@@ -599,24 +549,6 @@ public class Score
 
         // Return the last system in the score
         return recentSystem = system;
-    }
-
-    //------------//
-    // renderNode //
-    //------------//
-    /**
-     * Starting point for rendering all score items in the sheet view
-     *
-     * @param g the graphics context
-     * @param z the display zoom
-     *
-     * @return false
-     */
-    @Override
-    public boolean renderNode (Graphics g,
-                               Zoom     z)
-    {
-        return false;
     }
 
     //-------------------//

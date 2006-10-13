@@ -14,11 +14,12 @@ import omr.glyph.Shape;
 
 import omr.lag.Lag;
 
+import omr.score.visitor.Visitor;
+
 import omr.sheet.Scale;
 
 import omr.stick.Stick;
 
-import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
 
 import omr.util.Logger;
@@ -179,6 +180,15 @@ public class Barline
         return sticks;
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (Visitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // addStick //
     //----------//
@@ -195,25 +205,6 @@ public class Barline
 
         // Invalidate parameters
         reset();
-    }
-
-    //----------//
-    // colorize //
-    //----------//
-    /**
-     * Define the display color for the related sticks
-     *
-     * @param lag       the lag to be colorized
-     * @param viewIndex index of the display
-     * @param color     color to be used for display
-     */
-    public void colorize (Lag   lag,
-                          int   viewIndex,
-                          Color color)
-    {
-        for (Stick stick : sticks) {
-            stick.colorize(lag, viewIndex, color);
-        }
     }
 
     //------------//
@@ -315,30 +306,6 @@ public class Barline
     protected void computeCenter ()
     {
         center = computeGlyphsCenter(sticks);
-    }
-
-    //-----------//
-    // paintNode //
-    //-----------//
-    @Override
-    protected boolean paintNode (Graphics g,
-                                 Zoom     zoom)
-    {
-        Shape shape = getShape();
-
-        if (shape != null) {
-            // Draw the barline symbol
-            staff.paintSymbol(
-                g,
-                zoom,
-                (SymbolIcon) shape.getIcon(),
-                getCenter(),
-                0);
-        } else {
-            logger.warning("No shape for barline " + this);
-        }
-
-        return true;
     }
 
     //-----------//
