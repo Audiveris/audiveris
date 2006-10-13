@@ -15,6 +15,7 @@ import omr.constant.Constant;
 import omr.score.PagePoint;
 import static omr.score.ScoreConstants.*;
 import omr.score.UnitDimension;
+import omr.score.UnitRectangle;
 
 import omr.util.Logger;
 
@@ -533,6 +534,50 @@ public class Scale
         unitDim.height = pixelsToUnits(pixelDim.height);
 
         return unitDim;
+    }
+
+    //---------//
+    // toUnits //
+    //---------//
+    /**
+     * Convert a rectangle whose components are in pixels to a rectangle whose
+     * components are in units.
+     *
+     * @param pixelRect rectangle in pixels
+     *
+     * @return the result in units
+     */
+    public UnitRectangle toUnits (PixelRectangle pixelRect)
+    {
+        return toUnits(pixelRect, null);
+    }
+
+    //---------//
+    // toUnits //
+    //---------//
+    /**
+     * Convert a rectangle whose components are in pixels to a rectangle whose
+     * components are in units.
+     *
+     * @param pixelRect rectangle in pixels
+     * @param unitRect equivalent rectangle in units, or null if allocation to be
+     *                performed by the routine
+     *
+     * @return the result in units
+     */
+    public UnitRectangle toUnits (PixelRectangle pixelRect,
+                                  UnitRectangle  unitRect)
+    {
+        if (unitRect == null) {
+            unitRect = new UnitRectangle();
+        }
+
+        unitRect.x = pixelsToUnits(pixelRect.x);
+        unitRect.y = pixelsToUnits(pixelRect.y);
+        unitRect.width = pixelsToUnits(pixelRect.width);
+        unitRect.height = pixelsToUnits(pixelRect.height);
+
+        return unitRect;
     }
 
     //---------------//
