@@ -10,7 +10,6 @@
 //
 package omr.score.visitor;
 
-import omr.score.*;
 
 /**
  * Interface <code>Visitable</code> must be implemented by any node to be
@@ -30,7 +29,7 @@ public interface Visitable
      * General entry for any visiting
      *
      * @param visitor concrete visitor object to define the actual processing
-     * @return true if children mast be visited also, false otherwise
+     * @return true if children must be visited also, false otherwise
      */
     boolean accept (Visitor visitor);
 }
