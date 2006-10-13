@@ -191,7 +191,7 @@ public class ScoreController
                 view = new ScoreView(score);
             } else {
                 // So that scroll bars be OK
-                view.computePositions();
+                view.computeModelSize();
             }
 
             // Make sure the view is part of the related sheet assembly
@@ -294,8 +294,9 @@ public class ScoreController
                         Sheet sheet = score.getSheet();
 
                         if (sheet != null) {
-                            sheet.checkTransientSteps(); // Useful? TBD
-                            // To connect selections
+                            // Useful? TBD
+                            sheet.checkTransientSteps();
+                            // To connect selections of vertical lag
                             sheet.setVerticalLag(sheet.getVerticalLag());
                         }
 
