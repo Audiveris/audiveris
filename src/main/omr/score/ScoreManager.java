@@ -12,6 +12,8 @@ package omr.score;
 
 import omr.Main;
 
+import omr.sheet.Sheet;
+
 import omr.util.FileUtil;
 import omr.util.Logger;
 import omr.util.XmlMapper;
@@ -26,7 +28,6 @@ import java.io.*;
 import java.util.*;
 
 import javax.swing.event.*;
-import omr.sheet.Sheet;
 
 /**
  * Class <code>ScoreManager</code> handles a collection of score instances.
@@ -307,6 +308,23 @@ public class ScoreManager
             ex.printStackTrace();
         } catch (JiBXException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    //-----------//
+    // exportAll //
+    //-----------//
+    /**
+     * Export all score instances
+     */
+    public void exportAll ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("exportAll");
+        }
+
+        for (Score score : instances) {
+            score.export();
         }
     }
 
