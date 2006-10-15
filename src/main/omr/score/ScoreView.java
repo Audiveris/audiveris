@@ -11,7 +11,7 @@
 package omr.score;
 
 import static omr.score.ScoreConstants.*;
-import omr.score.visitor.PaintingVisitor;
+import omr.score.visitor.ScorePainter;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -284,7 +284,7 @@ public class ScoreView
         @Override
         public void render (Graphics g)
         {
-            score.accept(new PaintingVisitor(g, zoom));
+            score.accept(new ScorePainter(g, zoom));
         }
 
         //--------//

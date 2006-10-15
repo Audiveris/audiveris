@@ -12,7 +12,7 @@ package omr.score;
 
 import omr.Main;
 
-import omr.score.visitor.ExportingVisitor;
+import omr.score.visitor.ScoreExporter;
 
 import omr.util.Logger;
 
@@ -71,7 +71,7 @@ public class ScorePartWise
         if (measures == null) {
             // Prepare the measure list
             measures = new ArrayList<Measure>();
-            score.accept(new ExportingVisitor(measures));
+            score.accept(new ScoreExporter(measures));
             logger.info("measures built nb=" + measures.size());
         }
 

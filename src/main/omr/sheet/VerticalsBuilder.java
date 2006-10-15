@@ -35,7 +35,7 @@ import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 
-import omr.score.visitor.RenderingVisitor;
+import omr.score.visitor.SheetPainter;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -611,7 +611,7 @@ public class VerticalsBuilder
         public void renderItems (Graphics g)
         {
             // Render all physical info known so far
-            sheet.accept(new RenderingVisitor(g, getZoom()));
+            sheet.accept(new SheetPainter(g, getZoom()));
 
             super.renderItems(g);
         }

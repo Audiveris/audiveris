@@ -14,7 +14,7 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
-import omr.score.visitor.CleaningVisitor;
+import omr.score.visitor.ScoreCleaner;
 
 import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
@@ -197,7 +197,7 @@ public class ScoreBuilder
     private void scoreCleanup ()
     {
         // Keep only the systems, slurs, staves, measures, barlines
-        score.accept(new CleaningVisitor());
+        score.accept(new ScoreCleaner());
     }
 
     //-----------------//

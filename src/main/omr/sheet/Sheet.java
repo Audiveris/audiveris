@@ -24,9 +24,9 @@ import omr.glyph.ui.SymbolsEditor;
 import omr.score.Score;
 import omr.score.ScoreBuilder;
 import omr.score.ScoreManager;
-import omr.score.visitor.CheckingVisitor;
-import omr.score.visitor.ColorizingVisitor;
-import omr.score.visitor.RenderingVisitor;
+import omr.score.visitor.ScoreChecker;
+import omr.score.visitor.ScoreColorizer;
+import omr.score.visitor.SheetPainter;
 import omr.score.visitor.Visitable;
 import omr.score.visitor.Visitor;
 
@@ -450,7 +450,7 @@ public class Sheet
             builder.buildInfo();
 
             // Perform global checks recursively
-            score.accept(new CheckingVisitor());
+            score.accept(new ScoreChecker());
         }
 
         public void displayUI ()
@@ -1374,8 +1374,8 @@ public class Sheet
 
     public boolean accept (Visitor visitor)
     {
-        if (visitor instanceof RenderingVisitor) {
-            ((RenderingVisitor) visitor).visit(this);
+        if (visitor instanceof SheetPainter) {
+            ((SheetPainter) visitor).visit(this);
         }
 
         return true;
@@ -1462,7 +1462,7 @@ public class Sheet
     {
         if (score != null) {
             // Colorization of all known score items
-            score.accept(new ColorizingVisitor(lag, viewIndex, color));
+            score.accept(new ScoreColorizer(lag, viewIndex, color));
         } else {
             // Nothing to colorize ? TBD
         }

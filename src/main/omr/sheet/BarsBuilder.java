@@ -43,8 +43,8 @@ import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
 import omr.score.UnitDimension;
-import omr.score.visitor.ComputingVisitor;
-import omr.score.visitor.RenderingVisitor;
+import omr.score.visitor.ScoreFixer;
+import omr.score.visitor.SheetPainter;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -223,7 +223,7 @@ public class BarsBuilder
         //////eraseBars();
 
         // Update score internal data
-        score.accept(new ComputingVisitor());
+        score.accept(new ScoreFixer());
 
         // Report number of measures retrieved
         logger.info(
@@ -849,7 +849,7 @@ public class BarsBuilder
         {
             // Render all physical info known so far, which is just the staff
             // line info, lineset by lineset
-            sheet.accept(new RenderingVisitor(g, getZoom()));
+            sheet.accept(new SheetPainter(g, getZoom()));
 
             super.renderItems(g);
         }
