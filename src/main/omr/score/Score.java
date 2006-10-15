@@ -10,8 +10,6 @@
 //
 package omr.score;
 
-import omr.lag.Lag;
-
 import omr.score.visitor.Visitor;
 
 import omr.sheet.Sheet;
@@ -21,7 +19,6 @@ import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -65,6 +62,9 @@ public class Score
 
     /** Sheet global line spacing expressed in pixels * BASE */
     private int spacing;
+
+    /** Part list for the whole score */
+    private List<ScorePart> partList;
 
     /** The most recent system pointed at */
     private transient System recentSystem = null;
@@ -194,6 +194,32 @@ public class Score
         }
 
         return nb;
+    }
+
+    //-------------//
+    // setPartList //
+    //-------------//
+    /**
+     * Assign a part list valid for the whole score
+     *
+     * @param partList the list of score parts
+     */
+    public void setPartList (List<ScorePart> partList)
+    {
+        this.partList = partList;
+    }
+
+    //-------------//
+    // getPartList //
+    //-------------//
+    /**
+     * Report the global list of parts
+     *
+     * @return partList the list of score parts
+     */
+    public List<ScorePart> getPartList ()
+    {
+        return partList;
     }
 
     //----------//

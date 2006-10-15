@@ -79,6 +79,14 @@ public class ScorePartWise
     }
 
     //-------------//
+    // getPartList //
+    //-------------//
+    public List<ScorePart> getPartList ()
+    {
+        return score.getPartList();
+    }
+
+    //-------------//
     // getSoftware //
     //-------------//
     public String getSoftware ()

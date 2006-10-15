@@ -39,6 +39,7 @@ import omr.score.Barline;
 import omr.score.Measure;
 import omr.score.Score;
 import omr.score.ScoreConstants;
+import omr.score.ScorePart;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
@@ -150,8 +151,59 @@ public class BarsBuilder
     {
         int is = 0;
 
+        // Build the SystemParts for each system
         for (SystemInfo systemInfo : sheet.getSystems()) {
             setSystemBraces(systemInfo.getScoreSystem(), braceLists.get(is++));
+        }
+
+        // (Re)set the global ScorePart list accordingly
+        List<ScorePart> partList = null;
+        boolean         ok = true;
+
+        for (SystemInfo systemInfo : sheet.getSystems()) {
+            logger.fine(systemInfo.getScoreSystem().toString());
+
+            if (partList == null) {
+                // Build a ScorePart list based on the SystemPart list
+                partList = new ArrayList<ScorePart>();
+
+                for (SystemPart sp : systemInfo.getScoreSystem()
+                                               .getParts()) {
+                    ScorePart scorePart = new ScorePart(sp);
+                    logger.fine("Adding " + scorePart);
+                    partList.add(scorePart);
+                }
+            } else {
+                // Check our ScorePart list is still ok
+                int i = 0;
+
+                for (SystemPart sp : systemInfo.getScoreSystem()
+                                               .getParts()) {
+                    ScorePart global = partList.get(i++);
+                    ScorePart scorePart = new ScorePart(sp);
+                    logger.fine(
+                        "Comparing global " + global + " with " + scorePart);
+
+                    if (!global.equals(scorePart)) {
+                        logger.warning("Different SystemPart in system " + i);
+                        ok = false;
+                    }
+                }
+            }
+        }
+
+        if (ok) {
+            // Assign id and names (TBI)
+            int index = 0;
+
+            for (ScorePart part : partList) {
+                part.setId(++index);
+                part.setName("Part_" + index);
+                logger.info("Global " + part);
+            }
+
+            // This is now the global score part list
+            score.setPartList(partList);
         }
 
         // Repaint the score view, if any (TBI)
