@@ -410,9 +410,12 @@ public class Main
             if (batchMode) {
                 // Do we have to write down the score?
                 if (writeScore) {
-                    //Score.storeAll();
+//                    ScoreManager.getInstance()
+//                                .storeAll();
+//                    ScoreManager.getInstance()
+//                                .serializeAll();
                     ScoreManager.getInstance()
-                                .serializeAll();
+                                .exportAll();
                 }
 
                 // Dispose allocated stuff
