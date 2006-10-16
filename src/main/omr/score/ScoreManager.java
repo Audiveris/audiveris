@@ -12,17 +12,11 @@ package omr.score;
 
 import omr.Main;
 
-import omr.sheet.Sheet;
+import omr.score.visitor.ScoreExporter;
 
 import omr.util.FileUtil;
 import omr.util.Logger;
 import omr.util.XmlMapper;
-
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.IXMLWriter;
-import org.jibx.runtime.JiBXException;
 
 import java.io.*;
 import java.util.*;
@@ -247,9 +241,9 @@ public class ScoreManager
         export(score, null);
     }
 
-    //-------//
+    //--------//
     // export //
-    //-------//
+    //--------//
     /**
      * Export a score using the partwise structure of MusicXML to the provided
      * file
@@ -260,55 +254,7 @@ public class ScoreManager
     public void export (Score score,
                         File  xmlFile)
     {
-        // Where do we write the score xml file?
-        if (xmlFile == null) {
-            xmlFile = new File(
-                Main.getOutputFolder(),
-                score.getRadix() + ScoreFormat.MUSIC_XML.extension);
-        }
-
-        // Make sure the folder exists
-        File folder = new File(xmlFile.getParent());
-
-        if (!folder.exists()) {
-            logger.info("Creating folder " + folder);
-            folder.mkdirs();
-        }
-
-        try {
-            // Prepare the marshalling context
-            IBindingFactory     factory = BindingDirectory.getFactory(
-                ScorePartWise.class);
-            IMarshallingContext mctx = factory.createMarshallingContext();
-
-            // Document prologue
-            mctx.startDocument(
-                "UTF-8", // encoding
-                true, // standalone
-                new FileOutputStream(xmlFile));
-            mctx.setIndent(3);
-
-            IXMLWriter writer = mctx.getXmlWriter();
-            writer.writeDocType(
-                "score-partwise", // root element name
-                "http://www.musicxml.org/dtds/partwise.dtd", // system ID
-                "-//Recordare//DTD MusicXML 1.1 Partwise//EN", //public ID
-                null); // internal subset
-
-            // Marshall the score
-            ScorePartWise scorePartWise = new ScorePartWise(score);
-            mctx.marshalDocument(scorePartWise);
-
-            // Epilogue
-            mctx.endDocument();
-            logger.info("Score exported to " + xmlFile);
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (JiBXException ex) {
-            ex.printStackTrace();
-        }
+        new ScoreExporter(score, xmlFile);
     }
 
     //-----------//
