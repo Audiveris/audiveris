@@ -12,7 +12,7 @@ package omr.score;
 
 import omr.Main;
 
-import omr.score.visitor.ScoreExporter;
+import omr.score.visitor.Visitor;
 
 import omr.util.Logger;
 
@@ -22,7 +22,8 @@ import java.util.List;
 
 /**
  * Class <code>ScorePartWise</code> is the root object used for storing and
- * loading using MusicXML format in a score-partwise structure.
+ * loading using MusicXML format in a score-partwise structure. It is a kind of
+ * facade of Score, meant to be marshalled by JiBX.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -39,12 +40,14 @@ public class ScorePartWise
     private final Score score;
 
     /** List of measures elaborated on the fly */
-    private List<Measure> measures;
+    private List<Measure> measures = new ArrayList<Measure>();
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new ScorePartWise object.
+     * Create a new ScorePartWise object.
+     *
+     * @param score the score to export
      */
     public ScorePartWise (Score score)
     {
@@ -66,15 +69,6 @@ public class ScorePartWise
     //-------------//
     public List<Measure> getMeasures ()
     {
-        logger.info("getMeasures");
-
-        if (measures == null) {
-            // Prepare the measure list
-            measures = new ArrayList<Measure>();
-            score.accept(new ScoreExporter(measures));
-            logger.info("measures built nb=" + measures.size());
-        }
-
         return measures;
     }
 
