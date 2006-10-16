@@ -128,7 +128,7 @@ public class ScoreBuilder
     /**
      * Build the score information, system after system, glyph after glyph.
      * Nota: Only local tests can be performed here, global ones are performed
-     * via the {@link CheckingVisitor}.
+     * via the {@link omr.score.visitor.ScoreChecker}.
      */
     public void buildInfo ()
     {

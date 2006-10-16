@@ -146,7 +146,7 @@ class BarsChecker
      * glyph (bar stick or brace glyph)
      *
      * @param staff the given staff
-     * @param bar the given bar
+     * @param glyph the given glyph
      * @return true if staff is embraced by the bar
      */
     public boolean isStaffEmbraced (Staff staff,
