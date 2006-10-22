@@ -96,10 +96,5 @@ public class ScoreConstants
         Constant.Integer staffMarginHeight = new Constant.Integer(
             40,
             "Height in pixels above/under a staff display : ");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

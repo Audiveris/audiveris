@@ -10,8 +10,6 @@
 //
 package omr.score;
 
-import omr.constant.ConstantSet;
-
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
@@ -36,7 +34,6 @@ public class KeySignature
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants constants = new Constants();
     private static final Logger    logger = Logger.getLogger(
         KeySignature.class);
 
@@ -222,20 +219,6 @@ public class KeySignature
             }
         } else {
             logger.warning("Empty key signature " + this);
-        }
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        Constants ()
-        {
-            initialize();
         }
     }
 }

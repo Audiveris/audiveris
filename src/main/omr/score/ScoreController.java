@@ -378,11 +378,6 @@ public class ScoreController
         Constant.Integer maxHistorySize = new Constant.Integer(
             10,
             "Maximum number of score files kept in history");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //------------//

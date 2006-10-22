@@ -527,10 +527,5 @@ public class TimeSignature
             3d,
             "Minimum horizontal offset (in interline fraction) for a time" +
             " signature since start of measure");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }
