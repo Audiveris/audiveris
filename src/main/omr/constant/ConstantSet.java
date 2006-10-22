@@ -132,17 +132,6 @@ public abstract class ConstantSet
         return sb.toString();
     }
 
-    //------------//
-    // initialize //
-    //------------//
-    /**
-     * This is meant to be called in the constructor of subclasses, to actually
-     * initialize some needed fields in the ConstantSet.
-     */
-    protected void initialize ()
-    {
-    }
-
     //-------------//
     // getConstant //
     //-------------//

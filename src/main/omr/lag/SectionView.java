@@ -340,10 +340,5 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
         Constant.Double  saturation = new Constant.Double(
             0.4d,
             "Color saturation (range 0.0 .. 1.0)");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }
