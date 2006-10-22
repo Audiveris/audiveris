@@ -530,11 +530,6 @@ public class Selection
         Constant.Integer maxNotificationLevel = new Constant.Integer(
             10,
             "Reasonable maximum level for stacked selection notifications");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //---------------//

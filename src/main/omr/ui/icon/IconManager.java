@@ -502,10 +502,5 @@ public class IconManager
         Constant.Integer buttonIconSize = new Constant.Integer(
             16,
             "Size of toolbar icons (16 or 24)");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

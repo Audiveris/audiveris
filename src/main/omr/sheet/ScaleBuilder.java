@@ -335,10 +335,5 @@ public class ScaleBuilder
         Constant.Boolean plotting = new Constant.Boolean(
             false,
             "Should we produce a chart on computed scale data ?");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

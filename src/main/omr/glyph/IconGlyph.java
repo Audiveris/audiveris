@@ -174,10 +174,5 @@ public class IconGlyph
         Constant.Integer displayFactor = new Constant.Integer(
             4,
             "Scaling factor for IconGlyph display");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

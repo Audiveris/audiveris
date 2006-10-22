@@ -575,10 +575,5 @@ public class StickUtil
         Constant.Integer patchGreyLevel = new Constant.Integer(
             200,
             "Grey level to be used when patching crossing objects");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

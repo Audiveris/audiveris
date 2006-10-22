@@ -528,11 +528,6 @@ public class HorizontalsBuilder
         Scale.Fraction   minThicknessLow = new Scale.Fraction(
             0.3,
             " Low Minimum thickness of an interesting stick");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //---------------------//

@@ -813,11 +813,6 @@ public class BarsBuilder
         Scale.Fraction   minMeasureWidth = new Scale.Fraction(
             0.75,
             "Minimum width for a measure");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //--------------//

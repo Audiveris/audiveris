@@ -307,11 +307,6 @@ class ValidationPanel
         Constant.Double maxGrade = new Constant.Double(
             1.2,
             "Maximum acceptance grade");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //---------------------//

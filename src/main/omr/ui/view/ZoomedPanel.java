@@ -426,16 +426,11 @@ public class ZoomedPanel
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Integer focusMargin = new Constant.Integer(
             20,
             "Margin (in pixels) visible around a focus");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

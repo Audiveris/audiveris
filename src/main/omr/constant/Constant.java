@@ -429,6 +429,7 @@ public abstract class Constant
     java.lang.String currentString ()
     {
         if (currentString == null) {
+            UnitManager.getInstance().checkAllConstantSets();
             currentString = ConstantManager.getProperty(qualifiedName);
 
             if (currentString == null) { // Not defined by property files

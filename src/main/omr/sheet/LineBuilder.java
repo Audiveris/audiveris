@@ -604,11 +604,6 @@ public class LineBuilder
         Scale.Fraction   yMargin = new Scale.Fraction(
             0.2d,
             "Margin on peak ordinates to define the area where line sections are searched ");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //------------//

@@ -444,11 +444,6 @@ public class SkewBuilder
         Constant.Double  sizeRatio = new Constant.Double(
             0.5,
             "Only sticks with length higher than this threshold are used for final computation");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //--------------//

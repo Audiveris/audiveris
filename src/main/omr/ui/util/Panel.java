@@ -309,7 +309,7 @@ public class Panel
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.String  buttonWidth = new Constant.String(
@@ -345,10 +345,5 @@ public class Panel
         Constant.String  panelInterline = new Constant.String(
             "6dlu",
             "Vertical Gap between two panels");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

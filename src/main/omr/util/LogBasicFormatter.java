@@ -132,10 +132,5 @@ public class LogBasicFormatter
         Constant.Boolean printTime = new Constant.Boolean(
             false,
             "Should we print time in log");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

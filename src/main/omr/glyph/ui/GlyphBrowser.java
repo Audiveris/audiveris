@@ -331,11 +331,6 @@ class GlyphBrowser
             true,
             "Should user confirm each glyph deletion" +
             " from training material");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //-----------------//

@@ -583,11 +583,6 @@ public class LinesBuilder
         Constant.Boolean plotting = new Constant.Boolean(
             false,
             "Should we produce a GnuPlot file of computed data ?");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //-----------//

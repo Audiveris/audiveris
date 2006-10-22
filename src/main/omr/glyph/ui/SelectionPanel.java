@@ -432,11 +432,6 @@ class SelectionPanel
             20,
             "Absolute maximum number of instances for the same shape" +
             " used in training");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //-------------//

@@ -440,11 +440,6 @@ public class GlyphBoard
         Constant.Integer shapeIconWidth = new Constant.Integer(
             50,
             "Exact pixel width for the shape icon field");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //----------------//

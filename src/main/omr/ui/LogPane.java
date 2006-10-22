@@ -150,10 +150,5 @@ public class LogPane
         Constant.Integer msgQueueSize = new Constant.Integer(
             1000,
             "Size of message queue");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

@@ -151,10 +151,5 @@ public class VerticalArea
         Constant.Double maxSlope = new Constant.Double(
             0.04d,
             "Maximum slope value for a stick to be vertical");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

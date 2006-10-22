@@ -496,10 +496,5 @@ public class GlyphBuilder
         Scale.Fraction stemWiden = new Scale.Fraction(
             0.1,
             "Box widening to check intersection with stem");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

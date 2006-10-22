@@ -306,11 +306,6 @@ public class VerticalsBuilder
         Scale.Fraction   minStemLengthLow = new Scale.Fraction(
             2.5,
             "Low Minimum length for a stem");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //---------//

@@ -825,11 +825,6 @@ public class Jui
         Constant.Integer paramWidth = new Constant.Integer(
             900,
             "Width in pixels of the param frame");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //-------------//

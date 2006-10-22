@@ -242,10 +242,5 @@ public class MemoryMeter
         Constant.Integer alarmThreshold = new Constant.Integer(
             70,
             "Alarm threshold, in MB");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

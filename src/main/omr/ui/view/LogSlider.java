@@ -200,16 +200,11 @@ public class LogSlider
     //-----------//
     // Constants //
     //-----------//
-    private static class Constants
+    private static final class Constants
         extends ConstantSet
     {
         Constant.Integer resolution = new Constant.Integer(
             480,
             "Number of values between two major ticks");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

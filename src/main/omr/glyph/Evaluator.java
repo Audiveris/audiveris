@@ -412,10 +412,5 @@ public abstract class Evaluator
         Constant.Double minWeight = new Constant.Double(
             0.19,
             "Minimum normalized weight to be considered not a noise");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

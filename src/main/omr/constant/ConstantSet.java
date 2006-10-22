@@ -32,7 +32,7 @@ public abstract class ConstantSet
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger               logger = Logger.getLogger(
+    private static final Logger         logger = Logger.getLogger(
         ConstantSet.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -42,7 +42,7 @@ public abstract class ConstantSet
      * to allow access by constant index in constant set, as required by
      * ConstantTreeTable.
      */
-    private final SortedMap<String, Constant> map = new TreeMap<String, Constant>();
+    private SortedMap<String, Constant> map;
 
     /**  The containing unit/class */
     private final String unit;
@@ -77,7 +77,8 @@ public abstract class ConstantSet
      */
     public boolean isModified ()
     {
-        for (Constant constant : map.values()) {
+        for (Constant constant : getMap()
+                                     .values()) {
             if (constant.isModified()) {
                 return true;
             }
@@ -96,7 +97,8 @@ public abstract class ConstantSet
     {
         System.out.println("\n[" + unit + "]");
 
-        for (Constant constant : map.values()) {
+        for (Constant constant : getMap()
+                                     .values()) {
             System.out.printf(
                 "%-25s = %s\n",
                 constant.getName(),
@@ -139,6 +141,91 @@ public abstract class ConstantSet
      */
     protected void initialize ()
     {
+    }
+
+    //-------------//
+    // getConstant //
+    //-------------//
+    /**
+     * Report a constant knowing its name in the constant set
+     *
+     * @param name the desired name
+     *
+     * @return the proper constant, or null if not found
+     */
+    Constant getConstant (String name)
+    {
+        return getMap()
+                   .get(name);
+    }
+
+    //-------------//
+    // getConstant //
+    //-------------//
+    /**
+     * Report a constant knowing its index in the constant set
+     *
+     * @param i the desired index value
+     *
+     * @return the proper constant
+     */
+    Constant getConstant (int i)
+    {
+        return Collections.list(Collections.enumeration(getMap().values()))
+                          .get(i);
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name of the enclosing unit
+     *
+     * @return unit name
+     */
+    String getName ()
+    {
+        return unit;
+    }
+
+    //------//
+    // size //
+    //------//
+    /**
+     * Report the number of constants in this constant set
+     *
+     * @return the size of the constant set
+     */
+    int size ()
+    {
+        return getMap()
+                   .size();
+    }
+
+    //--------//
+    // getMap //
+    //--------//
+    SortedMap<String, Constant> getMap ()
+    {
+        if (map == null) {
+            // Initialize map content
+            initMap();
+        }
+
+        return map;
+    }
+
+    //---------//
+    // initMap //
+    //---------//
+    /**
+     * This is meant to be called in the constructor of subclasses, to actually
+     * initialize some needed fields in the ConstantSet.
+     */
+    private void initMap ()
+    {
+        map = new TreeMap<String, Constant>();
+
         // Retrieve values of all fields
         Class cl = getClass();
 
@@ -168,71 +255,14 @@ public abstract class ConstantSet
             }
         }
 
-        // Dump the current constant values for this unit, if so asked for
-        if (logger.isFineEnabled() ||
-            (new Constant.Boolean(
-            unit,
-            "constantValues",
-            false,
-            "Debugging flag for ConstantSet").getValue())) {
-            dump();
-        }
-    }
-
-    //-------------//
-    // getConstant //
-    //-------------//
-    /**
-     * Report a constant knowing its name in the constant set
-     *
-     * @param name the desired name
-     *
-     * @return the proper constant, or null if not found
-     */
-    Constant getConstant (String name)
-    {
-        return map.get(name);
-    }
-
-    //-------------//
-    // getConstant //
-    //-------------//
-    /**
-     * Report a constant knowing its index in the constant set
-     *
-     * @param i the desired index value
-     *
-     * @return the proper constant
-     */
-    Constant getConstant (int i)
-    {
-        return Collections.list(Collections.enumeration(map.values()))
-                          .get(i);
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name of the enclosing unit
-     *
-     * @return unit name
-     */
-    String getName ()
-    {
-        return unit;
-    }
-
-    //------//
-    // size //
-    //------//
-    /**
-     * Report the number of constants in this constant set
-     *
-     * @return the size of the constant set
-     */
-    int size ()
-    {
-        return map.size();
+//        // Dump the current constant values for this unit, if so asked for
+//        if (logger.isFineEnabled() ||
+//            (new Constant.Boolean(
+//            unit,
+//            "constantValues",
+//            false,
+//            "Debugging flag for ConstantSet").getValue())) {
+//            dump();
+//        }
     }
 }

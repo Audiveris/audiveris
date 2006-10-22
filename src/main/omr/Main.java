@@ -678,11 +678,6 @@ public class Main
         Constant.String toolVersion = new Constant.String(
             "",
             "Version of this application");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //--------------//

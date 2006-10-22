@@ -21,8 +21,6 @@ import java.util.TreeMap;
  * Class <code>UnitManager</code> manages all units (aka classes), for which we
  * have either a ConstantSet, or a Logger, or both.
  *
- * <p>It is a collection of static methods since only one manager is intended.
- *
  * <p>To help {@link UnitTreeTable} display the whole tree of UnitNodes,
  * UnitManager pre-loads all the classes known to contain a ConstantSet or a
  * Logger. This list is kept up-to-date and stored as a property
@@ -37,10 +35,10 @@ public class UnitManager
     private static final String           UNIT = UnitManager.class.getName();
 
     /** The single instance of this class */
-    private static UnitManager            INSTANCE;
+    private static UnitManager INSTANCE;
 
     /** Separator used in property that concatenates all unit names */
-    private static final String           SEPARATOR = ";";
+    private static final String SEPARATOR = ";";
     private static final Logger           logger = Logger.getLogger(
         UnitManager.class);
 
@@ -57,7 +55,7 @@ public class UnitManager
      * Lists of all units known as containing a constantset This is kept
      * up-to-date and saved as a property.
      */
-    private Constant.String  units;
+    private Constant.String units;
 
     /** Flag to avoid storing units being pre-loaded */
     private volatile boolean storeIt = false;
@@ -147,9 +145,7 @@ public class UnitManager
         System.out.println("\nUnitManager. All Units:");
         System.out.println("=======================");
 
-        for (Map.Entry<String, Node> entry : mapOfNodes.entrySet()) {
-            Node node = getNode(entry.getKey());
-
+        for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {
                 UnitNode unit = (UnitNode) node;
 
@@ -249,6 +245,25 @@ public class UnitManager
                 logger.severe("Unit with same name as package " + name);
             } else if (node instanceof UnitNode) {
                 logger.severe("duplicate Unit " + name);
+            }
+        }
+    }
+
+    //----------------------//
+    // checkAllConstantSets //
+    //----------------------//
+    void checkAllConstantSets ()
+    {
+        for (Node node : mapOfNodes.values()) {
+            if (node instanceof UnitNode) {
+                UnitNode    unit = (UnitNode) node;
+
+                // ConstantSet?
+                ConstantSet set = unit.getConstantSet();
+
+                if (set != null) {
+                    set.getMap();
+                }
             }
         }
     }

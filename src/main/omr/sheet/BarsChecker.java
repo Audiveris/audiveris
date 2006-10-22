@@ -782,11 +782,6 @@ class BarsChecker
         Constant.Double minCheckResult = new Constant.Double(
             0.50,
             "Minimum result for suite of check");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //--------------------//

@@ -650,10 +650,5 @@ public class GlyphInspector
         Constant.Double  symbolMaxGrade = new Constant.Double(
             1.0001,
             "Maximum acceptance grade for a symbol");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

@@ -913,10 +913,5 @@ public class StickArea
         Constant.Integer minStickWeight = new Constant.Integer(
             3,
             "Minimum value for stick number of pixels");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

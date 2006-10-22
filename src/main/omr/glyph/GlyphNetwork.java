@@ -481,10 +481,5 @@ public class GlyphNetwork
         Constant.Double  momentum = new Constant.Double(
             0.02,
             "Training momentum");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 }

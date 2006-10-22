@@ -508,11 +508,6 @@ public class SheetController
         Constant.Double initialZoomRatio = new Constant.Double(
             1d,
             "Initial zoom ratio for displayed sheet pictures");
-
-        Constants ()
-        {
-            initialize();
-        }
     }
 
     //-----------------//
