@@ -325,7 +325,7 @@ public abstract class Evaluator
     {
         // The custom file, if any, is located at the root of the train
         // folder
-        return new File(Main.getConfigFolder(), "neural" + BACKUP_EXTENSION);
+        return new File(Main.getConfigFolder(), "neural-network.xml");
     }
 
     //----------------//
@@ -339,9 +339,7 @@ public abstract class Evaluator
     protected File getDefaultFile ()
     {
         // The system file, is located in the config folder
-        return new File(
-            Main.getConfigFolder(),
-            "neural.default" + BACKUP_EXTENSION);
+        return new File(Main.getConfigFolder(), "neural-network.default.xml");
     }
 
     //-----------//
