@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="TIME_FOUR">
-    <dimension width="13" height="16"/>
-    <centroid x="6" y="8"/>
+    <pitch-position>-2</pitch-position>
     <bitmap>
         <row>----o####*---</row>
         <row>----*####----</row>

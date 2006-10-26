@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="BEAM">
-    <dimension width="29" height="44"/>
-    <centroid x="18" y="12"/>
     <bitmap>
         <row>--------------------------.#.</row>
         <row>------------------------.*##.</row>

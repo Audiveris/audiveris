@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="ARPEGGIATO_DOWN">
-    <dimension width="4" height="35"/>
-    <centroid x="2" y="16"/>
     <bitmap>
         <row>--$-</row>
         <row>--#*</row>

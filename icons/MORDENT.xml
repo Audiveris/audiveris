@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="MORDENT">
-    <dimension width="20" height="8"/>
-    <centroid x="9" y="3"/>
     <bitmap>
         <row>----0*------o$------</row>
         <row>---*##*----0##*-----</row>

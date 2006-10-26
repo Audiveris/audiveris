@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="GRACE_NOTE_SLASH">
-    <dimension width="14" height="22"/>
-    <centroid x="5" y="13"/>
     <bitmap>
         <row>-----+--------</row>
         <row>-----+o-------</row>

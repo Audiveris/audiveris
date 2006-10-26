@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="SEGNO">
-    <dimension width="17" height="22"/>
-    <centroid x="8" y="10"/>
+    <pitch-position>-7</pitch-position>
     <bitmap>
         <row>--o$##*+------o#.</row>
         <row>-0$.--0#0----.#0-</row>

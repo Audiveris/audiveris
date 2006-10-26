@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="COMBINING_ACCENT">
-    <dimension width="13" height="10"/>
-    <centroid x="5" y="5"/>
     <bitmap>
         <row>$o-----------</row>
         <row>o$#0.--------</row>

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="MEZZO_FORTE">
-    <dimension width="28" height="20"/>
-    <centroid x="13" y="9"/>
     <bitmap>
         <row>----------------------.*0+*-</row>
         <row>---------------------0#0-0#0</row>

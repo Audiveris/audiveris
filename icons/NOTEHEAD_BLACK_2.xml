@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="NOTEHEAD_BLACK_2">
-    <dimension width="11" height="16"/>
-    <centroid x="5" y="7"/>
+    <stem-number>1</stem-number>
     <bitmap>
         <row>---+*###0--</row>
         <row>--*######$-</row>

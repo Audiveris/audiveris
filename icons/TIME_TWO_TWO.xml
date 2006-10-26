@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="TIME_TWO_TWO">
-    <dimension width="13" height="33"/>
-    <centroid x="6" y="16"/>
+    <pitch-position>0</pitch-position>
     <bitmap>
         <row>---o**##$0---</row>
         <row>-.$0---$###+-</row>

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="EIGHTH_REST">
-    <dimension width="9" height="15"/>
-    <centroid x="3" y="4"/>
     <bitmap>
         <row>-0#$.----</row>
         <row>*###*--..</row>

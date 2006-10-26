@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="WHOLE_REST">
-    <dimension width="19" height="9"/>
-    <centroid x="9" y="3"/>
     <bitmap>
         <row>+++++++++++++++++++</row>
         <row>-----#########-----</row>

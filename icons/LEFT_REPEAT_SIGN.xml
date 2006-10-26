@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="LEFT_REPEAT_SIGN">
-    <dimension width="14" height="33"/>
-    <centroid x="4" y="16"/>
     <bitmap>
         <row>#####--#------</row>
         <row>#####--#------</row>

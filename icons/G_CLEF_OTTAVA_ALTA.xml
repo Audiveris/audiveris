@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="G_CLEF_OTTAVA_ALTA">
-    <dimension width="21" height="67"/>
-    <centroid x="10" y="35"/>
     <ref-point x="0" y="46"/>
+    <pitch-position>-0.5</pitch-position>
     <bitmap>
         <row>---------+$*$.-------</row>
         <row>--------.#.-.#-------</row>

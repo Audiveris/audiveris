@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="VOID_NOTEHEAD_3">
-    <dimension width="11" height="24"/>
-    <centroid x="5" y="11"/>
+    <stem-number>1</stem-number>
     <bitmap>
         <row>---+*###$+-</row>
         <row>--$###0.-*+</row>

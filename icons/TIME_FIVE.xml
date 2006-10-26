@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="TIME_FIVE">
-    <dimension width="11" height="16"/>
-    <centroid x="5" y="7"/>
+    <pitch-position>-2</pitch-position>
     <bitmap>
         <row>+##*****$#*</row>
         <row>+#########.</row>

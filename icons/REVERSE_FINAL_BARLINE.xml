@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="REVERSE_FINAL_BARLINE">
-    <dimension width="8" height="33"/>
-    <centroid x="3" y="16"/>
     <bitmap>
         <row>#####--#</row>
         <row>#####--#</row>

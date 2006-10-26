@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="F_CLEF_OTTAVA_ALTA">
-    <dimension width="23" height="37"/>
-    <centroid x="11" y="18"/>
     <ref-point x="0" y="19"/>
     <bitmap>
         <row>-------+$*$.-----------</row>

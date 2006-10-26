@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="DAL_SEGNO">
-    <dimension width="25" height="12"/>
-    <centroid x="12" y="5"/>
+    <pitch-position>-6</pitch-position>
     <bitmap>
         <row>---+$#$00$0------.$*00$--</row>
         <row>----0#.---$#-----#o--0*--</row>

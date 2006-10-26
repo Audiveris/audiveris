@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="BRACE">
-    <dimension width="5" height="59"/>
-    <centroid x="2" y="26"/>
+    <pitch-position>10</pitch-position>
     <bitmap>
         <row>----o</row>
         <row>---0.</row>

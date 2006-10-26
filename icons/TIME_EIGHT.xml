@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="TIME_EIGHT">
-    <dimension width="12" height="16"/>
-    <centroid x="6" y="8"/>
+    <pitch-position>-2</pitch-position>
     <bitmap>
         <row>--.*####*.--</row>
         <row>-o#*.---0#o-</row>

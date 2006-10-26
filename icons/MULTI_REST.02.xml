@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="MULTI_REST">
+    <pitch-position>-1</pitch-position>
+    <bitmap>
+        <row>#####</row>
+        <row>#####</row>
+        <row>#####</row>
+        <row>#####</row>
+        <row>#####</row>
+        <row>#####</row>
+        <row>#####</row>
+    </bitmap>
+</icon>

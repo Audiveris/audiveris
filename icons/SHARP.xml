@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="SHARP">
-    <dimension width="7" height="22"/>
-    <centroid x="3" y="10"/>
     <bitmap>
         <row>-+---#-</row>
         <row>-#---#-</row>

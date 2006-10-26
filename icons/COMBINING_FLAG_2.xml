@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="COMBINING_FLAG_2">
-    <dimension width="10" height="29"/>
-    <centroid x="4" y="10"/>
+    <stem-number>1</stem-number>
     <bitmap>
         <row>*---------</row>
         <row>$---------</row>

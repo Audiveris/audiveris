@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="WHOLE_NOTE">
-    <dimension width="14" height="8"/>
-    <centroid x="6" y="3"/>
     <bitmap>
         <row>--.0$**$$0.---</row>
         <row>-0##o---*##*--</row>

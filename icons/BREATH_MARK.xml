@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="BREATH_MARK">
-    <dimension width="6" height="11"/>
-    <centroid x="3" y="3"/>
+    <pitch-position>-6</pitch-position>
     <bitmap>
         <row>-*##+-</row>
         <row>*####-</row>

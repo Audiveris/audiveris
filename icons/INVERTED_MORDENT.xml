@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="INVERTED_MORDENT">
-    <dimension width="20" height="14"/>
-    <centroid x="9" y="6"/>
     <bitmap>
         <row>---------#----------</row>
         <row>---------#----------</row>

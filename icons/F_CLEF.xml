@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="F_CLEF">
-    <dimension width="23" height="27"/>
-    <centroid x="11" y="10"/>
     <ref-point x="0" y="8"/>
     <bitmap>
         <row>-----.0$###*+----------</row>

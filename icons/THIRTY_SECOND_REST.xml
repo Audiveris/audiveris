@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="THIRTY_SECOND_REST">
-    <dimension width="13" height="31"/>
-    <centroid x="5" y="12"/>
     <bitmap>
         <row>-----o$#+----</row>
         <row>----o####---o</row>

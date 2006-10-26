@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="REPEAT_DOTS">
-    <dimension width="4" height="13"/>
-    <centroid x="2" y="6"/>
+    <pitch-position>0</pitch-position>
     <bitmap>
         <row>+##+</row>
         <row>####</row>

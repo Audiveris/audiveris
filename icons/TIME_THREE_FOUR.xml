@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="TIME_THREE_FOUR">
-    <dimension width="12" height="33"/>
-    <centroid x="6" y="15"/>
+    <pitch-position>0</pitch-position>
     <bitmap>
         <row>--.0$###*.--</row>
         <row>-o#*-.*###+-</row>

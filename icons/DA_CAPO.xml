@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="DA_CAPO">
-    <dimension width="27" height="12"/>
-    <centroid x="12" y="5"/>
+    <pitch-position>-6</pitch-position>
     <bitmap>
         <row>---+$#$00$0-------+$$000*--</row>
         <row>----0#.---$#-----*#+---0#--</row>

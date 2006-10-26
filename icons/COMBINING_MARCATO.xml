@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="COMBINING_MARCATO">
-    <dimension width="7" height="14"/>
-    <centroid x="3" y="5"/>
     <bitmap>
         <row>$.----$</row>
         <row>0o---+0</row>

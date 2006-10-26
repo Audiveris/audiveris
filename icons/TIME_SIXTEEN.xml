@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="TIME_SIXTEEN">
-    <dimension width="22" height="16"/>
-    <centroid x="11" y="8"/>
+    <pitch-position>2</pitch-position>
     <bitmap>
         <row>---####-------0###*+--</row>
         <row>--+####-----+##0.o##0-</row>

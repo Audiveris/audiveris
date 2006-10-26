@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="TR">
-    <dimension width="16" height="12"/>
-    <centroid x="7" y="6"/>
+    <pitch-position>-6</pitch-position>
     <bitmap>
         <row>-----.#*--------</row>
         <row>-----0#+--------</row>

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="COMBINING_STEM">
-    <dimension width="10" height="35"/>
-    <centroid x="8" y="18"/>
     <bitmap>
         <row>---------#</row>
         <row>---------#</row>

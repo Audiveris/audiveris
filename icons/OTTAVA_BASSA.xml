@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="OTTAVA_BASSA">
-    <dimension width="23" height="17"/>
-    <centroid x="9" y="8"/>
     <bitmap>
         <row>------------------.o+--</row>
         <row>-------------------#---</row>
