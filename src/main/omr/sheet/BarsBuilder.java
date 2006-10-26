@@ -39,7 +39,7 @@ import omr.score.Barline;
 import omr.score.Measure;
 import omr.score.Score;
 import omr.score.ScoreConstants;
-import omr.score.ScorePart;
+import omr.score.Part;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
@@ -157,7 +157,7 @@ public class BarsBuilder
         }
 
         // (Re)set the global ScorePart list accordingly
-        List<ScorePart> partList = null;
+        List<Part> partList = null;
         boolean         ok = true;
 
         for (SystemInfo systemInfo : sheet.getSystems()) {
@@ -165,11 +165,11 @@ public class BarsBuilder
 
             if (partList == null) {
                 // Build a ScorePart list based on the SystemPart list
-                partList = new ArrayList<ScorePart>();
+                partList = new ArrayList<Part>();
 
                 for (SystemPart sp : systemInfo.getScoreSystem()
                                                .getParts()) {
-                    ScorePart scorePart = new ScorePart(sp);
+                    Part scorePart = new Part(sp);
                     logger.fine("Adding " + scorePart);
                     partList.add(scorePart);
                 }
@@ -179,8 +179,8 @@ public class BarsBuilder
 
                 for (SystemPart sp : systemInfo.getScoreSystem()
                                                .getParts()) {
-                    ScorePart global = partList.get(i++);
-                    ScorePart scorePart = new ScorePart(sp);
+                    Part global = partList.get(i++);
+                    Part scorePart = new Part(sp);
                     logger.fine(
                         "Comparing global " + global + " with " + scorePart);
 
@@ -196,7 +196,7 @@ public class BarsBuilder
             // Assign id and names (TBI)
             int index = 0;
 
-            for (ScorePart part : partList) {
+            for (Part part : partList) {
                 part.setId(++index);
                 part.setName("Part_" + index);
                 logger.info("Global " + part);
