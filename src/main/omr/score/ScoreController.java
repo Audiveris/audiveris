@@ -110,13 +110,6 @@ public class ScoreController
         new StoreAction(XML);
         scoreMenu.addSeparator();
 
-        // MusicXML Actions
-        new History(MUSIC_XML);
-
-        ///new OpenAction(MUSIC_XML);
-        new StoreAction(MUSIC_XML);
-        scoreMenu.addSeparator();
-
         // Display Actions
         new BrowseAction();
         new DumpAction();
@@ -600,11 +593,6 @@ public class ScoreController
                             break;
 
                         case XML :
-                            score.store();
-
-                            break;
-
-                        case MUSIC_XML :
                             score.export();
 
                             break;
