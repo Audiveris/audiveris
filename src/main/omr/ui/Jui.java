@@ -21,6 +21,7 @@ import omr.glyph.ui.GlyphVerifier;
 import omr.glyph.ui.ShapeColorChooser;
 
 import omr.score.ScoreController;
+import omr.score.export.ScoreExporter;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -250,6 +251,9 @@ public class Jui
 
         // Differ realization
         EventQueue.invokeLater(new FrameShower(frame));
+
+        // Background task : JaxbContext
+        ScoreExporter.preloadJaxbContext();
     }
 
     //~ Methods ----------------------------------------------------------------
