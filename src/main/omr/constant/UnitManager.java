@@ -12,7 +12,8 @@ package omr.constant;
 
 import omr.util.Logger;
 
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -32,7 +33,8 @@ public class UnitManager
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String           UNIT = UnitManager.class.getName();
+    /** Name of this unit */
+    private static final String UNIT = UnitManager.class.getName();
 
     /** The single instance of this class */
     private static UnitManager INSTANCE;
@@ -44,12 +46,14 @@ public class UnitManager
 
     //~ Instance fields --------------------------------------------------------
 
-    private final PackageNode             root = new PackageNode(
-        "<root>",
-        null);
+    /** The root node */
+    private final PackageNode root = new PackageNode("<root>", null);
 
     /** Map of PackageNodes and UnitNodes */
     private final SortedMap<String, Node> mapOfNodes = new TreeMap<String, Node>();
+
+    /** Set of names of ConstantSets that still need to be initialized */
+    private final Set<String> dirtySets = new HashSet<String>();
 
     /**
      * Lists of all units known as containing a constantset This is kept
@@ -88,7 +92,6 @@ public class UnitManager
      */
     public static UnitManager getInstance ()
     {
-        //log ("getInstance");
         if (INSTANCE == null) {
             INSTANCE = new UnitManager(null);
         }
@@ -107,7 +110,6 @@ public class UnitManager
      */
     public static UnitManager getInstance (String main)
     {
-        //log ("getInstance main=" + main);
         if (INSTANCE == null) {
             INSTANCE = new UnitManager(main);
         } else {
@@ -211,6 +213,11 @@ public class UnitManager
         //log ("addSet set=" + set.getName());
         retrieveUnit(set.getName())
             .setConstantSet(set);
+
+        // Register this name in the dirty ones
+        synchronized (dirtySets) {
+            dirtySets.add(set.getName());
+        }
     }
 
     //---------//
@@ -249,22 +256,25 @@ public class UnitManager
         }
     }
 
-    //----------------------//
-    // checkAllConstantSets //
-    //----------------------//
-    void checkAllConstantSets ()
+    //----------------//
+    // checkDirtySets //
+    //----------------//
+    /**
+     * Go through all registered to-be-initialized sets, and initialize them,
+     * then clear the set of such dirty sets
+     */
+    void checkDirtySets ()
     {
-        for (Node node : mapOfNodes.values()) {
-            if (node instanceof UnitNode) {
-                UnitNode    unit = (UnitNode) node;
-
-                // ConstantSet?
-                ConstantSet set = unit.getConstantSet();
-
-                if (set != null) {
-                    set.getMap();
-                }
+        // We use the collection of rookies
+        synchronized (dirtySets) {
+            for (String name : dirtySets) {
+                UnitNode unit = (UnitNode) getNode(name);
+                unit.getConstantSet()
+                    .getMap();
             }
+
+            // We're done!
+            dirtySets.clear();
         }
     }
 
@@ -315,8 +325,12 @@ public class UnitManager
     }
 
     //-----//
-    // log // To avoid premature use of a Logger TBD
+    // log //
     //-----//
+    /**
+     * Poor-man implementation of a log feature, since the normal Logger stuff
+     * is not yet available
+     */
     private static void log (String msg)
     {
         System.out.println("UnitManager:: " + msg);

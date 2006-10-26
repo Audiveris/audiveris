@@ -235,11 +235,17 @@ public abstract class Constant
      */
     protected void setString (java.lang.String val)
     {
+        checkInitialized();
+
         currentString = val;
         cachedValue = null; // To force update
 
         // Update the underlying property
-        ConstantManager.setProperty(qualifiedName, val);
+        if (qualifiedName != null) {
+            ConstantManager.setProperty(qualifiedName, val);
+        } else {
+            System.out.println("*** Constant " + this + " Cannot setString " + val);
+        }
     }
 
     //--------//
@@ -429,7 +435,7 @@ public abstract class Constant
     java.lang.String currentString ()
     {
         if (currentString == null) {
-            UnitManager.getInstance().checkAllConstantSets();
+            checkInitialized();
             currentString = ConstantManager.getProperty(qualifiedName);
 
             if (currentString == null) { // Not defined by property files
@@ -463,6 +469,17 @@ public abstract class Constant
     private Object getCachedValue ()
     {
         return cachedValue;
+    }
+
+    //------------------//
+    // checkInitialized //
+    //------------------//
+    private final void checkInitialized()
+    {
+        // Make sure everything is initialized properly
+        if (name == null) {
+            UnitManager.getInstance().checkDirtySets();
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

@@ -37,15 +37,17 @@ public abstract class ConstantSet
 
     //~ Instance fields --------------------------------------------------------
 
+    /**  Name of the containing unit/class */
+    private final String unit;
+
     /**
      * The mapping between constant name & constant object. We use a sorted map
      * to allow access by constant index in constant set, as required by
-     * ConstantTreeTable.
+     * ConstantTreeTable. This instance can only be lazily constructed, thanks
+     * to {@link #getMap} method, since all the enclosed constants must have
+     * been constructed beforehand.
      */
     private SortedMap<String, Constant> map;
-
-    /**  The containing unit/class */
-    private final String unit;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -208,11 +210,12 @@ public abstract class ConstantSet
     // initMap //
     //---------//
     /**
-     * This is meant to be called in the constructor of subclasses, to actually
-     * initialize some needed fields in the ConstantSet.
+     * Now that the enclosed constants of this set have been constructed, let
+     * assign them their unit and name parameters.
      */
     private void initMap ()
     {
+        ///System.out.println("*** ConstantSet.initMap " + unit);
         map = new TreeMap<String, Constant>();
 
         // Retrieve values of all fields
