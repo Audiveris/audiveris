@@ -13,6 +13,8 @@ package omr.score;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.*;
+
 /**
  * Class <code>ScorePart</code> defines a part at score level. It is
  * instantiated in each System by a SystemPart.
@@ -20,6 +22,7 @@ import java.util.List;
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
+@XmlRootElement
 public class ScorePart
 {
     //~ Instance fields --------------------------------------------------------
@@ -37,6 +40,11 @@ public class ScorePart
     private List<Integer> indices = new ArrayList<Integer>();
 
     //~ Constructors -----------------------------------------------------------
+
+    /** Meant for JAXB only */
+    private ScorePart()
+    {
+    }
 
     //-----------//
     // ScorePart //
