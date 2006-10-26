@@ -10,7 +10,10 @@
 //
 package omr.math;
 
+import omr.math.Line.UndefinedLineException;
+
 import omr.util.Implement;
+import omr.util.Logger;
 import static java.lang.Math.*;
 
 /**
@@ -24,6 +27,10 @@ import static java.lang.Math.*;
 public class BasicLine
     implements Line
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final Logger logger = Logger.getLogger(Line.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /** Flag to indicate that data needs to be recomputed */

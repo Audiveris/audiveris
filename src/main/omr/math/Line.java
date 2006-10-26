@@ -10,7 +10,6 @@
 //
 package omr.math;
 
-import omr.util.Logger;
 
 /**
  * Interface <code>Line</code> handles the equation of a line, whatever its
@@ -23,11 +22,6 @@ import omr.util.Logger;
 public interface Line
     extends java.io.Serializable
 {
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** The same logger, usable by all subclasses */
-    static final Logger logger = Logger.getLogger(Line.class);
-
     //~ Methods ----------------------------------------------------------------
 
     //------//
