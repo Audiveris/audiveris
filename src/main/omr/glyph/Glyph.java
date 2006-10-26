@@ -34,6 +34,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.bind.annotation.*;
+
 /**
  * Class <code>Glyph</code> represents any glyph found, such as stem, ledger,
  * accidental, note head, etc...
@@ -47,21 +49,55 @@ import java.util.Set;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "glyph")
+@XmlType(propOrder =  {
+    "stemNumber", "hasLedger", "pitchPosition", "members"}
+)
 public class Glyph
     implements Comparable<Glyph>, Checkable, java.io.Serializable
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger  logger = Logger.getLogger(Glyph.class);
+    private static final Logger                               logger = Logger.getLogger(
+        Glyph.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The containing lag */
-    protected GlyphLag lag;
+    /** Unique instance identifier (in the containing GlyphLag) */
+    @XmlAttribute
+    protected int id;
+
+    /** Current recognized shape of this glyph */
+    @XmlAttribute
+    protected Shape shape;
+
+    /** Interline of the containing staff (or sheet) */
+    @XmlAttribute
+    protected int interline;
+
+    /** Number of stems it is connected to (0, 1, 2) */
+    @XmlElement(name = "stem-number")
+    protected int stemNumber;
+
+    /** Position with respect to nearest staff. Key references are : 0 for
+       middle line (B), -2 for top line (F) and +2 for bottom line (E)  */
+    @XmlElement(name = "pitch-position")
+    protected double pitchPosition;
+
+    /** Has a ledger nearby ? */
+    @XmlElement(name = "has-ledger")
+    protected boolean hasLedger;
 
     /** Sections that compose this glyph. The collection should be kept sorted
        on centroid abscissa then ordinate*/
+
+    /////@XmlElementWrapper(name = "members")
+    @XmlElement(name = "section")
     protected List<GlyphSection> members = new ArrayList<GlyphSection>();
+
+    /** The containing lag */
+    protected GlyphLag lag;
 
     /** Computed moments of this glyph */
     protected Moments moments;
@@ -83,25 +119,6 @@ public class Glyph
 
     /** Shape previously assigned to this glyph */
     protected Shape oldShape;
-
-    /** Current recognized shape of this glyph */
-    protected Shape shape;
-
-    /** Has a ledger nearby ? */
-    protected boolean hasLedger;
-
-    /** Position with respect to nearest staff. Key references are : 0 for
-       middle line (B), -2 for top line (F) and +2 for bottom line (E)  */
-    protected double pitchPosition;
-
-    /** Unique instance identifier (in the containing GlyphLag) */
-    protected int id;
-
-    /** Interline of the containing staff (or sheet) */
-    protected int interline;
-
-    /** Number of stems it is connected to (0, 1, 2) */
-    protected int stemNumber;
 
     //~ Constructors -----------------------------------------------------------
 
