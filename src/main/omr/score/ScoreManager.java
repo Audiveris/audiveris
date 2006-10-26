@@ -16,7 +16,6 @@ import omr.score.export.ScoreExporter;
 
 import omr.util.FileUtil;
 import omr.util.Logger;
-import omr.util.XmlMapper;
 
 import java.io.*;
 import java.util.*;
@@ -34,9 +33,6 @@ public class ScoreManager
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(ScoreManager.class);
-
-    /** Specific glyph XML mapper */
-    private static XmlMapper xmlMapper;
 
     /** The single instance of this class */
     private static ScoreManager INSTANCE;
@@ -321,17 +317,17 @@ public class ScoreManager
         String ext = FileUtil.getExtension(file);
 
         if (ext.equals(ScoreFormat.XML.extension)) {
-            try {
-                // This may take a while, and even fail ...
-                score = (Score) getXmlMapper()
-                                    .load(file);
-                ////
-                score.dump();
-                omr.util.Dumper.dump(score.getSheet());
-
-                ////
-            } catch (Exception ex) {
-            }
+//            try {
+//                // This may take a while, and even fail ...
+//                score = (Score) getXmlMapper()
+//                                    .load(file);
+//                ////
+//                score.dump();
+//                omr.util.Dumper.dump(score.getSheet());
+//
+//                ////
+//            } catch (Exception ex) {
+//            }
         } else if (ext.equals(ScoreFormat.BINARY.extension)) {
             // This may take a while, and even fail ...
             score = deserialize(file);
@@ -410,68 +406,6 @@ public class ScoreManager
         }
     }
 
-    //-------//
-    // store //
-    //-------//
-    /**
-     * Marshal a score to its XML file
-     */
-    public void store (Score score)
-    {
-        store(score, null);
-    }
-
-    //-------//
-    // store //
-    //-------//
-    /**
-     * Marshal a score to its XML file
-     */
-    public void store (Score score,
-                       File  xmlFile)
-    {
-        // Where do we write the score xml file?
-        if (xmlFile == null) {
-            xmlFile = new File(
-                Main.getOutputFolder(),
-                score.getRadix() + ScoreFormat.XML.extension);
-        }
-
-        // Make sure the folder exists
-        File folder = new File(xmlFile.getParent());
-
-        if (!folder.exists()) {
-            logger.info("Creating folder " + folder);
-            folder.mkdirs();
-        }
-
-        try {
-            // Store to disk
-            getXmlMapper()
-                .store(score, xmlFile);
-            logger.info("Score stored to " + xmlFile);
-        } catch (Exception ignored) {
-            // Exception already signaled to the user
-        }
-    }
-
-    //----------//
-    // storeAll //
-    //----------//
-    /**
-     * Store all score instances
-     */
-    public void storeAll ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("storeAll");
-        }
-
-        for (Score score : instances) {
-            score.store();
-        }
-    }
-
     //--------//
     // remove //
     //--------//
@@ -490,18 +424,6 @@ public class ScoreManager
                 changeListener.stateChanged(changeEvent);
             }
         }
-    }
-
-    //--------------//
-    // getXmlMapper //
-    //--------------//
-    private XmlMapper getXmlMapper ()
-    {
-        if (xmlMapper == null) {
-            xmlMapper = new XmlMapper(Score.class);
-        }
-
-        return xmlMapper;
     }
 
     //----------------//
