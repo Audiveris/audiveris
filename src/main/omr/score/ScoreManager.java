@@ -12,7 +12,7 @@ package omr.score;
 
 import omr.Main;
 
-import omr.score.export.ScoreExporter;
+import omr.score.visitor.ScoreExporter;
 
 import omr.util.FileUtil;
 import omr.util.Logger;
