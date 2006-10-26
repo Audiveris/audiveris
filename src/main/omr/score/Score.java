@@ -64,7 +64,7 @@ public class Score
     private int spacing;
 
     /** Part list for the whole score */
-    private List<ScorePart> partList;
+    private List<Part> partList;
 
     /** The most recent system pointed at */
     private transient System recentSystem = null;
@@ -204,7 +204,7 @@ public class Score
      *
      * @param partList the list of score parts
      */
-    public void setPartList (List<ScorePart> partList)
+    public void setPartList (List<Part> partList)
     {
         this.partList = partList;
     }
@@ -217,7 +217,7 @@ public class Score
      *
      * @return partList the list of score parts
      */
-    public List<ScorePart> getPartList ()
+    public List<Part> getPartList ()
     {
         return partList;
     }
@@ -667,18 +667,6 @@ public class Score
     {
         ScoreManager.getInstance()
                     .serialize(this);
-    }
-
-    //-------//
-    // store //
-    //-------//
-    /**
-     * Marshal the score to its XML file
-     */
-    public void store ()
-    {
-        ScoreManager.getInstance()
-                    .store(this);
     }
 
     //----------//
