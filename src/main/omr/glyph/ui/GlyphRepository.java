@@ -28,7 +28,6 @@ import omr.ui.icon.SymbolIcon;
 import omr.util.BlackList;
 import omr.util.FileUtil;
 import omr.util.Logger;
-import omr.util.XmlMapper;
 
 import java.io.*;
 import java.util.*;
@@ -65,9 +64,6 @@ public class GlyphRepository
 
     /** The single instance of this class */
     private static GlyphRepository INSTANCE;
-
-    /** Specific glyph XML mapper */
-    private static XmlMapper glyphXmlMapper;
 
     /** Extension for training files */
     private static final String FILE_EXTENSION = ".xml";
@@ -546,18 +542,6 @@ public class GlyphRepository
                 unloadGlyph(gName);
             }
         }
-    }
-
-    //-------------------//
-    // getGlyphXmlMapper //
-    //-------------------//
-    private XmlMapper getGlyphXmlMapper ()
-    {
-        if (glyphXmlMapper == null) {
-            glyphXmlMapper = new XmlMapper(Glyph.class);
-        }
-
-        return glyphXmlMapper;
     }
 
     //--------//
