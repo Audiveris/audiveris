@@ -457,7 +457,7 @@ class NetworkPanel
             NeuralNetwork network = glyphNetwork.getNetwork();
             network.restore(bestSnap);
             logger.info("Network remaining error : " + (float) bestMse);
-            glyphNetwork.serialize();
+            glyphNetwork.marshal();
 
             // Let the user choose the other possibility
             setEnabled(false);
@@ -494,7 +494,7 @@ class NetworkPanel
             NeuralNetwork network = glyphNetwork.getNetwork();
             network.restore(lastSnap);
             logger.info("Network remaining error : " + (float) lastMse);
-            glyphNetwork.serialize();
+            glyphNetwork.marshal();
 
             // Let the user choose the other possibility
             setEnabled(false);

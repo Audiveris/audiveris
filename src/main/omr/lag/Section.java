@@ -10,7 +10,6 @@
 //
 package omr.lag;
 
-import omr.graph.DigraphView;
 import omr.graph.Vertex;
 
 import omr.sheet.Picture;
@@ -20,6 +19,8 @@ import omr.util.Logger;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+
+import javax.xml.bind.annotation.*;
 
 /**
  * Class <code>Section</code> is an class to handle a section of contiguous and
@@ -44,34 +45,37 @@ import java.util.List;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.NONE)
+///@XmlType(name = "section")
 public class Section<L extends Lag, S extends Section<L, S>>
     extends Vertex<L, S>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(Section.class);
+    private static final Logger                  logger = Logger.getLogger(
+        Section.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    /**
-     * Bounding rectangle (regardless of orientation)
-     */
-    protected Rectangle bounds;
+    /** Position of first run */
+    @XmlAttribute(name = "first-pos")
+    private int firstPos;
 
     /** The collection of runs that make up the section */
+    @XmlElement(name="run")
     private final List<Run> runs = new ArrayList<Run>();
 
+    /** Bounding rectangle (regardless of orientation) */
+    protected Rectangle bounds;
+
     /** Mass center */
-    private Point           centroid;
+    private Point centroid;
 
     /** Model(unzoomed) contour points, which depend on orientation */
-    private Polygon   contour;
+    private Polygon contour;
 
     /** Display contour points, which do not depend on orientation */
     private Rectangle contourBox;
-
-    /** Position of first run */
-    private int firstPos;
 
     /** Contribution to the foreground */
     private int foreWeight;

@@ -10,28 +10,17 @@
 //
 package omr.glyph;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.math.NeuralNetwork;
 
-import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
-
-import omr.stick.StickSection;
-
 import omr.util.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.*;
+import java.util.*;
+
+import javax.xml.bind.JAXBException;
 
 /**
  * Class <code>GlyphNetwork</code> encapsulates a neural network dedicated to
@@ -67,37 +56,8 @@ public class GlyphNetwork
      */
     private GlyphNetwork ()
     {
-        // Retrieve last custom version if any
-        try {
-            // First, look for a custom version
-            File customFile = getCustomFile();
-
-            if (customFile.exists()) {
-                logger.info(
-                    "Deserializing GlyphNetwork from custom" + " file " +
-                    customFile);
-                network = NeuralNetwork.deserialize(
-                    new FileInputStream(customFile));
-            }
-        } catch (FileNotFoundException ex) {
-            logger.warning(
-                "Cannot find or read custom backup " + getCustomFile());
-        }
-
-        // Second, use the system default
-        if (network == null) {
-            File defaultFile = getDefaultFile();
-
-            try {
-                logger.info(
-                    "Deserializing GlyphNetwork from default" + " file " +
-                    defaultFile);
-                network = NeuralNetwork.deserialize(
-                    new FileInputStream(defaultFile));
-            } catch (FileNotFoundException ex) {
-                logger.severe("Cannot find default backup " + defaultFile);
-            }
-        }
+        // Deserialize from binary file(s)
+        network = unmarshal();
 
         // Basic check
         if (network != null) {
@@ -359,16 +319,28 @@ public class GlyphNetwork
         network.dump();
     }
 
-    //-----------//
-    // serialize //
-    //-----------//
+    //---------//
+    // marshal //
+    //---------//
     /**
-     * Store the neural network
+     * Store the neural network in XML format
      */
-    public void serialize ()
+    public void marshal ()
     {
-        // Store the network as a custom file
-        network.serialize(getCustomFile());
+        final File file = getCustomFile();
+
+        try {
+            OutputStream os = new FileOutputStream(file);
+            network.marshal(os);
+            os.close();
+            logger.info("Glyph network marshalled to " + file);
+        } catch (FileNotFoundException ex) {
+            logger.warning("Could not find file " + file);
+        } catch (IOException ex) {
+            logger.warning("IO error on file " + file);
+        } catch (JAXBException ex) {
+            logger.warning("Error marshalling glyph network from " + file);
+        }
     }
 
     //------//
@@ -457,6 +429,48 @@ public class GlyphNetwork
             getMomentum(),
             getMaxError(),
             getListEpochs());
+
+        return nn;
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    private NeuralNetwork unmarshal (File file)
+    {
+        try {
+            if (file.exists()) {
+                logger.info("Unmarshalling GlyphNetwork from " + file);
+
+                InputStream   is = new FileInputStream(file);
+                NeuralNetwork nn = NeuralNetwork.unmarshal(is);
+                is.close();
+
+                return nn;
+            }
+        } catch (FileNotFoundException ex) {
+            logger.warning("Cannot find or read " + file);
+        } catch (IOException ex) {
+            logger.warning("IO error on " + file);
+        } catch (JAXBException ex) {
+            logger.warning("Error unmarshalling glyph network from " + file);
+        }
+
+        return null;
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    private NeuralNetwork unmarshal ()
+    {
+        // First, look for a custom version
+        NeuralNetwork nn = unmarshal(getCustomFile());
+
+        // Second, use the system default
+        if (nn == null) {
+            nn = unmarshal(getDefaultFile());
+        }
 
         return nn;
     }

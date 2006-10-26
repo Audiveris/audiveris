@@ -12,6 +12,8 @@ package omr.lag;
 
 import java.awt.*;
 
+import javax.xml.bind.annotation.*;
+
 /**
  * Class <code>Run</code> implements a contiguous run of pixels of the same
  * color. Note that the direction (vertical or horizontal) is not relevant.
@@ -19,18 +21,22 @@ import java.awt.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class Run
     implements java.io.Serializable
 {
     //~ Instance fields --------------------------------------------------------
 
     /** Number of pixels */
+    @XmlAttribute
     private int length;
 
     /** Average pixel level along the run */
+    @XmlAttribute
     private int level;
 
     /** Abscissa (for horizontal) / ordinate (for vertical) of first pixel */
+    @XmlAttribute
     private int start;
 
     //~ Constructors -----------------------------------------------------------
@@ -55,7 +61,10 @@ public class Run
         this.level = level;
     }
 
-    // For JiBX
+    //-----//
+    // Run //
+    //-----//
+    /** Meant for XML unmarshalling only */
     private Run ()
     {
     }

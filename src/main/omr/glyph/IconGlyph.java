@@ -117,13 +117,19 @@ public class IconGlyph
             PagePoint  pgCentroid = scale.toPagePoint(centroid);
 
             // Number of connected stems
-            setStemNumber(icon.getStemNumber());
+            if (icon.getStemNumber() != null) {
+                setStemNumber(icon.getStemNumber());
+            }
 
             // Has a related ledger ?
-            setHasLedger(icon.hasLedger());
+            if (icon.hasLedger() != null) {
+                setHasLedger(icon.hasLedger());
+            }
 
             // Vertical position wrt staff
-            setPitchPosition(icon.getPitchPosition());
+            if (icon.getPitchPosition() != null) {
+                setPitchPosition(icon.getPitchPosition());
+            }
 
             if (logger.isFineEnabled()) {
                 dump();
@@ -170,7 +176,7 @@ public class IconGlyph
         extends ConstantSet
     {
         /** This ratio has no impact on glyph moments, it is meant only for
-            display of the icon glyph in utilities such as the GlyphVerifier */
+           display of the icon glyph in utilities such as the GlyphVerifier */
         Constant.Integer displayFactor = new Constant.Integer(
             4,
             "Scaling factor for IconGlyph display");

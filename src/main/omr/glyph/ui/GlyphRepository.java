@@ -20,6 +20,8 @@ import omr.glyph.Shape;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.stick.Stick;
+
 import omr.ui.icon.IconManager;
 import omr.ui.icon.SymbolIcon;
 
@@ -30,6 +32,8 @@ import omr.util.XmlMapper;
 
 import java.io.*;
 import java.util.*;
+
+import javax.xml.bind.*;
 
 /**
  * Class <code>GlyphRepository</code> handles the store of known glyphs, across
@@ -94,6 +98,8 @@ public class GlyphRepository
         }
     };
 
+    /** Un/marshalling context for use with JAXB */
+    private static JAXBContext jaxbContext;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -369,8 +375,9 @@ public class GlyphRepository
             }
 
             // Now record each relevant glyph
-            int glyphNb = 0;
-            int structuresNb = 0;
+            int        glyphNb = 0;
+            int        structuresNb = 0;
+            final long startTime = System.currentTimeMillis();
 
             for (SystemInfo system : sheet.getSystems()) {
                 for (Glyph glyph : system.getGlyphs()) {
@@ -401,9 +408,11 @@ public class GlyphRepository
                             glyphFile = new File(structuresDir, sb.toString());
                         }
 
+                        OutputStream os = new FileOutputStream(glyphFile);
+
                         // Store the glyph
-                        getGlyphXmlMapper()
-                            .store(glyph, glyphFile);
+                        jaxbMarshal(glyph, os);
+
                         glyphNb++;
                     }
                 }
@@ -415,7 +424,8 @@ public class GlyphRepository
             logger.info(
                 glyphNb + " glyphs stored from " + sheet.getRadix() +
                 ((structuresNb == 0) ? ""
-                 : (" (including " + structuresNb + " structures)")));
+                 : (" (including " + structuresNb + " structures)")) +
+                (System.currentTimeMillis() - startTime) + " ms");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -561,6 +571,20 @@ public class GlyphRepository
         return isIconsFolder(folder);
     }
 
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private JAXBContext getJaxbContext ()
+        throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(Glyph.class, Stick.class);
+        }
+
+        return jaxbContext;
+    }
+
     //------------//
     // buildGlyph //
     //------------//
@@ -574,10 +598,12 @@ public class GlyphRepository
         Glyph glyph = null;
 
         try {
-            glyph = (Glyph) getGlyphXmlMapper()
-                                .load(file);
+            InputStream is = new FileInputStream(file);
+            glyph = (Glyph) jaxbUnmarshal(is);
+            is.close();
         } catch (Exception ex) {
-            // User already informed
+            logger.warning("Could not unmarshal file " + file);
+            ex.printStackTrace();
         }
 
         return glyph;
@@ -657,6 +683,31 @@ public class GlyphRepository
                    .getName() + "/" + file.getName();
     }
 
+    //-------------//
+    // jaxbMarshal //
+    //-------------//
+    private void jaxbMarshal (Glyph        glyph,
+                              OutputStream os)
+        throws JAXBException
+    {
+        Marshaller m = getJaxbContext()
+                           .createMarshaller();
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        m.marshal(glyph, os);
+    }
+
+    //---------------//
+    // jaxbUnmarshal //
+    //---------------//
+    private Glyph jaxbUnmarshal (InputStream is)
+        throws JAXBException
+    {
+        Unmarshaller um = getJaxbContext()
+                              .createUnmarshaller();
+
+        return (Glyph) um.unmarshal(is);
+    }
+
     //----------------//
     // listLegalFiles //
     //----------------//
@@ -693,6 +744,8 @@ public class GlyphRepository
         // Now, actually load the related glyphs if needed
         Collection<String> base = new ArrayList<String>(1000);
 
+        final long         startTime = System.currentTimeMillis();
+
         for (File file : files) {
             String gName = glyphNameOf(file);
             base.add(gName);
@@ -703,6 +756,10 @@ public class GlyphRepository
                 monitor.loadedGlyph(glyph);
             }
         }
+
+        logger.info(
+            files.size() + " glyphs loaded in " +
+            (System.currentTimeMillis() - startTime) + " ms");
 
         return base;
     }

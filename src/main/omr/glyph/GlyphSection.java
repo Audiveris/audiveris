@@ -12,9 +12,6 @@ package omr.glyph;
 
 import omr.check.SuccessResult;
 
-import omr.lag.Lag;
-import omr.lag.Run;
-import omr.lag.Run;
 import omr.lag.Section;
 
 import omr.util.Implement;

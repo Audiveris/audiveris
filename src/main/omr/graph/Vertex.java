@@ -15,6 +15,8 @@ import omr.util.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.*;
+
 /**
  * Class <code>Vertex</code> encapsulates a Vertex (or Node) in a directed
  * graph. Any vertex can have incoming edges from other vertices and outgoing
@@ -33,6 +35,7 @@ import java.util.List;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class Vertex<D extends Digraph, V extends Vertex<D, V>>
     implements java.io.Serializable
 {
@@ -45,6 +48,11 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
     public static final boolean NO_EDGE_DUPLICATES = true;
 
     //~ Instance fields --------------------------------------------------------
+
+    /**
+     * Unique vertex Id (for debugging mainly)
+     */
+    protected int id;
 
     /**
      * Incoming edges from other vertices
@@ -65,11 +73,6 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
      * Collection of views created on this vertex
      */
     protected transient List<VertexView> views;
-
-    /**
-     * Unique vertex Id (for debugging mainly)
-     */
-    protected int id;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -137,6 +140,7 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
      *
      * @param id The assigned id
      */
+    @XmlAttribute
     public void setId (int id)
     {
         this.id = id;

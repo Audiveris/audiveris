@@ -28,6 +28,8 @@ import java.awt.*;
 import java.util.Collection;
 import java.util.List;
 
+import javax.xml.bind.annotation.*;
+
 /**
  * Class <code>Stick</code> describes a stick, a special kind of glyph, either
  * horizontal or vertical, as an aggregation of sections. Besides usual
@@ -42,6 +44,8 @@ import java.util.List;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "stick")
 public class Stick
     extends Glyph
 {

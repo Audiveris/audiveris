@@ -23,6 +23,7 @@ import java.net.*;
 import java.util.*;
 
 import javax.swing.*;
+import javax.xml.bind.*;
 
 /**
  * Class <code>IconManager</code> manages icons in their loading and storing. It
@@ -43,7 +44,7 @@ import javax.swing.*;
  * such music icons, they are used also to build <i>artificial glyphs</i>,
  * instances of the {@link omr.glyph.IconGlyph} class, which can be used to
  * train the evaluator when no other real glyph is available for a given
- * shape. These symbol icons use a custom (un)marshalling technique (using JiBX)
+ * shape. These symbol icons use a custom (un)marshalling technique (using JAXB)
  * to ASCII descriptions that can be edited manually. They are loaded as
  * instances of specific class {@link SymbolIcon}. Access to these symbol icons
  * is provided via {@link #loadSymbolIcon} and {@link #storeSymbolIcon}. This
@@ -85,6 +86,9 @@ public class IconManager
     /** The single class instance */
     private static IconManager INSTANCE;
 
+    /** Un/marshalling context for use with JAXB */
+    private static JAXBContext jaxbContext;
+
     //~ Instance fields --------------------------------------------------------
 
     /** Map for symbol icons */
@@ -114,6 +118,29 @@ public class IconManager
         }
 
         return INSTANCE;
+    }
+
+    //-------------------//
+    // loadFromXmlStream //
+    //-------------------//
+    /**
+     * Load an icon description from an XML stream.
+     * This private method is declared package private to allow its unitary test
+     *
+     * @param is the input stream
+     *
+     * @return a new SymbolIcon, or null if loading has failed
+     */
+    public SymbolIcon loadFromXmlStream (InputStream is)
+    {
+        try {
+            return (SymbolIcon) jaxbUnmarshal(is);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
+            // User already notified
+            return null;
+        }
     }
 
     //---------------//
@@ -245,11 +272,37 @@ public class IconManager
         }
     }
 
+    //------------------//
+    // storeToXmlStream //
+    //------------------//
+    /**
+     * Store an icon description to an XML stream.
+     * This private method is declared package private to allow its unitary test
+     *
+     * @param icon the icon to store
+     * @param os the output stream
+     *
+     * @return true if successful, false otherwise
+     */
+    public boolean storeToXmlStream (SymbolIcon   icon,
+                                     OutputStream os)
+    {
+        try {
+            jaxbMarshal(icon, os);
+
+            return true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
+            return false;
+        }
+    }
+
     //-------------//
     // decodeImage //
     //-------------//
     /**
-     * Build an image out of an array of strings. This is meant to ease JiBX
+     * Build an image out of an array of strings. This is meant to ease JAXB
      * unmarshalling.
      *
      * @param rows the lines of characters
@@ -293,7 +346,7 @@ public class IconManager
     // encodeImage //
     //-------------//
     /**
-     * Build an array of strings from a given image. This is meant to ease JiBX
+     * Build an array of strings from a given image. This is meant to ease JAXB
      * marshalling.
      *
      * @param icon the icon, whose image is to be used
@@ -301,8 +354,21 @@ public class IconManager
      */
     String[] encodeImage (SymbolIcon icon)
     {
-        BufferedImage image = icon.getImage();
+        return encodeImage(icon.getImage());
+    }
 
+    //-------------//
+    // encodeImage //
+    //-------------//
+    /**
+     * Build an array of strings from a given image. This is meant to ease JAXB
+     * marshalling.
+     *
+     * @param image image to be used
+     * @return the array of strings
+     */
+    String[] encodeImage (BufferedImage image)
+    {
         // Retrieve proper image width & height values
         final int     width = image.getWidth();
         final int     height = image.getHeight();
@@ -328,55 +394,6 @@ public class IconManager
         return rows;
     }
 
-    //-------------------//
-    // loadFromXmlStream //
-    //-------------------//
-    /**
-     * Load an icon description from an XML stream.
-     * This private method is declared package private to allow its unitary test
-     *
-     * @param is the input stream
-     *
-     * @return a new SymbolIcon, or null if loading has failed
-     */
-    SymbolIcon loadFromXmlStream (InputStream is)
-    {
-        try {
-            return (SymbolIcon) getXmlMapper()
-                                    .load(is);
-        } catch (Exception ex) {
-            // User already notified
-            return null;
-        }
-    }
-
-    //------------------//
-    // storeToXmlStream //
-    //------------------//
-    /**
-     * Store an icon description to an XML stream.
-     * This private method is declared package private to allow its unitary test
-     *
-     * @param icon the icon to store
-     * @param os the output stream
-     *
-     * @return true if successful, false otherwise
-     */
-    boolean storeToXmlStream (SymbolIcon   icon,
-                              OutputStream os)
-    {
-        try {
-            getXmlMapper()
-                .store(icon, os);
-
-            return true;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-
-            return false;
-        }
-    }
-
     //---------------------//
     // getIconOutputStream //
     //---------------------//
@@ -398,6 +415,20 @@ public class IconManager
             logger.warning("Cannot open output stream to icon " + file);
             throw ex;
         }
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private JAXBContext getJaxbContext ()
+        throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(SymbolIcon.class);
+        }
+
+        return jaxbContext;
     }
 
     //--------------//
@@ -436,6 +467,31 @@ public class IconManager
 
             return charTable[index];
         }
+    }
+
+    //-------------//
+    // jaxbMarshal //
+    //-------------//
+    private void jaxbMarshal (SymbolIcon   icon,
+                              OutputStream os)
+        throws JAXBException
+    {
+        Marshaller m = getJaxbContext()
+                           .createMarshaller();
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        m.marshal(icon, os);
+    }
+
+    //---------------//
+    // jaxbUnmarshal //
+    //---------------//
+    private Object jaxbUnmarshal (InputStream is)
+        throws JAXBException
+    {
+        Unmarshaller um = getJaxbContext()
+                           .createUnmarshaller();
+
+        return um.unmarshal(is);
     }
 
     //--------//

@@ -13,56 +13,74 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.util.Implement;
+import omr.util.PointFacade;
 
 import java.awt.*;
 import java.awt.image.*;
 
 import javax.swing.*;
+import javax.xml.bind.*;
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class <code>SymbolIcon</code> is an icon, built from a provided image,
  * with consistent width among all defined symbol icons to ease their
  * presentation in menus.
  *
- *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "icon")
 public class SymbolIcon
     implements Icon
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants constants = new Constants();
+    private static final Constants  constants = new Constants();
 
     /** The same width for all such icons (to be improved) */
     private static int standardWidth = -1;
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Connected to Ledger ? */
-    private Boolean hasLedger;
-
-    /** Related image */
-    private BufferedImage image;
+    /** Related name */
+    @XmlAttribute
+    private String name;
 
     /** Symbol size (which must be consistent with image dimensions) */
+    ///@XmlElement
     private Dimension dimension;
-
-    /** Pitch position within staff lines */
-    private Double pitchPosition;
-
-    /** How many stems is it connected to ? */
-    private Integer stemNumber;
 
     /** Mass center */
     private Point centroid;
 
-    /** Reference point, if any */
+    /** Reference point, if any. (Un)Marshalling is done through
+        getXmlRefPoint */
     private Point refPoint;
 
-    /** Related name */
-    private String name;
+    /** How many stems is it connected to ? */
+    @XmlElement(name = "stem-number")
+    private Integer stemNumber;
+
+    /** Connected to Ledger ? */
+    @XmlElement(name = "has-ledger")
+    private Boolean hasLedger;
+
+    /** Pitch position within staff lines */
+    @XmlElement(name = "pitch-position")
+    private Double pitchPosition;
+
+    /** Related image */
+    @XmlTransient
+    private BufferedImage image;
+
+    /** Wrapping of the image for (un)marshalling */
+    //@XmlJavaTypeAdapter(BitmapAdapter.class)
+    @XmlElementWrapper(name = "bitmap")
+    @XmlElement(name = "row")
+    public String[] bitmap;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -113,19 +131,25 @@ public class SymbolIcon
     // getBitmap //
     //-----------//
     /**
-     * Report an array of strings that describe the bitmap (meant for JiBX)
+     * Report an array of strings that describe the bitmap (meant for JAXB)
      *
      * @return the array of strings for file storing
      */
+
+    //    @XmlElementWrapper(name = "image")
+    //    @XmlElement(name = "row")
     public String[] getBitmap ()
     {
-        if (getIconHeight() == -1) {
-            return null;
+        System.out.println("getBitmap called");
+        System.out.println("getIconHeight=" + getIconHeight());
+
+        if (getIconHeight() != -1) {
+            // Generate the string array from the icon image
+            bitmap = IconManager.getInstance()
+                                .encodeImage(this);
         }
 
-        // Generate the string array from the icon image
-        return IconManager.getInstance()
-                          .encodeImage(this);
+        return bitmap;
     }
 
     //-------------//
@@ -297,12 +321,13 @@ public class SymbolIcon
     // setBitmap //
     //-----------//
     /**
-     * Allows to define the bitmap, from an array of strings (meant for JiBX)
+     * Allows to define the bitmap, from an array of strings (meant for JAXB)
      *
      * @param rows the array of strings which describe the bitmap
      */
     public void setBitmap (String[] rows)
     {
+        System.out.println("setBitmap called rows.length=" + rows.length);
         // Elaborate the image from the string array
         setImage(IconManager.getInstance().decodeImage(rows));
     }
@@ -393,7 +418,7 @@ public class SymbolIcon
      *
      * @param stemNumber the number of stems
      */
-    public void setStemNumber (int stemNumber)
+    public void setStemNumber (Integer stemNumber)
     {
         this.stemNumber = stemNumber;
     }
@@ -406,9 +431,30 @@ public class SymbolIcon
      *
      * @return the number of stems
      */
-    public int getStemNumber ()
+    public Integer getStemNumber ()
     {
         return stemNumber;
+    }
+
+    //----------------//
+    // setXmlRefPoint //
+    //----------------//
+    @XmlElement(name = "ref-point")
+    private void setXmlRefPoint (PointFacade xp)
+    {
+        setRefPoint(xp.getPoint());
+    }
+
+    //----------------//
+    // getXmlRefPoint //
+    //----------------//
+    private PointFacade getXmlRefPoint ()
+    {
+        if (refPoint != null) {
+            return new PointFacade(refPoint);
+        } else {
+            return null;
+        }
     }
 
     //-----------//
@@ -417,9 +463,9 @@ public class SymbolIcon
     /**
      * Is this entity connected to a ledger
      *
-     * @return true if ther is at least one ledger
+     * @return true if there is at least one ledger
      */
-    public boolean hasLedger ()
+    public Boolean hasLedger ()
     {
         return hasLedger;
     }
@@ -442,6 +488,52 @@ public class SymbolIcon
                            int       y)
     {
         g.drawImage(image, x, y, c);
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled for this
+     * object, but before this object is set to the parent object.
+     */
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object       parent)
+    {
+        ///System.out.println("afterUnmarshal");
+        // Convert string bitmap -> image
+        if (image == null) {
+            image = IconManager.getInstance()
+                               .decodeImage(bitmap);
+        }
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    /**
+     * Called immediately before the marshalling of this object begins..
+     */
+    private void beforeMarshal (Marshaller m)
+    {
+        System.out.println("beforeMarshal");
+
+        // Dimension
+        if (dimension == null) {
+            getDimension();
+        }
+
+        // Centroid
+        if (centroid == null) {
+            getCentroid();
+        }
+
+        // Convert image -> string bitmap
+        if (bitmap == null) {
+            bitmap = IconManager.getInstance()
+                                .encodeImage(image);
+        }
+        omr.util.Dumper.dump(this);
     }
 
     //~ Inner Classes ----------------------------------------------------------

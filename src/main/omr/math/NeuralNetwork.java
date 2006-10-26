@@ -14,37 +14,62 @@ import omr.util.Logger;
 
 import java.io.*;
 
+import javax.xml.bind.*;
+import javax.xml.bind.annotation.*;
+
 /**
  * Class <code>NeuralNetwork</code> implements a back-propagation neural
  * network, with one input layer, one hidden layer and one output layer. The
  * transfer function is the sigmoid.
  *
+ * <p>This neuralNetwork class can be stored on disk in binary form (through the
+ * {@link #serialize} and {@link #deserialize} methods) and in XML form (through
+ * the {@link #marshal} and {@link #unmarshal} methods). The XML form is to be
+ * preferred since is it much more stable than the binary with respect to slight
+ * class modifications.
+ *
+ * <p>The classe also allows in-memory {@link #backup} and {@link #restore}
+ * operation, mainly used to save the most performant weight values during the
+ * network training.
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "neural-network")
 public class NeuralNetwork
     implements java.io.Serializable
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger        logger = Logger.getLogger(
-        NeuralNetwork.class);
+    /** Usual logger */
+    private static final Logger logger = Logger.getLogger(NeuralNetwork.class);
+
+    /** Un/marshalling context for use with JAXB */
+    private static JAXBContext jaxbContext;
 
     //~ Instance fields --------------------------------------------------------
 
     /** Size of input layer */
+    @XmlAttribute(name = "input-size")
     private final int inputSize;
 
     /** Size of hidden layer */
+    @XmlAttribute(name = "hidden-size")
     private final int hiddenSize;
 
     /** Size of output layer */
+    @XmlAttribute(name = "output-size")
     private final int outputSize;
 
     /** Weights for hidden layer */
+    @XmlElementWrapper(name = "hidden-weights")
+    @XmlElement(name = "row")
     private double[][] hiddenWeights;
 
     /** Weights for output layer */
+    @XmlElementWrapper(name = "output-weights")
+    @XmlElement(name = "row")
     private double[][] outputWeights;
 
     /** Flag to stop training */
@@ -60,7 +85,7 @@ public class NeuralNetwork
     private transient volatile double momentum = 0.25;
 
     /** Number of epochs when training */
-    private transient volatile int epochs = 100;
+    private transient volatile int epochs = 1000;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -69,7 +94,40 @@ public class NeuralNetwork
     //---------------//
     /**
      * Create a neural network, with specified number of cells in each layer,
-     * and amplitude for random values around zero
+     * and default values.
+     *
+     * @param inputSize  number of cells in input layer
+     * @param hiddenSize number of cells in hidden layer
+     * @param outputSize number of cells in output  layer
+     * @param amplitude  amplitude ( <= 1.0) for initial random values
+     */
+    public NeuralNetwork (int    inputSize,
+                          int    hiddenSize,
+                          int    outputSize,
+                          double amplitude)
+    {
+        // Cache parameters
+        this.inputSize = inputSize;
+        this.hiddenSize = hiddenSize;
+        this.outputSize = outputSize;
+
+        // Allocate weights (from input) to hidden layer
+        // +1 for bias
+        hiddenWeights = createMatrix(hiddenSize, inputSize + 1, amplitude);
+
+        // Allocate weights (from hidden) to output layer
+        // +1 for bias
+        outputWeights = createMatrix(outputSize, hiddenSize + 1, amplitude);
+
+        logger.fine("Network created");
+    }
+
+    //---------------//
+    // NeuralNetwork //
+    //---------------//
+    /**
+     * Create a neural network, with specified number of cells in each layer,
+     * and specific parameters
      *
      * @param inputSize  number of cells in input layer
      * @param hiddenSize number of cells in hidden layer
@@ -89,24 +147,25 @@ public class NeuralNetwork
                           double maxError,
                           int    epochs)
     {
+        this(inputSize, hiddenSize, outputSize, amplitude);
+
         // Cache parameters
-        this.inputSize = inputSize;
-        this.hiddenSize = hiddenSize;
-        this.outputSize = outputSize;
         this.learningRate = learningRate;
         this.momentum = momentum;
         this.maxError = maxError;
         this.epochs = epochs;
+    }
 
-        // Allocate weights (from input) to hidden layer
-        // +1 for bias
-        hiddenWeights = createMatrix(hiddenSize, inputSize + 1, amplitude);
+    //---------------//
+    // NeuralNetwork //
+    //---------------//
 
-        // Allocate weights (from hidden) to output layer
-        // +1 for bias
-        outputWeights = createMatrix(outputSize, hiddenSize + 1, amplitude);
-
-        logger.fine("Network created");
+    /** Private no-arg constructor meant for the JAXB compiler only */
+    private NeuralNetwork ()
+    {
+        inputSize = -1;
+        hiddenSize = -1;
+        outputSize = -1;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -116,12 +175,37 @@ public class NeuralNetwork
     //-----------//
     /**
      * set the number of iterations for training the network with a given input
-     * set
      * @param epochs number of iterations
      */
     public void setEpochs (int epochs)
     {
         this.epochs = epochs;
+    }
+
+    //---------------//
+    // getHiddenSize //
+    //---------------//
+    /**
+     * Report the number of cells in the hidden layer
+     *
+     * @return the size of the hidden layer
+     */
+    public int getHiddenSize ()
+    {
+        return hiddenSize;
+    }
+
+    //--------------//
+    // getInputSize //
+    //--------------//
+    /**
+     * Report the number of cells in the input layer
+     *
+     * @return the size of inpur layer
+     */
+    public int getInputSize ()
+    {
+        return inputSize;
     }
 
     //-----------------//
@@ -169,7 +253,7 @@ public class NeuralNetwork
      * Report the size of the output layer
      * @return the number of cells in the output layer
      */
-    public double getOutputSize ()
+    public int getOutputSize ()
     {
         return outputSize;
     }
@@ -197,26 +281,47 @@ public class NeuralNetwork
      * Deserialize the provided binary file to allocate the corresponding
      * NeuralNetwork
      *
-     * @param in the input stream that contains the network definition in binary
-     * format
+     * @param in input stream that contains the network definition in binary
+     * format. The stream is closed by this method.
      *
      * @return the allocated network.
+     * @exception IOException raised when IO error occurs
+     * @exception ClassNotFoundException raised if class is not found in the
+     *                                   binary stream
      */
     public static NeuralNetwork deserialize (InputStream in)
+        throws IOException, ClassNotFoundException
     {
-        try {
-            ObjectInputStream s = new ObjectInputStream(in);
+        ObjectInputStream s = new ObjectInputStream(in);
+        NeuralNetwork     nn = (NeuralNetwork) s.readObject();
+        s.close();
+        logger.fine("Network deserialized");
 
-            NeuralNetwork     nn = (NeuralNetwork) s.readObject();
-            s.close();
+        return nn;
+    }
 
-            return nn;
-        } catch (Exception ex) {
-            logger.warning("Could not deserialize Network");
-            logger.warning(ex.toString());
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding
+     * NeuralNetwork
+     *
+     * @param in the input stream that contains the network definition in XML
+     * format. The stream is not closed by this method
+     *
+     * @return the allocated network.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static NeuralNetwork unmarshal (InputStream in)
+        throws JAXBException
+    {
+        Unmarshaller  um = getJaxbContext()
+                               .createUnmarshaller();
+        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
+        logger.fine("Network unmarshalled");
 
-            return null;
-        }
+        return nn;
     }
 
     //------//
@@ -249,6 +354,24 @@ public class NeuralNetwork
         dumpMatrix(outputWeights);
         System.out.print("Outputs : " + outputSize);
         System.out.println(" cells\n");
+    }
+
+    //---------//
+    // marshal //
+    //---------//
+    /**
+     * Marshal the NeuralNetwork to its XML file
+     * @param os the XML output stream, which is not closed by this method
+     * @exception JAXBException raised when marshalling goes wrong
+     */
+    public void marshal (OutputStream os)
+        throws JAXBException
+    {
+        Marshaller m = getJaxbContext()
+                           .createMarshaller();
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        m.marshal(this, os);
+        logger.fine("Network marshalled");
     }
 
     //---------//
@@ -337,21 +460,18 @@ public class NeuralNetwork
     // serialize //
     //-----------//
     /**
-     * Serialize the NeuralNetwork to its binary file
-     * @param file Name of the file where the serialized form must be stored
+     * Serialize the NeuralNetwork to an output stream in binary format
+     * @param os The output stream where the serialized form must be stored. The
+     *           stream is closed by this method.
+     * @exception IOException raised when IO error occurs
      */
-    public void serialize (File file)
+    public void serialize (OutputStream os)
+        throws IOException
     {
-        try {
-            FileOutputStream f = new FileOutputStream(file);
-            ObjectOutput     s = new ObjectOutputStream(f);
-            s.writeObject(this);
-            s.close();
-            logger.info("Network serialized to " + file.getPath());
-        } catch (Exception ex) {
-            logger.warning("Could not serialize Network to " + file.getPath());
-            logger.warning(ex.toString());
-        }
+        ObjectOutput s = new ObjectOutputStream(os);
+        s.writeObject(this);
+        s.close();
+        logger.fine("Network serialized");
     }
 
     //------//
@@ -371,7 +491,9 @@ public class NeuralNetwork
     //-------//
     /**
      * Train the neural network on a collection of input patterns, so that it
-     * delivers the expected outputs within maxError.
+     * delivers the expected outputs within maxError. This method is not
+     * optimized for absolute speed, but rather for being able to keep the best
+     * weights values.
      *
      * @param inputs the provided patterns of values for input cells
      * @param desiredOutputs the corresponding desired values for output cells
@@ -429,6 +551,7 @@ public class NeuralNetwork
         }
 
         int ie = 0;
+
         for (; ie < epochs; ie++) {
             // Have we been told to stop ?
             if (stopping) {
@@ -537,6 +660,20 @@ public class NeuralNetwork
         }
 
         return mse;
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+        throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
+        }
+
+        return jaxbContext;
     }
 
     //-------------//
