@@ -15,7 +15,6 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.util.Logger;
-import omr.util.XmlMapper;
 
 import java.awt.image.*;
 import java.io.*;
@@ -60,9 +59,6 @@ public class IconManager
     private static final Constants        constants = new Constants();
     private static final Logger           logger = Logger.getLogger(
         IconManager.class);
-
-    /** Mapper for XML persistency */
-    private static XmlMapper xmlMapper;
 
     /** Dedicated file extension for our symbol icon files */
     private static final String FILE_EXTENSION = ".xml";
@@ -429,18 +425,6 @@ public class IconManager
         }
 
         return jaxbContext;
-    }
-
-    //--------------//
-    // getXmlMapper //
-    //--------------//
-    private XmlMapper getXmlMapper ()
-    {
-        if (xmlMapper == null) {
-            xmlMapper = new XmlMapper(SymbolIcon.class);
-        }
-
-        return xmlMapper;
     }
 
     //------------//
