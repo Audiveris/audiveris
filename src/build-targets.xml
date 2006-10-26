@@ -1,69 +1,61 @@
-<!-- +================================================================+ -->
-<!-- |                                                                | -->
-<!-- |                 b u i l d - t a r g e t s . x m l              | -->
-<!-- |                                                                | -->
-<!-- | abstract: ant build for Audiveris application                  | -->
-<!-- | author:   herve.bitteur@laposte.net                            | -->
-<!-- |                                                                | -->
-<!-- +================================================================+ -->
+<!-- +=====================================================================+ -->
+<!-- |                                                                     | -->
+<!-- |                 b u i l d - t a r g e t s . x m l                   | -->
+<!-- |                                                                     | -->
+<!-- | abstract: ant build for Audiveris application                       | -->
+<!-- | location: ${basedir}/src/build-targets.xml                          | -->
+<!-- | author:   herve.bitteur@laposte.net                                 | -->
+<!-- |                                                                     | -->
+<!-- +=====================================================================+ -->
 
 <project name="audiveris-targets" basedir="..">
-
-    <!-- =========== -->
-    <!--  - B I N D  -->
-    <!-- =========== -->
     
-    <!-- JiBX binding compiler task definition -->
-    <taskdef name="bind"
-             classname="org.jibx.binding.ant.CompileTask"
-             classpath="${jibx.dir}/jibx-bind.jar;${jibx.dir}/jibx-run.jar" />
-
-    <target name="-bind"
-            description="Generate some class binding, using JiBX" >
-
-<!--         <echo>DEBUG build-targets -bind</echo> -->
-
-        <bind verbose="false"
-              load="false">
-            <bindingfileset dir="${dev.dir}">
-                <include name="**/jibx-*-mapping.xml"/>
-            </bindingfileset>
-            <classpathset dir="${build.classes.dir}"/>
-        </bind>
-        
-    </target>
-
-    <!-- ================= -->
-    <!--  - P R E - J A R  -->
-    <!-- ================= -->
-    <target name="-pre-jar">
-
-<!--         <echo>DEBUG build-targets -pre-jar</echo> -->
-
-        <!-- Prepare a (half) manifest -->
-        <tstamp/>
-	<property name="manifest.file" value="manifest.mf" />
-        <echo file="${manifest.file}" append="false">Manifest-Version: 1.0
-Built-By: ${build.owner}
-Specification-Title: ${spec.title}
-Specification-Version: ${spec.version}
-Implementation-Version: ${impl.version} ${DSTAMP}
-</echo> 
-        
+    <description>
+	This project gathers all the targets that are common to NetBeans and
+	Emacs building tasks
+    </description>
+    
+    <!-- JAXB Java-to-Schema task definition -->
+    <taskdef name="schemagen"
+	     classname="com.sun.tools.jxc.SchemaGenTask">
+	<classpath>
+	    <fileset dir="${jaxb.dir}/lib" includes="*.jar" />
+	</classpath>
+    </taskdef>
+    
+    <!-- JAXB Schema-to-Java task definition -->
+    <taskdef name="xjc"
+	     classname="com.sun.tools.xjc.XJCTask">
+	<classpath>
+	    <fileset dir="${jaxb.dir}/lib" includes="*.jar" />
+	</classpath>
+    </taskdef>
+    
+    <!-- ========================= -->
+    <!--  - B U I L D - I C O N S  -->
+    <!-- ========================= -->
+    <target name="-build-icons">
         <!-- Make a separate archive for icons -->
-        <jar basedir="${top.dir}"
+        <jar basedir="${basedir}"
 	     destfile="${icons.dir}/music_icons.jar"
 	     includes="icons/*.xml"
 	     compress="true"
 	     />
-
+    </target>
+    
+    <!-- ========================= -->
+    <!--  - C L E A N - I C O N S  -->
+    <!-- ========================= -->
+    <target name="-clean-icons">
+<!--         description="Remove the icons archive." -->
+	<delete verbose="${verbose}" file="${icons.music.jar}"/>
     </target>
     
     <!-- ============================= -->
     <!--  - J A V A D O C - B U I L D  -->
     <!-- ============================= -->
     <target name="-javadoc-build">
-        <!--         description="Generate project documentation" -->
+        <!--         description="Generate project documentation." -->
         
 <!--         <echo>DEBUG build-targets -javadoc-build</echo> -->
 
@@ -86,7 +78,7 @@ Implementation-Version: ${impl.version} ${DSTAMP}
         <property name="javadoc.splitindex"      value="true" />
         <property name="javadoc.use"             value="true" />
         <property name="javadoc.version"         value="true" />
-        <property name="javadoc.windowtitle"     value="Titre de la window" />
+        <property name="javadoc.windowtitle"     value="" />
         
         <javadoc
             additionalparam ="${javadoc.additionalparam}"
@@ -136,15 +128,6 @@ Implementation-Version: ${impl.version} ${DSTAMP}
 
     </target>
 
-    <!-- ===================== -->
-    <!--  P R O P E R T I E S  -->
-    <!-- ===================== -->
-    <target name="properties"
-        description="Print out all properties for the build file">
-        <echoproperties/>
-    </target>
-    
-
     <!-- =========================== -->
     <!--  - P O S T - J A V A D O C  -->
     <!-- =========================== -->
@@ -191,6 +174,63 @@ Implementation-Version: ${impl.version} ${DSTAMP}
                      excludes="**/CVS/*"/>
         </copy>
         
+    </target>
+
+    <!-- ================= -->
+    <!--  - P R E - J A R  -->
+    <!-- ================= -->
+    <target name="-pre-jar">
+
+<!--         <echo>DEBUG build-targets -pre-jar</echo> -->
+
+        <!-- Prepare a (half) manifest -->
+        <tstamp/>
+	<property name="manifest.file" value="manifest.mf" />
+        <echo file="${manifest.file}" append="false">Manifest-Version: 1.0
+Built-By: ${build.owner}
+Specification-Title: ${spec.title}
+Specification-Version: ${spec.version}
+Implementation-Version: ${impl.version} ${DSTAMP}
+</echo> 
+
+    </target>
+
+    <!-- ===================== -->
+    <!--  P R O P E R T I E S  -->
+    <!-- ===================== -->
+    <target name="properties"
+        description="Print out all properties for the build file.">
+        <echoproperties/>
+    </target>
+    
+    <!-- =================== -->
+    <!--  S C H E M A G E N  -->
+    <!-- =================== -->
+    <target name="schemagen"
+	description="Generate some class binding, using JABX." >
+	<echo message="Generating schemas..." />
+	<mkdir dir="${build.dir}/schemas" />
+	<schemagen
+	    destdir="${build.dir}/schemas">
+	    <src path="${src.dir}" />
+	    <include name="**/ScorePart.java"/>
+	    <classpath refid="project.tools.classpath" />
+	</schemagen>
+    </target>
+    
+    <!-- ======= -->
+    <!--  X J C  -->
+    <!-- ======= -->
+    <target name="xjc"
+	description="Generate some Java classes, using JABX." >
+	<echo message="Generating Java classes ..." />
+	<mkdir dir="${build.dir}/java" />
+	<xjc schema="${build.dir}/schemas/partwise.xsd"
+	     package="genpkg"
+	     destdir="${build.dir}/java">
+	    <produces dir="${build.dir}/java" includes="**/*.java" />
+	    <classpath refid="project.tools.classpath" />
+	</xjc>
     </target>
 
 </project>
