@@ -60,7 +60,7 @@ public abstract class Node
     //----------//
     /**
      * Since <code>toString()</code> is used by JTreeTable to display the node
-     * name, this method return the last path component of the node, in other
+     * name, this method returns the last path component of the node, in other
      * words the non-qualified name.
      *
      * @return the non-qualified node name

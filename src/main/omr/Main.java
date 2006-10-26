@@ -128,7 +128,7 @@ public class Main
     //~ Constructors -----------------------------------------------------------
 
     //------//
-    // qMain //
+    // Main //
     //------//
     private Main (String[] args,
                   Class    caller)
