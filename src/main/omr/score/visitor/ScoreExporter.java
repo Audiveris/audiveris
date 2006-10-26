@@ -17,28 +17,34 @@ import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
 import omr.score.MusicNode;
+import omr.score.Part;
 import omr.score.Score;
 import omr.score.ScoreFormat;
-import omr.score.ScorePartWise;
 import omr.score.Slur;
 import omr.score.Staff;
 import omr.score.StaffNode;
 import omr.score.System;
+import omr.score.SystemPart;
 import omr.score.TimeSignature;
 
 import omr.util.Logger;
 
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.IXMLWriter;
-import org.jibx.runtime.JiBXException;
+import proxymusic.generated.Encoding;
+import proxymusic.generated.EncodingDate;
+import proxymusic.generated.Identification;
+import proxymusic.generated.PartList;
+import proxymusic.generated.PartName;
+import proxymusic.generated.ScorePart;
+import proxymusic.generated.ScorePartwise;
+import proxymusic.generated.Software;
+import proxymusic.generated.Source;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.List;
+import java.io.*;
+import java.util.Date;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 /**
  * Class <code>ScoreExporter</code> can visit the score hierarchy to export
@@ -54,15 +60,27 @@ public class ScoreExporter
 
     private static final Logger logger = Logger.getLogger(ScoreExporter.class);
 
+    /** Un/marshalling context for use with JAXB */
+    private static JAXBContext jaxbContext;
+
     //~ Instance fields --------------------------------------------------------
 
-    /** The score avatar built precisely for export via JiBX */
-    private ScorePartWise scorePartWise;
+    /** The score proxy built precisely for export via JAXB */
+    private ScorePartwise scorePartwise;
+
+    /** Current context */
+    private Current current = new Current();
+
+    /** Current flags */
+    private IsFirst isFirst = new IsFirst();
 
     //~ Constructors -----------------------------------------------------------
 
+    //---------------//
+    // ScoreExporter //
+    //---------------//
     /**
-     * Creates a new ScoreExporter object.
+     * Create a new ScoreExporter object, which triggers the export.
      *
      * @param score the score to export
      * @param xmlFile the xml file to write, or null
@@ -74,7 +92,7 @@ public class ScoreExporter
         if (xmlFile == null) {
             xmlFile = new File(
                 Main.getOutputFolder(),
-                score.getRadix() + ScoreFormat.MUSIC_XML.extension);
+                score.getRadix() + ScoreFormat.XML.extension);
         }
 
         // Make sure the folder exists
@@ -85,44 +103,52 @@ public class ScoreExporter
             folder.mkdirs();
         }
 
+        // Allocate a score proxy, and let visited nodes fill this proxy
+        scorePartwise = new ScorePartwise();
+        score.accept(this);
+
+        //  Marshal the proxy
         try {
-            // Prepare the marshalling context
-            IBindingFactory     factory = BindingDirectory.getFactory(
-                ScorePartWise.class);
-            IMarshallingContext mctx = factory.createMarshallingContext();
-
-            // Document prologue
-            mctx.startDocument(
-                "UTF-8", // encoding
-                true, // standalone
-                new FileOutputStream(xmlFile));
-            mctx.setIndent(3);
-
-            IXMLWriter writer = mctx.getXmlWriter();
-            writer.writeDocType(
-                "score-partwise", // root element name
-                "http://www.musicxml.org/dtds/partwise.dtd", // system ID
-                "-//Recordare//DTD MusicXML 1.1 Partwise//EN", //public ID
-                null); // internal subset
-
-            // Build and populate a score facade, thenmarshall the facade
-            scorePartWise = new ScorePartWise(score);
-            score.accept(this);
-            mctx.marshalDocument(scorePartWise);
-
-            // Document epilogue
-            mctx.endDocument();
+            OutputStream os = new FileOutputStream(xmlFile);
+            jaxbMarshal(scorePartwise, os);
             logger.info("Score exported to " + xmlFile);
+            os.close();
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
             ex.printStackTrace();
-        } catch (JiBXException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------------------//
+    // preloadJaxbContext //
+    //--------------------//
+    /**
+     * This method allows to preload the JaxbContext in a background task, so 
+     * that it is immediately available when the interactive user needs it.
+     */
+    public static void preloadJaxbContext ()
+    {
+        Thread worker = new Thread() {
+            public void run ()
+            {
+                try {
+                    getJaxbContext();
+                } catch (JAXBException ex) {
+                    ex.printStackTrace();
+                    logger.warning("Error preloading JaxbContext");
+                }
+            }
+        };
+
+        worker.setName("JaxbContextLoader");
+        worker.setPriority(Thread.MIN_PRIORITY);
+        worker.start();
+    }
 
     public boolean visit (Barline barline)
     {
@@ -139,17 +165,40 @@ public class ScoreExporter
         return true;
     }
 
+    //---------//
+    // Measure //
+    //---------//
     public boolean visit (Measure measure)
     {
-        if (measure.getLeftX() != null) {
-            logger.info("Adding " + measure);
+        logger.fine(measure + " : " + isFirst);
 
-            scorePartWise.getMeasures()
-                         .add(measure);
-        } else {
-            logger.info("Skipping " + measure);
+        if (isFirst.staff) {
+            ///current.partMeasure = new PartMeasure();
         }
 
+        //          <print>
+        //              <system-layout>
+        //                  <system-margins>
+        //                      <left-margin>64</left-margin>
+        //                      <right-margin>0</right-margin>
+        //                  </system-margins>
+        //                  <top-system-distance>208</top-system-distance>
+        //              </system-layout>
+        //              <staff-layout number="2">
+        //                  <staff-distance>64</staff-distance>
+        //              </staff-layout>
+        //          </print>
+
+        //        if (measure.getLeftX() != null) {
+        //            logger.fine("Adding " + measure);
+        //
+        //            proxy.getMeasures()
+        //                  .add(measure);
+        //        } else {
+        //            logger.fine("Skipping " + measure);
+        //        }
+        //
+        //        isFirst.measure = false;
         return true;
     }
 
@@ -158,15 +207,60 @@ public class ScoreExporter
         return true;
     }
 
+    //-------//
+    // Score //
+    //-------//
     public boolean visit (Score score)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Exporting score ...");
+        // Version
+        scorePartwise.setVersion("1.1");
+
+        // Source
+        Source source = new Source();
+        source.setContent(score.getImagePath());
+
+        // Encoding
+        Encoding encoding = new Encoding();
+        Software software = new Software();
+        software.setContent(Main.getToolName() + " " + Main.getToolVersion());
+        encoding.getEncodingDateOrEncoderOrSoftware()
+                .add(software);
+
+        EncodingDate encodingDate = new EncodingDate();
+        encodingDate.setContent(String.format("%tF", new Date()));
+        encoding.getEncodingDateOrEncoderOrSoftware()
+                .add(encodingDate);
+
+        // Identification
+        Identification identification = new Identification();
+        scorePartwise.setIdentification(identification);
+        identification.setSource(source);
+        identification.setEncoding(encoding);
+
+        // PartList
+        PartList partList = new PartList();
+        scorePartwise.setPartList(partList);
+
+        for (Part part : score.getPartList()) {
+            ScorePart scorePart = new ScorePart();
+            partList.getPartGroupOrScorePart()
+                    .add(scorePart);
+            scorePart.setId(part.getPid());
+
+            PartName partName = new PartName();
+            scorePart.setPartName(partName);
+            partName.setContent(part.getName());
         }
 
-        score.acceptChildren(this);
-        logger.info("measures built nb=" + scorePartWise.getMeasures().size());
+        // Populate each part in turn
+        //        for (Part part : score.getPartList()) {
+        //            current.part = part;
+        //            logger.fine("Populating " + current.part);
+        //            isFirst.system = true;
+        //            score.acceptChildren(this);
+        //        }
 
+        ///logger.fine("measures built nb=" + scorePartWise.getMeasures().size());
         return false;
     }
 
@@ -185,13 +279,115 @@ public class ScoreExporter
         return true;
     }
 
+    //--------//
+    // System //
+    //--------//
     public boolean visit (System system)
     {
-        return true;
+        logger.fine("Visiting " + system);
+
+        SystemPart systemPart = system.getParts()
+                                      .get(current.part.getId() - 1);
+        isFirst.measure = true;
+        isFirst.staff = true;
+
+        for (int im = 0; im < system.getFirstStaff()
+                                    .getMeasures()
+                                    .size(); im++) {
+            for (Staff staff : systemPart.getStaves()) {
+                Measure measure = (Measure) staff.getMeasures()
+                                                 .get(im);
+                measure.accept(this);
+                isFirst.staff = false;
+            }
+
+            isFirst.measure = false;
+        }
+
+        isFirst.system = false;
+
+        return false; // No default browsing
     }
 
     public boolean visit (TimeSignature timeSignature)
     {
         return true;
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static synchronized JAXBContext getJaxbContext ()
+        throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            logger.fine("Creating JAXBContext ...");
+            jaxbContext = JAXBContext.newInstance(ScorePartwise.class);
+            logger.fine("JAXBContext created");
+        }
+        
+        return jaxbContext;
+    }
+
+    //-------------//
+    // jaxbMarshal //
+    //-------------//
+    private void jaxbMarshal (ScorePartwise scorePartwise,
+                              OutputStream  os)
+        throws JAXBException
+    {
+        Marshaller m = getJaxbContext()
+                           .createMarshaller();
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        m.marshal(scorePartwise, os);
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //---------//
+    // Current //
+    //---------//
+    private static class Current
+    {
+        Part    part;
+        System  system;
+        Measure measure;
+        Staff   staff;
+    }
+
+    //---------//
+    // IsFirst //
+    //---------//
+    private static class IsFirst
+    {
+        /** We are writing the first system in the current page */
+        boolean system;
+
+        /** We are writing the first measure in the current system */
+        boolean measure;
+
+        /** We are writing the first staff in the current measure */
+        boolean staff;
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (system) {
+                sb.append(" firstSystem");
+            }
+
+            if (measure) {
+                sb.append(" firstMeasure");
+            }
+
+            if (staff) {
+                sb.append(" firstStaff");
+            }
+
+            return sb.toString();
+        }
     }
 }
