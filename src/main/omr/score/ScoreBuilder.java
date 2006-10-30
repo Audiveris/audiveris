@@ -146,11 +146,13 @@ public class ScoreBuilder
             translateSystem(systemInfo);
         }
 
-        // Update score view
-        score.getView()
-             .getScrollPane()
-             .getComponent()
-             .repaint();
+        // Update score view if any
+        if (score.getView() != null) {
+            score.getView()
+                 .getScrollPane()
+                 .getComponent()
+                 .repaint();
+        }
     }
 
     //-------------//
@@ -158,7 +160,7 @@ public class ScoreBuilder
     //-------------//
     /**
      * Report the 'priority index' of this glyph for its translating into score
-     * entity. NOTA: low value means high priority.
+     * entity. <b>NOTA</b>: low value means high priority.
      *
      * @param glyph the glyph to be ordered based on its shape
      * @return the priority index
