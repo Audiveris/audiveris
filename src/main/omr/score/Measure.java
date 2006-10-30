@@ -108,7 +108,6 @@ public class Measure
     /**
      * Set the ending bar line
      *
-     *
      * @param barline the ending bar line
      */
     public void setBarline (Barline barline)
@@ -231,7 +230,7 @@ public class Measure
     public int getWidth ()
     {
         return getBarline()
-                   .getCenter().x - leftX;
+                   .getCenter().x - getLeftX();
     }
 
     //--------//
