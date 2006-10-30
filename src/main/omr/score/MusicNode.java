@@ -117,10 +117,7 @@ public class MusicNode
     @Implement(Visitable.class)
     public boolean accept (Visitor visitor)
     {
-        visitor.visit(this);
-
-        // Continue down the tree by default
-        return true;
+        return visitor.visit(this);
     }
 
     //----------------//
@@ -133,6 +130,8 @@ public class MusicNode
      */
     public void acceptChildren (Visitor visitor)
     {
+        ///logger.info(children.size() + " children for " + this);
+
         for (TreeNode node : children) {
             MusicNode child = (MusicNode) node;
 
