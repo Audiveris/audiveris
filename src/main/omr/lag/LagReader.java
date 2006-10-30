@@ -34,7 +34,8 @@ public class LagReader
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger     logger = Logger.getLogger(LagReader.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(LagReader.class);
 
     //~ Instance fields --------------------------------------------------------
 

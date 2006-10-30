@@ -36,7 +36,8 @@ public class SpinnerGlyphModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger    logger = Logger.getLogger(
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
         SpinnerGlyphModel.class);
 
     //~ Instance fields --------------------------------------------------------

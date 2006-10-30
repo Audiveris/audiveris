@@ -38,7 +38,8 @@ public class SymbolIcon
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants  constants = new Constants();
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** The same width for all such icons (to be improved) */
     private static int standardWidth = -1;
@@ -57,7 +58,7 @@ public class SymbolIcon
     private Point centroid;
 
     /** Reference point, if any. (Un)Marshalling is done through
-        getXmlRefPoint */
+       getXmlRefPoint */
     private Point refPoint;
 
     /** How many stems is it connected to ? */
@@ -436,27 +437,6 @@ public class SymbolIcon
         return stemNumber;
     }
 
-    //----------------//
-    // setXmlRefPoint //
-    //----------------//
-    @XmlElement(name = "ref-point")
-    private void setXmlRefPoint (PointFacade xp)
-    {
-        setRefPoint(xp.getPoint());
-    }
-
-    //----------------//
-    // getXmlRefPoint //
-    //----------------//
-    private PointFacade getXmlRefPoint ()
-    {
-        if (refPoint != null) {
-            return new PointFacade(refPoint);
-        } else {
-            return null;
-        }
-    }
-
     //-----------//
     // hasLedger //
     //-----------//
@@ -488,6 +468,27 @@ public class SymbolIcon
                            int       y)
     {
         g.drawImage(image, x, y, c);
+    }
+
+    //----------------//
+    // setXmlRefPoint //
+    //----------------//
+    @XmlElement(name = "ref-point")
+    private void setXmlRefPoint (PointFacade xp)
+    {
+        setRefPoint(xp.getPoint());
+    }
+
+    //----------------//
+    // getXmlRefPoint //
+    //----------------//
+    private PointFacade getXmlRefPoint ()
+    {
+        if (refPoint != null) {
+            return new PointFacade(refPoint);
+        } else {
+            return null;
+        }
     }
 
     //----------------//
@@ -533,6 +534,7 @@ public class SymbolIcon
             bitmap = IconManager.getInstance()
                                 .encodeImage(image);
         }
+
         omr.util.Dumper.dump(this);
     }
 

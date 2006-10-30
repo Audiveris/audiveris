@@ -51,6 +51,7 @@ public class ScoreView
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreView.class);
 
     //~ Instance fields --------------------------------------------------------

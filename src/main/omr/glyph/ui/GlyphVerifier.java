@@ -53,8 +53,8 @@ public class GlyphVerifier
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger   logger = Logger.getLogger(
-        GlyphVerifier.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(GlyphVerifier.class);
 
     /** To differentiate the exit action */
     private static boolean standAlone = false;
@@ -203,7 +203,7 @@ public class GlyphVerifier
 
         folderSelector.populateWith(folderSet);
         folderSelector.selectAll();
-        
+
         // Load the first glyph in the browser
         glyphBrowser.loadGlyphNames();
     }

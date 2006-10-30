@@ -65,6 +65,7 @@ class EvaluationBoard
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         EvaluationBoard.class);
 

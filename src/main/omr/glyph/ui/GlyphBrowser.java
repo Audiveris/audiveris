@@ -66,9 +66,11 @@ class GlyphBrowser
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(
-        GlyphBrowser.class);
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(GlyphBrowser.class);
 
     /**
      * Field constant <code>NO_INDEX</code> is a specific value {@value} to
@@ -157,15 +159,6 @@ class GlyphBrowser
         localGlyphSelection.dump();
     }
 
-    //--------------//
-    // stateChanged //
-    //--------------//
-    public void stateChanged (ChangeEvent e)
-    {
-        int selNb = verifier.getGlyphNames().length;
-        navigator.loadAction.setEnabled(selNb > 0);
-    }
-
     //----------------//
     // loadGlyphNames //
     //----------------//
@@ -176,6 +169,15 @@ class GlyphBrowser
     public void loadGlyphNames ()
     {
         navigator.loadAction.actionPerformed(null);
+    }
+
+    //--------------//
+    // stateChanged //
+    //--------------//
+    public void stateChanged (ChangeEvent e)
+    {
+        int selNb = verifier.getGlyphNames().length;
+        navigator.loadAction.setEnabled(selNb > 0);
     }
 
     //----------------//

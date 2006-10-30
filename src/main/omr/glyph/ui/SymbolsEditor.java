@@ -62,8 +62,8 @@ public class SymbolsEditor
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger    logger = Logger.getLogger(
-        SymbolsEditor.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(SymbolsEditor.class);
 
     /** Color for hiding unknown glyphs when filter is ON */
     public static final Color hiddenColor = Color.white;

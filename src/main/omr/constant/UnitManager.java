@@ -41,6 +41,7 @@ public class UnitManager
 
     /** Separator used in property that concatenates all unit names */
     private static final String SEPARATOR = ";";
+    /** Usual logger utility */
     private static final Logger           logger = Logger.getLogger(
         UnitManager.class);
 

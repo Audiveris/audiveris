@@ -42,6 +42,7 @@ public class BoardsPane
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(BoardsPane.class);
 
     //~ Instance fields --------------------------------------------------------

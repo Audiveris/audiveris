@@ -27,6 +27,7 @@ public class ScrollLagView
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScrollLagView.class);
 
     //~ Constructors -----------------------------------------------------------

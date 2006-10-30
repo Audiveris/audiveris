@@ -32,7 +32,8 @@ public class StepMonitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger   logger = Logger.getLogger(StepMonitor.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(StepMonitor.class);
 
     //~ Instance fields --------------------------------------------------------
 

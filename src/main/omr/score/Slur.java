@@ -30,6 +30,7 @@ public class Slur
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Slur.class);
 
     //~ Instance fields --------------------------------------------------------

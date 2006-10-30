@@ -61,8 +61,11 @@ public class SheetController
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants           constants = new Constants();
-    private static final Logger              logger = Logger.getLogger(
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
         SheetController.class);
 
     /** Flag a tab index that is not yet available */

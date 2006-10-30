@@ -41,8 +41,8 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger          logger = Logger.getLogger(
-        Vertex.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Vertex.class);
 
     /** Compilation flag to forbid duplication of edges : {@value} */
     public static final boolean NO_EDGE_DUPLICATES = true;

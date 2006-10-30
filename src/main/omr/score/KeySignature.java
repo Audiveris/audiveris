@@ -34,8 +34,8 @@ public class KeySignature
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger    logger = Logger.getLogger(
-        KeySignature.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(KeySignature.class);
 
     //~ Instance fields --------------------------------------------------------
 

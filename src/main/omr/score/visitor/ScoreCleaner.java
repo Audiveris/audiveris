@@ -27,8 +27,8 @@ import omr.util.Logger;
 /**
  * Class <code>ScoreCleaner</code> can visit the score hierarchy to get rid of
  * all measure items except barlines.
- * 
- * 
+ *
+ *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
@@ -37,8 +37,8 @@ public class ScoreCleaner
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(
-        ScoreCleaner.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ScoreCleaner.class);
 
     //~ Constructors -----------------------------------------------------------
 

@@ -32,6 +32,7 @@ public class ScoreManager
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreManager.class);
 
     /** The single instance of this class */
@@ -317,17 +318,17 @@ public class ScoreManager
         String ext = FileUtil.getExtension(file);
 
         if (ext.equals(ScoreFormat.XML.extension)) {
-//            try {
-//                // This may take a while, and even fail ...
-//                score = (Score) getXmlMapper()
-//                                    .load(file);
-//                ////
-//                score.dump();
-//                omr.util.Dumper.dump(score.getSheet());
-//
-//                ////
-//            } catch (Exception ex) {
-//            }
+            //            try {
+            //                // This may take a while, and even fail ...
+            //                score = (Score) getXmlMapper()
+            //                                    .load(file);
+            //                ////
+            //                score.dump();
+            //                omr.util.Dumper.dump(score.getSheet());
+            //
+            //                ////
+            //            } catch (Exception ex) {
+            //            }
         } else if (ext.equals(ScoreFormat.BINARY.extension)) {
             // This may take a while, and even fail ...
             score = deserialize(file);

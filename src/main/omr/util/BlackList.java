@@ -27,7 +27,8 @@ public class BlackList
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger     logger = Logger.getLogger(BlackList.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(BlackList.class);
 
     /**
      * Name of the specific file where blacklist is kept.

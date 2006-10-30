@@ -35,6 +35,7 @@ public class Measure
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Measure.class);
 
     //~ Instance fields --------------------------------------------------------

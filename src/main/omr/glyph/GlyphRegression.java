@@ -39,8 +39,11 @@ public class GlyphRegression
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
         GlyphRegression.class);
 
     /** The singleton */

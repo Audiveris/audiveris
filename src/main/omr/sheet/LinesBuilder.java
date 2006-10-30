@@ -14,6 +14,7 @@ import omr.Main;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphSection;
@@ -70,9 +71,11 @@ public class LinesBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(
-        LinesBuilder.class);
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(LinesBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -80,7 +83,7 @@ public class LinesBuilder
     private List<StaffInfo> staves = new ArrayList<StaffInfo>();
 
     /** Related scale */
-    private final Scale  scale;
+    private final Scale scale;
 
     /** Lag view on staff lines, if so desired */
     private GlyphLagView lagView;
@@ -89,7 +92,7 @@ public class LinesBuilder
     private int[] histo;
 
     /** Threshold eeded for displayChart */
-    private int   threshold;
+    private int threshold;
 
     //~ Constructors -----------------------------------------------------------
 

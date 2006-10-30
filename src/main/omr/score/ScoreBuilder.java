@@ -40,8 +40,8 @@ public class ScoreBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger            logger = Logger.getLogger(
-        ScoreBuilder.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ScoreBuilder.class);
 
     /** A comparator to order glyph according to their translation order */
     private static final Comparator<Glyph> glyphComparator = new Comparator<Glyph>() {

@@ -30,6 +30,7 @@ public abstract class Check<C extends Checkable>
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Check.class);
 
     /**

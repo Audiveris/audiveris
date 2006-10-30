@@ -78,13 +78,17 @@ public class Main
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Very first actions */
     static {
         // Time stamps
         Clock.resetTime();
     }
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(Main.class);
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Main.class);
 
     /** Installation container and folder */
     private static File container;

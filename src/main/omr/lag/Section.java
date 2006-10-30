@@ -46,14 +46,13 @@ import javax.xml.bind.annotation.*;
  * @version $Id$
  */
 @XmlAccessorType(XmlAccessType.NONE)
-///@XmlType(name = "section")
 public class Section<L extends Lag, S extends Section<L, S>>
     extends Vertex<L, S>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger                  logger = Logger.getLogger(
-        Section.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Section.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -62,7 +61,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     private int firstPos;
 
     /** The collection of runs that make up the section */
-    @XmlElement(name="run")
+    @XmlElement(name = "run")
     private final List<Run> runs = new ArrayList<Run>();
 
     /** Bounding rectangle (regardless of orientation) */

@@ -24,6 +24,7 @@ public class ScoreConstants
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
     /** Height in pixels of a staff display */

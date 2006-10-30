@@ -56,6 +56,7 @@ public class ScoreExporter
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreExporter.class);
 
     /** Un/marshalling context for use with JAXB */

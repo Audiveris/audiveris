@@ -43,7 +43,8 @@ class NetworkPanel
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger  logger = Logger.getLogger(NetworkPanel.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(NetworkPanel.class);
 
     //~ Instance fields --------------------------------------------------------
 

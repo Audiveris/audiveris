@@ -60,7 +60,8 @@ public class SheetAssembly
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger  logger = Logger.getLogger(SheetAssembly.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(SheetAssembly.class);
 
     //~ Instance fields --------------------------------------------------------
 

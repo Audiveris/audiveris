@@ -73,7 +73,8 @@ public class Picture
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger   logger = Logger.getLogger(Picture.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Picture.class);
 
     /**
      * Constant color of the picture background (generally white).
@@ -93,8 +94,8 @@ public class Picture
     private final AffineTransform scaleTransform = AffineTransform.getScaleInstance(
         1d,
         1d);
-    private DataBuffer            dataBuffer;
-    private Dimension             dimension;
+    private DataBuffer  dataBuffer;
+    private Dimension   dimension;
 
     /** Original image dimension */
     private Dimension originalDimension;

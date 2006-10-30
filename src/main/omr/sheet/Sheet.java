@@ -105,8 +105,8 @@ public class Sheet
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger                logger = Logger.getLogger(
-        Sheet.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Sheet.class);
 
     /** List of steps */
     private static List<Step> steps;
@@ -301,7 +301,7 @@ public class Sheet
             // Perform the initial recognition of all glyphs built
             GlyphInspector inspector = getGlyphInspector();
             inspector.evaluateGlyphs(inspector.getSymbolMaxGrade());
-            
+
             // Determine score parts based on braces found
             inspector.processBraces();
         }

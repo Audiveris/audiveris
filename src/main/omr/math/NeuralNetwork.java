@@ -42,7 +42,7 @@ public class NeuralNetwork
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger */
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(NeuralNetwork.class);
 
     /** Un/marshalling context for use with JAXB */

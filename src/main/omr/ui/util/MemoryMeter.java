@@ -34,6 +34,7 @@ public class MemoryMeter
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
     //~ Instance fields --------------------------------------------------------
@@ -193,7 +194,7 @@ public class MemoryMeter
                         lastTotal = total;
                         lastUsed = used;
 
-                        if (used > 10 * constants.alarmThreshold.getValue()) {
+                        if (used > (10 * constants.alarmThreshold.getValue())) {
                             progressBar.setForeground(Color.red);
                         } else {
                             progressBar.setForeground(defaultForeground);

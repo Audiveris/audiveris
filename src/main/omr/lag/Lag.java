@@ -56,6 +56,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Lag.class);
 
     //~ Instance fields --------------------------------------------------------

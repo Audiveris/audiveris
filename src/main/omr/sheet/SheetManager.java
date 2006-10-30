@@ -31,8 +31,8 @@ public class SheetManager
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger    logger = Logger.getLogger(
-        SheetManager.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(SheetManager.class);
 
     /** The single instance of this class */
     private static SheetManager INSTANCE;

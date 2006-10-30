@@ -64,6 +64,7 @@ class ShapeFocusBoard
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         ShapeFocusBoard.class);
 
@@ -74,7 +75,7 @@ class ShapeFocusBoard
         /** Display all symbols */
         ALL,
         /** Display only known symbols */
-        KNOWN,
+        KNOWN, 
         /** Display only unknown symbols */
         UNKNOWN;
     }

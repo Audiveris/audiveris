@@ -56,9 +56,11 @@ public class IconManager
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants        constants = new Constants();
-    private static final Logger           logger = Logger.getLogger(
-        IconManager.class);
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(IconManager.class);
 
     /** Dedicated file extension for our symbol icon files */
     private static final String FILE_EXTENSION = ".xml";
@@ -473,7 +475,7 @@ public class IconManager
         throws JAXBException
     {
         Unmarshaller um = getJaxbContext()
-                           .createUnmarshaller();
+                              .createUnmarshaller();
 
         return um.unmarshal(is);
     }

@@ -51,7 +51,8 @@ public class Scale
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger    logger = Logger.getLogger(Scale.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Scale.class);
 
     //~ Instance fields --------------------------------------------------------
 

@@ -51,6 +51,7 @@ public class PixelBoard
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(PixelBoard.class);
 
     //~ Instance fields --------------------------------------------------------

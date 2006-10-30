@@ -39,7 +39,8 @@ public class Barline
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger       logger = Logger.getLogger(Barline.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Barline.class);
 
     /** Map of signature -> bar shape */
     private static Map<String, Shape> sigs;

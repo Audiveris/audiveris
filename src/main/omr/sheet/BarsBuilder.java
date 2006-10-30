@@ -37,9 +37,9 @@ import omr.lag.VerticalOrientation;
 
 import omr.score.Barline;
 import omr.score.Measure;
+import omr.score.Part;
 import omr.score.Score;
 import omr.score.ScoreConstants;
-import omr.score.Part;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
@@ -85,9 +85,11 @@ public class BarsBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants     constants = new Constants();
-    private static final Logger        logger = Logger.getLogger(
-        BarsBuilder.class);
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(BarsBuilder.class);
 
     /** Failure */
     private static final FailureResult NOT_SYSTEM_ALIGNED = new FailureResult(
@@ -158,7 +160,7 @@ public class BarsBuilder
 
         // (Re)set the global ScorePart list accordingly
         List<Part> partList = null;
-        boolean         ok = true;
+        boolean    ok = true;
 
         for (SystemInfo systemInfo : sheet.getSystems()) {
             logger.fine(systemInfo.getScoreSystem().toString());

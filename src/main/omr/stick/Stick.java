@@ -51,6 +51,7 @@ public class Stick
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Stick.class);
 
     //~ Instance fields --------------------------------------------------------

@@ -32,18 +32,19 @@ public class Step
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Step.class);
 
     /** Related UI when used in interactive mode */
     private static StepMonitor monitor;
 
     /** The most popular step, so it's easier to get it directly */
-    private static Step  LOAD;
+    private static Step LOAD;
 
     //~ Instance fields --------------------------------------------------------
 
     /** Reflection field to the corresponding sheet InstanceStep */
-    private final Field  field;
+    private final Field field;
 
     /** Readable description */
     private final String description;

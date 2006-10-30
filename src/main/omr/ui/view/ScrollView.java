@@ -33,6 +33,7 @@ public class ScrollView
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScrollView.class);
 
     //~ Instance fields --------------------------------------------------------

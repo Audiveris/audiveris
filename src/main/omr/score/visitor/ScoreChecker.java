@@ -30,8 +30,8 @@ import omr.util.Logger;
 /**
  * Class <code>ScoreChecker</code> can visit the score hierarchy perform
  * global checking on score nodes.
- * 
- * 
+ *
+ *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
@@ -40,8 +40,8 @@ public class ScoreChecker
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(
-        ScoreChecker.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ScoreChecker.class);
 
     //~ Constructors -----------------------------------------------------------
 

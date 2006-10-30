@@ -35,6 +35,7 @@ public abstract class StaffNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MusicNode.class);
 
     //~ Instance fields --------------------------------------------------------

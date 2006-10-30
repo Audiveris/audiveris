@@ -33,8 +33,8 @@ import java.awt.Color;
 /**
  * Class <code>ScoreColorizer</code> can visit the score hierarchy for
  * colorization (assigning colors) of related sections in the Sheet display.
- * 
- * 
+ *
+ *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
@@ -43,8 +43,8 @@ public class ScoreColorizer
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(
-        ScoreColorizer.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ScoreColorizer.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -61,14 +61,14 @@ public class ScoreColorizer
 
     /**
      * Creates a new ScoreColorizer object.
-     * 
+     *
      * @param lag       the lag to be colorized
      * @param viewIndex the provided lag view index
      * @param color     the color to use
      */
     public ScoreColorizer (GlyphLag lag,
-                              int      viewIndex,
-                              Color    color)
+                           int      viewIndex,
+                           Color    color)
     {
         this.lag = lag;
         this.viewIndex = viewIndex;

@@ -40,12 +40,14 @@ public class Selection
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants         constants = new Constants();
-    private static final Logger            logger = Logger.getLogger(
-        Selection.class);
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Selection.class);
 
     /** Attempt to debug choreography of messages ... */
-    private static int                     level = 0;
+    private static int level = 0;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -56,7 +58,7 @@ public class Selection
     private final SelectionTag tag;
 
     /** The entity designated by this selection */
-    private Object  entity;
+    private Object entity;
 
     /** Indicate if entity has changed */
     private boolean changed = false;

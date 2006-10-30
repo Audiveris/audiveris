@@ -45,7 +45,60 @@ public abstract class Board
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Board.class);
+
+    //~ Enumerations -----------------------------------------------------------
+
+    //-----//
+    // Tag //
+    //-----//
+    /**
+     * Enum <code>Tag</code> is used to refer to the various user boards.
+     */
+    public enum Tag {
+        /** Board for check results */
+        CHECK("Check"),
+        /** Custom board */
+        CUSTOM("Custom"), 
+        /** Board for glyph info */
+        GLYPH("Glyph"), 
+        /** Board for pixel info (coordinates, pixel grey level) */
+        PIXEL("Pixel"), 
+        /** Board for run info */
+        RUN("Run"), 
+        /** Board for section info */
+        SECTION("Section");
+        // For description only
+        private String label;
+
+        //-----//
+        // Tag //
+        //-----//
+        /**
+         * Create a tag enum item, with its provided description
+         *
+         * @param label the tag description
+         */
+        Tag (String label)
+        {
+            this.label = label;
+        }
+
+        //----------//
+        // toString //
+        //----------//
+        /**
+         * Report the tag description
+         *
+         * @return the tag description
+         */
+        @Override
+        public String toString ()
+        {
+            return label;
+        }
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -231,64 +284,5 @@ public abstract class Board
                         SelectionHint hint)
     {
         logger.info("Board default update. selection=" + selection);
-    }
-
-    //~ Enumerations -----------------------------------------------------------
-
-    //-----//
-    // Tag //
-    //-----//
-    /**
-     * Enum <code>Tag</code> is used to refer to the various user boards.
-     */
-    public enum Tag
-    {
-        /** Board for check results */
-        CHECK("Check"),
-
-        /** Custom board */
-        CUSTOM("Custom"),
-
-        /** Board for glyph info */
-        GLYPH("Glyph"),
-
-        /** Board for pixel info (coordinates, pixel grey level) */
-        PIXEL("Pixel"),
-
-        /** Board for run info */
-        RUN("Run"),
-
-        /** Board for section info */
-        SECTION("Section");
-
-        // For description only
-        private String label;
-
-        //-----//
-        // Tag //
-        //-----//
-        /**
-         * Create a tag enum item, with its provided description
-         *
-         * @param label the tag description
-         */
-        Tag (String label)
-        {
-            this.label = label;
-        }
-
-        //----------//
-        // toString //
-        //----------//
-        /**
-         * Report the tag description
-         *
-         * @return the tag description
-         */
-        @Override
-        public String toString ()
-        {
-            return label;
-        }
     }
 }

@@ -42,8 +42,11 @@ public class Panel
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(Panel.class);
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Panel.class);
 
     /** Default Insets */
     public static Insets DEFAULT_INSETS;

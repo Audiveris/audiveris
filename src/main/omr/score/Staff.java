@@ -42,6 +42,7 @@ public class Staff
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Staff.class);
 
     //~ Instance fields --------------------------------------------------------

@@ -27,6 +27,7 @@ public class UIUtilities
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(UIUtilities.class);
 
     /**

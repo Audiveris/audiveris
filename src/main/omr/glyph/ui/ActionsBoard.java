@@ -42,7 +42,8 @@ public class ActionsBoard
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger   logger = Logger.getLogger(ActionsBoard.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ActionsBoard.class);
 
     //~ Instance fields --------------------------------------------------------
 

@@ -44,9 +44,11 @@ public class ScaleBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(
-        ScaleBuilder.class);
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ScaleBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
 

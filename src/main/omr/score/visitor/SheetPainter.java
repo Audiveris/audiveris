@@ -42,11 +42,11 @@ import java.awt.*;
  * Class <code>SheetPainter</code> defines for every node in Score hierarchy
  * the rendering of related sections (with preset colors) in the dedicated
  * <b>Sheet</b> display.
- * 
+ *
  * <p>Nota: It has been extended to deal with rendering of initial sheet
  * elements.
- * 
- * 
+ *
+ *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
@@ -55,8 +55,8 @@ public class SheetPainter
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(
-        SheetPainter.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(SheetPainter.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -73,13 +73,13 @@ public class SheetPainter
     //--------------//
     /**
      * Creates a new SheetPainter object.
-     * 
-     * 
+     *
+     *
      * @param g Graphic context
      * @param z zoom factor
      */
     public SheetPainter (Graphics g,
-                             Zoom     z)
+                         Zoom     z)
     {
         this.g = g;
         this.z = z;

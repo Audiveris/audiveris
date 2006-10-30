@@ -42,9 +42,11 @@ public abstract class Evaluator
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants                constants = new Constants();
-    private static final Logger                   logger = Logger.getLogger(
-        Evaluator.class);
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Evaluator.class);
 
     /** Extension used by evaluator backup files */
     private static final String BACKUP_EXTENSION = ".def";

@@ -57,15 +57,17 @@ import javax.swing.event.*;
  */
 public class ZoomedPanel
     extends JPanel
-    implements ChangeListener,
-               MouseMonitor,
-               SelectionObserver // To receive events for location selection
+    implements ChangeListener, MouseMonitor,
+                   SelectionObserver // To receive events for location selection
 
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(ZoomedPanel.class);
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ZoomedPanel.class);
 
     //~ Instance fields --------------------------------------------------------
 

@@ -61,7 +61,8 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger   logger = Logger.getLogger(LagView.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(LagView.class);
 
     // Color used when rendering specific sections
     private static final Color    SPECIFIC_COLOR = Color.yellow;

@@ -36,6 +36,7 @@ public class GlyphModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GlyphModel.class);
 
     //~ Instance fields --------------------------------------------------------

@@ -46,8 +46,8 @@ class TrainingPanel
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger       logger = Logger.getLogger(
-        TrainingPanel.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(TrainingPanel.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -251,8 +251,8 @@ class TrainingPanel
 
         for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
             Glyph glyph = it.next();
-            int index = glyph.getShape()
-                             .ordinal();
+            int   index = glyph.getShape()
+                               .ordinal();
 
             if (index >= present.length) {
                 logger.warning(

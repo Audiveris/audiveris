@@ -53,8 +53,11 @@ public class Zoom
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants  constants = new Constants();
-    private static final Logger     logger = Logger.getLogger(Zoom.class);
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Zoom.class);
 
     // To assign a unique Id
     private static int              globalId;

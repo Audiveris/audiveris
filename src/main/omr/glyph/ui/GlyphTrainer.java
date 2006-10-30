@@ -49,7 +49,8 @@ public class GlyphTrainer
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger   logger = Logger.getLogger(GlyphTrainer.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(GlyphTrainer.class);
 
     /** The single instance of this class */
     private static GlyphTrainer INSTANCE;
@@ -242,7 +243,7 @@ public class GlyphTrainer
             /** No ongoing activity */
             INACTIVE,
             /** Selecting glyph to build a population for training */
-            SELECTING,
+            SELECTING, 
             /** Using the population to train the evaluator */
             TRAINING;
         }

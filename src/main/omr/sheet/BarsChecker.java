@@ -52,9 +52,11 @@ class BarsChecker
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants     constants = new Constants();
-    private static final Logger        logger = Logger.getLogger(
-        BarsChecker.class);
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(BarsChecker.class);
 
     /** Successful bar that embraces a whole system */
     private static final SuccessResult BAR_SYSTEM_DEFINING = new SuccessResult(

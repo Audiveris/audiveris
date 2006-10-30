@@ -39,8 +39,8 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger           logger = Logger.getLogger(
-        Digraph.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Digraph.class);
 
     //~ Instance fields --------------------------------------------------------
 

@@ -34,8 +34,8 @@ import java.awt.Point;
  * internal data.
  * Run computations on the tree of score, systems, etc, so that all display
  * data, such as origins and widths are available for display use.
- * 
- * 
+ *
+ *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
@@ -44,8 +44,8 @@ public class ScoreFixer
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger logger = Logger.getLogger(
-        ScoreFixer.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ScoreFixer.class);
 
     //~ Constructors -----------------------------------------------------------
 

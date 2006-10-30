@@ -43,8 +43,11 @@ public class IconGlyph
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(IconGlyph.class);
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(IconGlyph.class);
 
     /**
      * Reduction of icon image versus normal glyph size. The ascii descriptions

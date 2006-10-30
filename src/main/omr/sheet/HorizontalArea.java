@@ -40,9 +40,11 @@ public class HorizontalArea
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(
-        HorizontalArea.class);
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(HorizontalArea.class);
 
     //~ Constructors -----------------------------------------------------------
 

@@ -59,9 +59,11 @@ public class LineBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants       constants = new Constants();
-    private static final Logger          logger = Logger.getLogger(
-        LineBuilder.class);
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(LineBuilder.class);
     private static final StickComparator stickComparator = new StickComparator();
     private static int                   globalId = 0;
 

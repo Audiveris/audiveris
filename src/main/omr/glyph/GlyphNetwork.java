@@ -34,9 +34,11 @@ public class GlyphNetwork
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(
-        GlyphNetwork.class);
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(GlyphNetwork.class);
 
     /** The singleton */
     private static GlyphNetwork INSTANCE;

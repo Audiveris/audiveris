@@ -26,18 +26,33 @@ public class Moments
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger  logger = Logger.getLogger(Moments.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Moments.class);
 
     /**  Number of moments handled : {@value}*/
     public static final int size = 19;
 
     /** Labels for better display */
     public static final String[] labels = {
-                                              /*  0 */ "weight", /*  1 */ "width", /*  2 */ "height",
-                                              /*  3 */ "n20", /*  4 */ "n11", /*  5 */ "n02", /*  6 */ "n30",
-                                              /*  7 */ "n21", /*  8 */ "n12", /*  9 */ "n03", /* 10 */ "h1",
-                                              /* 11 */ "h2", /* 12 */ "h3", /* 13 */ "h4", /* 14 */ "h5",
-                                              /* 15 */ "h6", /* 16 */ "h7", /* 17 */ "xBar", /* 18 */ "yBar"
+                                              /*  0 */ "weight", /*  1 */
+    "width", /*  2 */
+    "height", /*  3 */
+    "n20", /*  4 */
+    "n11", /*  5 */
+    "n02", /*  6 */
+    "n30", /*  7 */
+    "n21", /*  8 */
+    "n12", /*  9 */
+    "n03", /* 10 */
+    "h1", /* 11 */
+    "h2", /* 12 */
+    "h3", /* 13 */
+    "h4", /* 14 */
+    "h5", /* 15 */
+    "h6", /* 16 */
+    "h7", /* 17 */
+    "xBar", /* 18 */
+    "yBar"
                                           };
 
     //~ Instance fields --------------------------------------------------------
@@ -228,6 +243,19 @@ public class Moments
     }
 
     //-----------//
+    // getHeight //
+    //-----------//
+    /**
+     * Report the height of the glyph, normalized by unit
+     *
+     * @return the normalized height
+     */
+    public Double getHeight ()
+    {
+        return k[2];
+    }
+
+    //-----------//
     // getValues //
     //-----------//
     /**
@@ -264,19 +292,6 @@ public class Moments
     public Double getWidth ()
     {
         return k[1];
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    /**
-     * Report the height of the glyph, normalized by unit
-     *
-     * @return the normalized height
-     */
-    public Double getHeight()
-    {
-        return k[2];
     }
 
     //----------//

@@ -34,6 +34,7 @@ public class LogSlider
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
     // Internal resolution

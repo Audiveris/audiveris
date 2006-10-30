@@ -88,6 +88,7 @@ public class MusicNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MusicNode.class);
 
     //~ Constructors -----------------------------------------------------------
@@ -131,7 +132,6 @@ public class MusicNode
     public void acceptChildren (Visitor visitor)
     {
         ///logger.info(children.size() + " children for " + this);
-
         for (TreeNode node : children) {
             MusicNode child = (MusicNode) node;
 

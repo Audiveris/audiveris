@@ -35,6 +35,7 @@ public abstract class Constant
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Constant.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -244,7 +245,8 @@ public abstract class Constant
         if (qualifiedName != null) {
             ConstantManager.setProperty(qualifiedName, val);
         } else {
-            System.out.println("*** Constant " + this + " Cannot setString " + val);
+            System.out.println(
+                "*** Constant " + this + " Cannot setString " + val);
         }
     }
 
@@ -474,11 +476,12 @@ public abstract class Constant
     //------------------//
     // checkInitialized //
     //------------------//
-    private final void checkInitialized()
+    private final void checkInitialized ()
     {
         // Make sure everything is initialized properly
         if (name == null) {
-            UnitManager.getInstance().checkDirtySets();
+            UnitManager.getInstance()
+                       .checkDirtySets();
         }
     }
 

@@ -40,8 +40,11 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(SectionView.class);
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(SectionView.class);
 
     // Build a palette with a limited nb of colors
     private static final int     COLOR_NB = 3;

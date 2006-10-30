@@ -34,6 +34,7 @@ public class System
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(System.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -121,7 +122,7 @@ public class System
      * <p>Width is the distance, in units, between left edge and right edge.
      *
      * <p>Height is the distance, in units, from top of first staff, down to
-     * top (and not bottom) of last staff. 
+     * top (and not bottom) of last staff.
      * Nota: It does not count the height of the last staff
      *
      * @param dimension system dimension, in units

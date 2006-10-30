@@ -48,8 +48,11 @@ class ValidationPanel
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
     private static final Constants constants = new Constants();
-    private static final Logger    logger = Logger.getLogger(
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
         ValidationPanel.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -192,9 +195,7 @@ class ValidationPanel
             "",
             standardWidth,
             standardWidth);
-        PanelBuilder               builder = new PanelBuilder(
-            layout,
-            component);
+        PanelBuilder builder = new PanelBuilder(layout, component);
 
         // Validation title & progress bar
         int r = 1;

@@ -25,6 +25,7 @@ public class UITest
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(UITest.class);
 
     //~ Constructors -----------------------------------------------------------
@@ -38,7 +39,8 @@ public class UITest
     public static void test ()
     {
         SelectionManager.dumpAllSelections();
-//        GlyphVerifier.getInstance()
-//                     .dumpSelections();
+
+        //        GlyphVerifier.getInstance()
+        //                     .dumpSelections();
     }
 }

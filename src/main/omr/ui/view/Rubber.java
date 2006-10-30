@@ -77,6 +77,7 @@ public class Rubber
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Rubber.class);
 
     // Color used for drawing horizontal & vertical rules

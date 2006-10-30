@@ -58,8 +58,8 @@ public class GlyphLag
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger               logger = Logger.getLogger(
-        GlyphSection.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(GlyphSection.class);
 
     //~ Instance fields --------------------------------------------------------
 

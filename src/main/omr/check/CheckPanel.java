@@ -39,6 +39,7 @@ public class CheckPanel<C extends Checkable>
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(CheckPanel.class);
     private static final Color  GREEN_COLOR = new Color(100, 150, 0);
     private static final Color  ORANGE_COLOR = new Color(255, 150, 0);

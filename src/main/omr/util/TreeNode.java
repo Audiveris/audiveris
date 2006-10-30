@@ -34,7 +34,8 @@ public class TreeNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger    logger = Logger.getLogger(TreeNode.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(TreeNode.class);
 
     //~ Instance fields --------------------------------------------------------
 

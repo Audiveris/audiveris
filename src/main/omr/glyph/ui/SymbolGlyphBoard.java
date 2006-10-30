@@ -55,6 +55,7 @@ class SymbolGlyphBoard
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         SymbolGlyphBoard.class);
 

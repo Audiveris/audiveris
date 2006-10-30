@@ -31,7 +31,8 @@ public class CheckSuite<C extends Checkable>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger  logger = Logger.getLogger(CheckSuite.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(CheckSuite.class);
     private static final String  RED_COLOR = "#FF0000";
     private static final String  ORANGE_COLOR = "#FFAA00";
     private static final String  GREEN_COLOR = "#00FF00";

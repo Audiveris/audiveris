@@ -59,8 +59,8 @@ public class Glyph
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger                               logger = Logger.getLogger(
-        Glyph.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Glyph.class);
 
     //~ Instance fields --------------------------------------------------------
 

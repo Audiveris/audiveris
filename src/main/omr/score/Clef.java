@@ -28,6 +28,7 @@ public class Clef
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Clef.class);
 
     //~ Instance fields --------------------------------------------------------

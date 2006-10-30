@@ -32,8 +32,8 @@ public abstract class ConstantSet
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger         logger = Logger.getLogger(
-        ConstantSet.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ConstantSet.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -166,6 +166,19 @@ public abstract class ConstantSet
                           .get(i);
     }
 
+    //--------//
+    // getMap //
+    //--------//
+    SortedMap<String, Constant> getMap ()
+    {
+        if (map == null) {
+            // Initialize map content
+            initMap();
+        }
+
+        return map;
+    }
+
     //---------//
     // getName //
     //---------//
@@ -191,19 +204,6 @@ public abstract class ConstantSet
     {
         return getMap()
                    .size();
-    }
-
-    //--------//
-    // getMap //
-    //--------//
-    SortedMap<String, Constant> getMap ()
-    {
-        if (map == null) {
-            // Initialize map content
-            initMap();
-        }
-
-        return map;
     }
 
     //---------//
@@ -247,14 +247,14 @@ public abstract class ConstantSet
             }
         }
 
-//        // Dump the current constant values for this unit, if so asked for
-//        if (logger.isFineEnabled() ||
-//            (new Constant.Boolean(
-//            unit,
-//            "constantValues",
-//            false,
-//            "Debugging flag for ConstantSet").getValue())) {
-//            dump();
-//        }
+        //        // Dump the current constant values for this unit, if so asked for
+        //        if (logger.isFineEnabled() ||
+        //            (new Constant.Boolean(
+        //            unit,
+        //            "constantValues",
+        //            false,
+        //            "Debugging flag for ConstantSet").getValue())) {
+        //            dump();
+        //        }
     }
 }

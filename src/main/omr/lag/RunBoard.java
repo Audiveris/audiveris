@@ -41,6 +41,7 @@ public class RunBoard
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(RunBoard.class);
 
     //~ Instance fields --------------------------------------------------------

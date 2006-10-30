@@ -42,8 +42,8 @@ import java.util.List;
 /**
  * Class <code>ScorePainter</code> defines for every node in Score hierarchy
  * the painting of node in the <b>Score</b> display.
- * 
- * 
+ *
+ *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
@@ -52,8 +52,8 @@ public class ScorePainter
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger     logger = Logger.getLogger(
-        ScorePainter.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ScorePainter.class);
 
     /** Brace icon */
     private static final SymbolIcon icon = IconManager.getInstance()
@@ -77,13 +77,13 @@ public class ScorePainter
     //--------------//
     /**
      * Creates a new ScorePainter object.
-     * 
-     * 
+     *
+     *
      * @param g Graphic context
      * @param z zoom factor
      */
     public ScorePainter (Graphics g,
-                            Zoom     z)
+                         Zoom     z)
     {
         this.g = g;
         this.zoom = z;

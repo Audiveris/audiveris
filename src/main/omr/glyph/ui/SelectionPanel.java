@@ -46,8 +46,11 @@ class SelectionPanel
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants  constants = new Constants();
-    private static final Logger     logger = Logger.getLogger(
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
         GlyphRepository.class);
 
     //~ Instance fields --------------------------------------------------------

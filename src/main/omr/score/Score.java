@@ -41,6 +41,7 @@ public class Score
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Score.class);
 
     //~ Instance fields --------------------------------------------------------

@@ -29,6 +29,7 @@ public class BasicLine
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Line.class);
 
     //~ Instance fields --------------------------------------------------------

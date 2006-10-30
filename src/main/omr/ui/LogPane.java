@@ -33,9 +33,11 @@ public class LogPane
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants           constants = new Constants();
-    private static final Logger              logger = Logger.getLogger(
-        LogPane.class);
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(LogPane.class);
 
     //~ Instance fields --------------------------------------------------------
 

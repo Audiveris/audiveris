@@ -46,6 +46,7 @@ public class SymbolRipper
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SymbolRipper.class);
 
     static {
@@ -229,8 +230,8 @@ public class SymbolRipper
                 GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
 
         // Initial values
-//        fontName.getSpinner()
-//                .setValue("Maestro");
+        //        fontName.getSpinner()
+        //                .setValue("Maestro");
         fontSize.setValue(31);
         pointCode.setModel(new SpinnerNumberModel(38, 0, 255, 1));
         width.setValue(23);

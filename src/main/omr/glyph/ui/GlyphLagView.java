@@ -51,8 +51,8 @@ public class GlyphLagView
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger          logger = Logger.getLogger(
-        GlyphLagView.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(GlyphLagView.class);
 
     //~ Instance fields --------------------------------------------------------
 

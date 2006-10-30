@@ -33,8 +33,8 @@ public class StaffBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger        logger = Logger.getLogger(
-        StaffBuilder.class);
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(StaffBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -132,6 +132,6 @@ public class StaffBuilder
         }
 
         // Allocate the staff info
-        return new StaffInfo(left, right, scale, sheet.getScale(),lines);
+        return new StaffInfo(left, right, scale, sheet.getScale(), lines);
     }
 }
