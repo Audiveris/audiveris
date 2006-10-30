@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.score.Score;
 import omr.score.ScoreManager;
+import omr.score.visitor.ScoreExporter;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
@@ -28,6 +29,7 @@ import omr.util.Logger;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 import javax.swing.*;
@@ -133,10 +135,14 @@ public class Main
     private Main (String[] args,
                   Class    caller)
     {
-        Package      thisPackage = Main.class.getPackage();
+        // Locale US to be used in the whole application ?
+        if (constants.forceLocaleUS.getValue()) {
+            Locale.setDefault(Locale.US);
+        }
 
         // Tool name
-        final String name = thisPackage.getSpecificationTitle();
+        final Package thisPackage = Main.class.getPackage();
+        final String  name = thisPackage.getSpecificationTitle();
 
         if (name != null) {
             toolName = name;
@@ -410,10 +416,6 @@ public class Main
             if (batchMode) {
                 // Do we have to write down the score?
                 if (writeScore) {
-//                    ScoreManager.getInstance()
-//                                .storeAll();
-//                    ScoreManager.getInstance()
-//                                .serializeAll();
                     ScoreManager.getInstance()
                                 .exportAll();
                 }
@@ -613,6 +615,9 @@ public class Main
                 worker.setPriority(Thread.MIN_PRIORITY);
                 worker.start();
             }
+
+            // Background task : JaxbContext
+            ScoreExporter.preloadJaxbContext();
         } else {
             logger.info("Batch processing");
             browse();
@@ -669,15 +674,25 @@ public class Main
     private static final class Constants
         extends ConstantSet
     {
+        /** Should we force the Locale US in the whole application */
+        Constant.Boolean forceLocaleUS = new Constant.Boolean(
+            true,
+            "Should we force the Locale US in the whole application?");
+
+        /** Directory for saved files, defaulted to 'save' audiveris subdir */
         Constant.String savePath = new Constant.String(
             "",
             "Directory for saved files, defaulted to 'save' audiveris subdir");
+
+        /** Utility constant */
         Constant.String toolName = new Constant.String(
             "Audiveris",
-            "Name of this application");
+            "* DO NOT EDIT * - Name of this application");
+
+        /** Utility constant */
         Constant.String toolVersion = new Constant.String(
             "",
-            "Version of this application");
+            "* DO NOT EDIT * - Version of this application");
     }
 
     //--------------//
