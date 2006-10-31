@@ -201,7 +201,9 @@ public class BarsBuilder
             for (Part part : partList) {
                 part.setId(++index);
                 part.setName("Part_" + index);
-                logger.info("Global " + part);
+                if (logger.isFineEnabled()) {
+                    logger.fine("Global " + part);
+                }
             }
 
             // This is now the global score part list
