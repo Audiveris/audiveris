@@ -222,17 +222,21 @@ public class GlyphLag
     // lookupGlyphs //
     //--------------//
     /**
-     * Look up for a collection of glyphs, knowing the coordinates rectangle
+     * Look up in a collection of glyphs for <b>all</b> glyphs contained in a
+     * provided rectangle
      *
+     * @param collection the collection of glyphs to be browsed
      * @param rect the coordinates rectangle
      *
-     * @return the collection of glyphs, which may be empty
+     * @return the glyphs found, which may be an empty list
      */
-    public List<Glyph> lookupGlyphs (Rectangle rect)
+    public List<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
+                                     Rectangle                  rect)
     {
         List<Glyph> list = new ArrayList<Glyph>();
 
-        for (Glyph glyph : glyphs.values()) {
+        //for (Glyph glyph : glyphs.values()) {
+        for (Glyph glyph : collection) {
             boolean inRect = true;
             sectionTest: 
             for (GlyphSection section : glyph.getMembers()) {
@@ -307,17 +311,19 @@ public class GlyphLag
                         // Look for enclosed glyphs
                         if ((glyphSetSelection != null) &&
                             (glyphSetSelection.countObservers() > 0)) {
-                            List<Glyph> glyphs = lookupGlyphs(rect);
+                            List<Glyph> glyphsFound = lookupGlyphs(
+                                glyphs.values(),
+                                rect);
 
-                            if (glyphs.size() > 0) {
+                            if (glyphsFound.size() > 0) {
                                 glyphSelection.setEntity(
-                                    glyphs.get(glyphs.size() - 1),
+                                    glyphsFound.get(glyphsFound.size() - 1),
                                     hint);
                             } else {
                                 glyphSelection.setEntity(null, hint);
                             }
 
-                            glyphSetSelection.setEntity(glyphs, hint);
+                            glyphSetSelection.setEntity(glyphsFound, hint);
                         }
                     } else {
                         // If a section has just been found,

@@ -70,7 +70,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     //~ Instance fields --------------------------------------------------------
 
     /** Specific sections for display & lookup */
-    protected final Collection<S> specifics;
+    protected final Collection<S> specificSections;
 
     /** Related lag model */
     protected final L lag;
@@ -98,21 +98,21 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     /**
      * Create a view on the provided lag, building the related section view.
      *
-     * @param lag       the lag to be displayed
-     * @param specifics the collection of 'specific' sections, or null
+     * @param lag              the lag to be displayed
+     * @param specificSections the collection of 'specific' sections, or null
      */
     public LagView (L             lag,
-                    Collection<S> specifics)
+                    Collection<S> specificSections)
     {
         // Self-register this view in the related lag
         this.lag = lag;
         lag.addView(this);
 
         // Remember specific sections
-        if (specifics != null) {
-            this.specifics = specifics;
+        if (specificSections != null) {
+            this.specificSections = specificSections;
         } else {
-            this.specifics = new ArrayList<S>(0);
+            this.specificSections = new ArrayList<S>(0);
         }
 
         // Process vertices
@@ -121,7 +121,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         }
 
         // Process also all specific sections
-        for (S section : this.specifics) {
+        for (S section : this.specificSections) {
             addSectionView(section);
         }
 
@@ -163,7 +163,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     {
         if (showingSpecifics) {
             // Look up in specifics first
-            for (S section : specifics) {
+            for (S section : specificSections) {
                 if (section.getId() == id) {
                     return section;
                 }
@@ -208,7 +208,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
 
         // Update standard vertices as well as specific ones
         setCollectionZoom(lag.getVertices(), viewIndex, zoom);
-        setCollectionZoom(specifics, viewIndex, zoom);
+        setCollectionZoom(specificSections, viewIndex, zoom);
 
         super.setZoom(zoom);
     }
@@ -243,7 +243,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         // Colorize specific sections, with a different color
         SectionView view;
 
-        for (S section : this.specifics) {
+        for (S section : specificSections) {
             view = (SectionView) section.getViews()
                                         .get(viewIndex);
             view.setColor(SPECIFIC_COLOR);
@@ -266,7 +266,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     {
         if (showingSpecifics) {
             // Look up in specifics first
-            S section = lag.lookupSection(specifics, pt);
+            S section = lookupSpecificSection(pt);
 
             if (section != null) {
                 return section;
@@ -276,32 +276,32 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         return lag.lookupSection(lag.getVertices(), pt);
     }
 
-    //---------------//
-    // lookupSection //
-    //---------------//
-    /**
-     * Given an absolute rectangle, retrieve the first contained section if any,
-     * first looking into the specifics if view is currently displaying them,
-     * then looking into the standard sections
-     *
-     * @param rect the given Rectangle
-     *
-     * @return the (first) section found, or null otherwise
-     */
-    public S lookupSection (Rectangle rect)
-    {
-        if (showingSpecifics) {
-            // Look up in specifics first
-            S section = lookupSection(specifics, rect);
-
-            if (section != null) {
-                return section;
-            }
-        }
-
-        return lookupSection(lag.getVertices(), rect);
-    }
-
+//    //---------------//
+//    // lookupSection //
+//    //---------------//
+//    /**
+//     * Given an absolute rectangle, retrieve the first contained section if any,
+//     * first looking into the specifics if view is currently displaying them,
+//     * then looking into the standard sections
+//     *
+//     * @param rect the given Rectangle
+//     *
+//     * @return the (first) section found, or null otherwise
+//     */
+//    public S lookupSection (Rectangle rect)
+//    {
+//        if (showingSpecifics) {
+//            // Look up in specifics first
+//            S section = lookupSection(specificSections, rect);
+//
+//            if (section != null) {
+//                return section;
+//            }
+//        }
+//
+//        return lookupSection(lag.getVertices(), rect);
+//    }
+//
     //-----------------------//
     // lookupSpecificSection //
     //-----------------------//
@@ -315,7 +315,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      */
     public S lookupSpecificSection (Point pt)
     {
-        return lag.lookupSection(specifics, pt);
+        return lag.lookupSection(specificSections, pt);
     }
 
     //--------//
@@ -333,7 +333,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
 
         // Render also all specific sections ?
         if (showingSpecifics) {
-            renderCollection(g, specifics, viewIndex);
+            renderCollection(g, specificSections, viewIndex);
         }
 
         // Paint additional items, such as recognized items, etc...
@@ -429,7 +429,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
                 // Lookup a specific section with proper ID
                 int id = (Integer) selection.getEntity();
 
-                for (S section : specifics) {
+                for (S section : specificSections) {
                     if (section.getId() == id) {
                         sectionSelection.setEntity(section, hint);
                         runSelection.setEntity(null, hint);
@@ -441,8 +441,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
                 break;
 
             default :
-
-                ///logger.warning("Unexpected selection event from " + selection);
             }
         }
     }
@@ -545,31 +543,31 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         }
     }
 
-    //---------------//
-    // lookupSection //
-    //---------------//
-    /**
-     * Given an absolute rectangle, retrieve the first contained section if any,
-     * using the provided collection of sections
-     *
-     * @param collection the desired collection of sections
-     * @param rect       the given rectangle
-     *
-     * @return the (first) section found, or null otherwise
-     */
-    private S lookupSection (Collection<S> collection,
-                             Rectangle     rect)
-    {
-        Rectangle target = lag.switchRef(rect, null); // Involutive!
-
-        for (S section : collection) {
-            if (target.contains(section.getContourBox())) {
-                return section;
-            }
-        }
-
-        return null;
-    }
+//    //---------------//
+//    // lookupSection //
+//    //---------------//
+//    /**
+//     * Given an absolute rectangle, retrieve the first contained section if any,
+//     * using the provided collection of sections
+//     *
+//     * @param collection the desired collection of sections
+//     * @param rect       the given rectangle
+//     *
+//     * @return the (first) section found, or null otherwise
+//     */
+//    private S lookupSection (Collection<S> collection,
+//                             Rectangle     rect)
+//    {
+//        Rectangle target = lag.switchRef(rect, null); // Involutive!
+//
+//        for (S section : collection) {
+//            if (target.contains(section.getContourBox())) {
+//                return section;
+//            }
+//        }
+//
+//        return null;
+//    }
 
     //------------------//
     // renderCollection //

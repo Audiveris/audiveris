@@ -18,15 +18,18 @@ import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Predicate;
 
+import java.util.*;
+
 import javax.swing.*;
 
 /**
  * Class <code>SpinnerGlyphModel</code> is a spinner model backed by a {@link
- * GlyphLag}. Any modification in the lag is thus transparently handled, since
- * the lag <b>is</b> the model. <p>A glyph {@link Predicate} can be assigned to
- * this SpinnerGlyphModel at construction time in order to restrict the
- * population of glyphs in the spinner. This class is used by {@link GlyphBoard}
- * only, but is not coupled with it.
+ * GlyphLag} and a potential additional glyph collection (that belongs to a
+ * {@link GlyphLagView}. Any modification in the lag is thus transparently
+ * handled, since the lag <b>is</b> the model. <p>A glyph {@link Predicate} can
+ * be assigned to this SpinnerGlyphModel at construction time in order to
+ * restrict the population of glyphs in the spinner. This class is used by
+ * {@link GlyphBoard} only, but is not coupled with it.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -45,7 +48,10 @@ public class SpinnerGlyphModel
     /** Underlying glyph lag */
     private final GlyphLag lag;
 
-    /** Additionnal predicate if any */
+    /** Additional glyph collection is any */
+    private final Collection<?extends Glyph> specificGlyphs;
+
+    /** Additional predicate if any */
     private final Predicate<Glyph> predicate;
 
     /** Current glyph id */
@@ -63,7 +69,7 @@ public class SpinnerGlyphModel
      */
     public SpinnerGlyphModel (GlyphLag lag)
     {
-        this(lag, null);
+        this(lag, null, null);
     }
 
     //-------------------//
@@ -73,10 +79,12 @@ public class SpinnerGlyphModel
      * Creates a new SpinnerGlyphModel object, with a related glyph predicate
      *
      * @param lag the underlying glyph lag
-     * @param predicate predicate of glyph
+     * @param specificGlyphs additional glyph collection, or null
+     * @param predicate predicate of glyph, or null
      */
-    public SpinnerGlyphModel (GlyphLag         lag,
-                              Predicate<Glyph> predicate)
+    public SpinnerGlyphModel (GlyphLag                   lag,
+                              Collection<?extends Glyph> specificGlyphs,
+                              Predicate<Glyph>           predicate)
     {
         if (lag == null) {
             throw new IllegalArgumentException(
@@ -85,6 +93,12 @@ public class SpinnerGlyphModel
 
         this.lag = lag;
         this.predicate = predicate;
+
+        if (specificGlyphs != null) {
+            this.specificGlyphs = specificGlyphs;
+        } else {
+            this.specificGlyphs = new ArrayList<Glyph>(0);
+        }
 
         currentId = NO_VALUE;
     }
@@ -118,12 +132,30 @@ public class SpinnerGlyphModel
                 }
             }
 
+            // Just in case, fall back to specifics
+            for (Glyph glyph : specificGlyphs) {
+                if ((predicate == null) || predicate.check(glyph)) {
+                    return glyph.getId();
+                }
+            }
+
             return null;
         } else {
-            // Return first suitable glyph after current glyph
+            // Return first suitable glyph after current glyph in lag
             boolean found = false;
 
             for (Glyph glyph : lag.getGlyphs()) {
+                if (!found) {
+                    if (glyph.getId() == cur) {
+                        found = true;
+                    }
+                } else if ((predicate == null) || predicate.check(glyph)) {
+                    return glyph.getId();
+                }
+            }
+
+            // Fall back to specifics
+            for (Glyph glyph : specificGlyphs) {
                 if (!found) {
                     if (glyph.getId() == cur) {
                         found = true;
@@ -161,7 +193,20 @@ public class SpinnerGlyphModel
             return NO_VALUE;
         }
 
+        // Lag
         for (Glyph glyph : lag.getGlyphs()) {
+            if (glyph.getId() == cur) {
+                return (prevGlyph != null) ? prevGlyph.getId() : NO_VALUE;
+            }
+
+            // Should we remember this as (suitable) previous glyph ?
+            if ((predicate == null) || predicate.check(glyph)) {
+                prevGlyph = glyph;
+            }
+        }
+
+        // Specifics
+        for (Glyph glyph : specificGlyphs) {
             if (glyph.getId() == cur) {
                 return (prevGlyph != null) ? prevGlyph.getId() : NO_VALUE;
             }
@@ -198,6 +243,7 @@ public class SpinnerGlyphModel
         if (id == NO_VALUE) {
             ok = true;
         } else {
+            // Lag
             Glyph glyph = lag.getGlyph(id);
 
             if (glyph != null) {
@@ -207,7 +253,21 @@ public class SpinnerGlyphModel
                     ok = true;
                 }
             } else {
+                // Specifics
+                int intId = id.intValue();
                 ok = false;
+
+                for (Glyph g : specificGlyphs) {
+                    if (g.getId() == intId) {
+                        if (predicate != null) {
+                            ok = predicate.check(g);
+                        } else {
+                            ok = true;
+                        }
+
+                        break;
+                    }
+                }
             }
         }
 

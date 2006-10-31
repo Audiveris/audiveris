@@ -398,7 +398,7 @@ class GlyphBrowser
     {
         public MyView ()
         {
-            super(vLag, null, null);
+            super(vLag, null, null, null);
             setName("GlyphVerifier-View");
             setLocationSelection(localPixelSelection);
             localPixelSelection.addObserver(this);

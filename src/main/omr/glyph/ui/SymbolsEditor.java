@@ -409,7 +409,7 @@ public class SymbolsEditor
     {
         private MyView (GlyphLag lag)
         {
-            super(lag, null, SymbolsEditor.this);
+            super(lag, null, SymbolsEditor.this, null);
             setName("GlyphPane-View");
 
             // Current glyph

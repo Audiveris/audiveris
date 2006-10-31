@@ -286,8 +286,8 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     // lookupSection //
     //---------------//
     /**
-     * Given an absolute point, retrieve a containing section if any, using the
-     * provided collection of sections
+     * Given an absolute point, retrieve the <b>first</b> containing section if
+     * any, using the provided collection of sections
      *
      * @param collection the desired collection of sections
      * @param pt         coordinates of the given point
@@ -326,48 +326,48 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         return foundSection;
     }
 
-    //---------------//
-    // lookupSection //
-    //---------------//
-    /**
-     * Given an absolute rectangle, retrieve the first contained section if any,
-     * using the provided collection of sections
-     *
-     * @param collection the desired collection of sections
-     * @param rect       the given rectangle
-     *
-     * @return the (first) section found, or null otherwise
-     */
-    public S lookupSection (Collection<S> collection,
-                            Rectangle     rect)
-    {
-        Rectangle target = switchRef(rect, null); // Involutive!
-
-        // Just in case...
-        S foundSection = (S) sectionSelection.getEntity(); // Compiler warning
-
-        if ((foundSection != null) &&
-            target.contains(foundSection.getContourBox())) {
-            return foundSection;
-        }
-
-        foundSection = null;
-
-        for (S section : collection) {
-            if (target.contains(section.getContourBox())) {
-                foundSection = section;
-
-                break;
-            }
-        }
-
-        sectionSelection.setEntity(
-            foundSection, /* hint => */
-            null, /* notify => */
-            false);
-
-        return foundSection;
-    }
+//    //---------------//
+//    // lookupSection //
+//    //---------------//
+//    /**
+//     * Given an absolute rectangle, retrieve the <b>first</b> contained section if any,
+//     * using the provided collection of sections
+//     *
+//     * @param collection the desired collection of sections
+//     * @param rect       the given rectangle
+//     *
+//     * @return the (first) section found, or null otherwise
+//     */
+//    public S lookupSection (Collection<S> collection,
+//                            Rectangle     rect)
+//    {
+//        Rectangle target = switchRef(rect, null); // Involutive!
+//
+//        // Just in case...
+//        S foundSection = (S) sectionSelection.getEntity(); // Compiler warning
+//
+//        if ((foundSection != null) &&
+//            target.contains(foundSection.getContourBox())) {
+//            return foundSection;
+//        }
+//
+//        foundSection = null;
+//
+//        for (S section : collection) {
+//            if (target.contains(section.getContourBox())) {
+//                foundSection = section;
+//
+//                break;
+//            }
+//        }
+//
+//        sectionSelection.setEntity(
+//            foundSection,
+//            null, // hint
+//            false); //  notify
+//
+//        return foundSection;
+//    }
 
     //---------------//
     // purgeSections //

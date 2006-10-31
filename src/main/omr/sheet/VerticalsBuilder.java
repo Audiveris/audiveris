@@ -207,6 +207,7 @@ public class VerticalsBuilder
                 new GlyphBoard(
                     unit,
                     this,
+                    null, // TO BE CHECKED : specific glyphs
                     sheet.getSelection(VERTICAL_GLYPH),
                     sheet.getSelection(VERTICAL_GLYPH_ID),
                     sheet.getSelection(GLYPH_SET)),
@@ -552,7 +553,7 @@ public class VerticalsBuilder
     {
         public MyGlyphLagView (GlyphLag lag)
         {
-            super(lag, null, VerticalsBuilder.this);
+            super(lag, null, VerticalsBuilder.this, null);
             setName("VerticalsBuilder-MyView");
 
             // Pixel

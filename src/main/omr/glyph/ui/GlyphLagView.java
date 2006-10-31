@@ -56,6 +56,9 @@ public class GlyphLagView
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Specific glyphs for display & lookup */
+    protected final Collection<?extends Glyph> specificGlyphs;
+
     /** Directory of Glyphs */
     protected final transient GlyphModel model;
 
@@ -74,16 +77,25 @@ public class GlyphLagView
      * Create a GlyphLagView as a LagView, with lag and potential specific
      * collection of sections
      *
-     * @param lag the related lag
+     * @param lag              the related lag
      * @param specificSections the specific sections if any, otherwise null
-     * @param model the related glyph model
+     * @param model            the related glyph model
+     * @param specificGlyphs   the specific glyphs if any, otherwise null
      */
-    public GlyphLagView (GlyphLag                 lag,
-                         Collection<GlyphSection> specificSections,
-                         GlyphModel               model)
+    public GlyphLagView (GlyphLag                   lag,
+                         Collection<GlyphSection>   specificSections,
+                         GlyphModel                 model,
+                         Collection<?extends Glyph> specificGlyphs)
     {
         super(lag, specificSections);
         this.model = model;
+
+        // Remember specific glyphs
+        if (specificGlyphs != null) {
+            this.specificGlyphs = specificGlyphs;
+        } else {
+            this.specificGlyphs = new ArrayList<Glyph>(0);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -100,6 +112,13 @@ public class GlyphLagView
      */
     public Glyph getGlyphById (int id)
     {
+        // Look up in specific glyphs first
+        for (Glyph glyph : specificGlyphs) {
+            if (glyph.getId() == id) {
+                return glyph;
+            }
+        }
+
         if (model != null) {
             return model.getGlyphById(id);
         } else {
@@ -192,6 +211,49 @@ public class GlyphLagView
         }
     }
 
+    //--------------//
+    // lookupGlyphs //
+    //--------------//
+    /**
+     * Lookup for <b>all</b> glyphs, view-specific ones if such collection
+     * exists, otherwise lag glyphs, that are contained in the provided
+     * rectangle
+     *
+     * @param rect the given rectangle
+     *
+     * @return the list of glyphs found, which may be empty
+     */
+    public List<Glyph> lookupGlyphs (Rectangle rect)
+    {
+        List<Glyph> found;
+
+        // Specific glyphs if any
+        if (specificGlyphs.size() > 0) {
+            found = lag.lookupGlyphs(specificGlyphs, rect);
+        } else {
+            found = lag.lookupGlyphs(lag.getGlyphs(), rect);
+        }
+
+        return found;
+    }
+
+    //
+    //    //----------------------//
+    //    // lookupSpecificGlyphs //
+    //    //----------------------//
+    //    /**
+    //     * Lookup for <b>all</b> glyphs, within the collection of specific glyphs,
+    //     * that are contained in the provided rectangle
+    //     *
+    //     * @param rect the given rectangle
+    //     *
+    //     * @return the list of glyphs found, which may be empty
+    //     */
+    //    public List<Glyph> lookupSpecificGlyphs (Rectangle rect)
+    //    {
+    //        return lag.lookupGlyphs(specificGlyphs, rect);
+    //    }
+
     //--------//
     // update //
     //--------//
@@ -213,10 +275,49 @@ public class GlyphLagView
 
         switch (selection.getTag()) {
         case PIXEL :
-        case VERTICAL_SECTION_ID :
-        case HORIZONTAL_SECTION_ID :
+
+            if ((hint == SelectionHint.LOCATION_ADD) ||
+                (hint == SelectionHint.LOCATION_INIT)) {
+                Rectangle rect = (Rectangle) selection.getEntity();
+
+                if (rect != null) {
+                    if ((rect.width > 0) || (rect.height > 0)) {
+                        // Look for enclosed glyphs
+                        List<Glyph> glyphsFound = lookupGlyphs(rect);
+
+                        if (glyphsFound.size() > 0) {
+                            glyphSelection.setEntity(
+                                glyphsFound.get(glyphsFound.size() - 1),
+                                hint);
+                        } else {
+                            glyphSelection.setEntity(null, hint);
+                        }
+
+                        glyphSetSelection.setEntity(glyphsFound, hint);
+                    }
+                }
+            }
+
+            break;
+
         case VERTICAL_GLYPH_ID :
         case HORIZONTAL_GLYPH_ID :
+
+            // Lookup a specific glyph with proper ID
+            int id = (Integer) selection.getEntity();
+
+            for (Glyph glyph : specificGlyphs) {
+                if (glyph.getId() == id) {
+                    glyphSelection.setEntity(glyph, hint);
+
+                    break;
+                }
+            }
+
+            break;
+
+        case VERTICAL_SECTION_ID :
+        case HORIZONTAL_SECTION_ID :
 
             // Check for glyph information
             if (showingSpecifics &&

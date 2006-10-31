@@ -260,6 +260,7 @@ public class LinesBuilder
             new GlyphBoard(
                 unit,
                 this,
+                null,
                 sheet.getSelection(HORIZONTAL_GLYPH),
                 sheet.getSelection(HORIZONTAL_GLYPH_ID),
                 null));
@@ -585,7 +586,7 @@ public class LinesBuilder
             "Maximum difference between a new interline and the current staff value");
         Constant.Boolean plotting = new Constant.Boolean(
             false,
-            "Should we produce a GnuPlot file of computed data ?");
+            "Should we produce a chart of computed data ?");
     }
 
     //-----------//
@@ -600,7 +601,7 @@ public class LinesBuilder
         public MyLagView (GlyphLag           lag,
                           List<GlyphSection> specifics)
         {
-            super(lag, specifics, LinesBuilder.this);
+            super(lag, specifics, LinesBuilder.this, null);
             setName("LinesBuilder-View");
 
             setLocationSelection(sheet.getSelection(PIXEL));

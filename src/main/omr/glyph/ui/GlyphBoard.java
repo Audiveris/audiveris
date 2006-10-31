@@ -37,6 +37,7 @@ import com.jgoodies.forms.layout.*;
 import java.awt.Dimension;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.*;
@@ -152,16 +153,18 @@ public class GlyphBoard
      * Create a Glyph Board
      *
      * @param unitName name of the owning unit
-     * @param glyphModel the related glyph model, if any
+     * @param lag the underlying glyph lag
+     * @param specificGlyphs additional collection of glyphs, or null
      * @param glyphSelection input glyph selection
      * @param glyphIdSelection output glyph Id selection
      * @param glyphSetSelection input glyph set selection
      */
-    public GlyphBoard (String     unitName,
-                       GlyphModel glyphModel,
-                       Selection  glyphSelection,
-                       Selection  glyphIdSelection,
-                       Selection  glyphSetSelection)
+    public GlyphBoard (String                     unitName,
+                       GlyphModel                 glyphModel,
+                       Collection<?extends Glyph> specificGlyphs,
+                       Selection                  glyphSelection,
+                       Selection                  glyphIdSelection,
+                       Selection                  glyphSetSelection)
     {
         this(unitName, glyphModel);
 
@@ -179,12 +182,18 @@ public class GlyphBoard
         setOutputSelection(glyphIdSelection);
 
         // Model for globalSpinner
-        globalSpinner = makeGlyphSpinner(glyphModel.getLag(), null);
+        globalSpinner = makeGlyphSpinner(
+            glyphModel.getLag(),
+            specificGlyphs,
+            null);
         globalSpinner.setName("globalSpinner");
         globalSpinner.setToolTipText("General spinner for any glyph id");
 
         // Model for knownSpinner
-        knownSpinner = makeGlyphSpinner(glyphModel.getLag(), knownPredicate);
+        knownSpinner = makeGlyphSpinner(
+            glyphModel.getLag(),
+            specificGlyphs,
+            knownPredicate);
         knownSpinner.setName("knownSpinner");
         knownSpinner.setToolTipText("Specific spinner for known glyphs");
 
@@ -411,14 +420,16 @@ public class GlyphBoard
      * Convenient method to allocate a glyph-based spinner
      *
      * @param lag the underlying glyph lag
+     * @param specificGlyphs additional specific glyph collection, or null
      * @param predicate a related glyph predicate, if any
      * @return the spinner built
      */
-    protected JSpinner makeGlyphSpinner (GlyphLag         lag,
-                                         Predicate<Glyph> predicate)
+    protected JSpinner makeGlyphSpinner (GlyphLag                   lag,
+                                         Collection<?extends Glyph> specificGlyphs,
+                                         Predicate<Glyph>           predicate)
     {
         JSpinner spinner = new JSpinner();
-        spinner.setModel(new SpinnerGlyphModel(lag, predicate));
+        spinner.setModel(new SpinnerGlyphModel(lag, specificGlyphs, predicate));
         spinner.addChangeListener(this);
         SpinnerUtilities.setRightAlignment(spinner);
         SpinnerUtilities.setEditable(spinner, true);

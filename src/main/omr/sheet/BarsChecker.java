@@ -493,8 +493,10 @@ class BarsChecker
 
         double minResult = constants.minCheckResult.getValue();
 
-        // Check each candidate stick in turn
-        for (Stick stick : clutter) {
+        // Check each candidate stick in turn, leaving in clutter the unlucky 
+        // candidates
+        for (Iterator<Stick> it = clutter.iterator(); it.hasNext();) {
+            Stick stick = it.next();
             // Allocate the candidate context, and pass the whole check suite
             Context context = new Context(stick);
             double  res = suite.pass(context);
@@ -504,9 +506,11 @@ class BarsChecker
             }
 
             if (res >= minResult) {
-                // OK, we insert this candidate stick as a true bars member.
+                // OK, we insert this candidate stick as a true bars member,
+                // and remove it from clutter
                 contexts.put(stick, context);
                 bars.add(stick);
+                it.remove();
 
                 // Bars that define a system (they start AND end with staves
                 // limits)

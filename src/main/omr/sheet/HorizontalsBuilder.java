@@ -291,6 +291,7 @@ public class HorizontalsBuilder
             new GlyphBoard(
                 unit,
                 this,
+                null,
                 sheet.getSelection(HORIZONTAL_GLYPH),
                 sheet.getSelection(HORIZONTAL_GLYPH_ID),
                 null),
@@ -782,7 +783,7 @@ public class HorizontalsBuilder
         public MyView (GlyphLag           lag,
                        List<GlyphSection> members)
         {
-            super(lag, members, HorizontalsBuilder.this);
+            super(lag, members, HorizontalsBuilder.this, null);
             setName("HorizontalsBuilder-View");
 
             setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));

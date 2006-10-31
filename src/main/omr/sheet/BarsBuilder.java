@@ -270,6 +270,14 @@ public class BarsBuilder
         // Check Measures using only score parameters
         checkMeasures();
 
+        // Remove clutter glyphs from lag (they will be handled as specific
+        // glyphs in the user view).
+        for (Stick stick : clutter) {
+            stick.destroy( /* cutSections => */
+            false);
+            stick.setInterline(sheet.getScale().interline()); // Safer
+        }
+
         // With now neat staff measures, let's allocate the systems measure frames
         //////createMeasureFrames();
 
@@ -666,6 +674,7 @@ public class BarsBuilder
             new GlyphBoard(
                 unit,
                 this,
+                clutter,
                 sheet.getSelection(VERTICAL_GLYPH),
                 sheet.getSelection(VERTICAL_GLYPH_ID),
                 sheet.getSelection(GLYPH_SET)),
@@ -856,7 +865,7 @@ public class BarsBuilder
     {
         private MyLagView (GlyphLag lag)
         {
-            super(lag, null, BarsBuilder.this);
+            super(lag, null, BarsBuilder.this, clutter);
             setName("BarsBuilder-View");
 
             // Pixel
@@ -867,6 +876,10 @@ public class BarsBuilder
                 SelectionTag.GLYPH_SET);
             setGlyphSetSelection(glyphSetSelection);
             glyphSetSelection.addObserver(this);
+
+            // Glyph id
+            sheet.getSelection(SelectionTag.VERTICAL_GLYPH_ID)
+                 .addObserver(this);
         }
 
         //----------//

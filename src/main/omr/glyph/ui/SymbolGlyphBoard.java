@@ -145,6 +145,7 @@ class SymbolGlyphBoard
         super(
             unitName,
             glyphModel,
+            null, // Specific glyphs
             glyphSelection,
             glyphIdSelection,
             glyphSetSelection);
@@ -156,6 +157,7 @@ class SymbolGlyphBoard
         if (glyphModel != null) {
             symbolSpinner = makeGlyphSpinner(
                 glyphModel.getLag(),
+                null, // Specific glyphs
                 symbolPredicate);
             symbolSpinner.setName("symbolSpinner");
             symbolSpinner.setToolTipText("Specific spinner for symbol glyphs");

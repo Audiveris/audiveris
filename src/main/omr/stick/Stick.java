@@ -424,12 +424,18 @@ public class Stick
      * Return the position (ordinate for horizontal stick, abscissa for vertical
      * stick) at the middle of the stick
      *
-     * @return the position of the midle of the stick
+     * @return the position of the middle of the stick
      */
     public int getMidPos ()
     {
-        return (int) Math.rint(
-            getLine().yAt((double) (getStart() + getStop()) / 2));
+        if (getLine()
+                .isVertical()) {
+            // Fall back value
+            return (int) Math.rint((getFirstPos() + getLastPos()) / 2.0);
+        } else {
+            return (int) Math.rint(
+                getLine().yAt((getStart() + getStop()) / 2.0));
+        }
     }
 
     //----------//
@@ -456,7 +462,8 @@ public class Stick
      */
     public int getStartingPos ()
     {
-        if (getThickness() >= 2) {
+        if ((getThickness() >= 2) && !getLine()
+                                          .isVertical()) {
             return getLine()
                        .yAt(getStart());
         } else {
@@ -487,7 +494,8 @@ public class Stick
      */
     public int getStoppingPos ()
     {
-        if (getThickness() >= 2) {
+        if ((getThickness() >= 2) && !getLine()
+                                          .isVertical()) {
             return getLine()
                        .yAt(getStop());
         } else {
