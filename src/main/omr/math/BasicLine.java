@@ -185,6 +185,17 @@ public class BasicLine
         return c;
     }
 
+    //--------------//
+    // isHorizontal //
+    //--------------//
+    @Implement(Line.class)
+    public boolean isHorizontal ()
+    {
+        checkLineParameters();
+
+        return a == 0d;
+    }
+
     //------------------//
     // getInvertedSlope //
     //------------------//
@@ -235,6 +246,17 @@ public class BasicLine
         checkLineParameters();
 
         return -a / b;
+    }
+
+    //------------//
+    // isVertical //
+    //------------//
+    @Implement(Line.class)
+    public boolean isVertical ()
+    {
+        checkLineParameters();
+
+        return b == 0d;
     }
 
     //------------//
@@ -403,7 +425,7 @@ public class BasicLine
     /**
      * Make sure the line parameters are usable.
      */
-    private void checkLineParameters ()
+    private final void checkLineParameters ()
     {
         // Recompute parameters based on points if so needed
         if (dirty) {

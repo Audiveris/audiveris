@@ -54,6 +54,16 @@ public interface Line
      */
     double getC ();
 
+    //--------------//
+    // isHorizontal //
+    //--------------//
+    /**
+     * Check if line is horizontal ('a' coeff is null)
+     *
+     * @return true if horizontal
+     */
+    boolean isHorizontal ();
+
     //------------------//
     // getInvertedSlope //
     //------------------//
@@ -95,6 +105,16 @@ public interface Line
      * @return the y/x coefficient
      */
     double getSlope ();
+
+    //------------//
+    // isVertical //
+    //------------//
+    /**
+     * Check if line is vertical ('b' coeff is null)
+     *
+     * @return true if vertical
+     */
+    boolean isVertical ();
 
     //------------//
     // distanceOf //
