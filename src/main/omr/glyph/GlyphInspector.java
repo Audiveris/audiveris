@@ -37,7 +37,7 @@ import java.util.List;
 
 /**
  * Class <code>GlyphInspector</code> is dedicated to processing of retrieved
- * glyphs, their recognition based on features as used by a neural network
+ * glyphs, their recognition is based on features as used by a neural network
  * evaluator.
  *
  * @author Herv&eacute; Bitteur
@@ -270,14 +270,14 @@ public class GlyphInspector
             processSystemCompounds(system, maxGrade, compounds);
         }
 
-        StringBuilder sb = new StringBuilder();
-
-        for (Glyph c : compounds) {
-            sb.append(" ")
-              .append(c.getId());
+        if (compounds.size() > 0) {
+            logger.info(
+                "Built " + compounds.size() + " compound(s) " +
+                compounds.get(0).getId() + " .. " +
+                compounds.get(compounds.size() - 1).getId());
+        } else {
+            logger.info("No compound built");
         }
-
-        logger.info("Built " + compounds.size() + " compound(s)" + sb);
     }
 
     //---------------//
@@ -426,6 +426,32 @@ public class GlyphInspector
         }
     }
 
+    //-----------------------//
+    // isSuitableForCompound //
+    //-----------------------//
+    private boolean isSuitableForCompound (Glyph glyph)
+    {
+        return !glyph.isKnown() || (glyph.getShape() == Shape.DOT);
+    }
+
+    //-------//
+    // idsOf //
+    //-------//
+    private String idsOf (List<Glyph> list)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+
+        for (Glyph glyph : list) {
+            sb.append(' ')
+              .append(glyph.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
     //------------------------//
     // processSystemCompounds //
     //------------------------//
@@ -441,11 +467,12 @@ public class GlyphInspector
                                          double      maxGrade,
                                          List<Glyph> compounds)
     {
-        // Collect unknown glyphs
+        // Collect unknown glyphs 
+        // (as well as DOT assigned ones, since they are easily taken apart)
         List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs().size());
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (!glyph.isKnown()) {
+            if (isSuitableForCompound(glyph)) {
                 glyphs.add(glyph);
             }
         }
@@ -461,15 +488,20 @@ public class GlyphInspector
                     }
                 });
 
+        //        if (logger.isFineEnabled()) {
+        //            logger.fine("System candidates: " + idsOf(glyphs));
+        //        }
+
         // Process each glyph in turn, by looking at smaller ones
-        int       index = -1;
-        Evaluator evaluator = GlyphNetwork.getInstance();
+        int         index = -1;
+        Evaluator   evaluator = GlyphNetwork.getInstance();
+        List<Glyph> neighbors = new ArrayList<Glyph>();
 
         for (Glyph glyph : glyphs) {
             index++;
 
             // Since the glyphs are modified on the fly ...
-            if (glyph.isKnown()) {
+            if (!isSuitableForCompound(glyph)) {
                 continue;
             }
 
@@ -480,33 +512,37 @@ public class GlyphInspector
 
             // Consider neighboring glyphs, which are glyphs whose contour
             // intersect the extended contour of glyph at hand
-            SUB_GLYPHS: 
+            neighbors.clear();
+
             for (Glyph g : glyphs.subList(index + 1, glyphs.size())) {
-                if (g.isKnown()) {
+                if (!isSuitableForCompound(glyph)) {
                     continue;
                 }
 
                 if (box.intersects(g.getContourBox())) {
-                    // Let's try a compound
-                    List<Glyph> parts = Arrays.asList(glyph, g);
-                    Glyph       compound = builder.buildCompound(parts);
+                    neighbors.add(g);
+                }
+            }
+
+            if (neighbors.size() > 0) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(glyph.getId() + " + " + idsOf(neighbors));
+                }
+
+                // Let's try a compound
+                neighbors.add(glyph);
+
+                Glyph compound = builder.buildCompound(neighbors);
+
+                Shape vote = evaluator.vote(compound, maxGrade);
+
+                if ((vote != null) && vote.isWellKnown()) {
+                    compound.setShape(vote);
+                    builder.insertCompound(compound, neighbors);
+                    compounds.add(compound);
 
                     if (logger.isFineEnabled()) {
-                        logger.fine(glyph + " & " + g + " -> " + compound);
-                    }
-
-                    Shape vote = evaluator.vote(compound, maxGrade);
-
-                    if ((vote != null) && vote.isWellKnown()) {
-                        compound.setShape(vote);
-                        builder.insertCompound(compound, parts);
-                        compounds.add(compound);
-
-                        if (logger.isFineEnabled()) {
-                            logger.fine("Compound " + compound);
-                        }
-
-                        break SUB_GLYPHS;
+                        logger.fine("Compound " + compound);
                     }
                 }
             }
