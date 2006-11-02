@@ -72,7 +72,10 @@ public class GlyphLag
     protected int globalGlyphId = 0;
 
     /** Smart glyph map, usable across several glyph extractions */
-    private final TreeMap<GlyphSignature, HashSet<Shape>> forbiddenShapes;
+    private final TreeMap<GlyphSignature, Glyph> originals;
+
+    /** Flag to indicate handling of original glyphs */
+    private boolean originalsSupported;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -87,7 +90,7 @@ public class GlyphLag
     public GlyphLag (Oriented orientation)
     {
         super(orientation);
-        forbiddenShapes = new TreeMap<GlyphSignature, HashSet<Shape>>();
+        originals = new TreeMap<GlyphSignature, Glyph>();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -117,19 +120,6 @@ public class GlyphLag
     public Glyph getGlyph (Integer id)
     {
         return glyphs.get(id);
-    }
-
-    //-------------------------//
-    // getGlyphForbiddenShapes //
-    //-------------------------//
-    /**
-     * Report the set of forbidden shapes for a given glyph, or null is none
-     *
-     * @param glyph the glyph at stake
-     */
-    public Set<Shape> getGlyphForbiddenShapes (Glyph glyph)
-    {
-        return forbiddenShapes.get(glyph.getSignature());
     }
 
     //-------------------//
@@ -184,6 +174,22 @@ public class GlyphLag
         return globalGlyphId;
     }
 
+    //------------------//
+    // getOriginalGlyph //
+    //------------------//
+    public Glyph getOriginalGlyph (Glyph glyph)
+    {
+        return originals.get(glyph.getSignature());
+    }
+
+    //-----------------------//
+    // setOriginalsSupported //
+    //-----------------------//
+    public void setOriginalsSupported (boolean bool)
+    {
+        originalsSupported = bool;
+    }
+
     //----------//
     // addGlyph //
     //----------//
@@ -197,6 +203,28 @@ public class GlyphLag
         glyphs.put(++globalGlyphId, glyph);
         glyph.setId(globalGlyphId);
         glyph.setLag(this);
+
+        // Use originals if so desired
+        if (originalsSupported) {
+            Glyph original = getOriginalGlyph(glyph);
+
+            if ((original != null) && (original != glyph)) {
+                glyph.setOriginal(original);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Glyph #" + glyph.getId() + " is avatar of #" +
+                        original.getId());
+                }
+            } else {
+                originals.put(glyph.getSignature(), glyph);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Registered glyph #" + glyph.getId() + " as original");
+                }
+            }
+        }
     }
 
     //------//
@@ -217,30 +245,6 @@ public class GlyphLag
         for (Glyph glyph : getGlyphs()) {
             System.out.println(glyph.toString());
         }
-    }
-
-    //------------------//
-    // forbidGlyphShape //
-    //------------------//
-    /**
-     * Register a shape as forbidden for a glyph known only through its
-     * signature
-     *
-     * @param glyph the glyph for which shape is forbidden
-     * @param shape the forbidden shape
-     */
-    public void forbidGlyphShape (Glyph glyph,
-                                  Shape shape)
-    {
-        GlyphSignature sig = glyph.getSignature();
-        HashSet<Shape> forbiddens = forbiddenShapes.get(sig);
-
-        if (forbiddens == null) {
-            forbiddens = new HashSet<Shape>();
-            forbiddenShapes.put(sig, forbiddens);
-        }
-
-        forbiddens.add(shape);
     }
 
     //--------------//

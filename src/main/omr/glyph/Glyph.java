@@ -66,6 +66,33 @@ public class Glyph
     @XmlAttribute
     protected int id;
 
+    /** Original if any */
+    protected Glyph original;
+
+    /** The containing lag */
+    protected GlyphLag lag;
+
+    /** Sections that compose this glyph. The collection should be kept sorted
+       on centroid abscissa then ordinate*/
+    @XmlElement(name = "section")
+    protected List<GlyphSection> members = new ArrayList<GlyphSection>();
+
+    /** Display box (always properly oriented), so that rectangle width is
+       aligned with display horizontal and rectangle height with display
+       vertical */
+    protected Rectangle contourBox;
+
+    /** Total weight of this glyph */
+    protected Integer weight;
+
+    /** Result of analysis wrt this glyph */
+    protected Result result;
+
+    /** A signature to retrieve this glyph */
+    private GlyphSignature signature;
+
+    // Below are properties to be retrieved in the glyph original if any
+
     /** Current recognized shape of this glyph */
     @XmlAttribute
     protected Shape shape;
@@ -87,16 +114,6 @@ public class Glyph
     @XmlElement(name = "has-ledger")
     protected boolean hasLedger;
 
-    /** Sections that compose this glyph. The collection should be kept sorted
-       on centroid abscissa then ordinate*/
-
-    /////@XmlElementWrapper(name = "members")
-    @XmlElement(name = "section")
-    protected List<GlyphSection> members = new ArrayList<GlyphSection>();
-
-    /** The containing lag */
-    protected GlyphLag lag;
-
     /** Computed moments of this glyph */
     protected Moments moments;
 
@@ -107,19 +124,8 @@ public class Glyph
        this implies that it has the same orientation as the sections */
     protected Rectangle bounds;
 
-    /** Display box (always properly oriented), so that rectangle width is
-       aligned with display horizontal and rectangle height with display
-       vertical */
-    protected Rectangle contourBox;
-
-    /** Total weight of this glyph */
-    protected Integer weight;
-
-    /** Result of analysis wrt this glyph */
-    protected Result result;
-
-    /** A signature to retrieve this glyph */
-    private GlyphSignature signature;
+    /** Set of forbidden shapes, if any */
+    protected Set<Shape> forbiddenShapes;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -135,6 +141,15 @@ public class Glyph
 
     //~ Methods ----------------------------------------------------------------
 
+    public void setBounds (Rectangle bounds)
+    {
+        if (original != null) {
+            original.setBounds(bounds);
+        } else {
+            this.bounds = bounds;
+        }
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -145,7 +160,9 @@ public class Glyph
      */
     public Rectangle getBounds ()
     {
-        if (bounds == null) {
+        if (original != null) {
+            return original.getBounds();
+        } else if (bounds == null) {
             for (Section section : members) {
                 if (bounds == null) {
                     bounds = new Rectangle(section.getBounds());
@@ -159,6 +176,18 @@ public class Glyph
     }
 
     //-------------//
+    // setCentroid //
+    //-------------//
+    public void setCentroid (PixelPoint centroid)
+    {
+        if (original != null) {
+            original.setCentroid(centroid);
+        } else {
+            this.centroid = centroid;
+        }
+    }
+
+    //-------------//
     // getCentroid //
     //-------------//
     /**
@@ -168,7 +197,9 @@ public class Glyph
      */
     public PixelPoint getCentroid ()
     {
-        if (centroid == null) {
+        if (original != null) {
+            return original.getCentroid();
+        } else if (centroid == null) {
             centroid = getMoments()
                            .getCentroid();
         }
@@ -273,6 +304,18 @@ public class Glyph
     }
 
     //--------------------//
+    // setForbiddenShapes //
+    //--------------------//
+    public void setForbiddenShapes (Set<Shape> forbiddenShapes)
+    {
+        if (original != null) {
+            original.setForbiddenShapes(forbiddenShapes);
+        } else {
+            this.forbiddenShapes = forbiddenShapes;
+        }
+    }
+
+    //--------------------//
     // getForbiddenShapes //
     //--------------------//
     /**
@@ -282,11 +325,10 @@ public class Glyph
      */
     public Set<Shape> getForbiddenShapes ()
     {
-        if (getLag() != null) {
-            return getLag()
-                       .getGlyphForbiddenShapes(this);
+        if (original != null) {
+            return original.getForbiddenShapes();
         } else {
-            return null;
+            return forbiddenShapes;
         }
     }
 
@@ -300,7 +342,11 @@ public class Glyph
      */
     public void setHasLedger (boolean hasLedger)
     {
-        this.hasLedger = hasLedger;
+        if (original != null) {
+            original.setHasLedger(hasLedger);
+        } else {
+            this.hasLedger = hasLedger;
+        }
     }
 
     //-------//
@@ -339,7 +385,11 @@ public class Glyph
      */
     public void setInterline (int interline)
     {
-        this.interline = interline;
+        if (original != null) {
+            original.setInterline(interline);
+        } else {
+            this.interline = interline;
+        }
     }
 
     //--------------//
@@ -353,7 +403,11 @@ public class Glyph
      */
     public int getInterline ()
     {
-        return interline;
+        if (original != null) {
+            return original.getInterline();
+        } else {
+            return interline;
+        }
     }
 
     //---------//
@@ -413,6 +467,18 @@ public class Glyph
     }
 
     //------------//
+    // setMoments //
+    //------------//
+    public void setMoments (Moments moments)
+    {
+        if (original != null) {
+            original.setMoments(moments);
+        } else {
+            this.moments = moments;
+        }
+    }
+
+    //------------//
     // getMoments //
     //------------//
     /**
@@ -422,11 +488,21 @@ public class Glyph
      */
     public Moments getMoments ()
     {
-        if (moments == null) {
+        if (original != null) {
+            return original.getMoments();
+        } else if (moments == null) {
             computeMoments();
         }
 
         return moments;
+    }
+
+    //-------------//
+    // setOriginal //
+    //-------------//
+    public void setOriginal (Glyph original)
+    {
+        this.original = original;
     }
 
     //------------------//
@@ -440,7 +516,11 @@ public class Glyph
      */
     public void setPitchPosition (double pitchPosition)
     {
-        this.pitchPosition = pitchPosition;
+        if (original != null) {
+            original.setPitchPosition(pitchPosition);
+        } else {
+            this.pitchPosition = pitchPosition;
+        }
     }
 
     //------------------//
@@ -453,7 +533,11 @@ public class Glyph
      */
     public double getPitchPosition ()
     {
-        return pitchPosition;
+        if (original != null) {
+            return original.getPitchPosition();
+        } else {
+            return pitchPosition;
+        }
     }
 
     //-----------//
@@ -493,18 +577,18 @@ public class Glyph
      */
     public void setShape (Shape shape)
     {
-        // Blacklist the previous shape if any
-        if (this.shape != null) {
-            getLag()
-                .forbidGlyphShape(this, this.shape);
-        }
+        if (original != null) {
+            original.setShape(shape);
+        } else {
+            // Blacklist the previous shape if any
+            if (getShape() != null) {
+                forbidShape(getShape());
+            }
 
-        this.shape = shape;
+            this.shape = shape;
 
-        // Now remove the assigned shape from the blacklist if any
-        if (getForbiddenShapes() != null) {
-            getForbiddenShapes()
-                .remove(shape);
+            // Now remove the assigned shape from the blacklist if any
+            allowShape(shape);
         }
     }
 
@@ -518,7 +602,11 @@ public class Glyph
      */
     public Shape getShape ()
     {
-        return shape;
+        if (original != null) {
+            return original.getShape();
+        } else {
+            return shape;
+        }
     }
 
     //--------------//
@@ -548,12 +636,12 @@ public class Glyph
      */
     public boolean isStem ()
     {
-        return shape == Shape.COMBINING_STEM;
+        return getShape() == Shape.COMBINING_STEM;
     }
 
-    //-------------//
-    // setLeftStem //
-    //-------------//
+    //---------------//
+    // setStemNumber //
+    //---------------//
     /**
      * Remember the number of stems near by
      *
@@ -561,7 +649,11 @@ public class Glyph
      */
     public void setStemNumber (int stemNumber)
     {
-        this.stemNumber = stemNumber;
+        if (original != null) {
+            original.setStemNumber(stemNumber);
+        } else {
+            this.stemNumber = stemNumber;
+        }
     }
 
     //---------------//
@@ -574,7 +666,11 @@ public class Glyph
      */
     public int getStemNumber ()
     {
-        return stemNumber;
+        if (original != null) {
+            return original.getStemNumber();
+        } else {
+            return stemNumber;
+        }
     }
 
     //-----------------//
@@ -717,6 +813,18 @@ public class Glyph
         invalidateCache();
     }
 
+    //------------//
+    // allowShape //
+    //------------//
+    public void allowShape (Shape shape)
+    {
+        Set<Shape> forbiddens = getForbiddenShapes();
+
+        if (forbiddens != null) {
+            forbiddens.remove(shape);
+        }
+    }
+
     //----------//
     // colorize //
     //----------//
@@ -757,7 +865,7 @@ public class Glyph
         }
 
         // Glyphs are vertically aligned, so use ordinates
-        return centroid.y - other.centroid.y;
+        return getCentroid().y - other.getCentroid().y;
     }
 
     //----------------//
@@ -779,7 +887,7 @@ public class Glyph
 
         // Then compute the moments, swapping pos & coord since the lag is
         // vertical
-        moments = new Moments(pos, coord, weight, interline);
+        setMoments(new Moments(pos, coord, weight, getInterline()));
     }
 
     //---------//
@@ -840,14 +948,24 @@ public class Glyph
      */
     public void dump ()
     {
-        // Temporary
-        omr.util.Dumper.dump(this);
-
-        if (getForbiddenShapes() != null) {
-            System.out.println(
-                " + forbiddenShapes=" +
-                Arrays.toString(getForbiddenShapes().toArray()));
-        }
+        System.out.println(this.getClass().getName());
+        System.out.println("   id=" + getId());
+        System.out.println("   original=" + original);
+        System.out.println("   lag=" + getLag());
+        System.out.println("   members=" + getMembers());
+        System.out.println("   contourBox=" + getContourBox());
+        System.out.println("   weight=" + getWeight());
+        System.out.println("   result=" + getResult());
+        System.out.println("   signature=" + getSignature());
+        System.out.println("   shape=" + getShape());
+        System.out.println("   interline=" + getInterline());
+        System.out.println("   stemNumber=" + getStemNumber());
+        System.out.println("   pitchPosition=" + getPitchPosition());
+        System.out.println("   hasLedger=" + hasLedger());
+        System.out.println("   moments=" + getMoments());
+        System.out.println("   centroid=" + getCentroid());
+        System.out.println("   bounds=" + getBounds());
+        System.out.println("   forbiddenShapes=" + getForbiddenShapes());
     }
 
     //-------------//
@@ -866,6 +984,21 @@ public class Glyph
         }
     }
 
+    //-------------//
+    // forbidShape //
+    //-------------//
+    public void forbidShape (Shape shape)
+    {
+        Set<Shape> forbiddens = getForbiddenShapes();
+
+        if (forbiddens == null) {
+            forbiddens = new HashSet<Shape>();
+            setForbiddenShapes(forbiddens);
+        }
+
+        forbiddens.add(shape);
+    }
+
     //-----------//
     // hasLedger //
     //-----------//
@@ -876,7 +1009,11 @@ public class Glyph
      */
     public boolean hasLedger ()
     {
-        return hasLedger;
+        if (original != null) {
+            return original.hasLedger();
+        } else {
+            return hasLedger;
+        }
     }
 
     //------------//
@@ -957,16 +1094,16 @@ public class Glyph
         sb.append("#")
           .append(id);
 
-        if (shape != null) {
+        if (getShape() != null) {
             sb.append(" shape=")
-              .append(shape);
+              .append(getShape());
         }
 
-        if (centroid != null) {
+        if (getCentroid() != null) {
             sb.append(" centroid=[")
-              .append(centroid.x)
+              .append(getCentroid().x)
               .append(",")
-              .append(centroid.y)
+              .append(getCentroid().y)
               .append("]");
         }
 
@@ -1027,9 +1164,9 @@ public class Glyph
     //-----------------//
     private void invalidateCache ()
     {
-        centroid = null;
-        moments = null;
-        bounds = null;
+        setCentroid(null);
+        setMoments(null);
+        setBounds(null);
         contourBox = null;
         weight = null;
         signature = null;

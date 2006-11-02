@@ -687,6 +687,19 @@ public class Stick
     // dump //
     //------//
     /**
+     * Print out glyph internal data
+     */
+    @Override
+    public void dump ()
+    {
+        super.dump();
+        System.out.println("   line=" + getLine());
+    }
+
+    //------//
+    // dump //
+    //------//
+    /**
      * Dump the stick as well as its contained sections is so desired
      *
      * @param withContent Flag to specify the dump of contained sections

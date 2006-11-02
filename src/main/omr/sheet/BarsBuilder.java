@@ -138,6 +138,7 @@ public class BarsBuilder
     {
         super(sheet, new GlyphLag(new VerticalOrientation()));
         lag.setName("vLag");
+        lag.setOriginalsSupported(true);
     }
 
     //~ Methods ----------------------------------------------------------------
