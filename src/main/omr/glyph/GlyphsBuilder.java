@@ -399,7 +399,7 @@ public class GlyphsBuilder
         glyph.setStemNumber(stemNb);
 
         // Has a related ledger ?
-        glyph.setHasLedger(
+        glyph.setWithLedger(
             checkDashIntersect(
                 system.getLedgers(),
                 system.getMaxLedgerWidth(),

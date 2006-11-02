@@ -58,7 +58,7 @@ public abstract class Evaluator
 
     /**
      * Number of useful input parameters : nb of moments +
-     * stemNumber, hasLedger, pitchPosition = {@value}
+     * stemNumber, isWithLedger, pitchPosition = {@value}
      */
     public static final int inSize = inMoments + 3;
 
@@ -189,7 +189,7 @@ public abstract class Evaluator
 
         // We append flags and step position
         int i = inMoments;
-        /* 10 */ ins[i++] = boolAsDouble(glyph.hasLedger());
+        /* 10 */ ins[i++] = boolAsDouble(glyph.isWithLedger());
         /* 11 */ ins[i++] = glyph.getStemNumber();
         /* 12 */ ins[i++] = glyph.getPitchPosition();
 

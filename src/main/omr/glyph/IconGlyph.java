@@ -127,7 +127,7 @@ public class IconGlyph
 
             // Has a related ledger ?
             if (icon.hasLedger() != null) {
-                setHasLedger(icon.hasLedger());
+                setWithLedger(icon.hasLedger());
             }
 
             // Vertical position wrt staff

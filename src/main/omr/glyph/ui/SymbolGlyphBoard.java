@@ -216,7 +216,7 @@ class SymbolGlyphBoard
             // Fill symbol characteristics
             if (glyph != null) {
                 pitchPosition.setValue(glyph.getPitchPosition());
-                ledger.setText(Boolean.toString(glyph.hasLedger()));
+                ledger.setText(Boolean.toString(glyph.isWithLedger()));
                 stems.setValue(glyph.getStemNumber());
 
                 Moments moments = glyph.getMoments();

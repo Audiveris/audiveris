@@ -50,7 +50,7 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "glyph")
 @XmlType(propOrder =  {
-    "stemNumber", "hasLedger", "pitchPosition", "members"}
+    "stemNumber", "withLedger", "pitchPosition", "members"}
 )
 public class Glyph
     implements Comparable<Glyph>, Checkable, java.io.Serializable
@@ -94,25 +94,20 @@ public class Glyph
     // Below are properties to be retrieved in the glyph original if any
 
     /** Current recognized shape of this glyph */
-    @XmlAttribute
     protected Shape shape;
 
     /** Interline of the containing staff (or sheet) */
-    @XmlAttribute
     protected int interline;
 
     /** Number of stems it is connected to (0, 1, 2) */
-    @XmlElement(name = "stem-number")
     protected int stemNumber;
 
     /** Position with respect to nearest staff. Key references are : 0 for
        middle line (B), -2 for top line (F) and +2 for bottom line (E)  */
-    @XmlElement(name = "pitch-position")
     protected double pitchPosition;
 
-    /** Has a ledger nearby ? */
-    @XmlElement(name = "has-ledger")
-    protected boolean hasLedger;
+    /** Is there a ledger nearby ? */
+    protected boolean withLedger;
 
     /** Computed moments of this glyph */
     protected Moments moments;
@@ -332,20 +327,21 @@ public class Glyph
         }
     }
 
-    //--------------//
-    // setHasLedger //
-    //--------------//
+    //---------------//
+    // setWithLedger //
+    //---------------//
     /**
      * Remember info about ledger near by
-     *
-     * @param hasLedger true is there is such ledger
+     * 
+     * @param withLedger true is there is such ledger
      */
-    public void setHasLedger (boolean hasLedger)
+    @XmlElement(name = "with-ledger")
+    public void setWithLedger (boolean withLedger)
     {
         if (original != null) {
-            original.setHasLedger(hasLedger);
+            original.setWithLedger(withLedger);
         } else {
-            this.hasLedger = hasLedger;
+            this.withLedger = withLedger;
         }
     }
 
@@ -401,6 +397,7 @@ public class Glyph
      *
      * @return the interline value
      */
+    @XmlAttribute
     public int getInterline ()
     {
         if (original != null) {
@@ -531,6 +528,7 @@ public class Glyph
      *
      * @return the pitchPosition value
      */
+    @XmlElement(name = "pitch-position")
     public double getPitchPosition ()
     {
         if (original != null) {
@@ -600,6 +598,7 @@ public class Glyph
      *
      * @return the glyph shape, which may be null
      */
+    @XmlAttribute
     public Shape getShape ()
     {
         if (original != null) {
@@ -664,6 +663,7 @@ public class Glyph
      *
      * @return the number of stems near by, typically 0, 1 or 2.
      */
+    @XmlElement(name = "stem-number")
     public int getStemNumber ()
     {
         if (original != null) {
@@ -961,7 +961,7 @@ public class Glyph
         System.out.println("   interline=" + getInterline());
         System.out.println("   stemNumber=" + getStemNumber());
         System.out.println("   pitchPosition=" + getPitchPosition());
-        System.out.println("   hasLedger=" + hasLedger());
+        System.out.println("   hasLedger=" + isWithLedger());
         System.out.println("   moments=" + getMoments());
         System.out.println("   centroid=" + getCentroid());
         System.out.println("   bounds=" + getBounds());
@@ -999,20 +999,20 @@ public class Glyph
         forbiddens.add(shape);
     }
 
-    //-----------//
-    // hasLedger //
-    //-----------//
+    //--------------//
+    // isWithLedger //
+    //--------------//
     /**
      * Report whether the glyph touches a ledger
      *
      * @return true if there is a close ledger
      */
-    public boolean hasLedger ()
+    public boolean isWithLedger ()
     {
         if (original != null) {
-            return original.hasLedger();
+            return original.isWithLedger();
         } else {
-            return hasLedger;
+            return withLedger;
         }
     }
 
