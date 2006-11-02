@@ -383,7 +383,7 @@ public enum Shape
         /*-----*/ CHARACTER("A letter"),
 
         /**
-         * Specific value, meaning that we have not been able to determined a
+         * Specific value, meaning that we have not been able to determine a
          * legal shape
          */
         /*-----*/ NO_LEGAL_SHAPE("No Legal Shape");

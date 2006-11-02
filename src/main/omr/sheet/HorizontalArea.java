@@ -16,12 +16,12 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphLag;
 
 import omr.stick.Stick;
-import omr.stick.StickArea;
+import omr.stick.SticksBuilder;
+import omr.stick.SticksSource;
 
 import omr.util.Logger;
 
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 
 /**
  * Class <code>HorizontalArea</code> processes a horizontal lag to extract
@@ -36,7 +36,7 @@ import java.util.Comparator;
  * @version $Id$
  */
 public class HorizontalArea
-    extends StickArea
+    extends SticksBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -66,21 +66,22 @@ public class HorizontalArea
                            int      maxThickness)
         throws omr.ProcessingException
     {
+        super(
+            hLag,
+            new SticksSource(hLag.getVertices()), // source for adequate sections
+            sheet.getScale().toPixels(constants.coreSectionLength), // minCoreLength
+            constants.maxAdjacency.getValue(), // maxAdjacency
+            maxThickness, // maxThickness
+            constants.maxSlope.getValue(), // maxSlope
+            false); // longAlignment);
+
         if (logger.isFineEnabled()) {
             logger.fine("maxThickness=" + maxThickness);
         }
 
         // Retrieve the stick(s)
         Scale scale = sheet.getScale();
-        initialize(
-            hLag,
-            null,
-            new Source(hLag.getVertices()), // source for adequate sections
-            scale.toPixels(constants.coreSectionLength), // minCoreLength
-            constants.maxAdjacency.getValue(), // maxAdjacency
-            maxThickness, // maxThickness
-            constants.maxSlope.getValue(), // maxSlope
-            false); // longAlignment
+        createSticks(null);
 
         // Merge aligned horizontals
         merge(

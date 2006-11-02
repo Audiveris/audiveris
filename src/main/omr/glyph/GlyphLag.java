@@ -21,11 +21,7 @@ import omr.selection.SelectionTag;
 import omr.util.Logger;
 
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Class <code>GlyphLag</code> is a lag of {@link GlyphSection} instances which
@@ -75,6 +71,9 @@ public class GlyphLag
     /** Global id to uniquely identify a glyph */
     protected int globalGlyphId = 0;
 
+    /** Smart glyph map, usable across several glyph extractions */
+    private final TreeMap<GlyphSignature, HashSet<Shape>> forbiddenShapes;
+
     //~ Constructors -----------------------------------------------------------
 
     //----------//
@@ -88,6 +87,7 @@ public class GlyphLag
     public GlyphLag (Oriented orientation)
     {
         super(orientation);
+        forbiddenShapes = new TreeMap<GlyphSignature, HashSet<Shape>>();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -117,6 +117,19 @@ public class GlyphLag
     public Glyph getGlyph (Integer id)
     {
         return glyphs.get(id);
+    }
+
+    //-------------------------//
+    // getGlyphForbiddenShapes //
+    //-------------------------//
+    /**
+     * Report the set of forbidden shapes for a given glyph, or null is none
+     *
+     * @param glyph the glyph at stake
+     */
+    public Set<Shape> getGlyphForbiddenShapes (Glyph glyph)
+    {
+        return forbiddenShapes.get(glyph.getSignature());
     }
 
     //-------------------//
@@ -171,31 +184,19 @@ public class GlyphLag
         return globalGlyphId;
     }
 
-    //-------------//
-    // createGlyph //
-    //-------------//
+    //----------//
+    // addGlyph //
+    //----------//
     /**
-     * Create a new glyph instance in the lag
+     * Add a glyph in the graph
      *
-     * @param cl the concrete glyph class to use for instantiation
-     * @return the newly created glyph
+     * @param glyph the glyph to add to the lag
      */
-    public Glyph createGlyph (Class<?extends Glyph> cl)
+    public void addGlyph (Glyph glyph)
     {
-        try {
-            Glyph glyph = cl.newInstance();
-            addGlyph(glyph);
-
-            return glyph;
-        } catch (InstantiationException ex) {
-            ex.printStackTrace();
-
-            return null;
-        } catch (IllegalAccessException ex) {
-            ex.printStackTrace();
-
-            return null;
-        }
+        glyphs.put(++globalGlyphId, glyph);
+        glyph.setId(globalGlyphId);
+        glyph.setLag(this);
     }
 
     //------//
@@ -216,6 +217,30 @@ public class GlyphLag
         for (Glyph glyph : getGlyphs()) {
             System.out.println(glyph.toString());
         }
+    }
+
+    //------------------//
+    // forbidGlyphShape //
+    //------------------//
+    /**
+     * Register a shape as forbidden for a glyph known only through its
+     * signature
+     *
+     * @param glyph the glyph for which shape is forbidden
+     * @param shape the forbidden shape
+     */
+    public void forbidGlyphShape (Glyph glyph,
+                                  Shape shape)
+    {
+        GlyphSignature sig = glyph.getSignature();
+        HashSet<Shape> forbiddens = forbiddenShapes.get(sig);
+
+        if (forbiddens == null) {
+            forbiddens = new HashSet<Shape>();
+            forbiddenShapes.put(sig, forbiddens);
+        }
+
+        forbiddens.add(shape);
     }
 
     //--------------//
@@ -414,21 +439,6 @@ public class GlyphLag
     protected String getPrefix ()
     {
         return "GlyphLag";
-    }
-
-    //----------//
-    // addGlyph //
-    //----------//
-    /**
-     * (package access from {@link Glyph}) to add a glyph in the graph
-     *
-     * @param glyph the newly created glyph
-     */
-    void addGlyph (Glyph glyph)
-    {
-        glyphs.put(++globalGlyphId, glyph);
-        glyph.setId(globalGlyphId);
-        glyph.setLag(this);
     }
 
     //-------------//

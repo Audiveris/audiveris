@@ -37,6 +37,7 @@ import com.jgoodies.forms.layout.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Collections;
+import java.util.Set;
 
 import javax.swing.*;
 
@@ -176,9 +177,11 @@ class EvaluationBoard
             (glyph.getShape() == Shape.COMBINING_STEM) ||
             Shape.Barlines.contains(glyph.getShape())) {
             // Blank the output
-            selector.setEvals(null);
+            selector.setEvals(null, null);
         } else {
-            selector.setEvals(evaluator.getEvaluations(glyph));
+            selector.setEvals(
+                evaluator.getAllEvaluations(glyph),
+                glyph.getForbiddenShapes());
         }
     }
 
@@ -294,7 +297,8 @@ class EvaluationBoard
             }
         }
 
-        public void setEval (Evaluation eval)
+        public void setEval (Evaluation eval,
+                             boolean    barred)
         {
             JComponent comp;
 
@@ -306,9 +310,21 @@ class EvaluationBoard
 
             if (eval != null) {
                 if (sheet != null) {
+                    if (barred) {
+                        button.setBackground(Color.LIGHT_GRAY);
+                    } else {
+                        button.setBackground(null);
+                    }
+
                     button.setText(eval.shape.toString());
                     button.setIcon(eval.shape.getIcon());
                 } else {
+                    if (barred) {
+                        field.setBackground(Color.LIGHT_GRAY);
+                    } else {
+                        field.setBackground(null);
+                    }
+
                     field.setText(eval.shape.toString());
                     field.setIcon(eval.shape.getIcon());
                 }
@@ -358,7 +374,7 @@ class EvaluationBoard
                 buttons[i] = new EvalButton();
             }
 
-            setEvals(null);
+            setEvals(null, null);
         }
 
         //----------//
@@ -370,14 +386,18 @@ class EvaluationBoard
          * threshold, and less than x times (also evaluator-dependent) the best
          * (first) eval whichever comes first)
          *
-         * @param evals the ordered list of evaluations from best to worst
+         * @param evals the ordered list of <b>all</b>evaluations from best to
+         *              worst
+         * @param forbiddenShapes set of undesired shapes to be displayed
+         *                        accordingly, or null
          */
-        public void setEvals (Evaluation[] evals)
+        public void setEvals (Evaluation[] evals,
+                              Set<Shape>   forbiddenShapes)
         {
             // Special case to empty the selector
             if (evals == null) {
                 for (EvalButton evalButton : buttons) {
-                    evalButton.setEval(null);
+                    evalButton.setEval(null, false);
                 }
 
                 return;
@@ -405,12 +425,17 @@ class EvaluationBoard
                     break;
                 }
 
-                buttons[i].setEval(eval);
+                if ((forbiddenShapes != null) &&
+                    forbiddenShapes.contains(eval.shape)) {
+                    buttons[i].setEval(eval, true); // Barred
+                } else {
+                    buttons[i].setEval(eval, false);
+                }
             }
 
             // Zero the remaining buttons
             for (; i < EVAL_NB; i++) {
-                buttons[i].setEval(null);
+                buttons[i].setEval(null, false);
             }
         }
     }

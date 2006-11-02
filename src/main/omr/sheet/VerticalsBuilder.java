@@ -27,6 +27,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
+import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
@@ -43,7 +44,6 @@ import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
 
 import omr.stick.Stick;
-import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
@@ -98,7 +98,7 @@ public class VerticalsBuilder
     //~ Instance fields --------------------------------------------------------
 
     /** Area of vertical runs */
-    private final VerticalArea verticalsArea;
+    ///private final VerticalArea verticalsArea;
 
     /** Related user display if any */
     private GlyphLagView view;
@@ -124,12 +124,12 @@ public class VerticalsBuilder
         // We re-use the same vertical lag (but not the sticks) from Bars.
         super(sheet, sheet.getVerticalLag());
 
-        Scale scale = sheet.getScale();
+        Scale        scale = sheet.getScale();
 
         // We cannot reuse the sticks, since thick sticks are allowed for bars
         // but not for stems. So, let's rebuild the stick area from the initial
         // lag.
-        verticalsArea = new VerticalArea(
+        VerticalArea verticalsArea = new VerticalArea(
             sheet,
             lag,
             new MySectionPredicate(),
@@ -286,9 +286,6 @@ public class VerticalsBuilder
         Constant.Double  maxStemAdjacencyLow = new Constant.Double(
             0.60,
             "Low Maximum adjacency ratio for a stem stick");
-        Scale.Fraction   maxStemThickness = new Scale.Fraction(
-            0.3,
-            "Maximum thickness of an interesting vertical stick");
         Constant.Double  minCheckResult = new Constant.Double(
             0.50,
             "Minimum result for suite of check");
@@ -310,6 +307,9 @@ public class VerticalsBuilder
         Scale.Fraction   minStemLengthLow = new Scale.Fraction(
             2.5,
             "Low Minimum length for a stem");
+        Scale.Fraction   maxStemThickness = new Scale.Fraction(
+            0.4,
+            "Maximum thickness of an interesting vertical stick");
     }
 
     //---------//
@@ -584,9 +584,12 @@ public class VerticalsBuilder
                                      .indexOf(this);
 
             // All remaining vertical sticks clutter
-            for (Stick stick : verticalsArea.getSticks()) {
-                stick.colorize(lag, viewIndex, Color.red);
-            }
+            //            for (Stick stick : verticalsArea.getSticks()) {
+            //                stick.colorize(lag, viewIndex, Color.red);
+            //            }
+            //            for (Glyph glyph : lag.getGlyphs()) {
+            //                glyph.colorize(lag, viewIndex, Color.red);
+            //            }
 
             // Use light gray color for past successful entities
             sheet.colorize(lag, viewIndex, Color.lightGray);
@@ -622,7 +625,7 @@ public class VerticalsBuilder
     private static class MySectionPredicate
         extends VerticalArea.SectionPredicate
     {
-        public boolean check (StickSection section)
+        public boolean check (GlyphSection section)
         {
             // We process section for which glyph is null, NOISE, STRUCTURE
             boolean result = (section.getGlyph() == null) ||

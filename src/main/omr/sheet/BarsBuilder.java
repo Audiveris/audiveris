@@ -29,7 +29,7 @@ import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 
 import omr.lag.JunctionDeltaPolicy;
-import omr.lag.LagBuilder;
+import omr.lag.SectionsBuilder;
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
@@ -72,8 +72,8 @@ import java.util.List;
  * as bar lines. This class uses a dedicated companion named {@link
  * omr.sheet.BarsChecker} which handles physical checks.
  *
- * <p> Input is provided by the list of vertical sticks retrieved by the
- * preceding step.
+ * <p> Input is provided by a list of vertical sticks retrieved from the 
+ * vertical lag.
  *
  * <p> Output is the collection of detected Bar lines.
  *
@@ -137,6 +137,7 @@ public class BarsBuilder
     public BarsBuilder (Sheet sheet)
     {
         super(sheet, new GlyphLag(new VerticalOrientation()));
+        lag.setName("vLag");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -201,6 +202,7 @@ public class BarsBuilder
             for (Part part : partList) {
                 part.setId(++index);
                 part.setName("Part_" + index);
+
                 if (logger.isFineEnabled()) {
                     logger.fine("Global " + part);
                 }
@@ -237,14 +239,13 @@ public class BarsBuilder
         scale = sheet.getScale();
         sheet.getHorizontals();
 
-        // Augment the vertical lag of runs
-        lag.setName("vLag");
+        // Populate the vertical lag of runs
         lag.setVertexClass(StickSection.class);
-        new LagBuilder<GlyphLag, GlyphSection>().rip(
+        SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
+        lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             lag,
-            sheet.getPicture(),
-            0, // minRunLength
-            new JunctionDeltaPolicy(constants.maxDeltaLength.getValue())); // maxDeltaLength
+            new JunctionDeltaPolicy(constants.maxDeltaLength.getValue()));
+        lagBuilder.createSections(sheet.getPicture(), 0); // 0 = minRunLength
         sheet.setVerticalLag(lag);
 
         // Retrieve (vertical) sticks

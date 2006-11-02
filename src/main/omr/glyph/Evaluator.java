@@ -218,13 +218,27 @@ public abstract class Evaluator
     //----------------//
     /**
      * Run the evaluator with the specified glyph, and return a prioritized
-     * collection of interpretations (ordered from best to wors).
+     * collection of interpretations (ordered from best to worst), without the 
+     * shapes that are flagged as forbidden for this glyph.
      *
      * @param glyph the glyph to be examined
      *
      * @return the ordered best evaluations
      */
     public abstract Evaluation[] getEvaluations (Glyph glyph);
+
+    //-------------------//
+    // getAllEvaluations //
+    //-------------------//
+    /**
+     * Run the evaluator with the specified glyph, and return a prioritized
+     * collection of interpretations (ordered from best to worst).
+     *
+     * @param glyph the glyph to be examined
+     *
+     * @return the ordered best evaluations
+     */
+    public abstract Evaluation[] getAllEvaluations (Glyph glyph);
 
     //-----------//
     // isTrained //

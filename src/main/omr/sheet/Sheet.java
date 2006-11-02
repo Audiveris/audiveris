@@ -15,7 +15,7 @@ import omr.ProcessingException;
 import omr.Step;
 
 import omr.glyph.Glyph;
-import omr.glyph.GlyphBuilder;
+import omr.glyph.GlyphsBuilder;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
@@ -142,7 +142,7 @@ public class Sheet
     private transient BarsBuilder barsBuilder;
 
     /** A glyph extractor for this sheet */
-    private transient GlyphBuilder glyphBuilder;
+    private transient GlyphsBuilder glyphBuilder;
 
     /** A glyph inspector for this sheet */
     private transient GlyphInspector glyphInspector;
@@ -299,11 +299,12 @@ public class Sheet
             result = Boolean.valueOf(true);
 
             // Perform the initial recognition of all glyphs built
-            GlyphInspector inspector = getGlyphInspector();
-            inspector.evaluateGlyphs(inspector.getSymbolMaxGrade());
+            getGlyphInspector()
+                .processGlyphs(getGlyphInspector().getSymbolMaxGrade());
 
             // Determine score parts based on braces found
-            inspector.processBraces();
+            getGlyphInspector()
+                .processBraces();
         }
 
         public void displayUI ()
@@ -327,7 +328,7 @@ public class Sheet
             GlyphInspector inspector = getGlyphInspector();
             inspector.processCompounds(inspector.getSymbolMaxGrade());
             result = Boolean.valueOf(true);
-            inspector.evaluateGlyphs(inspector.getSymbolMaxGrade());
+            inspector.processGlyphs(inspector.getSymbolMaxGrade());
         }
 
         public void displayUI ()
@@ -376,7 +377,7 @@ public class Sheet
                 .processLeaves();
             result = Boolean.valueOf(true);
             getGlyphInspector()
-                .evaluateGlyphs(GlyphInspector.getLeafMaxGrade());
+                .processGlyphs(GlyphInspector.getLeafMaxGrade());
         }
 
         public void displayUI ()
@@ -401,7 +402,7 @@ public class Sheet
                 .processCompounds(GlyphInspector.getLeafMaxGrade());
             result = Boolean.valueOf(true);
             getGlyphInspector()
-                .evaluateGlyphs(GlyphInspector.getLeafMaxGrade());
+                .processGlyphs(GlyphInspector.getLeafMaxGrade());
         }
 
         public void displayUI ()
@@ -425,7 +426,7 @@ public class Sheet
                 .processUndueStems();
             result = Boolean.valueOf(true);
             getGlyphInspector()
-                .evaluateGlyphs(GlyphInspector.getCleanupMaxGrade());
+                .processGlyphs(GlyphInspector.getCleanupMaxGrade());
         }
 
         public void displayUI ()
@@ -658,10 +659,10 @@ public class Sheet
      *
      * @return the builder instance
      */
-    public GlyphBuilder getGlyphBuilder ()
+    public GlyphsBuilder getGlyphBuilder ()
     {
         if (glyphBuilder == null) {
-            glyphBuilder = new GlyphBuilder(this);
+            glyphBuilder = new GlyphsBuilder(this);
         }
 
         return glyphBuilder;
@@ -812,31 +813,6 @@ public class Sheet
 
         return (iStep == SYMBOLS) || (iStep == SYMBOLS_COMPOUNDS);
     }
-
-    //     //--------------//
-    //     // requestScore //
-    //     //--------------//
-    //     /**
-    //      * Make sure to report the Score that gathers in a score the information
-    //      * retrieved from this sheet.
-    //      *
-    //      * @return the related score
-    //      */
-    //     public Score requestScore ()
-    //         throws ProcessingException
-    //     {
-    //         if (score == null) {
-    //             try {
-    //                 // Brought by BARS/BarsBuilder, so...
-    //                 BARS.doit();
-    //             } catch (ProcessingException ex) {
-    //                 logger.error("Cannot retrieve Score from BARS");
-    //                 throw new ProcessingException();
-    //             }
-    //         }
-
-    //         return score;
-    //     }
 
     //---------//
     // getPath //

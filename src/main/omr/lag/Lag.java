@@ -592,7 +592,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     //---------//
     /**
      * Assign the populated runs to the lag. Package private access is provided
-     * for LagBuilder
+     * for SectionsBuilder
      *
      * @param runs the populated runs
      */

@@ -13,7 +13,7 @@ package omr.sheet;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.lag.Run;
+import omr.lag.RunsBuilder;
 
 import omr.util.Implement;
 import omr.util.Logger;
@@ -52,7 +52,7 @@ public class ScaleBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    /** ADapter for reading runs */
+    /** Adapter for reading runs */
     private Adapter adapter;
 
     /** Related sheet */
@@ -156,8 +156,8 @@ public class ScaleBuilder
         adapter = new Adapter(sheet, picture.getHeight() - 1);
 
         // Read the picture runs
-        Run.readRuns(
-            adapter,
+        RunsBuilder runsBuilder = new RunsBuilder(adapter);
+        runsBuilder.createRuns(
             new Rectangle(0, 0, picture.getHeight(), picture.getWidth()));
 
         logger.info(
@@ -168,10 +168,10 @@ public class ScaleBuilder
     //~ Inner Classes ----------------------------------------------------------
 
     //---------//
-    // Adapter //          Needed for readRuns
+    // Adapter //          Needed for createRuns
     //---------//
     private class Adapter
-        implements Run.Reader
+        implements RunsBuilder.Reader
     {
         private Picture picture;
         private Sheet   sheet;
@@ -200,7 +200,7 @@ public class ScaleBuilder
         //--------//
         // isFore //
         //--------//
-        @Implement(Run.Reader.class)
+        @Implement(RunsBuilder.Reader.class)
         public boolean isFore (int level)
         {
             // Assuming black=0, white=255
@@ -210,7 +210,7 @@ public class ScaleBuilder
         //----------//
         // getLevel //
         //----------//
-        @Implement(Run.Reader.class)
+        @Implement(RunsBuilder.Reader.class)
         public int getLevel (int coord,
                              int pos)
         {
@@ -220,7 +220,7 @@ public class ScaleBuilder
         //---------//
         // backRun //
         //---------//
-        @Implement(Run.Reader.class)
+        @Implement(RunsBuilder.Reader.class)
         public void backRun (int w,
                              int h,
                              int length)
@@ -231,7 +231,7 @@ public class ScaleBuilder
         //---------//
         // foreRun //
         //---------//
-        @Implement(Run.Reader.class)
+        @Implement(RunsBuilder.Reader.class)
         public void foreRun (int w,
                              int h,
                              int length,
@@ -243,7 +243,7 @@ public class ScaleBuilder
         //-----------//
         // terminate //
         //-----------//
-        @Implement(Run.Reader.class)
+        @Implement(RunsBuilder.Reader.class)
         public void terminate ()
         {
             // Determine the biggest buckets
@@ -266,12 +266,6 @@ public class ScaleBuilder
             if (constants.plotting.getValue()) {
                 writePlot();
             }
-
-            // House keeping (useful ? TBD)
-            //             sheet = null;
-            //             picture = null;
-            //             fore = null;
-            //             back = null;
         }
 
         //-----------//

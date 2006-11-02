@@ -12,7 +12,7 @@ package omr.glyph.ui;
 
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
-import omr.glyph.GlyphBuilder;
+import omr.glyph.GlyphsBuilder;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
@@ -74,7 +74,7 @@ public class SymbolsEditor
     private final Evaluator evaluator = GlyphNetwork.getInstance();
 
     /** Glyph builder */
-    private final GlyphBuilder builder;
+    private final GlyphsBuilder builder;
 
     /** Glyph inspector */
     private final GlyphInspector inspector;

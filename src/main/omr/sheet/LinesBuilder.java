@@ -23,7 +23,7 @@ import omr.glyph.ui.GlyphLagView;
 
 import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionDeltaPolicy;
-import omr.lag.LagBuilder;
+import omr.lag.SectionsBuilder;
 import omr.lag.Run;
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
@@ -119,11 +119,12 @@ public class LinesBuilder
         lag.setName("hLag");
         lag.setVertexClass(StickSection.class);
 
-        new LagBuilder<GlyphLag, GlyphSection>().rip(
+        // Populate the lag
+        SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
+        lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             lag,
-            picture,
-            0, // minRunLength
-            new JunctionDeltaPolicy(constants.maxDeltaLength.getValue())); // maxDeltaLength
+            new JunctionDeltaPolicy(constants.maxDeltaLength.getValue()));
+        lagBuilder.createSections(picture, 0); // 0 = minRunLength
         sheet.setHorizontalLag(lag);
 
         retrieveStaves(retrievePeaks(picture.getHeight()));

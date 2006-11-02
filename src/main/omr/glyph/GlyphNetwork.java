@@ -96,6 +96,35 @@ public class GlyphNetwork
         return INSTANCE;
     }
 
+    //-------------------//
+    // getAllEvaluations //
+    //-------------------//
+    @Override
+    public Evaluation[] getAllEvaluations (Glyph glyph)
+    {
+        // If too small, it's just NOISE
+        if (!isBigEnough(glyph)) {
+            return noiseEvaluations;
+        } else {
+            double[]     ins = feedInput(glyph, null);
+            double[]     outs = new double[outSize];
+            Evaluation[] evals = new Evaluation[outSize];
+
+            network.run(ins, null, outs);
+
+            for (int s = 0; s < outSize; s++) {
+                evals[s] = new Evaluation();
+                evals[s].shape = Shape.values()[s];
+                evals[s].grade = 1d / outs[s];
+            }
+
+            // Order the evals from best to worst
+            Arrays.sort(evals, comparator);
+
+            return evals;
+        }
+    }
+
     //--------------//
     // setAmplitude //
     //--------------//
@@ -125,37 +154,20 @@ public class GlyphNetwork
     //----------------//
     // getEvaluations //
     //----------------//
-    /**
-     * Report the results of evaluating a glyph
-     *
-     * @param glyph the glyph to evaluate
-     *
-     * @return the ordered array of evaluations
-     */
     @Override
     public Evaluation[] getEvaluations (Glyph glyph)
     {
-        // If too small, it's just NOISE
-        if (!isBigEnough(glyph)) {
-            return noiseEvaluations;
-        } else {
-            double[]     ins = feedInput(glyph, null);
-            double[]     outs = new double[outSize];
-            Evaluation[] evals = new Evaluation[outSize];
+        List<Evaluation> kept = new ArrayList<Evaluation>();
 
-            network.run(ins, null, outs);
-
-            for (int s = 0; s < outSize; s++) {
-                evals[s] = new Evaluation();
-                evals[s].shape = Shape.values()[s];
-                evals[s].grade = 1d / outs[s];
+        for (Evaluation eval : getAllEvaluations(glyph)) {
+            if ((glyph.getForbiddenShapes() == null) ||
+                !glyph.getForbiddenShapes()
+                      .contains(eval.shape)) {
+                kept.add(eval);
             }
-
-            // Order the evals from best to worst
-            Arrays.sort(evals, comparator);
-
-            return evals;
         }
+
+        return kept.toArray(new Evaluation[0]);
     }
 
     //-----------------//

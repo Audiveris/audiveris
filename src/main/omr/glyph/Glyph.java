@@ -29,10 +29,8 @@ import omr.util.Logger;
 import omr.util.Predicate;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.annotation.*;
 
@@ -114,11 +112,14 @@ public class Glyph
        vertical */
     protected Rectangle contourBox;
 
+    /** Total weight of this glyph */
+    protected Integer weight;
+
     /** Result of analysis wrt this glyph */
     protected Result result;
 
-    /** Shape previously assigned to this glyph */
-    protected Shape oldShape;
+    /** A signature to retrieve this glyph */
+    private GlyphSignature signature;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -216,11 +217,15 @@ public class Glyph
             }
         }
 
-        return new PixelRectangle(
-            contourBox.x,
-            contourBox.y,
-            contourBox.width,
-            contourBox.height);
+        if (contourBox != null) {
+            return new PixelRectangle(
+                contourBox.x,
+                contourBox.y,
+                contourBox.width,
+                contourBox.height);
+        } else {
+            return null;
+        }
     }
 
     //------------------//
@@ -265,6 +270,24 @@ public class Glyph
         }
 
         return low;
+    }
+
+    //--------------------//
+    // getForbiddenShapes //
+    //--------------------//
+    /**
+     * Report the set of non-reassignable shapes for this glyph instance
+     *
+     * @return the set of previous shapes, which may be null
+     */
+    public Set<Shape> getForbiddenShapes ()
+    {
+        if (getLag() != null) {
+            return getLag()
+                       .getGlyphForbiddenShapes(this);
+        } else {
+            return null;
+        }
     }
 
     //--------------//
@@ -406,19 +429,6 @@ public class Glyph
         return moments;
     }
 
-    //-------------//
-    // getOldShape //
-    //-------------//
-    /**
-     * Report the previous glyph shape
-     *
-     * @return the glyph old shape, which may be null
-     */
-    public Shape getOldShape ()
-    {
-        return oldShape;
-    }
-
     //------------------//
     // setPitchPosition //
     //------------------//
@@ -483,8 +493,19 @@ public class Glyph
      */
     public void setShape (Shape shape)
     {
-        oldShape = this.shape;
+        // Blacklist the previous shape if any
+        if (this.shape != null) {
+            getLag()
+                .forbidGlyphShape(this, this.shape);
+        }
+
         this.shape = shape;
+
+        // Now remove the assigned shape from the blacklist if any
+        if (getForbiddenShapes() != null) {
+            getForbiddenShapes()
+                .remove(shape);
+        }
     }
 
     //----------//
@@ -498,6 +519,23 @@ public class Glyph
     public Shape getShape ()
     {
         return shape;
+    }
+
+    //--------------//
+    // getSignature //
+    //--------------//
+    /**
+     * Report a signature that should allow to detect glyph identity
+     *
+     * @return the glyph signature
+     */
+    public GlyphSignature getSignature ()
+    {
+        if (signature == null) {
+            signature = new GlyphSignature(this);
+        }
+
+        return signature;
     }
 
     //--------//
@@ -611,10 +649,12 @@ public class Glyph
      */
     public int getWeight ()
     {
-        int weight = 0;
+        if (weight == null) {
+            weight = 0;
 
-        for (GlyphSection section : members) {
-            weight += section.getWeight();
+            for (GlyphSection section : members) {
+                weight += section.getWeight();
+            }
         }
 
         return weight;
@@ -802,6 +842,12 @@ public class Glyph
     {
         // Temporary
         omr.util.Dumper.dump(this);
+
+        if (getForbiddenShapes() != null) {
+            System.out.println(
+                " + forbiddenShapes=" +
+                Arrays.toString(getForbiddenShapes().toArray()));
+        }
     }
 
     //-------------//
@@ -894,20 +940,6 @@ public class Glyph
         }
     }
 
-    //
-    //    //----------------//
-    //    // setStringShape //
-    //    //----------------//
-    //    /**
-    //     * Setter for the shape, knowing the name of the shape
-    //     *
-    //     * @param shape the NAME of the shape
-    //     */
-    //    public void setStringShape (String shape)
-    //    {
-    //        setShape(Shape.valueOf(shape));
-    //    }
-
     //----------//
     // toString //
     //----------//
@@ -930,21 +962,18 @@ public class Glyph
               .append(shape);
         }
 
-        if (oldShape != null) {
-            sb.append(" oldShape=")
-              .append(oldShape);
-        }
-
         if (centroid != null) {
             sb.append(" centroid=[")
               .append(centroid.x)
-              .append(",");
-            sb.append(centroid.y)
+              .append(",")
+              .append(centroid.y)
               .append("]");
         }
 
         //         if (moments != null)
         //             sb.append(" moments=" + moments);
+
+        // Is that all?
         if (this.getClass()
                 .getName()
                 .equals(Glyph.class.getName())) {
@@ -1002,5 +1031,7 @@ public class Glyph
         moments = null;
         bounds = null;
         contourBox = null;
+        weight = null;
+        signature = null;
     }
 }

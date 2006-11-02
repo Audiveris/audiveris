@@ -40,7 +40,7 @@ import java.util.List;
  *
  * <li> At line creation, the whole area is scanned to retrieve core sections
  * then peripheral and internal sections. This is done by the inherited
- * StickArea class. </li>
+ * SticksBuilder class. </li>
  *
  * <li> Then, after all lines of the containing staff have been processed, we
  * have a better knowledge of what left and right extrema should be. We use this
@@ -51,11 +51,12 @@ import java.util.List;
  *
  * </ol>
  *
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class LineBuilder
-    extends StickArea
+    extends SticksBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -69,22 +70,19 @@ public class LineBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Related lag */
-    private GlyphLag hLag;
-
     /** Best line equation */
     private Line line = null;
 
     /** Source for sections in this area */
-    private LineSource source;
+    ///private LineSource source;
 
     /** Hole areas */
-    private List<StickArea> holeAreas = new ArrayList<StickArea>();
+    private List<SticksBuilder> holeAreas = new ArrayList<SticksBuilder>();
 
     /** (local) scale at staff level */
     private Scale staffScale;
 
-    /** FRelated sheet */
+    /** Related sheet */
     private Sheet sheet;
 
     /** Just a sequential id for debug */
@@ -121,13 +119,20 @@ public class LineBuilder
                         Sheet                      sheet,
                         Scale                      staffScale)
     {
+        super(
+            hLag,
+            new LineSource(
+                yTop - staffScale.toPixels(constants.yMargin),
+                yBottom + staffScale.toPixels(constants.yMargin),
+                vi),
+            sheet.getScale().toPixels(constants.coreSectionLength), // minCoreLength
+            constants.maxAdjacency.getValue(), // maxAdjacency
+            staffScale.toPixels(constants.maxThickness),
+            constants.maxSlope.getValue(), // max stick slope
+            true); // closeTest
+
         this.sheet = sheet;
         this.staffScale = staffScale;
-        this.hLag = hLag;
-
-        // source for adequate sections
-        int yMargin = staffScale.toPixels(constants.yMargin);
-        source = new LineSource(yTop - yMargin, yBottom + yMargin, vi);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -150,18 +155,8 @@ public class LineBuilder
             logger.fine("Building LineBuilder #" + id + " ...");
         }
 
-        maxThickness = staffScale.toPixels(constants.maxThickness);
-
         // Initialize the line area
-        initialize(
-            hLag,
-            null, // No pre-candidates
-            source, // Source for sections
-            sheet.getScale().toPixels(constants.coreSectionLength), // minCoreLength
-            constants.maxAdjacency.getValue(), // maxAdjacency
-            maxThickness,
-            constants.maxSlope.getValue(), // max stick slope
-            true); // closeTest
+        createSticks(null);
 
         if (logger.isFineEnabled()) {
             logger.fine(
@@ -228,7 +223,7 @@ public class LineBuilder
         for (Stick stick : sticks) {
             StickUtil.cleanup(
                 stick,
-                hLag,
+                lag,
                 constants.extensionMinPointNb.getValue(),
                 sheet.getPicture());
         }
@@ -299,7 +294,7 @@ public class LineBuilder
         }
 
         // Include sticks from hole areas into sticks list
-        for (StickArea area : holeAreas) {
+        for (SticksBuilder area : holeAreas) {
             sticks.addAll(area.getSticks());
         }
 
@@ -342,7 +337,7 @@ public class LineBuilder
                 Run       run = null;
 
                 do {
-                    run = hLag.getFirstRectRun(gapStart, gapStop, yMin, yMax); // HB : check order TBD
+                    run = lag.getFirstRectRun(gapStart, gapStop, yMin, yMax); // HB : check order TBD
 
                     if (run != null) {
                         if ((run.getStart() - gapStart) > maxGapWidth) {
@@ -557,16 +552,15 @@ public class LineBuilder
 
         // Have we found anything ?
         if (holeCandidates != null) {
-            StickArea holeArea = new StickArea();
-            holeArea.initialize(
-                hLag,
-                holeCandidates,
+            SticksBuilder holeArea = new SticksBuilder(
+                lag,
                 source,
                 0,
                 constants.maxAdjacency.getValue(), // maxAdjacency
                 maxThickness,
                 constants.maxSlope.getValue(), // max stick slope
-                true); // closeTest
+                true);
+            holeArea.createSticks(holeCandidates);
             holeAreas.add(holeArea);
         }
     }
@@ -612,7 +606,7 @@ public class LineBuilder
     // LineSource //
     //------------//
     private static class LineSource
-        extends StickArea.Source
+        extends SticksSource
     {
         // My private list of sections in related area
         private final List<GlyphSection> sections = new ArrayList<GlyphSection>();
@@ -626,6 +620,8 @@ public class LineBuilder
                            int                        yMax,
                            ListIterator<GlyphSection> it)
         {
+            super(null, null);
+
             this.yMin = yMin;
             this.yMax = yMax;
 
@@ -665,6 +661,7 @@ public class LineBuilder
         //----------//
         // isInArea //
         //----------//
+        @Override
         public boolean isInArea (GlyphSection section)
         {
             return (section.getFirstPos() >= yMin) &&
@@ -674,6 +671,7 @@ public class LineBuilder
         //--------//
         // backup //
         //--------//
+        @Override
         public void backup ()
         {
             vi.previous();
@@ -700,6 +698,7 @@ public class LineBuilder
         //-------//
         // reset //
         //-------//
+        @Override
         public void reset ()
         {
             vi = sections.listIterator();

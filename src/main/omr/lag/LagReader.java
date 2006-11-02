@@ -24,13 +24,13 @@ import java.util.List;
  * lag reference is used to access the picture pixels using the proper
  * orientation horizontal / vertical.
  *
- * <p>These runs can then be used to build a lag, using {@link LagBuilder}.
+ * <p>These runs can then be used to populate a lag via {@link SectionsBuilder}.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class LagReader
-    implements Run.Reader
+    implements RunsBuilder.Reader
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -39,7 +39,9 @@ public class LagReader
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The lag to populate */
+    /**
+     * The lag to populate
+     */
     protected final Lag lag;
 
     /**
@@ -63,8 +65,8 @@ public class LagReader
     protected final int minLength;
 
     // To avoid too many allocations (beware : non-reentrant)
-    private Point cp = new Point();
-    private Point xy = new Point();
+    private final Point cp = new Point();
+    private final Point xy = new Point();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -104,7 +106,7 @@ public class LagReader
      *
      * @return true if foreground, false if background
      */
-    @Implement(Run.Reader.class)
+    @Implement(RunsBuilder.Reader.class)
     public boolean isFore (int level)
     {
         return level <= maxLevel;
@@ -121,7 +123,7 @@ public class LagReader
      *
      * @return pixel grey level
      */
-    @Implement(Run.Reader.class)
+    @Implement(RunsBuilder.Reader.class)
     public int getLevel (int coord,
                          int pos)
     {
@@ -142,7 +144,7 @@ public class LagReader
      * @param pos position of run start
      * @param length run length
      */
-    @Implement(Run.Reader.class)
+    @Implement(RunsBuilder.Reader.class)
     public void backRun (int coord,
                          int pos,
                          int length)
@@ -160,7 +162,7 @@ public class LagReader
      * @param length run length
      * @param cumul cumulated pixel grey levels on all run points
      */
-    @Implement(Run.Reader.class)
+    @Implement(RunsBuilder.Reader.class)
     public void foreRun (int coord,
                          int pos,
                          int length,
@@ -180,7 +182,7 @@ public class LagReader
     /**
      * Method called-back when all runs have been read
      */
-    @Implement(Run.Reader.class)
+    @Implement(RunsBuilder.Reader.class)
     public void terminate ()
     {
         if (logger.isFineEnabled()) {

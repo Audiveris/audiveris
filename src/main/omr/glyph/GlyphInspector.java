@@ -15,23 +15,17 @@ import omr.ProcessingException;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.score.Score;
-import omr.score.ScoreManager;
-
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
+import omr.sheet.SystemSplit;
+import omr.sheet.VerticalArea;
 import omr.sheet.VerticalsBuilder;
 
-import omr.stick.Stick;
-
-import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.Predicate;
 
 import java.awt.*;
-import java.io.*;
 import java.util.*;
 import java.util.List;
 
@@ -59,7 +53,7 @@ public class GlyphInspector
     private final Sheet sheet;
 
     /** Related glyph builder */
-    private final GlyphBuilder builder;
+    private final GlyphsBuilder builder;
 
     /** Underlying lag */
     private final GlyphLag vLag;
@@ -90,8 +84,8 @@ public class GlyphInspector
      * @param sheet the sheet to inspect
      * @param builder the glyph builder
      */
-    public GlyphInspector (Sheet        sheet,
-                           GlyphBuilder builder)
+    public GlyphInspector (Sheet         sheet,
+                           GlyphsBuilder builder)
     {
         this.sheet = sheet;
         this.builder = builder;
@@ -138,67 +132,6 @@ public class GlyphInspector
     public static double getSymbolMaxGrade ()
     {
         return constants.symbolMaxGrade.getValue();
-    }
-
-    //----------------//
-    // evaluateGlyphs //
-    //----------------//
-    /**
-     * All symbol glyphs of the sheet, for which we can get a positive vote of
-     * the evaluator, are assigned the voted shape.
-     *
-     * @param maxGrade maximum value for acceptable grade
-     */
-    public void evaluateGlyphs (double maxGrade)
-    {
-        // For temporary use only ...
-        if (constants.inspectorDisabled.getValue()) {
-            logger.warning(
-                "GlyphInspector is disabled. Check Tools|Options menu");
-
-            return;
-        }
-
-        int       acceptNb = 0;
-        int       knownNb = 0;
-        int       noiseNb = 0;
-        int       clutterNb = 0;
-        int       structureNb = 0;
-        Evaluator evaluator = GlyphNetwork.getInstance();
-
-        for (int id = sheet.getFirstSymbolId(); id <= vLag.getLastGlyphId();
-             id++) {
-            Glyph glyph = vLag.getGlyph(id);
-
-            if (glyph != null) {
-                if (glyph.getShape() == null) {
-                    glyph.setInterline(sheet.getScale().interline());
-
-                    // Get vote
-                    Shape vote = evaluator.vote(glyph, maxGrade);
-
-                    if (vote != null) {
-                        glyph.setShape(vote);
-                        acceptNb++;
-
-                        if (vote == Shape.NOISE) {
-                            noiseNb++;
-                        } else if (vote == Shape.CLUTTER) {
-                            clutterNb++;
-                        } else if (vote == Shape.STRUCTURE) {
-                            structureNb++;
-                        } else {
-                            knownNb++;
-                        }
-                    }
-                }
-            }
-        }
-
-        logger.info(
-            acceptNb + " glyph(s) accepted (" + noiseNb + " as noise, " +
-            structureNb + " as structure, " + clutterNb + " as clutter, " +
-            knownNb + " as known)");
     }
 
     //------------------------//
@@ -278,6 +211,67 @@ public class GlyphInspector
         } else {
             logger.info("No compound built");
         }
+    }
+
+    //---------------//
+    // processGlyphs //
+    //---------------//
+    /**
+     * All symbol glyphs of the sheet, for which we can get a positive vote of
+     * the evaluator, are assigned the voted shape.
+     *
+     * @param maxGrade maximum value for acceptable grade
+     */
+    public void processGlyphs (double maxGrade)
+    {
+        // For temporary use only ...
+        if (constants.inspectorDisabled.getValue()) {
+            logger.warning(
+                "GlyphInspector is disabled. Check Tools|Options menu");
+
+            return;
+        }
+
+        int       acceptNb = 0;
+        int       knownNb = 0;
+        int       noiseNb = 0;
+        int       clutterNb = 0;
+        int       structureNb = 0;
+        Evaluator evaluator = GlyphNetwork.getInstance();
+
+        for (int id = sheet.getFirstSymbolId(); id <= vLag.getLastGlyphId();
+             id++) {
+            Glyph glyph = vLag.getGlyph(id);
+
+            if (glyph != null) {
+                if (glyph.getShape() == null) {
+                    glyph.setInterline(sheet.getScale().interline());
+
+                    // Get vote
+                    Shape vote = evaluator.vote(glyph, maxGrade);
+
+                    if (vote != null) {
+                        glyph.setShape(vote);
+                        acceptNb++;
+
+                        if (vote == Shape.NOISE) {
+                            noiseNb++;
+                        } else if (vote == Shape.CLUTTER) {
+                            clutterNb++;
+                        } else if (vote == Shape.STRUCTURE) {
+                            structureNb++;
+                        } else {
+                            knownNb++;
+                        }
+                    }
+                }
+            }
+        }
+
+        logger.info(
+            acceptNb + " glyph(s) accepted (" + noiseNb + " as noise, " +
+            structureNb + " as structure, " + clutterNb + " as clutter, " +
+            knownNb + " as known)");
     }
 
     //---------------//
@@ -533,7 +527,6 @@ public class GlyphInspector
                 neighbors.add(glyph);
 
                 Glyph compound = builder.buildCompound(neighbors);
-
                 Shape vote = evaluator.vote(compound, maxGrade);
 
                 if ((vote != null) && vote.isWellKnown()) {

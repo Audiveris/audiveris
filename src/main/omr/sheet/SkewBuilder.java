@@ -20,7 +20,7 @@ import omr.glyph.GlyphSection;
 
 import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionRatioPolicy;
-import omr.lag.LagBuilder;
+import omr.lag.SectionsBuilder;
 import omr.lag.LagView;
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
@@ -135,11 +135,12 @@ public class SkewBuilder
         sLag = new GlyphLag(new HorizontalOrientation());
         sLag.setName("Skew-HLag");
         sLag.setVertexClass(StickSection.class);
-        new LagBuilder<GlyphLag, GlyphSection>().rip(
+
+        SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
+        lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             sLag,
-            picture,
-            scale.toPixels(constants.minRunLength), // minRunLength
             new JunctionRatioPolicy(constants.maxHeightRatio.getValue())); // maxHeightRatio
+        lagBuilder.createSections(picture, scale.toPixels(constants.minRunLength)); // minRunLength
 
         // Detect long sticks
         maxThickness = scale.mainFore();
@@ -234,7 +235,8 @@ public class SkewBuilder
                     stick = (Stick) section.getGlyph();
                 } else {
                     // Otherwise, start a brand new stick
-                    stick = (Stick) sLag.createGlyph(Stick.class);
+                    stick = new Stick();
+                    sLag.addGlyph(stick);
 
                     // Store this new stick into the stick table
                     sticks.add(stick);

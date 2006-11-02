@@ -223,7 +223,7 @@ public class ActionsBoard
 
         public void actionPerformed (ActionEvent e)
         {
-            inspector.evaluateGlyphs(inspector.getLeafMaxGrade());
+            inspector.processGlyphs(inspector.getLeafMaxGrade());
             refresh();
         }
     }
@@ -242,7 +242,7 @@ public class ActionsBoard
         public void actionPerformed (ActionEvent e)
         {
             inspector.processLeaves();
-            inspector.evaluateGlyphs(inspector.getLeafMaxGrade());
+            inspector.processGlyphs(inspector.getLeafMaxGrade());
             refresh();
         }
     }

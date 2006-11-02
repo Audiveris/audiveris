@@ -16,11 +16,11 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphLag;
 
 import omr.stick.Stick;
-import omr.stick.StickArea;
-import omr.stick.StickSection;
+import omr.stick.SticksBuilder;
+import omr.stick.SticksBuilder.SectionPredicate;
+import omr.stick.SticksSource;
 
 import omr.util.Logger;
-import omr.util.Predicate;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,7 +37,7 @@ import java.util.Comparator;
  * @version $Id$
  */
 public class VerticalArea
-    extends StickArea
+    extends SticksBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -90,23 +90,24 @@ public class VerticalArea
                          int              maxThickness)
         throws omr.ProcessingException
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("maxThickness=" + maxThickness);
-        }
-
-        // Retrieve the stick(s)
-        Scale scale = sheet.getScale();
-        initialize(
+        super(
             vLag,
-            null,
-            new Source(vLag.getVertices(), predicate), // source for adequate sections
-            scale.toPixels(constants.coreSectionLength), // minCoreLength
+            new SticksSource(vLag.getVertices(), predicate), // source for adequate sections
+            sheet.getScale().toPixels(constants.coreSectionLength), // minCoreLength
             constants.maxAdjacency.getValue(), // maxAdjacency
             maxThickness, // maxThickness
             constants.maxSlope.getValue(), // maxSlope
             false); // longAlignment
 
+        if (logger.isFineEnabled()) {
+            logger.fine("maxThickness=" + maxThickness);
+        }
+
+        // Retrieve the stick(s)
+        createSticks(null);
+
         // Merge aligned verticals
+        Scale scale = sheet.getScale();
         merge(
             scale.toPixels(constants.maxDeltaCoord),
             scale.toPixels(constants.maxDeltaPos),

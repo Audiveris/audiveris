@@ -14,7 +14,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.lag.JunctionAllPolicy;
-import omr.lag.LagBuilder;
+import omr.lag.SectionsBuilder;
 import omr.lag.VerticalOrientation;
 
 import omr.score.PagePoint;
@@ -86,11 +86,12 @@ public class IconGlyph
             GlyphLag vLag = new GlyphLag(new VerticalOrientation());
             vLag.setName("iconLag");
             vLag.setVertexClass(GlyphSection.class);
-            new LagBuilder<GlyphLag, GlyphSection>().rip(
+
+            SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
+            lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
                 vLag,
-                picture,
-                0, // minRunLength
                 new JunctionAllPolicy()); // catch all
+            lagBuilder.createSections(picture, 0); // minRunLength
 
             // Retrieve the whole glyph made of all sections
             setLag(vLag);

@@ -93,18 +93,11 @@ public class GlyphRegression
         return INSTANCE;
     }
 
-    //----------------//
-    // getEvaluations //
-    //----------------//
-    /**
-     * Report the results of evaluating a glyph
-     *
-     * @param glyph the glyph to evaluate
-     *
-     * @return ordered array of evaluations
-     */
+    //-------------------//
+    // getAllEvaluations //
+    //-------------------//
     @Override
-    public Evaluation[] getEvaluations (Glyph glyph)
+    public Evaluation[] getAllEvaluations (Glyph glyph)
     {
         // If too small, it's just NOISE
         if (!isBigEnough(glyph)) {
@@ -127,14 +120,18 @@ public class GlyphRegression
         }
     }
 
+    //----------------//
+    // getEvaluations //
+    //----------------//
+    @Override
+    public Evaluation[] getEvaluations (Glyph glyph)
+    {
+        return getAllEvaluations(glyph);
+    }
+
     //---------//
     // getName //
     //---------//
-    /**
-     * Report a name for this evaluator
-     *
-     * @return a simple name
-     */
     @Override
     public String getName ()
     {
@@ -144,11 +141,6 @@ public class GlyphRegression
     //-----------//
     // isTrained //
     //-----------//
-    /**
-     * Check whether the evaluator has been trained
-     *
-     * @return true if trained
-     */
     @Override
     public boolean isTrained ()
     {
@@ -164,9 +156,6 @@ public class GlyphRegression
     //------//
     // dump //
     //------//
-    /**
-     * Dump all descriptions to the standard output
-     */
     @Override
     public void dump ()
     {
