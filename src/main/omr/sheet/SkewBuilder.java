@@ -395,7 +395,7 @@ public class SkewBuilder
 
         // Chart
         JFreeChart chart = ChartFactory.createXYLineChart(
-            sheet.getRadix() + " - Slope Histogram", // Title
+            sheet.getRadix() + " (Slope Histogram)", // Title
             "Slope [" + (float) (RESOLUTION * angle) + " Radians/" +
             RESOLUTION + "]", // X-Axis label
             "Counts", // Y-Axis label

@@ -541,7 +541,7 @@ public class LinesBuilder
 
         // Chart
         JFreeChart chart = ChartFactory.createXYLineChart(
-            sheet.getRadix() + " - Horizontal Projections", // Title
+            sheet.getRadix() + " (Horizontal Projections)", // Title
             "Ordinate",
             "Horizontal counts",
             dataset, // Dataset

@@ -300,7 +300,7 @@ public class ScaleBuilder
 
             // Chart
             JFreeChart chart = ChartFactory.createXYLineChart(
-                sheet.getRadix() + " - Run Lengths", // Title
+                sheet.getRadix() + " (Run Lengths)", // Title
                 "Lengths", // X-Axis label
                 "Numbers", // Y-Axis label
                 dataset, // Dataset
