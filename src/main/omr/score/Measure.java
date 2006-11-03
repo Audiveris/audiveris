@@ -50,7 +50,7 @@ public class Measure
     private ClefList clefs;
 
     /** Child: possibly several KeySignature's */
-    //     private KeysigList keysigs;
+    private KeySignatureList keysigs;
 
     /** Child: possibly several Chord's */
     //     private ChordList chords;
@@ -96,6 +96,9 @@ public class Measure
 
         cleanupNode();
 
+        // Allocate children lists
+        keysigs = new KeySignatureList(this, staff);
+
         if (logger.isFineEnabled()) {
             Dumper.dump(this, "Constructed");
         }
@@ -140,6 +143,19 @@ public class Measure
     public List<TreeNode> getClefs ()
     {
         return clefs.getChildren();
+    }
+
+    //------------------//
+    // getKeySignatures //
+    //------------------//
+    /**
+     * Report the collection of KeySignature's
+     *
+     * @return the list of KeySignature's
+     */
+    public List<TreeNode> getKeySignatures ()
+    {
+        return keysigs.getChildren();
     }
 
     //-------//
@@ -259,6 +275,10 @@ public class Measure
             clefs.addChild(node);
             node.setContainer(clefs);
 
+        } else if (node instanceof KeySignature) {
+            keysigs.addChild(node);
+            node.setContainer(keysigs);
+            
             //      } else if (node instanceof Lyricline) {
             //          lyriclines.addChild (node);
             //          node.setContainer (lyriclines);
@@ -269,7 +289,7 @@ public class Measure
             //          dynamics.addChild (node);
             //          node.setContainer (dynamics);
         } else if (node instanceof TreeNode) {
-            // Meant for the 4 lists
+            // Meant for the 4 dummy lists
             children.add(node);
             node.setContainer(this);
         } else {
@@ -301,9 +321,9 @@ public class Measure
 
         // (Re)Allocate specific children lists
         clefs = new ClefList(this, staff);
+        keysigs = new KeySignatureList(this, staff);
 
         //         chords = new ChordList(this, staff);
-        //         keysigs = new KeysigList(this, staff);
     }
 
     //--------------//
@@ -373,6 +393,19 @@ public class Measure
     {
         ClefList (StaffNode container,
                   Staff     staff)
+        {
+            super(container, staff);
+        }
+    }
+
+    //------------------//
+    // KeySignatureList //
+    //------------------//
+    private static class KeySignatureList
+        extends StaffNode
+    {
+        KeySignatureList (StaffNode container,
+                          Staff     staff)
         {
             super(container, staff);
         }

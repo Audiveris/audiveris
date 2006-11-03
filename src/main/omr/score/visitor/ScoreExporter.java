@@ -282,6 +282,13 @@ public class ScoreExporter
     //--------------//
     public boolean visit (KeySignature keySignature)
     {
+        Key key = new Key();
+        getAttributes().setKey(key);
+
+        Fifths fifths = new Fifths();
+        key.setFifths(fifths);
+        fifths.setContent("" + keySignature.getKey());
+
         return true;
     }
 

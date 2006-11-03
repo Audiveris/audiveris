@@ -162,7 +162,6 @@ public abstract class StaffNode
      */
     public StaffPoint computeGlyphCenter (Glyph glyph)
     {
-        // We compute the bounding center of all glyphs
         Rectangle  rect = new Rectangle(glyph.getContourBox());
         Scale      scale = staff.getInfo()
                                 .getScale();

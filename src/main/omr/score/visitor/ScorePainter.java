@@ -101,7 +101,7 @@ public class ScorePainter
                    .paintSymbol(
                 g,
                 zoom,
-                (SymbolIcon) shape.getIcon(),
+                shape,
                 barline.getCenter(),
                 0);
         } else {
@@ -118,7 +118,7 @@ public class ScorePainter
             .paintSymbol(
             g,
             zoom,
-            (SymbolIcon) clef.getShape().getIcon(),
+            clef.getShape(),
             clef.getCenter(),
             clef.getPitchPosition());
 
@@ -127,8 +127,13 @@ public class ScorePainter
 
     public boolean visit (KeySignature keySignature)
     {
-        logger.warning(
-            "KeySignature to be implemented in " + getClass().getName());
+        keySignature.getStaff()
+                    .paintSymbol(
+            g,
+            zoom,
+            keySignature.getShape(),
+            keySignature.getCenter(),
+            keySignature.getPitchPosition());
 
         return true;
     }
@@ -287,7 +292,7 @@ public class ScorePainter
                 staff.paintSymbol(
                     g,
                     zoom,
-                    (SymbolIcon) shape.getIcon(),
+                    shape,
                     timeSignature.getCenter());
 
                 break;
@@ -303,7 +308,7 @@ public class ScorePainter
                     staff.paintSymbol(
                         g,
                         zoom,
-                        (SymbolIcon) s.getIcon(),
+                        s,
                         center,
                         pitch);
                 }

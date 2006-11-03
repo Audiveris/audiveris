@@ -10,6 +10,8 @@
 //
 package omr.score;
 
+import omr.glyph.Shape;
+
 import omr.lag.Lag;
 import static omr.score.ScoreConstants.*;
 import omr.score.visitor.Visitor;
@@ -620,9 +622,9 @@ public class Staff
      * @return the ordinate in pixels, counted from staff origin (upper line),
      * so top line is 0px and bottom line is 64px (with an inter line of 16).
      */
-    public static int pitchToUnit (int pitchPosition)
+    public static int pitchToUnit (double pitchPosition)
     {
-        return ((pitchPosition + 4) * INTER_LINE) / 2;
+        return (int) Math.rint(((pitchPosition + 4) * INTER_LINE) / 2.0);
     }
 
     //--------------//
@@ -694,33 +696,40 @@ public class Staff
      *
      * @param g graphical context
      * @param zoom display zoom
-     * @param icon the symbol icon to paint
+     * @param shape the shape whose icon must be painted
      * @param center staff-based coordinates of bounding center in units (only
      *               abscissa is actually used)
      * @param pitchPosition staff-based ordinate in step lines
      */
     public void paintSymbol (Graphics   g,
                              Zoom       zoom,
-                             SymbolIcon icon,
+                             Shape      shape,
                              StaffPoint center,
-                             int        pitchPosition)
+                             double     pitchPosition)
     {
-        if (icon == null) {
-            logger.warning("No icon to paint");
-        } else if (center == null) {
-            logger.warning("Need bounding center for " + icon.getName());
+        if (shape == null) {
+            logger.warning("No shape to paint");
         } else {
-            ScorePoint origin = getOrigin();
-            int        dy = pitchToUnit(pitchPosition);
-            Point      refPoint = icon.getRefPoint();
-            int        refY = (refPoint == null) ? icon.getCentroid().y
-                              : refPoint.y;
+            SymbolIcon icon = (SymbolIcon) shape.getIcon();
 
-            g.drawImage(
-                icon.getImage(),
-                zoom.scaled(origin.x + center.x) - (icon.getActualWidth() / 2),
-                zoom.scaled(origin.y + dy) - refY,
-                null);
+            if (icon == null) {
+                logger.warning("No icon defined for shape " + shape);
+            } else if (center == null) {
+                logger.warning("Need bounding center for " + icon.getName());
+            } else {
+                ScorePoint origin = getOrigin();
+                int        dy = pitchToUnit(pitchPosition);
+                Point      refPoint = icon.getRefPoint();
+                int        refY = (refPoint == null) ? icon.getCentroid().y
+                                  : refPoint.y;
+
+                g.drawImage(
+                    icon.getImage(),
+                    zoom.scaled(origin.x + center.x) -
+                    (icon.getActualWidth() / 2),
+                    zoom.scaled(origin.y + dy) - refY,
+                    null);
+            }
         }
     }
 
@@ -733,25 +742,33 @@ public class Staff
      *
      * @param g graphical context
      * @param zoom display zoom
-     * @param icon the symbol icon to paint
+     * @param shape the shape whose icon must be painted
      * @param center staff-based bounding center in units
      */
     public void paintSymbol (Graphics   g,
                              Zoom       zoom,
-                             SymbolIcon icon,
+                             Shape      shape,
                              StaffPoint center)
     {
-        if (icon == null) {
-            logger.warning("No icon to paint");
-        } else if (center == null) {
-            logger.warning("Need area center for " + icon.getName());
+        if (shape == null) {
+            logger.warning("No shape to paint");
         } else {
-            ScorePoint origin = getOrigin();
-            g.drawImage(
-                icon.getImage(),
-                zoom.scaled(origin.x + center.x) - (icon.getActualWidth() / 2),
-                zoom.scaled(origin.y + center.y) - (icon.getIconHeight() / 2),
-                null);
+            SymbolIcon icon = (SymbolIcon) shape.getIcon();
+
+            if (icon == null) {
+                logger.warning("No icon defined for shape " + shape);
+            } else if (center == null) {
+                logger.warning("Need area center for " + icon.getName());
+            } else {
+                ScorePoint origin = getOrigin();
+                g.drawImage(
+                    icon.getImage(),
+                    zoom.scaled(origin.x + center.x) -
+                    (icon.getActualWidth() / 2),
+                    zoom.scaled(origin.y + center.y) -
+                    (icon.getIconHeight() / 2),
+                    null);
+            }
         }
     }
 

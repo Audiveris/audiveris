@@ -13,6 +13,7 @@ package omr.score;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
+import omr.glyph.Shape.Range;
 
 import omr.score.visitor.ScoreCleaner;
 
@@ -22,6 +23,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
+import omr.util.TreeNode;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -243,6 +245,7 @@ public class ScoreBuilder
                     success = TimeSignature.populate(glyph, measure, scale);
                 } else if ((shape == SHARP) || (shape == FLAT)) {
                     // Key signature or just accidental ?
+                    success = KeySignature.populate(glyph, measure, scale);
                 } else if (shape == NATURAL) {
                     // Accidental
                 } else {
@@ -253,9 +256,30 @@ public class ScoreBuilder
                 }
 
                 if (!success) {
-                    deassignGlyph(glyph);
+                    ///deassignGlyph(glyph);
                 }
             }
+        }
+
+        // Dummy
+        int is = 0;
+
+        for (TreeNode node : systemInfo.getScoreSystem()
+                                       .getStaves()) {
+            Staff staff = (Staff) node;
+            int   im = 0;
+
+            for (TreeNode n : staff.getMeasures()) {
+                Measure measure = (Measure) n;
+
+                if (im > 0) {
+                    KeySignature sig = new KeySignature(measure, is*3 + im);
+                }
+
+                im++;
+            }
+
+            is++;
         }
     }
 }
