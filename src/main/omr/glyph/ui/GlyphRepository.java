@@ -374,7 +374,7 @@ public class GlyphRepository
             // Now record each relevant glyph
             int        glyphNb = 0;
             int        structuresNb = 0;
-            final long startTime = System.currentTimeMillis();
+            ///final long startTime = System.currentTimeMillis();
 
             for (SystemInfo system : sheet.getSystems()) {
                 for (Glyph glyph : system.getGlyphs()) {
@@ -421,8 +421,8 @@ public class GlyphRepository
             logger.info(
                 glyphNb + " glyphs stored from " + sheet.getRadix() +
                 ((structuresNb == 0) ? ""
-                 : (" (including " + structuresNb + " structures)")) +
-                (System.currentTimeMillis() - startTime) + " ms");
+                 : (" (including " + structuresNb + " structures)")));
+            /// + " in " + (System.currentTimeMillis() - startTime) + " ms");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
