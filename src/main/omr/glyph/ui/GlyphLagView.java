@@ -237,23 +237,6 @@ public class GlyphLagView
         return found;
     }
 
-    //
-    //    //----------------------//
-    //    // lookupSpecificGlyphs //
-    //    //----------------------//
-    //    /**
-    //     * Lookup for <b>all</b> glyphs, within the collection of specific glyphs,
-    //     * that are contained in the provided rectangle
-    //     *
-    //     * @param rect the given rectangle
-    //     *
-    //     * @return the list of glyphs found, which may be empty
-    //     */
-    //    public List<Glyph> lookupSpecificGlyphs (Rectangle rect)
-    //    {
-    //        return lag.lookupGlyphs(specificGlyphs, rect);
-    //    }
-
     //--------//
     // update //
     //--------//

@@ -16,12 +16,9 @@ import omr.glyph.GlyphSection;
 import omr.score.System;
 
 import omr.stick.Stick;
-import omr.stick.StickSection;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.awt.Rectangle;
+import java.util.*;
 
 /**
  * Class <code>SystemInfo</code> gathers information from the original picture
@@ -591,6 +588,53 @@ public class SystemInfo
     public int getWidth ()
     {
         return width;
+    }
+
+    //-------------------------//
+    // lookupIntersectedGlyphs //
+    //-------------------------//
+    /**
+     * Look up in system glyphs for <b>all</b> glyphs, apart from the excluded
+     * glyph, intersected by a provided rectangle
+     *
+     * @param rect the coordinates rectangle, in pixels
+     * @param excluded the glyph to be excluded
+     * @return the glyphs found, which may be an empty list
+     */
+    public List<Glyph> lookupIntersectedGlyphs (PixelRectangle rect,
+                                                Glyph          excluded)
+    {
+        List<Glyph> found = new ArrayList<Glyph>();
+
+        // System glyphs are (assumed to be) sorted on abscissa
+        for (Glyph glyph : getGlyphs()) {
+            if (glyph != excluded) {
+                if (rect.intersects(glyph.getContourBox())) {
+                    found.add(glyph);
+
+                    //            } else if (glyph.getContourBox().x > rect.x) {
+                    //                // No more possible intersection
+                    //                break;
+                }
+            }
+        }
+
+        return found;
+    }
+
+    //-------------------------//
+    // lookupIntersectedGlyphs //
+    //-------------------------//
+    /**
+     * Look up in system glyphs for <b>all</b> glyphs intersected by a
+     * provided rectangle
+     *
+     * @param rect the coordinates rectangle, in pixels
+     * @return the glyphs found, which may be an empty list
+     */
+    public List<Glyph> lookupIntersectedGlyphs (PixelRectangle rect)
+    {
+        return lookupIntersectedGlyphs(rect, null);
     }
 
     //------------//
