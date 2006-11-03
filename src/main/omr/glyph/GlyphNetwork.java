@@ -454,7 +454,7 @@ public class GlyphNetwork
     {
         try {
             if (file.exists()) {
-                logger.info("Unmarshalling GlyphNetwork from " + file);
+                logger.fine("Unmarshalling GlyphNetwork from " + file);
 
                 InputStream   is = new FileInputStream(file);
                 NeuralNetwork nn = NeuralNetwork.unmarshal(is);
