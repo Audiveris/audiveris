@@ -46,13 +46,13 @@ public class Measure
     /** Child: Potential time signature */
     private TimeSignature timeSignature;
 
-    /** Child: possibly several clefs */
+    /** Children: possibly several clefs */
     private ClefList clefs;
 
-    /** Child: possibly several KeySignature's */
+    /** Children: possibly several KeySignature's */
     private KeySignatureList keysigs;
 
-    /** Child: possibly several Chord's */
+    /** Children: possibly several Chord's */
     //     private ChordList chords;
 
     /** Left abscissa (in units) of this measure */
@@ -145,19 +145,6 @@ public class Measure
         return clefs.getChildren();
     }
 
-    //------------------//
-    // getKeySignatures //
-    //------------------//
-    /**
-     * Report the collection of KeySignature's
-     *
-     * @return the list of KeySignature's
-     */
-    public List<TreeNode> getKeySignatures ()
-    {
-        return keysigs.getChildren();
-    }
-
     //-------//
     // setId //
     //-------//
@@ -182,6 +169,89 @@ public class Measure
     public int getId ()
     {
         return id;
+    }
+
+    //------------------//
+    // getKeySignatures //
+    //------------------//
+    /**
+     * Report the collection of KeySignature's
+     *
+     * @return the list of KeySignature's
+     */
+    public List<TreeNode> getKeySignatures ()
+    {
+        return keysigs.getChildren();
+    }
+
+    //-------------//
+    // getLastClef //
+    //-------------//
+    /**
+     * Report the last clef (if any) in this measure
+     *
+     * @return the last clef, or null
+     */
+    public Clef getLastClef ()
+    {
+        for (int ic = getClefs()
+                          .size() - 1; ic >= 0; ic--) {
+            return (Clef) getClefs()
+                              .get(ic);
+        }
+
+        return null;
+    }
+
+    //-----------------//
+    // getPreviousClef //
+    //-----------------//
+    /**
+     * Report the latest clef, if any, defined before this measure (in previous
+     * measures, previous systems)
+     *
+     * @return the latest clef defoned, or null
+     */
+    public Clef getPreviousClef ()
+    {
+        Clef    clef = null;
+
+        // Look in previous measures of the same staff
+        Measure measure = (Measure) getPreviousSibling();
+
+        for (; measure != null;
+             measure = (Measure) measure.getPreviousSibling()) {
+            clef = measure.getLastClef();
+
+            if (clef != null) {
+                return clef;
+            }
+        }
+
+        // Look in corresponding staff in previous system(s) of the page (TBD)
+        int    stafflink = getStaff()
+                               .getStafflink();
+        System system = (System) getStaff()
+                                     .getSystem()
+                                     .getPreviousSibling();
+
+        for (; system != null; system = (System) system.getPreviousSibling()) {
+            Staff staff = (Staff) system.getStaves()
+                                        .get(stafflink);
+
+            for (int im = staff.getMeasures()
+                               .size() - 1; im >= 0; im--) {
+                measure = (Measure) staff.getMeasures()
+                                         .get(im);
+                clef = measure.getLastClef();
+
+                if (clef != null) {
+                    return clef;
+                }
+            }
+        }
+
+        return null; // No clef previously defined
     }
 
     //----------//
@@ -274,11 +344,10 @@ public class Measure
         if (node instanceof Clef) {
             clefs.addChild(node);
             node.setContainer(clefs);
-
         } else if (node instanceof KeySignature) {
             keysigs.addChild(node);
             node.setContainer(keysigs);
-            
+
             //      } else if (node instanceof Lyricline) {
             //          lyriclines.addChild (node);
             //          node.setContainer (lyriclines);
