@@ -119,21 +119,21 @@ public class IconGlyph
             PixelPoint centroid = getCentroid();
             Scale      scale = new Scale(interline, 1);
             PagePoint  pgCentroid = scale.toPagePoint(centroid);
-
-            // Number of connected stems
-            if (icon.getStemNumber() != null) {
-                setStemNumber(icon.getStemNumber());
-            }
-
-            // Has a related ledger ?
-            if (icon.hasLedger() != null) {
-                setWithLedger(icon.hasLedger());
-            }
-
-            // Vertical position wrt staff
-            if (icon.getPitchPosition() != null) {
-                setPitchPosition(icon.getPitchPosition());
-            }
+//
+//            // Number of connected stems
+//            if (icon.getStemNumber() != null) {
+//                setStemNumber(icon.getStemNumber());
+//            }
+//
+//            // Has a related ledger ?
+//            if (icon.hasLedger() != null) {
+//                setWithLedger(icon.hasLedger());
+//            }
+//
+//            // Vertical position wrt staff
+//            if (icon.getPitchPosition() != null) {
+//                setPitchPosition(icon.getPitchPosition());
+//            }
 
             if (logger.isFineEnabled()) {
                 dump();
