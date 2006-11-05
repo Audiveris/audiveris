@@ -107,7 +107,7 @@ public class Staff
     }
 
     //-------//
-    // Staff // Building this Staff
+    // Staff //
     //-------//
     /**
      * Build a staff, given all its parameters
@@ -722,7 +722,6 @@ public class Staff
                 Point      refPoint = icon.getRefPoint();
                 int        refY = (refPoint == null) ? icon.getCentroid().y
                                   : refPoint.y;
-
                 g.drawImage(
                     icon.getImage(),
                     zoom.scaled(origin.x + center.x) -
