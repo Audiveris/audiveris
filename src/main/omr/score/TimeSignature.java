@@ -51,7 +51,7 @@ public class TimeSignature
     private Integer denominator;
 
     /**
-     * Precise time signature shape (if any, since we may have no redefined
+     * Precise time signature shape (if any, since we may have no predefined
      * shape for complex time signatures). Since a time signature may be
      * composed incrementally through several glyphs, its shape is determined
      * only when needed. In case of failure, a NO_LEGAL_SHAPE is assigned,
