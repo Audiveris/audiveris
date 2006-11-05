@@ -157,9 +157,9 @@ public class ScoreExporter
         worker.start();
     }
 
-    //---------//
-    // Barline //
-    //---------//
+    //---------------//
+    // visit Barline //
+    //---------------//
     public boolean visit (Barline barline)
     {
         if (isFirst.staffInPart) {
@@ -179,9 +179,9 @@ public class ScoreExporter
         return true;
     }
 
-    //------//
-    // Clef //
-    //------//
+    //------------//
+    // visit Clef //
+    //------------//
     public boolean visit (Clef clef)
     {
         //      Clefs are represented by the sign, line, and
@@ -277,13 +277,14 @@ public class ScoreExporter
         return true;
     }
 
-    //--------------//
-    // KeySignature //
-    //--------------//
+    //--------------------//
+    // visit KeySignature //
+    //--------------------//
     public boolean visit (KeySignature keySignature)
     {
         Key key = new Key();
-        getAttributes().setKey(key);
+        getAttributes()
+            .setKey(key);
 
         Fifths fifths = new Fifths();
         key.setFifths(fifths);
@@ -292,9 +293,9 @@ public class ScoreExporter
         return true;
     }
 
-    //---------//
-    // Measure //
-    //---------//
+    //---------------//
+    // visit Measure //
+    //---------------//
     public boolean visit (Measure measure)
     {
         logger.fine(measure + " : " + isFirst);
@@ -396,9 +397,9 @@ public class ScoreExporter
         return true;
     }
 
-    //-----------//
-    // MusicNode //
-    //-----------//
+    //-----------------//
+    // visit MusicNode //
+    //-----------------//
     public boolean visit (MusicNode musicNode)
     {
         return true;
@@ -412,7 +413,7 @@ public class ScoreExporter
      * The rest of processing is delegated to the score children, that is to
      * say pages (TBI), then systems, etc...
      *
-     * @param score the score to export
+     * @param score visit the score to export
      */
     public boolean visit (Score score)
     {
@@ -513,25 +514,25 @@ public class ScoreExporter
         return false; // That's all
     }
 
-    //------//
-    // Slur //
-    //------//
+    //------------//
+    // visit Slur //
+    //------------//
     public boolean visit (Slur slur)
     {
         return true;
     }
 
-    //-------//
-    // Staff //
-    //-------//
+    //-------------//
+    // visit Staff //
+    //-------------//
     public boolean visit (Staff staff)
     {
         return true;
     }
 
-    //-----------//
-    // StaffNode //
-    //-----------//
+    //-----------------//
+    // visit StaffNode //
+    //-----------------//
     public boolean visit (StaffNode staffNode)
     {
         return true;
@@ -545,7 +546,7 @@ public class ScoreExporter
      * current part. The rest of processing is directly delegated to the
      * measures (TBD: add the slurs ?)
      *
-     * @param system the system to export
+     * @param system visit the system to export
      */
     public boolean visit (System system)
     {
@@ -582,9 +583,9 @@ public class ScoreExporter
         return false; // No default browsing this way
     }
 
-    //---------------//
-    // TimeSignature //
-    //---------------//
+    //---------------------//
+    // visit TimeSignature //
+    //---------------------//
     public boolean visit (TimeSignature timeSignature)
     {
         Time time = new Time();
@@ -662,26 +663,6 @@ public class ScoreExporter
         return current.attributes;
     }
 
-    //---------------//
-    // getLastClefIn //
-    //---------------//
-    /**
-     * Report the last clef (if any) in the provided measure
-     *
-     * @param measure the containing measure
-     * @return the last clef, or null
-     */
-    private Clef getLastClefIn (Measure measure)
-    {
-        for (int ic = measure.getClefs()
-                             .size() - 1; ic >= 0; ic--) {
-            return (Clef) measure.getClefs()
-                                 .get(ic);
-        }
-
-        return null;
-    }
-
     //-----------//
     // isNewClef //
     //-----------//
@@ -701,35 +682,11 @@ public class ScoreExporter
             return c.getShape() != clef.getShape();
         }
 
-        // Look in previous measures of the same staff
-        Measure measure = (Measure) current.measure.getPreviousSibling();
+        // Look in previous measures
+        Clef previousClef = current.measure.getPreviousClef();
 
-        for (; measure != null;
-             measure = (Measure) measure.getPreviousSibling()) {
-            c = getLastClefIn(measure);
-
-            if (c != null) {
-                return c.getShape() != clef.getShape();
-            }
-        }
-
-        // Look in corresponding staff in previous system(s) of the page (TBD)
-        System system = (System) current.system.getPreviousSibling();
-
-        for (; system != null; system = (System) system.getPreviousSibling()) {
-            Staff staff = (Staff) system.getStaves()
-                                        .get(current.staff.getStafflink());
-
-            for (int im = staff.getMeasures()
-                               .size() - 1; im >= 0; im--) {
-                measure = (Measure) staff.getMeasures()
-                                         .get(im);
-                c = getLastClefIn(measure);
-
-                if (c != null) {
-                    return c.getShape() != clef.getShape();
-                }
-            }
+        if (previousClef != null) {
+            return previousClef.getShape() != clef.getShape();
         }
 
         return true; // Since no previous clef found

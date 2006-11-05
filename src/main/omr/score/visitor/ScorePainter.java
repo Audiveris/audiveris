@@ -78,7 +78,6 @@ public class ScorePainter
     /**
      * Creates a new ScorePainter object.
      *
-     *
      * @param g Graphic context
      * @param z zoom factor
      */
@@ -91,6 +90,9 @@ public class ScorePainter
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------------//
+    // visit Barline //
+    //---------------//
     public boolean visit (Barline barline)
     {
         Shape shape = barline.getShape();
@@ -98,12 +100,7 @@ public class ScorePainter
         if (shape != null) {
             // Draw the barline symbol
             barline.getStaff()
-                   .paintSymbol(
-                g,
-                zoom,
-                shape,
-                barline.getCenter(),
-                0);
+                   .paintSymbol(g, zoom, shape, barline.getCenter(), 0);
         } else {
             logger.warning("No shape for barline " + this);
         }
@@ -111,6 +108,9 @@ public class ScorePainter
         return true;
     }
 
+    //------------//
+    // visit Clef //
+    //------------//
     public boolean visit (Clef clef)
     {
         // Draw the clef symbol
@@ -125,19 +125,27 @@ public class ScorePainter
         return true;
     }
 
+    //--------------------//
+    // visit KeySignature //
+    //--------------------//
     public boolean visit (KeySignature keySignature)
     {
-        keySignature.getStaff()
-                    .paintSymbol(
-            g,
-            zoom,
-            keySignature.getShape(),
-            keySignature.getCenter(),
-            keySignature.getPitchPosition());
+        if (keySignature.getPitchPosition() != null) {
+            keySignature.getStaff()
+                        .paintSymbol(
+                g,
+                zoom,
+                keySignature.getShape(),
+                keySignature.getCenter(),
+                keySignature.getPitchPosition());
+        }
 
         return true;
     }
 
+    //---------------//
+    // visit Measure //
+    //---------------//
     public boolean visit (Measure measure)
     {
         // Draw the measure id, if on the first staff only
@@ -154,11 +162,17 @@ public class ScorePainter
         return true;
     }
 
+    //-----------------//
+    // visit MusicNode //
+    //-----------------//
     public boolean visit (MusicNode musicNode)
     {
         return true;
     }
 
+    //-------------//
+    // visit Score //
+    //-------------//
     public boolean visit (Score score)
     {
         score.acceptChildren(this);
@@ -166,6 +180,9 @@ public class ScorePainter
         return false;
     }
 
+    //------------//
+    // visit Slur //
+    //------------//
     public boolean visit (Slur slur)
     {
         slur.getArc()
@@ -174,6 +191,9 @@ public class ScorePainter
         return true;
     }
 
+    //-------------//
+    // visit Staff //
+    //-------------//
     public boolean visit (Staff staff)
     {
         Point origin = staff.getOrigin();
@@ -199,11 +219,17 @@ public class ScorePainter
         return true;
     }
 
+    //-----------------//
+    // visit StaffNode //
+    //-----------------//
     public boolean visit (StaffNode staffNode)
     {
         return true;
     }
 
+    //--------------//
+    // visit System //
+    //--------------//
     public boolean visit (System system)
     {
         // Check whether our system is impacted)
@@ -269,6 +295,9 @@ public class ScorePainter
         }
     }
 
+    //---------------------//
+    // visit TimeSignature //
+    //---------------------//
     public boolean visit (TimeSignature timeSignature)
     {
         Shape shape = timeSignature.getShape();
@@ -289,11 +318,7 @@ public class ScorePainter
             case TIME_SIX_EIGHT :
             case COMMON_TIME :
             case CUT_TIME :
-                staff.paintSymbol(
-                    g,
-                    zoom,
-                    shape,
-                    timeSignature.getCenter());
+                staff.paintSymbol(g, zoom, shape, timeSignature.getCenter());
 
                 break;
             }
@@ -305,12 +330,7 @@ public class ScorePainter
                 if (s != null) {
                     StaffPoint center = timeSignature.computeGlyphCenter(glyph);
                     int        pitch = staff.unitToPitch(center.y);
-                    staff.paintSymbol(
-                        g,
-                        zoom,
-                        s,
-                        center,
-                        pitch);
+                    staff.paintSymbol(g, zoom, s, center, pitch);
                 }
             }
         }

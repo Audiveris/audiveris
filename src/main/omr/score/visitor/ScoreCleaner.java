@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                       C l e a n i n g V i s i t o r                        //
+//                          S c o r e C l e a n e r                           //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
 //  This software is released under the terms of the GNU General Public       //
@@ -42,6 +42,9 @@ public class ScoreCleaner
 
     //~ Constructors -----------------------------------------------------------
 
+    //--------------//
+    // ScoreCleaner //
+    //--------------//
     /**
      * Creates a new ScoreCleaner object.
      */
@@ -51,21 +54,33 @@ public class ScoreCleaner
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------------//
+    // visit Barline //
+    //---------------//
     public boolean visit (Barline barline)
     {
         return true;
     }
 
+    //------------//
+    // visit Clef //
+    //------------//
     public boolean visit (Clef clef)
     {
         return true;
     }
 
+    //--------------------//
+    // visit KeySignature //
+    //--------------------//
     public boolean visit (KeySignature keySignature)
     {
         return true;
     }
 
+    //---------------//
+    // visit Measure //
+    //---------------//
     public boolean visit (Measure measure)
     {
         measure.cleanupNode();
@@ -73,11 +88,17 @@ public class ScoreCleaner
         return false;
     }
 
+    //-----------------//
+    // visit MusicNode //
+    //-----------------//
     public boolean visit (MusicNode musicNode)
     {
         return true;
     }
 
+    //-------------//
+    // visit Score //
+    //-------------//
     public boolean visit (Score score)
     {
         if (logger.isFineEnabled()) {
@@ -89,26 +110,41 @@ public class ScoreCleaner
         return false;
     }
 
+    //------------//
+    // visit Slur //
+    //------------//
     public boolean visit (Slur slur)
     {
         return true;
     }
 
+    //-------------//
+    // visit Staff //
+    //-------------//
     public boolean visit (Staff staff)
     {
         return true;
     }
 
+    //-----------------//
+    // visit StaffNode //
+    //-----------------//
     public boolean visit (StaffNode staffNode)
     {
         return true;
     }
 
+    //--------------//
+    // visit System //
+    //--------------//
     public boolean visit (System system)
     {
         return true;
     }
 
+    //---------------------//
+    // visit TimeSignature //
+    //---------------------//
     public boolean visit (TimeSignature timeSignature)
     {
         return true;

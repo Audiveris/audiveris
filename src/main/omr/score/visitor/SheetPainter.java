@@ -87,21 +87,33 @@ public class SheetPainter
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------------//
+    // visit Barline //
+    //---------------//
     public boolean visit (Barline barline)
     {
         return true;
     }
 
+    //------------//
+    // visit Clef //
+    //------------//
     public boolean visit (Clef clef)
     {
         return true;
     }
 
+    //--------------------//
+    // visit KeySignature //
+    //--------------------//
     public boolean visit (KeySignature keySignature)
     {
         return true;
     }
 
+    //---------------//
+    // visit Measure //
+    //---------------//
     public boolean visit (Measure measure)
     {
         // Render the measure ending barline, if within the clipping area
@@ -111,11 +123,17 @@ public class SheetPainter
         return true;
     }
 
+    //-----------------//
+    // visit MusicNode //
+    //-----------------//
     public boolean visit (MusicNode musicNode)
     {
         return true;
     }
 
+    //-------------//
+    // visit Score //
+    //-------------//
     public boolean visit (Score score)
     {
         score.acceptChildren(this);
@@ -123,11 +141,17 @@ public class SheetPainter
         return false;
     }
 
+    //------------//
+    // visit Slur //
+    //------------//
     public boolean visit (Slur slur)
     {
         return true;
     }
 
+    //-------------//
+    // visit Staff //
+    //-------------//
     public boolean visit (Staff staff)
     {
         StaffInfo info = staff.getInfo();
@@ -146,16 +170,25 @@ public class SheetPainter
         }
     }
 
+    //-----------------//
+    // visit StaffNode //
+    //-----------------//
     public boolean visit (StaffNode staffNode)
     {
         return true;
     }
 
+    //--------------//
+    // visit System //
+    //--------------//
     public boolean visit (System system)
     {
         return true;
     }
 
+    //---------------------//
+    // visit TimeSignature //
+    //---------------------//
     public boolean visit (TimeSignature timeSignature)
     {
         return true;
@@ -167,6 +200,9 @@ public class SheetPainter
      *
      * @param sheet the sheet to render initial elements
      */
+    //-------------//
+    // visit Sheet //
+    //-------------//
     public boolean visit (Sheet sheet)
     {
         // Use specific color

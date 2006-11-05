@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                      C o m p u t i n g V i s i t o r                       //
+//                            S c o r e F i x e r                             //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
 //  This software is released under the terms of the GNU General Public       //
@@ -58,21 +58,33 @@ public class ScoreFixer
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------------//
+    // visit Barline //
+    //---------------//
     public boolean visit (Barline barline)
     {
         return true;
     }
 
+    //------------//
+    // visit Clef //
+    //------------//
     public boolean visit (Clef clef)
     {
         return true;
     }
 
+    //--------------------//
+    // visit KeySignature //
+    //--------------------//
     public boolean visit (KeySignature keySignature)
     {
         return true;
     }
 
+    //---------------//
+    // visit Measure //
+    //---------------//
     public boolean visit (Measure measure)
     {
         // Fix the staff reference
@@ -90,11 +102,17 @@ public class ScoreFixer
         return true;
     }
 
+    //-----------------//
+    // visit MusicNode //
+    //-----------------//
     public boolean visit (MusicNode musicNode)
     {
         return true;
     }
 
+    //-------------//
+    // visit Score //
+    //-------------//
     public boolean visit (Score score)
     {
         if (logger.isFineEnabled()) {
@@ -106,11 +124,17 @@ public class ScoreFixer
         return false;
     }
 
+    //------------//
+    // visit Slur //
+    //------------//
     public boolean visit (Slur slur)
     {
         return true;
     }
 
+    //-------------//
+    // visit Staff //
+    //-------------//
     public boolean visit (Staff staff)
     {
         // Display origin for the staff
@@ -133,11 +157,17 @@ public class ScoreFixer
         return true;
     }
 
+    //-----------------//
+    // visit StaffNode //
+    //-----------------//
     public boolean visit (StaffNode staffNode)
     {
         return true;
     }
 
+    //--------------//
+    // visit System //
+    //--------------//
     public boolean visit (System system)
     {
         // Is there a Previous System ?
@@ -167,6 +197,9 @@ public class ScoreFixer
         return true;
     }
 
+    //---------------------//
+    // visit TimeSignature //
+    //---------------------//
     public boolean visit (TimeSignature timeSignature)
     {
         return true;

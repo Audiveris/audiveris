@@ -45,6 +45,9 @@ public class ScoreChecker
 
     //~ Constructors -----------------------------------------------------------
 
+    //--------------//
+    // ScoreChecker //
+    //--------------//
     /**
      * Creates a new ScoreChecker object.
      */
@@ -54,31 +57,49 @@ public class ScoreChecker
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------------//
+    // visit Barline //
+    //---------------//
     public boolean visit (Barline barline)
     {
         return true;
     }
 
+    //------------//
+    // visit Clef //
+    //------------//
     public boolean visit (Clef clef)
     {
         return true;
     }
 
+    //--------------------//
+    // visit KeySignature //
+    //--------------------//
     public boolean visit (KeySignature keySignature)
     {
         return true;
     }
 
+    //---------------//
+    // visit Measure //
+    //---------------//
     public boolean visit (Measure measure)
     {
         return true;
     }
 
+    //-----------------//
+    // visit MusicNode //
+    //-----------------//
     public boolean visit (MusicNode musicNode)
     {
         return true;
     }
 
+    //-------------//
+    // visit Score //
+    //-------------//
     public boolean visit (Score score)
     {
         if (logger.isFineEnabled()) {
@@ -90,26 +111,41 @@ public class ScoreChecker
         return false;
     }
 
+    //------------//
+    // visit Slur //
+    //------------//
     public boolean visit (Slur slur)
     {
         return true;
     }
 
+    //-------------//
+    // visit Staff //
+    //-------------//
     public boolean visit (Staff staff)
     {
         return true;
     }
 
+    //-----------------//
+    // visit StaffNode //
+    //-----------------//
     public boolean visit (StaffNode staffNode)
     {
         return true;
     }
 
+    //--------------//
+    // visit System //
+    //--------------//
     public boolean visit (System system)
     {
         return true;
     }
 
+    //---------------------//
+    // visit TimeSignature //
+    //---------------------//
     public boolean visit (TimeSignature timeSignature)
     {
         if (logger.isFineEnabled()) {
