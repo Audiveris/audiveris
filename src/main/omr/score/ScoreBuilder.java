@@ -137,16 +137,13 @@ public class ScoreBuilder
         // First, cleanup the score
         scoreCleanup();
 
-        // Browse each system info of the sheet
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            System system = systemInfo.getScoreSystem();
+        // Perhaps, order the glyphs within each system ?
+        // TBD
 
-            if (logger.isFineEnabled()) {
-                logger.fine("System " + systemInfo);
-            }
-
-            translateSystem(systemInfo);
-        }
+        // Ordered translations
+        translate(new ClefTranslator());
+        translate(new TimeTranslator());
+        translate(new KeyTranslator());
 
         // Update score view if any
         if (score.getView() != null) {
@@ -204,82 +201,180 @@ public class ScoreBuilder
         score.accept(new ScoreCleaner());
     }
 
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Perform translation on all glyphs, with a certain translation engine
+     *
+     * @param translator the actual translation engine
+     */
+    private void translate (Translator translator)
+    {
+        for (SystemInfo systemInfo : sheet.getSystems()) {
+            System system = systemInfo.getScoreSystem();
+            translateSystem(systemInfo, translator);
+        }
+
+        // Final processing if any
+        translator.completeScore();
+    }
+
     //-----------------//
     // translateSystem //
     //-----------------//
-    private void translateSystem (SystemInfo systemInfo)
+    private void translateSystem (SystemInfo systemInfo,
+                                  Translator translator)
     {
-        // Sort the glyph collection, to ease its processing
-        List<Glyph> orderedGlyphs = new ArrayList<Glyph>(
-            systemInfo.getGlyphs());
-        Collections.sort(orderedGlyphs, glyphComparator);
-
-        // Translate each glyph in turn
-        for (Glyph glyph : orderedGlyphs) {
+        for (Glyph glyph : systemInfo.getGlyphs()) {
             Shape shape = glyph.getShape();
 
             if (glyph.isWellKnown() && (shape != CLUTTER)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Translating " + glyph.toString());
-                }
+                if (translator.isrelevant(glyph)) {
+                    // Retrieve related score items
+                    Rectangle  box = glyph.getContourBox();
+                    PixelPoint pp = new PixelPoint(
+                        box.x + (box.width / 2),
+                        box.y + (box.height / 2));
+                    PagePoint  p = scale.toPagePoint(pp);
+                    staff = systemInfo.getScoreSystem()
+                                      .getStaffAt(p);
+                    staffPoint = staff.toStaffPoint(p);
+                    measure = staff.getMeasureAt(staffPoint);
 
-                // Retrieve related score items
-                Rectangle  box = glyph.getContourBox();
-                PixelPoint pp = new PixelPoint(
-                    box.x + (box.width / 2),
-                    box.y + (box.height / 2));
-                PagePoint  p = scale.toPagePoint(pp);
-                staff = systemInfo.getScoreSystem()
-                                  .getStaffAt(p);
-                staffPoint = staff.toStaffPoint(p);
-                measure = staff.getMeasureAt(staffPoint);
-
-                boolean success = true;
-
-                // Processing is based on glyph shape
-                if (Shape.Clefs.contains(shape)) {
-                    // Clef
-                    success = Clef.populate(glyph, measure, staffPoint);
-                } else if (Shape.Times.contains(shape)) {
-                    // Time
-                    success = TimeSignature.populate(glyph, measure, scale);
-                } else if ((shape == SHARP) || (shape == FLAT)) {
-                    // Key signature or just accidental ?
-                    success = KeySignature.populate(glyph, measure, scale);
-                } else if (shape == NATURAL) {
-                    // Accidental
-                } else {
-                    // Basic processing
-                    switch (shape) {
-                    default :
-                    }
-                }
-
-                if (!success) {
-                    ///deassignGlyph(glyph);
+                    // Perform the translation on this glyph
+                    translator.translate(glyph);
                 }
             }
         }
 
-        // Dummy
-        int is = 0;
+        // Processing at end of system if any
+        translator.completeSystem(systemInfo);
+    }
 
-        for (TreeNode node : systemInfo.getScoreSystem()
-                                       .getStaves()) {
-            Staff staff = (Staff) node;
-            int   im = 0;
+    //~ Inner Classes ----------------------------------------------------------
 
-            for (TreeNode n : staff.getMeasures()) {
-                Measure measure = (Measure) n;
+    //------------//
+    // Translator //
+    //------------//
+    /**
+     * Class <code>Translator</code> is an abstract class that defines the
+     * pattern for every translation engine
+     */
+    private abstract class Translator
+    {
+        /**
+         * Hook for final processing at end of the score
+         */
+        public void completeScore ()
+        {
+        }
 
-                if (im > 0) {
-                    KeySignature sig = new KeySignature(measure, is*3 + im);
+        /**
+         * Hook for final processing at end of each system
+         *
+         * @param systemInfo the system being completed
+         */
+        public void completeSystem (SystemInfo systemInfo)
+        {
+        }
+
+        /**
+         * Check if provided glyph is relevant
+         *
+         * @param glyph the glyph at hand
+         */
+        public abstract boolean isrelevant (Glyph glyph);
+
+        /**
+         * Perform the desired translation
+         *
+         * @param glyph the glyph at hand
+         */
+        public abstract void translate (Glyph glyph);
+    }
+
+    //----------------//
+    // ClefTranslator //
+    //----------------//
+    private class ClefTranslator
+        extends Translator
+    {
+        public boolean isrelevant (Glyph glyph)
+        {
+            return Shape.Clefs.contains(glyph.getShape());
+        }
+
+        public void translate (Glyph glyph)
+        {
+            Clef.populate(glyph, measure, staffPoint);
+        }
+    }
+
+    //---------------//
+    // KeyTranslator //
+    //---------------//
+    private class KeyTranslator
+        extends Translator
+    {
+        public void completeSystem (SystemInfo systemInfo)
+        {
+            // Dummy
+            if (false) {
+                int is = 0;
+
+                for (TreeNode node : systemInfo.getScoreSystem()
+                                               .getStaves()) {
+                    Staff staff = (Staff) node;
+                    int   im = 0;
+
+                    for (TreeNode n : staff.getMeasures()) {
+                        Measure measure = (Measure) n;
+
+                        if (im > 0) {
+                            int k = (is * 3) + im;
+
+//                            if (Math.abs(k) <= 7) {
+//                                KeySignature sig = new KeySignature(
+//                                    measure,
+//                                    -k);
+//                            }
+                        }
+
+                        im++;
+                    }
+
+                    is++;
                 }
-
-                im++;
             }
+        }
 
-            is++;
+        public boolean isrelevant (Glyph glyph)
+        {
+            return (glyph.getShape() == SHARP) || (glyph.getShape() == FLAT);
+        }
+
+        public void translate (Glyph glyph)
+        {
+            // Key signature or just accidental ?
+            KeySignature.populate(glyph, measure, scale);
+        }
+    }
+
+    //----------------//
+    // TimeTranslator //
+    //----------------//
+    private class TimeTranslator
+        extends Translator
+    {
+        public boolean isrelevant (Glyph glyph)
+        {
+            return Shape.Times.contains(glyph.getShape());
+        }
+
+        public void translate (Glyph glyph)
+        {
+            TimeSignature.populate(glyph, measure, scale);
         }
     }
 }
