@@ -311,7 +311,7 @@ class EvaluationBoard
             if (eval != null) {
                 if (sheet != null) {
                     if (barred) {
-                        button.setBackground(Color.LIGHT_GRAY);
+                        button.setBackground(Color.PINK);
                     } else {
                         button.setBackground(null);
                     }
@@ -320,7 +320,7 @@ class EvaluationBoard
                     button.setIcon(eval.shape.getIcon());
                 } else {
                     if (barred) {
-                        field.setBackground(Color.LIGHT_GRAY);
+                        field.setBackground(Color.PINK);
                     } else {
                         field.setBackground(null);
                     }
