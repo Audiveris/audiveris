@@ -512,9 +512,8 @@ public class KeySignature
             return C_CLEF;
 
         default :
+            return null;
         }
-
-        return null;
     }
 
     //------------//
@@ -648,9 +647,10 @@ public class KeySignature
 
         case C_CLEF :
             return 1;
-        }
 
-        return 0; // Not correct TBD
+        default :
+            return 0; // Not correct TBD
+        }
     }
 
     //---------//
@@ -708,9 +708,10 @@ public class KeySignature
 
         case 2 :
             return clefKind = F_CLEF;
-        }
 
-        return null;
+        default :
+            return null;
+        }
     }
 
     //---------------//
