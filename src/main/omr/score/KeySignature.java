@@ -867,10 +867,10 @@ public class KeySignature
             "Ordinate margin (in interline fraction) when looking up for glyph neighbors");
 
         /**
-         * Margin on pitch position
+         * Margin when checking pitch position
          */
         Constant.Double pitchMargin = new Constant.Double(
             0.5,
-            "Margin on pitch position");
+            "Margin (in positions) when checking pitch position");
     }
 }
