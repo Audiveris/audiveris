@@ -115,13 +115,17 @@ public class KeySignature
         super(measure, measure.getStaff());
     }
 
+    //--------------//
+    // KeySignature //
+    //--------------//
     /**
-     * Dummy entry for test, please ignore
+     * Entry for generating a dummy keysig, please ignore.
      */
     public KeySignature (Measure measure,
                          int     key)
     {
         super(measure, measure.getStaff());
+
         this.key = key;
         center = new StaffPoint(
             measure.getLeftX() + (measure.getWidth() / 2),
@@ -164,7 +168,7 @@ public class KeySignature
                 guess = G_CLEF;
             }
 
-            pitchPosition = getMeanPosition() + clefToDelta(guess);
+            pitchPosition = getTheoreticalPosition() + clefToDelta(guess);
         }
 
         return pitchPosition;
@@ -297,7 +301,7 @@ public class KeySignature
             }
         }
 
-        // If so, just try to extend it, else create a brand new one
+        // If not found create a brand new one
         if (!found) {
             // Check pitch position
             Shape clefShape = null;
@@ -318,6 +322,7 @@ public class KeySignature
             keysig = new KeySignature(measure, scale);
         }
 
+        // Extend the keysig with this glyph
         keysig.addGlyph(glyph);
 
         if (logger.isFineEnabled()) {
@@ -347,6 +352,9 @@ public class KeySignature
         sb.append(" center=")
           .append(getCenter());
 
+        sb.append(" pitch=")
+          .append(getPitchPosition());
+
         sb.append(" glyphs[");
 
         for (Glyph glyph : glyphs) {
@@ -363,6 +371,12 @@ public class KeySignature
     //------------------//
     // verifySystemKeys //
     //------------------//
+    /**
+     * Perform verifications (and corrections when possible) when all keysigs
+     * have been generated for the system
+     *
+     * @param system the system to be verified
+     */
     public static void verifySystemKeys (System system)
     {
         // Check key consistency across the various staves
@@ -389,6 +403,7 @@ public class KeySignature
             for (List<TreeNode> list : keyMatrix) {
                 if (list.size() < nb) {
                     // Need to add a key here (which index?, which key?)
+                    // To Be Implemented TBD
                 }
             }
 
@@ -430,7 +445,7 @@ public class KeySignature
                     }
                 }
 
-                // Force key signatures to this value, if compatibles
+                // Force key signatures to this value, if compatible
                 if (compatible && adjustment) {
                     for (List<TreeNode> list : keyMatrix) {
                         KeySignature ks = (KeySignature) list.get(ik);
@@ -540,15 +555,15 @@ public class KeySignature
         return contour;
     }
 
-    //-----------------//
-    // getMeanPosition //
-    //-----------------//
+    //------------------------//
+    // getTheoreticalPosition //
+    //------------------------//
     /**
      * Compute the theoretical mean pitch position, based on key value
      *
      * @return the mean pitch position (for the signature symbol, for example)
      */
-    private double getMeanPosition ()
+    private double getTheoreticalPosition ()
     {
         double sum = 0;
         getKey();
@@ -583,6 +598,16 @@ public class KeySignature
     //--------------------//
     // checkPitchPosition //
     //--------------------//
+    /**
+     * Check that the glyph is at the correct pitch position, knowing its index
+     * in the signature, its shape (sharp or flat) and the current clef kind at
+     * this location
+     *
+     * @param glyph the glyph to check
+     * @param index index in signature
+     * @param clefKind kind of clef at this location
+     * @return true if OK, false otherwise
+     */
     private static boolean checkPitchPosition (Glyph glyph,
                                                int   index,
                                                Shape clefKind)
@@ -605,14 +630,24 @@ public class KeySignature
     //---------------//
     // checkPosition //
     //---------------//
+    /**
+     * Check the pitch position of the glyph, knowing the theoretical positions
+     * based on glyph shape
+     *
+     * @param glyph the glyph to check
+     * @param positions the array of positions (for G clef kind)
+     * @param index index of glyph within signature
+     * @param delta delta pitch position (based on clef kind)
+     * @return true if OK, false otherwise
+     */
     private static boolean checkPosition (Glyph    glyph,
                                           double[] positions,
                                           int      index,
-                                          int      offset)
+                                          int      delta)
     {
-        double delta = glyph.getPitchPosition() - positions[index] - offset;
+        double dif = glyph.getPitchPosition() - positions[index] - delta;
 
-        if (Math.abs(delta) > constants.pitchMargin.getValue()) {
+        if (Math.abs(dif) > constants.pitchMargin.getValue()) {
             if (logger.isFineEnabled()) {
                 logger.fine(
                     "Invalid pitch position for glyph " + glyph.getId());
@@ -656,6 +691,12 @@ public class KeySignature
     //---------//
     // copyKey //
     //---------//
+    /**
+     * Force parameters (key, center, pitchPosition) of this key signature, by
+     * deriving parameters of another keysig (from another staff)
+     *
+     * @param ks the key signature to replicate here
+     */
     private void copyKey (KeySignature ks)
     {
         if (logger.isFineEnabled()) {
@@ -726,7 +767,7 @@ public class KeySignature
     private Shape guessClefKind ()
     {
         if (clefKind == null) {
-            double theoPos = getMeanPosition();
+            double theoPos = getTheoreticalPosition();
             double realPos = getStaff()
                                  .pitchPositionOf(getCentroid());
             int    delta = (int) Math.rint(realPos - theoPos);
