@@ -65,7 +65,7 @@ public class Staff
     private PagePoint topLeft;
 
     /** Actual cached display origin */
-    private ScorePoint origin;
+    private ScorePoint displayOrigin;
 
     /** Related info from sheet analysis */
     private StaffInfo info;
@@ -143,6 +143,33 @@ public class Staff
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------------//
+    // setDisplayOrigin //
+    //------------------//
+    /**
+     * Assign proper staff display origin
+     *
+     * @param displayOrigin staff display origin
+     */
+    public void setDisplayOrigin (ScorePoint displayOrigin)
+    {
+        this.displayOrigin = displayOrigin;
+    }
+
+    //------------------//
+    // getDisplayOrigin //
+    //------------------//
+    /**
+     * Report the display origin in the score display of this staff
+     *
+     *
+     * @return the displayOrigin
+     */
+    public ScorePoint getDisplayOrigin ()
+    {
+        return displayOrigin;
+    }
 
     //-------------//
     // setDynamics //
@@ -351,19 +378,6 @@ public class Staff
         return measures.getChildren();
     }
 
-    //-----------//
-    // getOrigin //
-    //-----------//
-    /**
-     * Report the display origin in the score display of this staff
-     *
-     * @return the origin
-     */
-    public ScorePoint getOrigin ()
-    {
-        return origin;
-    }
-
     //---------//
     // setSize //
     //---------//
@@ -416,15 +430,15 @@ public class Staff
         return stafflink;
     }
 
-    //----------------//
-    // setStartingBar //
-    //----------------//
+    //--------------------//
+    // setStartingBarline //
+    //--------------------//
     /**
      * Set the bar line that starts the staff
      *
      * @param startingBarline the starting bar line
      */
-    public void setStartingBar (Barline startingBarline)
+    public void setStartingBarline (Barline startingBarline)
     {
         this.startingBarline = startingBarline;
     }
@@ -526,7 +540,7 @@ public class Staff
     }
 
     //----------//
-    // addChild // Overrides normal behavior
+    // addChild //
     //----------//
     /**
      * Override normal behavior, so that a given child is store in its proper
@@ -614,12 +628,12 @@ public class Staff
     // pitchToUnit //
     //-------------//
     /**
-     * Compute the ordinate Y (counted in units and measured from staff origin)
+     * Compute the ordinate Y (counted in units and measured from staff displayOrigin)
      * that corresponds to a given step line
      *
      * @param pitchPosition the pitch position (-4 for top line, +4 for bottom
      *                      line)
-     * @return the ordinate in pixels, counted from staff origin (upper line),
+     * @return the ordinate in pixels, counted from staff displayOrigin (upper line),
      * so top line is 0px and bottom line is 64px (with an inter line of 16).
      */
     public static int pitchToUnit (double pitchPosition)
@@ -653,7 +667,7 @@ public class Staff
     public String toString ()
     {
         return "{Staff" + " topLeft=" + topLeft + " width=" + width + " size=" +
-               size + " origin=" + origin + "}";
+               size + " origin=" + displayOrigin + "}";
     }
 
     //-------------//
@@ -661,9 +675,10 @@ public class Staff
     //-------------//
     /**
      * Compute the pitch position of a given ordinate Y (counted in units and
-     * measured from staff origin)
+     * measured from staff displayOrigin)
      *
-     * @param unit the ordinate in pixel units, counted from staff origin (upper
+     *
+     * @param unit the ordinate in pixel units, counted from staff displayOrigin (upper
      * line), so top line is 0px and bottom line is 64px (with an inter line of
      * 16).
      * @return the pitch position (-4 for top line, +4 for bottom line)
@@ -671,19 +686,6 @@ public class Staff
     public static int unitToPitch (int unit)
     {
         return (int) Math.rint(((2D * unit) - (4D * INTER_LINE)) / INTER_LINE);
-    }
-
-    //-----------//
-    // setOrigin //
-    //-----------//
-    /**
-     * Assign proper staff display origin
-     *
-     * @param origin staff display origin
-     */
-    public void setOrigin (ScorePoint origin)
-    {
-        this.origin = origin;
     }
 
     //-------------//
@@ -717,7 +719,7 @@ public class Staff
             } else if (center == null) {
                 logger.warning("Need bounding center for " + icon.getName());
             } else {
-                ScorePoint origin = getOrigin();
+                ScorePoint origin = getDisplayOrigin();
                 int        dy = pitchToUnit(pitchPosition);
                 Point      refPoint = icon.getRefPoint();
                 int        refY = (refPoint == null) ? icon.getCentroid().y
@@ -759,7 +761,7 @@ public class Staff
             } else if (center == null) {
                 logger.warning("Need area center for " + icon.getName());
             } else {
-                ScorePoint origin = getOrigin();
+                ScorePoint origin = getDisplayOrigin();
                 g.drawImage(
                     icon.getImage(),
                     zoom.scaled(origin.x + center.x) -

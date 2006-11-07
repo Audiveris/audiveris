@@ -783,7 +783,7 @@ public class BarsBuilder
                 // Set the bar as starting bar for the staff
                 Measure measure = (Measure) staff.getMeasures()
                                                  .get(0);
-                staff.setStartingBar(measure.getBarline());
+                staff.setStartingBarline(measure.getBarline());
 
                 // Remove this first measure
                 staff.getMeasures()

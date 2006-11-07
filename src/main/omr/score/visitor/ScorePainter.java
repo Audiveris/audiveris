@@ -196,7 +196,7 @@ public class ScorePainter
     //-------------//
     public boolean visit (Staff staff)
     {
-        Point origin = staff.getOrigin();
+        Point origin = staff.getDisplayOrigin();
         g.setColor(Color.black);
 
         // Draw the staff lines
@@ -267,9 +267,10 @@ public class ScorePainter
                 if (staves.size() > 1) {
                     // Top & bottom of brace to draw
                     int        top = staves.get(0)
-                                           .getOrigin().y;
+                                           .getDisplayOrigin().y;
                     int        bot = staves.get(staves.size() - 1)
-                                           .getOrigin().y + STAFF_HEIGHT;
+                                           .getDisplayOrigin().y +
+                                     STAFF_HEIGHT;
                     double     height = zoom.scaled(bot - top + 1);
 
                     // Vertical ratio to extend the icon */

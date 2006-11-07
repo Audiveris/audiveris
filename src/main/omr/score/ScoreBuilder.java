@@ -319,34 +319,36 @@ public class ScoreBuilder
     {
         public void completeSystem (SystemInfo systemInfo)
         {
-            // Dummy
-            if (false) {
-                int is = 0;
+            KeySignature.verifySystemKeys(systemInfo.getScoreSystem());
 
-                for (TreeNode node : systemInfo.getScoreSystem()
-                                               .getStaves()) {
-                    Staff staff = (Staff) node;
-                    int   im = 0;
-
-                    for (TreeNode n : staff.getMeasures()) {
-                        Measure measure = (Measure) n;
-
-                        if (im > 0) {
-                            int k = (is * 3) + im;
-
-//                            if (Math.abs(k) <= 7) {
-//                                KeySignature sig = new KeySignature(
-//                                    measure,
-//                                    -k);
-//                            }
-                        }
-
-                        im++;
-                    }
-
-                    is++;
-                }
-            }
+            //            // Dummy
+            //            if (false) {
+            //                int is = 0;
+            //
+            //                for (TreeNode node : systemInfo.getScoreSystem()
+            //                                               .getStaves()) {
+            //                    Staff staff = (Staff) node;
+            //                    int   im = 0;
+            //
+            //                    for (TreeNode n : staff.getMeasures()) {
+            //                        Measure measure = (Measure) n;
+            //
+            //                        if (im > 0) {
+            //                            int k = (is * 3) + im;
+            //
+            //                            if (Math.abs(k) <= 7) {
+            //                                KeySignature sig = new KeySignature(
+            //                                    measure,
+            //                                    -k);
+            //                            }
+            //                        }
+            //
+            //                        im++;
+            //                    }
+            //
+            //                    is++;
+            //                }
+            //            }
         }
 
         public boolean isrelevant (Glyph glyph)

@@ -43,6 +43,18 @@ public class PixelRectangle
     // PixelRectangle //
     //----------------//
     /**
+     * Creates an instance of <code>PixelRectangle</code> by cloning another
+     * instance.
+     */
+    public PixelRectangle (PixelRectangle other)
+    {
+        this(other.x, other.y, other.width, other.height);
+    }
+
+    //----------------//
+    // PixelRectangle //
+    //----------------//
+    /**
      * Construct a <code>PixelRectangle</code> and initialize it with the
      * specified data
      *
@@ -57,5 +69,22 @@ public class PixelRectangle
                            int height)
     {
         super(x, y, width, height);
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //-------//
+    // union //
+    //-------//
+    /**
+     * Union with another PixelRectangle
+     *
+     * @param other another PixelRectangle
+     * @return the union of these 2 rectangles
+     */
+    public PixelRectangle union (PixelRectangle other)
+    {
+        Rectangle r = super.union(other);
+        return new PixelRectangle(r.x, r.y, r.width, r.height);
     }
 }

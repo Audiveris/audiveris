@@ -140,7 +140,7 @@ public class ScoreFixer
         // Display origin for the staff
         System system = staff.getSystem();
         Point  sysorg = system.getOrigin();
-        staff.setOrigin(
+        staff.setDisplayOrigin(
             new ScorePoint(
                 sysorg.x,
                 sysorg.y +

@@ -96,9 +96,6 @@ public class Measure
 
         cleanupNode();
 
-        // Allocate children lists
-        keysigs = new KeySignatureList(this, staff);
-
         if (logger.isFineEnabled()) {
             Dumper.dump(this, "Constructed");
         }
@@ -130,6 +127,69 @@ public class Measure
     public Barline getBarline ()
     {
         return barline;
+    }
+
+    //---------------//
+    // getClefBefore //
+    //---------------//
+    /**
+     * Report the latest clef, if any, defined before this measure point
+     * (looking in beginning of the measure, then in previous measures, then in
+     * previous systems)
+     *
+     * @return the latest clef defined, or null
+     */
+    public Clef getClefBefore (StaffPoint point)
+    {
+        Clef clef = null;
+
+        // Look in this measure, going backwards
+        for (int ic = getClefs()
+                          .size() - 1; ic >= 0; ic--) {
+            clef = (Clef) getClefs()
+                              .get(ic);
+
+            if (clef.getCenter().x <= point.x) {
+                return clef;
+            }
+        }
+
+        // Look in previous measures of the same staff
+        Measure measure = (Measure) getPreviousSibling();
+
+        for (; measure != null;
+             measure = (Measure) measure.getPreviousSibling()) {
+            clef = measure.getLastClef();
+
+            if (clef != null) {
+                return clef;
+            }
+        }
+
+        // Look in corresponding staff in previous system(s) of the page (TBD)
+        int    stafflink = getStaff()
+                               .getStafflink();
+        System system = (System) getStaff()
+                                     .getSystem()
+                                     .getPreviousSibling();
+
+        for (; system != null; system = (System) system.getPreviousSibling()) {
+            Staff staff = (Staff) system.getStaves()
+                                        .get(stafflink);
+
+            for (int im = staff.getMeasures()
+                               .size() - 1; im >= 0; im--) {
+                measure = (Measure) staff.getMeasures()
+                                         .get(im);
+                clef = measure.getLastClef();
+
+                if (clef != null) {
+                    return clef;
+                }
+            }
+        }
+
+        return null; // No clef previously defined
     }
 
     //----------//
@@ -201,57 +261,6 @@ public class Measure
         }
 
         return null;
-    }
-
-    //-----------------//
-    // getPreviousClef //
-    //-----------------//
-    /**
-     * Report the latest clef, if any, defined before this measure (in previous
-     * measures, previous systems)
-     *
-     * @return the latest clef defoned, or null
-     */
-    public Clef getPreviousClef ()
-    {
-        Clef    clef = null;
-
-        // Look in previous measures of the same staff
-        Measure measure = (Measure) getPreviousSibling();
-
-        for (; measure != null;
-             measure = (Measure) measure.getPreviousSibling()) {
-            clef = measure.getLastClef();
-
-            if (clef != null) {
-                return clef;
-            }
-        }
-
-        // Look in corresponding staff in previous system(s) of the page (TBD)
-        int    stafflink = getStaff()
-                               .getStafflink();
-        System system = (System) getStaff()
-                                     .getSystem()
-                                     .getPreviousSibling();
-
-        for (; system != null; system = (System) system.getPreviousSibling()) {
-            Staff staff = (Staff) system.getStaves()
-                                        .get(stafflink);
-
-            for (int im = staff.getMeasures()
-                               .size() - 1; im >= 0; im--) {
-                measure = (Measure) staff.getMeasures()
-                                         .get(im);
-                clef = measure.getLastClef();
-
-                if (clef != null) {
-                    return clef;
-                }
-            }
-        }
-
-        return null; // No clef previously defined
     }
 
     //----------//

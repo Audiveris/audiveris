@@ -101,7 +101,7 @@ public abstract class StaffNode
     }
 
     //-----------//
-    // getOrigin //
+    // getDisplayOrigin //
     //-----------//
     /**
      * The display origin which is relevant for this node (this is the staff
@@ -111,7 +111,7 @@ public abstract class StaffNode
      */
     public ScorePoint getOrigin ()
     {
-        return staff.getOrigin();
+        return staff.getDisplayOrigin();
     }
 
     //----------//

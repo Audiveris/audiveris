@@ -26,18 +26,18 @@ import omr.score.ScoreFormat;
 import omr.score.Slur;
 import omr.score.Staff;
 import omr.score.StaffNode;
+import omr.score.StaffPoint;
 import omr.score.System;
 import omr.score.SystemPart;
 import omr.score.TimeSignature;
 
 import omr.util.Logger;
-import omr.util.TreeNode;
 
 import proxymusic.*;
 import proxymusic.Scaling;
 
 import java.io.*;
-import java.lang.String; // To avoid proxymusic.String default
+import java.lang.String;
 import java.util.Date;
 
 import javax.xml.bind.JAXBContext;
@@ -675,15 +675,9 @@ public class ScoreExporter
      */
     private boolean isNewClef (Clef clef)
     {
-        // Perhaps another clef within the same measure ?
-        Clef c = (Clef) clef.getPreviousSibling();
-
-        if (c != null) {
-            return c.getShape() != clef.getShape();
-        }
-
-        // Look in previous measures
-        Clef previousClef = current.measure.getPreviousClef();
+        // Perhaps another clef before this one ?
+        Clef previousClef = current.measure.getClefBefore(
+            new StaffPoint(clef.getCenter().x - 1, 0));
 
         if (previousClef != null) {
             return previousClef.getShape() != clef.getShape();

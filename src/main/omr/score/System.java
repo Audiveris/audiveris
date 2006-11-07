@@ -240,6 +240,21 @@ public class System
                            .get(getStaves().size() - 1);
     }
 
+    //---------------------//
+    // getNumberOfMeasures //
+    //---------------------//
+    /**
+     * Report the number of measures (frames) in this system
+     *
+     * @return the number of measures (read in first staff)
+     */
+    public int getNumberOfMeasures ()
+    {
+        return getFirstStaff()
+                   .getMeasures()
+                   .size();
+    }
+
     //-----------//
     // setOrigin //
     //-----------//

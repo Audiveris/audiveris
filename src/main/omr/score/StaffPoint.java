@@ -29,11 +29,27 @@ public class StaffPoint
 {
     //~ Constructors -----------------------------------------------------------
 
+    //------------//
+    // StaffPoint //
+    //------------//
     /**
      * Creates a new StaffPoint object.
      */
     public StaffPoint ()
     {
+    }
+
+    //------------//
+    // StaffPoint //
+    //------------//
+    /**
+     * Creates a new StaffPoint object, by cloning another staff point
+     *
+     * @param point the staff point to clone
+     */
+    public StaffPoint (StaffPoint point)
+    {
+        super(point);
     }
 
     //------------//
