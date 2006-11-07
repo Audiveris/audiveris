@@ -153,7 +153,7 @@ public class GlyphBoard
      * Create a Glyph Board
      *
      * @param unitName name of the owning unit
-     * @param lag the underlying glyph lag
+     * @param glyphModel the underlying glyph model
      * @param specificGlyphs additional collection of glyphs, or null
      * @param glyphSelection input glyph selection
      * @param glyphIdSelection output glyph Id selection
