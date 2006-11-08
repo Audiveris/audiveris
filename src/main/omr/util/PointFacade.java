@@ -74,9 +74,13 @@ public class PointFacade
     //------//
     // setX //
     //------//
-    @XmlElement
+    @XmlAttribute
     public void setX (int x)
     {
+        if (point == null) {
+            point = new Point();
+        }
+
         point.x = x;
     }
 
@@ -91,9 +95,13 @@ public class PointFacade
     //------//
     // setY //
     //------//
-    @XmlElement
+    @XmlAttribute
     public void setY (int y)
     {
+        if (point == null) {
+            point = new Point();
+        }
+
         point.y = y;
     }
 
