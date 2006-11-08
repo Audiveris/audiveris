@@ -32,6 +32,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * @version $Id$
  */
 @XmlAccessorType(XmlAccessType.NONE)
+@XmlType(name = "", propOrder =  {
+    "xmlRefPoint", "stemNumber", "withLedger", "pitchPosition", "bitmap"}
+)
 @XmlRootElement(name = "icon")
 public class SymbolIcon
     implements Icon
@@ -66,8 +69,8 @@ public class SymbolIcon
     private Integer stemNumber;
 
     /** Connected to Ledger ? */
-    @XmlElement(name = "has-ledger")
-    private Boolean hasLedger;
+    @XmlElement(name = "with-ledger")
+    private Boolean withLedger;
 
     /** Pitch position within staff lines */
     @XmlElement(name = "pitch-position")
@@ -141,9 +144,6 @@ public class SymbolIcon
     //    @XmlElement(name = "row")
     public String[] getBitmap ()
     {
-        System.out.println("getBitmap called");
-        System.out.println("getIconHeight=" + getIconHeight());
-
         if (getIconHeight() != -1) {
             // Generate the string array from the icon image
             bitmap = IconManager.getInstance()
@@ -220,16 +220,16 @@ public class SymbolIcon
     }
 
     //--------------//
-    // setHasLedger //
+    // setWithLedger //
     //--------------//
     /**
      * Assign the connection to a ledger
      *
-     * @param hasLedger true if there is a connected ledger
+     * @param hwithLedger true if there is a connected ledger
      */
-    public void setHasLedger (boolean hasLedger)
+    public void setWithLedger (boolean withLedger)
     {
-        this.hasLedger = hasLedger;
+        this.withLedger = withLedger;
     }
 
     //---------------//
@@ -328,7 +328,6 @@ public class SymbolIcon
      */
     public void setBitmap (String[] rows)
     {
-        System.out.println("setBitmap called rows.length=" + rows.length);
         // Elaborate the image from the string array
         setImage(IconManager.getInstance().decodeImage(rows));
     }
@@ -437,17 +436,17 @@ public class SymbolIcon
         return stemNumber;
     }
 
-    //-----------//
-    // hasLedger //
-    //-----------//
+    //--------------//
+    // isWithLedger //
+    //--------------//
     /**
      * Is this entity connected to a ledger
      *
      * @return true if there is at least one ledger
      */
-    public Boolean hasLedger ()
+    public Boolean isWithLedger ()
     {
-        return hasLedger;
+        return withLedger;
     }
 
     //-----------//
@@ -501,7 +500,6 @@ public class SymbolIcon
     private void afterUnmarshal (Unmarshaller um,
                                  Object       parent)
     {
-        ///System.out.println("afterUnmarshal");
         // Convert string bitmap -> image
         if (image == null) {
             image = IconManager.getInstance()
@@ -517,8 +515,6 @@ public class SymbolIcon
      */
     private void beforeMarshal (Marshaller m)
     {
-        System.out.println("beforeMarshal");
-
         // Dimension
         if (dimension == null) {
             getDimension();
