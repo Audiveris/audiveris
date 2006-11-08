@@ -203,10 +203,10 @@ class SelectionPanel
     /**
      * Call-back when a glyph has just been loaded
      *
-     * @param glyph the loaded glyph
+     * @param gName the normalized glyph name
      */
     @Implement(GlyphRepository.Monitor.class)
-    public void loadedGlyph (Glyph glyph)
+    public void loadedGlyph (String gName)
     {
         nbLoadedFiles.setValue(++nbLoaded);
         progressBar.setValue(nbLoaded);
@@ -264,7 +264,7 @@ class SelectionPanel
 
         // Actually load each glyph description, if not yet done
         for (String gName : gNames) {
-            Glyph glyph = repository.getGlyph(gName);
+            Glyph glyph = repository.getGlyph(gName, this);
 
             if (glyph != null) {
                 glyphs.add(glyph);
@@ -280,13 +280,17 @@ class SelectionPanel
         for (String gName : gNames) {
             NotedGlyph ng = new NotedGlyph();
             ng.gName = gName;
-            ng.glyph = repository.getGlyph(gName);
+            ng.glyph = repository.getGlyph(gName, this);
 
             if (ng.glyph != null) {
-                ng.grade = regression.measureDistance(
-                    ng.glyph,
-                    ng.glyph.getShape());
-                palmares.add(ng);
+                try {
+                    ng.grade = regression.measureDistance(
+                        ng.glyph,
+                        ng.glyph.getShape());
+                    palmares.add(ng);
+                } catch (Exception ex) {
+                    logger.warning("Cannot evaluate " + ng.glyph);
+                }
             }
         }
 

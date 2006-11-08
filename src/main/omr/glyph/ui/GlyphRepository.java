@@ -195,10 +195,12 @@ public class GlyphRepository
      * then the core area, then in the global sheets area.
      *
      * @param gName the full glyph name (format is: sheetName/Shape.id.xml)
+     * @param the monitor, if any, to be kept informed of glyph loading
      *
      * @return the glyph instance if found, null otherwise
      */
-    Glyph getGlyph (String gName)
+    Glyph getGlyph (String  gName,
+                    Monitor monitor)
     {
         // First, try the map of glyphs
         Glyph glyph = glyphsMap.get(gName);
@@ -227,6 +229,10 @@ public class GlyphRepository
             if (glyph != null) {
                 glyphsMap.put(gName, glyph);
             }
+        }
+
+        if (monitor != null) {
+            monitor.loadedGlyph(gName);
         }
 
         return glyph;
@@ -372,10 +378,10 @@ public class GlyphRepository
             }
 
             // Now record each relevant glyph
-            int        glyphNb = 0;
-            int        structuresNb = 0;
-            ///final long startTime = System.currentTimeMillis();
+            int glyphNb = 0;
+            int structuresNb = 0;
 
+            ///final long startTime = System.currentTimeMillis();
             for (SystemInfo system : sheet.getSystems()) {
                 for (Glyph glyph : system.getGlyphs()) {
                     Shape shape = glyph.getShape();
@@ -422,6 +428,7 @@ public class GlyphRepository
                 glyphNb + " glyphs stored from " + sheet.getRadix() +
                 ((structuresNb == 0) ? ""
                  : (" (including " + structuresNb + " structures)")));
+
             /// + " in " + (System.currentTimeMillis() - startTime) + " ms");
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -531,7 +538,7 @@ public class GlyphRepository
         for (String gName : names) {
             if (isIcon(gName)) {
                 if (isLoaded(gName)) {
-                    Glyph glyph = getGlyph(gName);
+                    Glyph glyph = getGlyph(gName, null);
 
                     for (GlyphSection section : glyph.getMembers()) {
                         section.getViews()
@@ -726,26 +733,20 @@ public class GlyphRepository
             monitor.setTotalGlyphs(files.size());
         }
 
-        // Now, actually load the related glyphs if needed
-        Collection<String> base = new ArrayList<String>(1000);
-
-        final long         startTime = System.currentTimeMillis();
+        // Now, collect the glyphs names
+        Collection<String> base = new ArrayList<String>(4000);
 
         for (File file : files) {
-            String gName = glyphNameOf(file);
-            base.add(gName);
+            base.add(glyphNameOf(file));
 
-            Glyph glyph = getGlyph(gName);
-
-            if (monitor != null) {
-                monitor.loadedGlyph(glyph);
-            }
+            //            Glyph glyph = getGlyph(gName);
+            //
+            //            if (monitor != null) {
+            //                monitor.loadedGlyph(glyph);
+            //            }
         }
 
-        logger.info(
-            files.size() + " glyphs loaded in " +
-            (System.currentTimeMillis() - startTime) + " ms");
-
+        ///logger.info(files.size() + " glyphs names collected");
         return base;
     }
 
@@ -868,8 +869,8 @@ public class GlyphRepository
         /**
          * Called whenever a new glyph has been loaded
          *
-         * @param glyph the glyph just loaded
+         * @param gName the normalized glyph name
          */
-        void loadedGlyph (Glyph glyph);
+        void loadedGlyph (String gName);
     }
 }

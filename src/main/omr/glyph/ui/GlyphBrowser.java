@@ -673,7 +673,7 @@ class GlyphBrowser
         public Glyph getGlyph (String gName)
         {
             ///logger.info("Loading " + gName);
-            Glyph glyph = repository.getGlyph(gName);
+            Glyph glyph = repository.getGlyph(gName, null);
 
             if ((glyph != null) && (glyph.getLag() != vLag)) {
                 glyph.setLag(vLag);

@@ -265,7 +265,7 @@ class ValidationPanel
         for (String gName : gNames) {
             index++;
 
-            Glyph glyph = repository.getGlyph(gName);
+            Glyph glyph = repository.getGlyph(gName, selectionPanel);
 
             if (glyph != null) {
                 Shape vote = evaluator.vote(glyph, maxGrade);

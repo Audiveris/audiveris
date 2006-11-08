@@ -20,6 +20,7 @@ import static omr.glyph.ui.GlyphTrainer.Task.Activity.*;
 import omr.math.NeuralNetwork;
 
 import omr.ui.util.Panel;
+import omr.ui.util.SwingWorker;
 
 import omr.util.Implement;
 import omr.util.Logger;
@@ -76,9 +77,17 @@ class TrainingPanel
     /** Repository of known glyphs */
     private final GlyphRepository repository = GlyphRepository.getInstance();
 
-    /** Flag to indicate that the whole population of recorded glyphs (and not
-       just the core ones) is to be considered */
+    /**
+     * Flag to indicate that the whole population of recorded glyphs (and not
+     * just the core ones) is to be considered
+     */
     private boolean useWhole = true;
+
+    /** Display of cardinality of whole population */
+    private JLabel wholeNumber = new JLabel();
+
+    /** Display of cardinality of core population */
+    private JLabel coreNumber = new JLabel();
 
     /** UI panel dealing with repository selection */
     private final SelectionPanel selectionPanel;
@@ -162,7 +171,7 @@ class TrainingPanel
     // update //
     //--------//
     /**
-     * Method triggered by new task activity : thte train action is enabled only
+     * Method triggered by new task activity : the train action is enabled only
      * when no activity is going on.
      *
      * @param obs the task object
@@ -213,8 +222,10 @@ class TrainingPanel
     protected void defineLayout ()
     {
         // Buttons to select just the core glyphs, or the whole population
-        JRadioButton coreButton = new JRadioButton(new CoreAction());
-        JRadioButton wholeButton = new JRadioButton(new WholeAction());
+        CoreAction   coreAction = new CoreAction();
+        JRadioButton coreButton = new JRadioButton(coreAction);
+        WholeAction  wholeAction = new WholeAction();
+        JRadioButton wholeButton = new JRadioButton(wholeAction);
 
         // Group the radio buttons.
         ButtonGroup group = new ButtonGroup();
@@ -232,9 +243,15 @@ class TrainingPanel
 
         r += 2; // ----------------------------
         builder.add(wholeButton, cst.xy(3, r));
+        builder.add(wholeNumber, cst.xy(5, r));
 
         r += 2; // ----------------------------
         builder.add(coreButton, cst.xy(3, r));
+        builder.add(coreNumber, cst.xy(5, r));
+
+        // Initialize with population cardinalities
+        coreAction.actionPerformed(null);
+        wholeAction.actionPerformed(null);
     }
 
     //-----------------//
@@ -347,7 +364,7 @@ class TrainingPanel
             List<Glyph> glyphs = new ArrayList<Glyph>();
 
             for (String gName : gNames) {
-                Glyph glyph = repository.getGlyph(gName);
+                Glyph glyph = repository.getGlyph(gName, selectionPanel);
 
                 if (glyph != null) {
                     glyphs.add(glyph);
@@ -372,6 +389,21 @@ class TrainingPanel
     private class CoreAction
         extends AbstractAction
     {
+        final SwingWorker<Integer> worker = new SwingWorker<Integer>() {
+            // This runs on worker's thread
+            public Integer construct ()
+            {
+                return selectionPanel.getBase(false)
+                                     .size();
+            }
+
+            // This runs on the event-dispatching thread.
+            public void finished ()
+            {
+                coreNumber.setText("" + getValue());
+            }
+        };
+
         public CoreAction ()
         {
             super("Core");
@@ -381,6 +413,7 @@ class TrainingPanel
         public void actionPerformed (ActionEvent e)
         {
             useWhole = false;
+            worker.start();
         }
     }
 
@@ -390,6 +423,21 @@ class TrainingPanel
     private class WholeAction
         extends AbstractAction
     {
+        final SwingWorker<Integer> worker = new SwingWorker<Integer>() {
+            // This runs on worker's thread
+            public Integer construct ()
+            {
+                return selectionPanel.getBase(true)
+                                     .size();
+            }
+
+            // This runs on the event-dispatching thread.
+            public void finished ()
+            {
+                wholeNumber.setText("" + getValue());
+            }
+        };
+
         public WholeAction ()
         {
             super("Whole");
@@ -399,6 +447,7 @@ class TrainingPanel
         public void actionPerformed (ActionEvent e)
         {
             useWhole = true;
+            worker.start();
         }
     }
 }
