@@ -53,10 +53,6 @@ public enum Shape
         /*-----*/ CLUTTER("Pure clutter"),
         /*-----*/ DOT("General dot shape"),
         /*-----*/ DASH("General dash shape"),
-        /*-----*/ BEAM("Beam between two stems"),
-        /*-----*/ BEAM_HOOK("Hook of a beam attached on one stem"),
-        /*-----*/ FERMATA_BEND("Bend part of a fermata"),
-        /*-----*/ FERMATA_BELOW_BEND("Bend part of a below fermata"),
 
         // Bars
         //
@@ -67,7 +63,8 @@ public enum Shape
         /*1D10D*/ // REPEATED_FIGURE_1,
         /*1D10E*/ // REPEATED_FIGURE_2,
         /*1D10F*/ // REPEATED_FIGURE_3,
-
+        /*1D110*/ FERMATA("Fermata"),
+        /*1D111*/ FERMATA_BELOW("Fermata Below"),
         /*1D112*/ BREATH_MARK("Breath Mark"),
         /*1D113*/ CAESURA("Caesura"),
         /*1D114*/ BRACE("Brace"),
@@ -227,6 +224,9 @@ public enum Shape
 
         // Beams and slurs
         //
+        /*-----*/ BEAM("Beam between two stems"),
+        /*-----*/ BEAM_HOOK("Hook of a beam attached on one stem"),
+        /*-----*/ SLUR("Slur tying notes"),
         /*1D173*/ // BEGIN_BEAM,
         /*1D174*/ // END_BEAM,
         /*1D175*/ // BEGIN_TIE,
@@ -344,18 +344,12 @@ public enum Shape
         // Alternate ending indication
         /*-----*/ ENDING("Alternate ending"),
 
-        // Need special recognition action
-        /*-----*/ SLUR("Slur tying notes"),
-
         // Miscellaneous
         //
         /*-----*/ LEDGER("Ledger"),
         /*-----*/ STAFF_LINE("Staff Line"),
         /*-----*/ ENDING_HORIZONTAL("Horizontal part of ending"),
         /*-----*/ ENDING_VERTICAL("Vertical part of ending"),
-
-        /*1D110*/ FERMATA("Fermata"),
-        /*1D111*/ FERMATA_BELOW("Fermata Below"),
 
         // Stems
         //
@@ -889,7 +883,7 @@ public enum Shape
     // Predefined shape ranges
     //
     public static final Range Garbage       = new Range(EnumSet.range(NOISE, STRUCTURE));
-    public static final Range Physicals     = new Range(EnumSet.range(CLUTTER, FERMATA_BELOW_BEND));
+    public static final Range Physicals     = new Range(EnumSet.range(CLUTTER, DASH));
     //
     public static final Range Bars          = new Range(EnumSet.range(DAL_SEGNO, BRACKET));
     public static final Range Clefs         = new Range(EnumSet.range(G_CLEF, F_CLEF_OTTAVA_BASSA));
@@ -901,6 +895,7 @@ public enum Shape
     public static final Range Notes         = new Range(EnumSet.range(BREVE, WHOLE_NOTE_3));
     public static final Range Stems         = new Range(EnumSet.range(COMBINING_STEM, COMBINING_STEM));
     public static final Range Flags         = new Range(EnumSet.range(COMBINING_FLAG_1, COMBINING_FLAG_5_UP));
+    public static final Range Beams         = new Range(EnumSet.range(BEAM, SLUR));
     public static final Range Articulations = new Range(EnumSet.range(ARPEGGIATO_UP, ARPEGGIATO_DOWN));
     public static final Range Dynamics      = new Range(EnumSet.range(PIANISSISSIMO, DECRESCENDO));
     public static final Range Ornaments     = new Range(EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
