@@ -268,10 +268,13 @@ public class GlyphInspector
             }
         }
 
-        logger.info(
-            acceptNb + " glyph(s) accepted (" + noiseNb + " as noise, " +
-            structureNb + " as structure, " + clutterNb + " as clutter, " +
-            knownNb + " as known)");
+        if (acceptNb > 0) {
+            logger.info(
+                        acceptNb + " glyph(s) accepted (" + noiseNb + " as noise, " +
+                        structureNb + " as structure, " + clutterNb + " as clutter, " +
+                        knownNb + " as known)");
+        }
+
     }
 
     //---------------//
@@ -461,7 +464,7 @@ public class GlyphInspector
                                          double      maxGrade,
                                          List<Glyph> compounds)
     {
-        // Collect unknown glyphs 
+        // Collect unknown glyphs
         // (as well as DOT assigned ones, since they are easily taken apart)
         List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs().size());
 
