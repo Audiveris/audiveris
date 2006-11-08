@@ -78,7 +78,6 @@ public class Main
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Very first actions */
     static {
         // Time stamps
         Clock.resetTime();
@@ -139,10 +138,8 @@ public class Main
     private Main (String[] args,
                   Class    caller)
     {
-        // Locale US to be used in the whole application ?
-        if (constants.forceLocaleUS.getValue()) {
-            Locale.setDefault(Locale.US);
-        }
+        // Locale  to be used in the whole application ?
+        checkLocale();
 
         // Tool name
         final Package thisPackage = Main.class.getPackage();
@@ -444,6 +441,25 @@ public class Main
     }
 
     //----------------//
+    // getIconsFolder //
+    //----------------//
+    private void checkLocale ()
+    {
+        final String country = constants.localeCountry.getValue();
+
+        if (!country.equals("")) {
+            for (Locale locale : Locale.getAvailableLocales()) {
+                if (locale.getCountry()
+                          .equals(country)) {
+                    Locale.setDefault(locale);
+                    return;
+                }
+            }
+            logger.info("Cannot set locale country to " + country);
+        }
+    }
+
+    //----------------//
     // parseArguments //
     //----------------//
     private void parseArguments (final String[] args)
@@ -678,10 +694,10 @@ public class Main
     private static final class Constants
         extends ConstantSet
     {
-        /** Should we force the Locale US in the whole application */
-        Constant.Boolean forceLocaleUS = new Constant.Boolean(
-            true,
-            "Should we force the Locale US in the whole application?");
+        /** Selection of locale country code (2 letters), or empty */
+        Constant.String localeCountry = new Constant.String(
+            "FR",
+            "Locale country to be used in the whole application (US, FR, ...)");
 
         /** Directory for saved files, defaulted to 'save' audiveris subdir */
         Constant.String savePath = new Constant.String(
