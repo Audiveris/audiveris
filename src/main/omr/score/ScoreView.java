@@ -231,7 +231,8 @@ public class ScoreView
     // tellPoint //
     //-----------//
     private void tellPoint (ScorePoint scrPt,
-                            PagePoint  pagPt)
+                            PagePoint  pagPt,
+                            StaffPoint staPt)
     {
         StringBuilder sb = new StringBuilder();
 
@@ -250,6 +251,15 @@ public class ScoreView
               .append(pagPt.x)
               .append(" Y:")
               .append(pagPt.y)
+              .append(" ");
+        }
+
+        if (staPt != null) {
+            sb.append("StaffPoint")
+              .append(" X:")
+              .append(staPt.x)
+              .append(" Y:")
+              .append(staPt.y)
               .append(" ");
         }
 
@@ -316,9 +326,11 @@ public class ScoreView
                     ScorePoint scrPt = new ScorePoint(rect.x, rect.y);
                     System     system = score.scoreLocateSystem(scrPt);
                     PagePoint  pagPt = system.scoreToSheet(scrPt, null);
-                    tellPoint(scrPt, pagPt);
+                    Staff      staff = system.getStaffAt(pagPt);
+                    StaffPoint staPt = staff.toStaffPoint(pagPt);
+                    tellPoint(scrPt, pagPt, staPt);
                 } else {
-                    tellPoint(null, null);
+                    tellPoint(null, null, null);
                 }
             }
         }
