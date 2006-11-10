@@ -166,7 +166,7 @@ public class SkewBuilder
         if (Math.abs(angle) > constants.maxSkewAngle.getValue()) {
             picture.rotate(-angle);
         } else {
-            logger.info("No image rotation needed.");
+            logger.fine("No image rotation needed.");
         }
 
         // Report the computed info
