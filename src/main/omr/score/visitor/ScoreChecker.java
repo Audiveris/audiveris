@@ -14,6 +14,8 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
 import omr.score.Barline;
+import omr.score.Beam;
+import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
@@ -61,6 +63,22 @@ public class ScoreChecker
     // visit Barline //
     //---------------//
     public boolean visit (Barline barline)
+    {
+        return true;
+    }
+
+    //------------//
+    // visit Beam //
+    //------------//
+    public boolean visit (Beam beam)
+    {
+        return true;
+    }
+
+    //------------//
+    // visit Chord //
+    //------------//
+    public boolean visit (Chord chord)
     {
         return true;
     }

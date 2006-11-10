@@ -11,6 +11,8 @@
 package omr.score.visitor;
 
 import omr.score.Barline;
+import omr.score.Beam;
+import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
@@ -34,6 +36,10 @@ public interface Visitor
     //~ Methods ----------------------------------------------------------------
 
     boolean visit (Barline node);
+
+    boolean visit (Beam node);
+
+    boolean visit (Chord node);
 
     boolean visit (Clef node);
 

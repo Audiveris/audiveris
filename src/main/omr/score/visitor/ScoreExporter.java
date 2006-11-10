@@ -16,6 +16,8 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
 import omr.score.Barline;
+import omr.score.Beam;
+import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
@@ -37,8 +39,8 @@ import proxymusic.*;
 import proxymusic.Scaling;
 
 import java.io.*;
-import java.lang.String;
 import java.util.Date;
+import java.lang.String;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -178,6 +180,23 @@ public class ScoreExporter
 
         return true;
     }
+
+    //------------//
+    // visit Beam //
+    //------------//
+    public boolean visit (Beam beam)
+    {
+        return true;
+    }
+
+    //------------//
+    // visit Chord //
+    //------------//
+    public boolean visit (Chord chord)
+    {
+        return true;
+    }
+
 
     //------------//
     // visit Clef //

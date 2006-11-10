@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                       P a i n t i n g V i s i t o r                        //
+//                          S c o r e P a i n t e r                           //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
 //  This software is released under the terms of the GNU General Public       //
@@ -14,6 +14,8 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
 import omr.score.Barline;
+import omr.score.Beam;
+import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
@@ -59,6 +61,15 @@ public class ScorePainter
     private static final SymbolIcon icon = IconManager.getInstance()
                                                       .loadSymbolIcon("BRACE");
 
+    /** Stroke to draw beams */
+    private static final Stroke beamStroke = new BasicStroke(4f);
+
+    /** Sequence of colors for beams */
+    private static Color[] beamColors = new Color[] {
+                                            Color.RED, Color.CYAN, Color.ORANGE,
+                                            Color.GREEN
+                                        };
+
     //~ Instance fields --------------------------------------------------------
 
     /** Graphic context */
@@ -69,6 +80,9 @@ public class ScorePainter
 
     /** Used for icon image transformation */
     private final AffineTransform transform = new AffineTransform();
+
+    /** Index for beam color */
+    private int beamIndex;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -105,6 +119,42 @@ public class ScorePainter
             logger.warning("No shape for barline " + this);
         }
 
+        return true;
+    }
+
+    //------------//
+    // visit Beam //
+    //------------//
+    public boolean visit (Beam beam)
+    {
+        Graphics2D g2 = (Graphics2D) g;
+        Stroke     oldStroke = g2.getStroke();
+        g2.setStroke(beamStroke);
+
+        Point origin = beam.getStaff()
+                           .getDisplayOrigin();
+
+        // Choose beam color;
+        beamIndex = (beamIndex + 1) % beamColors.length;
+        g.setColor(beamColors[beamIndex]);
+
+        // Draw the beam line
+        g.drawLine(
+            zoom.scaled(origin.x + beam.getLeft().x),
+            zoom.scaled(origin.y + beam.getLeft().y),
+            zoom.scaled(origin.x + beam.getRight().x),
+            zoom.scaled(origin.y + beam.getRight().y));
+
+        g2.setStroke(oldStroke);
+
+        return true;
+    }
+
+    //-------------//
+    // visit Chord //
+    //-------------//
+    public boolean visit (Chord chord)
+    {
         return true;
     }
 
@@ -148,6 +198,7 @@ public class ScorePainter
     //---------------//
     public boolean visit (Measure measure)
     {
+        //logger.info("painting measure " + measure.getId());
         // Draw the measure id, if on the first staff only
         if (measure.getStaff()
                    .getStafflink() == 0) {

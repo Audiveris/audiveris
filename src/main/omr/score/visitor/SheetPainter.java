@@ -37,6 +37,8 @@ import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.*;
+import omr.score.Beam;
+import omr.score.Chord;
 
 /**
  * Class <code>SheetPainter</code> defines for every node in Score hierarchy
@@ -91,6 +93,22 @@ public class SheetPainter
     // visit Barline //
     //---------------//
     public boolean visit (Barline barline)
+    {
+        return true;
+    }
+
+    //------------//
+    // visit Beam //
+    //------------//
+    public boolean visit (Beam beam)
+    {
+        return true;
+    }
+
+    //-------------//
+    // visit Chord //
+    //-------------//
+    public boolean visit (Chord chord)
     {
         return true;
     }
