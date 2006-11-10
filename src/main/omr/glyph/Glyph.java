@@ -102,6 +102,12 @@ public class Glyph
     /** Number of stems it is connected to (0, 1, 2) */
     protected int stemNumber;
 
+    /** Stem attached on left if any */
+    protected Glyph leftStem;
+
+    /** Stem attached on right if any */
+    protected Glyph rightStem;
+
     /** Position with respect to nearest staff. Key references are : 0 for
        middle line (B), -2 for top line (F) and +2 for bottom line (E)  */
     protected double pitchPosition;
@@ -327,24 +333,6 @@ public class Glyph
         }
     }
 
-    //---------------//
-    // setWithLedger //
-    //---------------//
-    /**
-     * Remember info about ledger near by
-     * 
-     * @param withLedger true is there is such ledger
-     */
-    @XmlElement(name = "with-ledger")
-    public void setWithLedger (boolean withLedger)
-    {
-        if (original != null) {
-            original.setWithLedger(withLedger);
-        } else {
-            this.withLedger = withLedger;
-        }
-    }
-
     //-------//
     // setId //
     //-------//
@@ -448,6 +436,32 @@ public class Glyph
     public GlyphLag getLag ()
     {
         return lag;
+    }
+
+    //-------------//
+    // setLeftStem //
+    //-------------//
+    /**
+     * Assign the stem on left
+     *
+     * @param leftStem stem glyph
+     */
+    public void setLeftStem (Glyph leftStem)
+    {
+        this.leftStem = leftStem;
+    }
+
+    //-------------//
+    // getLeftStem //
+    //-------------//
+    /**
+     * Report the stem attached on left side, if any
+     *
+     * @return stem on left, or null
+     */
+    public Glyph getLeftStem ()
+    {
+        return leftStem;
     }
 
     //------------//
@@ -563,6 +577,32 @@ public class Glyph
     public Result getResult ()
     {
         return result;
+    }
+
+    //--------------//
+    // setRightStem //
+    //--------------//
+    /**
+     * Assign the stem on right
+     *
+     * @param rightStem stem glyph
+     */
+    public void setRightStem (Glyph rightStem)
+    {
+        this.rightStem = rightStem;
+    }
+
+    //--------------//
+    // getRightStem //
+    //--------------//
+    /**
+     * Report the stem attached on right side, if any
+     *
+     * @return stem on right, or null
+     */
+    public Glyph getRightStem ()
+    {
+        return rightStem;
     }
 
     //----------//
@@ -772,6 +812,41 @@ public class Glyph
         return (shape != null) && shape.isWellKnown();
     }
 
+    //---------------//
+    // setWithLedger //
+    //---------------//
+    /**
+     * Remember info about ledger near by
+     *
+     * @param withLedger true is there is such ledger
+     */
+    @XmlElement(name = "with-ledger")
+    public void setWithLedger (boolean withLedger)
+    {
+        if (original != null) {
+            original.setWithLedger(withLedger);
+        } else {
+            this.withLedger = withLedger;
+        }
+    }
+
+    //--------------//
+    // isWithLedger //
+    //--------------//
+    /**
+     * Report whether the glyph touches a ledger
+     *
+     * @return true if there is a close ledger
+     */
+    public boolean isWithLedger ()
+    {
+        if (original != null) {
+            return original.isWithLedger();
+        } else {
+            return withLedger;
+        }
+    }
+
     //------------------//
     // addGlyphSections //
     //------------------//
@@ -961,7 +1036,7 @@ public class Glyph
         System.out.println("   interline=" + getInterline());
         System.out.println("   stemNumber=" + getStemNumber());
         System.out.println("   pitchPosition=" + getPitchPosition());
-        System.out.println("   hasLedger=" + isWithLedger());
+        System.out.println("   withLedger=" + isWithLedger());
         System.out.println("   moments=" + getMoments());
         System.out.println("   centroid=" + getCentroid());
         System.out.println("   bounds=" + getBounds());
@@ -997,23 +1072,6 @@ public class Glyph
         }
 
         forbiddens.add(shape);
-    }
-
-    //--------------//
-    // isWithLedger //
-    //--------------//
-    /**
-     * Report whether the glyph touches a ledger
-     *
-     * @return true if there is a close ledger
-     */
-    public boolean isWithLedger ()
-    {
-        if (original != null) {
-            return original.isWithLedger();
-        } else {
-            return withLedger;
-        }
     }
 
     //------------//
