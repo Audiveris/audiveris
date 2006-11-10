@@ -94,6 +94,9 @@ public class ScoreBuilder
     /** The sheet mean scale */
     private Scale scale;
 
+    /** The current system */
+    private System system;
+
     /** The current staff */
     private Staff staff;
 
@@ -144,6 +147,9 @@ public class ScoreBuilder
         translate(new ClefTranslator());
         translate(new TimeTranslator());
         translate(new KeyTranslator());
+        translate(new BeamTranslator());
+
+        ///translate(new ChordTranslator());
 
         // Update score view if any
         if (score.getView() != null) {
@@ -212,8 +218,8 @@ public class ScoreBuilder
     private void translate (Translator translator)
     {
         for (SystemInfo systemInfo : sheet.getSystems()) {
-            System system = systemInfo.getScoreSystem();
-            translateSystem(systemInfo, translator);
+            system = systemInfo.getScoreSystem();
+            translateSystem(translator);
         }
 
         // Final processing if any
@@ -223,25 +229,15 @@ public class ScoreBuilder
     //-----------------//
     // translateSystem //
     //-----------------//
-    private void translateSystem (SystemInfo systemInfo,
-                                  Translator translator)
+    private void translateSystem (Translator translator)
     {
-        for (Glyph glyph : systemInfo.getGlyphs()) {
-            Shape shape = glyph.getShape();
-
-            if (glyph.isWellKnown() && (shape != CLUTTER)) {
+        for (Glyph glyph : system.getInfo()
+                                 .getGlyphs()) {
+            if (glyph.isWellKnown() && (glyph.getShape() != CLUTTER)) {
+                // Check for glyph relevance
                 if (translator.isrelevant(glyph)) {
-                    // Retrieve related score items
-                    Rectangle  box = glyph.getContourBox();
-                    PixelPoint pp = new PixelPoint(
-                        box.x + (box.width / 2),
-                        box.y + (box.height / 2));
-                    PagePoint  p = scale.toPagePoint(pp);
-                    staff = systemInfo.getScoreSystem()
-                                      .getStaffAt(p);
-                    staffPoint = staff.toStaffPoint(p);
-                    measure = staff.getMeasureAt(staffPoint);
-
+                    // Determine staff containment
+                    translator.computeLocation(glyph);
                     // Perform the translation on this glyph
                     translator.translate(glyph);
                 }
@@ -249,7 +245,7 @@ public class ScoreBuilder
         }
 
         // Processing at end of system if any
-        translator.completeSystem(systemInfo);
+        translator.completeSystem();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -272,11 +268,29 @@ public class ScoreBuilder
 
         /**
          * Hook for final processing at end of each system
-         *
-         * @param systemInfo the system being completed
          */
-        public void completeSystem (SystemInfo systemInfo)
+        public void completeSystem ()
         {
+        }
+
+        /**
+         * Compute the location system environment of the provided glyph.
+         * Results are written in global variables 'staff', 'staffPoint' and
+         * 'measure'.
+         *
+         * @param glyph the glyph to locate
+         */
+        public void computeLocation (Glyph glyph)
+        {
+            Rectangle  box = glyph.getContourBox();
+            PixelPoint pp = new PixelPoint(
+                box.x + (box.width / 2),
+                box.y + (box.height / 2));
+            PagePoint  p = scale.toPagePoint(pp);
+
+            staff = system.getStaffAt(p);
+            staffPoint = staff.toStaffPoint(p);
+            measure = staff.getMeasureAt(staffPoint);
         }
 
         /**
@@ -293,6 +307,56 @@ public class ScoreBuilder
          */
         public abstract void translate (Glyph glyph);
     }
+
+    //----------------//
+    // BeamTranslator //
+    //----------------//
+    private class BeamTranslator
+        extends Translator
+    {
+        @Override
+        public void computeLocation (Glyph glyph)
+        {
+            // Staff, measure and staff point need specific processing
+            // We use the attached stem(s) to determine proper containment
+            if (glyph.getLeftStem() != null) {
+                super.computeLocation(glyph.getLeftStem());
+            } else if (glyph.getRightStem() != null) {
+                super.computeLocation(glyph.getRightStem());
+            } else {
+                logger.warning(
+                    "Beam glyph " + glyph.getId() + " with no attached stem");
+            }
+        }
+
+        public boolean isrelevant (Glyph glyph)
+        {
+            return (glyph.getShape() == BEAM) ||
+                   (glyph.getShape() == BEAM_HOOK);
+        }
+
+        public void translate (Glyph glyph)
+        {
+            Beam.populate(glyph, measure);
+        }
+    }
+
+    //-----------------//
+    // ChordTranslator //
+    //-----------------//
+    //    private class ChordTranslator
+    //        extends Translator
+    //    {
+    //        public boolean isrelevant (Glyph glyph)
+    //        {
+    //            return Shape.Chords.contains(glyph.getShape());
+    //        }
+    //
+    //        public void translate (Glyph glyph)
+    //        {
+    //            Chord.populate(glyph, measure, scale);
+    //        }
+    //    }
 
     //----------------//
     // ClefTranslator //
@@ -317,9 +381,9 @@ public class ScoreBuilder
     private class KeyTranslator
         extends Translator
     {
-        public void completeSystem (SystemInfo systemInfo)
+        public void completeSystem ()
         {
-            KeySignature.verifySystemKeys(systemInfo.getScoreSystem());
+            KeySignature.verifySystemKeys(system);
 
             //            // Dummy
             //            if (false) {
