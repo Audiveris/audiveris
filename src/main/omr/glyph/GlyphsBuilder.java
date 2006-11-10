@@ -191,7 +191,7 @@ public class GlyphsBuilder
     public int retrieveSystemGlyphs (SystemInfo system)
     {
         // Differentiate new glyphs from existing ones
-        int newGlyphId = vLag.getLastGlyphId() + 1;
+        int         newGlyphId = vLag.getLastGlyphId() + 1;
         List<Glyph> newGlyphs = new ArrayList<Glyph>();
 
         // Browse the various unrecognized sections
@@ -207,7 +207,7 @@ public class GlyphsBuilder
                 vLag.addGlyph(glyph);
                 newGlyphs.add(glyph);
                 system.getGlyphs()
-                    .add(glyph);
+                      .add(glyph);
             }
         }
 
@@ -325,12 +325,15 @@ public class GlyphsBuilder
                         if (onLeft) {
                             for (GlyphSection source : section.getSources()) {
                                 if (source.getGlyph() == s) {
+                                    glyph.setLeftStem(s);
+
                                     return true;
                                 }
                             }
                         } else {
                             for (GlyphSection target : section.getTargets()) {
                                 if (target.getGlyph() == s) {
+                                    glyph.setRightStem(s);
                                     return true;
                                 }
                             }
