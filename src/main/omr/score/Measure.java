@@ -53,7 +53,10 @@ public class Measure
     private KeySignatureList keysigs;
 
     /** Children: possibly several Chord's */
-    //     private ChordList chords;
+    private ChordList chords;
+
+    /** Children: possibly several Beam's */
+    private BeamList beams;
 
     /** Left abscissa (in units) of this measure */
     private Integer leftX;
@@ -63,6 +66,10 @@ public class Measure
 
     /** Measure Id */
     private int id = 0;
+
+    /** Counter for beam id.
+     * Attention, should use an id unique within all staves of the part TBD */
+    private int globalBeamId;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -127,6 +134,19 @@ public class Measure
     public Barline getBarline ()
     {
         return barline;
+    }
+
+    //----------//
+    // getBeams //
+    //----------//
+    /**
+     * Report the collection of beams
+     *
+     * @return the list of beams
+     */
+    public List<TreeNode> getBeams ()
+    {
+        return beams.getChildren();
     }
 
     //---------------//
@@ -289,6 +309,14 @@ public class Measure
         return leftX;
     }
 
+    //---------------//
+    // getNextBeamId //
+    //---------------//
+    public int getNextBeamId ()
+    {
+        return ++globalBeamId;
+    }
+
     //------------------//
     // setTimeSignature //
     //------------------//
@@ -356,6 +384,16 @@ public class Measure
         } else if (node instanceof KeySignature) {
             keysigs.addChild(node);
             node.setContainer(keysigs);
+        } else if (node instanceof Beam) {
+            beams.addChild(node);
+            node.setContainer(beams);
+        } else if (node instanceof Chord) {
+            chords.addChild(node);
+            node.setContainer(chords);
+
+            //        } else if (node instanceof Note) {
+            //            notes.addChild(node);
+            //            node.setContainer(notes);
 
             //      } else if (node instanceof Lyricline) {
             //          lyriclines.addChild (node);
@@ -400,8 +438,8 @@ public class Measure
         // (Re)Allocate specific children lists
         clefs = new ClefList(this, staff);
         keysigs = new KeySignatureList(this, staff);
-
-        //         chords = new ChordList(this, staff);
+        chords = new ChordList(this, staff);
+        beams = new BeamList(this, staff);
     }
 
     //--------------//
@@ -464,15 +502,41 @@ public class Measure
     //~ Inner Classes ----------------------------------------------------------
 
     //----------//
+    // BeamList //
+    //----------//
+    private static class BeamList
+        extends StaffNode
+    {
+        BeamList (Measure measure,
+                  Staff   staff)
+        {
+            super(measure, staff);
+        }
+    }
+
+    //-----------//
+    // ChordList //
+    //-----------//
+    private static class ChordList
+        extends StaffNode
+    {
+        ChordList (Measure measure,
+                   Staff   staff)
+        {
+            super(measure, staff);
+        }
+    }
+
+    //----------//
     // ClefList //
     //----------//
     private static class ClefList
         extends StaffNode
     {
-        ClefList (StaffNode container,
-                  Staff     staff)
+        ClefList (Measure measure,
+                  Staff   staff)
         {
-            super(container, staff);
+            super(measure, staff);
         }
     }
 
@@ -482,10 +546,10 @@ public class Measure
     private static class KeySignatureList
         extends StaffNode
     {
-        KeySignatureList (StaffNode container,
-                          Staff     staff)
+        KeySignatureList (Measure measure,
+                          Staff   staff)
         {
-            super(container, staff);
+            super(measure, staff);
         }
     }
 }
