@@ -82,4 +82,13 @@ public class StaffPoint
 
         return super.distance(pt);
     }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "StaffPoint[x=" + x + ",y=" + y + "]";
+    }
 }
