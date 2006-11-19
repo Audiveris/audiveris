@@ -16,14 +16,17 @@ import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
-import omr.score.MusicNode;
+import omr.score.MeasureNode;
+import omr.score.Note;
+import omr.score.PartNode;
 import omr.score.Score;
 import static omr.score.ScoreConstants.*;
+import omr.score.ScoreNode;
 import omr.score.ScorePoint;
 import omr.score.Slur;
 import omr.score.Staff;
-import omr.score.StaffNode;
 import omr.score.System;
+import omr.score.SystemPart;
 import omr.score.TimeSignature;
 
 import omr.util.Dumper;
@@ -36,7 +39,6 @@ import java.awt.Point;
  * internal data.
  * Run computations on the tree of score, systems, etc, so that all display
  * data, such as origins and widths are available for display use.
- *
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -51,6 +53,9 @@ public class ScoreFixer
 
     //~ Constructors -----------------------------------------------------------
 
+    //------------//
+    // ScoreFixer //
+    //------------//
     /**
      * Creates a new ScoreFixer object.
      */
@@ -105,25 +110,56 @@ public class ScoreFixer
     //---------------//
     public boolean visit (Measure measure)
     {
-        // Fix the staff reference
-        measure.fixStaff();
+        // Set measure id
+        Measure prevMeasure = (Measure) measure.getPreviousSibling();
 
-        // First/Last measure ids
-        Staff staff = measure.getStaff();
-        staff.incrementLastMeasureId();
-        measure.setId(staff.getLastMeasureId());
+        if (prevMeasure != null) {
+            measure.setId(prevMeasure.getId() + 1);
+        } else {
+            // Look for a previous system
+            System system = measure.getPart()
+                                   .getSystem();
+            System prevSystem = (System) system.getPreviousSibling();
 
-        if (logger.isFineEnabled()) {
-            Dumper.dump(measure, "Computed");
+            if (prevSystem != null) {
+                measure.setId(
+                    prevSystem.getFirstPart().getLastMeasure().getId() + 1);
+            } else {
+                measure.setId(1);
+            }
         }
 
         return true;
     }
 
+    //-------------------//
+    // visit MeasureNode //
+    //-------------------//
+    public boolean visit (MeasureNode node)
+    {
+        return true;
+    }
+
+    //------------//
+    // visit Note //
+    //------------//
+    public boolean visit (Note node)
+    {
+        return true;
+    }
+
+    //----------------//
+    // visit PartNode //
+    //----------------//
+    public boolean visit (PartNode node)
+    {
+        return true;
+    }
+
     //-----------------//
-    // visit MusicNode //
+    // visit ScoreNode //
     //-----------------//
-    public boolean visit (MusicNode musicNode)
+    public boolean visit (ScoreNode node)
     {
         return true;
     }
@@ -133,10 +169,6 @@ public class ScoreFixer
     //-------------//
     public boolean visit (Score score)
     {
-        if (logger.isFineEnabled()) {
-            logger.info("Computing score ...");
-        }
-
         score.acceptChildren(this);
 
         return false;
@@ -157,29 +189,13 @@ public class ScoreFixer
     {
         // Display origin for the staff
         System system = staff.getSystem();
-        Point  sysorg = system.getOrigin();
+        Point  sysorg = system.getDisplayOrigin();
         staff.setDisplayOrigin(
             new ScorePoint(
                 sysorg.x,
                 sysorg.y +
                 (staff.getTopLeft().y - staff.getSystem().getTopLeft().y)));
 
-        // First/Last measure ids
-        staff.setFirstMeasureId(system.getFirstMeasureId());
-        staff.setLastMeasureId(system.getFirstMeasureId());
-
-        if (logger.isFineEnabled()) {
-            Dumper.dump(staff, "Computed");
-        }
-
-        return true;
-    }
-
-    //-----------------//
-    // visit StaffNode //
-    //-----------------//
-    public boolean visit (StaffNode staffNode)
-    {
         return true;
     }
 
@@ -190,28 +206,33 @@ public class ScoreFixer
     {
         // Is there a Previous System ?
         System     prevSystem = (System) system.getPreviousSibling();
-
         ScorePoint origin = new ScorePoint();
 
         if (prevSystem == null) {
             // Very first system in the score
             origin.move(SCORE_INIT_X, SCORE_INIT_Y);
-            system.setFirstMeasureId(0);
         } else {
             // Not the first system
-            origin.setLocation(prevSystem.getOrigin());
+            origin.setLocation(prevSystem.getDisplayOrigin());
             origin.translate(
                 prevSystem.getDimension().width - 1 + INTER_SYSTEM,
                 0);
-            system.setFirstMeasureId(prevSystem.getLastMeasureId());
         }
 
-        system.setOrigin(origin);
+        system.setDisplayOrigin(origin);
 
         if (logger.isFineEnabled()) {
             Dumper.dump(system, "Computed");
         }
 
+        return true;
+    }
+
+    //------------------//
+    // visit SystemPart //
+    //------------------//
+    public boolean visit (SystemPart part)
+    {
         return true;
     }
 

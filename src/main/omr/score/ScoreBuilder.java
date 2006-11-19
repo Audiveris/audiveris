@@ -18,18 +18,13 @@ import omr.glyph.Shape.Range;
 import omr.score.visitor.ScoreCleaner;
 
 import omr.sheet.PixelPoint;
-import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
-import omr.util.TreeNode;
 
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 /**
  * Class <code>ScoreBuilder</code> is in charge of translating each relevant
@@ -91,17 +86,17 @@ public class ScoreBuilder
     /** The related sheet */
     private Sheet sheet;
 
-    /** The sheet mean scale */
-    private Scale scale;
-
     /** The current system */
     private System system;
+
+    /** The current systempart */
+    private SystemPart systemPart;
 
     /** The current staff */
     private Staff staff;
 
-    /** The current point in current staff */
-    private StaffPoint staffPoint;
+    /** The current point in current system */
+    private SystemPoint systemPoint;
 
     /** The current measure */
     private Measure measure;
@@ -121,8 +116,6 @@ public class ScoreBuilder
     {
         this.score = score;
         this.sheet = sheet;
-
-        scale = sheet.getScale();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -236,7 +229,7 @@ public class ScoreBuilder
             if (glyph.isWellKnown() && (glyph.getShape() != CLUTTER)) {
                 // Check for glyph relevance
                 if (translator.isrelevant(glyph)) {
-                    // Determine staff containment
+                    // Determine part/staff containment
                     translator.computeLocation(glyph);
                     // Perform the translation on this glyph
                     translator.translate(glyph);
@@ -286,11 +279,10 @@ public class ScoreBuilder
             PixelPoint pp = new PixelPoint(
                 box.x + (box.width / 2),
                 box.y + (box.height / 2));
-            PagePoint  p = scale.toPagePoint(pp);
-
-            staff = system.getStaffAt(p);
-            staffPoint = staff.toStaffPoint(p);
-            measure = staff.getMeasureAt(staffPoint);
+            systemPoint = system.toSystemPoint(pp);
+            staff = system.getStaffAt(systemPoint);
+            systemPart = staff.getPart();
+            measure = systemPart.getMeasureAt(systemPoint);
         }
 
         /**
@@ -371,7 +363,7 @@ public class ScoreBuilder
 
         public void translate (Glyph glyph)
         {
-            Clef.populate(glyph, measure, staffPoint);
+            Clef.populate(glyph, measure, systemPoint);
         }
     }
 
@@ -423,7 +415,7 @@ public class ScoreBuilder
         public void translate (Glyph glyph)
         {
             // Key signature or just accidental ?
-            KeySignature.populate(glyph, measure, scale);
+            KeySignature.populate(glyph, measure);
         }
     }
 
@@ -440,7 +432,7 @@ public class ScoreBuilder
 
         public void translate (Glyph glyph)
         {
-            TimeSignature.populate(glyph, measure, scale);
+            TimeSignature.populate(glyph, measure);
         }
     }
 }

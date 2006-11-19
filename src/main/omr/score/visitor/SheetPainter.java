@@ -13,15 +13,20 @@ package omr.score.visitor;
 import omr.glyph.Glyph;
 
 import omr.score.Barline;
+import omr.score.Beam;
+import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
-import omr.score.MusicNode;
+import omr.score.MeasureNode;
+import omr.score.Note;
+import omr.score.PartNode;
 import omr.score.Score;
+import omr.score.ScoreNode;
 import omr.score.Slur;
 import omr.score.Staff;
-import omr.score.StaffNode;
 import omr.score.System;
+import omr.score.SystemPart;
 import omr.score.TimeSignature;
 
 import omr.sheet.Ending;
@@ -37,8 +42,6 @@ import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.*;
-import omr.score.Beam;
-import omr.score.Chord;
 
 /**
  * Class <code>SheetPainter</code> defines for every node in Score hierarchy
@@ -47,7 +50,6 @@ import omr.score.Chord;
  *
  * <p>Nota: It has been extended to deal with rendering of initial sheet
  * elements.
- *
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -141,10 +143,34 @@ public class SheetPainter
         return true;
     }
 
+    //-------------------//
+    // visit MeasureNode //
+    //-------------------//
+    public boolean visit (MeasureNode node)
+    {
+        return true;
+    }
+
+    //------------//
+    // visit Note //
+    //------------//
+    public boolean visit (Note node)
+    {
+        return true;
+    }
+
+    //----------------//
+    // visit PartNode //
+    //----------------//
+    public boolean visit (PartNode node)
+    {
+        return true;
+    }
+
     //-----------------//
-    // visit MusicNode //
+    // visit ScoreNode //
     //-----------------//
-    public boolean visit (MusicNode musicNode)
+    public boolean visit (ScoreNode musicNode)
     {
         return true;
     }
@@ -176,24 +202,10 @@ public class SheetPainter
 
         // Render the staff lines, if within the clipping area
         if ((info != null) && info.render(g, z)) {
-            // Render the staff starting barline, if any
-            if (staff.getStartingBarline() != null) {
-                staff.getStartingBarline()
-                     .render(g, z);
-            }
-
             return true;
         } else {
             return false;
         }
-    }
-
-    //-----------------//
-    // visit StaffNode //
-    //-----------------//
-    public boolean visit (StaffNode staffNode)
-    {
-        return true;
     }
 
     //--------------//
@@ -201,6 +213,20 @@ public class SheetPainter
     //--------------//
     public boolean visit (System system)
     {
+        return true;
+    }
+
+    //------------------//
+    // visit SystemPart //
+    //------------------//
+    public boolean visit (SystemPart part)
+    {
+        // Render the part starting barline, if any
+        if (part.getStartingBarline() != null) {
+            part.getStartingBarline()
+                .render(g, z);
+        }
+
         return true;
     }
 

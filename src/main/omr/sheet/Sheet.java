@@ -303,8 +303,8 @@ public class Sheet
                 .processGlyphs(getGlyphInspector().getSymbolMaxGrade());
 
             // Determine score parts based on braces found
-            getGlyphInspector()
-                .processBraces();
+//            getGlyphInspector()
+//                .processBraces();
         }
 
         public void displayUI ()
@@ -1373,7 +1373,7 @@ public class Sheet
     {
         // Make sure that scale and skew info is available for the sheet
         if (!SCALE.isDone()) {
-            setScale(new Scale(score.getSpacing()));
+            setScale(score.getScale());
         }
 
         if (!SKEW.isDone()) {

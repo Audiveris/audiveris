@@ -29,17 +29,17 @@ import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 
 import omr.lag.JunctionDeltaPolicy;
-import omr.lag.SectionsBuilder;
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
+import omr.lag.SectionsBuilder;
 import omr.lag.VerticalOrientation;
 
 import omr.score.Barline;
 import omr.score.Measure;
-import omr.score.Part;
 import omr.score.Score;
 import omr.score.ScoreConstants;
+import omr.score.ScorePart;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
@@ -72,7 +72,7 @@ import java.util.List;
  * as bar lines. This class uses a dedicated companion named {@link
  * omr.sheet.BarsChecker} which handles physical checks.
  *
- * <p> Input is provided by a list of vertical sticks retrieved from the 
+ * <p> Input is provided by a list of vertical sticks retrieved from the
  * vertical lag.
  *
  * <p> Output is the collection of detected Bar lines.
@@ -161,19 +161,20 @@ public class BarsBuilder
         }
 
         // (Re)set the global ScorePart list accordingly
-        List<Part> partList = null;
-        boolean    ok = true;
+        List<ScorePart> partList = null;
+        boolean         ok = true;
 
         for (SystemInfo systemInfo : sheet.getSystems()) {
             logger.fine(systemInfo.getScoreSystem().toString());
 
             if (partList == null) {
                 // Build a ScorePart list based on the SystemPart list
-                partList = new ArrayList<Part>();
+                partList = new ArrayList<ScorePart>();
 
-                for (SystemPart sp : systemInfo.getScoreSystem()
+                for (TreeNode node : systemInfo.getScoreSystem()
                                                .getParts()) {
-                    Part scorePart = new Part(sp);
+                    SystemPart sp = (SystemPart) node;
+                    ScorePart  scorePart = new ScorePart(sp);
                     logger.fine("Adding " + scorePart);
                     partList.add(scorePart);
                 }
@@ -181,10 +182,11 @@ public class BarsBuilder
                 // Check our ScorePart list is still ok
                 int i = 0;
 
-                for (SystemPart sp : systemInfo.getScoreSystem()
+                for (TreeNode node : systemInfo.getScoreSystem()
                                                .getParts()) {
-                    Part global = partList.get(i++);
-                    Part scorePart = new Part(sp);
+                    SystemPart sp = (SystemPart) node;
+                    ScorePart  global = partList.get(i++);
+                    ScorePart  scorePart = new ScorePart(sp);
                     logger.fine(
                         "Comparing global " + global + " with " + scorePart);
 
@@ -200,7 +202,7 @@ public class BarsBuilder
             // Assign id and names (TBI)
             int index = 0;
 
-            for (Part part : partList) {
+            for (ScorePart part : partList) {
                 part.setId(++index);
                 part.setName("Part_" + index);
 
@@ -242,6 +244,7 @@ public class BarsBuilder
 
         // Populate the vertical lag of runs
         lag.setVertexClass(StickSection.class);
+
         SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
         lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             lag,
@@ -263,14 +266,6 @@ public class BarsBuilder
         checker = new BarsChecker(sheet);
         checker.retrieveMeasures(clutter, bars);
 
-        // Assign bar line shape
-        for (Stick stick : bars) {
-            stick.setShape(
-                checker.isThickBar(stick) ? Shape.THICK_BAR_LINE
-                                : Shape.THIN_BAR_LINE);
-            stick.setInterline(sheet.getScale().interline());
-        }
-
         // Check Measures using only score parameters
         checkMeasures();
 
@@ -282,18 +277,20 @@ public class BarsBuilder
             stick.setInterline(sheet.getScale().interline()); // Safer
         }
 
-        // With now neat staff measures, let's allocate the systems measure frames
-        //////createMeasureFrames();
-
-        // Erase bar pixels from picture
+        // Erase bar pixels from picture (not used for the time being)
         //////eraseBars();
 
         // Update score internal data
         score.accept(new ScoreFixer());
 
+        if (logger.isFineEnabled()) {
+            score.dump();
+        }
+
         // Report number of measures retrieved
         logger.info(
-            score.getLastSystem().getLastMeasureId() + " measure(s) found");
+            score.getLastSystem().getLastPart().getLastMeasure().getId() +
+            " measure(s) found");
 
         // Split everything, including horizontals, per system
         SystemSplit.computeSystemLimits(sheet);
@@ -349,43 +346,42 @@ public class BarsBuilder
             }
 
             // Remove from the containing Measure
-            System scoreSystem = system.getScoreSystem();
-
-            for (Iterator it = scoreSystem.getStaves()
-                                          .iterator(); it.hasNext();) {
-                Staff staff = (Staff) it.next();
-
-                if (checker.isStaffEmbraced(staff, bar)) {
-                    for (Iterator mit = staff.getMeasures()
-                                             .iterator(); mit.hasNext();) {
-                        Measure measure = (Measure) mit.next();
-
-                        //                    for (Iterator bit = measure.getInfos().iterator();
-                        //                         bit.hasNext();) {
-                        //                        BarInfo info = (BarInfo) bit.next();
-                        //                        if (info == bar) {
-                        //                            // Remove the bar info
-                        //                            if (logger.isFineEnabled()) {
-                        //                                logger.fine("Removing " + info +
-                        //                                             " from " + measure);
-                        //                            }
-                        //                            bit.remove();
-                        //
-                        //                            // Remove measure as well ?
-                        //                            if (measure.getInfos().size() == 0) {
-                        //                                if (logger.isFineEnabled()) {
-                        //                                    logger.fine("Removing " + measure);
-                        //                                }
-                        //                                mit.remove();
-                        //                            }
-                        //
-                        //                            break;
-                        //                        }
-                        //                    }
-                    }
-                }
-            }
-
+            //            System scoreSystem = system.getScoreSystem();
+            //
+            //            for (Iterator it = scoreSystem.getStaves()
+            //                                          .iterator(); it.hasNext();) {
+            //                Staff staff = (Staff) it.next();
+            //
+            //                if (checker.isStaffEmbraced(staff, bar)) {
+            //                    for (Iterator mit = staff.getMeasures()
+            //                                             .iterator(); mit.hasNext();) {
+            //                        Measure measure = (Measure) mit.next();
+            //
+            //                        //                    for (Iterator bit = measure.getInfos().iterator();
+            //                        //                         bit.hasNext();) {
+            //                        //                        BarInfo info = (BarInfo) bit.next();
+            //                        //                        if (info == bar) {
+            //                        //                            // Remove the bar info
+            //                        //                            if (logger.isFineEnabled()) {
+            //                        //                                logger.fine("Removing " + info +
+            //                        //                                             " from " + measure);
+            //                        //                            }
+            //                        //                            bit.remove();
+            //                        //
+            //                        //                            // Remove measure as well ?
+            //                        //                            if (measure.getInfos().size() == 0) {
+            //                        //                                if (logger.isFineEnabled()) {
+            //                        //                                    logger.fine("Removing " + measure);
+            //                        //                                }
+            //                        //                                mit.remove();
+            //                        //                            }
+            //                        //
+            //                        //                            break;
+            //                        //                        }
+            //                        //                    }
+            //                    }
+            //                }
+            //            }
             assignGlyphShape(glyph, null);
 
             // Update the view accordingly
@@ -426,137 +422,137 @@ public class BarsBuilder
     private void setSystemBraces (System      system,
                                   List<Glyph> braces)
     {
-        // Map Staff -> its containing staves ensemble (= Part)
-        Map<Staff, List<Staff>> ensembles = new HashMap<Staff, List<Staff>>();
-
-        // Inspect each brace in turn
-        for (Glyph brace : braces) {
-            List<Staff> ensemble = new ArrayList<Staff>();
-
-            // Inspect all staves for this brace
-            for (TreeNode node : system.getStaves()) {
-                Staff staff = (Staff) node;
-
-                if (checker.isStaffEmbraced(staff, brace)) {
-                    ensemble.add(staff);
-                    ensembles.put(staff, ensemble);
-                }
-            }
-
-            if (ensemble.size() == 0) {
-                logger.warning(
-                    "Brace with no embraced staves at all: " + brace.getId());
-            }
-        }
-
-        // Now build the parts by looking back at all staves
-        List<SystemPart> parts = new ArrayList<SystemPart>();
-        List<Staff>      currentEnsemble = null;
-
-        for (TreeNode node : system.getStaves()) {
-            Staff       staff = (Staff) node;
-            List<Staff> ensemble = ensembles.get(staff);
-
-            if (ensemble == null) {
-                // Standalone staff, a part by itself
-                parts.add(new SystemPart(Arrays.asList(staff)));
-            } else {
-                // Staff is in a part
-                if (ensemble != currentEnsemble) {
-                    parts.add(new SystemPart(ensemble));
-                } else {
-                    // Nothing to do
-                }
-            }
-
-            currentEnsemble = ensemble;
-        }
-
-        // Dump this system parts
-        if (logger.isFineEnabled()) {
-            StringBuilder sb = new StringBuilder();
-
-            for (SystemPart part : parts) {
-                sb.append("[");
-
-                for (Staff staff : part.getStaves()) {
-                    sb.append(" ")
-                      .append(staff.getStafflink());
-                }
-
-                sb.append("] ");
-            }
-
-            logger.fine(system + " Parts: " + sb);
-        }
-
-        // Assign the parts to the system
-        system.setParts(parts);
+        //        // Map Staff -> its containing staves ensemble (= ScorePart)
+        //        Map<Staff, List<Staff>> ensembles = new HashMap<Staff, List<Staff>>();
+        //
+        //        // Inspect each brace in turn
+        //        for (Glyph brace : braces) {
+        //            List<Staff> ensemble = new ArrayList<Staff>();
+        //
+        //            // Inspect all staves for this brace
+        //            for (TreeNode node : system.getStaves()) {
+        //                Staff staff = (Staff) node;
+        //
+        //                if (checker.isStaffEmbraced(staff, brace)) {
+        //                    ensemble.add(staff);
+        //                    ensembles.put(staff, ensemble);
+        //                }
+        //            }
+        //
+        //            if (ensemble.size() == 0) {
+        //                logger.warning(
+        //                    "Brace with no embraced staves at all: " + brace.getId());
+        //            }
+        //        }
+        //
+        //        // Now build the parts by looking back at all staves
+        //        List<SystemPart> parts = new ArrayList<SystemPart>();
+        //        List<Staff>      currentEnsemble = null;
+        //
+        //        for (TreeNode node : system.getStaves()) {
+        //            Staff       staff = (Staff) node;
+        //            List<Staff> ensemble = ensembles.get(staff);
+        //
+        //            if (ensemble == null) {
+        //                // Standalone staff, a part by itself
+        //                parts.add(new SystemPart(Arrays.asList(staff)));
+        //            } else {
+        //                // Staff is in a part
+        //                if (ensemble != currentEnsemble) {
+        //                    parts.add(new SystemPart(ensemble));
+        //                } else {
+        //                    // Nothing to do
+        //                }
+        //            }
+        //
+        //            currentEnsemble = ensemble;
+        //        }
+        //
+        //        // Dump this system parts
+        //        if (logger.isFineEnabled()) {
+        //            StringBuilder sb = new StringBuilder();
+        //
+        //            for (SystemPart part : parts) {
+        //                sb.append("[");
+        //
+        //                for (Staff staff : part.getStaves()) {
+        //                    sb.append(" ")
+        //                      .append(staff.getStaffIndex());
+        //                }
+        //
+        //                sb.append("] ");
+        //            }
+        //
+        //            logger.fine(system + " Parts: " + sb);
+        //        }
+        //
+        //        // Assign the parts to the system
+        //        system.setParts(parts);
     }
 
     //--------------------//
     // checkBarAlignments //
     //--------------------//
     /**
-     * Check alignment of each measure of each staff with the other staff
-     * measures, a test that needs several staves in the system
+     * Check alignment of each measure of each part with the other part
+     * measures, a test that needs several parts in the system
      *
      * @param system the system to check
      */
     private void checkBarAlignments (omr.score.System system)
     {
-        if (system.getStaves()
-                  .size() > 1) {
-            int maxShiftDx = scale.toPixels(constants.maxAlignShiftDx);
-
-            for (Iterator sit = system.getStaves()
-                                      .iterator(); sit.hasNext();) {
-                Staff staff = (Staff) sit.next();
-
-                for (Iterator mit = staff.getMeasures()
-                                         .iterator(); mit.hasNext();) {
-                    Measure measure = (Measure) mit.next();
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Checking alignment of " + measure);
-                    }
-
-                    // Compare the abscissa with corresponding position in
-                    // the other staves
-                    int x = measure.getBarline()
-                                   .getCenter().x;
-
-                    for (Iterator it = system.getStaves()
-                                             .iterator(); it.hasNext();) {
-                        Staff stv = (Staff) it.next();
-
-                        if (stv == staff) {
-                            continue;
-                        }
-
-                        if (!stv.barlineExists(x, maxShiftDx)) {
-                            if (logger.isFineEnabled()) {
-                                logger.fine(
-                                    "Singular measure removed: " +
-                                    Dumper.dumpOf(measure));
-                            }
-
-                            // Remove the false bar info
-                            for (Stick stick : measure.getBarline()
-                                                      .getSticks()) {
-                                stick.setResult(NOT_SYSTEM_ALIGNED);
-                                bars.remove(stick);
-                            }
-
-                            // Remove the false measure
-                            mit.remove();
-
-                            break;
-                        }
-                    }
-                }
-            }
-        }
+        //        if (system.getStaves()
+        //                  .size() > 1) {
+        //            int maxShiftDx = scale.toPixels(constants.maxAlignShiftDx);
+        //
+        //            for (Iterator sit = system.getStaves()
+        //                                      .iterator(); sit.hasNext();) {
+        //                Staff staff = (Staff) sit.next();
+        //
+        //                for (Iterator mit = staff.getMeasures()
+        //                                         .iterator(); mit.hasNext();) {
+        //                    Measure measure = (Measure) mit.next();
+        //
+        //                    if (logger.isFineEnabled()) {
+        //                        logger.fine("Checking alignment of " + measure);
+        //                    }
+        //
+        //                    // Compare the abscissa with corresponding position in
+        //                    // the other staves
+        //                    int x = measure.getBarline()
+        //                                   .getCenter().x;
+        //
+        //                    for (Iterator it = system.getStaves()
+        //                                             .iterator(); it.hasNext();) {
+        //                        Staff stv = (Staff) it.next();
+        //
+        //                        if (stv == staff) {
+        //                            continue;
+        //                        }
+        //
+        //                        if (!stv.barlineExists(x, maxShiftDx)) {
+        //                            if (logger.isFineEnabled()) {
+        //                                logger.fine(
+        //                                    "Singular measure removed: " +
+        //                                    Dumper.dumpOf(measure));
+        //                            }
+        //
+        //                            // Remove the false bar info
+        //                            for (Stick stick : measure.getBarline()
+        //                                                      .getSticks()) {
+        //                                stick.setResult(NOT_SYSTEM_ALIGNED);
+        //                                bars.remove(stick);
+        //                            }
+        //
+        //                            // Remove the false measure
+        //                            mit.remove();
+        //
+        //                            break;
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
     }
 
     //----------------//
@@ -570,32 +566,32 @@ public class BarsBuilder
      */
     private void checkEndingBar (omr.score.System system)
     {
-        Staff   staff = system.getFirstStaff();
-        Measure measure = staff.getLastMeasure();
-        Barline barline = measure.getBarline();
-        int     lastX = barline.getRightX();
-        int     minWidth = scale.toPixels(constants.minMeasureWidth);
-
-        if ((staff.getWidth() - lastX) < minWidth) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Adjusting EndingBar " + system);
-            }
-
-            // Adjust end of system & staff(s) to this one
-            UnitDimension dim = system.getDimension();
-
-            if (dim == null) {
-                system.setDimension(new UnitDimension(lastX, 0));
-            } else {
-                dim.width = lastX;
-            }
-
-            for (Iterator sit = system.getStaves()
-                                      .iterator(); sit.hasNext();) {
-                Staff stv = (Staff) sit.next();
-                stv.setWidth(system.getDimension().width);
-            }
-        }
+        //        Staff   staff = system.getFirstStaff();
+        //        Measure measure = staff.getLastMeasure();
+        //        Barline barline = measure.getBarline();
+        //        int     lastX = barline.getRightX();
+        //        int     minWidth = scale.toPixels(constants.minMeasureWidth);
+        //
+        //        if ((staff.getWidth() - lastX) < minWidth) {
+        //            if (logger.isFineEnabled()) {
+        //                logger.fine("Adjusting EndingBar " + system);
+        //            }
+        //
+        //            // Adjust end of system & staff(s) to this one
+        //            UnitDimension dim = system.getDimension();
+        //
+        //            if (dim == null) {
+        //                system.setDimension(new UnitDimension(lastX, 0));
+        //            } else {
+        //                dim.width = lastX;
+        //            }
+        //
+        //            for (Iterator sit = system.getStaves()
+        //                                      .iterator(); sit.hasNext();) {
+        //                Staff stv = (Staff) sit.next();
+        //                stv.setWidth(system.getDimension().width);
+        //            }
+        //        }
     }
 
     //---------------//
@@ -645,7 +641,7 @@ public class BarsBuilder
             scale.toUnits(
                 new PixelDimension(sheet.getWidth(), sheet.getHeight())),
             (int) Math.rint(sheet.getSkew().angle() * ScoreConstants.BASE),
-            scale.spacing(),
+            scale,
             sheet.getPath());
 
         // Mutual referencing
@@ -706,14 +702,12 @@ public class BarsBuilder
     {
         int maxDoubleDx = scale.toPixels(constants.maxDoubleBarDx);
 
-        for (Iterator sit = system.getStaves()
-                                  .iterator(); sit.hasNext();) {
-            Staff   staff = (Staff) sit.next();
+        for (TreeNode node : system.getParts()) {
+            SystemPart part = (SystemPart) node;
+            Measure    prevMeasure = null;
 
-            Measure prevMeasure = null;
-
-            for (Iterator mit = staff.getMeasures()
-                                     .iterator(); mit.hasNext();) {
+            for (Iterator mit = part.getMeasures()
+                                    .iterator(); mit.hasNext();) {
                 Measure measure = (Measure) mit.next();
 
                 if (prevMeasure != null) {
@@ -757,7 +751,7 @@ public class BarsBuilder
     private void removeStartingBar (omr.score.System system)
     {
         int     minWidth = scale.toPixels(constants.minMeasureWidth);
-        Barline firstBarline = system.getFirstStaff()
+        Barline firstBarline = system.getFirstPart()
                                      .getFirstMeasure()
                                      .getBarline();
         int     firstX = firstBarline.getLeftX();
@@ -772,31 +766,33 @@ public class BarsBuilder
 
                 system.getTopLeft()
                       .translate(firstX, 0);
-                system.getDimension().width -= -firstX;
+                system.getDimension().width -= firstX;
             }
 
             // Adjust beginning of all staves to this one
-            // Remove this false "measure" in all staves of the system
-            for (TreeNode node : system.getStaves()) {
-                Staff   staff = (Staff) node;
+            // Remove this false "measure" in all parts of the system
+            for (TreeNode node : system.getParts()) {
+                SystemPart part = (SystemPart) node;
 
                 // Set the bar as starting bar for the staff
-                Measure measure = (Measure) staff.getMeasures()
-                                                 .get(0);
-                staff.setStartingBarline(measure.getBarline());
+                Measure measure = part.getFirstMeasure();
+                part.setStartingBarline(measure.getBarline());
 
                 // Remove this first measure
-                staff.getMeasures()
-                     .remove(0);
+                part.getMeasures()
+                    .remove(0);
 
-                // Update abscissa of top-left corner of the staff
-                staff.getTopLeft()
-                     .translate(staff.getStartingBarline().getLeftX(), 0);
+                // Update abscissa of top-left corner of every staff
+                for (TreeNode sNode : part.getStaves()) {
+                    Staff staff = (Staff) sNode;
+                    staff.getTopLeft()
+                         .translate(firstX, 0);
+                }
 
                 // Update other bar lines abscissae accordingly
-                for (TreeNode mNode : staff.getMeasures()) {
+                for (TreeNode mNode : part.getMeasures()) {
                     Measure meas = (Measure) mNode;
-                    meas.reset();
+                    meas.resetAbscissae();
                 }
             }
         }

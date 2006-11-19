@@ -24,7 +24,7 @@ import omr.util.Logger;
  * @version $Id$
  */
 public class Clef
-    extends StaffNode
+    extends MeasureNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -50,19 +50,21 @@ public class Clef
     /**
      * Create a Clef instance
      *
-     * @param container the container (the measure clef list)
-     * @param staff the containing staff
+     * @param measure the containing measure
+     * @param staff the assigned staff
      * @param shape precise clef shape
-     * @param center center wrt staff (in units)
+     * @param center center wrt system (in units)
      * @param pitchPosition pitch position
      */
-    public Clef (MusicNode  container,
-                 Staff      staff,
-                 Shape      shape,
-                 StaffPoint center,
-                 int        pitchPosition)
+    public Clef (Measure     measure,
+                 Staff       staff,
+                 Shape       shape,
+                 SystemPoint center,
+                 int         pitchPosition)
     {
-        super(container, staff);
+        super(measure);
+
+        this.setStaff(staff);
         this.shape = shape;
         this.center = center;
         this.pitchPosition = pitchPosition;
@@ -108,24 +110,26 @@ public class Clef
     //----------//
     // populate //
     //----------//
-    static boolean populate (Glyph      glyph,
-                             Measure    measure,
-                             StaffPoint staffPoint)
+    static boolean populate (Glyph       glyph,
+                             Measure     measure,
+                             SystemPoint systemPoint)
     {
         Shape shape = glyph.getShape();
+        Staff staff = measure.getPart()
+                             .getStaffAt(systemPoint);
 
         switch (shape) {
         case G_CLEF :
         case G_CLEF_OTTAVA_ALTA :
         case G_CLEF_OTTAVA_BASSA :
-            new Clef(measure, measure.getStaff(), shape, staffPoint, 2);
+            new Clef(measure, staff, shape, systemPoint, 2);
 
             return true;
 
         case F_CLEF :
         case F_CLEF_OTTAVA_ALTA :
         case F_CLEF_OTTAVA_BASSA :
-            new Clef(measure, measure.getStaff(), shape, staffPoint, -2);
+            new Clef(measure, staff, shape, systemPoint, -2);
 
             return true;
 

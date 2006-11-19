@@ -12,13 +12,10 @@ package omr.glyph;
 
 import omr.constant.ConstantSet;
 
-import omr.score.Measure;
-import omr.score.PagePoint;
 import omr.score.Staff;
-import omr.score.StaffPoint;
+import omr.score.SystemPoint;
 
 import omr.sheet.Dash;
-import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.StaffInfo;
@@ -334,6 +331,7 @@ public class GlyphsBuilder
                             for (GlyphSection target : section.getTargets()) {
                                 if (target.getGlyph() == s) {
                                     glyph.setRightStem(s);
+
                                     return true;
                                 }
                             }
@@ -363,22 +361,14 @@ public class GlyphsBuilder
         Rectangle box = glyph.getContourBox();
         int       y = box.y;
 
-        // Nearest/containing staff
-        StaffInfo staff = system.getStaffAtY(y);
-
-        // Staff interline value
+        // Interline value
         glyph.setInterline(sheet.getScale().interline());
 
         // Mass center (which makes sure moments are available)
-        PixelPoint centroid = glyph.getCentroid();
-        Scale      scale = sheet.getScale();
-        PagePoint  pgCentroid = scale.toPagePoint(centroid);
-        Staff      s = system.getScoreSystem()
-                             .getStaffAt(pgCentroid);
-        StaffPoint stCentroid = s.toStaffPoint(pgCentroid);
-
-        // Left and right margins within measure
-        Measure measure = s.getMeasureAt(s.toStaffPoint(pgCentroid));
+        SystemPoint centroid = system.getScoreSystem()
+                                     .toSystemPoint(glyph.getCentroid());
+        Staff       staff = system.getScoreSystem()
+                                  .getStaffAt(centroid);
 
         // Number of connected stems
         int stemNb = 0;

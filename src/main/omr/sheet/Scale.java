@@ -77,14 +77,11 @@ public class Scale
      * Create a scale entity, this is meant for allocation after a score is
      * read.
      *
-     * @param spacing the score spacing value, expressed using BASE resolution,
-     *                since this is an int.
-     *
-     * @see omr.score.ScoreConstants#BASE
+     * @param interline the score interline value.
      */
-    public Scale (int spacing)
+    public Scale (int interline)
     {
-        interline = spacing / BASE;
+        this.interline = interline;
     }
 
     //-------//
@@ -225,21 +222,6 @@ public class Scale
     public double pixelsToUnitsDouble (double pixels)
     {
         return (pixels * INTER_LINE) / (double) interline;
-    }
-
-    //---------//
-    // spacing //
-    //---------//
-    /**
-     * Report a measure of spacing, based on the interline
-     *
-     * @return an int value, which is the interline value (expressed in pixels)
-     *         times the BASE resolution
-     * @see omr.score.ScoreConstants#BASE
-     */
-    public int spacing ()
-    {
-        return interline * BASE;
     }
 
     //-------------//

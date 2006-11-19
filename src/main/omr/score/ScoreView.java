@@ -230,9 +230,9 @@ public class ScoreView
     //-----------//
     // tellPoint //
     //-----------//
-    private void tellPoint (ScorePoint scrPt,
-                            PagePoint  pagPt,
-                            StaffPoint staPt)
+    private void tellPoint (ScorePoint  scrPt,
+                            PagePoint   pagPt,
+                            SystemPoint sysPt)
     {
         StringBuilder sb = new StringBuilder();
 
@@ -254,12 +254,12 @@ public class ScoreView
               .append(" ");
         }
 
-        if (staPt != null) {
-            sb.append("StaffPoint")
+        if (sysPt != null) {
+            sb.append("SystemPoint")
               .append(" X:")
-              .append(staPt.x)
+              .append(sysPt.x)
               .append(" Y:")
-              .append(staPt.y)
+              .append(sysPt.y)
               .append(" ");
         }
 
@@ -323,12 +323,11 @@ public class ScoreView
                 Rectangle rect = (Rectangle) selection.getEntity();
 
                 if (rect != null) {
-                    ScorePoint scrPt = new ScorePoint(rect.x, rect.y);
-                    System     system = score.scoreLocateSystem(scrPt);
-                    PagePoint  pagPt = system.scoreToSheet(scrPt, null);
-                    Staff      staff = system.getStaffAt(pagPt);
-                    StaffPoint staPt = staff.toStaffPoint(pagPt);
-                    tellPoint(scrPt, pagPt, staPt);
+                    ScorePoint  scrPt = new ScorePoint(rect.x, rect.y);
+                    System      system = score.scoreLocateSystem(scrPt);
+                    PagePoint   pagPt = system.toPagePoint(scrPt);
+                    SystemPoint sysPt = system.toSystemPoint(pagPt);
+                    tellPoint(scrPt, pagPt, sysPt);
                 } else {
                     tellPoint(null, null, null);
                 }

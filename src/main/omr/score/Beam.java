@@ -27,8 +27,7 @@ import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
 import static java.lang.Math.*;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Class <code>Beam</code> represents a beam hook or a beam, that may be
@@ -38,7 +37,7 @@ import java.util.TreeSet;
  * @version $Id$
  */
 public class Beam
-    extends StaffNode
+    extends MeasureNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -50,7 +49,7 @@ public class Beam
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Unique id (within measure) of this beam */
+    /** Unique id (within measure TBD) of this beam */
     private int id;
 
     /** Glyphs that compose this beam */
@@ -63,10 +62,10 @@ public class Beam
     private Line line;
 
     /** Left point of beam */
-    private StaffPoint left;
+    private SystemPoint left;
 
     /** Right point of beam */
-    private StaffPoint right;
+    private SystemPoint right;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -74,19 +73,17 @@ public class Beam
     // Beam //
     //------//
     /** Creates a new instance of Beam */
-    public Beam (StaffNode container)
+    public Beam (Measure measure)
     {
-        super(container, container.getStaff());
+        super(measure);
 
-        Measure measure = (Measure) getContainer()
-                                        .getContainer();
         id = measure.getNextBeamId();
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //------//
-    // getId//
+    //-------//
+    // getId //
     //-------//
     public int getId ()
     {
@@ -96,7 +93,7 @@ public class Beam
     //---------//
     // getLeft //
     //---------//
-    public StaffPoint getLeft ()
+    public SystemPoint getLeft ()
     {
         getLine();
 
@@ -124,7 +121,7 @@ public class Beam
     //----------//
     // getRight //
     //----------//
-    public StaffPoint getRight ()
+    public SystemPoint getRight ()
     {
         getLine();
 
@@ -213,7 +210,9 @@ public class Beam
 
         beam.addGlyph(glyph);
 
-        logger.info(beam.toString());
+        if (logger.isFineEnabled()) {
+            logger.fine(beam.getContainmentString() + beam);
+        }
     }
 
     //------------------//
@@ -221,30 +220,35 @@ public class Beam
     //------------------//
     private boolean isCompatibleWith (Glyph glyph)
     {
-        logger.info("Check glyph " + glyph.getId() + " with " + this);
-
-        Scale      scale = getStaff()
-                               .getInfo()
-                               .getScale();
+        if (logger.isFineEnabled()) {
+            logger.fine("Check glyph " + glyph.getId() + " with " + this);
+        }
 
         // Check alignment
-        StaffPoint gsp = computeGlyphCenter(glyph);
-        double     dist = getLine()
-                              .distanceOf(gsp.x, gsp.y);
-        double     maxDistance = scale.toUnits(constants.maxDistance);
-        logger.info("maxDistance=" + maxDistance + " dist=" + dist);
+        SystemPoint gsp = computeGlyphCenter(glyph);
+        double      dist = getLine()
+                               .distanceOf(gsp.x, gsp.y);
+        double      maxDistance = getScale()
+                                      .toUnits(constants.maxDistance);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("maxDistance=" + maxDistance + " dist=" + dist);
+        }
 
         if (abs(dist) > maxDistance) {
             return false;
         }
 
         // Check distance along the same alignment
-        double maxGap = scale.toUnits(constants.maxGap);
+        double maxGap = getScale()
+                            .toUnits(constants.maxGap);
 
-        logger.info(
-            "maxGap=" + maxGap + " leftGap=" +
-            getRightPoint(glyph).distance(getLeft()) + " rightGap=" +
-            getLeftPoint(glyph).distance(getRight()));
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "maxGap=" + maxGap + " leftGap=" +
+                getRightPoint(glyph).distance(getLeft()) + " rightGap=" +
+                getLeftPoint(glyph).distance(getRight()));
+        }
 
         if ((getRightPoint(glyph)
                  .distance(getLeft()) <= maxGap) ||
@@ -259,37 +263,37 @@ public class Beam
     //--------------//
     // getLeftPoint //
     //--------------//
-    private StaffPoint getLeftPoint (Glyph glyph)
+    private SystemPoint getLeftPoint (Glyph glyph)
     {
-        Stick stick = (Stick) glyph;
-        int   lx = stick.getFirstPos();
-        Scale scale = getStaff()
-                          .getInfo()
-                          .getScale();
+        Stick  stick = (Stick) glyph;
+        int    lx = stick.getFirstPos();
+        System system = getMeasure()
+                            .getPart()
+                            .getSystem();
 
-        return new StaffPoint(
-            scale.pixelsToUnits(lx) - staff.getTopLeft().x,
+        return new SystemPoint(
+            getScale().pixelsToUnits(lx) - system.getTopLeft().x,
             (int) rint(
-                scale.pixelsToUnitsDouble(stick.getLine().xAt((double) lx)) -
-                staff.getTopLeft().y));
+                getScale().pixelsToUnitsDouble(
+                    stick.getLine().xAt((double) lx)) - system.getTopLeft().y));
     }
 
     //---------------//
     // getRightPoint //
     //---------------//
-    private StaffPoint getRightPoint (Glyph glyph)
+    private SystemPoint getRightPoint (Glyph glyph)
     {
-        Stick stick = (Stick) glyph;
-        int   rx = stick.getLastPos();
-        Scale scale = getStaff()
-                          .getInfo()
-                          .getScale();
+        Stick  stick = (Stick) glyph;
+        int    rx = stick.getLastPos();
+        System system = getMeasure()
+                            .getPart()
+                            .getSystem();
 
-        return new StaffPoint(
-            scale.pixelsToUnits(rx) - staff.getTopLeft().x,
+        return new SystemPoint(
+            getScale().pixelsToUnits(rx) - system.getTopLeft().x,
             (int) rint(
-                scale.pixelsToUnitsDouble(stick.getLine().xAt((double) rx)) -
-                staff.getTopLeft().y));
+                getScale().pixelsToUnitsDouble(
+                    stick.getLine().xAt((double) rx)) - system.getTopLeft().y));
     }
 
     //----------//

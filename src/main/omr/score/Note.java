@@ -22,7 +22,7 @@ import omr.score.visitor.Visitor;
  * @version $Id$
  */
 public class Note
-    extends StaffNode
+    extends MeasureNode
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -44,9 +44,9 @@ public class Note
     // Note //
     //------//
     /** Creates a new instance of Note */
-    public Note (StaffNode container)
+    public Note (Measure measure)
     {
-        super(container, container.getStaff());
+        super(measure);
     }
 
     //~ Methods ----------------------------------------------------------------

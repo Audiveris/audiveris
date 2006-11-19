@@ -16,12 +16,15 @@ import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
-import omr.score.MusicNode;
+import omr.score.MeasureNode;
+import omr.score.Note;
+import omr.score.PartNode;
 import omr.score.Score;
+import omr.score.ScoreNode;
 import omr.score.Slur;
 import omr.score.Staff;
-import omr.score.StaffNode;
 import omr.score.System;
+import omr.score.SystemPart;
 import omr.score.TimeSignature;
 
 import omr.util.Logger;
@@ -106,10 +109,34 @@ public class ScoreCleaner
         return false;
     }
 
+    //-------------------//
+    // visit MeasureNode //
+    //-------------------//
+    public boolean visit (MeasureNode node)
+    {
+        return true;
+    }
+
+    //------------//
+    // visit Note //
+    //------------//
+    public boolean visit (Note node)
+    {
+        return true;
+    }
+
+    //----------------//
+    // visit PartNode //
+    //----------------//
+    public boolean visit (PartNode node)
+    {
+        return true;
+    }
+
     //-----------------//
-    // visit MusicNode //
+    // visit ScoreNode //
     //-----------------//
-    public boolean visit (MusicNode musicNode)
+    public boolean visit (ScoreNode musicNode)
     {
         return true;
     }
@@ -144,18 +171,18 @@ public class ScoreCleaner
         return true;
     }
 
-    //-----------------//
-    // visit StaffNode //
-    //-----------------//
-    public boolean visit (StaffNode staffNode)
-    {
-        return true;
-    }
-
     //--------------//
     // visit System //
     //--------------//
     public boolean visit (System system)
+    {
+        return true;
+    }
+
+    //------------------//
+    // visit SystemPart //
+    //------------------//
+    public boolean visit (SystemPart node)
     {
         return true;
     }

@@ -37,7 +37,7 @@ import java.util.*;
  * @version $Id$
  */
 public class KeySignature
-    extends StaffNode
+    extends MeasureNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -95,7 +95,7 @@ public class KeySignature
      */
     private SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
 
-    /** Unlucky glyphs candidates */
+    /** Unlucky glyphs candidates (not really used TBD) */
     private SortedSet<Glyph> parias = new TreeSet<Glyph>();
 
     //~ Constructors -----------------------------------------------------------
@@ -104,35 +104,37 @@ public class KeySignature
     // KeySignature //
     //--------------//
     /**
-     * Create a key signature, with related sheet scale and containing staff
+     * Create a key signature, with containing measure
      *
      * @param measure the containing measure
-     * @param scale the sheet global scale
+     * @param staff the related staff
      */
     public KeySignature (Measure measure,
-                         Scale   scale)
+                         Staff   staff)
     {
-        super(measure, measure.getStaff());
-    }
-
-    //--------------//
-    // KeySignature //
-    //--------------//
-    /**
-     * Entry for generating a dummy keysig, please ignore.
-     */
-    public KeySignature (Measure measure,
-                         int     key)
-    {
-        super(measure, measure.getStaff());
-
-        this.key = key;
-        center = new StaffPoint(
-            measure.getLeftX() + (measure.getWidth() / 2),
-            0);
+        super(measure);
+        setStaff(staff);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //
+    //    //--------------//
+    //    // KeySignature //
+    //    //--------------//
+    //    /**
+    //     * Entry for generating a dummy keysig, please ignore.
+    //     */
+    //    public KeySignature (Measure measure,
+    //                         int     key)
+    //    {
+    //        super(measure);
+    //
+    //        this.key = key;
+    //        center = new SystemPoint(
+    //            measure.getLeftX() + (measure.getWidth() / 2),
+    //            0);
+    //    }
 
     //--------//
     // getKey //
@@ -214,28 +216,28 @@ public class KeySignature
      *
      * @param glyph the source glyph
      * @param measure containing measure
-     * @param scale sheet scale
      *
      * @return true if population is successful, false otherwise
      */
     public static boolean populate (Glyph   glyph,
-                                    Measure measure,
-                                    Scale   scale)
+                                    Measure measure)
     {
         if (logger.isFineEnabled()) {
             logger.fine("Populating keysig for " + glyph);
         }
 
-        System         system = measure.getStaff()
+        System         system = measure.getPart()
                                        .getSystem();
         SystemInfo     systemInfo = system.getInfo();
-        StaffPoint     center = measure.computeGlyphCenter(glyph);
+        SystemPoint    center = measure.computeGlyphCenter(glyph);
 
         // Make sure we have no note nearby
         // Use a enlarged rectangular box around the glyph, and check what's in
         PixelRectangle box = glyph.getContourBox();
-        final int      dx = scale.toPixels(constants.xMargin);
-        final int      dy = scale.toPixels(constants.yMargin);
+        final int      dx = measure.getScale()
+                                   .toPixels(constants.xMargin);
+        final int      dy = measure.getScale()
+                                   .toPixels(constants.yMargin);
         PixelRectangle glyphFatBox = new PixelRectangle(
             box.x - dx,
             box.y - dy,
@@ -285,7 +287,7 @@ public class KeySignature
                 continue;
             } else if (((glyph.getShape() == SHARP) && (keysig.getKey() < 0)) ||
                        ((glyph.getShape() == FLAT) && (keysig.getKey() > 0))) {
-                // Check sharp or flat key sig, wrt to current glyph
+                // Check sharp or flat key sig, wrt current glyph
                 if (logger.isFineEnabled()) {
                     logger.fine(
                         "Cannot extend key signature with glyph " +
@@ -319,7 +321,9 @@ public class KeySignature
                 return false;
             }
 
-            keysig = new KeySignature(measure, scale);
+            keysig = new KeySignature(
+                measure,
+                measure.getPart().getStaffAt(center));
         }
 
         // Extend the keysig with this glyph
@@ -373,42 +377,79 @@ public class KeySignature
     //------------------//
     /**
      * Perform verifications (and corrections when possible) when all keysigs
-     * have been generated for the system
+     * have been generated for the system: The key signature must be the same
+     * (in terms of fifths) for the same measure index in all parts and staves.
      *
      * @param system the system to be verified
      */
     public static void verifySystemKeys (System system)
     {
-        // Check key consistency across the various staves
-        final int measureNb = system.getNumberOfMeasures();
+        ///logger.info("verifySystemKeys for " + system);
 
+        // Total number of staves in the system
+        final int staffNb = system.getInfo()
+                                  .getStaves()
+                                  .size();
+
+        // Number of measures in the system
+        final int measureNb = system.getFirstPart()
+                                    .getMeasures()
+                                    .size();
+
+        // Verify each measure index on turn
         for (int im = 0; im < measureNb; im++) {
+            ///logger.info("measure index =" + im);
+
             // Retrieve the key list for this measure in each staff
-            List<List<TreeNode>> keyMatrix = new ArrayList<List<TreeNode>>();
+            List[] keyMatrix = new List[staffNb];
+            int    staffOffset = 0;
 
-            for (TreeNode node : system.getStaves()) {
-                Staff   staff = (Staff) node;
-                Measure measure = (Measure) staff.getMeasures()
-                                                 .get(im);
-                keyMatrix.add(measure.getKeySignatures());
+            for (int is = 0; is < staffNb; is++) {
+                keyMatrix[is] = new ArrayList<TreeNode>();
             }
 
-            // Same number of keys in each measure ?
-            int nb = -1;
+            for (TreeNode node : system.getParts()) {
+                SystemPart part = (SystemPart) node;
+                Measure    measure = (Measure) part.getMeasures()
+                                                   .get(im);
 
-            for (List<TreeNode> list : keyMatrix) {
-                nb = Math.max(nb, list.size());
+                for (TreeNode ksnode : measure.getKeySignatures()) {
+                    KeySignature ks = (KeySignature) ksnode;
+
+                    keyMatrix[ks.getStaff()
+                                .getStaffIndex() + staffOffset].add(ks);
+                }
+
+                staffOffset += part.getStaves()
+                                   .size();
             }
 
+            // Same number of keys in each measure/staff ?
+            int maxKeyNb = -1;
+
             for (List<TreeNode> list : keyMatrix) {
-                if (list.size() < nb) {
+                maxKeyNb = Math.max(maxKeyNb, list.size());
+            }
+
+            ///logger.info("maxKeyNb = " + maxKeyNb);
+            int iStaff = 0;
+
+            for (List<TreeNode> list : keyMatrix) {
+                ///logger.info("Staff " + iStaff + " key nb=" + list.size());
+                if (list.size() < maxKeyNb) {
+                    logger.warning("Missing key signature in " + system);
+
+                    return;
+
                     // Need to add a key here (which index?, which key?)
                     // To Be Implemented TBD
                 }
+
+                iStaff++;
             }
 
             // Compatible keys ?
-            for (int ik = 0; ik < nb; ik++) {
+            for (int ik = 0; ik < maxKeyNb; ik++) {
                 // Browse all staves for sharp/flat compatibility
                 // If not, give up
                 // If compatible, adjust all keysigs to the longest
@@ -452,6 +493,10 @@ public class KeySignature
 
                         if (!keysig.getKey()
                                    .equals(ks.getKey())) {
+                            logger.info(
+                                ks.getContainmentString() +
+                                "forcing key signature to " +
+                                keysig.getKey());
                             ks.copyKey(keysig);
                         }
                     }
@@ -720,7 +765,7 @@ public class KeySignature
         int     delta = clefToDelta(kind) - clefToDelta(k);
 
         // center
-        center = new StaffPoint(
+        center = new SystemPoint(
             ks.getCenter().x,
             ks.getCenter().y + getStaff().pitchToUnit(delta));
 

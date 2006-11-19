@@ -23,15 +23,19 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class <code>Measure</code> handles a measure of a staff. As a MusicNode, the
- * children of a Measure are : Barline, TimeSignature, list of Clef(s), list of
- * KeySignature(s), list of Chord(s).
+ * Class <code>Measure</code> handles a measure of a system part, that is all
+ * entities within the same measure time frame, for all staves that compose the
+ * system part.
+ *
+ * <p>As a ScoreNode, the children of a Measure are : Barline, TimeSignature,
+ * list of Clef(s), list of KeySignature(s), list of Chord(s) and list of
+ * Beam(s).
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Measure
-    extends StaffNode
+    extends PartNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -58,17 +62,29 @@ public class Measure
     /** Children: possibly several Beam's */
     private BeamList beams;
 
-    /** Left abscissa (in units) of this measure */
+    //
+    //    /** Children: possibly several dynamics */
+    //    private DynamicList dynamics;
+    //
+    //    /** Children: possibly severalof lyrics */
+    //    private LyricList lyriclines;
+    //
+    //    /** Children: possibly several texts */
+    //    private TextList texts;
+
+    /** Left abscissa (in units, wrt system left side) of this measure */
     private Integer leftX;
 
     /** For measure with no physical ending bar line */
-    private boolean lineinvented;
+    private boolean lineInvented;
 
     /** Measure Id */
     private int id = 0;
 
-    /** Counter for beam id.
-     * Attention, should use an id unique within all staves of the part TBD */
+    /**
+     * Counter for beam id.
+     * Attention, should use an id unique within all staves of the part TBD
+     */
     private int globalBeamId;
 
     //~ Constructors -----------------------------------------------------------
@@ -77,11 +93,17 @@ public class Measure
     // Measure //
     //---------//
     /**
-     * Default constructor (needed by XML Binder)
+     * Create a measure with the specified parameters
+     *
+     * @param part        the containing system part
+     * @param lineInvented flag an artificial ending bar line if none existed
      */
-    public Measure ()
+    public Measure (SystemPart part,
+                    boolean    lineInvented)
     {
-        super(null, null);
+        super(part);
+
+        this.lineInvented = lineInvented;
         cleanupNode();
     }
 
@@ -89,39 +111,15 @@ public class Measure
     // Measure //
     //---------//
     /**
-     * Create a measure with the specified parameters
-     *
-     * @param staff        the containing staff
-     * @param lineinvented flag an artificial ending bar line if none existed
+     * Default constructor (needed by XML Binder)
      */
-    public Measure (Staff   staff,
-                    boolean lineinvented)
+    private Measure ()
     {
-        super(staff, staff);
-
-        this.lineinvented = lineinvented;
-
+        super(null);
         cleanupNode();
-
-        if (logger.isFineEnabled()) {
-            Dumper.dump(this, "Constructed");
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------------//
-    // setBarline //
-    //------------//
-    /**
-     * Set the ending bar line
-     *
-     * @param barline the ending bar line
-     */
-    public void setBarline (Barline barline)
-    {
-        this.barline = barline;
-    }
 
     //------------//
     // getBarline //
@@ -159,49 +157,57 @@ public class Measure
      *
      * @return the latest clef defined, or null
      */
-    public Clef getClefBefore (StaffPoint point)
+    public Clef getClefBefore (SystemPoint point)
     {
-        Clef clef = null;
+        // Which staff we are in
+        Clef  clef = null;
+        Staff staff = getPart()
+                          .getStaffAt(point);
 
-        // Look in this measure, going backwards
+        // Look in this measure, with same staff, going backwards
         for (int ic = getClefs()
                           .size() - 1; ic >= 0; ic--) {
             clef = (Clef) getClefs()
                               .get(ic);
 
-            if (clef.getCenter().x <= point.x) {
+            if ((clef.getStaff() == staff) && (clef.getCenter().x <= point.x)) {
                 return clef;
             }
         }
 
-        // Look in previous measures of the same staff
+        // Look in previous measures, with the same staff
         Measure measure = (Measure) getPreviousSibling();
 
         for (; measure != null;
              measure = (Measure) measure.getPreviousSibling()) {
-            clef = measure.getLastClef();
+            clef = measure.getLastClef(staff);
 
             if (clef != null) {
                 return clef;
             }
         }
 
-        // Look in corresponding staff in previous system(s) of the page (TBD)
-        int    stafflink = getStaff()
-                               .getStafflink();
-        System system = (System) getStaff()
+        // Remember staff index in part & part index in system
+        final int staffIndex = staff.getStaffIndex();
+        final int partIndex = getPart()
+                                  .getId() - 1;
+
+        // Look in previous system(s) of the page
+        System system = (System) getPart()
                                      .getSystem()
                                      .getPreviousSibling();
 
         for (; system != null; system = (System) system.getPreviousSibling()) {
-            Staff staff = (Staff) system.getStaves()
-                                        .get(stafflink);
+            SystemPart prt = (SystemPart) system.getParts()
+                                                .get(partIndex);
+            Staff      stf = (Staff) prt.getStaves()
+                                        .get(staffIndex);
 
-            for (int im = staff.getMeasures()
-                               .size() - 1; im >= 0; im--) {
-                measure = (Measure) staff.getMeasures()
-                                         .get(im);
-                clef = measure.getLastClef();
+            for (int im = prt.getMeasures()
+                             .size() - 1; im >= 0; im--) {
+                measure = (Measure) prt.getMeasures()
+                                       .get(im);
+                clef = measure.getLastClef(stf);
 
                 if (clef != null) {
                     return clef;
@@ -268,16 +274,23 @@ public class Measure
     // getLastClef //
     //-------------//
     /**
-     * Report the last clef (if any) in this measure
+     * Report the last clef (if any) in this measure, tagged  with the provided
+     * staff
      *
+     * @param staff the imposed related staff
      * @return the last clef, or null
      */
-    public Clef getLastClef ()
+    public Clef getLastClef (Staff staff)
     {
+        // Going backwards
         for (int ic = getClefs()
                           .size() - 1; ic >= 0; ic--) {
-            return (Clef) getClefs()
-                              .get(ic);
+            Clef clef = (Clef) getClefs()
+                                   .get(ic);
+
+            if (clef.getStaff() == staff) {
+                return clef;
+            }
         }
 
         return null;
@@ -378,7 +391,11 @@ public class Measure
     @Override
     public void addChild (TreeNode node)
     {
-        if (node instanceof Clef) {
+        if (node instanceof Barline) {
+            children.add(node);
+            node.setContainer(this);
+            barline = (Barline) node; // Ending barline
+        } else if (node instanceof Clef) {
             clefs.addChild(node);
             node.setContainer(clefs);
         } else if (node instanceof KeySignature) {
@@ -425,7 +442,7 @@ public class Measure
     {
         // Remove all direct children except barlines
         for (Iterator it = children.iterator(); it.hasNext();) {
-            MusicNode node = (MusicNode) it.next();
+            ScoreNode node = (ScoreNode) it.next();
 
             if (!(node instanceof Barline)) {
                 it.remove();
@@ -436,63 +453,32 @@ public class Measure
         timeSignature = null;
 
         // (Re)Allocate specific children lists
-        clefs = new ClefList(this, staff);
-        keysigs = new KeySignatureList(this, staff);
-        chords = new ChordList(this, staff);
-        beams = new BeamList(this, staff);
+        clefs = new ClefList(this);
+        keysigs = new KeySignatureList(this);
+        chords = new ChordList(this);
+        beams = new BeamList(this);
+
+        //        dynamics = new DynamicList(this);
+        //        lyriclines = new LyricList(this);
+        //        texts = new TextList(this);
     }
 
-    //--------------//
-    // leftMarginOf //
-    //--------------//
-    /**
-     * Report the horizontal margin (in units) between left side of the measure
-     * and the given point
-     *
-     * @param pt the given StaffPoint
-     * @return the left margin
-     */
-    public int leftMarginOf (StaffPoint pt)
-    {
-        return pt.x - getLeftX();
-    }
-
-    //-------//
-    // reset //
-    //-------//
+    //----------------//
+    // resetAbscissae //
+    //----------------//
     /**
      * Reset the coordinates of the measure, they will be lazily recomputed when
      * needed
      */
-    public void reset ()
+    public void resetAbscissae ()
     {
         leftX = null;
         barline.reset();
     }
 
-    //---------------//
-    // rightMarginOf //
-    //---------------//
-    /**
-     * Report the horizontal margin (in units) between the given point and the
-     * right side of the measure
-     *
-     * @param pt the given StaffPoint
-     * @return the right margin
-     */
-    public int rightMarginOf (StaffPoint pt)
-    {
-        return barline.getLeftX() - pt.x;
-    }
-
     //----------//
     // toString //
     //----------//
-    /**
-     * Report a readable description
-     *
-     * @return a string based on main members
-     */
     @Override
     public String toString ()
     {
@@ -505,12 +491,11 @@ public class Measure
     // BeamList //
     //----------//
     private static class BeamList
-        extends StaffNode
+        extends MeasureNode
     {
-        BeamList (Measure measure,
-                  Staff   staff)
+        BeamList (Measure measure)
         {
-            super(measure, staff);
+            super(measure);
         }
     }
 
@@ -518,12 +503,11 @@ public class Measure
     // ChordList //
     //-----------//
     private static class ChordList
-        extends StaffNode
+        extends MeasureNode
     {
-        ChordList (Measure measure,
-                   Staff   staff)
+        ChordList (Measure measure)
         {
-            super(measure, staff);
+            super(measure);
         }
     }
 
@@ -531,25 +515,59 @@ public class Measure
     // ClefList //
     //----------//
     private static class ClefList
-        extends StaffNode
+        extends MeasureNode
     {
-        ClefList (Measure measure,
-                  Staff   staff)
+        ClefList (Measure measure)
         {
-            super(measure, staff);
+            super(measure);
         }
     }
+
+    //-------------//
+    // DynamicList //
+    //-------------//
+    //    private static class DynamicList
+    //        extends MeasureNode
+    //    {
+    //        DynamicList (Measure measure)
+    //        {
+    //            super(measure);
+    //        }
+    //    }
 
     //------------------//
     // KeySignatureList //
     //------------------//
     private static class KeySignatureList
-        extends StaffNode
+        extends MeasureNode
     {
-        KeySignatureList (Measure measure,
-                          Staff   staff)
+        KeySignatureList (Measure measure)
         {
-            super(measure, staff);
+            super(measure);
         }
     }
+
+    //    //-----------//
+    //    // LyricList //
+    //    //-----------//
+    //    private static class LyricList
+    //        extends MeasureNode
+    //    {
+    //        LyricList (Measure measure)
+    //        {
+    //            super(measure);
+    //        }
+    //    }
+
+    //----------//
+    // TextList //
+    //----------//
+    //    private static class TextList
+    //        extends MeasureNode
+    //    {
+    //        TextList (Measure measure)
+    //        {
+    //            super(measure);
+    //        }
+    //    }
 }

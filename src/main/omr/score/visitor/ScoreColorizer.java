@@ -18,12 +18,15 @@ import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
-import omr.score.MusicNode;
+import omr.score.MeasureNode;
+import omr.score.Note;
+import omr.score.PartNode;
 import omr.score.Score;
+import omr.score.ScoreNode;
 import omr.score.Slur;
 import omr.score.Staff;
-import omr.score.StaffNode;
 import omr.score.System;
+import omr.score.SystemPart;
 import omr.score.TimeSignature;
 
 import omr.stick.Stick;
@@ -35,7 +38,6 @@ import java.awt.Color;
 /**
  * Class <code>ScoreColorizer</code> can visit the score hierarchy for
  * colorization (assigning colors) of related sections in the Sheet display.
- *
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -135,10 +137,34 @@ public class ScoreColorizer
         return true;
     }
 
+    //-------------------//
+    // visit MeasureNode //
+    //-------------------//
+    public boolean visit (MeasureNode node)
+    {
+        return true;
+    }
+
+    //------------//
+    // visit Note //
+    //------------//
+    public boolean visit (Note node)
+    {
+        return true;
+    }
+
+    //----------------//
+    // visit PartNode //
+    //----------------//
+    public boolean visit (PartNode node)
+    {
+        return true;
+    }
+
     //-----------------//
-    // visit MusicNode //
+    // visit ScoreNode //
     //-----------------//
-    public boolean visit (MusicNode musicNode)
+    public boolean visit (ScoreNode musicNode)
     {
         return true;
     }
@@ -170,21 +196,6 @@ public class ScoreColorizer
     //-------------//
     public boolean visit (Staff staff)
     {
-        // Set color for the starting bar line, if any
-        Barline startingBarline = staff.getStartingBarline();
-
-        if (startingBarline != null) {
-            startingBarline.accept(this);
-        }
-
-        return true;
-    }
-
-    //-----------------//
-    // visit StaffNode //
-    //-----------------//
-    public boolean visit (StaffNode staffNode)
-    {
         return true;
     }
 
@@ -193,6 +204,21 @@ public class ScoreColorizer
     //--------------//
     public boolean visit (System system)
     {
+        return true;
+    }
+
+    //------------------//
+    // visit SystemPart //
+    //------------------//
+    public boolean visit (SystemPart part)
+    {
+       // Set color for the starting bar line, if any
+       Barline startingBarline = part.getStartingBarline();
+
+       if (startingBarline != null) {
+           startingBarline.accept(this);
+       }
+
         return true;
     }
 

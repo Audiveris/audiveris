@@ -23,12 +23,14 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
+import omr.glyph.Shape;
 
 import omr.score.Barline;
 import omr.score.Measure;
 import omr.score.Score;
 import omr.score.Staff;
 import omr.score.System;
+import omr.score.SystemPart;
 import omr.score.UnitRectangle;
 
 import omr.stick.Stick;
@@ -38,7 +40,6 @@ import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
-import java.awt.Rectangle;
 import java.util.*;
 
 /**
@@ -48,7 +49,7 @@ import java.util.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-class BarsChecker
+public class BarsChecker
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -59,12 +60,12 @@ class BarsChecker
     private static final Logger logger = Logger.getLogger(BarsChecker.class);
 
     /** Successful bar that embraces a whole system */
-    private static final SuccessResult BAR_SYSTEM_DEFINING = new SuccessResult(
-        "Bar-SystemDefining");
+    private static final SuccessResult BAR_PART_DEFINING = new SuccessResult(
+        "Bar-PartDefining");
 
-    /** Successful bar that embraces only part of a system */
-    private static final SuccessResult BAR_NOT_SYSTEM_DEFINING = new SuccessResult(
-        "Bar-NotSystemDefining");
+    /** Successful bar that embraces only part of a part */
+    private static final SuccessResult BAR_NOT_PART_DEFINING = new SuccessResult(
+        "Bar-NotPartDefining");
 
     /** Failure, since bar is shorter than staff height */
     private static final FailureResult TOO_SHORT_BAR = new FailureResult(
@@ -140,30 +141,61 @@ class BarsChecker
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------//
-    // isStaffEmbraced //
-    //-----------------//
+    //----------------//
+    // isPartEmbraced //
+    //----------------//
     /**
-     * Check whether the given staff is within the vertical range of the given
+     * Check whether the given part is within the vertical range of the given
      * glyph (bar stick or brace glyph)
      *
-     * @param staff the given staff
+     * @param part the given part
      * @param glyph the given glyph
-     * @return true if staff is embraced by the bar
+     * @return true if part is embraced by the bar
      */
-    public boolean isStaffEmbraced (Staff staff,
-                                    Glyph glyph)
+    public boolean isPartEmbraced (SystemPart part,
+                                   Glyph      glyph)
     {
         // Extrema of glyph
         UnitRectangle box = scale.toUnits(glyph.getContourBox());
         int           top = box.y;
         int           bot = box.y + box.height;
 
-        // Check that middle of staff is within bar top & bottom
-        final int midStaff = staff.getTopLeft().y + (staff.getSize() / 2);
+        // Check that middle of part is within bar top & bottom
+        // TO BE REALLY IMPROVED !!!!!!!
+        final int midPart = (part.getFirstStaff()
+                                 .getTopLeft().y +
+                            part.getLastStaff()
+                                .getTopLeft().y +
+                            part.getLastStaff()
+                                .getHeight()) / 2;
 
-        return (midStaff > top) && (midStaff < bot);
+        return (midPart > top) && (midPart < bot);
     }
+
+    //    //-----------------//
+    //    // isStaffEmbraced //
+    //    //-----------------//
+    //    /**
+    //     * Check whether the given staff is within the vertical range of the given
+    //     * glyph (bar stick or brace glyph)
+    //     *
+    //     * @param staff the given staff
+    //     * @param glyph the given glyph
+    //     * @return true if staff is embraced by the bar
+    //     */
+    //    public boolean isStaffEmbraced (Staff staff,
+    //                                    Glyph glyph)
+    //    {
+    //        // Extrema of glyph
+    //        UnitRectangle box = scale.toUnits(glyph.getContourBox());
+    //        int           top = box.y;
+    //        int           bot = box.y + box.height;
+    //
+    //        // Check that middle of staff is within bar top & bottom
+    //        final int midStaff = staff.getTopLeft().y + (staff.getHeight() / 2);
+    //
+    //        return (midStaff > top) && (midStaff < bot);
+    //    }
 
     //----------//
     // getSuite //
@@ -229,36 +261,15 @@ class BarsChecker
         return null;
     }
 
-    //------------//
-    // isThickBar //
-    //------------//
-    /**
-     * Check if the stick/bar is a thick one
-     *
-     * @param stick the bar stick to check
-     *
-     * @return true if thick
-     */
-    public boolean isThickBar (Stick stick)
-    {
-        // Max width of a thin bar line, otherwise this must be a thick bar
-        final int maxThinWidth = scale.toPixels(constants.maxThinWidth);
-
-        // Average width of the stick
-        final int meanWidth = (int) Math.rint(
-            (double) stick.getWeight() / (double) stick.getLength());
-
-        return meanWidth > maxThinWidth;
-    }
-
     //------------------//
     // retrieveMeasures //
     //------------------//
     /**
      * Perform the sequence of physical checks to detect bar lines, then
-     * systems, staves and measures.
+     * systems, parts, staves and measures.
      *
-     * @param clutter the initial collection of vertical sticks
+     * @param clutter the initial collection of vertical sticks, where
+     *                recognized bar sticks are removed
      * @param bars the resulting collection of bar sticks
      * @exception omr.ProcessingException raised if processing has been stoppped
      */
@@ -273,11 +284,33 @@ class BarsChecker
         // Retrieve true bar lines and thus SystemInfos
         retrieveBarLines();
 
-        // Build score Systems & Staves from SystemInfos
-        buildSystemsAndStaves();
+        // Build score Systems, Parts & Staves from SystemInfos
+        buildScoreSystemsAndStaves();
 
         // Build Measures
         buildMeasures();
+    }
+
+    //------------//
+    // isThickBar //
+    //------------//
+    /**
+     * Check if the stick/bar is a thick one
+     *
+     * @param stick the bar stick to check
+     *
+     * @return true if thick
+     */
+    private boolean isThickBar (Stick stick)
+    {
+        // Max width of a thin bar line, otherwise this must be a thick bar
+        final int maxThinWidth = scale.toPixels(constants.maxThinWidth);
+
+        // Average width of the stick
+        final int meanWidth = (int) Math.rint(
+            (double) stick.getWeight() / (double) stick.getLength());
+
+        return meanWidth > maxThinWidth;
     }
 
     //---------------//
@@ -286,7 +319,7 @@ class BarsChecker
     /**
      * Bar lines are first sorted according to their abscissa, then we run
      * additional checks on each bar line, since we now know its enclosing
-     * system. If OK, then we add a corresponding measure in each staff.
+     * system. If OK, then we add the corresponding measures in their parts.
      */
     private void buildMeasures ()
     {
@@ -323,9 +356,10 @@ class BarsChecker
             // We don't check that the bar does not start before first staff,
             // this is too restrictive because of alternate endings.  We however
             // do check that the bar does not end after last staff of the
-            // system.
+            // last part of the system.
             int barAbscissa = bar.getMidPos();
-            int systemBottom = system.getLastStaff()
+            int systemBottom = system.getLastPart()
+                                     .getLastStaff()
                                      .getInfo()
                                      .getLastLine()
                                      .getLine()
@@ -342,77 +376,42 @@ class BarsChecker
                 continue;
             }
 
-            // We add a measure in each staff of this system, provided that the
-            // staff is embraced by the bar line
-            for (TreeNode node : system.getStaves()) {
-                Staff staff = (Staff) node;
+            // We add a measure in each relevant part of this system, provided
+            // that the part is embraced by the bar line
+            for (TreeNode node : system.getParts()) {
+                SystemPart part = (SystemPart) node;
 
-                if (isStaffEmbraced(staff, bar)) {
+                if (isPartEmbraced(part, bar)) {
                     if (logger.isFineEnabled()) {
-                        logger.fine("Creating measure for bar-line " + bar);
+                        logger.fine(
+                            part + " - Creating measure for bar-line " + bar);
                     }
 
-                    Measure measure = new Measure(staff, false); // invented ?
-                    Barline barline = new Barline(measure, staff, scale);
+                    Measure measure = new Measure(part, false); // invented ?
+                    Barline barline = new Barline(measure);
                     bar.setInterline(scale.interline()); // Safer
+                    bar.setShape(
+                        isThickBar(bar) ? Shape.THICK_BAR_LINE
+                                                : Shape.THIN_BAR_LINE);
                     barline.addStick(bar);
-                    measure.setBarline(barline);
                 }
             }
         }
+
+        //
+        //        if (logger.isFineEnabled()) {
+        //            score.dump();
+        //        }
     }
 
-    //------------------//
-    // buildSystemInfos //
-    //------------------//
-    /**
-     * Knowing the starting staff indice of each staff system, we are able to
-     * allocate and describe the proper number of systems in the score.
-     *
-     * @param starts indexed by any staff, to give the staff index of the
-     *               containing system. For a system with just one staff, both
-     *               indices are equal. For a system of more than 1 staff, the
-     *               indices differ.
-     *
-     * @throws omr.ProcessingException raised if processing failed
-     */
-    private void buildSystemInfos (int[] starts)
-        throws omr.ProcessingException
-    {
-        int id = 0; // Id for created SystemInfo's
-        int start = -1;
-
-        for (int i = 0; i < starts.length; i++) {
-            if (starts[i] != start) {
-                if (start != -1) {
-                    systems.add(
-                        new SystemInfo(++id, sheet, start, starts[i] - 1));
-                }
-
-                start = i;
-            }
-        }
-
-        systems.add(new SystemInfo(++id, sheet, start, starts.length - 1));
-
-        if (logger.isFineEnabled()) {
-            for (SystemInfo info : systems) {
-                Dumper.dump(info);
-            }
-        }
-
-        // Finally, store this list into the sheet instance
-        sheet.setSystems(systems);
-    }
-
-    //-----------------------//
-    // buildSystemsAndStaves //
-    //-----------------------//
+    //----------------------------//
+    // buildScoreSystemsAndStaves //
+    //----------------------------//
     /**
      * For each SystemInfo, build the corresponding System entity with all its
-     * depending Staves
+     * depending Parts and Staves
      */
-    private void buildSystemsAndStaves ()
+    private void buildScoreSystemsAndStaves ()
     {
         // Systems
         for (SystemInfo info : systems) {
@@ -428,23 +427,95 @@ class BarsChecker
             // Set the link SystemInfo -> System
             info.setScoreSystem(system);
 
-            // Allocate the staves in this system
-            int staffLink = 0;
+            // Allocate the parts in the system
+            int partId = 0;
 
-            for (StaffInfo set : info.getStaves()) {
-                LineInfo line = set.getFirstLine();
-                new Staff(
-                    set,
-                    system,
-                    scale.toPagePoint(
-                        new PixelPoint(
-                            set.getLeft(),
-                            line.getLine().yAt(line.getLeft()))),
-                    scale.pixelsToUnits(set.getRight() - set.getLeft()),
-                    64, // Staff vertical size in units
-                    staffLink++);
+            for (PartInfo partInfo : info.getParts()) {
+                SystemPart part = new SystemPart(system, ++partId);
+
+                // Allocate the staves in this part
+                int index = 0;
+
+                for (StaffInfo staffInfo : partInfo.getStaves()) {
+                    LineInfo line = staffInfo.getFirstLine();
+                    Staff    staff = new Staff(
+                        staffInfo,
+                        part,
+                        scale.toPagePoint(
+                            new PixelPoint(
+                                staffInfo.getLeft(),
+                                line.getLine().yAt(line.getLeft()))),
+                        scale.pixelsToUnits(
+                            staffInfo.getRight() - staffInfo.getLeft()),
+                        64, // Staff vertical size in units
+                        index++);
+                }
             }
         }
+    }
+
+    //----------------------//
+    // buildSystemsAndParts //
+    //----------------------//
+    /**
+     * Knowing the starting staff indice of each staff system, we are able to
+     * allocate and describe the proper number of systems & parts in the score.
+     *
+     * @param systemStarts indexed by any staff, to give the staff index of the
+     *                     containing system. For a system with just one staff,
+     *                     both indices are equal. For a system of more than 1
+     *                     staff, the indices differ.
+     * @param partStarts indexed by any staff, to give the staff index of the
+     *                   containing part. For a part with just one staff, both
+     *                   indices are equal. For a part of more than 1 staff, the
+     *                   indices differ.
+     * @throws omr.ProcessingException raised if processing failed
+     */
+    private void buildSystemsAndParts (int[] systemStarts,
+                                       int[] partStarts)
+        throws omr.ProcessingException
+    {
+        int            id = 0; // Id for created SystemInfo's
+        int            sStart = -1; // Current system start
+        SystemInfo     system = null; // Current system info
+        int            pStart = -1; // Current part start
+        PartInfo       part = null; // Current part info
+        List<PartInfo> parts = new ArrayList<PartInfo>(); // Temporary list
+
+        for (int i = 0; i < systemStarts.length; i++) {
+            // System break ?
+            if (systemStarts[i] != sStart) {
+                system = new SystemInfo(++id, sheet);
+                systems.add(system);
+                sStart = i;
+            }
+
+            system.addStaff(i);
+
+            // Part break ?
+            if (partStarts[i] != pStart) {
+                part = new PartInfo();
+                system.addPart(part);
+                pStart = i;
+            }
+
+            part.addStaff(sheet.getStaves().get(i));
+        }
+
+        if (logger.isFineEnabled()) {
+            for (SystemInfo systemInfo : systems) {
+                Dumper.dump(systemInfo);
+
+                int i = 0;
+
+                for (PartInfo partInfo : systemInfo.getParts()) {
+                    Dumper.dump(partInfo, "Part #" + ++i, 1);
+                }
+            }
+        }
+
+        // Finally, store this list into the sheet instance
+        sheet.setSystems(systems);
     }
 
     //-------------//
@@ -475,28 +546,34 @@ class BarsChecker
     private void retrieveBarLines ()
         throws ProcessingException
     {
-        // The list of candidate vertical sticks
         if (logger.isFineEnabled()) {
             logger.fine(clutter.size() + " sticks to check");
         }
 
-        // A way to tell the System for each staff, by providing the staff index
-        // of the starting staff of the containing system.
-        int[] starts = new int[sheet.getStaves()
-                                    .size()];
+        // Total number of staves in the sheet
+        final int staffNb = sheet.getStaves()
+                                 .size();
 
-        for (int i = starts.length - 1; i >= 0; i--) {
-            starts[i] = -1;
-        }
+        // A way to tell the containing System for each staff, by providing the
+        // staff index of the starting staff of the containing system.
+        int[] systemStarts = new int[staffNb];
+        Arrays.fill(systemStarts, -1);
+
+        // A way to tell the containing Part for each staff, by providing the
+        // staff index of the starting staff of the containing part.
+        int[] partStarts = new int[staffNb];
+        Arrays.fill(partStarts, -1);
 
         createSuite();
 
         double minResult = constants.minCheckResult.getValue();
 
-        // Check each candidate stick in turn, leaving in clutter the unlucky 
+        // Check each candidate stick in turn, leaving in clutter the unlucky
         // candidates
         for (Iterator<Stick> it = clutter.iterator(); it.hasNext();) {
             Stick stick = it.next();
+            stick.setInterline(sheet.getScale().interline());
+
             // Allocate the candidate context, and pass the whole check suite
             Context context = new Context(stick);
             double  res = suite.pass(context);
@@ -512,52 +589,58 @@ class BarsChecker
                 bars.add(stick);
                 it.remove();
 
-                // Bars that define a system (they start AND end with staves
-                // limits)
+                // Bars that define a system or a part (they start AND end with
+                // precise staves limits)
                 if ((context.topIdx != -1) && (context.botIdx != -1)) {
+                    // Here, we have both part & system defining bars
+                    // System bars occur first (increasing abscissa of glyphs)
                     for (int i = context.topIdx; i <= context.botIdx; i++) {
-                        if (starts[i] == -1) {
-                            starts[i] = context.topIdx;
+                        if (systemStarts[i] == -1) {
+                            systemStarts[i] = context.topIdx;
                         }
+
+                        partStarts[i] = context.topIdx;
                     }
 
-                    stick.setResult(BAR_SYSTEM_DEFINING);
+                    stick.setResult(BAR_PART_DEFINING);
 
                     if (logger.isFineEnabled()) {
                         logger.fine(
-                            "System-defining Bar line from staff " +
+                            "Part-defining Bar line from staff " +
                             context.topIdx + " to staff " + context.botIdx +
                             " " + stick);
                     }
                 } else {
                     if (logger.isFineEnabled()) {
                         logger.fine(
-                            "Non-System-defining Bar line " +
+                            "Non-Part-defining Bar line " +
                             ((context.topIdx != -1)
                              ? (" topIdx=" + context.topIdx) : "") +
                             ((context.botIdx != -1)
                              ? (" botIdx=" + context.botIdx) : ""));
                     }
 
-                    stick.setResult(BAR_NOT_SYSTEM_DEFINING);
+                    stick.setResult(BAR_NOT_PART_DEFINING);
                 }
             }
         }
 
         // Sanity check on the systems found
-        for (int i = 0; i < starts.length; i++) {
+        for (int i = 0; i < systemStarts.length; i++) {
             if (logger.isFineEnabled()) {
-                logger.fine("staff " + i + " system " + starts[i]);
+                logger.fine(
+                    "staff=" + i + " system=" + systemStarts[i] + " part=" +
+                    partStarts[i]);
             }
 
-            if (starts[i] == -1) {
+            if (systemStarts[i] == -1) {
                 logger.warning("No system found for staff " + i);
                 throw new ProcessingException();
             }
         }
 
-        // System retrieval
-        buildSystemInfos(starts);
+        // System/Part retrieval
+        buildSystemsAndParts(systemStarts, partStarts);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -568,12 +651,23 @@ class BarsChecker
     static class Context
         implements Checkable
     {
-        Stick   stick;
+        /** The stick being checked */
+        Stick stick;
+
+        /** Indicates a thick bar stick */
         boolean isThick;
-        int     botIdx = -1;
-        int     bottomArea = -1;
-        int     topArea = -1;
-        int     topIdx = -1;
+
+        /** Staff area index for top of bar stick */
+        int topArea = -1;
+
+        /** Staff area index for bottom of bar stick */
+        int bottomArea = -1;
+
+        /** Precise staff index for top of bar stick, assigned when OK */
+        int topIdx = -1;
+
+        /** Precise staff index for bottom of bar stick, assigned when OK */
+        int botIdx = -1;
 
         public Context (Stick stick)
         {

@@ -19,15 +19,18 @@ import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
-import omr.score.MusicNode;
+import omr.score.MeasureNode;
+import omr.score.Note;
+import omr.score.PartNode;
 import omr.score.Score;
 import static omr.score.ScoreConstants.*;
+import omr.score.ScoreNode;
+import omr.score.ScorePoint;
 import omr.score.Slur;
 import omr.score.Staff;
-import omr.score.StaffNode;
-import omr.score.StaffPoint;
 import omr.score.System;
 import omr.score.SystemPart;
+import omr.score.SystemPoint;
 import omr.score.TimeSignature;
 import omr.score.UnitDimension;
 
@@ -36,15 +39,14 @@ import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
 
 import omr.util.Logger;
+import omr.util.TreeNode;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.util.List;
 
 /**
  * Class <code>ScorePainter</code> defines for every node in Score hierarchy
  * the painting of node in the <b>Score</b> display.
- *
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -112,9 +114,13 @@ public class ScorePainter
         Shape shape = barline.getShape();
 
         if (shape != null) {
-            // Draw the barline symbol
-            barline.getStaff()
-                   .paintSymbol(g, zoom, shape, barline.getCenter(), 0);
+            // Draw the barline symbol for each stave in the measure
+            SystemPart part = barline.getPart();
+
+            for (TreeNode node : part.getStaves()) {
+                Staff staff = (Staff) node;
+                part.paintSymbol(g, zoom, shape, barline.getCenter(), staff, 0);
+            }
         } else {
             logger.warning("No shape for barline " + this);
         }
@@ -131,8 +137,7 @@ public class ScorePainter
         Stroke     oldStroke = g2.getStroke();
         g2.setStroke(beamStroke);
 
-        Point origin = beam.getStaff()
-                           .getDisplayOrigin();
+        Point origin = beam.getDisplayOrigin();
 
         // Choose beam color;
         beamIndex = (beamIndex + 1) % beamColors.length;
@@ -164,12 +169,13 @@ public class ScorePainter
     public boolean visit (Clef clef)
     {
         // Draw the clef symbol
-        clef.getStaff()
+        clef.getPart()
             .paintSymbol(
             g,
             zoom,
             clef.getShape(),
             clef.getCenter(),
+            clef.getStaff(),
             clef.getPitchPosition());
 
         return true;
@@ -181,12 +187,13 @@ public class ScorePainter
     public boolean visit (KeySignature keySignature)
     {
         if (keySignature.getPitchPosition() != null) {
-            keySignature.getStaff()
+            keySignature.getPart()
                         .paintSymbol(
                 g,
                 zoom,
                 keySignature.getShape(),
                 keySignature.getCenter(),
+                keySignature.getStaff(),
                 keySignature.getPitchPosition());
         }
 
@@ -198,25 +205,35 @@ public class ScorePainter
     //---------------//
     public boolean visit (Measure measure)
     {
-        //logger.info("painting measure " + measure.getId());
-        // Draw the measure id, if on the first staff only
-        if (measure.getStaff()
-                   .getStafflink() == 0) {
-            Point origin = measure.getOrigin();
+        SystemPart part = measure.getPart();
+
+        // Draw the measure id, on the first staff  of the first part only
+        if (part.getId() == 1) {
+            ScorePoint staffOrigin = measure.getPart()
+                                            .getFirstStaff()
+                                            .getDisplayOrigin();
             g.setColor(Color.lightGray);
             g.drawString(
                 Integer.toString(measure.getId()),
-                zoom.scaled(origin.x + measure.getLeftX()) - 5,
-                zoom.scaled(origin.y) - 15);
+                zoom.scaled(staffOrigin.x + measure.getLeftX()) - 5,
+                zoom.scaled(staffOrigin.y) - 15);
         }
 
         return true;
     }
 
+    //------------//
+    // visit Note //
+    //------------//
+    public boolean visit (Note node)
+    {
+        return true;
+    }
+
     //-----------------//
-    // visit MusicNode //
+    // visit ScoreNode //
     //-----------------//
-    public boolean visit (MusicNode musicNode)
+    public boolean visit (ScoreNode musicNode)
     {
         return true;
     }
@@ -237,7 +254,7 @@ public class ScorePainter
     public boolean visit (Slur slur)
     {
         slur.getArc()
-            .draw(g, slur.getOrigin(), zoom);
+            .draw(g, slur.getDisplayOrigin(), zoom);
 
         return true;
     }
@@ -261,19 +278,21 @@ public class ScorePainter
                 y);
         }
 
-        // Draw the starting barline, if any
-        if (staff.getStartingBarline() != null) {
-            staff.getStartingBarline()
-                 .accept(this);
-        }
-
         return true;
     }
 
-    //-----------------//
-    // visit StaffNode //
-    //-----------------//
-    public boolean visit (StaffNode staffNode)
+    //-------------------//
+    // visit MeasureNode //
+    //-------------------//
+    public boolean visit (MeasureNode measureNode)
+    {
+        return true;
+    }
+
+    //----------------//
+    // visit PartNode //
+    //----------------//
+    public boolean visit (PartNode node)
     {
         return true;
     }
@@ -287,14 +306,14 @@ public class ScorePainter
         Rectangle clip = g.getClipBounds();
         int       xMargin = INTER_SYSTEM;
         int       systemLeft = system.getRightPosition() + xMargin;
-        int       systemRight = system.getOrigin().x - xMargin;
+        int       systemRight = system.getDisplayOrigin().x - xMargin;
 
         if ((zoom.unscaled(clip.x) > systemLeft) ||
             (zoom.unscaled(clip.x + clip.width) < systemRight)) {
             return false;
         } else {
             UnitDimension dimension = system.getDimension();
-            Point         origin = system.getOrigin();
+            Point         origin = system.getDisplayOrigin();
             g.setColor(Color.lightGray);
 
             // Draw the system left edge
@@ -311,40 +330,51 @@ public class ScorePainter
                 zoom.scaled(origin.x + dimension.width),
                 zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
 
-            // Draw the braces if any
-            for (SystemPart part : system.getParts()) {
-                List<Staff> staves = part.getStaves();
-
-                if (staves.size() > 1) {
-                    // Top & bottom of brace to draw
-                    int        top = staves.get(0)
-                                           .getDisplayOrigin().y;
-                    int        bot = staves.get(staves.size() - 1)
-                                           .getDisplayOrigin().y +
-                                     STAFF_HEIGHT;
-                    double     height = zoom.scaled(bot - top + 1);
-
-                    // Vertical ratio to extend the icon */
-                    double     ratio = height / icon.getIconHeight();
-
-                    // Offset on left of system
-                    int        dx = 10;
-
-                    Graphics2D g2 = (Graphics2D) g;
-                    g.setColor(Color.black);
-                    transform.setTransform(
-                        1,
-                        0,
-                        0,
-                        ratio,
-                        zoom.scaled(origin.x) - dx,
-                        zoom.scaled(top));
-                    g2.drawRenderedImage(icon.getImage(), transform);
-                }
-            }
-
             return true;
         }
+    }
+
+    //------------------//
+    // visit SystemPart //
+    //------------------//
+    public boolean visit (SystemPart part)
+    {
+        // Draw a brace if there is more than one stave in the part
+        if (part.getStaves()
+                .size() > 1) {
+            // Top & bottom of brace to draw
+            int        top = part.getFirstStaff()
+                                 .getDisplayOrigin().y;
+            int        bot = part.getLastStaff()
+                                 .getDisplayOrigin().y + STAFF_HEIGHT;
+            double     height = zoom.scaled(bot - top + 1);
+
+            // Vertical ratio to extend the icon */
+            double     ratio = height / icon.getIconHeight();
+
+            // Offset on left of system
+            int        dx = 10;
+
+            Graphics2D g2 = (Graphics2D) g;
+            g.setColor(Color.black);
+            transform.setTransform(
+                1,
+                0,
+                0,
+                ratio,
+                zoom.scaled(part.getSystem()
+                                .getDisplayOrigin().x) - dx,
+                zoom.scaled(top));
+            g2.drawRenderedImage(icon.getImage(), transform);
+        }
+
+        // Draw the starting barline, if any
+        if (part.getStartingBarline() != null) {
+            part.getStartingBarline()
+                .accept(this);
+        }
+
+        return true;
     }
 
     //---------------------//
@@ -352,8 +382,8 @@ public class ScorePainter
     //---------------------//
     public boolean visit (TimeSignature timeSignature)
     {
-        Shape shape = timeSignature.getShape();
-        Staff staff = timeSignature.getStaff();
+        Shape      shape = timeSignature.getShape();
+        SystemPart part = timeSignature.getPart();
 
         if (shape != null) {
             switch (shape) {
@@ -370,7 +400,7 @@ public class ScorePainter
             case TIME_SIX_EIGHT :
             case COMMON_TIME :
             case CUT_TIME :
-                staff.paintSymbol(g, zoom, shape, timeSignature.getCenter());
+                part.paintSymbol(g, zoom, shape, timeSignature.getCenter());
 
                 break;
             }
@@ -380,9 +410,11 @@ public class ScorePainter
                 Shape s = glyph.getShape();
 
                 if (s != null) {
-                    StaffPoint center = timeSignature.computeGlyphCenter(glyph);
-                    int        pitch = staff.unitToPitch(center.y);
-                    staff.paintSymbol(g, zoom, s, center, pitch);
+                    SystemPoint center = timeSignature.computeGlyphCenter(
+                        glyph);
+                    Staff       staff = part.getStaffAt(center);
+                    int         pitch = staff.unitToPitch(center.y);
+                    part.paintSymbol(g, zoom, s, center, staff, pitch);
                 }
             }
         }

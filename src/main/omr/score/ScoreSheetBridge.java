@@ -150,7 +150,7 @@ public class ScoreSheetBridge
                     if (pagPt != null) {
                         // Which system ?
                         final System system = score.pageLocateSystem(pagPt);
-                        ScorePoint   scrPt = system.sheetToScore(pagPt, null);
+                        ScorePoint   scrPt = system.toScorePoint(pagPt);
                         scoreSelection.setEntity(new Rectangle(scrPt), hint);
                     }
                 } else {
@@ -168,7 +168,7 @@ public class ScoreSheetBridge
 
                     // The enclosing system
                     System     system = score.scoreLocateSystem(scrPt);
-                    PagePoint  pagPt = system.scoreToSheet(scrPt, null);
+                    PagePoint  pagPt = system.toPagePoint(scrPt);
                     PixelPoint pt = sheet.getScale()
                                          .toPixelPoint(pagPt, null);
                     pixelSelection.setEntity(new Rectangle(pt), hint);

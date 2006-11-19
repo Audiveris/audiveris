@@ -16,12 +16,15 @@ import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
-import omr.score.MusicNode;
+import omr.score.MeasureNode;
+import omr.score.Note;
+import omr.score.PartNode;
 import omr.score.Score;
+import omr.score.ScoreNode;
 import omr.score.Slur;
 import omr.score.Staff;
-import omr.score.StaffNode;
 import omr.score.System;
+import omr.score.SystemPart;
 import omr.score.TimeSignature;
 
 /**
@@ -47,17 +50,23 @@ public interface Visitor
 
     boolean visit (Measure node);
 
-    boolean visit (MusicNode node);
+    boolean visit (MeasureNode node);
+
+    boolean visit (Note node);
+
+    boolean visit (PartNode node);
 
     boolean visit (Score node);
+
+    boolean visit (ScoreNode node);
 
     boolean visit (Slur node);
 
     boolean visit (Staff node);
 
-    boolean visit (StaffNode node);
-
     boolean visit (System node);
+
+    boolean visit (SystemPart node);
 
     boolean visit (TimeSignature node);
 }

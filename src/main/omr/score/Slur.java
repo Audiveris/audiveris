@@ -26,7 +26,7 @@ import java.awt.*;
  * @version $Id$
  */
 public class Slur
-    extends MusicNode
+    extends PartNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -54,21 +54,6 @@ public class Slur
     private int rightrow;
 
     //~ Constructors -----------------------------------------------------------
-
-    //------//
-    // Slur //
-    //------//
-    /**
-     * NoArg constructor (needed by XML binder)
-     */
-    public Slur ()
-    {
-        super(null);
-
-        if (logger.isFineEnabled()) {
-            Dumper.dump(this, "Construction");
-        }
-    }
 
     //------//
     // Slur //
@@ -102,6 +87,17 @@ public class Slur
         if (logger.isFineEnabled()) {
             Dumper.dump(this, "Constructed");
         }
+    }
+
+    //------//
+    // Slur //
+    //------//
+    /**
+     * NoArg constructor (needed by XML binder)
+     */
+    private Slur ()
+    {
+        super(null);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -147,20 +143,6 @@ public class Slur
     public int getLeftrow ()
     {
         return leftrow;
-    }
-
-    //-----------//
-    // getOrigin //
-    //-----------//
-    /**
-     * Report the display origin (which is the origin of the containing system)
-     * used for slur x and y relative coordinates
-     *
-     * @return the base origin
-     */
-    public Point getOrigin ()
-    {
-        return ((System) container.getContainer()).getOrigin();
     }
 
     //-----------//

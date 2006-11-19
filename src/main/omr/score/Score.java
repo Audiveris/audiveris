@@ -12,6 +12,7 @@ package omr.score;
 
 import omr.score.visitor.Visitor;
 
+import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
@@ -37,7 +38,7 @@ import java.util.List;
  * @version $Id$
  */
 public class Score
-    extends MusicNode
+    extends ScoreNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -61,11 +62,13 @@ public class Score
     /** Sheet skew angle in radians */
     private int skewAngle;
 
-    /** Sheet global line spacing expressed in pixels * BASE */
-    private int spacing;
+    /** Sheet global scale */
+    private Scale scale;
 
-    /** Part list for the whole score */
-    private List<Part> partList;
+    /**
+     * ScorePart list for the whole score
+     */
+    private List<ScorePart> partList;
 
     /** The most recent system pointed at */
     private transient System recentSystem = null;
@@ -99,18 +102,18 @@ public class Score
      *
      * @param dimension the score dimension, expressed in units
      * @param skewAngle the detected skew angle, in radians, clockwise
-     * @param spacing the main interline spacing, in 1/1024 of units
+     * @param scale the global scale
      * @param imagePath full name of the original sheet file
      */
     public Score (UnitDimension dimension,
                   int           skewAngle,
-                  int           spacing,
+                  Scale         scale,
                   String        imagePath)
     {
         this();
         this.dimension = dimension;
         this.skewAngle = skewAngle;
-        this.spacing = spacing;
+        this.scale = scale;
 
         setImagePath(imagePath);
 
@@ -191,7 +194,15 @@ public class Score
 
         for (TreeNode node : children) {
             System system = (System) node;
-            nb = Math.max(nb, system.getStaves().size());
+            int    sn = 0;
+
+            for (TreeNode n : system.getParts()) {
+                SystemPart part = (SystemPart) n;
+                sn += part.getStaves()
+                          .size();
+            }
+
+            nb = Math.max(nb, sn);
         }
 
         return nb;
@@ -205,7 +216,7 @@ public class Score
      *
      * @param partList the list of score parts
      */
-    public void setPartList (List<Part> partList)
+    public void setPartList (List<ScorePart> partList)
     {
         this.partList = partList;
     }
@@ -218,7 +229,7 @@ public class Score
      *
      * @return partList the list of score parts
      */
-    public List<Part> getPartList ()
+    public List<ScorePart> getPartList ()
     {
         return partList;
     }
@@ -255,6 +266,19 @@ public class Score
         }
 
         return radix;
+    }
+
+    //----------//
+    // getScale //
+    //----------//
+    /**
+     * Report the scale the score
+     *
+     * @return the score scale (basically: number of pixels for main interline)
+     */
+    public Scale getScale ()
+    {
+        return scale;
     }
 
     //----------//
@@ -314,19 +338,6 @@ public class Score
     public double getSkewAngleDouble ()
     {
         return (double) skewAngle / (double) ScoreConstants.BASE;
-    }
-
-    //------------//
-    // getSpacing //
-    //------------//
-    /**
-     * Report the main interline spacing in the score
-     *
-     * @return the spacing in 1/1024 of units
-     */
-    public int getSpacing ()
-    {
-        return spacing;
     }
 
     //------------//
@@ -515,11 +526,9 @@ public class Score
      */
     public System pageLocateSystem (PagePoint pagPt)
     {
-        int y = pagPt.y;
-
         if (recentSystem != null) {
             // Check first with most recent system (loosely)
-            switch (recentSystem.yLocate(y)) {
+            switch (recentSystem.locate(pagPt)) {
             case -1 :
 
                 // Check w/ previous system
@@ -528,7 +537,7 @@ public class Score
                 if (prevSystem == null) { // Very first system
 
                     return recentSystem;
-                } else if (prevSystem.yLocate(y) > 0) {
+                } else if (prevSystem.locate(pagPt) > 0) {
                     return recentSystem;
                 }
 
@@ -545,7 +554,7 @@ public class Score
                 if (nextSystem == null) { // Very last system
 
                     return recentSystem;
-                } else if (nextSystem.yLocate(y) < 0) {
+                } else if (nextSystem.locate(pagPt) < 0) {
                     return recentSystem;
                 }
 
@@ -564,7 +573,7 @@ public class Score
             system = (System) node;
 
             // How do we locate the point wrt the system  ?
-            switch (system.yLocate(y)) {
+            switch (system.locate(pagPt)) {
             case -1 : // Point is above this system, give up.
             case 0 : // Point is within system.
                 return recentSystem = system;
@@ -592,11 +601,9 @@ public class Score
      */
     public System scoreLocateSystem (ScorePoint scrPt)
     {
-        int x = scrPt.x;
-
         if (recentSystem != null) {
             // Check first with most recent system (loosely)
-            switch (recentSystem.xLocate(x)) {
+            switch (recentSystem.locate(scrPt)) {
             case -1 :
 
                 // Check w/ previous system
@@ -606,7 +613,7 @@ public class Score
 
                     return recentSystem;
                 } else {
-                    if (prevSystem.xLocate(x) > 0) {
+                    if (prevSystem.locate(scrPt) > 0) {
                         return recentSystem;
                     }
                 }
@@ -625,7 +632,7 @@ public class Score
 
                     return recentSystem;
                 } else {
-                    if (nextSystem.xLocate(x) < 0) {
+                    if (nextSystem.locate(scrPt) < 0) {
                         return recentSystem;
                     }
                 }
@@ -641,7 +648,7 @@ public class Score
             system = (System) node;
 
             // How do we locate the point wrt the system  ?
-            switch (system.xLocate(x)) {
+            switch (system.locate(scrPt)) {
             case -1 : // Point is on left of system, give up.
             case 0 : // Point is within system.
                 return recentSystem = system;

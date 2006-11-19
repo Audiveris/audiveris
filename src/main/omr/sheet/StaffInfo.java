@@ -69,18 +69,21 @@ public class StaffInfo
     /**
      * Create info about a staff, with its contained staff lines
      *
+     * @param id the id of the staff
      * @param left abscissa of the left side
      * @param right abscissa of the right side
      * @param specificScale specific scale detected for this staff
      * @param scale global sheet scale
      * @param lines the collection of contained staff lines
      */
-    public StaffInfo (int            left,
+    public StaffInfo (int            id,
+                      int            left,
                       int            right,
                       Scale          specificScale,
                       Scale          scale,
                       List<LineInfo> lines)
     {
+        this.id = id;
         this.left = left;
         this.right = right;
         this.specificScale = specificScale;

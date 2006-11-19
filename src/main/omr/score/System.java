@@ -13,24 +13,24 @@ package omr.score;
 import static omr.score.ScoreConstants.*;
 import omr.score.visitor.Visitor;
 
+import omr.sheet.PixelPoint;
 import omr.sheet.SystemInfo;
 
-import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class <code>System</code> encapsulates a system in a score.  <p>A system
- * contains two direct children : staves and slurs, each in its dedicated list.
+ * Class <code>System</code> encapsulates a system in a score.
+ *
+ * <p>A system contains only one kind direct children : SystemPart instances
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class System
-    extends MusicNode
+    extends ScoreNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -39,20 +39,11 @@ public class System
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Specific Child : list of slurs */
-    private final SlurList slurs;
-
-    /** Specific Child : list of staves */
-    private final StaffList staves;
-
-    /** Parts in this system */
-    private List<SystemPart> parts = new ArrayList<SystemPart>();
-
     /** Top left corner of the system */
     private PagePoint topLeft;
 
     /** Actual display origin */
-    private ScorePoint origin;
+    private ScorePoint displayOrigin;
 
     /** Related info from sheet analysis */
     private SystemInfo info;
@@ -67,17 +58,6 @@ public class System
     private int lastMeasureId = 0;
 
     //~ Constructors -----------------------------------------------------------
-
-    //--------//
-    // System //
-    //--------//
-    /**
-     * Default constructor (needed by XML binder)
-     */
-    public System ()
-    {
-        this(null, null, null, null);
-    }
 
     //--------//
     // System //
@@ -98,17 +78,20 @@ public class System
     {
         super(score);
 
-        // Allocate staff and slur (node) lists
-        staves = new StaffList(this);
-        slurs = new SlurList(this);
-
         this.info = info;
         this.topLeft = topLeft;
         this.dimension = dimension;
+    }
 
-        if (logger.isFineEnabled()) {
-            Dumper.dump(this, "Constructed");
-        }
+    //--------//
+    // System //
+    //--------//
+    /**
+     * Default constructor (needed by XML binder)
+     */
+    private System ()
+    {
+        this(null, null, null, null);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -146,45 +129,44 @@ public class System
         return dimension;
     }
 
-    //-------------------//
-    // setFirstMeasureId //
-    //-------------------//
+    //------------------//
+    // setDisplayOrigin //
+    //------------------//
     /**
-     * Assign id for first measure
+     * Assign origin for score display
      *
-     * @param firstMeasureId first measure id
+     * @param origin display origin for this system
      */
-    public void setFirstMeasureId (int firstMeasureId)
+    public void setDisplayOrigin (ScorePoint origin)
     {
-        this.firstMeasureId = firstMeasureId;
+        this.displayOrigin = origin;
     }
 
-    //-------------------//
-    // getFirstMeasureId //
-    //-------------------//
+    //------------------//
+    // getDisplayOrigin //
+    //------------------//
     /**
-     * Report the id of the first measure in the system, knowing that 0 is the
-     * id of the very first measure of the very first system in the score
+     * Report the origin for this system, in the horizontal score display
      *
-     * @return the first measure id
+     * @return the display origin
      */
-    public int getFirstMeasureId ()
+    public ScorePoint getDisplayOrigin ()
     {
-        return firstMeasureId;
+        return displayOrigin;
     }
 
-    //---------------//
-    // getFirstStaff //
-    //---------------//
+    //--------------//
+    // getFirstPart //
+    //--------------//
     /**
-     * Report the first staff in this system
+     * Report the first part in this system
      *
-     * @return the first staff entity
+     * @return the first part entity
      */
-    public Staff getFirstStaff ()
+    public SystemPart getFirstPart ()
     {
-        return (Staff) getStaves()
-                           .get(0);
+        return (SystemPart) getChildren()
+                                .get(0);
     }
 
     //---------//
@@ -200,111 +182,46 @@ public class System
         return info;
     }
 
-    //------------------//
-    // setLastMeasureId //
-    //------------------//
+    //-------------//
+    // getLastPart //
+    //-------------//
     /**
-     * Remember the id of the last measure in this system
+     * Report the last part in this system
      *
-     * @param lastMeasureId last measure index
+     * @return the last part entity
      */
-    public void setLastMeasureId (int lastMeasureId)
+    public SystemPart getLastPart ()
     {
-        this.lastMeasureId = lastMeasureId;
-    }
-
-    //------------------//
-    // getLastMeasureId //
-    //------------------//
-    /**
-     * Report the id of the last measure in this system
-     *
-     * @return the last measure id
-     */
-    public int getLastMeasureId ()
-    {
-        return lastMeasureId;
-    }
-
-    //--------------//
-    // getLastStaff //
-    //--------------//
-    /**
-     * Report the last staff in this system
-     *
-     * @return the last staff entity
-     */
-    public Staff getLastStaff ()
-    {
-        return (Staff) getStaves()
-                           .get(getStaves().size() - 1);
-    }
-
-    //---------------------//
-    // getNumberOfMeasures //
-    //---------------------//
-    /**
-     * Report the number of measures (frames) in this system
-     *
-     * @return the number of measures (read in first staff)
-     */
-    public int getNumberOfMeasures ()
-    {
-        return getFirstStaff()
-                   .getMeasures()
-                   .size();
+        return (SystemPart) getParts()
+                                .get(getParts().size() - 1);
     }
 
     //-----------//
-    // setOrigin //
+    // getPartAt //
     //-----------//
     /**
-     * Assign origin for display
+     * Determine the part which contains the given system point
      *
-     * @param origin display origin for this system
+     * @param sysPt the given system point
+     * @return the containing part
      */
-    public void setOrigin (ScorePoint origin)
+    public SystemPart getPartAt (SystemPoint sysPt)
     {
-        this.origin = origin;
-    }
-
-    //-----------//
-    // getOrigin //
-    //-----------//
-    /**
-     * Report the origin for this system, in the horizontal score display
-     *
-     * @return the display origin
-     */
-    public ScorePoint getOrigin ()
-    {
-        return origin;
+        return getStaffAt(sysPt)
+                   .getPart();
     }
 
     //----------//
-    // setParts //
-    //----------//
-    /**
-     * Assign the parts for this system
-     *
-     * @param parts the ordered parts
-     */
-    public void setParts (List<SystemPart> parts)
-    {
-        this.parts = parts;
-    }
-
-    //----------//
-    // setParts //
+    // getParts //
     //----------//
     /**
      * Report the parts for this system
      *
      * @return the ordered parts
      */
-    public List<SystemPart> getParts ()
+    public List<TreeNode> getParts ()
     {
-        return parts;
+        return getChildren();
     }
 
     //------------------//
@@ -317,98 +234,40 @@ public class System
      */
     public int getRightPosition ()
     {
-        return (origin.x + dimension.width) - 1;
-    }
-
-    //----------//
-    // setSlurs //
-    //----------//
-    /**
-     * Set the collection of slurs
-     *
-     * @param slurs the collection of slurs
-     */
-    public void setSlurs (List<TreeNode> slurs)
-    {
-        final List<TreeNode> list = getSlurs();
-
-        if (list != slurs) {
-            list.clear();
-            list.addAll(slurs);
-        }
-    }
-
-    //----------//
-    // getSlurs //
-    //----------//
-    /**
-     * Report the collection of slurs
-     *
-     * @return the slur list, which may be empty but not null
-     */
-    public List<TreeNode> getSlurs ()
-    {
-        return slurs.getChildren();
+        return (displayOrigin.x + dimension.width) - 1;
     }
 
     //------------//
     // getStaffAt //
     //------------//
     /**
-     * Report the staff nearest (in ordinate) to a provided point
+     * Determine the staff which is closest to the given system point
      *
-     * @param point the provided point
-     *
-     * @return the nearest staff
+     * @param sysPt the given system point
+     * @return the closest staff
      */
-    public Staff getStaffAt (PagePoint point)
+    public Staff getStaffAt (SystemPoint sysPt)
     {
         int   minDy = Integer.MAX_VALUE;
         Staff best = null;
 
-        for (TreeNode node : getStaves()) {
-            Staff staff = (Staff) node;
-            int   midY = staff.getTopLeft().y + (staff.getSize() / 2);
-            int   dy = Math.abs(point.y - midY);
+        for (TreeNode node : getParts()) {
+            SystemPart part = (SystemPart) node;
 
-            if (dy < minDy) {
-                minDy = dy;
-                best = staff;
+            for (TreeNode n : part.getStaves()) {
+                Staff staff = (Staff) n;
+                int   midY = (staff.getTopLeft().y + (staff.getHeight() / 2)) -
+                             this.getTopLeft().y;
+                int   dy = Math.abs(sysPt.y - midY);
+
+                if (dy < minDy) {
+                    minDy = dy;
+                    best = staff;
+                }
             }
         }
 
         return best;
-    }
-
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * Set the collection of staves
-     *
-     * @param staves the collection of staves
-     */
-    public void setStaves (List<TreeNode> staves)
-    {
-        final List<TreeNode> list = getStaves();
-
-        if (list != staves) {
-            list.clear();
-            list.addAll(staves);
-        }
-    }
-
-    //-----------//
-    // getStaves //
-    //-----------//
-    /**
-     * Report the collection of staves
-     *
-     * @return the staff list
-     */
-    public List<TreeNode> getStaves ()
-    {
-        return staves.getChildren();
     }
 
     //------------//
@@ -449,62 +308,105 @@ public class System
         return visitor.visit(this);
     }
 
-    //----------//
-    // addChild //
-    //----------//
+    //--------//
+    // locate //
+    //--------//
     /**
-     * Overrides normal behavior, to deal with the separation of children into
-     * slurs and staves
+     * Return the position of given ScorePoint, relative to the system.
      *
-     * @param node the node to insert (either a slur or a staff)
+     * @param scrPt the ScorePoint in the score display
+     *
+     * @return -1 for left, 0 for middle, +1 for right
      */
-    @Override
-    public void addChild (TreeNode node)
+    public int locate (ScorePoint scrPt)
     {
-        if (node instanceof Staff) {
-            staves.addChild(node);
-            node.setContainer(staves);
-        } else if (node instanceof Slur) {
-            slurs.addChild(node);
-            node.setContainer(slurs);
-        } else if (node instanceof MusicNode) {
-            children.add(node);
-            node.setContainer(this);
-        } else {
-            // Programming error
-            Dumper.dump(node);
-            logger.severe("System node not Staff nor Slur");
+        if (scrPt.x < displayOrigin.x) {
+            return -1;
         }
+
+        if (scrPt.x > getRightPosition()) {
+            return +1;
+        }
+
+        return 0;
     }
 
-    //--------------//
-    // scoreToSheet //
-    //--------------//
+    //--------//
+    // locate //
+    //--------//
+    /**
+     * Return the position of given PagePoint, relative to the system
+     *
+     * @param pagPt the given PagePoint
+     *
+     * @return -1 for above, 0 for middle, +1 for below
+     */
+    public int locate (PagePoint pagPt)
+    {
+        if (pagPt.y < topLeft.y) {
+            return -1;
+        }
+
+        if (pagPt.y > (topLeft.y + dimension.height + STAFF_HEIGHT)) {
+            return +1;
+        }
+
+        return 0;
+    }
+
+    //-------------//
+    // toPagePoint //
+    //-------------//
     /**
      * Compute the point in the sheet that corresponds to a given point in the
      * score display
      *
      * @param scrPt the point in the score display
-     * @param pagPt the corresponding sheet point, or null
-     * @return the page point
-     *
-     * @see #sheetToScore
+     * @return the corresponding page point
+     * @see #toScorePoint
      */
-    public PagePoint scoreToSheet (ScorePoint scrPt,
-                                   PagePoint  pagPt)
+    public PagePoint toPagePoint (ScorePoint scrPt)
     {
-        if (pagPt == null) {
-            pagPt = new PagePoint();
-        }
+        return new PagePoint(
+            (topLeft.x + scrPt.x) - displayOrigin.x,
+            (topLeft.y + scrPt.y) - displayOrigin.y);
+    }
 
-        pagPt.x = (topLeft.x + scrPt.x) - origin.x;
-        pagPt.y = (topLeft.y + scrPt.y) - origin.y;
-
-        return pagPt;
+    //-------------//
+    // toPagePoint //
+    //-------------//
+    /**
+     * Compute the pagepoint that correspond to a given systempoint, which is
+     * basically a translation using the coordinates of the system topLeft
+     * corner.
+     *
+     * @param sysPt the point in the system
+     * @return the page point
+     */
+    public PagePoint toPagePoint (SystemPoint sysPt)
+    {
+        return new PagePoint(sysPt.x + topLeft.x, sysPt.y + topLeft.y);
     }
 
     //--------------//
-    // sheetToScore //
+    // toPixelPoint //
+    //--------------//
+    /**
+     * Compute the pixel point that correspond to a given system point, which is
+     * basically a translation using the coordinates of the system topLeft
+     * corner, then a scaling.
+     *
+     * @param sysPt the point in the system
+     * @return the pixel point
+     */
+    public PixelPoint toPixelPoint (SystemPoint sysPt)
+    {
+        return getScale()
+                   .toPixelPoint(toPagePoint(sysPt));
+    }
+
+    //--------------//
+    // toScorePoint //
     //--------------//
     /**
      * Compute the score display point that correspond to a given sheet point,
@@ -514,30 +416,18 @@ public class System
      * @param pagPt the point in the sheet
      * @param scrPt the corresponding point in score display, or null
      * @return the score point
-     *
-     * @see #scoreToSheet
+     * @see #toPagePoint
      */
-    public ScorePoint sheetToScore (PagePoint  pagPt,
-                                    ScorePoint scrPt)
+    public ScorePoint toScorePoint (PagePoint pagPt)
     {
-        if (scrPt == null) {
-            scrPt = new ScorePoint();
-        }
-
-        scrPt.x = (origin.x + pagPt.x) - topLeft.x;
-        scrPt.y = (origin.y + pagPt.y) - topLeft.y;
-
-        return scrPt;
+        return new ScorePoint(
+            (displayOrigin.x + pagPt.x) - topLeft.x,
+            (displayOrigin.y + pagPt.y) - topLeft.y);
     }
 
     //----------//
     // toString //
     //----------//
-    /**
-     * Report a readable description
-     *
-     * @return a string based on upper left corner
-     */
     @Override
     public String toString ()
     {
@@ -557,75 +447,38 @@ public class System
         return sb.toString();
     }
 
-    //---------//
-    // xLocate //
-    //---------//
+    //---------------//
+    // toSystemPoint //
+    //---------------//
     /**
-     * Return the position of given x, relative to the system.
+     * Compute the system point that correspond to a given page point, which is
+     * basically a translation using the coordinates of the system topLeft
+     * corner.
      *
-     * @param x the abscissa value of the point (scrPt)
-     *
-     * @return -1 for left, 0 for middle, +1 for right
+     * @param pagPt the point in the sheet
+     * @return the system point
      */
-    public int xLocate (int x)
+    public SystemPoint toSystemPoint (PagePoint pagPt)
     {
-        if (x < origin.x) {
-            return -1;
-        }
-
-        if (x > getRightPosition()) {
-            return +1;
-        }
-
-        return 0;
+        return new SystemPoint(pagPt.x - topLeft.x, pagPt.y - topLeft.y);
     }
 
-    //---------//
-    // yLocate //
-    //---------//
+    //---------------//
+    // toSystemPoint //
+    //---------------//
     /**
-     * Return the position of given y, relative to the system
+     * Compute the system point that correspond to a given pixel point, which is
+     * basically a scaling plus a translation using the coordinates of the
+     * system topLeft corner.
      *
-     * @param y the ordinate value of the point (pagPt)
-     *
-     * @return -1 for above, 0 for middle, +1 for below
+     * @param pixPt the point in the sheet
+     * @return the system point
      */
-    public int yLocate (int y)
+    public SystemPoint toSystemPoint (PixelPoint pixPt)
     {
-        if (y < topLeft.y) {
-            return -1;
-        }
+        PagePoint pagPt = getScale()
+                              .toPagePoint(pixPt);
 
-        if (y > (topLeft.y + dimension.height + STAFF_HEIGHT)) {
-            return +1;
-        }
-
-        return 0;
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //----------//
-    // SlurList //
-    //----------//
-    private static class SlurList
-        extends MusicNode
-    {
-        SlurList (MusicNode container)
-        {
-            super(container);
-        }
-    }
-
-    //-----------//
-    // StaffList //
-    //-----------//
-    private static class StaffList
-        extends MusicNode
-    {
-        StaffList (MusicNode container)
-        {
-            super(container);
-        }
+        return new SystemPoint(pagPt.x - topLeft.x, pagPt.y - topLeft.y);
     }
 }

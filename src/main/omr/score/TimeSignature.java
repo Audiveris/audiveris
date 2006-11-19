@@ -32,7 +32,7 @@ import java.util.*;
  * @version $Id$
  */
 public class TimeSignature
-    extends StaffNode
+    extends MeasureNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -74,15 +74,13 @@ public class TimeSignature
     // TimeSignature //
     //--------------//
     /**
-     * Create a time signature, with related sheet scale and containing staff
+     * Create a time signature, with containing measure
      *
      * @param measure the containing measure
-     * @param scale the sheet global scale
      */
-    public TimeSignature (Measure measure,
-                          Scale   scale)
+    public TimeSignature (Measure measure)
     {
-        super(measure, measure.getStaff());
+        super(measure);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -244,20 +242,19 @@ public class TimeSignature
      *
      * @param glyph the source glyph
      * @param measure containing measure
-     * @param scale sheet scale
      *
      * @return true if population is successful, false otherwise
      */
     static boolean populate (Glyph   glyph,
-                             Measure measure,
-                             Scale   scale)
+                             Measure measure)
     {
         // First, some basic tests
         // Horizontal distance since beginning of measure
-        StaffPoint center = measure.computeGlyphCenter(glyph);
-        int        unitDx = center.x - measure.getLeftX();
+        SystemPoint center = measure.computeGlyphCenter(glyph);
+        int         unitDx = center.x - measure.getLeftX();
 
-        if (unitDx < scale.toUnits(constants.minTimeOffset)) {
+        if (unitDx < measure.getScale()
+                            .toUnits(constants.minTimeOffset)) {
             if (logger.isFineEnabled()) {
                 logger.fine(
                     "Too small offset for time signature" + " (glyph#" +
@@ -271,9 +268,9 @@ public class TimeSignature
         Shape shape = glyph.getShape();
 
         if (SingleTimes.contains(shape)) {
-            return populateSingleTime(glyph, measure, scale);
+            return populateSingleTime(glyph, measure);
         } else {
-            return populateMultiTime(glyph, measure, scale);
+            return populateMultiTime(glyph, measure);
         }
     }
 
@@ -400,7 +397,7 @@ public class TimeSignature
                 numerator = denominator = null;
 
                 for (Glyph glyph : glyphs) {
-                    int     pitch = staff.unitToPitch(
+                    int     pitch = getStaff().unitToPitch(
                         computeGlyphCenter(glyph).y);
                     Integer value = getNumericValue(glyph);
 
@@ -447,13 +444,12 @@ public class TimeSignature
     // populateMultiTime //
     //-------------------//
     private static boolean populateMultiTime (Glyph   glyph,
-                                              Measure measure,
-                                              Scale   scale)
+                                              Measure measure)
     {
         TimeSignature ts = measure.getTimeSignature();
 
         if (ts == null) {
-            ts = new TimeSignature(measure, scale);
+            ts = new TimeSignature(measure);
             ts.addGlyph(glyph);
             measure.setTimeSignature(ts);
         } else {
@@ -473,16 +469,17 @@ public class TimeSignature
     // populateSingleTime //
     //--------------------//
     private static boolean populateSingleTime (Glyph   glyph,
-                                               Measure measure,
-                                               Scale   scale)
+                                               Measure measure)
     {
         TimeSignature ts = measure.getTimeSignature();
 
         if (ts != null) {
             // Check we are not too far from this first time signature part
-            StaffPoint center = measure.computeGlyphCenter(glyph);
-            double     unitDist = center.distance(ts.getCenter());
-            double     unitMax = scale.toUnitsDouble(constants.maxTimeDistance);
+            SystemPoint center = measure.computeGlyphCenter(glyph);
+            double      unitDist = center.distance(ts.getCenter());
+            double      unitMax = measure.getScale()
+                                         .toUnitsDouble(
+                constants.maxTimeDistance);
 
             if (unitDist <= unitMax) {
                 ts.addGlyph(glyph);
@@ -496,7 +493,7 @@ public class TimeSignature
                 return false;
             }
         } else {
-            ts = new TimeSignature(measure, scale);
+            ts = new TimeSignature(measure);
             ts.addGlyph(glyph);
             measure.setTimeSignature(ts);
         }

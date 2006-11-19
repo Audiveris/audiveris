@@ -34,6 +34,9 @@ public class SystemInfo
 {
     //~ Instance fields --------------------------------------------------------
 
+    /** Related sheet */
+    private final Sheet sheet;
+
     /** Retrieved bar lines in this system */
     private List<Stick> bars = new ArrayList<Stick>();
 
@@ -51,7 +54,10 @@ public class SystemInfo
     private List<Ledger> ledgers = new ArrayList<Ledger>();
 
     /** Staves of this system */
-    private List<StaffInfo> staves;
+    private List<StaffInfo> staves = new ArrayList<StaffInfo>();
+
+    /** Parts in this system */
+    private List<PartInfo> parts = new ArrayList<PartInfo>();
 
     /** Vertical sections of this system */
     private List<GlyphSection> vSections = new ArrayList<GlyphSection>();
@@ -79,7 +85,7 @@ public class SystemInfo
     private int deltaY;
 
     /** Unique Id for this system (in the sheet) */
-    private int id;
+    private final int id;
 
     /** Abscissa of beginning of system. */
     private int left = -1;
@@ -99,13 +105,13 @@ public class SystemInfo
 
     /** Index of first staff of the system, counted from 0 within all staves of
        the score */
-    private int startIdx;
+    private int startIdx = -1;
 
     /** Index of last staff of the system, also counted from 0. */
     private int stopIdx;
 
     /** Ordinate of top of first staff of the system. */
-    private int top;
+    private int top = -1;
 
     /** Width of the system. */
     private int width = -1;
@@ -121,51 +127,14 @@ public class SystemInfo
      * @param id       the unique identity
      * @param sheet    the containing sheet
      * @param startIdx the index of the starting staff
-     * @param stopIdx  the index of the terminating staff
      *
      * @throws omr.ProcessingException
      */
     public SystemInfo (int   id,
-                       Sheet sheet,
-                       int   startIdx,
-                       int   stopIdx)
+                       Sheet sheet)
     {
         this.id = id;
-        this.startIdx = startIdx;
-        this.stopIdx = stopIdx;
-
-        // Compute size
-        staves = new ArrayList<StaffInfo>();
-        staves.addAll(sheet.getStaves().subList(startIdx, stopIdx + 1));
-
-        for (StaffInfo set : staves) {
-            if (left == -1) {
-                left = set.getLeft();
-            } else {
-                left = Math.min(left, set.getLeft());
-            }
-
-            if (width == -1) {
-                width = set.getRight() - left + 1;
-            } else {
-                width = Math.max(width, set.getRight() - left + 1);
-            }
-        }
-
-        // First staff
-        StaffInfo set = staves.get(0);
-        LineInfo  line = set.getFirstLine();
-        top = line.getLine()
-                  .yAt(line.getLeft());
-
-        // Last staff
-        set = staves.get(staves.size() - 1);
-        line = set.getFirstLine();
-        deltaY = line.getLine()
-                     .yAt(line.getLeft()) - top;
-        line = set.getLastLine();
-        bottom = line.getLine()
-                     .yAt(line.getLeft());
+        this.sheet = sheet;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -400,6 +369,14 @@ public class SystemInfo
     }
 
     //----------//
+    // getParts //
+    //----------//
+    public List<PartInfo> getParts ()
+    {
+        return parts;
+    }
+
+    //----------//
     // getRight //
     //----------//
     /**
@@ -512,19 +489,6 @@ public class SystemInfo
     }
 
     //------------//
-    // setStopIdx //
-    //------------//
-    /**
-     * Set the index of the terminating staff of this system
-     *
-     * @param stopIdx the stopping staff index, counted from 0
-     */
-    public void setStopIdx (int stopIdx)
-    {
-        this.stopIdx = stopIdx;
-    }
-
-    //------------//
     // getStopIdx //
     //------------//
     /**
@@ -588,6 +552,55 @@ public class SystemInfo
     public int getWidth ()
     {
         return width;
+    }
+
+    //---------//
+    // addPart //
+    //---------//
+    public void addPart (PartInfo partInfo)
+    {
+        parts.add(partInfo);
+    }
+
+    //----------//
+    // addStaff //
+    //----------//
+    public void addStaff (int idx)
+    {
+        StaffInfo staff = sheet.getStaves()
+                               .get(idx);
+        LineInfo  firstLine = staff.getFirstLine();
+        staves.add(staff);
+
+        // Remember left side
+        if (left == -1) {
+            left = staff.getLeft();
+        } else {
+            left = Math.min(left, staff.getLeft());
+        }
+
+        // Remember width
+        if (width == -1) {
+            width = staff.getRight() - left + 1;
+        } else {
+            width = Math.max(width, staff.getRight() - left + 1);
+        }
+
+        // First staff ?
+        if (startIdx == -1) {
+            startIdx = idx;
+            top = firstLine.getLine()
+                           .yAt(firstLine.getLeft());
+        }
+
+        // Last staff (so far)
+        stopIdx = idx;
+        deltaY = firstLine.getLine()
+                          .yAt(firstLine.getLeft()) - top;
+
+        LineInfo lastLine = staff.getLastLine();
+        bottom = lastLine.getLine()
+                         .yAt(lastLine.getLeft());
     }
 
     //-------------------------//

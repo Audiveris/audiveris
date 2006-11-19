@@ -12,6 +12,11 @@ package omr.score;
 
 import omr.score.visitor.Visitor;
 
+import omr.util.TreeNode;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Class <code>Chord</code> represents an ensemble of entities (rests, notes)
  * that occur on the same time in a staff.
@@ -20,7 +25,7 @@ import omr.score.visitor.Visitor;
  * @version $Id$
  */
 public class Chord
-    extends StaffNode
+    extends MeasureNode
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -43,13 +48,10 @@ public class Chord
     private int headPosition;
 
     /** Location for chord tail */
-    private StaffPoint tailLocation;
-
-    /** List of notes */
-    private NoteList notes;
+    private SystemPoint tailLocation;
 
     /** List of beams */
-    private BeamList beams;
+    private List<Beam> beams = new ArrayList<Beam>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -60,16 +62,20 @@ public class Chord
      * Creates a new instance of Chord
      * @param measure the containing measure
      */
-    public Chord (StaffNode container)
+    public Chord (Measure measure)
     {
-        super(container, container.getStaff());
-
-        // Allocate specific children lists
-        notes = new NoteList(this, container.getStaff());
-        beams = new BeamList(this, container.getStaff());
+        super(measure);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // getNotes //
+    //----------//
+    public List<TreeNode> getNotes ()
+    {
+        return children;
+    }
 
     //--------//
     // accept //
@@ -78,33 +84,5 @@ public class Chord
     public boolean accept (Visitor visitor)
     {
         return visitor.visit(this);
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //----------//
-    // BeamList //
-    //----------//
-    private static class BeamList
-        extends StaffNode
-    {
-        BeamList (StaffNode container,
-                  Staff     staff)
-        {
-            super(container, staff);
-        }
-    }
-
-    //----------//
-    // NoteList //
-    //----------//
-    private static class NoteList
-        extends StaffNode
-    {
-        NoteList (StaffNode container,
-                  Staff     staff)
-        {
-            super(container, staff);
-        }
     }
 }

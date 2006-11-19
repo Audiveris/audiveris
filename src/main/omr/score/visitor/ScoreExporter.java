@@ -21,26 +21,28 @@ import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
-import omr.score.MusicNode;
-import omr.score.Part;
+import omr.score.MeasureNode;
+import omr.score.PartNode;
 import omr.score.Score;
 import omr.score.ScoreFormat;
+import omr.score.ScoreNode;
+import omr.score.ScorePart;
 import omr.score.Slur;
 import omr.score.Staff;
-import omr.score.StaffNode;
-import omr.score.StaffPoint;
 import omr.score.System;
 import omr.score.SystemPart;
+import omr.score.SystemPoint;
 import omr.score.TimeSignature;
 
 import omr.util.Logger;
+import omr.util.TreeNode;
 
 import proxymusic.*;
 import proxymusic.Scaling;
 
 import java.io.*;
-import java.util.Date;
 import java.lang.String;
+import java.util.Date;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -196,7 +198,6 @@ public class ScoreExporter
     {
         return true;
     }
-
 
     //------------//
     // visit Clef //
@@ -387,12 +388,12 @@ public class ScoreExporter
                             current.system.getTopLeft().y -
                             prevSystem.getTopLeft().y -
                             prevSystem.getDimension().height -
-                            prevSystem.getLastStaff().getSize()));
+                            prevSystem.getLastPart().getLastStaff().getHeight()));
                 }
             }
 
             // StaffLayout for all staves in this part, except 1st system staff
-            if (current.staff.getStafflink() > 0) {
+            if (current.staff.getStaffIndex() > 0) {
                 StaffLayout staffLayout = new StaffLayout();
                 current.pmPrint.getStaffLayout()
                                .add(staffLayout);
@@ -406,7 +407,7 @@ public class ScoreExporter
                     "" +
                     unitsToTenths(
                         current.staff.getTopLeft().y -
-                        prevStaff.getTopLeft().y - prevStaff.getSize()));
+                        prevStaff.getTopLeft().y - prevStaff.getHeight()));
             }
         }
 
@@ -416,10 +417,34 @@ public class ScoreExporter
         return true;
     }
 
+    //-------------------//
+    // visit MeasureNode //
+    //-------------------//
+    public boolean visit (MeasureNode node)
+    {
+        return true;
+    }
+
+    //------------//
+    // visit Note //
+    //------------//
+    public boolean visit (omr.score.Note node)
+    {
+        return true;
+    }
+
+    //----------------//
+    // visit PartNode //
+    //----------------//
+    public boolean visit (PartNode node)
+    {
+        return true;
+    }
+
     //-----------------//
-    // visit MusicNode //
+    // visit ScoreNode //
     //-----------------//
-    public boolean visit (MusicNode musicNode)
+    public boolean visit (ScoreNode musicNode)
     {
         return true;
     }
@@ -502,11 +527,11 @@ public class ScoreExporter
         scorePartwise.setPartList(partList);
         isFirst.part = true;
 
-        for (Part p : score.getPartList()) {
+        for (ScorePart p : score.getPartList()) {
             current.part = p;
 
             // Scorepart in partList
-            ScorePart scorePart = new ScorePart();
+            proxymusic.ScorePart scorePart = new proxymusic.ScorePart();
             partList.getPartGroupOrScorePart()
                     .add(scorePart);
             scorePart.setId(current.part.getPid());
@@ -515,7 +540,7 @@ public class ScoreExporter
             scorePart.setPartName(partName);
             partName.setContent(current.part.getName());
 
-            // Part in scorePartwise
+            // ScorePart in scorePartwise
             current.pmPart = new proxymusic.Part();
             scorePartwise.getPart()
                          .add(current.pmPart);
@@ -549,14 +574,6 @@ public class ScoreExporter
         return true;
     }
 
-    //-----------------//
-    // visit StaffNode //
-    //-----------------//
-    public boolean visit (StaffNode staffNode)
-    {
-        return true;
-    }
-
     //--------//
     // System //
     //--------//
@@ -572,34 +589,31 @@ public class ScoreExporter
         logger.fine("Visiting " + system);
         current.system = system;
 
-        SystemPart systemPart = system.getParts()
-                                      .get(current.part.getId() - 1);
+        SystemPart systemPart = (SystemPart) system.getParts()
+                                                   .get(
+            current.part.getId() - 1);
 
         // Loop on measures
         isFirst.measure = true;
 
-        for (int im = 0; im < system.getFirstStaff()
-                                    .getMeasures()
-                                    .size(); im++) {
-            // Loop on staves (within the current part only)
-            isFirst.staffInPart = true;
-
-            for (Staff staff : systemPart.getStaves()) {
-                current.staff = staff;
-
-                Measure measure = (Measure) staff.getMeasures()
-                                                 .get(im);
-                // Delegate to measure
-                measure.accept(this);
-                isFirst.staffInPart = false;
-            }
-
+        for (TreeNode node : systemPart.getMeasures()) {
+            Measure measure = (Measure) node;
+            // Delegate to measure
+            measure.accept(this);
             isFirst.measure = false;
         }
 
         isFirst.system = false;
 
         return false; // No default browsing this way
+    }
+
+    //------------------//
+    // visit SystemPart //
+    //------------------//
+    public boolean visit (SystemPart node)
+    {
+        return true;
     }
 
     //---------------------//
@@ -696,7 +710,7 @@ public class ScoreExporter
     {
         // Perhaps another clef before this one ?
         Clef previousClef = current.measure.getClefBefore(
-            new StaffPoint(clef.getCenter().x - 1, 0));
+            new SystemPoint(clef.getCenter().x - 1, 0));
 
         if (previousClef != null) {
             return previousClef.getShape() != clef.getShape();
@@ -715,7 +729,7 @@ public class ScoreExporter
      */
     private int getStaffNumber ()
     {
-        return ((1 + current.staff.getStafflink()) -
+        return ((1 + current.staff.getStaffIndex()) -
                current.part.getIndices()
                            .get(0));
     }
@@ -805,7 +819,7 @@ public class ScoreExporter
     private static class Current
     {
         proxymusic.Part       pmPart;
-        Part                  part;
+        ScorePart             part;
         System                system;
         proxymusic.Measure    pmMeasure;
         Measure               measure;

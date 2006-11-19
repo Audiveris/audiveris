@@ -35,7 +35,7 @@ import java.util.*;
  * @version $Id$
  */
 public class Barline
-    extends StaffNode
+    extends PartNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -46,9 +46,6 @@ public class Barline
     private static Map<String, Shape> sigs;
 
     //~ Instance fields --------------------------------------------------------
-
-    /** Sheet global scale */
-    private Scale scale;
 
     /** Precise bar line shape */
     private Shape shape;
@@ -68,28 +65,24 @@ public class Barline
     // Barline //
     //---------//
     /**
-     * Needed for XML binding
+     * Create a bar line, in a containing measure
+     *
+     * @param measure the containing measure
      */
-    public Barline ()
+    public Barline (Measure measure)
     {
-        super(null, null);
+        super(measure);
     }
 
     //---------//
     // Barline //
     //---------//
     /**
-     * Create a bar line, with related sheet scale and containing staff
-     *
-     * @param scale the sheet global scale
-     * @param staff the containing staff
+     * Needed for XML binding
      */
-    public Barline (MusicNode container,
-                    Staff     staff,
-                    Scale     scale)
+    private Barline ()
     {
-        super(container, staff);
-        this.scale = scale;
+        super(null);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -100,18 +93,24 @@ public class Barline
     /**
      * Report the abscissa of the left side of the bar line
      *
-     * @return abscissa (in units wrt staff top left) of the left side
+     * @return abscissa (in units wrt system top left) of the left side
      */
     public int getLeftX ()
     {
+        PagePoint topLeft = getPart()
+                                .getSystem()
+                                .getTopLeft();
+
         for (Stick stick : sticks) {
             if ((stick.getShape() == Shape.THICK_BAR_LINE) ||
                 (stick.getShape() == Shape.THIN_BAR_LINE)) {
                 // Beware : Vertical sticks using Horizontal line equation
                 int x = stick.getLine()
-                             .yAt(scale.toPixelPoint(staff.getTopLeft()).y);
+                             .yAt(getScale()
+                                      .toPixelPoint(topLeft).y);
 
-                return scale.pixelsToUnits(x) - staff.getTopLeft().x;
+                return getScale()
+                           .pixelsToUnits(x) - topLeft.x;
             }
         }
 
@@ -131,14 +130,18 @@ public class Barline
      */
     public int getRightX ()
     {
-        int right = 0;
+        int       right = 0;
+        PagePoint topLeft = getPart()
+                                .getSystem()
+                                .getTopLeft();
 
         for (Stick stick : sticks) {
             if ((stick.getShape() == Shape.THICK_BAR_LINE) ||
                 (stick.getShape() == Shape.THIN_BAR_LINE)) {
                 // Beware : Vertical sticks using Horizontal line equation
                 int x = stick.getLine()
-                             .yAt(scale.toPixelPoint(staff.getTopLeft()).y);
+                             .yAt(getScale()
+                                      .toPixelPoint(topLeft).y);
 
                 if (x > right) {
                     right = x;
@@ -146,7 +149,8 @@ public class Barline
             }
         }
 
-        return scale.pixelsToUnits(right) - staff.getTopLeft().x;
+        return getScale()
+                   .pixelsToUnits(right) - topLeft.x;
     }
 
     //----------//

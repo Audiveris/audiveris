@@ -96,7 +96,7 @@ public class ScoreTree
                         TreePath p = e.getNewLeadSelectionPath();
 
                         if (p != null) {
-                            MusicNode node = (MusicNode) p.getLastPathComponent();
+                            ScoreNode node = (ScoreNode) p.getLastPathComponent();
                             htmlPane.setText(Dumper.htmlDumpOf(node));
                         }
                     }
@@ -200,9 +200,9 @@ public class ScoreTree
         public Object getChild (Object parent,
                                 int    index)
         {
-            MusicNode node = (MusicNode) parent;
+            ScoreNode node = (ScoreNode) parent;
 
-            return (MusicNode) node.getChildren()
+            return (ScoreNode) node.getChildren()
                                    .get(index);
         }
 
@@ -212,7 +212,7 @@ public class ScoreTree
         @Implement(TreeModel.class)
         public int getChildCount (Object parent)
         {
-            MusicNode node = (MusicNode) parent;
+            ScoreNode node = (ScoreNode) parent;
 
             return node.getChildren()
                        .size();
@@ -225,7 +225,7 @@ public class ScoreTree
         public int getIndexOfChild (Object parent,
                                     Object child)
         {
-            MusicNode node = (MusicNode) parent;
+            ScoreNode node = (ScoreNode) parent;
 
             return node.getChildren()
                        .indexOf(child);
@@ -239,7 +239,7 @@ public class ScoreTree
         {
             // Determines whether the icon shows up to the left.
             // Return true for any node with no children
-            MusicNode musicNode = (MusicNode) node;
+            ScoreNode musicNode = (ScoreNode) node;
 
             return getChildCount(musicNode) <= 0;
         }
