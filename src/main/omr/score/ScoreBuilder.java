@@ -22,6 +22,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
+import omr.util.TreeNode;
 
 import java.awt.Rectangle;
 import java.util.Comparator;
@@ -96,7 +97,7 @@ public class ScoreBuilder
     private Staff staff;
 
     /** The current point in current system */
-    private SystemPoint systemPoint;
+    private SystemPoint center;
 
     /** The current measure */
     private Measure measure;
@@ -141,6 +142,7 @@ public class ScoreBuilder
         translate(new TimeTranslator());
         translate(new KeyTranslator());
         translate(new BeamTranslator());
+        translate(new ChordTranslator());
 
         ///translate(new ChordTranslator());
 
@@ -275,14 +277,10 @@ public class ScoreBuilder
          */
         public void computeLocation (Glyph glyph)
         {
-            Rectangle  box = glyph.getContourBox();
-            PixelPoint pp = new PixelPoint(
-                box.x + (box.width / 2),
-                box.y + (box.height / 2));
-            systemPoint = system.toSystemPoint(pp);
-            staff = system.getStaffAt(systemPoint);
+            center = system.toSystemPoint(glyph.getCenter());
+            staff = system.getStaffAt(center);
             systemPart = staff.getPart();
-            measure = systemPart.getMeasureAt(systemPoint);
+            measure = systemPart.getMeasureAt(center);
         }
 
         /**
@@ -336,19 +334,66 @@ public class ScoreBuilder
     //-----------------//
     // ChordTranslator //
     //-----------------//
-    //    private class ChordTranslator
-    //        extends Translator
-    //    {
-    //        public boolean isrelevant (Glyph glyph)
-    //        {
-    //            return Shape.Chords.contains(glyph.getShape());
-    //        }
-    //
-    //        public void translate (Glyph glyph)
-    //        {
-    //            Chord.populate(glyph, measure, scale);
-    //        }
-    //    }
+    private class ChordTranslator
+        extends Translator
+    {
+        @Override
+        public void completeSystem ()
+        {
+            if (logger.isFineEnabled()) {
+                dumpSystemSlots();
+            }
+
+            // Allocate proper chords in every slot
+            for (TreeNode node : system.getParts()) {
+                SystemPart part = (SystemPart) node;
+
+                for (TreeNode mn : part.getMeasures()) {
+                    Measure measure = (Measure) mn;
+
+                    for (Slot slot : measure.getSlots()) {
+                        slot.allocateChords();
+                    }
+                }
+            }
+        }
+
+        public boolean isrelevant (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+
+            return Shape.Rests.contains(shape) ||
+                   Shape.NoteHeads.contains(shape) ||
+                   Shape.Notes.contains(shape);
+        }
+
+        public void translate (Glyph glyph)
+        {
+            Chord.populate(glyph, measure, center);
+        }
+
+        private void dumpSystemSlots ()
+        {
+            // Dump all measure slots
+            logger.fine(system.toString());
+
+            for (TreeNode node : system.getParts()) {
+                SystemPart part = (SystemPart) node;
+
+                logger.fine(part.toString());
+
+                for (TreeNode mn : part.getMeasures()) {
+                    Measure measure = (Measure) mn;
+
+                    logger.fine(measure.toString());
+
+                    for (Slot slot : measure.getSlots()) {
+                        logger.fine(slot.toString());
+                    }
+                }
+            }
+        }
+    }
 
     //----------------//
     // ClefTranslator //
@@ -363,7 +408,7 @@ public class ScoreBuilder
 
         public void translate (Glyph glyph)
         {
-            Clef.populate(glyph, measure, systemPoint);
+            Clef.populate(glyph, measure, staff, center);
         }
     }
 
@@ -373,6 +418,7 @@ public class ScoreBuilder
     private class KeyTranslator
         extends Translator
     {
+        @Override
         public void completeSystem ()
         {
             KeySignature.verifySystemKeys(system);
@@ -415,7 +461,7 @@ public class ScoreBuilder
         public void translate (Glyph glyph)
         {
             // Key signature or just accidental ?
-            KeySignature.populate(glyph, measure);
+            KeySignature.populate(glyph, measure, staff, center);
         }
     }
 
@@ -432,7 +478,7 @@ public class ScoreBuilder
 
         public void translate (Glyph glyph)
         {
-            TimeSignature.populate(glyph, measure);
+            TimeSignature.populate(glyph, measure, staff, center);
         }
     }
 }

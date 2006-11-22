@@ -15,8 +15,12 @@ import omr.glyph.Shape;
 
 import omr.score.visitor.Visitor;
 
+import omr.sheet.PixelPoint;
+import omr.sheet.PixelRectangle;
+
 /**
- * Class <code>Note</code>
+ * Class <code>Note</code> represents the characteristics of a note. Besides a
+ * regular note, it can also be a cue note or a grace note.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -26,30 +30,101 @@ public class Note
 {
     //~ Instance fields --------------------------------------------------------
 
+    /** The underlying glyph */
+    private final Glyph glyph;
+
     /** The note shape */
-    private Shape shape;
+    private final Shape shape;
+
+    /** Related staff */
+    private final Staff staff;
 
     /** Accidental is any */
     private Shape accidental;
 
-    /** Pitch position */
-    private double pitchPosition;
+    /** Indicate a rest */
+    private final boolean isRest;
 
-    /** The underlying glyph */
-    private Glyph glyph;
+    /** Note duration (not for grace notes) */
+    private int duration;
+
+    /** Pitch alteration (not for rests) */
+    private int alter;
+
+    /** Tie ??? */
+
+    /** Note center */
+    private final SystemPoint center;
+
+    /** Pitch position */
+    private final double pitchPosition;
 
     //~ Constructors -----------------------------------------------------------
+
+    /** Type is inferred from shape and chord beam/flag number */
+    /** Rest is inferred from shape */
+    /** Pitch or rest step/octave are inferred from pitchPosition */
 
     //------//
     // Note //
     //------//
     /** Creates a new instance of Note */
-    public Note (Measure measure)
+    public Note (Chord chord,
+                 Glyph glyph)
     {
-        super(measure);
+        super(chord);
+        this.glyph = glyph;
+
+        // Rest?
+        isRest = Shape.Rests.contains(glyph.getShape());
+
+        // Staff, center & pitchPosition
+        System system = getPart()
+                            .getSystem();
+        center = system.toSystemPoint(glyph.getCenter());
+        staff = system.getStaffAt(center);
+        pitchPosition = staff.pitchPositionOf(center);
+
+        // Shape (to be verified ... TBD)
+        shape = glyph.getShape();
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------//
+    // getCenter //
+    //-----------//
+    public SystemPoint getCenter ()
+    {
+        return center;
+    }
+
+    //----------//
+    // getChord //
+    //----------//
+    public Chord getChord ()
+    {
+        return (Chord) getContainer();
+    }
+
+    /// DEBUG
+    public Glyph getGlyph ()
+    {
+        return glyph;
+    }
+
+    //------------------//
+    // getPitchPosition //
+    //------------------//
+    public double getPitchPosition ()
+    {
+        return pitchPosition;
+    }
+
+    public Shape getShape ()
+    {
+        return shape;
+    }
 
     //--------//
     // accept //

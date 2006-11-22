@@ -216,11 +216,15 @@ public class KeySignature
      *
      * @param glyph the source glyph
      * @param measure containing measure
+     * @param staff related staff
+     * @param center glyph center wrt system
      *
      * @return true if population is successful, false otherwise
      */
-    public static boolean populate (Glyph   glyph,
-                                    Measure measure)
+    public static boolean populate (Glyph       glyph,
+                                    Measure     measure,
+                                    Staff       staff,
+                                    SystemPoint center)
     {
         if (logger.isFineEnabled()) {
             logger.fine("Populating keysig for " + glyph);
@@ -229,7 +233,6 @@ public class KeySignature
         System         system = measure.getPart()
                                        .getSystem();
         SystemInfo     systemInfo = system.getInfo();
-        SystemPoint    center = measure.computeGlyphCenter(glyph);
 
         // Make sure we have no note nearby
         // Use a enlarged rectangular box around the glyph, and check what's in
@@ -321,9 +324,7 @@ public class KeySignature
                 return false;
             }
 
-            keysig = new KeySignature(
-                measure,
-                measure.getPart().getStaffAt(center));
+            keysig = new KeySignature(measure, staff);
         }
 
         // Extend the keysig with this glyph
@@ -495,8 +496,7 @@ public class KeySignature
                                    .equals(ks.getKey())) {
                             logger.info(
                                 ks.getContainmentString() +
-                                "forcing key signature to " +
-                                keysig.getKey());
+                                "forcing key signature to " + keysig.getKey());
                             ks.copyKey(keysig);
                         }
                     }

@@ -112,24 +112,23 @@ public class Clef
     //----------//
     static boolean populate (Glyph       glyph,
                              Measure     measure,
-                             SystemPoint systemPoint)
+                             Staff       staff,
+                             SystemPoint center)
     {
         Shape shape = glyph.getShape();
-        Staff staff = measure.getPart()
-                             .getStaffAt(systemPoint);
 
         switch (shape) {
         case G_CLEF :
         case G_CLEF_OTTAVA_ALTA :
         case G_CLEF_OTTAVA_BASSA :
-            new Clef(measure, staff, shape, systemPoint, 2);
+            new Clef(measure, staff, shape, center, 2);
 
             return true;
 
         case F_CLEF :
         case F_CLEF_OTTAVA_ALTA :
         case F_CLEF_OTTAVA_BASSA :
-            new Clef(measure, staff, shape, systemPoint, -2);
+            new Clef(measure, staff, shape, center, -2);
 
             return true;
 

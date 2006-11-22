@@ -10,17 +10,16 @@
 //
 package omr.score;
 
-import omr.lag.Lag;
-
 import omr.score.visitor.Visitor;
 
 import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
-import java.awt.*;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>Measure</code> handles a measure of a system part, that is all
@@ -47,19 +46,19 @@ public class Measure
     /** Child: Ending bar line */
     private Barline barline;
 
-    /** Child: Potential time signature */
-    private TimeSignature timeSignature;
+    /** Child: Potential one time signature per staff */
+    private TimeSigList timesigs;
 
-    /** Children: possibly several clefs */
+    /** Children: possibly several clefs per staff */
     private ClefList clefs;
 
-    /** Children: possibly several KeySignature's */
-    private KeySignatureList keysigs;
+    /** Children: possibly several KeySignature's per staff */
+    private KeySigList keysigs;
 
-    /** Children: possibly several Chord's */
+    /** Children: possibly several Chord's per staff */
     private ChordList chords;
 
-    /** Children: possibly several Beam's */
+    /** Children: possibly several Beam's per staff */
     private BeamList beams;
 
     //
@@ -86,6 +85,9 @@ public class Measure
      * Attention, should use an id unique within all staves of the part TBD
      */
     private int globalBeamId;
+
+    /** Identified time slots within the measure */
+    private SortedSet<Slot> slots;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -330,30 +332,39 @@ public class Measure
         return ++globalBeamId;
     }
 
-    //------------------//
-    // setTimeSignature //
-    //------------------//
+    //----------//
+    // getSlots //
+    //----------//
     /**
-     * Assign a time signature to this measure
+     * Report the ordered collection of slots
      *
-     * @param timeSignature the time signature
+     * @return the collection of slots
      */
-    public void setTimeSignature (TimeSignature timeSignature)
+    public SortedSet<Slot> getSlots ()
     {
-        this.timeSignature = timeSignature;
+        return slots;
     }
 
     //------------------//
     // getTimeSignature //
     //------------------//
     /**
-     * Report the potential time signature of this measure
+     * Report the potential time signature in this measure for the related staff
      *
-     * @return the related time signature, or null if none
+     * @param staff the related staff
+     * @return the time signature, or null if not found
      */
-    public TimeSignature getTimeSignature ()
+    public TimeSignature getTimeSignature (Staff staff)
     {
-        return timeSignature;
+        for (TreeNode node : timesigs.getChildren()) {
+            TimeSignature ts = (TimeSignature) node;
+
+            if (ts.getStaff() == staff) {
+                return ts;
+            }
+        }
+
+        return null; // Not found
     }
 
     //----------//
@@ -391,11 +402,8 @@ public class Measure
     @Override
     public void addChild (TreeNode node)
     {
-        if (node instanceof Barline) {
-            children.add(node);
-            node.setContainer(this);
-            barline = (Barline) node; // Ending barline
-        } else if (node instanceof Clef) {
+        // Special children lists
+        if (node instanceof Clef) {
             clefs.addChild(node);
             node.setContainer(clefs);
         } else if (node instanceof KeySignature) {
@@ -407,28 +415,13 @@ public class Measure
         } else if (node instanceof Chord) {
             chords.addChild(node);
             node.setContainer(chords);
-
-            //        } else if (node instanceof Note) {
-            //            notes.addChild(node);
-            //            node.setContainer(notes);
-
-            //      } else if (node instanceof Lyricline) {
-            //          lyriclines.addChild (node);
-            //          node.setContainer (lyriclines);
-            //      } else if (node instanceof Text) {
-            //          texts.addChild (node);
-            //          node.setContainer (texts);
-            //      } else if (node instanceof Dynamic) {
-            //          dynamics.addChild (node);
-            //          node.setContainer (dynamics);
-        } else if (node instanceof TreeNode) {
-            // Meant for the 4 dummy lists
-            children.add(node);
-            node.setContainer(this);
         } else {
-            // Programming error
-            Dumper.dump(node);
-            logger.severe("Staff node not known");
+            super.addChild(node);
+        }
+
+        // Side effect for barline
+        if (node instanceof Barline) {
+            barline = (Barline) node; // Ending barline
         }
     }
 
@@ -450,17 +443,21 @@ public class Measure
         }
 
         // Invalidate data
-        timeSignature = null;
+        slots = null;
 
         // (Re)Allocate specific children lists
         clefs = new ClefList(this);
-        keysigs = new KeySignatureList(this);
+        keysigs = new KeySigList(this);
+        timesigs = new TimeSigList(this);
         chords = new ChordList(this);
         beams = new BeamList(this);
 
         //        dynamics = new DynamicList(this);
         //        lyriclines = new LyricList(this);
         //        texts = new TextList(this);
+
+        // Should this be a MeasureNode ??? TBD
+        slots = new TreeSet<Slot>();
     }
 
     //----------------//
@@ -535,13 +532,13 @@ public class Measure
     //        }
     //    }
 
-    //------------------//
-    // KeySignatureList //
-    //------------------//
-    private static class KeySignatureList
+    //------------//
+    // KeySigList //
+    //------------//
+    private static class KeySigList
         extends MeasureNode
     {
-        KeySignatureList (Measure measure)
+        KeySigList (Measure measure)
         {
             super(measure);
         }
@@ -570,4 +567,16 @@ public class Measure
     //            super(measure);
     //        }
     //    }
+
+    //-------------//
+    // TimeSigList //
+    //-------------//
+    private static class TimeSigList
+        extends MeasureNode
+    {
+        TimeSigList (Measure measure)
+        {
+            super(measure);
+        }
+    }
 }

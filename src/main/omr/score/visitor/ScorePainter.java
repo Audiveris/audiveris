@@ -10,6 +10,9 @@
 //
 package omr.score.visitor;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
@@ -26,6 +29,7 @@ import omr.score.Score;
 import static omr.score.ScoreConstants.*;
 import omr.score.ScoreNode;
 import omr.score.ScorePoint;
+import omr.score.Slot;
 import omr.score.Slur;
 import omr.score.Staff;
 import omr.score.System;
@@ -56,6 +60,9 @@ public class ScorePainter
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScorePainter.class);
 
@@ -72,10 +79,17 @@ public class ScorePainter
                                             Color.GREEN
                                         };
 
+    /** Color for slot axis */
+    private static final Color slotColor = new Color(
+        0,
+        0,
+        0,
+        constants.slotAlpha.getValue());
+
     //~ Instance fields --------------------------------------------------------
 
     /** Graphic context */
-    private final Graphics g;
+    private final Graphics2D g;
 
     /** Display zoom */
     private final Zoom zoom;
@@ -100,8 +114,12 @@ public class ScorePainter
     public ScorePainter (Graphics g,
                          Zoom     z)
     {
-        this.g = g;
+        this.g = (Graphics2D) g;
         this.zoom = z;
+
+        this.g.setRenderingHint(
+            RenderingHints.KEY_ANTIALIASING,
+            RenderingHints.VALUE_ANTIALIAS_ON);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -133,24 +151,17 @@ public class ScorePainter
     //------------//
     public boolean visit (Beam beam)
     {
-        Graphics2D g2 = (Graphics2D) g;
-        Stroke     oldStroke = g2.getStroke();
-        g2.setStroke(beamStroke);
-
-        Point origin = beam.getDisplayOrigin();
+        Stroke oldStroke = g.getStroke();
+        g.setStroke(beamStroke);
 
         // Choose beam color;
         beamIndex = (beamIndex + 1) % beamColors.length;
-        g.setColor(beamColors[beamIndex]);
+        //g.setColor(beamColors[beamIndex]);
+        g.setColor(Color.black);
 
         // Draw the beam line
-        g.drawLine(
-            zoom.scaled(origin.x + beam.getLeft().x),
-            zoom.scaled(origin.y + beam.getLeft().y),
-            zoom.scaled(origin.x + beam.getRight().x),
-            zoom.scaled(origin.y + beam.getRight().y));
-
-        g2.setStroke(oldStroke);
+        drawLine(beam, beam.getLeft(), beam.getRight());
+        g.setStroke(oldStroke);
 
         return true;
     }
@@ -160,6 +171,11 @@ public class ScorePainter
     //-------------//
     public boolean visit (Chord chord)
     {
+        if (chord.getStem() != null) {
+            g.setColor(Color.black);
+            drawLine(chord, chord.getTailLocation(), chord.getHeadLocation());
+        }
+
         return true;
     }
 
@@ -207,7 +223,7 @@ public class ScorePainter
     {
         SystemPart part = measure.getPart();
 
-        // Draw the measure id, on the first staff  of the first part only
+        // Write the measure id, on the first staff  of the first part only
         if (part.getId() == 1) {
             ScorePoint staffOrigin = measure.getPart()
                                             .getFirstStaff()
@@ -219,14 +235,58 @@ public class ScorePainter
                 zoom.scaled(staffOrigin.y) - 15);
         }
 
+        // Draw slot vertical lines ?
+        if (constants.slotPainting.getValue()) {
+            g.setColor(slotColor);
+
+            for (Slot slot : measure.getSlots()) {
+                // Draw vertical line using slot abscissa
+                ScorePoint partOrigin = measure.getPart()
+                                               .getFirstStaff()
+                                               .getDisplayOrigin();
+                int        x = zoom.scaled(partOrigin.x + slot.getX());
+                g.drawLine(
+                    x,
+                    zoom.scaled(partOrigin.y),
+                    x,
+                    zoom.scaled(
+                        measure.getPart().getLastStaff().getDisplayOrigin().y +
+                        STAFF_HEIGHT));
+            }
+        }
+
         return true;
     }
 
     //------------//
     // visit Note //
     //------------//
-    public boolean visit (Note node)
+    public boolean visit (Note note)
     {
+        // If note is attached to a stem, link the note display to the stem one
+        Chord chord = note.getChord();
+        Glyph stem = chord.getStem();
+
+        if (stem != null) {
+            note.getPart()
+                .paintSymbol(g, zoom, note.getShape(), note.getCenter(), chord);
+        } else {
+            Shape shape = note.getShape();
+            Shape displayShape;
+
+            if (shape == Shape.MULTI_REST) {
+                displayShape = Shape.MULTI_REST_DISPLAY;
+            } else if ((shape == Shape.WHOLE_REST) ||
+                       (shape == Shape.HALF_REST)) {
+                displayShape = Shape.HALF_OR_WHOLE_REST_DISPLAY;
+            } else {
+                displayShape = shape;
+            }
+
+            note.getPart()
+                .paintSymbol(g, zoom, displayShape, note.getCenter());
+        }
+
         return true;
     }
 
@@ -420,5 +480,36 @@ public class ScorePainter
         }
 
         return true;
+    }
+
+    private void drawLine (PartNode    node,
+                           SystemPoint from,
+                           SystemPoint to)
+    {
+        ScorePoint origin = node.getDisplayOrigin();
+        g.drawLine(
+            zoom.scaled(origin.x + from.x),
+            zoom.scaled(origin.y + from.y),
+            zoom.scaled(origin.x + to.x),
+            zoom.scaled(origin.y + to.y));
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        /** Alpha parameter for slot axis transparency (0 .. 255) */
+        Constant.Integer slotAlpha = new Constant.Integer(
+            20,
+            "Alpha parameter for slot axis transparency (0 .. 255)");
+
+        /** Should the slot be painted */
+        Constant.Boolean slotPainting = new Constant.Boolean(
+            true,
+            "Should the slot be painted");
     }
 }

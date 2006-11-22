@@ -10,6 +10,7 @@
 //
 package omr.score;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
 import omr.score.visitor.Visitor;
@@ -17,7 +18,6 @@ import omr.score.visitor.Visitor;
 import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
 
-import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
@@ -318,6 +318,7 @@ public class SystemPart
     @Override
     public void addChild (TreeNode node)
     {
+        // Specific children lists
         if (node instanceof Staff) {
             staves.addChild(node);
             node.setContainer(staves);
@@ -327,13 +328,8 @@ public class SystemPart
         } else if (node instanceof Slur) {
             slurs.addChild(node);
             node.setContainer(slurs);
-        } else if (node instanceof ScoreNode) {
-            children.add(node);
-            node.setContainer(this);
         } else {
-            // Programming error
-            Dumper.dump(node);
-            logger.severe("Illegal child of SystemPart");
+            super.addChild(node);
         }
     }
 
@@ -370,6 +366,60 @@ public class SystemPart
                     icon.getImage(),
                     zoom.scaled(origin.x + center.x) -
                     (icon.getActualWidth() / 2),
+                    zoom.scaled(origin.y + center.y) -
+                    (icon.getIconHeight() / 2),
+                    null);
+            }
+        }
+    }
+
+    //-------------//
+    // paintSymbol //
+    //-------------//
+    /**
+     * Paint a symbol icon using the coordinates in units of its bounding center
+     * within the containing system part, forcing adjacency with provided chord
+     * stem.
+     *
+     * @param g graphical context
+     * @param zoom display zoom
+     * @param shape the shape whose icon must be painted
+     * @param center part-based bounding center in units
+     * @param chord the chord stem to attach the symbol to
+     */
+    public void paintSymbol (Graphics    g,
+                             Zoom        zoom,
+                             Shape       shape,
+                             SystemPoint center,
+                             Chord       chord)
+    {
+        if (shape == null) {
+            logger.warning("No shape to paint");
+        } else {
+            SymbolIcon icon = (SymbolIcon) shape.getIcon();
+
+            if (icon == null) {
+                logger.warning("No icon defined for shape " + shape);
+            } else if (center == null) {
+                logger.warning("No center defined for " + shape);
+            } else if (chord == null) {
+                logger.warning("No chord defined for " + shape);
+            } else {
+                ScorePoint origin = getSystem()
+                                        .getDisplayOrigin();
+
+                // Position of symbol wrt stem
+                int stemX = chord.getTailLocation().x;
+                int iconX = zoom.scaled(origin.x + stemX);
+
+                if (center.x < stemX) {
+                    // Symbol is on left side of stem (-1 is for stem width)
+                    iconX -= icon.getActualWidth() -1;
+                }
+
+                g.drawImage(
+                    icon.getImage(),
+                    iconX,
                     zoom.scaled(origin.y + center.y) -
                     (icon.getIconHeight() / 2),
                     null);

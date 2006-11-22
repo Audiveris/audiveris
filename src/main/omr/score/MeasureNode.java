@@ -24,8 +24,10 @@ import java.util.Collection;
 
 /**
  * Class <code>MeasureNode</code> is an abstract class that is subclassed for
- * any ScoreNode with a containing measure. So this class encapsulates a direct
- * link to the enclosing measure.
+ * any PartNode with a containing measure. So this class encapsulates a direct
+ * link to the enclosing measure. A link to a related staff is provided as a
+ * potential tag only, since all MeasureNode instances (Beam for example) are
+ * not contained in a staff.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$

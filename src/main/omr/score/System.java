@@ -414,7 +414,6 @@ public class System
      * are located one under the other in a sheet.
      *
      * @param pagPt the point in the sheet
-     * @param scrPt the corresponding point in score display, or null
      * @return the score point
      * @see #toPagePoint
      */

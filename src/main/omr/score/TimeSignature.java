@@ -74,13 +74,16 @@ public class TimeSignature
     // TimeSignature //
     //--------------//
     /**
-     * Create a time signature, with containing measure
+     * Create a time signature, with containing measure and related staff
      *
      * @param measure the containing measure
+     * @param staff the related staff
      */
-    public TimeSignature (Measure measure)
+    public TimeSignature (Measure measure,
+                          Staff   staff)
     {
         super(measure);
+        setStaff(staff);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -242,16 +245,19 @@ public class TimeSignature
      *
      * @param glyph the source glyph
      * @param measure containing measure
+     * @param staff the related staff
+     * @param center the glyph center wrt system
      *
      * @return true if population is successful, false otherwise
      */
-    static boolean populate (Glyph   glyph,
-                             Measure measure)
+    static boolean populate (Glyph       glyph,
+                             Measure     measure,
+                             Staff       staff,
+                             SystemPoint center)
     {
         // First, some basic tests
         // Horizontal distance since beginning of measure
-        SystemPoint center = measure.computeGlyphCenter(glyph);
-        int         unitDx = center.x - measure.getLeftX();
+        int unitDx = center.x - measure.getLeftX();
 
         if (unitDx < measure.getScale()
                             .toUnits(constants.minTimeOffset)) {
@@ -268,9 +274,9 @@ public class TimeSignature
         Shape shape = glyph.getShape();
 
         if (SingleTimes.contains(shape)) {
-            return populateSingleTime(glyph, measure);
+            return populateSingleTime(glyph, measure, staff);
         } else {
-            return populateMultiTime(glyph, measure);
+            return populateMultiTime(glyph, measure, staff);
         }
     }
 
@@ -397,7 +403,8 @@ public class TimeSignature
                 numerator = denominator = null;
 
                 for (Glyph glyph : glyphs) {
-                    int     pitch = getStaff().unitToPitch(
+                    int     pitch = getStaff()
+                                        .unitToPitch(
                         computeGlyphCenter(glyph).y);
                     Integer value = getNumericValue(glyph);
 
@@ -444,14 +451,14 @@ public class TimeSignature
     // populateMultiTime //
     //-------------------//
     private static boolean populateMultiTime (Glyph   glyph,
-                                              Measure measure)
+                                              Measure measure,
+                                              Staff   staff)
     {
-        TimeSignature ts = measure.getTimeSignature();
+        TimeSignature ts = measure.getTimeSignature(staff);
 
         if (ts == null) {
-            ts = new TimeSignature(measure);
+            ts = new TimeSignature(measure, staff);
             ts.addGlyph(glyph);
-            measure.setTimeSignature(ts);
         } else {
             if (logger.isFineEnabled()) {
                 logger.fine(
@@ -469,9 +476,10 @@ public class TimeSignature
     // populateSingleTime //
     //--------------------//
     private static boolean populateSingleTime (Glyph   glyph,
-                                               Measure measure)
+                                               Measure measure,
+                                               Staff   staff)
     {
-        TimeSignature ts = measure.getTimeSignature();
+        TimeSignature ts = measure.getTimeSignature(staff);
 
         if (ts != null) {
             // Check we are not too far from this first time signature part
@@ -493,9 +501,8 @@ public class TimeSignature
                 return false;
             }
         } else {
-            ts = new TimeSignature(measure);
+            ts = new TimeSignature(measure, staff);
             ts.addGlyph(glyph);
-            measure.setTimeSignature(ts);
         }
 
         return true;

@@ -405,6 +405,8 @@ public class Score
     public void addChild (TreeNode node)
     {
         super.addChild(node);
+        
+        // Side effect on score
         ScoreManager.getInstance()
                     .checkInserted(this);
     }
