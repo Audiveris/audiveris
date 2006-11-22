@@ -395,6 +395,22 @@ public class BarsBuilder
         }
     }
 
+    //------------------//
+    // deassignSetShape //
+    //------------------//
+    /**
+     * Remove a set of bars
+     *
+     * @param glyphs the collection of glyphs to be de-assigned
+     */
+    @Override
+    public void deassignSetShape (List<Glyph> glyphs)
+    {
+        for (Glyph glyph : glyphs) {
+            deassignGlyphShape(glyph);
+        }
+    }
+
     //----------//
     // getBarOf //
     //----------//
@@ -501,58 +517,59 @@ public class BarsBuilder
      */
     private void checkBarAlignments (omr.score.System system)
     {
-        //        if (system.getStaves()
-        //                  .size() > 1) {
-        //            int maxShiftDx = scale.toPixels(constants.maxAlignShiftDx);
-        //
-        //            for (Iterator sit = system.getStaves()
-        //                                      .iterator(); sit.hasNext();) {
-        //                Staff staff = (Staff) sit.next();
-        //
-        //                for (Iterator mit = staff.getMeasures()
-        //                                         .iterator(); mit.hasNext();) {
-        //                    Measure measure = (Measure) mit.next();
-        //
-        //                    if (logger.isFineEnabled()) {
-        //                        logger.fine("Checking alignment of " + measure);
-        //                    }
-        //
-        //                    // Compare the abscissa with corresponding position in
-        //                    // the other staves
-        //                    int x = measure.getBarline()
-        //                                   .getCenter().x;
-        //
-        //                    for (Iterator it = system.getStaves()
-        //                                             .iterator(); it.hasNext();) {
-        //                        Staff stv = (Staff) it.next();
-        //
-        //                        if (stv == staff) {
-        //                            continue;
-        //                        }
-        //
-        //                        if (!stv.barlineExists(x, maxShiftDx)) {
-        //                            if (logger.isFineEnabled()) {
-        //                                logger.fine(
-        //                                    "Singular measure removed: " +
-        //                                    Dumper.dumpOf(measure));
-        //                            }
-        //
-        //                            // Remove the false bar info
-        //                            for (Stick stick : measure.getBarline()
-        //                                                      .getSticks()) {
-        //                                stick.setResult(NOT_SYSTEM_ALIGNED);
-        //                                bars.remove(stick);
-        //                            }
-        //
-        //                            // Remove the false measure
-        //                            mit.remove();
-        //
-        //                            break;
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
+        if (system.getInfo()
+                  .getStaves()
+                  .size() > 1) {
+            int maxShiftDx = scale.toPixels(constants.maxAlignShiftDx);
+
+            for (Iterator pit = system.getParts()
+                                      .iterator(); pit.hasNext();) {
+                SystemPart part = (SystemPart) pit.next();
+
+                for (Iterator mit = part.getMeasures()
+                                        .iterator(); mit.hasNext();) {
+                    Measure measure = (Measure) mit.next();
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Checking alignment of " + measure);
+                    }
+
+                    // Compare the abscissa with corresponding position in
+                    // the other parts
+                    int x = measure.getBarline()
+                                   .getCenter().x;
+
+                    for (Iterator it = system.getParts()
+                                             .iterator(); it.hasNext();) {
+                        SystemPart prt = (SystemPart) it.next();
+
+                        if (prt == part) {
+                            continue;
+                        }
+
+                        if (!prt.barlineExists(x, maxShiftDx)) {
+                            if (logger.isFineEnabled()) {
+                                logger.fine(
+                                    "Singular measure removed: " +
+                                    Dumper.dumpOf(measure));
+                            }
+
+                            // Remove the false bar info
+                            for (Stick stick : measure.getBarline()
+                                                      .getSticks()) {
+                                stick.setResult(NOT_SYSTEM_ALIGNED);
+                                bars.remove(stick);
+                            }
+
+                            // Remove the false measure
+                            mit.remove();
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     //----------------//
@@ -566,32 +583,38 @@ public class BarsBuilder
      */
     private void checkEndingBar (omr.score.System system)
     {
-        //        Staff   staff = system.getFirstStaff();
-        //        Measure measure = staff.getLastMeasure();
-        //        Barline barline = measure.getBarline();
-        //        int     lastX = barline.getRightX();
-        //        int     minWidth = scale.toPixels(constants.minMeasureWidth);
-        //
-        //        if ((staff.getWidth() - lastX) < minWidth) {
-        //            if (logger.isFineEnabled()) {
-        //                logger.fine("Adjusting EndingBar " + system);
-        //            }
-        //
-        //            // Adjust end of system & staff(s) to this one
-        //            UnitDimension dim = system.getDimension();
-        //
-        //            if (dim == null) {
-        //                system.setDimension(new UnitDimension(lastX, 0));
-        //            } else {
-        //                dim.width = lastX;
-        //            }
-        //
-        //            for (Iterator sit = system.getStaves()
-        //                                      .iterator(); sit.hasNext();) {
-        //                Staff stv = (Staff) sit.next();
-        //                stv.setWidth(system.getDimension().width);
-        //            }
-        //        }
+        SystemPart part = system.getFirstPart();
+        Measure    measure = part.getLastMeasure();
+        Barline    barline = measure.getBarline();
+        int        lastX = barline.getRightX();
+        int        minWidth = scale.toPixels(constants.minMeasureWidth);
+
+        if ((part.getFirstStaff()
+                 .getWidth() - lastX) < minWidth) {
+            if (logger.isFineEnabled()) {
+                logger.fine("Adjusting EndingBar " + system);
+            }
+
+            // Adjust end of system & staff(s) to this one
+            UnitDimension dim = system.getDimension();
+
+            if (dim == null) {
+                system.setDimension(new UnitDimension(lastX, 0));
+            } else {
+                dim.width = lastX;
+            }
+
+            for (Iterator pit = system.getParts()
+                                      .iterator(); pit.hasNext();) {
+                SystemPart prt = (SystemPart) pit.next();
+
+                for (Iterator sit = prt.getStaves()
+                                       .iterator(); sit.hasNext();) {
+                    Staff stv = (Staff) sit.next();
+                    stv.setWidth(system.getDimension().width);
+                }
+            }
+        }
     }
 
     //---------------//
@@ -806,22 +829,33 @@ public class BarsBuilder
     private static final class Constants
         extends ConstantSet
     {
+        /** Should we display a frame on the vertical sticks */
         Constant.Boolean displayFrame = new Constant.Boolean(
             false,
             "Should we display a frame on the vertical sticks");
-        Scale.Fraction   maxAlignShiftDx = new Scale.Fraction(
+
+        /** Maximum horizontal shift in bars between staves in a system */
+        Scale.Fraction maxAlignShiftDx = new Scale.Fraction(
             0.2,
             "Maximum horizontal shift in bars between staves in a system");
-        Scale.Fraction   maxBarThickness = new Scale.Fraction(
+
+        /** Maximum thickness of an interesting vertical stick */
+        Scale.Fraction maxBarThickness = new Scale.Fraction(
             0.75,
             "Maximum thickness of an interesting vertical stick");
+
+        /** Maximum difference in run length to be part of the same section */
         Constant.Integer maxDeltaLength = new Constant.Integer(
             4,
             "Maximum difference in run length to be part of the same section");
-        Scale.Fraction   maxDoubleBarDx = new Scale.Fraction(
+
+        /** Maximum horizontal distance between the two bars of a double bar */
+        Scale.Fraction maxDoubleBarDx = new Scale.Fraction(
             0.75,
             "Maximum horizontal distance between the two bars of a double bar");
-        Scale.Fraction   minMeasureWidth = new Scale.Fraction(
+
+        /** Minimum width for a measure */
+        Scale.Fraction minMeasureWidth = new Scale.Fraction(
             0.75,
             "Minimum width for a measure");
     }
