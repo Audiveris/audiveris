@@ -121,6 +121,9 @@ public class Glyph
     /**  Centroid coordinates */
     protected PixelPoint centroid;
 
+    /**  Box center coordinates */
+    protected PixelPoint center;
+
     /** Bounding rectangle, defined as union of all member section bounds so
        this implies that it has the same orientation as the sections */
     protected Rectangle bounds;
@@ -174,6 +177,40 @@ public class Glyph
         }
 
         return bounds;
+    }
+
+    //-----------//
+    // setCenter //
+    //-----------//
+    public void setCenter (PixelPoint center)
+    {
+        if (original != null) {
+            original.setCenter(center);
+        } else {
+            this.center = center;
+        }
+    }
+
+    //-----------//
+    // getCenter //
+    //-----------//
+    /**
+     * Report the glyph area center. The point is lazily evaluated.
+     *
+     * @return the area center point
+     */
+    public PixelPoint getCenter ()
+    {
+        if (original != null) {
+            return original.getCenter();
+        } else if (center == null) {
+            PixelRectangle box = getContourBox();
+            center = new PixelPoint(
+                box.x + (box.width / 2),
+                box.y + (box.height / 2));
+        }
+
+        return center;
     }
 
     //-------------//
@@ -472,7 +509,7 @@ public class Glyph
      *
      * @return member sections
      */
-    public Collection<GlyphSection> getMembers ()
+    public List<GlyphSection> getMembers ()
     {
         return members;
     }
@@ -1038,6 +1075,7 @@ public class Glyph
         System.out.println("   pitchPosition=" + getPitchPosition());
         System.out.println("   withLedger=" + isWithLedger());
         System.out.println("   moments=" + getMoments());
+        System.out.println("   center=" + getCenter());
         System.out.println("   centroid=" + getCentroid());
         System.out.println("   bounds=" + getBounds());
         System.out.println("   forbiddenShapes=" + getForbiddenShapes());
