@@ -452,6 +452,7 @@ public class Sheet
 
             // Perform global checks recursively
             score.accept(new ScoreChecker());
+            result = Boolean.valueOf(true);
         }
 
         public void displayUI ()
