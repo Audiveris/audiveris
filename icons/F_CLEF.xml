@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <icon name="F_CLEF">
-    <ref-point x="0" y="8"/>
+    <ref-point x="0" y="7"/>
     <bitmap>
         <row>-----.0$###*+----------</row>
         <row>----0$+---o##$.--------</row>
