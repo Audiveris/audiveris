@@ -431,7 +431,8 @@ public class GlyphInspector
     //-----------------------//
     private boolean isSuitableForCompound (Glyph glyph)
     {
-        return !glyph.isKnown() || (glyph.getShape() == Shape.DOT);
+        return !glyph.isKnown() || (glyph.getShape() == Shape.DOT) ||
+               (glyph.getShape() == Shape.SLUR);
     }
 
     //-------//
