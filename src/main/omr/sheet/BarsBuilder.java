@@ -143,76 +143,21 @@ public class BarsBuilder
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // setBraces //
-    //-----------//
+    //--------------//
+    // assignBraces //
+    //--------------//
     /**
      * Pass the braces symbols found, so that score parts can be defined
      *
      * @param braceLists the braces, system per system
      */
-    public void setBraces (List<List<Glyph>> braceLists)
+    public void assignBraces (List<List<Glyph>> braceLists)
     {
         int is = 0;
 
         // Build the SystemParts for each system
         for (SystemInfo systemInfo : sheet.getSystems()) {
             setSystemBraces(systemInfo.getScoreSystem(), braceLists.get(is++));
-        }
-
-        // (Re)set the global ScorePart list accordingly
-        List<ScorePart> partList = null;
-        boolean         ok = true;
-
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            logger.fine(systemInfo.getScoreSystem().toString());
-
-            if (partList == null) {
-                // Build a ScorePart list based on the SystemPart list
-                partList = new ArrayList<ScorePart>();
-
-                for (TreeNode node : systemInfo.getScoreSystem()
-                                               .getParts()) {
-                    SystemPart sp = (SystemPart) node;
-                    ScorePart  scorePart = new ScorePart(sp);
-                    logger.fine("Adding " + scorePart);
-                    partList.add(scorePart);
-                }
-            } else {
-                // Check our ScorePart list is still ok
-                int i = 0;
-
-                for (TreeNode node : systemInfo.getScoreSystem()
-                                               .getParts()) {
-                    SystemPart sp = (SystemPart) node;
-                    ScorePart  global = partList.get(i++);
-                    ScorePart  scorePart = new ScorePart(sp);
-                    logger.fine(
-                        "Comparing global " + global + " with " + scorePart);
-
-                    if (!global.equals(scorePart)) {
-                        logger.warning("Different SystemPart in system " + i);
-                        ok = false;
-                    }
-                }
-            }
-        }
-
-        if (ok) {
-            // Assign id and names (TBI)
-            int index = 0;
-
-            for (ScorePart part : partList) {
-                part.setId(++index);
-                part.setName("Part_" + index);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("Global " + part);
-                }
-            }
-
-            // This is now the global score part list
-            score.setPartList(partList);
         }
 
         // Repaint the score view, if any (TBI)
@@ -268,6 +213,9 @@ public class BarsBuilder
 
         // Check Measures using only score parameters
         checkMeasures();
+        
+        // Define score parts
+        defineScoreParts();
 
         // Remove clutter glyphs from lag (they will be handled as specific
         // glyphs in the user view).
@@ -408,6 +356,70 @@ public class BarsBuilder
     {
         for (Glyph glyph : glyphs) {
             deassignGlyphShape(glyph);
+        }
+    }
+
+    //------------------//
+    // defineScoreParts //
+    //------------------//
+    /**
+     * From system part, define the score parts
+     */
+    public void defineScoreParts ()
+    {
+        // (Re)set the global ScorePart list accordingly
+        List<ScorePart> partList = null;
+        boolean         ok = true;
+
+        for (SystemInfo systemInfo : sheet.getSystems()) {
+            logger.fine(systemInfo.getScoreSystem().toString());
+
+            if (partList == null) {
+                // Build a ScorePart list based on the SystemPart list
+                partList = new ArrayList<ScorePart>();
+
+                for (TreeNode node : systemInfo.getScoreSystem()
+                                               .getParts()) {
+                    SystemPart sp = (SystemPart) node;
+                    ScorePart  scorePart = new ScorePart(sp);
+                    logger.fine("Adding " + scorePart);
+                    partList.add(scorePart);
+                }
+            } else {
+                // Check our ScorePart list is still ok
+                int i = 0;
+
+                for (TreeNode node : systemInfo.getScoreSystem()
+                                               .getParts()) {
+                    SystemPart sp = (SystemPart) node;
+                    ScorePart  global = partList.get(i++);
+                    ScorePart  scorePart = new ScorePart(sp);
+                    logger.fine(
+                        "Comparing global " + global + " with " + scorePart);
+
+                    if (!global.equals(scorePart)) {
+                        logger.warning("Different SystemPart in system " + i);
+                        ok = false;
+                    }
+                }
+            }
+        }
+
+        if (ok) {
+            // Assign id and names (TBI)
+            int index = 0;
+
+            for (ScorePart part : partList) {
+                part.setId(++index);
+                part.setName("Part_" + index);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("Global " + part);
+                }
+            }
+
+            // This is now the global score part list
+            score.setPartList(partList);
         }
     }
 
