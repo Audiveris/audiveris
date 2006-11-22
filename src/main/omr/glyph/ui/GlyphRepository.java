@@ -195,7 +195,7 @@ public class GlyphRepository
      * then the core area, then in the global sheets area.
      *
      * @param gName the full glyph name (format is: sheetName/Shape.id.xml)
-     * @param the monitor, if any, to be kept informed of glyph loading
+     * @param monitor the monitor, if any, to be kept informed of glyph loading
      *
      * @return the glyph instance if found, null otherwise
      */
