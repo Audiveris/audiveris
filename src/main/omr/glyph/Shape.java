@@ -376,6 +376,10 @@ public enum Shape
 
         /*-----*/ CHARACTER("A letter"),
 
+        /** The two following shapes are a kludge to get proper icon */
+        /*-----*/ HALF_OR_WHOLE_REST_DISPLAY,
+        /*-----*/ MULTI_REST_DISPLAY,
+
         /**
          * Specific value, meaning that we have not been able to determine a
          * legal shape
