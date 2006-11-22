@@ -219,13 +219,13 @@ public class SymbolIcon
         return dimension;
     }
 
-    //--------------//
+    //---------------//
     // setWithLedger //
-    //--------------//
+    //---------------//
     /**
      * Assign the connection to a ledger
      *
-     * @param hwithLedger true if there is a connected ledger
+     * @param withLedger true if there is a connected ledger
      */
     public void setWithLedger (boolean withLedger)
     {
