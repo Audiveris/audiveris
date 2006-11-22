@@ -179,6 +179,21 @@ public class VerticalsBuilder
         }
     }
 
+    //------------------//
+    // deassignSetShape //
+    //------------------//
+    /**
+     * This method is limited to deassignment of stems
+     *
+     * @param glyphs the collection of glyphs to be de-assigned
+     */
+    @Override
+    public void deassignSetShape (List<Glyph> glyphs)
+    {
+        sheet.getSymbolsEditor()
+             .deassignSetShape(glyphs);
+    }
+
     //--------------//
     // displayFrame //
     //--------------//
