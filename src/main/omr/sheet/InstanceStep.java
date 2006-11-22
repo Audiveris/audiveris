@@ -140,6 +140,6 @@ public abstract class InstanceStep<R>
      *
      * @throws ProcessingException raised if processing failed
      */
-    protected abstract void doit ()
+    public abstract void doit ()
         throws ProcessingException;
 }
