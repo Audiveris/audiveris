@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="HALF_OR_WHOLE_REST_DISPLAY">
+    <bitmap>
+        <row>#########</row>
+        <row>#########</row>
+        <row>#########</row>
+        <row>#########</row>
+    </bitmap>
+</icon>
