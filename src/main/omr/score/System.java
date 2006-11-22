@@ -51,12 +51,6 @@ public class System
     /** System dimensions, expressed in units */
     private UnitDimension dimension;
 
-    /** Id of first measure */
-    private int firstMeasureId = 0;
-
-    /** Id of last measure */
-    private int lastMeasureId = 0;
-
     //~ Constructors -----------------------------------------------------------
 
     //--------//
