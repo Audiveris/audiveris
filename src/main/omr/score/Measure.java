@@ -302,10 +302,10 @@ public class Measure
     // getLeftX //
     //----------//
     /**
-     * Report the abscissa of the start of the measure, relative to staff (so 0
-     * for first measure in the staff)
+     * Report the abscissa of the start of the measure, relative to system/part
+     * left edge (so 0 for first measure in the part)
      *
-     * @return staff-based abscissa of left side of the measure
+     * @return part-based abscissa of left side of the measure
      */
     public Integer getLeftX ()
     {
