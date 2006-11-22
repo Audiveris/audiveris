@@ -333,6 +333,23 @@ public class SystemPart
         }
     }
 
+    //---------------//
+    // barlineExists //
+    //---------------//
+    public boolean barlineExists (int x,
+                                  int maxShiftDx)
+    {
+        for (TreeNode node : getMeasures()) {
+            Measure measure = (Measure) node;
+
+            if (Math.abs(measure.getBarline().getCenter().x - x) <= maxShiftDx) {
+                return true;
+            }
+        }
+
+        return false; // Not found
+    }
+
     //-------------//
     // paintSymbol //
     //-------------//
@@ -414,7 +431,7 @@ public class SystemPart
 
                 if (center.x < stemX) {
                     // Symbol is on left side of stem (-1 is for stem width)
-                    iconX -= icon.getActualWidth() -1;
+                    iconX -= (icon.getActualWidth() - 1);
                 }
 
                 g.drawImage(
