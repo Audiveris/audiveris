@@ -69,7 +69,7 @@ public class IconManager
      * Characters used for encoding bitmaps with 8 levels of gray (this is
      * sufficient for our symbol display)
      */
-    private static final char WHITE = '-'; // And transparent
+    private static final char TRANSPARENT = '-';
     private static final char[]           charTable = new char[] {
                                                           '#', // 0 Black
     '$', // 1
@@ -78,7 +78,7 @@ public class IconManager
     'o', // 4
     '+', // 5
     '.', // 6
-    WHITE // 7
+    TRANSPARENT // 7
                                                       };
 
     /** The single class instance */
@@ -442,17 +442,12 @@ public class IconManager
     private char ARGBtoChar (int argb)
     {
         int a = (argb & 0xff000000) >>> 24; // Alpha
+        int r = (argb & 0x00ff0000) >>> 16; // Red
+        int g = (argb & 0x0000ff00) >>> 8; // Green
+        int b = (argb & 0x000000ff) >>> 0; // Blue
+        int index = (int) Math.rint((a * (r + g + b)) / (108.0 * 255)); // 3 * 36
 
-        if (a == 0) {
-            return WHITE; // White / transparent
-        } else {
-            int r = (argb & 0x00ff0000) >>> 16;
-            int g = (argb & 0x0000ff00) >>> 8;
-            int b = (argb & 0x000000ff);
-            int index = (int) Math.rint((r + g + b) / 108.0); // 3 * 36
-
-            return charTable[index];
-        }
+        return charTable[index];
     }
 
     //-------------//
@@ -491,31 +486,22 @@ public class IconManager
      */
     private int toARGB (char c)
     {
-        final int level = toGray(c);
-
-        if (level == 255) {
-            return 0x00ffffff; // Totally transparent / white
-        } else {
-            return (255 << 24) | // Alpha (opaque)
-                   (level << 16) | // R
-                   (level << 8) | // G
-                   level; // B
-        }
+        return (255 - toLevel(c)) << 24;
     }
 
-    //--------//
-    // toGray //
-    //--------//
+    //---------//
+    // toLevel //
+    //---------//
     /**
      * Compute the pixel gray level that corresponds to the given char
      *
      * @param c the char
      * @return the corresponding pixel value ( 0 .. 255)
      */
-    private int toGray (char c)
+    private int toLevel (char c)
     {
         // Check the char
-        if (c == WHITE) {
+        if (c == TRANSPARENT) {
             return 255;
         } else {
             for (int i = charTable.length - 1; i >= 0; i--) {
