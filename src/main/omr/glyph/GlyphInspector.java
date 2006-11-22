@@ -203,13 +203,17 @@ public class GlyphInspector
             processSystemCompounds(system, maxGrade, compounds);
         }
 
-        if (compounds.size() > 0) {
+        if (compounds.size() > 1) {
             logger.info(
-                "Built " + compounds.size() + " compound(s) " +
+                "Built " + compounds.size() + " compounds " +
                 compounds.get(0).getId() + " .. " +
                 compounds.get(compounds.size() - 1).getId());
+        } else if (compounds.size() == 1) {
+            logger.info(
+                "Built compound " + compounds.get(0).getId() + " as " +
+                compounds.get(0).getShape());
         } else {
-            logger.info("No compound built");
+            logger.fine("No compound built");
         }
     }
 
@@ -270,11 +274,10 @@ public class GlyphInspector
 
         if (acceptNb > 0) {
             logger.info(
-                        acceptNb + " glyph(s) accepted (" + noiseNb + " as noise, " +
-                        structureNb + " as structure, " + clutterNb + " as clutter, " +
-                        knownNb + " as known)");
+                acceptNb + " glyph(s) accepted (" + noiseNb + " as noise, " +
+                structureNb + " as structure, " + clutterNb + " as clutter, " +
+                knownNb + " as known)");
         }
-
     }
 
     //---------------//
