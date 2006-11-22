@@ -166,18 +166,16 @@ public class ScoreExporter
     //---------------//
     public boolean visit (Barline barline)
     {
-        if (isFirst.staffInPart) {
-            if (barline.getShape() != omr.glyph.Shape.SINGLE_BARLINE) {
-                proxymusic.Barline pmBarline = new proxymusic.Barline();
-                current.pmMeasure.getNoteOrBackupOrForward()
-                                 .add(pmBarline);
-                pmBarline.setLocation("right");
+        if (barline.getShape() != omr.glyph.Shape.SINGLE_BARLINE) {
+            proxymusic.Barline pmBarline = new proxymusic.Barline();
+            current.pmMeasure.getNoteOrBackupOrForward()
+                             .add(pmBarline);
+            pmBarline.setLocation("right");
 
-                BarStyle barStyle = new BarStyle();
-                pmBarline.getContent()
-                         .add(barStyle);
-                barStyle.setContent(barStyleOf(barline.getShape()));
-            }
+            BarStyle barStyle = new BarStyle();
+            pmBarline.getContent()
+                     .add(barStyle);
+            barStyle.setContent(barStyleOf(barline.getShape()));
         }
 
         return true;
@@ -225,7 +223,7 @@ public class ScoreExporter
             // Staff number (only for multi-staff parts)
             if (current.part.getIndices()
                             .size() > 1) {
-                pmClef.setNumber("" + getStaffNumber());
+                pmClef.setNumber("" + clef.getStaff().getStaffIndex() + 1);
             }
 
             // Sign
@@ -321,32 +319,27 @@ public class ScoreExporter
         logger.fine(measure + " : " + isFirst);
         current.measure = measure;
 
-        if (isFirst.staffInPart) {
-            // Allocate Measure
-            current.pmMeasure = new proxymusic.Measure();
-            current.attributes = null;
-            current.pmPart.getMeasure()
-                          .add(current.pmMeasure);
-            current.pmMeasure.setNumber("" + measure.getId());
-            current.pmMeasure.setWidth(
-                "" + (unitsToTenths(measure.getWidth())));
-
-            if (isFirst.measure) {
-                // Allocate Print
-                current.pmPrint = new Print();
-                current.pmMeasure.getNoteOrBackupOrForward()
-                                 .add(current.pmPrint);
-
-                if (isFirst.system) {
-                    // New Page ? TBD
-                } else {
-                    // New system
-                    current.pmPrint.setNewSystem(YES);
-                }
-            }
-        }
+        // Allocate Measure
+        current.pmMeasure = new proxymusic.Measure();
+        current.attributes = null;
+        current.pmPart.getMeasure()
+                      .add(current.pmMeasure);
+        current.pmMeasure.setNumber("" + measure.getId());
+        current.pmMeasure.setWidth("" + (unitsToTenths(measure.getWidth())));
 
         if (isFirst.measure) {
+            // Allocate Print
+            current.pmPrint = new Print();
+            current.pmMeasure.getNoteOrBackupOrForward()
+                             .add(current.pmPrint);
+
+            if (isFirst.system) {
+                // New Page ? TBD
+            } else {
+                // New system
+                current.pmPrint.setNewSystem(YES);
+            }
+
             if (isFirst.part) {
                 // SystemLayout
                 SystemLayout systemLayout = new SystemLayout();
@@ -393,21 +386,33 @@ public class ScoreExporter
             }
 
             // StaffLayout for all staves in this part, except 1st system staff
-            if (current.staff.getStaffIndex() > 0) {
-                StaffLayout staffLayout = new StaffLayout();
-                current.pmPrint.getStaffLayout()
-                               .add(staffLayout);
-                staffLayout.setNumber("" + getStaffNumber());
+            for (TreeNode sNode : measure.getPart()
+                                         .getStaves()) {
+                Staff staff = (Staff) sNode;
 
-                StaffDistance staffDistance = new StaffDistance();
-                staffLayout.setStaffDistance(staffDistance);
+                if (!isFirst.part || (staff.getStaffIndex() > 0)) {
+                    StaffLayout staffLayout = new StaffLayout();
+                    current.pmPrint.getStaffLayout()
+                                   .add(staffLayout);
+                    staffLayout.setNumber("" + (staff.getStaffIndex() + 1));
 
-                Staff prevStaff = (Staff) current.staff.getPreviousSibling();
-                staffDistance.setContent(
-                    "" +
-                    unitsToTenths(
-                        current.staff.getTopLeft().y -
-                        prevStaff.getTopLeft().y - prevStaff.getHeight()));
+                    StaffDistance staffDistance = new StaffDistance();
+                    staffLayout.setStaffDistance(staffDistance);
+
+                    Staff prevStaff = (Staff) staff.getPreviousSibling();
+
+                    if (prevStaff == null) {
+                        SystemPart prevPart = (SystemPart) measure.getPart()
+                                                                  .getPreviousSibling();
+                        prevStaff = prevPart.getLastStaff();
+                    }
+
+                    staffDistance.setContent(
+                        "" +
+                        unitsToTenths(
+                            staff.getTopLeft().y - prevStaff.getTopLeft().y -
+                            prevStaff.getHeight()));
+                }
             }
         }
 
@@ -719,21 +724,6 @@ public class ScoreExporter
         return true; // Since no previous clef found
     }
 
-    //----------------//
-    // getStaffNumber //
-    //----------------//
-    /**
-     * Report the number of the current staff
-     *
-     * @return the staff number
-     */
-    private int getStaffNumber ()
-    {
-        return ((1 + current.staff.getStaffIndex()) -
-               current.part.getIndices()
-                           .get(0));
-    }
-
     //------------//
     // barStyleOf //
     //------------//
@@ -825,7 +815,6 @@ public class ScoreExporter
         Measure               measure;
         proxymusic.Print      pmPrint;
         proxymusic.Attributes attributes;
-        Staff                 staff;
     }
 
     //---------//
@@ -840,11 +829,8 @@ public class ScoreExporter
         /** We are writing the first system in the current page */
         boolean system;
 
-        /** We are writing the first measure in the current system */
+        /** We are writing the first measure in current system (in current part) */
         boolean measure;
-
-        /** We are writing the first staff in the current part */
-        boolean staffInPart;
 
         @Override
         public String toString ()
@@ -861,10 +847,6 @@ public class ScoreExporter
 
             if (measure) {
                 sb.append(" firstMeasure");
-            }
-
-            if (staffInPart) {
-                sb.append(" firstStaffInPart");
             }
 
             return sb.toString();
