@@ -10,13 +10,15 @@
 //
 package omr.glyph.ui;
 
+import omr.ProcessingException;
+
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
-import omr.glyph.GlyphsBuilder;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 
 import omr.lag.RunBoard;
@@ -124,7 +126,11 @@ public class SymbolsEditor
                     }
                 });
 
-        glyphMenu = new GlyphMenu(this, focus, sheet.getSelection(GLYPH_SET));
+        glyphMenu = new GlyphMenu(
+            this,
+            focus,
+            sheet.getSelection(VERTICAL_GLYPH),
+            sheet.getSelection(GLYPH_SET));
 
         glyphBoard = new SymbolGlyphBoard(
             "Editor-SymbolGlyphBoard",
@@ -184,6 +190,14 @@ public class SymbolsEditor
         if (glyph != null) {
             if ((shape == Shape.NOISE) || evaluator.isBigEnough(glyph)) {
                 super.assignGlyphShape(glyph, shape);
+
+                if (shape != null) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine("assign " + shape + " -> updateScore");
+                    }
+
+                    updateScore();
+                }
             } else {
                 logger.warning(
                     "Attempt to assign " + shape + " to a tiny glyph");
@@ -352,6 +366,13 @@ public class SymbolsEditor
 
         sheet.getSelection(SelectionTag.GLYPH_SET)
              .setEntity(glyphsCopy, null);
+
+        // Forward to score
+        if (logger.isFineEnabled()) {
+            logger.info("deassignSetShape -> updateScore");
+        }
+
+        updateScore();
     }
 
     //---------//
@@ -397,6 +418,23 @@ public class SymbolsEditor
         toolMenu.add(networkMenu);
 
         return menuBar;
+    }
+
+    //-------------//
+    // updateScore //
+    //-------------//
+    private void updateScore ()
+    {
+        if (sheet.SCORE.isDone()) {
+            try {
+                sheet.LEAVES_COMPOUNDS.doit();
+                sheet.SCORE.doit();
+            } catch (ProcessingException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        refresh(); // Always refresh sheet view
     }
 
     //~ Inner Classes ----------------------------------------------------------

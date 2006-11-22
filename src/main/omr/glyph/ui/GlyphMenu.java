@@ -18,10 +18,10 @@ import omr.selection.Selection;
 import omr.util.Dumper;
 
 import java.awt.event.*;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
+import omr.selection.SelectionHint;
 
 /**
  * Class <code>GlyphMenu</code> defines the popup menu which is linked to the
@@ -44,14 +44,14 @@ public class GlyphMenu
     private final JMenuItem       similarItem;
 
     /** Concrete popup menu */
-    private final JPopupMenu      popup;
+    private final JPopupMenu popup;
 
     /** Current selection of glyphs */
+    private final Selection glyphSelection;
     private final Selection       glyphSetSelection;
-
     private final ShapeFocusBoard shapeFocus;
     private final SimilarAction   similarAction = new SimilarAction();
-    private final SymbolsEditor   symbolsBuilder;
+    private final SymbolsEditor   symbolsEditor;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -61,16 +61,20 @@ public class GlyphMenu
     /**
      * Create the popup menu
      *
-     * @param symbolsBuilder the top companion
+     *
+     * @param symbolsEditor the top companion
      * @param shapeFocus the current shape focus
+     * @param glyphSelection the currently selected glyph
      * @param glyphSetSelection the currently selected glyphs
      */
     public GlyphMenu (final SymbolsEditor symbolsBuilder,
-                      ShapeFocusBoard      shapeFocus,
-                      Selection            glyphSetSelection)
+                      ShapeFocusBoard     shapeFocus,
+                      Selection           glyphSelection,
+                      Selection           glyphSetSelection)
     {
-        this.symbolsBuilder = symbolsBuilder;
+        this.symbolsEditor = symbolsBuilder;
         this.shapeFocus = shapeFocus;
+        this.glyphSelection = glyphSelection;
         this.glyphSetSelection = glyphSetSelection;
 
         popup = new JPopupMenu();
@@ -274,10 +278,10 @@ public class GlyphMenu
     //--------------------//
     private void updateLatestAssign ()
     {
-        if (symbolsBuilder.getLatestShapeAssigned() != null) {
+        if (symbolsEditor.getLatestShapeAssigned() != null) {
             latestAssign.setEnabled(true);
             latestAssign.setText(
-                symbolsBuilder.getLatestShapeAssigned().toString());
+                symbolsEditor.getLatestShapeAssigned().toString());
         } else {
             latestAssign.setEnabled(false);
             latestAssign.setText("no shape");
@@ -299,7 +303,17 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            symbolsBuilder.deassignSetShape(getCurrentGlyphs());
+            Glyph glyph = (Glyph) glyphSelection.getEntity();
+            symbolsEditor.deassignSetShape(getCurrentGlyphs());
+
+            // Update focus on current glyph, if reused in a compound
+            Glyph newGlyph = glyph.getMembers()
+                                  .get(0)
+                                  .getGlyph();
+
+            if (glyph != newGlyph) {
+                glyphSelection.setEntity(newGlyph, SelectionHint.GLYPH_INIT);
+            }
         }
     }
 

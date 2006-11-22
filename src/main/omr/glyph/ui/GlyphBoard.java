@@ -470,11 +470,28 @@ public class GlyphBoard
         @Implement(ChangeListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            Selection glyphSelection = inputSelectionList.get(0);
-            Glyph     glyph = (Glyph) glyphSelection.getEntity();
+            if (glyphModel != null) {
+                if (inputSelectionList.size() > 1) {
+                    Selection   glyphSelection = inputSelectionList.get(0);
+                    Glyph       glyph = (Glyph) glyphSelection.getEntity();
+                    Selection   glyphSetSelection = inputSelectionList.get(1);
+                    List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+                    glyphModel.deassignSetShape(glyphs);
 
-            if ((glyphModel != null) && (glyph != null) && glyph.isKnown()) {
-                glyphModel.deassignGlyphShape(glyph);
+                    // Update focus on current glyph, if reused in a compound
+                    Glyph newGlyph = glyph.getMembers()
+                                          .get(0)
+                                          .getGlyph();
+
+                    if (glyph != newGlyph) {
+                        glyphSelection.setEntity(
+                            newGlyph,
+                            SelectionHint.GLYPH_INIT);
+                    }
+                } else if (inputSelectionList.size() == 1) {
+                    glyphModel.deassignGlyphShape(
+                        (Glyph) inputSelectionList.get(0).getEntity());
+                }
             }
         }
     }
