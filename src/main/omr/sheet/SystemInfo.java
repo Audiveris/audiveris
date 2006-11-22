@@ -126,7 +126,6 @@ public class SystemInfo
      *
      * @param id       the unique identity
      * @param sheet    the containing sheet
-     * @param startIdx the index of the starting staff
      *
      * @throws omr.ProcessingException
      */
