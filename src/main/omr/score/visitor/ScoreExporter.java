@@ -223,7 +223,7 @@ public class ScoreExporter
             // Staff number (only for multi-staff parts)
             if (current.part.getIndices()
                             .size() > 1) {
-                pmClef.setNumber("" + clef.getStaff().getStaffIndex() + 1);
+                pmClef.setNumber("" + (clef.getStaff().getStaffIndex() + 1));
             }
 
             // Sign
