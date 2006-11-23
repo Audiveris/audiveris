@@ -10,17 +10,12 @@
 //
 package omr.score;
 
-import omr.glyph.Glyph;
 import static omr.score.ScoreConstants.*;
 import omr.score.visitor.Visitor;
 
-import omr.sheet.PixelPoint;
-import omr.sheet.Scale;
-
 import omr.util.TreeNode;
 
-import java.awt.*;
-import java.util.Collection;
+import java.util.Comparator;
 
 /**
  * Class <code>MeasureNode</code> is an abstract class that is subclassed for
@@ -35,6 +30,34 @@ import java.util.Collection;
 public abstract class MeasureNode
     extends PartNode
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /**
+     * Specific comparator to sort collections of MeasureNode instances,
+     * according first to staff index, then to abscissa.
+     */
+    public static final Comparator<TreeNode> staffComparator = new Comparator<TreeNode>() {
+        public int compare (TreeNode tn1,
+                            TreeNode tn2)
+        {
+            MeasureNode mn1 = (MeasureNode) tn1;
+            MeasureNode mn2 = (MeasureNode) tn2;
+            int         deltaStaff = mn1.getStaff()
+                                        .getStaffIndex() -
+                                     mn2.getStaff()
+                                        .getStaffIndex();
+
+            if (deltaStaff != 0) {
+                // Staves are different
+                return deltaStaff;
+            } else {
+                // Staves are the same, use abscissae to differentiate
+                return mn1.getCenter().x - mn2.getCenter().x;
+            }
+        }
+    };
+
+
     //~ Instance fields --------------------------------------------------------
 
     /** Containing measure */
@@ -143,18 +166,5 @@ public abstract class MeasureNode
     public boolean accept (Visitor visitor)
     {
         return visitor.visit(this);
-    }
-
-    //---------------//
-    // computeCenter //
-    //---------------//
-    /**
-     * Compute the center of this entity, wrt the measure top-left corner.
-     * Unless overridden, this method raises an exception.
-     */
-    protected void computeCenter ()
-    {
-        throw new RuntimeException(
-            "computeCenter() not implemented in " + getClass().getName());
     }
 }
