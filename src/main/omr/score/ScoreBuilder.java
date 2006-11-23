@@ -17,14 +17,13 @@ import omr.glyph.Shape.Range;
 
 import omr.score.visitor.ScoreCleaner;
 
-import omr.sheet.PixelPoint;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
 import omr.util.TreeNode;
 
-import java.awt.Rectangle;
+import java.util.Collections;
 import java.util.Comparator;
 
 /**
@@ -41,44 +40,6 @@ public class ScoreBuilder
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreBuilder.class);
 
-    /** A comparator to order glyph according to their translation order */
-    private static final Comparator<Glyph> glyphComparator = new Comparator<Glyph>() {
-        public int compare (Glyph g1,
-                            Glyph g2)
-        {
-            // First, order on translation interest
-            if (g1.getShape() != g2.getShape()) {
-                return getPriority(g1) - getPriority(g2);
-            } else {
-                // Second, order on abscissa
-                return g1.getCentroid().x - g2.getCentroid().x;
-            }
-        }
-    };
-
-    /** (Partial) array of ranges ordered  by priority order */
-    private static final Range[] orderedRanges = new Range[] {
-                                                     //
-    NoteHeads, //
-    Notes, //
-    Stems, //
-    Bars, //
-    Clefs, //
-    Times, //
-    Accidentals, // Must be after alterable notes
-    Octaves, //
-    Rests, //
-    Flags, //
-    Articulations, //
-    Dynamics, //
-    Ornaments, //
-    Pedals, //
-    Barlines, //
-    Logicals, //
-    Physicals, //
-    Garbage
-                                                 };
-
     //~ Instance fields --------------------------------------------------------
 
     /** The score we are populating */
@@ -88,19 +49,19 @@ public class ScoreBuilder
     private Sheet sheet;
 
     /** The current system */
-    private System system;
+    private System currentSystem;
 
     /** The current systempart */
-    private SystemPart systemPart;
+    private SystemPart currentPart;
 
     /** The current staff */
-    private Staff staff;
+    private Staff currentStaff;
 
     /** The current point in current system */
-    private SystemPoint center;
+    private SystemPoint currentCenter;
 
     /** The current measure */
-    private Measure measure;
+    private Measure currentMeasure;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -144,8 +105,6 @@ public class ScoreBuilder
         translate(new BeamTranslator());
         translate(new ChordTranslator());
 
-        ///translate(new ChordTranslator());
-
         // Update score view if any
         if (score.getView() != null) {
             score.getView()
@@ -153,31 +112,6 @@ public class ScoreBuilder
                  .getComponent()
                  .repaint();
         }
-    }
-
-    //-------------//
-    // getPriority //
-    //-------------//
-    /**
-     * Report the 'priority index' of this glyph for its translating into score
-     * entity. <b>NOTA</b>: low value means high priority.
-     *
-     * @param glyph the glyph to be ordered based on its shape
-     * @return the priority index
-     */
-    private static int getPriority (Glyph glyph)
-    {
-        Shape shape = glyph.getShape();
-        int   i = 0;
-
-        for (; i < orderedRanges.length; i++) {
-            if (orderedRanges[i].contains(shape)) {
-                return i;
-            }
-        }
-
-        // Last ones, if not part of the ordered ranges
-        return i;
     }
 
     //---------------//
@@ -189,6 +123,7 @@ public class ScoreBuilder
             logger.fine("Deassigning " + glyph);
         }
 
+        // AIE AIE AIE TBD, should not depend on a UI element !!!
         sheet.getSymbolsEditor()
              .deassignGlyphShape(glyph);
     }
@@ -213,11 +148,11 @@ public class ScoreBuilder
     private void translate (Translator translator)
     {
         for (SystemInfo systemInfo : sheet.getSystems()) {
-            system = systemInfo.getScoreSystem();
+            currentSystem = systemInfo.getScoreSystem();
             translateSystem(translator);
         }
 
-        // Final processing if any
+        // Final score processing if any
         translator.completeScore();
     }
 
@@ -226,8 +161,8 @@ public class ScoreBuilder
     //-----------------//
     private void translateSystem (Translator translator)
     {
-        for (Glyph glyph : system.getInfo()
-                                 .getGlyphs()) {
+        for (Glyph glyph : currentSystem.getInfo()
+                                        .getGlyphs()) {
             if (glyph.isWellKnown() && (glyph.getShape() != CLUTTER)) {
                 // Check for glyph relevance
                 if (translator.isrelevant(glyph)) {
@@ -270,17 +205,16 @@ public class ScoreBuilder
 
         /**
          * Compute the location system environment of the provided glyph.
-         * Results are written in global variables 'staff', 'staffPoint' and
-         * 'measure'.
+         * Results are written in global variables currentXXX.
          *
          * @param glyph the glyph to locate
          */
         public void computeLocation (Glyph glyph)
         {
-            center = system.toSystemPoint(glyph.getCenter());
-            staff = system.getStaffAt(center);
-            systemPart = staff.getPart();
-            measure = systemPart.getMeasureAt(center);
+            currentCenter = currentSystem.toSystemPoint(glyph.getCenter());
+            currentStaff = currentSystem.getStaffAt(currentCenter);
+            currentPart = currentStaff.getPart();
+            currentMeasure = currentPart.getMeasureAt(currentCenter);
         }
 
         /**
@@ -316,6 +250,7 @@ public class ScoreBuilder
             } else {
                 logger.warning(
                     "Beam glyph " + glyph.getId() + " with no attached stem");
+                super.computeLocation(glyph); // Backup alternative...
             }
         }
 
@@ -327,7 +262,7 @@ public class ScoreBuilder
 
         public void translate (Glyph glyph)
         {
-            Beam.populate(glyph, measure);
+            Beam.populate(glyph, currentMeasure);
         }
     }
 
@@ -345,7 +280,7 @@ public class ScoreBuilder
             }
 
             // Allocate proper chords in every slot
-            for (TreeNode node : system.getParts()) {
+            for (TreeNode node : currentSystem.getParts()) {
                 SystemPart part = (SystemPart) node;
 
                 for (TreeNode mn : part.getMeasures()) {
@@ -369,15 +304,15 @@ public class ScoreBuilder
 
         public void translate (Glyph glyph)
         {
-            Chord.populate(glyph, measure, center);
+            Chord.populate(glyph, currentMeasure, currentCenter);
         }
 
         private void dumpSystemSlots ()
         {
             // Dump all measure slots
-            logger.fine(system.toString());
+            logger.fine(currentSystem.toString());
 
-            for (TreeNode node : system.getParts()) {
+            for (TreeNode node : currentSystem.getParts()) {
                 SystemPart part = (SystemPart) node;
 
                 logger.fine(part.toString());
@@ -401,6 +336,22 @@ public class ScoreBuilder
     private class ClefTranslator
         extends Translator
     {
+        @Override
+        public void completeSystem ()
+        {
+            // Sort the clefs in any measure, according to staff number
+            for (TreeNode node : currentSystem.getParts()) {
+                SystemPart part = (SystemPart) node;
+
+                for (TreeNode mn : part.getMeasures()) {
+                    Measure measure = (Measure) mn;
+                    Collections.sort(
+                        measure.getClefs(),
+                        MeasureNode.staffComparator);
+                }
+            }
+        }
+
         public boolean isrelevant (Glyph glyph)
         {
             return Shape.Clefs.contains(glyph.getShape());
@@ -408,7 +359,7 @@ public class ScoreBuilder
 
         public void translate (Glyph glyph)
         {
-            Clef.populate(glyph, measure, staff, center);
+            Clef.populate(glyph, currentMeasure, currentStaff, currentCenter);
         }
     }
 
@@ -421,7 +372,7 @@ public class ScoreBuilder
         @Override
         public void completeSystem ()
         {
-            KeySignature.verifySystemKeys(system);
+            KeySignature.verifySystemKeys(currentSystem);
 
             //            // Dummy
             //            if (false) {
@@ -461,7 +412,11 @@ public class ScoreBuilder
         public void translate (Glyph glyph)
         {
             // Key signature or just accidental ?
-            KeySignature.populate(glyph, measure, staff, center);
+            KeySignature.populate(
+                glyph,
+                currentMeasure,
+                currentStaff,
+                currentCenter);
         }
     }
 
@@ -478,7 +433,11 @@ public class ScoreBuilder
 
         public void translate (Glyph glyph)
         {
-            TimeSignature.populate(glyph, measure, staff, center);
+            TimeSignature.populate(
+                glyph,
+                currentMeasure,
+                currentStaff,
+                currentCenter);
         }
     }
 }
