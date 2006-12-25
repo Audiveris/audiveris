@@ -89,15 +89,15 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
     /**
      * Populate a lag with sections created by ripping a picture
      *
-     * @param picture        the picture to read pixels from
+     * @param source         the source to read pixels from
      * @param minRunLength   minimum length to consider a run
      */
-    public void createSections (Picture picture,
-                                int     minRunLength)
+    public void createSections (PixelSource source,
+                                int         minRunLength)
     {
         // Retrieve the properly oriented picture dimension
         Rectangle rect = lag.switchRef(
-            new Rectangle(0, 0, picture.getWidth(), picture.getHeight()),
+            new Rectangle(0, 0, source.getWidth(), source.getHeight()),
             null);
 
         // Prepare the collections of runs, one collection per pos value
@@ -107,10 +107,9 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
             runs.add(new ArrayList<Run>());
         }
 
-        // Populate the runs. To optimize access to pixels, we use a dedicated
-        // adapter, depending on the lag orientation
+        // Populate the runs.
         RunsBuilder runsBuilder = new RunsBuilder(
-            new LagReader(lag, runs, picture, minRunLength));
+            new LagReader(lag, runs, source, minRunLength));
         runsBuilder.createRuns(rect);
 
         // Organize the runs into sections
