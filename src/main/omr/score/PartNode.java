@@ -12,7 +12,7 @@ package omr.score;
 
 import omr.glyph.Glyph;
 import static omr.score.ScoreConstants.*;
-import omr.score.visitor.Visitor;
+import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
@@ -37,10 +37,10 @@ public abstract class PartNode
     //~ Instance fields --------------------------------------------------------
 
     /** Containing part */
-    protected SystemPart part;
+    private SystemPart part;
 
     /** Location of the center of this entity WRT system top-left corner */
-    protected SystemPoint center;
+    private SystemPoint center;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -68,18 +68,17 @@ public abstract class PartNode
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------------//
-    // getDisplayOrigin //
-    //------------------//
+    //-----------//
+    // setCenter //
+    //-----------//
     /**
-     * Report the origin for the containing system, in the horizontal score 
-     * display, since coordinates use SystemPoint.
+     * Remember the center of this part node
      *
-     * @return the (system) display origin
+     * @param center the system-based center of the part node
      */
-    public ScorePoint getDisplayOrigin ()
+    public void setCenter (SystemPoint center)
     {
-        return getPart().getSystem().getDisplayOrigin();
+        this.center = center;
     }
 
     //-----------//
@@ -99,6 +98,37 @@ public abstract class PartNode
         return center;
     }
 
+    //------------------//
+    // getContextString //
+    //------------------//
+    @Override
+    public String getContextString ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(getSystem().getContextString());
+
+        sb.append("P")
+          .append(part.getId());
+
+        return sb.toString();
+    }
+
+    //------------------//
+    // getDisplayOrigin //
+    //------------------//
+    /**
+     * Report the origin for the containing system, in the horizontal score
+     * display, since coordinates use SystemPoint.
+     *
+     * @return the (system) display origin
+     */
+    public ScorePoint getDisplayOrigin ()
+    {
+        return getSystem()
+                   .getDisplayOrigin();
+    }
+
     //---------//
     // getPart //
     //---------//
@@ -112,11 +142,25 @@ public abstract class PartNode
         return part;
     }
 
+    //-----------//
+    // getSystem //
+    //-----------//
+    /**
+     * Report the containing system
+     *
+     * @return the containing system
+     */
+    public System getSystem ()
+    {
+        return getPart()
+                   .getSystem();
+    }
+
     //--------//
     // accept //
     //--------//
     @Override
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
     }
@@ -184,8 +228,7 @@ public abstract class PartNode
             rect.x + (rect.width / 2),
             rect.y + (rect.height / 2));
 
-        return getPart()
-                   .getSystem()
+        return getSystem()
                    .toSystemPoint(pixPt);
     }
 }
