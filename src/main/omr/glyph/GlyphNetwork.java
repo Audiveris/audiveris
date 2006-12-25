@@ -113,9 +113,15 @@ public class GlyphNetwork
             network.run(ins, null, outs);
 
             for (int s = 0; s < outSize; s++) {
-                evals[s] = new Evaluation();
-                evals[s].shape = Shape.values()[s];
-                evals[s].grade = 1d / outs[s];
+                Shape shape = specificShapeCheck(Shape.values()[s], glyph);
+
+                if (shape != null) {
+                    evals[s] = new Evaluation(shape, 1d / outs[s]);
+                } else {
+                    evals[s] = new Evaluation(
+                        Shape.values()[s],
+                        Double.MAX_VALUE);
+                }
             }
 
             // Order the evals from best to worst
@@ -160,9 +166,7 @@ public class GlyphNetwork
         List<Evaluation> kept = new ArrayList<Evaluation>();
 
         for (Evaluation eval : getAllEvaluations(glyph)) {
-            if ((glyph.getForbiddenShapes() == null) ||
-                !glyph.getForbiddenShapes()
-                      .contains(eval.shape)) {
+            if (!glyph.isShapeForbidden(eval.shape)) {
                 kept.add(eval);
             }
         }
@@ -307,20 +311,6 @@ public class GlyphNetwork
         return network;
     }
 
-    //-----------//
-    // isTrained //
-    //-----------//
-    /**
-     * Predicate on whether the network has been trained
-     *
-     * @return true if trained
-     */
-    @Override
-    public boolean isTrained ()
-    {
-        return true; // TBD ////
-    }
-
     //------//
     // dump //
     //------//
@@ -390,25 +380,48 @@ public class GlyphNetwork
             return;
         }
 
-        // Starting options
-        switch (mode) {
-        case SCRATCH :
-            network = createNetwork();
+        int    quorum = constants.quorum.getValue();
 
-            break;
+        // Determine cardinality for each shape
+        List[] shapeGlyphs = new List[outSize];
 
-        case INCREMENTAL :
-            break;
+        for (int i = 0; i < shapeGlyphs.length; i++) {
+            shapeGlyphs[i] = new ArrayList<Glyph>();
         }
 
-        Collections.shuffle(glyphs);
+        for (Glyph glyph : glyphs) {
+            shapeGlyphs[glyph.getShape()
+                             .ordinal()].add(glyph);
+        }
 
-        double[][] inputs = new double[glyphs.size()][];
-        double[][] desiredOutputs = new double[glyphs.size()][];
+        List<Glyph> newGlyphs = new ArrayList<Glyph>();
+
+        for (List l : shapeGlyphs) {
+            int     card = 0;
+            boolean first = true;
+
+            while (card < quorum) {
+                for (int i = 0; i < l.size(); i++) {
+                    newGlyphs.add((Glyph) l.get(i));
+                    card++;
+
+                    if (!first && (card >= quorum)) {
+                        break;
+                    }
+                }
+
+                first = false;
+            }
+        }
+
+        Collections.shuffle(newGlyphs);
+
+        double[][] inputs = new double[newGlyphs.size()][];
+        double[][] desiredOutputs = new double[newGlyphs.size()][];
 
         int        ig = 0;
 
-        for (Glyph glyph : glyphs) {
+        for (Glyph glyph : newGlyphs) {
             double[] ins = new double[inSize];
             feedInput(glyph, ins);
             inputs[ig] = ins;
@@ -421,6 +434,11 @@ public class GlyphNetwork
             desiredOutputs[ig] = des;
 
             ig++;
+        }
+
+        // Starting options
+        if (mode == StartingMode.SCRATCH) {
+            network = createNetwork();
         }
 
         // Train
@@ -503,6 +521,9 @@ public class GlyphNetwork
         Constant.Integer listEpochs = new Constant.Integer(
             2000,
             "Number of epochs for training on list of glyphs");
+        Constant.Integer quorum = new Constant.Integer(
+            10,
+            "Minimum number of glyphs for each shape");
         Constant.Double  maxError = new Constant.Double(
             1E-4,
             "Threshold to stop training");
