@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                      E x p o r t i n g V i s i t o r                       //
+//                         S c o r e E x p o r t e r                          //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
 //  This software is released under the terms of the GNU General Public       //
@@ -12,6 +12,7 @@ package omr.score.visitor;
 
 import omr.Main;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
@@ -21,18 +22,18 @@ import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
-import omr.score.MeasureNode;
-import omr.score.PartNode;
 import omr.score.Score;
 import omr.score.ScoreFormat;
-import omr.score.ScoreNode;
 import omr.score.ScorePart;
+import omr.score.Slot;
 import omr.score.Slur;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
 import omr.score.SystemPoint;
 import omr.score.TimeSignature;
+
+import omr.sheet.PixelPoint;
 
 import omr.util.Logger;
 import omr.util.TreeNode;
@@ -43,6 +44,7 @@ import proxymusic.Scaling;
 import java.io.*;
 import java.lang.String;
 import java.util.Date;
+import java.util.Locale;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -56,7 +58,7 @@ import javax.xml.bind.Marshaller;
  * @version $Id$
  */
 public class ScoreExporter
-    implements Visitor
+    extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -75,7 +77,7 @@ public class ScoreExporter
     private Score score;
 
     /** The score proxy built precisely for export via JAXB */
-    private ScorePartwise scorePartwise;
+    private final ScorePartwise scorePartwise = new ScorePartwise();
 
     /** Current context */
     private Current current = new Current();
@@ -114,11 +116,10 @@ public class ScoreExporter
             folder.mkdirs();
         }
 
-        // Allocate a score proxy, and let visited nodes fill this proxy
-        scorePartwise = new ScorePartwise();
+        // Let visited nodes fill the scorePartWise proxy
         score.accept(this);
 
-        //  Marshal the proxy
+        //  Finally, marshal the proxy
         try {
             OutputStream os = new FileOutputStream(xmlFile);
             jaxbMarshal(scorePartwise, os);
@@ -164,8 +165,10 @@ public class ScoreExporter
     //---------------//
     // visit Barline //
     //---------------//
+    @Override
     public boolean visit (Barline barline)
     {
+        ///logger.info("Visiting " + barline);
         if (barline.getShape() != omr.glyph.Shape.SINGLE_BARLINE) {
             proxymusic.Barline pmBarline = new proxymusic.Barline();
             current.pmMeasure.getNoteOrBackupOrForward()
@@ -173,57 +176,39 @@ public class ScoreExporter
             pmBarline.setLocation("right");
 
             BarStyle barStyle = new BarStyle();
-            pmBarline.getContent()
-                     .add(barStyle);
+            pmBarline.setBarStyle(barStyle);
             barStyle.setContent(barStyleOf(barline.getShape()));
         }
 
         return true;
     }
 
-    //------------//
-    // visit Beam //
-    //------------//
-    public boolean visit (Beam beam)
-    {
-        return true;
-    }
-
-    //------------//
+    //-------------//
     // visit Chord //
-    //------------//
+    //-------------//
+    @Override
     public boolean visit (Chord chord)
     {
-        return true;
+        return false;
     }
 
     //------------//
     // visit Clef //
     //------------//
+    @Override
     public boolean visit (Clef clef)
     {
-        //      Clefs are represented by the sign, line, and
-        //      clef-octave-change elements. Sign values include G, F, C,
-        //      percussion, TAB, and none. Line numbers are counted from
-        //      the bottom of the staff. Standard values are 2 for the
-        //      G sign (treble clef), 4 for the F sign (bass clef), 3
-        //      for the C sign (alto clef) and 5 for TAB (on a 6-line
-        //      staff). The clef-octave-change element is used for
-        //      transposing clefs (e.g., a treble clef for tenors would
-        //      have a clef-octave-change value of -1). The optional
-        //      number attribute refers to staff numbers, from top to
-        //      bottom on the system. A value of 1 is assumed if not
-        //      present.
+        ///logger.info("Visiting " + clef);
         if (isNewClef(clef)) {
             proxymusic.Clef pmClef = new proxymusic.Clef();
-            getAttributes()
+            getMeasureAttributes()
                 .getClef()
                 .add(pmClef);
 
             // Staff number (only for multi-staff parts)
-            if (current.part.getIndices()
+            if (current.part.getStaffIds()
                             .size() > 1) {
-                pmClef.setNumber("" + (clef.getStaff().getStaffIndex() + 1));
+                pmClef.setNumber("" + (clef.getStaff().getId()));
             }
 
             // Sign
@@ -298,15 +283,26 @@ public class ScoreExporter
     //--------------------//
     // visit KeySignature //
     //--------------------//
+    @Override
     public boolean visit (KeySignature keySignature)
     {
-        Key key = new Key();
-        getAttributes()
-            .setKey(key);
+        ///logger.info("Visiting " + keySignature);
+        if (isNewKeySignature(keySignature)) {
+            //            logger.info(
+            //                keySignature.getContextString() + " New key " + keySignature);
+            Key key = new Key();
+            getMeasureAttributes()
+                .setKey(key);
 
-        Fifths fifths = new Fifths();
-        key.setFifths(fifths);
-        fifths.setContent("" + keySignature.getKey());
+            Fifths fifths = new Fifths();
+            key.setFifths(fifths);
+            fifths.setContent("" + keySignature.getKey());
+
+            //        } else {
+            //            logger.info(
+            //                keySignature.getContextString() + " No new key " +
+            //                keySignature);
+        }
 
         return true;
     }
@@ -314,8 +310,10 @@ public class ScoreExporter
     //---------------//
     // visit Measure //
     //---------------//
+    @Override
     public boolean visit (Measure measure)
     {
+        ///logger.info("Visiting " + measure);
         logger.fine(measure + " : " + isFirst);
         current.measure = measure;
 
@@ -327,6 +325,10 @@ public class ScoreExporter
         current.pmMeasure.setNumber("" + measure.getId());
         current.pmMeasure.setWidth("" + (unitsToTenths(measure.getWidth())));
 
+        if (measure.isImplicit()) {
+            current.pmMeasure.setImplicit(YES);
+        }
+
         if (isFirst.measure) {
             // Allocate Print
             current.pmPrint = new Print();
@@ -335,6 +337,15 @@ public class ScoreExporter
 
             if (isFirst.system) {
                 // New Page ? TBD
+
+                // Divisions
+                Divisions divisions = new Divisions();
+                getMeasureAttributes()
+                    .setDivisions(divisions);
+                divisions.setContent(
+                    "" +
+                    measure.getPart().getScorePart().simpleDurationOf(
+                        omr.score.Note.QUARTER_DURATION));
             } else {
                 // New system
                 current.pmPrint.setNewSystem(YES);
@@ -390,11 +401,11 @@ public class ScoreExporter
                                          .getStaves()) {
                 Staff staff = (Staff) sNode;
 
-                if (!isFirst.part || (staff.getStaffIndex() > 0)) {
+                if (!isFirst.part || (staff.getId() > 1)) {
                     StaffLayout staffLayout = new StaffLayout();
                     current.pmPrint.getStaffLayout()
                                    .add(staffLayout);
-                    staffLayout.setNumber("" + (staff.getStaffIndex() + 1));
+                    staffLayout.setNumber("" + (staff.getId()));
 
                     StaffDistance staffDistance = new StaffDistance();
                     staffLayout.setStaffDistance(staffDistance);
@@ -416,41 +427,197 @@ public class ScoreExporter
             }
         }
 
-        // Forward browsing down the measure
+        // Forward browsing down the measure (a bit simplistic TBD)
+        current.voice = 0;
         measure.acceptChildren(this);
 
-        return true;
-    }
+        // Now voice per voice
+        int timeCounter = 0;
 
-    //-------------------//
-    // visit MeasureNode //
-    //-------------------//
-    public boolean visit (MeasureNode node)
-    {
+        for (current.voice = 1; current.voice <= measure.getVoicesNumber();
+             current.voice++) {
+            // Need a backup ?
+            if (timeCounter != 0) {
+                insertBackup(timeCounter);
+                timeCounter = 0;
+            }
+
+            Chord lastChord = null;
+
+            for (Slot slot : measure.getSlots()) {
+                for (Chord chord : slot.getChords()) {
+                    if (chord.getVoice() == current.voice) {
+                        // Need a forward before this chord ?
+                        if (timeCounter < slot.getOffset()) {
+                            insertForward(
+                                slot.getOffset() - timeCounter,
+                                chord);
+                            timeCounter = slot.getOffset();
+                        }
+
+                        // Delegate to the chord children directly
+                        chord.acceptChildren(this);
+                        lastChord = chord;
+                        timeCounter += chord.getDuration();
+                    }
+                }
+            }
+
+            // Need an ending forward ?
+            if ((lastChord != null) &&
+                !measure.isImplicit() &&
+                (timeCounter < measure.getExpectedDuration())) {
+                insertForward(
+                    measure.getExpectedDuration() - timeCounter,
+                    lastChord);
+            }
+        }
+
         return true;
     }
 
     //------------//
     // visit Note //
     //------------//
-    public boolean visit (omr.score.Note node)
+    @Override
+    public boolean visit (omr.score.Note note)
     {
-        return true;
-    }
+        ///logger.info("Visiting " + note);
+        Chord chord = note.getChord();
 
-    //----------------//
-    // visit PartNode //
-    //----------------//
-    public boolean visit (PartNode node)
-    {
-        return true;
-    }
+        Note  pmNote = new Note();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(pmNote);
 
-    //-----------------//
-    // visit ScoreNode //
-    //-----------------//
-    public boolean visit (ScoreNode musicNode)
-    {
+        // Chord indication for every note, except first one in chord
+        if (chord.getNotes()
+                 .indexOf(note) != 0) {
+            pmNote.setChord(new proxymusic.Chord());
+        }
+
+        // Rest ?
+        if (note.isRest()) {
+            Rest rest = new Rest();
+            pmNote.setRest(rest);
+        } else {
+            // Pitch
+            Pitch pitch = new Pitch();
+            pmNote.setPitch(pitch);
+
+            Step step = new Step();
+            pitch.setStep(step);
+            step.setContent("" + note.getStep());
+
+            Octave octave = new Octave();
+            pitch.setOctave(octave);
+            octave.setContent("" + note.getOctave());
+
+            if (note.getAlter() != 0) {
+                Alter alter = new Alter();
+                pitch.setAlter(alter);
+                alter.setContent("" + note.getAlter());
+            }
+        }
+
+        // Default-x (use left side of the note wrt measure)
+        SystemPoint noteTopLeft = note.getSystem()
+                                      .toSystemPoint(
+            new PixelPoint(
+                note.getGlyph()
+                    .getContourBox().x,
+                note.getGlyph()
+                    .getContourBox().y));
+        pmNote.setDefaultX(
+            "" + unitsToTenths(noteTopLeft.x - note.getMeasure().getLeftX()));
+
+        // Duration
+        Duration duration = new Duration();
+        pmNote.setDuration(duration);
+        duration.setContent(
+            "" + current.part.simpleDurationOf(chord.getDuration()));
+
+        // Voice
+        Voice voice = new Voice();
+        pmNote.setVoice(voice);
+        voice.setContent("" + chord.getVoice());
+
+        // Type
+        Type type = new Type();
+        pmNote.setType(type);
+        type.setContent("" + note.getTypeName());
+
+        // Stem ?
+        if (chord.getStem() != null) {
+            Glyph stem = chord.getStem();
+            Stem  pmStem = new Stem();
+            pmNote.setStem(pmStem);
+
+            SystemPoint tail = chord.getTailLocation();
+            pmStem.setDefaultY(
+                "" +
+                unitsToTenths(
+                    note.getStaff().getTopLeft().y -
+                    note.getSystem().getTopLeft().y - tail.y));
+
+            if (tail.y < note.getCenter().y) {
+                pmStem.setContent("up");
+            } else {
+                pmStem.setContent("down");
+            }
+        }
+
+        // Staff ? (only if more than one staff in part)
+        if (note.getPart()
+                .getStaves()
+                .size() > 1) {
+            proxymusic.Staff pmStaff = new proxymusic.Staff();
+            pmNote.setStaff(pmStaff);
+            pmStaff.setContent("" + (note.getStaff().getId()));
+        }
+
+        // Dots
+        for (int i = 0; i < chord.getDotsNumber(); i++) {
+            pmNote.getDot()
+                  .add(new Dot());
+        }
+
+        // Accidental ?
+        if (note.getAccidental() != null) {
+            Accidental accidental = new Accidental();
+            pmNote.setAccidental(accidental);
+            accidental.setContent(accidentalNameOf(note.getAccidental()));
+        }
+
+        // Beams ?
+        for (Beam beam : chord.getBeams()) {
+            proxymusic.Beam pmBeam = new proxymusic.Beam();
+            pmNote.getBeam()
+                  .add(pmBeam);
+            pmBeam.setNumber("" + beam.getLevel());
+
+            Glyph glyph = beam.getGlyphs()
+                              .first();
+
+            if (glyph.getShape() == BEAM_HOOK) {
+                if (glyph.getCenter().x > chord.getStem()
+                                               .getCenter().x) {
+                    pmBeam.setContent("forward hook");
+                } else {
+                    pmBeam.setContent("backward hook");
+                }
+            } else {
+                if (beam.getChords()
+                        .first() == chord) {
+                    pmBeam.setContent("begin");
+                } else if (beam.getChords()
+                               .last() == chord) {
+                    pmBeam.setContent("end");
+                } else {
+                    pmBeam.setContent("continue");
+                }
+            }
+        }
+
         return true;
     }
 
@@ -464,8 +631,10 @@ public class ScoreExporter
      *
      * @param score visit the score to export
      */
+    @Override
     public boolean visit (Score score)
     {
+        ///logger.info("Visiting " + score);
         // Version
         scorePartwise.setVersion("1.1");
 
@@ -506,6 +675,7 @@ public class ScoreExporter
         scaling.setMillimeters(millimeters);
         millimeters.setContent(
             String.format(
+                Locale.US,
                 "%.3f",
                 (score.getSheet()
                       .getScale()
@@ -566,16 +736,10 @@ public class ScoreExporter
     //------------//
     // visit Slur //
     //------------//
+    @Override
     public boolean visit (Slur slur)
     {
-        return true;
-    }
-
-    //-------------//
-    // visit Staff //
-    //-------------//
-    public boolean visit (Staff staff)
-    {
+        ///logger.info("Visiting " + slur);
         return true;
     }
 
@@ -589,9 +753,10 @@ public class ScoreExporter
      *
      * @param system visit the system to export
      */
+    @Override
     public boolean visit (System system)
     {
-        logger.fine("Visiting " + system);
+        ///logger.info("Visiting " + system);
         current.system = system;
 
         SystemPart systemPart = (SystemPart) system.getParts()
@@ -613,21 +778,15 @@ public class ScoreExporter
         return false; // No default browsing this way
     }
 
-    //------------------//
-    // visit SystemPart //
-    //------------------//
-    public boolean visit (SystemPart node)
-    {
-        return true;
-    }
-
     //---------------------//
     // visit TimeSignature //
     //---------------------//
+    @Override
     public boolean visit (TimeSignature timeSignature)
     {
+        ///logger.info("Visiting " + timeSignature);
         Time time = new Time();
-        getAttributes()
+        getMeasureAttributes()
             .setTime(time);
 
         // Beats
@@ -682,15 +841,15 @@ public class ScoreExporter
         return jaxbContext;
     }
 
-    //---------------//
-    // getAttributes //
-    //---------------//
+    //----------------------//
+    // getMeasureAttributes //
+    //----------------------//
     /**
      * Report (after creating it if necessary) the measure attributes element
      *
      * @return the measure attributes element
      */
-    private Attributes getAttributes ()
+    private Attributes getMeasureAttributes ()
     {
         if (current.attributes == null) {
             current.attributes = new Attributes();
@@ -722,6 +881,57 @@ public class ScoreExporter
         }
 
         return true; // Since no previous clef found
+    }
+
+    //-------------------//
+    // isNewKeySignature //
+    //-------------------//
+    /**
+     * Make sure we have a NEW key, not already assigned. We have to go back
+     * in current measure, then in current staff, then in same staff in previous
+     * systems, until we find a previous key. And we compare the two shapes.
+     * @param key the potentially new key
+     * @return true if this key is really new
+     */
+    private boolean isNewKeySignature (KeySignature key)
+    {
+        // Perhaps another key before this one ?
+        KeySignature previousKey = current.measure.getKeyBefore(
+            key.getCenter());
+
+        if (previousKey != null) {
+            return previousKey.getKey() != key.getKey();
+        }
+
+        return true; // Since no previous key found
+    }
+
+    //------------------//
+    // accidentalNameOf //
+    //------------------//
+    private String accidentalNameOf (Shape shape)
+    {
+        ///sharp, natural, flat, double-sharp, sharp-sharp, flat-flat
+        switch (shape) {
+        case SHARP :
+            return "sharp";
+
+        case NATURAL :
+            return "natural";
+
+        case FLAT :
+            return "flat";
+
+        case DOUBLE_SHARP :
+            return "double-sharp";
+
+        case DOUBLE_FLAT :
+            return "flat-flat";
+        }
+
+        logger.warning("Illegal shape for accidental: " + shape);
+
+        return "";
     }
 
     //------------//
@@ -764,11 +974,53 @@ public class ScoreExporter
         return "???";
     }
 
+    //--------------//
+    // insertBackup //
+    //--------------//
+    private void insertBackup (int delta)
+    {
+        Backup backup = new Backup();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(backup);
+
+        Duration duration = new Duration();
+        backup.setDuration(duration);
+        duration.setContent("" + current.part.simpleDurationOf(delta));
+    }
+
+    //---------------//
+    // insertForward //
+    //---------------//
+    private void insertForward (int   delta,
+                                Chord chord)
+    {
+        Forward forward = new Forward();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(forward);
+
+        Duration duration = new Duration();
+        forward.setDuration(duration);
+        duration.setContent("" + current.part.simpleDurationOf(delta));
+
+        Voice voice = new Voice();
+        forward.setVoice(voice);
+        voice.setContent("" + current.voice);
+
+        // Staff ? (only if more than one staff in part)
+        if (chord.getPart()
+                 .getStaves()
+                 .size() > 1) {
+            proxymusic.Staff pmStaff = new proxymusic.Staff();
+            forward.setStaff(pmStaff);
+            pmStaff.setContent("" + (chord.getStaff().getId()));
+        }
+    }
+
     //-------------//
     // jaxbMarshal //
     //-------------//
     /**
-     * Marshal the hierarchy rooted at provided Scorepartwise instance to an
+     * Marshal the hierarchy rooted at provided ScorePartwise instance to an
      * OutputStream
      *
      * @param scorePartwise the root element
@@ -815,6 +1067,7 @@ public class ScoreExporter
         Measure               measure;
         proxymusic.Print      pmPrint;
         proxymusic.Attributes attributes;
+        int                   voice;
     }
 
     //---------//
