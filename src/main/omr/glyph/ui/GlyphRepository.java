@@ -101,10 +101,10 @@ public class GlyphRepository
     //~ Instance fields --------------------------------------------------------
 
     /** Core collection of glyphs */
-    private Collection<String> coreBase;
+    private List<String> coreBase;
 
     /** Whole collection of glyphs */
-    private Collection<String> wholeBase;
+    private List<String> wholeBase;
 
     /**
      * Map of all glyphs deserialized so far, using full glyph name as key. Full
@@ -163,7 +163,7 @@ public class GlyphRepository
      *
      * @param base the provided collection
      */
-    synchronized void setCoreBase (Collection<String> base)
+    synchronized void setCoreBase (List<String> base)
     {
         coreBase = base;
     }
@@ -176,7 +176,7 @@ public class GlyphRepository
      *
      * @return the core collection of recorded glyphs
      */
-    synchronized Collection<String> getCoreBase (Monitor monitor)
+    synchronized List<String> getCoreBase (Monitor monitor)
     {
         if (coreBase == null) {
             coreBase = loadCoreBase(monitor);
@@ -324,13 +324,59 @@ public class GlyphRepository
      *
      * @return the whole collection of recorded glyphs
      */
-    synchronized Collection<String> getWholeBase (Monitor monitor)
+    synchronized List<String> getWholeBase (Monitor monitor)
     {
         if (wholeBase == null) {
             wholeBase = loadWholeBase(monitor);
         }
 
         return wholeBase;
+    }
+
+    //------------//
+    // fileNameOf //
+    //------------//
+    /**
+     * Report the file name w/o extension of a gName.
+     *
+     * @param gName glyph name, using format "folder/name.number.xml" or "folder/name.xml"
+     * @return the 'name' or 'name.number' part of the format
+     */
+    static String fileNameOf (String gName)
+    {
+        int    slash = gName.indexOf("/");
+        String nameWithExt = gName.substring(slash + 1);
+
+        int    lastDot = nameWithExt.lastIndexOf(".");
+
+        if (lastDot != -1) {
+            return nameWithExt.substring(0, lastDot);
+        } else {
+            return nameWithExt;
+        }
+    }
+
+    //-------------//
+    // shapeNameOf //
+    //-------------//
+    /**
+     * Report the shape name of a gName.
+     *
+     * @param gName glyph name, using format "folder/name.number.xml" or "folder/name.xml"
+     * @return the 'name' part of the format
+     */
+    static String shapeNameOf (String gName)
+    {
+        int    slash = gName.indexOf("/");
+        String nameWithExt = gName.substring(slash + 1);
+
+        int    firstDot = nameWithExt.indexOf(".");
+
+        if (firstDot != -1) {
+            return nameWithExt.substring(0, firstDot);
+        } else {
+            return nameWithExt;
+        }
     }
 
     //-------------------//
@@ -384,39 +430,43 @@ public class GlyphRepository
             ///final long startTime = System.currentTimeMillis();
             for (SystemInfo system : sheet.getSystems()) {
                 for (Glyph glyph : system.getGlyphs()) {
-                    Shape shape = glyph.getShape();
+                    if (glyph.getShape() != null) {
+                        Shape shape = glyph.getShape()
+                                           .getTrainingShape();
 
-                    if ((shape != null) &&
-                        (shape != Shape.NOISE) &&
-                        (shape != Shape.COMBINING_STEM)) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine("Storing " + glyph);
+                        if ((shape != Shape.NOISE) &&
+                            (shape != Shape.COMBINING_STEM)) {
+                            if (logger.isFineEnabled()) {
+                                logger.fine("Storing " + glyph);
+                            }
+
+                            glyph.setInterline(sheet.getScale().interline());
+
+                            // Build the proper glyph file
+                            StringBuffer sb = new StringBuffer();
+                            sb.append(shape);
+                            sb.append(".");
+                            sb.append(String.format("%04d", glyph.getId()));
+                            sb.append(FILE_EXTENSION);
+
+                            File glyphFile;
+
+                            if (shape != Shape.STRUCTURE) {
+                                glyphFile = new File(sheetDir, sb.toString());
+                            } else {
+                                structuresNb++;
+                                glyphFile = new File(
+                                    structuresDir,
+                                    sb.toString());
+                            }
+
+                            OutputStream os = new FileOutputStream(glyphFile);
+
+                            // Store the glyph
+                            jaxbMarshal(glyph, os);
+
+                            glyphNb++;
                         }
-
-                        glyph.setInterline(sheet.getScale().interline());
-
-                        // Build the proper glyph file
-                        StringBuffer sb = new StringBuffer();
-                        sb.append(shape);
-                        sb.append(".");
-                        sb.append(String.format("%04d", glyph.getId()));
-                        sb.append(FILE_EXTENSION);
-
-                        File glyphFile;
-
-                        if (shape != Shape.STRUCTURE) {
-                            glyphFile = new File(sheetDir, sb.toString());
-                        } else {
-                            structuresNb++;
-                            glyphFile = new File(structuresDir, sb.toString());
-                        }
-
-                        OutputStream os = new FileOutputStream(glyphFile);
-
-                        // Store the glyph
-                        jaxbMarshal(glyph, os);
-
-                        glyphNb++;
                     }
                 }
             }
@@ -636,29 +686,6 @@ public class GlyphRepository
         }
     }
 
-    //------------//
-    // fileNameOf //
-    //------------//
-    /**
-     * Report the file name w/o extension of a gName.
-     *
-     * @param gName glyph name, using format "folder/name.number.xml" or "folder/name.xml"
-     * @return the 'name' part of the format
-     */
-    private String fileNameOf (String gName)
-    {
-        int    slash = gName.indexOf("/");
-        String nameWithExt = gName.substring(slash + 1);
-
-        int    lastDot = nameWithExt.lastIndexOf(".");
-
-        if (lastDot != -1) {
-            return nameWithExt.substring(0, lastDot);
-        } else {
-            return nameWithExt;
-        }
-    }
-
     //-------------//
     // glyphNameOf //
     //-------------//
@@ -719,8 +746,8 @@ public class GlyphRepository
      * @param monitor the observing entity if any
      * @return the collection of loaded glyphs names
      */
-    private synchronized Collection<String> loadBase (File[]  paths,
-                                                      Monitor monitor)
+    private synchronized List<String> loadBase (File[]  paths,
+                                                Monitor monitor)
     {
         // Files in the provided directory & its subdirectories
         List<File> files = new ArrayList<File>(4000);
@@ -734,7 +761,7 @@ public class GlyphRepository
         }
 
         // Now, collect the glyphs names
-        Collection<String> base = new ArrayList<String>(4000);
+        List<String> base = new ArrayList<String>(4000);
 
         for (File file : files) {
             base.add(glyphNameOf(file));
@@ -758,7 +785,7 @@ public class GlyphRepository
      *
      * @return the collection of core glyphs names
      */
-    private Collection<String> loadCoreBase (Monitor monitor)
+    private List<String> loadCoreBase (Monitor monitor)
     {
         return loadBase(new File[] { coreFolder }, monitor);
     }
@@ -806,7 +833,7 @@ public class GlyphRepository
      *
      * @return a collection of (known) glyphs names
      */
-    private Collection<String> loadWholeBase (Monitor monitor)
+    private List<String> loadWholeBase (Monitor monitor)
     {
         return loadBase(new File[] { iconsFolder, getSheetsFolder() }, monitor);
     }
