@@ -10,6 +10,7 @@
 //
 package omr;
 
+
 /**
  * Class <code>ProcessingException</code> describes an exception occurring while
  * doing OMR processing, and which should immediately stop the current Step, as

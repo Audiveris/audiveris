@@ -452,9 +452,11 @@ public class Main
                 if (locale.getCountry()
                           .equals(country)) {
                     Locale.setDefault(locale);
+
                     return;
                 }
             }
+
             logger.info("Cannot set locale country to " + country);
         }
     }
