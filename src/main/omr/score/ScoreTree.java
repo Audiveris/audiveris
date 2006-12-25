@@ -10,15 +10,18 @@
 //
 package omr.score;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.util.Dumper;
 import omr.util.Implement;
+import omr.util.TreeNode;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
-import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 
@@ -33,14 +36,17 @@ public class ScoreTree
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Default window height in pixels */
-    private static final int WINDOW_HEIGHT = 550;
+    private static final int WINDOW_HEIGHT = 700;
 
     /** Default width in pixels for the left part (the tree) */
-    private static final int LEFT_WIDTH = 300;
+    private static final int LEFT_WIDTH = 400;
 
     /** Default width in pixels for the right part (the detail) */
-    private static final int RIGHT_WIDTH = 340;
+    private static final int RIGHT_WIDTH = 500;
 
     /** Default windows width in pixels */
     private static final int WINDOW_WIDTH = LEFT_WIDTH + RIGHT_WIDTH;
@@ -58,12 +64,6 @@ public class ScoreTree
     private ScoreTree (Score score)
     {
         component = new JPanel();
-
-        // Make a nice border
-        EmptyBorder    eb = new EmptyBorder(5, 5, 5, 5);
-        BevelBorder    bb = new BevelBorder(BevelBorder.LOWERED);
-        CompoundBorder cb = new CompoundBorder(eb, bb);
-        component.setBorder(new CompoundBorder(cb, eb));
 
         // Set up the tree
         JTree       tree = new JTree(new Adapter(score));
@@ -109,6 +109,8 @@ public class ScoreTree
             htmlView);
         splitPane.setContinuousLayout(true);
         splitPane.setDividerLocation(LEFT_WIDTH);
+        splitPane.setBorder(null);
+        splitPane.setDividerSize(2);
         splitPane.setPreferredSize(
             new Dimension(WINDOW_WIDTH + 10, WINDOW_HEIGHT + 10));
 
@@ -200,9 +202,7 @@ public class ScoreTree
         public Object getChild (Object parent,
                                 int    index)
         {
-            ScoreNode node = (ScoreNode) parent;
-
-            return (ScoreNode) node.getChildren()
+            return (ScoreNode) getRelevantChildren(parent)
                                    .get(index);
         }
 
@@ -212,9 +212,7 @@ public class ScoreTree
         @Implement(TreeModel.class)
         public int getChildCount (Object parent)
         {
-            ScoreNode node = (ScoreNode) parent;
-
-            return node.getChildren()
+            return getRelevantChildren(parent)
                        .size();
         }
 
@@ -225,9 +223,7 @@ public class ScoreTree
         public int getIndexOfChild (Object parent,
                                     Object child)
         {
-            ScoreNode node = (ScoreNode) parent;
-
-            return node.getChildren()
+            return getRelevantChildren(parent)
                        .indexOf(child);
         }
 
@@ -239,9 +235,9 @@ public class ScoreTree
         {
             // Determines whether the icon shows up to the left.
             // Return true for any node with no children
-            ScoreNode musicNode = (ScoreNode) node;
+            ScoreNode scoreNode = (ScoreNode) node;
 
-            return getChildCount(musicNode) <= 0;
+            return getChildCount(scoreNode) == 0;
         }
 
         //---------//
@@ -291,5 +287,51 @@ public class ScoreTree
             // ensure the new value was really new and then fire a
             // TreeNodesChanged event.
         }
+
+        //------------//
+        // isRelevant //
+        //------------//
+        private boolean isRelevant (Object node)
+        {
+            // We display dummy containers only when they are not empty            
+            if (constants.hideEmptyDummies.getValue() &&
+                (node.getClass().getDeclaredFields().length == 0)) {
+                ScoreNode scoreNode = (ScoreNode) node;
+
+                return scoreNode.getChildren()
+                                .size() > 0;
+            } else {
+                return true;
+            }
+        }
+
+        //---------------------//
+        // getRelevantChildren //
+        //---------------------//
+        private List<TreeNode> getRelevantChildren (Object node)
+        {
+            List<TreeNode> relevantChildren = new ArrayList<TreeNode>();
+            ScoreNode      scoreNode = (ScoreNode) node;
+
+            for (TreeNode n : scoreNode.getChildren()) {
+                if (isRelevant(n)) {
+                    relevantChildren.add(n);
+                }
+            }
+
+            return relevantChildren;
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        /** Should we hide empty dummy containers */
+        Constant.Boolean hideEmptyDummies = new Constant.Boolean(
+            true,
+            "Should we hide empty dummy containers");
     }
 }
