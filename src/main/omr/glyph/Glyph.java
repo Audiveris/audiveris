@@ -22,6 +22,7 @@ import omr.sheet.Picture;
 import omr.sheet.PixelPoint;
 import omr.sheet.PixelRectangle;
 
+import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
 
 import omr.util.Implement;
@@ -38,11 +39,17 @@ import javax.xml.bind.annotation.*;
  * Class <code>Glyph</code> represents any glyph found, such as stem, ledger,
  * accidental, note head, etc...
  *
- * <p> Collections of glyphs (generally at system level) are sorted first by
- * abscissa then by ordinate. To cope with glyphs nearly vertically aligned, and
- * which would thus be too dependent on the precise x value, the y value could
- * be used instead. But this would lead to non transitive comparisons... TBC:
- * does this apply to horizontal glyphs as well ?
+ * <p>A Glyph is basically a collection of pixels. It can be split into smaller
+ * glyphs, which may later be re-assembled into another instance of glyph. There
+ * is a means, based on a simple signature (weight and bounding box), to link
+ * the second instance to the first (original) one. Then any getter or setter
+ * does transparently access the original glyph.
+ *
+ * <p>The Glyph class implements Comparable so that collections of glyphs
+ * (generally at system level) are sorted first by abscissa then by ordinate.
+ *
+ * <p>A Glyph can be stored on disk and reloaded in order to train a glyph
+ * evaluator, so this class uses JAXB annotations.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -62,24 +69,25 @@ public class Glyph
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Unique instance identifier (in the containing GlyphLag) */
+    /** Instance identifier (Unique in the containing GlyphLag) */
     @XmlAttribute
     protected int id;
 
-    /** Original if any */
-    protected Glyph original;
-
-    /** The containing lag */
+    /** The containing glyph lag */
     protected GlyphLag lag;
 
-    /** Sections that compose this glyph. The collection should be kept sorted
-       on centroid abscissa then ordinate*/
+    /**
+     * Sections that compose this glyph. The collection should be kept sorted
+     * on centroid abscissa then ordinate
+     */
     @XmlElement(name = "section")
     protected List<GlyphSection> members = new ArrayList<GlyphSection>();
 
-    /** Display box (always properly oriented), so that rectangle width is
-       aligned with display horizontal and rectangle height with display
-       vertical */
+    /**
+     * Display box (always properly oriented), so that rectangle width is
+     * aligned with display horizontal and rectangle height with display
+     * vertical
+     */
     protected Rectangle contourBox;
 
     /** Total weight of this glyph */
@@ -91,10 +99,16 @@ public class Glyph
     /** A signature to retrieve this glyph */
     private GlyphSignature signature;
 
+    /** Original if any */
+    protected Glyph original;
+
     // Below are properties to be retrieved in the glyph original if any
 
     /** Current recognized shape of this glyph */
     protected Shape shape;
+
+    /** Doubt in the assigned shape */
+    protected double doubt = Evaluation.NO_DOUBT;
 
     /** Interline of the containing staff (or sheet) */
     protected int interline;
@@ -124,8 +138,10 @@ public class Glyph
     /**  Box center coordinates */
     protected PixelPoint center;
 
-    /** Bounding rectangle, defined as union of all member section bounds so
-       this implies that it has the same orientation as the sections */
+    /**
+     * Bounding rectangle, defined as union of all member section bounds so
+     * this implies that it has the same orientation as the sections
+     */
     protected Rectangle bounds;
 
     /** Set of forbidden shapes, if any */
@@ -145,6 +161,31 @@ public class Glyph
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------------//
+    // getAreaCenter //
+    //---------------//
+    /**
+     * Report the glyph area center. The point is lazily evaluated.
+     *
+     * @return the area center point
+     */
+    public PixelPoint getAreaCenter ()
+    {
+        if (original != null) {
+            return original.getAreaCenter();
+        } else if (center == null) {
+            PixelRectangle box = getContourBox();
+            center = new PixelPoint(
+                box.x + (box.width / 2),
+                box.y + (box.height / 2));
+        }
+
+        return center;
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
     public void setBounds (Rectangle bounds)
     {
         if (original != null) {
@@ -195,22 +236,31 @@ public class Glyph
     // getCenter //
     //-----------//
     /**
-     * Report the glyph area center. The point is lazily evaluated.
+     * Report the glyph (reference) center, which is the equivalent of the icon
+     * reference point if one such point exist, or the glyph area center
+     * otherwise. The point is lazily evaluated.
      *
-     * @return the area center point
+     * @return the reference center point
      */
     public PixelPoint getCenter ()
     {
-        if (original != null) {
-            return original.getCenter();
-        } else if (center == null) {
-            PixelRectangle box = getContourBox();
-            center = new PixelPoint(
-                box.x + (box.width / 2),
-                box.y + (box.height / 2));
+        if (shape == null) {
+            return getAreaCenter();
         }
 
-        return center;
+        SymbolIcon icon = (SymbolIcon) shape.getIcon();
+        Point      iconRefPoint = icon.getRefPoint();
+
+        if (iconRefPoint != null) {
+            double         refRatio = (double) iconRefPoint.y / icon.getIconHeight();
+            PixelRectangle box = getContourBox();
+
+            return new PixelPoint(
+                getAreaCenter().x,
+                (int) Math.rint(box.y + (box.height * refRatio)));
+        } else {
+            return getAreaCenter();
+        }
     }
 
     //-------------//
@@ -341,32 +391,20 @@ public class Glyph
         return low;
     }
 
-    //--------------------//
-    // setForbiddenShapes //
-    //--------------------//
-    public void setForbiddenShapes (Set<Shape> forbiddenShapes)
-    {
-        if (original != null) {
-            original.setForbiddenShapes(forbiddenShapes);
-        } else {
-            this.forbiddenShapes = forbiddenShapes;
-        }
-    }
-
-    //--------------------//
-    // getForbiddenShapes //
-    //--------------------//
+    //----------//
+    // getDoubt //
+    //----------//
     /**
-     * Report the set of non-reassignable shapes for this glyph instance
+     * Report the doubt of the glyph shape
      *
-     * @return the set of previous shapes, which may be null
+     * @return the doubt related to glyph shape
      */
-    public Set<Shape> getForbiddenShapes ()
+    public double getDoubt ()
     {
         if (original != null) {
-            return original.getForbiddenShapes();
+            return original.getDoubt();
         } else {
-            return forbiddenShapes;
+            return doubt;
         }
     }
 
@@ -449,7 +487,7 @@ public class Glyph
     }
 
     //--------//
-    // setLag // // For access from GlyphLag only !!!
+    // setLag //
     //--------//
     /**
      * The setter for glyph lag. Used with care, by {@link GlyphLag} and {@link
@@ -485,7 +523,11 @@ public class Glyph
      */
     public void setLeftStem (Glyph leftStem)
     {
-        this.leftStem = leftStem;
+        if (original != null) {
+            original.setLeftStem(leftStem);
+        } else {
+            this.leftStem = leftStem;
+        }
     }
 
     //-------------//
@@ -498,7 +540,30 @@ public class Glyph
      */
     public Glyph getLeftStem ()
     {
-        return leftStem;
+        if (original != null) {
+            return original.getLeftStem();
+        } else {
+            return leftStem;
+        }
+    }
+
+    public Logger getLogger ()
+    {
+        return logger;
+    }
+
+    //---------------//
+    // isManualShape //
+    //---------------//
+    /**
+     * Report whether the shape of this glyph has been manually assigned (and
+     * thus can only be modified by explicit user action)
+     *
+     * @return true if shape manually assigned
+     */
+    public boolean isManualShape ()
+    {
+        return getDoubt() == Evaluation.MANUAL_NO_DOUBT;
     }
 
     //------------//
@@ -626,7 +691,11 @@ public class Glyph
      */
     public void setRightStem (Glyph rightStem)
     {
-        this.rightStem = rightStem;
+        if (original != null) {
+            original.setRightStem(rightStem);
+        } else {
+            this.rightStem = rightStem;
+        }
     }
 
     //--------------//
@@ -639,31 +708,50 @@ public class Glyph
      */
     public Glyph getRightStem ()
     {
-        return rightStem;
+        if (original != null) {
+            return original.getRightStem();
+        } else {
+            return rightStem;
+        }
     }
 
     //----------//
     // setShape //
     //----------//
     /**
-     * Setter for the glyph shape
+     * Setter for the glyph shape, assumed to be based on structural data
      *
      * @param shape the assigned shape, which may be null
      */
     public void setShape (Shape shape)
     {
+        setShape(shape, Evaluation.NO_DOUBT);
+    }
+
+    //----------//
+    // setShape //
+    //----------//
+    /**
+     * Setter for the glyph shape, with related grade
+     *
+     * @param eval the glyph evaluation (shape and grade)
+     */
+    public void setShape (Shape  shape,
+                          double doubt)
+    {
         if (original != null) {
-            original.setShape(shape);
+            original.setShape(shape, doubt);
         } else {
             // Blacklist the previous shape if any
             if (getShape() != null) {
                 forbidShape(getShape());
             }
 
-            this.shape = shape;
-
             // Now remove the assigned shape from the blacklist if any
             allowShape(shape);
+
+            this.shape = shape;
+            this.doubt = doubt;
         }
     }
 
@@ -675,7 +763,6 @@ public class Glyph
      *
      * @return the glyph shape, which may be null
      */
-    @XmlAttribute
     public Shape getShape ()
     {
         if (original != null) {
@@ -683,6 +770,16 @@ public class Glyph
         } else {
             return shape;
         }
+    }
+
+    //------------------//
+    // isShapeForbidden //
+    //------------------//
+    public boolean isShapeForbidden (Shape shape)
+    {
+        return (getForbiddenShapes() != null) &&
+               getForbiddenShapes()
+                   .contains(shape);
     }
 
     //--------------//
@@ -754,7 +851,8 @@ public class Glyph
     // getSymbolsAfter //
     //-----------------//
     /**
-     * Return the known glyphs stuck on last side of the stick
+     * Return the known glyphs stuck on last side of the stick (this is relevant
+     * mainly for a stem glyph)
      *
      * @param predicate the predicate to apply on each glyph
      * @param goods the set of correct glyphs (perhaps empty)
@@ -785,7 +883,8 @@ public class Glyph
     // getSymbolsBefore //
     //------------------//
     /**
-     * Return the known glyphs stuck on first side of the stick
+     * Return the known glyphs stuck on first side of the stick (this is
+     * relevant mainly for a stem glyph)
      *
      * @param predicate the predicate to apply on each glyph
      * @param goods the set of correct glyphs (perhaps empty)
@@ -809,6 +908,33 @@ public class Glyph
                     }
                 }
             }
+        }
+    }
+
+    //------------------//
+    // setTrainingShape //
+    //------------------//
+    public void setTrainingShape (Shape shape)
+    {
+        setShape(shape);
+    }
+
+    //------------------//
+    // getTrainingShape //
+    //------------------//
+    /**
+     * Report the training shape of the registered glyph shape
+     *
+     * @return the glyph shape, which may be null
+     */
+    @XmlAttribute(name = "shape")
+    public Shape getTrainingShape ()
+    {
+        if (getShape() != null) {
+            return getShape()
+                       .getTrainingShape();
+        } else {
+            return null;
         }
     }
 
@@ -853,7 +979,7 @@ public class Glyph
     // setWithLedger //
     //---------------//
     /**
-     * Remember info about ledger near by
+     * Remember info about ledger nearby
      *
      * @param withLedger true is there is such ledger
      */
@@ -1060,7 +1186,7 @@ public class Glyph
      */
     public void dump ()
     {
-        System.out.println(this.getClass().getName());
+        System.out.println(getClass().getName());
         System.out.println("   id=" + getId());
         System.out.println("   original=" + original);
         System.out.println("   lag=" + getLag());
@@ -1070,8 +1196,12 @@ public class Glyph
         System.out.println("   result=" + getResult());
         System.out.println("   signature=" + getSignature());
         System.out.println("   shape=" + getShape());
+        System.out.println("   doubt=" + getDoubt());
+        System.out.println("   training=" + getTrainingShape());
         System.out.println("   interline=" + getInterline());
         System.out.println("   stemNumber=" + getStemNumber());
+        System.out.println("   leftStem=" + getLeftStem());
+        System.out.println("   rightStem=" + getRightStem());
         System.out.println("   pitchPosition=" + getPitchPosition());
         System.out.println("   withLedger=" + isWithLedger());
         System.out.println("   moments=" + getMoments());
@@ -1095,21 +1225,6 @@ public class Glyph
         for (GlyphSection section : members) {
             section.write(picture, Picture.BACKGROUND);
         }
-    }
-
-    //-------------//
-    // forbidShape //
-    //-------------//
-    public void forbidShape (Shape shape)
-    {
-        Set<Shape> forbiddens = getForbiddenShapes();
-
-        if (forbiddens == null) {
-            forbiddens = new HashSet<Shape>();
-            setForbiddenShapes(forbiddens);
-        }
-
-        forbiddens.add(shape);
     }
 
     //------------//
@@ -1192,7 +1307,15 @@ public class Glyph
 
         if (getShape() != null) {
             sb.append(" shape=")
-              .append(getShape());
+              .append(getShape())
+              .append("(")
+              .append(String.format("%.3f", getDoubt()))
+              .append(")");
+
+            if (getTrainingShape() != getShape()) {
+                sb.append(" training=")
+                  .append(getTrainingShape());
+            }
         }
 
         if (getCentroid() != null) {
@@ -1203,9 +1326,6 @@ public class Glyph
               .append("]");
         }
 
-        //         if (moments != null)
-        //             sb.append(" moments=" + moments);
-
         // Is that all?
         if (this.getClass()
                 .getName()
@@ -1214,6 +1334,15 @@ public class Glyph
         }
 
         return sb.toString();
+    }
+
+    protected void setGrade (double grade)
+    {
+        if (original != null) {
+            original.setGrade(grade);
+        } else {
+            this.doubt = grade;
+        }
     }
 
     //-----------//
@@ -1228,6 +1357,30 @@ public class Glyph
     protected String getPrefix ()
     {
         return "Glyph";
+    }
+
+    //--------------------//
+    // setForbiddenShapes //
+    //--------------------//
+    private void setForbiddenShapes (Set<Shape> forbiddenShapes)
+    {
+        if (original != null) {
+            original.setForbiddenShapes(forbiddenShapes);
+        } else {
+            this.forbiddenShapes = forbiddenShapes;
+        }
+    }
+
+    //--------------------//
+    // getForbiddenShapes //
+    //--------------------//
+    private Set<Shape> getForbiddenShapes ()
+    {
+        if (original != null) {
+            return original.getForbiddenShapes();
+        } else {
+            return forbiddenShapes;
+        }
     }
 
     //----------------//
@@ -1253,6 +1406,21 @@ public class Glyph
         for (Section section : members) {
             section.fillTable(table, box);
         }
+    }
+
+    //-------------//
+    // forbidShape //
+    //-------------//
+    private void forbidShape (Shape shape)
+    {
+        Set<Shape> forbiddens = getForbiddenShapes();
+
+        if (forbiddens == null) {
+            forbiddens = new HashSet<Shape>();
+            setForbiddenShapes(forbiddens);
+        }
+
+        forbiddens.add(shape);
     }
 
     //-----------------//
