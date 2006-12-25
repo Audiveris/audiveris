@@ -99,9 +99,10 @@ public class GlyphInspector
     // getCleanupMaxGrade //
     //--------------------//
     /**
-     * Report the maximum grade for a cleanup
+     * Report the maximum doubt for a cleanup
      *
-     * @return maximum acceptable grade value
+     *
+     * @return maximum acceptable doubt value
      */
     public static double getCleanupMaxGrade ()
     {
@@ -112,9 +113,10 @@ public class GlyphInspector
     // getLeafMaxGrade //
     //-----------------//
     /**
-     * Report the maximum grade for a leaf
+     * Report the maximum doubt for a leaf
      *
-     * @return maximum acceptable grade value
+     *
+     * @return maximum acceptable doubt value
      */
     public static double getLeafMaxGrade ()
     {
@@ -125,9 +127,10 @@ public class GlyphInspector
     // getSymbolMaxGrade //
     //-------------------//
     /**
-     * Report the maximum grade for a symbol
+     * Report the maximum doubt for a symbol
      *
-     * @return maximum acceptable grade value
+     *
+     * @return maximum acceptable doubt value
      */
     public static double getSymbolMaxGrade ()
     {
@@ -182,8 +185,8 @@ public class GlyphInspector
         }
 
         // Pass this data to the glyph inspector
-        sheet.getBarsBuilder()
-             .setBraces(braceLists);
+        //        sheet.getBarsBuilder()
+        //             .setBraces(braceLists);
     }
 
     //------------------//
@@ -193,7 +196,8 @@ public class GlyphInspector
      * Look for glyphs portions that should be considered as parts of compound
      * glyphs
      *
-     * @param maxGrade mamximum acceptance grade
+     *
+     * @param maxGrade mamximum acceptance doubt
      */
     public void processCompounds (double maxGrade)
     {
@@ -224,7 +228,8 @@ public class GlyphInspector
      * All symbol glyphs of the sheet, for which we can get a positive vote of
      * the evaluator, are assigned the voted shape.
      *
-     * @param maxGrade maximum value for acceptable grade
+     *
+     * @param maxGrade maximum value for acceptable doubt
      */
     public void processGlyphs (double maxGrade)
     {
@@ -252,17 +257,17 @@ public class GlyphInspector
                     glyph.setInterline(sheet.getScale().interline());
 
                     // Get vote
-                    Shape vote = evaluator.vote(glyph, maxGrade);
+                    Evaluation vote = evaluator.vote(glyph, maxGrade);
 
                     if (vote != null) {
-                        glyph.setShape(vote);
+                        glyph.setShape(vote.shape, vote.doubt);
                         acceptNb++;
 
-                        if (vote == Shape.NOISE) {
+                        if (vote.shape == Shape.NOISE) {
                             noiseNb++;
-                        } else if (vote == Shape.CLUTTER) {
+                        } else if (vote.shape == Shape.CLUTTER) {
                             clutterNb++;
-                        } else if (vote == Shape.STRUCTURE) {
+                        } else if (vote.shape == Shape.STRUCTURE) {
                             structureNb++;
                         } else {
                             knownNb++;
@@ -431,8 +436,12 @@ public class GlyphInspector
     //-----------------------//
     private boolean isSuitableForCompound (Glyph glyph)
     {
-        return !glyph.isKnown() || (glyph.getShape() == Shape.DOT) ||
-               (glyph.getShape() == Shape.SLUR);
+        return !glyph.isKnown() ||
+               (!glyph.isManualShape() &&
+               ((glyph.getShape() == Shape.DOT) ||
+               (glyph.getShape() == Shape.SLUR) ||
+               (glyph.getShape() == Shape.CLUTTER) ||
+               (glyph.getDoubt() >= constants.minCompoundPartDoubt.getValue())));
     }
 
     //-------//
@@ -460,16 +469,16 @@ public class GlyphInspector
      * In the specified system, look for glyphs portions that should be
      * considered as parts of compound glyphs
      *
+     *
      * @param system the system where splitted glyphs are looked for
-     * @param maxGrade mamximum acceptance grade
-     * @param compounds global list of compounds to expend
+     * @param maxGrade maximum acceptance doubt
+     * @param compounds resulting global list of compounds to expend
      */
     private void processSystemCompounds (SystemInfo  system,
                                          double      maxGrade,
                                          List<Glyph> compounds)
     {
-        // Collect unknown glyphs
-        // (as well as DOT assigned ones, since they are easily taken apart)
+        // Collect glyphs suitable for participating in compound building
         List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs().size());
 
         for (Glyph glyph : system.getGlyphs()) {
@@ -489,17 +498,12 @@ public class GlyphInspector
                     }
                 });
 
-        //        if (logger.isFineEnabled()) {
-        //            logger.fine("System candidates: " + idsOf(glyphs));
-        //        }
-
         // Process each glyph in turn, by looking at smaller ones
-        int         index = -1;
         Evaluator   evaluator = GlyphNetwork.getInstance();
         List<Glyph> neighbors = new ArrayList<Glyph>();
 
-        for (Glyph glyph : glyphs) {
-            index++;
+        for (int index = 0; index < glyphs.size(); index++) {
+            Glyph glyph = glyphs.get(index);
 
             // Since the glyphs are modified on the fly ...
             if (!isSuitableForCompound(glyph)) {
@@ -526,23 +530,29 @@ public class GlyphInspector
             }
 
             if (neighbors.size() > 0) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(glyph.getId() + " + " + idsOf(neighbors));
-                }
-
                 // Let's try a compound
                 neighbors.add(glyph);
 
-                Glyph compound = builder.buildCompound(neighbors);
-                Shape vote = evaluator.vote(compound, maxGrade);
+                Glyph      compound = builder.buildCompound(neighbors);
+                Evaluation vote = evaluator.vote(compound, maxGrade);
 
-                if ((vote != null) && vote.isWellKnown()) {
-                    compound.setShape(vote);
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        glyph.getId() + " " + glyph.getShape() + "(" +
+                        String.format("%.3f", glyph.getDoubt()) + ") : " +
+                        idsOf(neighbors) + " -> " + vote);
+                }
+
+                if ((vote != null) &&
+                    vote.shape.isWellKnown() &&
+                    (vote.shape != Shape.CLUTTER) &&
+                    (!glyph.isKnown() || (vote.doubt < glyph.getDoubt()))) {
+                    compound.setShape(vote.shape, vote.doubt);
                     builder.insertCompound(compound, neighbors);
                     compounds.add(compound);
 
                     if (logger.isFineEnabled()) {
-                        logger.fine("Compound " + compound);
+                        logger.fine("Insert compound " + compound);
                     }
                 }
             }
@@ -566,6 +576,8 @@ public class GlyphInspector
 
         int         nb = 0;
 
+        // Use very close stems to detect sharps and naturals ?
+
         // Collect all undue stems
         List<Glyph> SuspectedStems = new ArrayList<Glyph>();
 
@@ -585,7 +597,7 @@ public class GlyphInspector
 
                     // Discard "bad" ones
                     for (Glyph g : bads) {
-                        g.setShape(null);
+                        g.setShape((Shape) null);
                     }
                 }
             }
@@ -607,10 +619,10 @@ public class GlyphInspector
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
-                Shape vote = evaluator.vote(glyph, maxGrade);
+                Evaluation vote = evaluator.vote(glyph, maxGrade);
 
                 if (vote != null) {
-                    glyph.setShape(vote);
+                    glyph.setShape(vote.shape, vote.doubt);
 
                     if (glyph.isWellKnown()) {
                         if (logger.isFineEnabled()) {
@@ -687,6 +699,9 @@ public class GlyphInspector
             "Maximum acceptance grade for a leaf");
         Constant.Double  symbolMaxGrade = new Constant.Double(
             1.0001,
-            "Maximum acceptance grade for a symbol");
+            "Maximum doubt for a symbol");
+        Constant.Double  minCompoundPartDoubt = new Constant.Double(
+            1.020,
+            "Minimum doubt for a compound part");
     }
 }
