@@ -13,7 +13,7 @@ package omr.score;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
-import omr.score.visitor.Visitor;
+import omr.score.visitor.ScoreVisitor;
 
 import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
@@ -32,7 +32,7 @@ import java.util.List;
  * @version $Id$
  */
 public class SystemPart
-    extends ScoreNode
+    extends PartNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -44,6 +44,9 @@ public class SystemPart
     /** Id of this part within the system, starting at 1 */
     private final int id;
 
+    /** The corresponding ScorePart */
+    private ScorePart scorePart;
+
     /** Specific child : sequence of staves that belong to this system */
     private final StaffList staves;
 
@@ -52,6 +55,9 @@ public class SystemPart
 
     /** Specific child : list of slurs */
     private final SlurList slurs;
+
+    /** Specific child : list of wedges */
+    private final WedgeList wedges;
 
     /** Lonesome child : Starting barline (the others are linked to measures) */
     private Barline startingBarline;
@@ -77,6 +83,7 @@ public class SystemPart
         staves = new StaffList(this);
         measures = new MeasureList(this);
         slurs = new SlurList(this);
+        wedges = new WedgeList(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -189,6 +196,22 @@ public class SystemPart
         return measures.getChildren();
     }
 
+    //--------------//
+    // setScorePart //
+    //--------------//
+    public void setScorePart (ScorePart scorePart)
+    {
+        this.scorePart = scorePart;
+    }
+
+    //--------------//
+    // getScorePart //
+    //--------------//
+    public ScorePart getScorePart ()
+    {
+        return scorePart;
+    }
+
     //----------//
     // getSlurs //
     //----------//
@@ -293,6 +316,7 @@ public class SystemPart
      *
      * @return the containing system
      */
+    @Override
     public System getSystem ()
     {
         return (System) getContainer();
@@ -302,7 +326,7 @@ public class SystemPart
     // accept //
     //--------//
     @Override
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
     }
@@ -321,13 +345,12 @@ public class SystemPart
         // Specific children lists
         if (node instanceof Staff) {
             staves.addChild(node);
-            node.setContainer(staves);
         } else if (node instanceof Measure) {
             measures.addChild(node);
-            node.setContainer(measures);
         } else if (node instanceof Slur) {
             slurs.addChild(node);
-            node.setContainer(slurs);
+        } else if (node instanceof Wedge) {
+            wedges.addChild(node);
         } else {
             super.addChild(node);
         }
@@ -350,149 +373,6 @@ public class SystemPart
         return false; // Not found
     }
 
-    //-------------//
-    // paintSymbol //
-    //-------------//
-    /**
-     * Paint a symbol icon using the coordinates in units of its bounding center
-     * within the containing system part
-     *
-     * @param g graphical context
-     * @param zoom display zoom
-     * @param shape the shape whose icon must be painted
-     * @param center part-based bounding center in units
-     */
-    public void paintSymbol (Graphics    g,
-                             Zoom        zoom,
-                             Shape       shape,
-                             SystemPoint center)
-    {
-        if (shape == null) {
-            logger.warning("No shape to paint");
-        } else {
-            SymbolIcon icon = (SymbolIcon) shape.getIcon();
-
-            if (icon == null) {
-                logger.warning("No icon defined for shape " + shape);
-            } else if (center == null) {
-                logger.warning("No center defined for " + shape);
-            } else {
-                ScorePoint origin = getSystem()
-                                        .getDisplayOrigin();
-                g.drawImage(
-                    icon.getImage(),
-                    zoom.scaled(origin.x + center.x) -
-                    (icon.getActualWidth() / 2),
-                    zoom.scaled(origin.y + center.y) -
-                    (icon.getIconHeight() / 2),
-                    null);
-            }
-        }
-    }
-
-    //-------------//
-    // paintSymbol //
-    //-------------//
-    /**
-     * Paint a symbol icon using the coordinates in units of its bounding center
-     * within the containing system part, forcing adjacency with provided chord
-     * stem.
-     *
-     * @param g graphical context
-     * @param zoom display zoom
-     * @param shape the shape whose icon must be painted
-     * @param center part-based bounding center in units
-     * @param chord the chord stem to attach the symbol to
-     */
-    public void paintSymbol (Graphics    g,
-                             Zoom        zoom,
-                             Shape       shape,
-                             SystemPoint center,
-                             Chord       chord)
-    {
-        if (shape == null) {
-            logger.warning("No shape to paint");
-        } else {
-            SymbolIcon icon = (SymbolIcon) shape.getIcon();
-
-            if (icon == null) {
-                logger.warning("No icon defined for shape " + shape);
-            } else if (center == null) {
-                logger.warning("No center defined for " + shape);
-            } else if (chord == null) {
-                logger.warning("No chord defined for " + shape);
-            } else {
-                ScorePoint origin = getSystem()
-                                        .getDisplayOrigin();
-
-                // Position of symbol wrt stem
-                int stemX = chord.getTailLocation().x;
-                int iconX = zoom.scaled(origin.x + stemX);
-
-                if (center.x < stemX) {
-                    // Symbol is on left side of stem (-1 is for stem width)
-                    iconX -= (icon.getActualWidth() - 1);
-                }
-
-                g.drawImage(
-                    icon.getImage(),
-                    iconX,
-                    zoom.scaled(origin.y + center.y) -
-                    (icon.getIconHeight() / 2),
-                    null);
-            }
-        }
-    }
-
-    //-------------//
-    // paintSymbol //
-    //-------------//
-    /**
-     * Paint a symbol using its pitch position for ordinate in the containing
-     * staff
-     *
-     * @param g graphical context
-     * @param zoom display zoom
-     * @param shape the shape whose icon must be painted
-     * @param center part-based coordinates of bounding center in units (only
-     *               abscissa is actually used)
-     * @param staff the related staff
-     * @param pitchPosition staff-based ordinate in step lines
-     */
-    public void paintSymbol (Graphics    g,
-                             Zoom        zoom,
-                             Shape       shape,
-                             SystemPoint center,
-                             Staff       staff,
-                             double      pitchPosition)
-    {
-        if (shape == null) {
-            logger.warning("No shape to paint");
-        } else {
-            SymbolIcon icon = (SymbolIcon) shape.getIcon();
-
-            if (icon == null) {
-                logger.warning("No icon defined for shape " + shape);
-            } else if (center == null) {
-                logger.warning("No center defined for " + shape);
-            } else if (staff == null) {
-                logger.warning("No staff defined for " + shape);
-            } else {
-                ScorePoint origin = staff.getDisplayOrigin();
-                int        dy = staff.pitchToUnit(pitchPosition);
-                Point      refPoint = icon.getRefPoint();
-                int        refY = (refPoint == null) ? icon.getCentroid().y
-                                  : refPoint.y;
-                g.drawImage(
-                    icon.getImage(),
-                    zoom.scaled(origin.x + center.x) -
-                    (icon.getActualWidth() / 2),
-                    zoom.scaled(origin.y + dy) - refY,
-                    null);
-            }
-        }
-    }
-
     //----------//
     // toString //
     //----------//
@@ -506,7 +386,7 @@ public class SystemPart
 
         for (TreeNode node : getStaves()) {
             Staff staff = (Staff) node;
-            sb.append(staff.getStaffIndex() + " ");
+            sb.append(staff.getId() + " ");
         }
 
         sb.append("]}");
@@ -547,6 +427,18 @@ public class SystemPart
         extends ScoreNode
     {
         StaffList (SystemPart container)
+        {
+            super(container);
+        }
+    }
+
+    //-----------//
+    // WedgeList //
+    //-----------//
+    private static class WedgeList
+        extends ScoreNode
+    {
+        WedgeList (SystemPart container)
         {
             super(container);
         }
