@@ -239,8 +239,9 @@ class ShapeFocusBoard
 
                 if (glyph.getShape() != null) {
                     setCurrentShape(glyph.getShape());
-//                } else if (glyph.getOldShape() == currentShape) {
-//                    setCurrentShape(currentShape);
+
+                    //                } else if (glyph.getOldShape() == currentShape) {
+                    //                    setCurrentShape(currentShape);
                 }
             }
 
