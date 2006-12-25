@@ -10,7 +10,7 @@
 //
 package omr.score;
 
-import omr.score.visitor.Visitor;
+import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -135,6 +135,19 @@ public class Score
     public UnitDimension getDimension ()
     {
         return dimension;
+    }
+
+    //----------------//
+    // getFirstSystem //
+    //----------------//
+    /**
+     * Report the first system in the score
+     *
+     * @return the first system
+     */
+    public System getFirstSystem ()
+    {
+        return (System) children.get(0);
     }
 
     //--------------//
@@ -387,7 +400,7 @@ public class Score
     // accept //
     //--------//
     @Override
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
     }
@@ -405,7 +418,7 @@ public class Score
     public void addChild (TreeNode node)
     {
         super.addChild(node);
-        
+
         // Side effect on score
         ScoreManager.getInstance()
                     .checkInserted(this);
@@ -467,9 +480,12 @@ public class Score
      */
     public void linkWithSheet ()
     {
-        //        if (getSheet() != null) {
-        //            return;
-        //        }
+        if (getSheet() != null) {
+            return;
+        }
+
+        logger.info("Linking " + this);
+
         for (Sheet sheet : SheetManager.getInstance()
                                        .getSheets()) {
             if (sheet.getPath()
@@ -701,7 +717,7 @@ public class Score
     // viewScore //
     //-----------//
     /**
-     * launch a dedicated frame, where all score elements can be browsed in the
+     * Launch a dedicated frame, where all score elements can be browsed in the
      * tree hierarchy
      */
     public void viewScore ()
