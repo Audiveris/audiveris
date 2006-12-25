@@ -11,7 +11,7 @@
 package omr.score;
 
 import static omr.score.ScoreConstants.*;
-import omr.score.visitor.Visitor;
+import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
 import omr.sheet.SystemInfo;
@@ -38,6 +38,9 @@ public class System
     private static final Logger logger = Logger.getLogger(System.class);
 
     //~ Instance fields --------------------------------------------------------
+
+    /** Id for debug */
+    private final int id;
 
     /** Top left corner of the system */
     private PagePoint topLeft;
@@ -75,6 +78,10 @@ public class System
         this.info = info;
         this.topLeft = topLeft;
         this.dimension = dimension;
+
+        id = getContainer()
+                 .getChildren()
+                 .indexOf(this) + 1;
     }
 
     //--------//
@@ -89,6 +96,15 @@ public class System
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------------//
+    // getContextString //
+    //------------------//
+    @Override
+    public String getContextString ()
+    {
+        return "S" + getId();
+    }
 
     //--------------//
     // setDimension //
@@ -161,6 +177,14 @@ public class System
     {
         return (SystemPart) getChildren()
                                 .get(0);
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    public int getId ()
+    {
+        return id;
     }
 
     //---------//
@@ -297,7 +321,7 @@ public class System
     // accept //
     //--------//
     @Override
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
     }
@@ -425,7 +449,8 @@ public class System
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{System")
+        sb.append("{System#")
+          .append(id)
           .append(" topLeft=[")
           .append(topLeft.x)
           .append(",")
