@@ -14,7 +14,7 @@ import omr.glyph.Shape;
 
 import omr.lag.Lag;
 import static omr.score.ScoreConstants.*;
-import omr.score.visitor.Visitor;
+import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
 import omr.sheet.StaffInfo;
@@ -33,7 +33,9 @@ import java.util.List;
  * Class <code>Staff</code> handles a staff in a system part. It is useful for
  * its geometric parameters (topLeft corner, width and height, ability to
  * convert between a SystemPoint ordinate and a staff-based pitchPosition. But
- * it contains no further entities, the Measures are the actual containers.
+ * it contains no further entities, the Measure's are the actual containers.
+ * Within a measure, some entities may be assigned a staff, more like a tag than
+ * like a container.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -48,7 +50,7 @@ public class Staff
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Top left corner of the staff (relative to the system top left corner) */
+    /** Top left corner of the staff (relative to the page top left corner) */
     private PagePoint topLeft;
 
     /** Actual cached display origin */
@@ -57,8 +59,8 @@ public class Staff
     /** Related info from sheet analysis */
     private StaffInfo info;
 
-    /** Index of staff in containing system part */
-    private int partIndex;
+    /** Id of staff in containing system part */
+    private int id;
 
     /** Staff height (units) */
     private int height;
@@ -80,15 +82,12 @@ public class Staff
      *                  corner, of the upper left corner of this staff
      * @param width the staff width, in units
      * @param height the staff height, in units
-     * @param partIndex the index of the staff in the containing system part,
-     *                  starting at 0
      */
     public Staff (StaffInfo  info,
                   SystemPart part,
                   PagePoint  topLeft,
                   int        width,
-                  int        height,
-                  int        partIndex)
+                  int        height)
     {
         super(part);
 
@@ -96,7 +95,11 @@ public class Staff
         this.topLeft = topLeft;
         this.width = width;
         this.height = height;
-        this.partIndex = partIndex;
+
+        // Assign id
+        id = this.getContainer()
+                 .getChildren()
+                 .indexOf(this) + 1;
     }
 
     //-------//
@@ -152,6 +155,19 @@ public class Staff
         return height;
     }
 
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the staff id within the containing system part
+     *
+     * @return the id, counting from 1
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
     //---------//
     // getInfo //
     //---------//
@@ -163,19 +179,6 @@ public class Staff
     public StaffInfo getInfo ()
     {
         return info;
-    }
-
-    //---------------//
-    // getStaffIndex //
-    //---------------//
-    /**
-     * Report the staff index within the containing system part
-     *
-     * @return the index, counting from 0
-     */
-    public int getStaffIndex ()
-    {
-        return partIndex;
     }
 
     //-----------//
@@ -237,7 +240,7 @@ public class Staff
     // accept //
     //--------//
     @Override
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
     }
