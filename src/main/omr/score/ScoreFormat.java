@@ -17,18 +17,15 @@ import omr.constant.ConstantSet;
  * Class <code>ScoreFormat</code> defines an enumeration of all possible formats
  * for score files.
  */
-public enum ScoreFormat
-{
+public enum ScoreFormat {
     /**
      * Binary format, used with plain Java (de)serialization
      */
     BINARY("Binary", ".score"),
-
     /**
      * MusicXML ASCII format, used with an XML mapper
      */
     XML("Xml", ".xml");
-
     /**
      * Readable name of the format
      */
