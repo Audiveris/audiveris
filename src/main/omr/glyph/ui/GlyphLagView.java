@@ -10,6 +10,8 @@
 //
 package omr.glyph.ui;
 
+import omr.constant.Constant;
+
 import omr.glyph.*;
 
 import omr.lag.LagView;
@@ -22,7 +24,6 @@ import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 
@@ -79,15 +80,17 @@ public class GlyphLagView
      *
      * @param lag              the related lag
      * @param specificSections the specific sections if any, otherwise null
+     * @param showingSpecifics dynamic constants for actually showing specifics
      * @param model            the related glyph model
      * @param specificGlyphs   the specific glyphs if any, otherwise null
      */
     public GlyphLagView (GlyphLag                   lag,
                          Collection<GlyphSection>   specificSections,
+                         Constant.Boolean           showingSpecifics,
                          GlyphModel                 model,
                          Collection<?extends Glyph> specificGlyphs)
     {
-        super(lag, specificSections);
+        super(lag, specificSections, showingSpecifics);
         this.model = model;
 
         // Remember specific glyphs
@@ -303,7 +306,8 @@ public class GlyphLagView
         case HORIZONTAL_SECTION_ID :
 
             // Check for glyph information
-            if (showingSpecifics &&
+            if ((showingSpecifics != null) &&
+                showingSpecifics.getValue() &&
                 (sectionSelection != null) &&
                 (glyphSelection != null)) {
                 // Current Section (perhaps null) is in Section Selection
