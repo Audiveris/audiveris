@@ -62,7 +62,7 @@ public class SystemPoint
      * @param y ordinate
      */
     public SystemPoint (int x,
-                      int y)
+                        int y)
     {
         super(x, y);
     }
