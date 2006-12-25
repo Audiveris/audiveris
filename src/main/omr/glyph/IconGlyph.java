@@ -10,9 +10,6 @@
 //
 package omr.glyph;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.lag.JunctionAllPolicy;
 import omr.lag.SectionsBuilder;
 import omr.lag.VerticalOrientation;
@@ -20,11 +17,11 @@ import omr.lag.VerticalOrientation;
 import omr.score.PagePoint;
 import omr.score.ScoreConstants;
 
-import omr.sheet.Picture;
 import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
 
 import omr.ui.icon.SymbolIcon;
+import omr.ui.icon.SymbolPicture;
 
 import omr.util.Logger;
 
@@ -43,17 +40,15 @@ public class IconGlyph
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
-
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(IconGlyph.class);
 
     /**
      * Reduction of icon image versus normal glyph size. The ascii descriptions
-     * are half the size of their real glyph equivalent, so reduction is 2
+     * of SymbolIcon are half the size of their real glyph equivalent, so
+     * reduction is 2.
      */
-    private static final double descReduction = 2f;
+    private static final int descReduction = 2;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -77,10 +72,8 @@ public class IconGlyph
                       Shape      shape)
     {
         try {
-            final int displayFactor = constants.displayFactor.getValue();
-
-            // Build a picture
-            Picture  picture = new Picture(icon.getImage(), 2f * displayFactor);
+            // Build a dedicated SymbolPicture
+            SymbolPicture picture = new SymbolPicture(icon, descReduction);
 
             // Build related vertical lag
             GlyphLag vLag = new GlyphLag(new VerticalOrientation());
@@ -112,7 +105,7 @@ public class IconGlyph
             int       y = box.y;
 
             // Staff interline value
-            int interline = displayFactor * ScoreConstants.INTER_LINE;
+            int interline = ScoreConstants.INTER_LINE;
             setInterline(interline);
 
             // Mass center
@@ -169,20 +162,5 @@ public class IconGlyph
     public SymbolIcon getIcon ()
     {
         return icon;
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        /** This ratio has no impact on glyph moments, it is meant only for
-           display of the icon glyph in utilities such as the GlyphVerifier */
-        Constant.Integer displayFactor = new Constant.Integer(
-            4,
-            "Scaling factor for IconGlyph display");
     }
 }
