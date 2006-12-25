@@ -14,7 +14,7 @@ import omr.glyph.Shape;
 
 import omr.lag.Lag;
 
-import omr.score.visitor.Visitor;
+import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
@@ -97,8 +97,7 @@ public class Barline
      */
     public int getLeftX ()
     {
-        PagePoint topLeft = getPart()
-                                .getSystem()
+        PagePoint topLeft = getSystem()
                                 .getTopLeft();
 
         for (Stick stick : sticks) {
@@ -131,8 +130,7 @@ public class Barline
     public int getRightX ()
     {
         int       right = 0;
-        PagePoint topLeft = getPart()
-                                .getSystem()
+        PagePoint topLeft = getSystem()
                                 .getTopLeft();
 
         for (Stick stick : sticks) {
@@ -189,7 +187,7 @@ public class Barline
     // accept //
     //--------//
     @Override
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
     }
@@ -268,7 +266,7 @@ public class Barline
     public void reset ()
     {
         signature = null;
-        center = null;
+        setCenter(null);
         shape = null;
     }
 
@@ -310,7 +308,7 @@ public class Barline
     @Override
     protected void computeCenter ()
     {
-        center = computeGlyphsCenter(sticks);
+        setCenter(computeGlyphsCenter(sticks));
     }
 
     //-----------//
