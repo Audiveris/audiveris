@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                      R e n d e r i n g V i s i t o r                       //
+//                          S h e e t P a i n t e r                           //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
 //  This software is released under the terms of the GNU General Public       //
@@ -12,22 +12,10 @@ package omr.score.visitor;
 
 import omr.glyph.Glyph;
 
-import omr.score.Barline;
-import omr.score.Beam;
-import omr.score.Chord;
-import omr.score.Clef;
-import omr.score.KeySignature;
 import omr.score.Measure;
-import omr.score.MeasureNode;
-import omr.score.Note;
-import omr.score.PartNode;
 import omr.score.Score;
-import omr.score.ScoreNode;
-import omr.score.Slur;
 import omr.score.Staff;
-import omr.score.System;
 import omr.score.SystemPart;
-import omr.score.TimeSignature;
 
 import omr.sheet.Ending;
 import omr.sheet.Ledger;
@@ -55,7 +43,7 @@ import java.awt.*;
  * @version $Id$
  */
 public class SheetPainter
-    implements Visitor
+    extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -92,48 +80,9 @@ public class SheetPainter
     //~ Methods ----------------------------------------------------------------
 
     //---------------//
-    // visit Barline //
-    //---------------//
-    public boolean visit (Barline barline)
-    {
-        return true;
-    }
-
-    //------------//
-    // visit Beam //
-    //------------//
-    public boolean visit (Beam beam)
-    {
-        return true;
-    }
-
-    //-------------//
-    // visit Chord //
-    //-------------//
-    public boolean visit (Chord chord)
-    {
-        return true;
-    }
-
-    //------------//
-    // visit Clef //
-    //------------//
-    public boolean visit (Clef clef)
-    {
-        return true;
-    }
-
-    //--------------------//
-    // visit KeySignature //
-    //--------------------//
-    public boolean visit (KeySignature keySignature)
-    {
-        return true;
-    }
-
-    //---------------//
     // visit Measure //
     //---------------//
+    @Override
     public boolean visit (Measure measure)
     {
         // Render the measure ending barline, if within the clipping area
@@ -143,41 +92,10 @@ public class SheetPainter
         return true;
     }
 
-    //-------------------//
-    // visit MeasureNode //
-    //-------------------//
-    public boolean visit (MeasureNode node)
-    {
-        return true;
-    }
-
-    //------------//
-    // visit Note //
-    //------------//
-    public boolean visit (Note node)
-    {
-        return true;
-    }
-
-    //----------------//
-    // visit PartNode //
-    //----------------//
-    public boolean visit (PartNode node)
-    {
-        return true;
-    }
-
-    //-----------------//
-    // visit ScoreNode //
-    //-----------------//
-    public boolean visit (ScoreNode musicNode)
-    {
-        return true;
-    }
-
     //-------------//
     // visit Score //
     //-------------//
+    @Override
     public boolean visit (Score score)
     {
         score.acceptChildren(this);
@@ -185,17 +103,10 @@ public class SheetPainter
         return false;
     }
 
-    //------------//
-    // visit Slur //
-    //------------//
-    public boolean visit (Slur slur)
-    {
-        return true;
-    }
-
     //-------------//
     // visit Staff //
     //-------------//
+    @Override
     public boolean visit (Staff staff)
     {
         StaffInfo info = staff.getInfo();
@@ -208,17 +119,10 @@ public class SheetPainter
         }
     }
 
-    //--------------//
-    // visit System //
-    //--------------//
-    public boolean visit (System system)
-    {
-        return true;
-    }
-
     //------------------//
     // visit SystemPart //
     //------------------//
+    @Override
     public boolean visit (SystemPart part)
     {
         // Render the part starting barline, if any
@@ -230,20 +134,13 @@ public class SheetPainter
         return true;
     }
 
-    //---------------------//
-    // visit TimeSignature //
-    //---------------------//
-    public boolean visit (TimeSignature timeSignature)
-    {
-        return true;
-    }
-
     /**
      * Although a Sheet is not part of the Score hierarchy, this visitor has
      * been specifically extended to render all physical info of a sheet
      *
      * @param sheet the sheet to render initial elements
      */
+
     //-------------//
     // visit Sheet //
     //-------------//
