@@ -13,9 +13,9 @@ package omr.glyph.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Evaluation;
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
-import omr.glyph.Shape;
 
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
@@ -268,16 +268,19 @@ class ValidationPanel
             Glyph glyph = repository.getGlyph(gName, selectionPanel);
 
             if (glyph != null) {
-                Shape vote = evaluator.vote(glyph, maxGrade);
+                Evaluation vote = evaluator.vote(glyph, maxGrade);
 
-                if (vote == glyph.getShape()) {
-                    positives++;
-                } else if (vote == null) {
+                if (vote == null) {
                     negatives.add(gName);
                     System.out.printf("%-35s: Not recognized%n", gName);
+                } else if (vote.shape.getTrainingShape() == glyph.getShape()) {
+                    positives++;
                 } else {
                     falsePositives.add(gName);
-                    System.out.printf("%-35s: Mistaken as %s%n", gName, vote);
+                    System.out.printf(
+                        "%-35s: Mistaken as %s%n",
+                        gName,
+                        vote.shape.getTrainingShape());
                 }
             }
 
