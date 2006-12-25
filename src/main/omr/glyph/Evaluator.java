@@ -60,7 +60,7 @@ public abstract class Evaluator
      * Number of useful input parameters : nb of moments +
      * stemNumber, isWithLedger, pitchPosition = {@value}
      */
-    public static final int inSize = inMoments + 3;
+    public static final int inSize = inMoments + 2;
 
     /**
      * Number of shapes to differentiate
@@ -77,18 +77,18 @@ public abstract class Evaluator
                                                  };
 
     /**
-     * An Evaluation comparator in increasing order, where smaller grade value
+     * An Evaluation comparator in increasing order, where smaller doubt value
      * means better interpretation
      */
     protected static final Comparator<Evaluation> comparator = new Comparator<Evaluation>() {
         public int compare (Evaluation e1,
                             Evaluation e2)
         {
-            if (e1.grade < e2.grade) {
+            if (e1.doubt < e2.doubt) {
                 return -1;
             }
 
-            if (e1.grade > e2.grade) {
+            if (e1.doubt > e2.doubt) {
                 return +1;
             }
 
@@ -191,41 +191,12 @@ public abstract class Evaluator
         int i = inMoments;
         /* 10 */ ins[i++] = boolAsDouble(glyph.isWithLedger());
         /* 11 */ ins[i++] = glyph.getStemNumber();
-        /* 12 */ ins[i++] = glyph.getPitchPosition();
+
+        ////////* 12 */ ins[i++] = glyph.getPitchPosition();
 
         // We skip moments 17 & 18 (xMean and yMean) ???
         return ins;
     }
-
-    //-------------------//
-    // getBestEvaluation //
-    //-------------------//
-    /**
-     * Run the network with the specified glyph, and infer a shape.
-     *
-     * @param glyph the glyph to be examined
-     *
-     * @return the best evaluation, if its grade is acceptable, null
-     * otherwise
-     */
-    public Evaluation getBestEvaluation (Glyph glyph)
-    {
-        return getEvaluations(glyph)[0];
-    }
-
-    //----------------//
-    // getEvaluations //
-    //----------------//
-    /**
-     * Run the evaluator with the specified glyph, and return a prioritized
-     * collection of interpretations (ordered from best to worst), without the 
-     * shapes that are flagged as forbidden for this glyph.
-     *
-     * @param glyph the glyph to be examined
-     *
-     * @return the ordered best evaluations
-     */
-    public abstract Evaluation[] getEvaluations (Glyph glyph);
 
     //-------------------//
     // getAllEvaluations //
@@ -240,15 +211,19 @@ public abstract class Evaluator
      */
     public abstract Evaluation[] getAllEvaluations (Glyph glyph);
 
-    //-----------//
-    // isTrained //
-    //-----------//
+    //----------------//
+    // getEvaluations //
+    //----------------//
     /**
-     * Check whether the evaluator has been trained
+     * Run the evaluator with the specified glyph, and return a prioritized
+     * collection of interpretations (ordered from best to worst), without the
+     * shapes that are flagged as forbidden for this glyph.
      *
-     * @return true if trained
+     * @param glyph the glyph to be examined
+     *
+     * @return the ordered best evaluations
      */
-    public abstract boolean isTrained ();
+    public abstract Evaluation[] getEvaluations (Glyph glyph);
 
     //------//
     // stop //
@@ -279,9 +254,10 @@ public abstract class Evaluator
     // getMaxDistance //
     //----------------//
     /**
-     * Report the maximum grade value for an evaluation to be accepted
+     * Report the maximum doubt value for an evaluation to be accepted
      *
-     * @return the maximum grade value
+     *
+     * @return the maximum doubt value
      */
     public double getMaxDistance ()
     {
@@ -308,24 +284,20 @@ public abstract class Evaluator
     /**
      * Run the evaluator with the specified glyph, and infer a shape.
      *
-     * @param glyph the glyph to be examined
-     * @param maxGrade the maximum grade to be accepted
      *
-     * @return the best suitable interpretation, or null
+     * @param glyph the glyph to be examined
+     * @param maxGrade the maximum doubt to be accepted
+     * @return the best acceptable evaluation, or null
      */
-    public Shape vote (Glyph  glyph,
-                       double maxGrade)
+    public Evaluation vote (Glyph  glyph,
+                            double maxGrade)
     {
-        if (isBigEnough(glyph)) {
-            Evaluation eval = getBestEvaluation(glyph);
+        Evaluation[] evaluations = getEvaluations(glyph);
 
-            if (eval.grade <= maxGrade) {
-                return eval.shape;
-            } else {
-                return null;
-            }
+        if ((evaluations.length > 0) && (evaluations[0].doubt <= maxGrade)) {
+            return evaluations[0];
         } else {
-            return Shape.NOISE;
+            return null;
         }
     }
 
@@ -358,6 +330,52 @@ public abstract class Evaluator
         return new File(Main.getConfigFolder(), "neural-network.default.xml");
     }
 
+    //--------------------//
+    // specificShapeCheck //
+    //--------------------//
+    protected Shape specificShapeCheck (Shape shape,
+                                        Glyph glyph)
+    {
+        // Special case for WHOLE/HALF rests : use pitch position
+        if (shape == Shape.WHOLE_OR_HALF_REST) {
+            int pp = (int) Math.rint(2 * glyph.getPitchPosition());
+
+            if (pp == -1) {
+                return Shape.HALF_REST;
+            } else if (pp == -3) {
+                return Shape.WHOLE_REST;
+            } else {
+                return null;
+            }
+        } else if (Shape.HeadAndFlags.contains(shape)) {
+            // Check that we do have a stem on left side
+            if (glyph.getLeftStem() == null) {
+                return null;
+            }
+        } else if (Shape.BEAM_HOOK == shape) {
+            // Check we have exactly 1 stem
+            if (glyph.getStemNumber() != 1) {
+                return null;
+            }
+        } else if (Shape.Times.contains(shape)) {
+            // A time signature is on staff !
+            if (Math.abs(glyph.getPitchPosition()) >= 3) {
+                return null;
+            }
+        } else if (Shape.Notes.contains(shape) ||
+                   Shape.NoteHeads.contains(shape) ||
+                   Shape.Rests.contains(shape) ||
+                   Shape.HeadAndFlags.contains(shape)) {
+            // A note / rest cannot be too far from a staff
+            if (Math.abs(glyph.getPitchPosition()) >= 15) {
+                return null;
+            }
+        }
+
+        // Pass-through by default
+        return shape;
+    }
+
     //-----------//
     // getLabels // Lazy initialization
     //-----------//
@@ -373,7 +391,8 @@ public abstract class Evaluator
             int i = inMoments;
             /* 10 */ labels[i++] = "ledger";
             /* 11 */ labels[i++] = "stemNb";
-            /* 12 */ labels[i++] = "pitch";
+
+            ////* 12 */ labels[i++] = "pitch";
         }
 
         return labels;
