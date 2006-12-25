@@ -121,7 +121,7 @@ public class GlyphModel
     // assignGlyphShape //
     //------------------//
     /**
-     * Assign a Shape to a glyph
+     * Manually assign a Shape to a glyph
      *
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
@@ -130,8 +130,8 @@ public class GlyphModel
                                   Shape shape)
     {
         if (glyph != null) {
-            // First, do assign the shape to the glyph
-            glyph.setShape(shape);
+            // First, do a manual assignment of the shape to the glyph
+            glyph.setShape(shape, Evaluation.MANUAL_NO_DOUBT);
 
             // Remember the latest shape assigned
             if (shape != null) {
