@@ -10,7 +10,7 @@
 //
 package omr.score;
 
-import omr.score.visitor.Visitor;
+import omr.score.visitor.ScoreVisitor;
 
 import omr.ui.view.Zoom;
 
@@ -61,7 +61,7 @@ public class Slur
     /**
      * Create a slur with all the specified parameters
      *
-     * @param system      the containing system
+     * @param part      the containing system part
      * @param leftrow y (in units) of the left point, wrt the system origin
      * @param leftcolumn  x (in units) of the left point
      * @param rightrow    y (in units) of the right point
@@ -69,14 +69,14 @@ public class Slur
      * @param radius the radius of the circle, in units, &lt;0 if center if
      *                    above, &gt;0 if center is below
      */
-    public Slur (System system,
-                 int    leftrow,
-                 int    leftcolumn,
-                 int    rightrow,
-                 int    rightcolumn,
-                 int    radius)
+    public Slur (SystemPart part,
+                 int        leftrow,
+                 int        leftcolumn,
+                 int        rightrow,
+                 int        rightcolumn,
+                 int        radius)
     {
-        super(system);
+        super(part);
 
         this.leftrow = leftrow;
         this.leftcolumn = leftcolumn;
@@ -188,7 +188,7 @@ public class Slur
     // accept //
     //--------//
     @Override
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
     }
@@ -214,6 +214,9 @@ public class Slur
     //-----//
     // Arc //
     //-----//
+    /**
+     * Class <code>Arc</code> defines the underlying geometric arc of a slur
+     */
     public static class Arc
     {
         private final Point upperleft;
