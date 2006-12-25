@@ -179,9 +179,7 @@ class EvaluationBoard
             // Blank the output
             selector.setEvals(null, null);
         } else {
-            selector.setEvals(
-                evaluator.getAllEvaluations(glyph),
-                glyph.getForbiddenShapes());
+            selector.setEvals(evaluator.getAllEvaluations(glyph), glyph);
         }
     }
 
@@ -275,7 +273,7 @@ class EvaluationBoard
         final JButton button;
         final JLabel  field;
 
-        // The related grade
+        // The related doubt
         JLabel grade = new JLabel("", SwingConstants.RIGHT);
 
         public EvalButton ()
@@ -331,14 +329,14 @@ class EvaluationBoard
 
                 comp.setVisible(true);
 
-                if (eval.grade <= GlyphInspector.getSymbolMaxGrade()) {
+                if (eval.doubt <= GlyphInspector.getSymbolMaxGrade()) {
                     comp.setForeground(EVAL_GOOD_COLOR);
                 } else {
                     comp.setForeground(EVAL_SOSO_COLOR);
                 }
 
                 grade.setVisible(true);
-                grade.setText(String.format("%.3f", eval.grade));
+                grade.setText(String.format("%.3f", eval.doubt));
             } else {
                 grade.setVisible(false);
                 comp.setVisible(false);
@@ -388,11 +386,10 @@ class EvaluationBoard
          *
          * @param evals the ordered list of <b>all</b>evaluations from best to
          *              worst
-         * @param forbiddenShapes set of undesired shapes to be displayed
-         *                        accordingly, or null
+         * @param glyph evaluated glyph, to check forbidden shapes if any
          */
         public void setEvals (Evaluation[] evals,
-                              Set<Shape>   forbiddenShapes)
+                              Glyph        glyph)
         {
             // Special case to empty the selector
             if (evals == null) {
@@ -413,24 +410,20 @@ class EvaluationBoard
             for (i = 0; i < iBound; i++) {
                 Evaluation eval = evals[i];
 
-                if (eval.grade > maxDist) {
+                if (eval.doubt > maxDist) {
                     break;
                 }
 
                 if (best < 0) {
-                    best = eval.grade;
+                    best = eval.doubt;
                 }
 
-                if (eval.grade > (best * maxRatio)) {
+                if (eval.doubt > (best * maxRatio)) {
                     break;
                 }
 
-                if ((forbiddenShapes != null) &&
-                    forbiddenShapes.contains(eval.shape)) {
-                    buttons[i].setEval(eval, true); // Barred
-                } else {
-                    buttons[i].setEval(eval, false);
-                }
+                // Barred on non-barred button
+                buttons[i].setEval(eval, glyph.isShapeForbidden(eval.shape));
             }
 
             // Zero the remaining buttons
@@ -469,9 +462,9 @@ class EvaluationBoard
                         (glyph.getShape() != Shape.COMBINING_STEM)) {
                         total++;
 
-                        Shape guess = evaluator.vote(glyph, maxGrade);
+                        Evaluation guess = evaluator.vote(glyph, maxGrade);
 
-                        if (glyph.getShape() == guess) {
+                        if (glyph.getShape() == guess.shape) {
                             ok++;
                             view.colorizeGlyph(glyph, Shape.okColor);
                         } else {
