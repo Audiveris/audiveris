@@ -142,7 +142,7 @@ public class ScoreController
      *
      * @return the current score, or null if none selected
      */
-    public Score getCurrentScore ()
+    public static Score getCurrentScore ()
     {
         Sheet sheet = SheetManager.getSelectedSheet();
 
