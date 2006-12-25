@@ -11,7 +11,7 @@
 package omr.score;
 
 import static omr.score.ScoreConstants.*;
-import omr.score.visitor.Visitor;
+import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
@@ -43,9 +43,8 @@ public abstract class MeasureNode
             MeasureNode mn1 = (MeasureNode) tn1;
             MeasureNode mn2 = (MeasureNode) tn2;
             int         deltaStaff = mn1.getStaff()
-                                        .getStaffIndex() -
-                                     mn2.getStaff()
-                                        .getStaffIndex();
+                                        .getId() - mn2.getStaff()
+                                                      .getId();
 
             if (deltaStaff != 0) {
                 // Staves are different
@@ -61,7 +60,7 @@ public abstract class MeasureNode
     //~ Instance fields --------------------------------------------------------
 
     /** Containing measure */
-    protected Measure measure;
+    private Measure measure;
 
     /** Related staff, if relevant */
     private Staff staff;
@@ -92,30 +91,23 @@ public abstract class MeasureNode
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------------//
-    // getContainmentString //
-    //----------------------//
-    /**
-     * Report a string that describes the containment (measure, part, staff) of
-     * this entity
-     *
-     * @return the properly filled containment string
-     */
-    public String getContainmentString ()
+    //------------------//
+    // getContextString //
+    //------------------//
+    @Override
+    public String getContextString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("Measure ")
+
+        sb.append(getPart().getContextString());
+
+        sb.append("M")
           .append(getMeasure().getId());
 
-        sb.append(" Part ")
-          .append(getPart().getId());
-
         if (getStaff() != null) {
-            sb.append(" Staff ")
-              .append(getStaff().getStaffIndex() + 1);
+            sb.append("T")
+              .append(getStaff().getId());
         }
-
-        sb.append(" : ");
 
         return sb.toString();
     }
@@ -163,7 +155,7 @@ public abstract class MeasureNode
     // accept //
     //--------//
     @Override
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
     }
