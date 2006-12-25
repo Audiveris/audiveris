@@ -177,8 +177,8 @@ public class SymbolsEditor
     // assignGlyphShape //
     //------------------//
     /**
-     * Assign a Shape to a glyph, but preventing to assign a non-noise shape to
-     * a noise glyph
+     * Manually assign a Shape to a glyph, but preventing to assign a non-noise
+     * shape to a noise glyph
      *
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
@@ -447,7 +447,7 @@ public class SymbolsEditor
     {
         private MyView (GlyphLag lag)
         {
-            super(lag, null, SymbolsEditor.this, null);
+            super(lag, null, null, SymbolsEditor.this, null);
             setName("GlyphPane-View");
 
             // Current glyph
