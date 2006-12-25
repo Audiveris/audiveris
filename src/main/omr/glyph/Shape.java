@@ -144,8 +144,9 @@ public enum Shape
         // Rests
         //
         /*1D13A*/ MULTI_REST("Rest for multiple measures"),
-        /*1D13B*/ WHOLE_REST("Rest for whole measure"),
-        /*1D13C*/ HALF_REST("Rest for a 1/2"),
+        /*1D13B*/ WHOLE_OR_HALF_REST("Same shape for whole or half Rest"),
+//        /*1D13B*/ WHOLE_REST("Rest for whole measure"),
+//        /*1D13C*/ HALF_REST("Rest for a 1/2"),
         /*1D13D*/ QUARTER_REST("Rest for a 1/4"),
         /*1D13E*/ EIGHTH_REST("Rest for a 1/8"),
         /*1D13F*/ SIXTEENTH_REST("Rest for a 1/16"),
@@ -221,6 +222,20 @@ public enum Shape
         /*-----*/ COMBINING_FLAG_3_UP("Triple flag up"),
         /*-----*/ COMBINING_FLAG_4_UP("Quadruple flag up"),
         /*-----*/ COMBINING_FLAG_5_UP("Quintuple flag up"),
+
+        // Connected head and flags
+        //
+        /*-----*/ HEAD_AND_FLAG_1("Black notehead with single flag down"),
+        /*-----*/ HEAD_AND_FLAG_2("Black notehead with double flag down"),
+        /*-----*/ HEAD_AND_FLAG_3("Black notehead with triple flag down"),
+        /*-----*/ HEAD_AND_FLAG_4("Black notehead with quadruple flag down"),
+        /*-----*/ HEAD_AND_FLAG_5("Black notehead with quintuple flag down"),
+
+        /*-----*/ HEAD_AND_FLAG_1_UP("Black notehead with single flag up"),
+        /*-----*/ HEAD_AND_FLAG_2_UP("Black notehead with double flag up"),
+        /*-----*/ HEAD_AND_FLAG_3_UP("Black notehead with triple flag up"),
+        /*-----*/ HEAD_AND_FLAG_4_UP("Black notehead with quadruple flag up"),
+        /*-----*/ HEAD_AND_FLAG_5_UP("Black notehead with quintuple flag up"),
 
         // Beams and slurs
         //
@@ -376,9 +391,13 @@ public enum Shape
 
         /*-----*/ CHARACTER("A letter"),
 
-        /** The two following shapes are a kludge to get proper icon */
-        /*-----*/ HALF_OR_WHOLE_REST_DISPLAY,
+        /*1D13B*/ WHOLE_REST("Rest for whole measure", WHOLE_OR_HALF_REST),
+        /*1D13C*/ HALF_REST("Rest for a 1/2", WHOLE_OR_HALF_REST),
+
+        /** The following shape is a kludge to get proper icon */
         /*-----*/ MULTI_REST_DISPLAY,
+
+        /*-----*/ FORWARD,
 
         /**
          * Specific value, meaning that we have not been able to determine a
@@ -423,6 +442,9 @@ public enum Shape
     /** Potential related icon */
     private Icon    icon;
 
+    /** Potential related shape to be used for training */
+    private Shape trainingShape;
+
     /** Remember the fact that this shape has no related icon */
     private boolean hasNoIcon;
 
@@ -441,25 +463,17 @@ public enum Shape
     //-------//
     Shape (String description)
     {
-        this(description, null); // No icon
-    }
-
-    //-------//
-    // Shape //
-    //-------//
-    Shape (Icon icon)
-    {
-        this(null, icon); // No description
+        this(description, null);
     }
 
     //-------//
     // Shape //
     //-------//
     Shape (String description,
-           Icon   icon)
+           Shape trainingShape)
     {
         this.description = description;
-        this.icon = icon;
+        this.trainingShape = trainingShape;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -623,6 +637,18 @@ public enum Shape
     public void setIcon (Icon icon)
     {
         this.icon = icon;
+    }
+
+    //------------------//
+    // getTrainingShape //
+    //------------------//
+    public Shape getTrainingShape()
+    {
+        if (trainingShape != null) {
+            return trainingShape;
+        } else {
+            return this;
+        }
     }
 
     //--------------------//
@@ -894,11 +920,20 @@ public enum Shape
     public static final Range Accidentals   = new Range(EnumSet.range(FLAT, DOUBLE_FLAT));
     public static final Range Times         = new Range(EnumSet.range(TIME_ZERO, CUT_TIME));
     public static final Range Octaves       = new Range(EnumSet.range(OTTAVA_ALTA, OTTAVA_BASSA));
-    public static final Range Rests         = new Range(EnumSet.range(MULTI_REST, ONE_HUNDRED_TWENTY_EIGHTH_REST));
+    public static final Range Rests         = new Range(EnumSet.of(MULTI_REST,
+                                                                   WHOLE_REST,
+                                                                   HALF_REST,
+                                                                   QUARTER_REST,
+                                                                   EIGHTH_REST,
+                                                                   SIXTEENTH_REST,
+                                                                   THIRTY_SECOND_REST,
+                                                                   SIXTY_FOURTH_REST,
+                                                                   ONE_HUNDRED_TWENTY_EIGHTH_REST));
     public static final Range NoteHeads     = new Range(EnumSet.range(VOID_NOTEHEAD, NOTEHEAD_BLACK_3));
     public static final Range Notes         = new Range(EnumSet.range(BREVE, WHOLE_NOTE_3));
     public static final Range Stems         = new Range(EnumSet.range(COMBINING_STEM, COMBINING_STEM));
     public static final Range Flags         = new Range(EnumSet.range(COMBINING_FLAG_1, COMBINING_FLAG_5_UP));
+    public static final Range HeadAndFlags  = new Range(EnumSet.range(HEAD_AND_FLAG_1, HEAD_AND_FLAG_5_UP));
     public static final Range Beams         = new Range(EnumSet.range(BEAM, SLUR));
     public static final Range Articulations = new Range(EnumSet.range(ARPEGGIATO_UP, ARPEGGIATO_DOWN));
     public static final Range Dynamics      = new Range(EnumSet.range(PIANISSISSIMO, DECRESCENDO));
@@ -938,6 +973,7 @@ public enum Shape
 
         StemSymbols.addAll(NoteHeads.getShapes());
         StemSymbols.addAll(Flags.getShapes());
+        StemSymbols.addAll(HeadAndFlags.getShapes());
     }
 
     /** Specific single symbol for part of time signature (such as 4) */
