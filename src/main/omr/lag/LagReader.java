@@ -20,8 +20,8 @@ import java.util.List;
 
 /**
  * Class <code>LagReader</code> retrieves the runs structure out of a given
- * picture. Input is thus the picture, the runs are the output, and the provided
- * lag reference is used to access the picture pixels using the proper
+ * source. Input is thus the source, the runs are the output, and the provided
+ * lag reference is used to access the source pixels using the proper
  * orientation horizontal / vertical.
  *
  * <p>These runs can then be used to populate a lag via {@link SectionsBuilder}.
@@ -50,9 +50,9 @@ public class LagReader
     protected final List<List<Run>> runs;
 
     /**
-     * The picture to read runs of pixels from
+     * The source to read runs of pixels from
      */
-    protected final Picture picture;
+    protected final PixelSource source;
 
     /**
      * The maximum pixel grey level to be foreground
@@ -76,22 +76,22 @@ public class LagReader
     /**
      * Create an adapter, with its key parameters.
      *
-     * @param lag       the lag for which runs have to be filled
-     * @param runs      the collections of runs to be filled
-     * @param picture the picture to read runs from. Lag orientation is used to
-     *                  properly access the picture pixels.
+     * @param lag the lag for which runs have to be filled
+     * @param runs the collections of runs to be filled
+     * @param source the source to read runs from. Lag orientation is used to
+     *               properly access the source pixels.
      * @param minLength the minimum length for each run
      */
     public LagReader (Lag             lag,
                       List<List<Run>> runs,
-                      Picture         picture,
+                      PixelSource     source,
                       int             minLength)
     {
         this.lag = lag;
         this.runs = runs;
-        this.picture = picture;
+        this.source = source;
         this.minLength = minLength;
-        this.maxLevel = Picture.FOREGROUND;
+        this.maxLevel = source.getMaxForeground();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -116,7 +116,7 @@ public class LagReader
     // getLevel //
     //----------//
     /**
-     * Retrieve the pixel grey level of a point in the underlying picture
+     * Retrieve the pixel grey level of a point in the underlying source
      *
      * @param coord coordinate value, relative to lag orientation
      * @param pos position value, relative to lag orientation
@@ -131,7 +131,7 @@ public class LagReader
         cp.y = pos;
         lag.switchRef(cp, xy);
 
-        return picture.getPixel(xy.x, xy.y);
+        return source.getPixel(xy.x, xy.y);
     }
 
     //---------//
