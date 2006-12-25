@@ -13,18 +13,21 @@ package omr.score;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
-import omr.glyph.Shape.Range;
 
 import omr.score.visitor.ScoreCleaner;
+import omr.score.visitor.ScoreFixer;
 
+import omr.sheet.PixelPoint;
+import omr.sheet.PixelRectangle;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import omr.ui.icon.SymbolIcon;
 
 import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.util.Collections;
-import java.util.Comparator;
 
 /**
  * Class <code>ScoreBuilder</code> is in charge of translating each relevant
@@ -92,18 +95,21 @@ public class ScoreBuilder
      */
     public void buildInfo ()
     {
-        // First, cleanup the score
-        scoreCleanup();
+        // First, cleanup the score, keeping only the systems, slurs(?), staves,
+        // measures, barlines
+        score.accept(new ScoreCleaner());
 
-        // Perhaps, order the glyphs within each system ?
-        // TBD
-
-        // Ordered translations
+        // Translations in proper order
         translate(new ClefTranslator());
         translate(new TimeTranslator());
         translate(new KeyTranslator());
-        translate(new BeamTranslator());
         translate(new ChordTranslator());
+        translate(new BeamTranslator());
+        translate(new FlagTranslator());
+        translate(new AccidentalTranslator());
+        translate(new DotTranslator());
+
+        ///translate(new WedgeTranslator());
 
         // Update score view if any
         if (score.getView() != null) {
@@ -126,15 +132,6 @@ public class ScoreBuilder
         // AIE AIE AIE TBD, should not depend on a UI element !!!
         sheet.getSymbolsEditor()
              .deassignGlyphShape(glyph);
-    }
-
-    //--------------//
-    // scoreCleanup //
-    //--------------//
-    private void scoreCleanup ()
-    {
-        // Keep only the systems, slurs, staves, measures, barlines
-        score.accept(new ScoreCleaner());
     }
 
     //-----------//
@@ -189,6 +186,22 @@ public class ScoreBuilder
      */
     private abstract class Translator
     {
+        public Translator ()
+        {
+            if (logger.isFineEnabled()) {
+                logger.fine("Creating translator " + this);
+            }
+        }
+
+        /**
+         * Specific browsing of a given measure
+         *
+         * @param measure the given measure
+         */
+        public void browse (Measure measure)
+        {
+        }
+
         /**
          * Hook for final processing at end of the score
          */
@@ -201,6 +214,7 @@ public class ScoreBuilder
          */
         public void completeSystem ()
         {
+            browseSystemMeasures();
         }
 
         /**
@@ -230,6 +244,39 @@ public class ScoreBuilder
          * @param glyph the glyph at hand
          */
         public abstract void translate (Glyph glyph);
+
+        /**
+         * Pattern to browse through all measures in the current system
+         */
+        public void browseSystemMeasures ()
+        {
+            for (TreeNode node : currentSystem.getParts()) {
+                SystemPart part = (SystemPart) node;
+
+                for (TreeNode mn : part.getMeasures()) {
+                    Measure measure = (Measure) mn;
+
+                    browse(measure);
+                }
+            }
+        }
+    }
+
+    //----------------------//
+    // AccidentalTranslator //
+    //----------------------//
+    private class AccidentalTranslator
+        extends Translator
+    {
+        public boolean isrelevant (Glyph glyph)
+        {
+            return Shape.Accidentals.contains(glyph.getShape());
+        }
+
+        public void translate (Glyph glyph)
+        {
+            Note.populateAccidental(glyph, currentMeasure, currentCenter);
+        }
     }
 
     //----------------//
@@ -238,6 +285,13 @@ public class ScoreBuilder
     private class BeamTranslator
         extends Translator
     {
+        @Override
+        public void browse (Measure measure)
+        {
+            // Allocate beams to chords, and populate beam groups
+            BeamGroup.populate(measure);
+        }
+
         @Override
         public void computeLocation (Glyph glyph)
         {
@@ -273,23 +327,21 @@ public class ScoreBuilder
         extends Translator
     {
         @Override
+        public void browse (Measure measure)
+        {
+            // Allocate proper chords in every slot
+            for (Slot slot : measure.getSlots()) {
+                slot.allocateChordsAndNotes();
+            }
+        }
+
+        @Override
         public void completeSystem ()
         {
+            super.completeSystem();
+
             if (logger.isFineEnabled()) {
                 dumpSystemSlots();
-            }
-
-            // Allocate proper chords in every slot
-            for (TreeNode node : currentSystem.getParts()) {
-                SystemPart part = (SystemPart) node;
-
-                for (TreeNode mn : part.getMeasures()) {
-                    Measure measure = (Measure) mn;
-
-                    for (Slot slot : measure.getSlots()) {
-                        slot.allocateChords();
-                    }
-                }
             }
         }
 
@@ -299,12 +351,13 @@ public class ScoreBuilder
 
             return Shape.Rests.contains(shape) ||
                    Shape.NoteHeads.contains(shape) ||
-                   Shape.Notes.contains(shape);
+                   Shape.Notes.contains(shape) ||
+                   Shape.HeadAndFlags.contains(shape);
         }
 
         public void translate (Glyph glyph)
         {
-            Chord.populate(glyph, currentMeasure, currentCenter);
+            Slot.populateSlot(glyph, currentMeasure, currentCenter);
         }
 
         private void dumpSystemSlots ()
@@ -337,19 +390,10 @@ public class ScoreBuilder
         extends Translator
     {
         @Override
-        public void completeSystem ()
+        public void browse (Measure measure)
         {
-            // Sort the clefs in any measure, according to staff number
-            for (TreeNode node : currentSystem.getParts()) {
-                SystemPart part = (SystemPart) node;
-
-                for (TreeNode mn : part.getMeasures()) {
-                    Measure measure = (Measure) mn;
-                    Collections.sort(
-                        measure.getClefs(),
-                        MeasureNode.staffComparator);
-                }
-            }
+            // Sort the clefs according to containing staff
+            Collections.sort(measure.getClefs(), MeasureNode.staffComparator);
         }
 
         public boolean isrelevant (Glyph glyph)
@@ -360,6 +404,142 @@ public class ScoreBuilder
         public void translate (Glyph glyph)
         {
             Clef.populate(glyph, currentMeasure, currentStaff, currentCenter);
+        }
+    }
+
+    //---------------//
+    // DotTranslator //
+    //---------------//
+    private class DotTranslator
+        extends Translator
+    {
+        @Override
+        public void browse (Measure measure)
+        {
+            // Determine the voices within this measure
+            Slot.buildVoices(measure);
+
+            // Check duration sanity in this measure
+            measure.checkDuration();
+        }
+
+        @Override
+        public void completeScore ()
+        {
+            // Check for an implicit measure at the beginning:
+            // On the very first system, all parts have their very first measure
+            // ending too short with the same value (or filled by whole rest)
+            System  system = score.getFirstSystem();
+            Integer finalDuration = null;
+
+            for (TreeNode node : system.getParts()) {
+                SystemPart part = (SystemPart) node;
+                Measure    measure = part.getFirstMeasure();
+
+                for (int voice = 0; voice < measure.getVoicesNumber();
+                     voice++) {
+                    Integer voiceFinal = measure.getFinalDuration(voice);
+
+                    if (voiceFinal != null) {
+                        if (finalDuration == null) {
+                            finalDuration = voiceFinal;
+                        } else if (!voiceFinal.equals(finalDuration)) {
+                            logger.fine("No introduction measure");
+
+                            return;
+                        }
+                    }
+                }
+            }
+
+            if ((finalDuration != null) && (finalDuration < 0)) {
+                logger.info(
+                    "Found an introduction measure for " + finalDuration);
+
+                // Flag these measures as implicit, and get rid of their final
+                // forward marks if any
+                for (TreeNode node : system.getParts()) {
+                    SystemPart part = (SystemPart) node;
+                    part.getFirstMeasure()
+                        .setImplicit();
+                }
+
+                score.accept(new ScoreFixer());
+            }
+        }
+
+        public boolean isrelevant (Glyph glyph)
+        {
+            return glyph.getShape() == Shape.DOT;
+        }
+
+        public void translate (Glyph glyph)
+        {
+            Chord.populateDot(glyph, currentMeasure, currentCenter);
+        }
+    }
+
+    //----------------//
+    // FlagTranslator //
+    //----------------//
+    private class FlagTranslator
+        extends Translator
+    {
+        @Override
+        public void browse (Measure measure)
+        {
+            if (logger.isFineEnabled()) {
+                // Print flag/beam value of each chord
+                logger.fine("Flag/Beams for " + measure.getContextString());
+
+                for (TreeNode node : measure.getChords()) {
+                    Chord chord = (Chord) node;
+                    logger.fine(chord.toString());
+
+                    if (chord.getBeams()
+                             .size() > 0) {
+                        logger.fine("   Beams:" + chord.getBeams().size());
+                    }
+
+                    if (chord.getFlagsNumber() > 0) {
+                        logger.fine("   Flags:" + chord.getFlagsNumber());
+                    }
+
+                    // Just to be sure
+                    if ((chord.getBeams()
+                              .size() * chord.getFlagsNumber()) != 0) {
+                        logger.warning("*** Inconsistent Flag/Beam config ***");
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void computeLocation (Glyph glyph)
+        {
+            // We use the attached stem(s) to determine proper containment
+            if (glyph.getLeftStem() != null) {
+                super.computeLocation(glyph.getLeftStem());
+            } else if (glyph.getRightStem() != null) {
+                super.computeLocation(glyph.getRightStem());
+            } else {
+                logger.warning(
+                    "Flag glyph " + glyph.getId() + " with no attached stem");
+                super.computeLocation(glyph); // Backup alternative...
+            }
+        }
+
+        public boolean isrelevant (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+
+            return Shape.Flags.contains(shape) ||
+                   Shape.HeadAndFlags.contains(shape);
+        }
+
+        public void translate (Glyph glyph)
+        {
+            Chord.populateFlag(glyph, currentMeasure);
         }
     }
 
