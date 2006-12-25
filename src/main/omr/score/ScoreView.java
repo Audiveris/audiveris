@@ -236,15 +236,14 @@ public class ScoreView
     {
         StringBuilder sb = new StringBuilder();
 
-//        if (scrPt != null) {
-//            sb.append("ScorePoint")
-//              .append(" X:")
-//              .append(scrPt.x)
-//              .append(" Y:")
-//              .append(scrPt.y)
-//              .append(" ");
-//        }
-
+        //        if (scrPt != null) {
+        //            sb.append("ScorePoint")
+        //              .append(" X:")
+        //              .append(scrPt.x)
+        //              .append(" Y:")
+        //              .append(scrPt.y)
+        //              .append(" ");
+        //        }
         if (pagPt != null) {
             sb.append("PagePoint")
               .append(" X:")
