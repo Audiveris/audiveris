@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * Class <code>GlyphRegression</code> is a glyph evaluator based on a {@link
- * omr.math.NeuralNetwork}.
+ * omr.math.Population}.
  *
  * <p>Note that this evaluator has been deprecated. It is used internally and
  * temporarily in the selection of core sheets among the training material. It
@@ -108,9 +108,13 @@ public class GlyphRegression
 
             for (int s = 0; s < outSize; s++) {
                 ShapeDesc desc = shapeDescs[s];
-                evals[s] = new Evaluation();
-                evals[s].shape = desc.shape;
-                evals[s].grade = desc.distance(ins);
+                Shape     shape = specificShapeCheck(desc.shape, glyph);
+
+                if (shape != null) {
+                    evals[s] = new Evaluation(shape, desc.distance(ins));
+                } else {
+                    evals[s] = new Evaluation(desc.shape, Double.MAX_VALUE);
+                }
             }
 
             // Order the evals from best to worst
@@ -136,21 +140,6 @@ public class GlyphRegression
     public String getName ()
     {
         return "Regression";
-    }
-
-    //-----------//
-    // isTrained //
-    //-----------//
-    @Override
-    public boolean isTrained ()
-    {
-        for (ShapeDesc desc : shapeDescs) {
-            if (desc.populations[0].getCardinality() >= 2) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     //------//
@@ -239,7 +228,7 @@ public class GlyphRegression
                                                  .ordinal()];
                 desc.include(feedInput(glyph, ins));
             } catch (Exception ex) {
-                logger.warning("Weird glyph: " + glyph);
+                logger.warning("Weird glyph: " + glyph.getShape());
             }
         }
 
