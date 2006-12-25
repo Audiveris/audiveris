@@ -10,16 +10,14 @@
 //
 package omr.score;
 
-import omr.score.visitor.Visitor;
+import omr.glyph.Shape;
 
-import omr.util.Dumper;
+import omr.score.visitor.ScoreVisitor;
+
 import omr.util.Logger;
 import omr.util.TreeNode;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Class <code>Measure</code> handles a measure of a system part, that is all
@@ -34,7 +32,7 @@ import java.util.TreeSet;
  * @version $Id$
  */
 public class Measure
-    extends PartNode
+    extends MeasureNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -65,7 +63,7 @@ public class Measure
     //    /** Children: possibly several dynamics */
     //    private DynamicList dynamics;
     //
-    //    /** Children: possibly severalof lyrics */
+    //    /** Children: possibly several lines of lyrics */
     //    private LyricList lyriclines;
     //
     //    /** Children: possibly several texts */
@@ -77,17 +75,35 @@ public class Measure
     /** For measure with no physical ending bar line */
     private boolean lineInvented;
 
-    /** Measure Id */
-    private int id = 0;
+    /** Flag for implicit (introduction) measure */
+    private boolean implicit;
 
-    /**
-     * Counter for beam id.
-     * Attention, should use an id unique within all staves of the part TBD
-     */
-    private int globalBeamId;
+    /** Measure Id */
+    private int id;
 
     /** Identified time slots within the measure */
     private SortedSet<Slot> slots;
+
+    /** Groups of beams in this measure */
+    private List<BeamGroup> beamGroups;
+
+    /** Number of voices */
+    private Integer voicesNumber;
+
+    /** Theoretical measure duration */
+    private Integer expectedDuration;
+
+    /** Flag to indicate a wrong duration */
+    private boolean erroneous;
+
+    /**
+     * Final duration per voice:
+     * 0=perfect, -n=too_short, +n=overlast, null=whole_rest
+     */
+    private Map<Integer, Integer> finalDurations = new HashMap<Integer, Integer>();
+
+    /** Final chord of each voice */
+    private Map<Integer, Chord> finalChords = new HashMap<Integer, Chord>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -136,6 +152,19 @@ public class Measure
         return barline;
     }
 
+    //---------------//
+    // getBeamGroups //
+    //---------------//
+    /**
+     * Report the collection of beam groups
+     *
+     * @return the list of beam groups
+     */
+    public List<BeamGroup> getBeamGroups ()
+    {
+        return beamGroups;
+    }
+
     //----------//
     // getBeams //
     //----------//
@@ -147,6 +176,19 @@ public class Measure
     public List<TreeNode> getBeams ()
     {
         return beams.getChildren();
+    }
+
+    //-----------//
+    // getChords //
+    //-----------//
+    /**
+     * Report the collection of chords
+     *
+     * @return the list of chords
+     */
+    public List<TreeNode> getChords ()
+    {
+        return chords.getChildren();
     }
 
     //---------------//
@@ -162,9 +204,10 @@ public class Measure
     public Clef getClefBefore (SystemPoint point)
     {
         // Which staff we are in
-        Clef  clef = null;
-        Staff staff = getPart()
-                          .getStaffAt(point);
+        Clef clef = null;
+        int  staffId = getPart()
+                           .getStaffAt(point)
+                           .getId();
 
         // Look in this measure, with same staff, going backwards
         for (int ic = getClefs()
@@ -172,7 +215,9 @@ public class Measure
             clef = (Clef) getClefs()
                               .get(ic);
 
-            if ((clef.getStaff() == staff) && (clef.getCenter().x <= point.x)) {
+            if ((clef.getStaff()
+                     .getId() == staffId) &&
+                (clef.getCenter().x <= point.x)) {
                 return clef;
             }
         }
@@ -182,34 +227,30 @@ public class Measure
 
         for (; measure != null;
              measure = (Measure) measure.getPreviousSibling()) {
-            clef = measure.getLastClef(staff);
+            clef = measure.getLastMeasureClef(staffId);
 
             if (clef != null) {
                 return clef;
             }
         }
 
-        // Remember staff index in part & part index in system
-        final int staffIndex = staff.getStaffIndex();
+        // Remember part index in system
         final int partIndex = getPart()
                                   .getId() - 1;
 
         // Look in previous system(s) of the page
-        System system = (System) getPart()
-                                     .getSystem()
+        System system = (System) getSystem()
                                      .getPreviousSibling();
 
         for (; system != null; system = (System) system.getPreviousSibling()) {
             SystemPart prt = (SystemPart) system.getParts()
                                                 .get(partIndex);
-            Staff      stf = (Staff) prt.getStaves()
-                                        .get(staffIndex);
 
             for (int im = prt.getMeasures()
                              .size() - 1; im >= 0; im--) {
                 measure = (Measure) prt.getMeasures()
                                        .get(im);
-                clef = measure.getLastClef(stf);
+                clef = measure.getLastMeasureClef(staffId);
 
                 if (clef != null) {
                     return clef;
@@ -231,6 +272,152 @@ public class Measure
     public List<TreeNode> getClefs ()
     {
         return clefs.getChildren();
+    }
+
+    //-------------------------//
+    // getCurrentTimeSignature //
+    //-------------------------//
+    /**
+     * Report the time signature which applies in this measure, whether a time
+     * signature actually starts this measure in whatever staff, or whether a
+     * time signature was found in a previous measure.
+     *
+     * @return the current time signature, or null if not found
+     */
+    public TimeSignature getCurrentTimeSignature ()
+    {
+        TimeSignature ts = null;
+
+        // Look in this measure
+        ts = getTimeSignature();
+
+        if (ts != null) {
+            return ts;
+        }
+
+        // Look in previous measures in the system
+        Measure measure = (Measure) getPreviousSibling();
+
+        for (; measure != null;
+             measure = (Measure) measure.getPreviousSibling()) {
+            ts = measure.getTimeSignature();
+
+            if (ts != null) {
+                return ts;
+            }
+        }
+
+        // Remember part index in system
+        final int partIndex = getPart()
+                                  .getId() - 1;
+
+        // Look in previous system(s) of the page
+        System system = (System) getSystem()
+                                     .getPreviousSibling();
+
+        for (; system != null; system = (System) system.getPreviousSibling()) {
+            SystemPart prt = (SystemPart) system.getParts()
+                                                .get(partIndex);
+
+            for (int im = prt.getMeasures()
+                             .size() - 1; im >= 0; im--) {
+                measure = (Measure) prt.getMeasures()
+                                       .get(im);
+                ts = measure.getTimeSignature();
+
+                if (ts != null) {
+                    return ts;
+                }
+            }
+        }
+
+        return null; // Not found !!!
+    }
+
+    //-------------//
+    // getDuration //
+    //-------------//
+    /**
+     * Report the duration of this measure, as computed from its contained
+     * voices
+     *
+     * @return the (measured) measure duration
+     */
+    public int getDuration ()
+    {
+        return 0;
+    }
+
+    //--------------//
+    // setErroneous //
+    //--------------//
+    /**
+     * Assign this measure as erroneous (perhaps we should be more specific, for
+     * the time being, this is used only to flag measures for which the comtuted
+     * duration of a voice is longer than the expected measure duration)
+     *
+     * @param erroneous true is erroneaous, false otherwise
+     */
+    public void setErroneous (boolean erroneous)
+    {
+        this.erroneous = erroneous;
+    }
+
+    //-------------//
+    // isErroneous //
+    //-------------//
+    /**
+     * Report whether this measure has been determined as erroneous
+     *
+     * @return true is erroneous, false otherwise
+     */
+    public boolean isErroneous ()
+    {
+        return erroneous;
+    }
+
+    //---------------------//
+    // getExpectedDuration //
+    //---------------------//
+    /**
+     * Report the theoretical duration of this measure, based on current time
+     * signature
+     *
+     * @return the expected measure duration
+     */
+    public int getExpectedDuration ()
+    {
+        if (expectedDuration == null) {
+            int           numerator;
+            int           denominator;
+            TimeSignature ts = getCurrentTimeSignature();
+
+            if (ts != null) {
+                numerator = ts.getNumerator();
+                denominator = ts.getDenominator();
+            } else {
+                numerator = 4;
+                denominator = 4;
+            }
+
+            expectedDuration = (4 * Note.QUARTER_DURATION * numerator) / denominator;
+        }
+
+        return expectedDuration;
+    }
+
+    //------------------//
+    // getFinalDuration //
+    //------------------//
+    /**
+     * Report how a given voice terminates in this measure
+     *
+     * @param voice the given voice
+     * @return the duration delta at end of the measure (or null for whole rest)
+     */
+    public Integer getFinalDuration (int voice)
+    {
+        return finalDurations.get(voice);
     }
 
     //-------//
@@ -259,6 +446,124 @@ public class Measure
         return id;
     }
 
+    //-------------//
+    // setImplicit //
+    //-------------//
+    /**
+     * Flag this measure as implicit
+     */
+    public void setImplicit ()
+    {
+        implicit = true;
+
+        // Remove any final forward mark (to be improved ?)
+        for (int voice = 1; voice <= getVoicesNumber(); voice++) {
+            Integer duration = finalDurations.get(voice);
+
+            if ((duration != null) && (duration < 0)) {
+                Chord chord = finalChords.get(voice);
+
+                if (chord != null) {
+                    int nbMarks = chord.getMarks()
+                                       .size();
+                    chord.getMarks()
+                         .remove(chord.getMarks().get(nbMarks - 1));
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            getContextString() + " Final forward removed");
+                    }
+                } else {
+                    logger.warning(
+                        getContextString() + " No final chord in voice " +
+                        voice);
+                }
+            }
+        }
+    }
+
+    //------------//
+    // isImplicit //
+    //------------//
+    /**
+     * Report whether this measure is implicit
+     *
+     * @return true if measure is implicit
+     */
+    public boolean isImplicit ()
+    {
+        return implicit;
+    }
+
+    //--------------//
+    // getKeyBefore //
+    //--------------//
+    /**
+     * Report the key signature which applies in this measure, whether a key
+     * signature actually starts this measure in the same staff, or whether a
+     * key signature was found in a previous measure, for the same staff.
+     *
+     * @return the current time signature, or null if not found
+     */
+    public KeySignature getKeyBefore (SystemPoint point)
+    {
+        KeySignature ks = null;
+        int          staffId = getPart()
+                                   .getStaffAt(point)
+                                   .getId();
+
+        // Look in this measure, with same staff, going backwards
+        for (int ik = getKeySignatures()
+                          .size() - 1; ik >= 0; ik--) {
+            ks = (KeySignature) getKeySignatures()
+                                    .get(ik);
+
+            if ((ks.getStaff()
+                   .getId() == staffId) &&
+                (ks.getCenter().x < point.x)) {
+                return ks;
+            }
+        }
+
+        // Look in previous measures in the system
+        Measure measure = (Measure) getPreviousSibling();
+
+        for (; measure != null;
+             measure = (Measure) measure.getPreviousSibling()) {
+            ks = measure.getLastMeasureKey(staffId);
+
+            if (ks != null) {
+                return ks;
+            }
+        }
+
+        // Remember part index in system
+        final int partIndex = getPart()
+                                  .getId() - 1;
+
+        // Look in previous system(s) of the page
+        System system = (System) getSystem()
+                                     .getPreviousSibling();
+
+        for (; system != null; system = (System) system.getPreviousSibling()) {
+            SystemPart prt = (SystemPart) system.getParts()
+                                                .get(partIndex);
+
+            for (int im = prt.getMeasures()
+                             .size() - 1; im >= 0; im--) {
+                measure = (Measure) prt.getMeasures()
+                                       .get(im);
+                ks = measure.getLastMeasureKey(staffId);
+
+                if (ks != null) {
+                    return ks;
+                }
+            }
+        }
+
+        return null; // Not found !!!
+    }
+
     //------------------//
     // getKeySignatures //
     //------------------//
@@ -272,17 +577,17 @@ public class Measure
         return keysigs.getChildren();
     }
 
-    //-------------//
-    // getLastClef //
-    //-------------//
+    //--------------------//
+    // getLastMeasureClef //
+    //--------------------//
     /**
      * Report the last clef (if any) in this measure, tagged  with the provided
      * staff
      *
-     * @param staff the imposed related staff
+     * @param staffId the imposed related staff id
      * @return the last clef, or null
      */
-    public Clef getLastClef (Staff staff)
+    public Clef getLastMeasureClef (int staffId)
     {
         // Going backwards
         for (int ic = getClefs()
@@ -290,8 +595,36 @@ public class Measure
             Clef clef = (Clef) getClefs()
                                    .get(ic);
 
-            if (clef.getStaff() == staff) {
+            if (clef.getStaff()
+                    .getId() == staffId) {
                 return clef;
+            }
+        }
+
+        return null;
+    }
+
+    //-------------------//
+    // getLastMeasureKey //
+    //-------------------//
+    /**
+     * Report the last key signature (if any) in this measure, tagged with the
+     * provided staff
+     *
+     * @param staffId the imposed related staff id
+     * @return the last key signature, or null
+     */
+    public KeySignature getLastMeasureKey (int staffId)
+    {
+        // Going backwards
+        for (int ik = getKeySignatures()
+                          .size() - 1; ik >= 0; ik--) {
+            KeySignature key = (KeySignature) getKeySignatures()
+                                                  .get(ik);
+
+            if (key.getStaff()
+                   .getId() == staffId) {
+                return key;
             }
         }
 
@@ -322,14 +655,6 @@ public class Measure
         }
 
         return leftX;
-    }
-
-    //---------------//
-    // getNextBeamId //
-    //---------------//
-    public int getNextBeamId ()
-    {
-        return ++globalBeamId;
     }
 
     //----------//
@@ -367,6 +692,49 @@ public class Measure
         return null; // Not found
     }
 
+    //------------------//
+    // getTimeSignature //
+    //------------------//
+    /**
+     * Report the potential time signature in this measure (whatever the staff)
+     *
+     * @return the time signature, or null if not found
+     */
+    public TimeSignature getTimeSignature ()
+    {
+        for (TreeNode node : timesigs.getChildren()) {
+            return (TimeSignature) node;
+        }
+
+        return null; // Not found
+    }
+
+    //-----------------//
+    // setVoicesNumber //
+    //-----------------//
+    /**
+     * Assign the number of voices in this measure
+     *
+     * @param voicesNumber total number of voices
+     */
+    public void setVoicesNumber (int voicesNumber)
+    {
+        this.voicesNumber = voicesNumber;
+    }
+
+    //-----------------//
+    // getVoicesNumber //
+    //-----------------//
+    /**
+     * Report the number of voices in this measure
+     *
+     * @return the number fo voices computed
+     */
+    public int getVoicesNumber ()
+    {
+        return voicesNumber;
+    }
+
     //----------//
     // getWidth //
     //----------//
@@ -385,7 +753,7 @@ public class Measure
     // accept //
     //--------//
     @Override
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
     }
@@ -405,16 +773,14 @@ public class Measure
         // Special children lists
         if (node instanceof Clef) {
             clefs.addChild(node);
-            node.setContainer(clefs);
+        } else if (node instanceof TimeSignature) {
+            timesigs.addChild(node);
         } else if (node instanceof KeySignature) {
             keysigs.addChild(node);
-            node.setContainer(keysigs);
         } else if (node instanceof Beam) {
             beams.addChild(node);
-            node.setContainer(beams);
         } else if (node instanceof Chord) {
             chords.addChild(node);
-            node.setContainer(chords);
         } else {
             super.addChild(node);
         }
@@ -422,6 +788,72 @@ public class Measure
         // Side effect for barline
         if (node instanceof Barline) {
             barline = (Barline) node; // Ending barline
+        }
+    }
+
+    //----------//
+    // addGroup //
+    //----------//
+    /**
+     * Add a beam goup to this measure
+     *
+     * @param group a beam group to add
+     */
+    public void addGroup (BeamGroup group)
+    {
+        beamGroups.add(group);
+    }
+
+    //---------------//
+    // checkDuration //
+    //---------------//
+    /**
+     * Check the duration as computed in this measure from its contained voices,
+     * compared to its theoretical duration.
+     */
+    public void checkDuration ()
+    {
+        // As a first attempt, make all forward stuff explicit & visible
+        for (int voice = 1; voice <= getVoicesNumber(); voice++) {
+            int   timeCounter = 0;
+            Chord lastChord = null;
+
+            for (Slot slot : getSlots()) {
+                for (Chord chord : slot.getChords()) {
+                    if (chord.getVoice() == voice) {
+                        // Need a forward before this chord ?
+                        if (timeCounter < slot.getOffset()) {
+                            insertForward(
+                                slot.getOffset() - timeCounter,
+                                Mark.Position.BEFORE,
+                                chord);
+                            timeCounter = slot.getOffset();
+                        }
+
+                        lastChord = chord;
+                        timeCounter += chord.getDuration();
+                    }
+                }
+            }
+
+            // Need an ending forward ?
+            if (lastChord != null) {
+                finalChords.put(voice, lastChord);
+
+                int delta = timeCounter - getExpectedDuration();
+                finalDurations.put(voice, delta);
+
+                if (delta < 0) {
+                    // Insert a forward mark
+                    insertForward(-delta, Mark.Position.AFTER, lastChord);
+                } else if (delta > 0) {
+                    // Flag the measure as too long
+                    erroneous = true;
+                } else if (lastChord.isWholeDuration()) {
+                    // Remember we can't tell anything'
+                    finalDurations.put(voice, null);
+                }
+            }
         }
     }
 
@@ -444,6 +876,8 @@ public class Measure
 
         // Invalidate data
         slots = null;
+        expectedDuration = null;
+        erroneous = false;
 
         // (Re)Allocate specific children lists
         clefs = new ClefList(this);
@@ -458,6 +892,7 @@ public class Measure
 
         // Should this be a MeasureNode ??? TBD
         slots = new TreeSet<Slot>();
+        beamGroups = new ArrayList<BeamGroup>();
     }
 
     //----------------//
@@ -480,6 +915,32 @@ public class Measure
     public String toString ()
     {
         return "{Measure id=" + id + "}";
+    }
+
+    //---------------//
+    // insertForward //
+    //---------------//
+    private void insertForward (int           duration,
+                                Mark.Position position,
+                                Chord         chord)
+    {
+        SystemPoint point = new SystemPoint(
+            chord.getHeadLocation().x,
+            (chord.getHeadLocation().y + chord.getTailLocation().y) / 2);
+
+        if (position == Mark.Position.AFTER) {
+            point.x += 10;
+        } else if (position == Mark.Position.BEFORE) {
+            point.x -= 10;
+        }
+
+        Mark mark = new Mark(
+            chord.getSystem(),
+            point,
+            position,
+            Shape.FORWARD,
+            new Integer(duration));
+        chord.addMark(mark);
     }
 
     //~ Inner Classes ----------------------------------------------------------
