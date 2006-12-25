@@ -16,7 +16,7 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
-import omr.score.visitor.Visitor;
+import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
@@ -155,7 +155,7 @@ public class TimeSignature
     // accept //
     //--------//
     @Override
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
     }
@@ -182,7 +182,7 @@ public class TimeSignature
      */
     public void reset ()
     {
-        center = null;
+        setCenter(null);
         shape = null;
         numerator = null;
         denominator = null;
@@ -234,7 +234,7 @@ public class TimeSignature
     @Override
     protected void computeCenter ()
     {
-        center = computeGlyphsCenter(glyphs);
+        setCenter(computeGlyphsCenter(glyphs));
     }
 
     //----------//
@@ -386,7 +386,7 @@ public class TimeSignature
                         return;
 
                     case CUT_TIME :
-                        assignRational(shape, 2, 4);
+                        assignRational(shape, 2, 2);
 
                         return;
 
