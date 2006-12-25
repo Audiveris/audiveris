@@ -50,10 +50,12 @@ class SelectionPanel
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
-        GlyphRepository.class);
+    private static final Logger logger = Logger.getLogger(SelectionPanel.class);
 
     //~ Instance fields --------------------------------------------------------
+
+    /** Reference of network panel companion (TBI) */
+    private TrainingPanel trainingPanel;
 
     /** Swing component */
     private final Panel component;
@@ -69,6 +71,9 @@ class SelectionPanel
 
     /** Visual progression of the selection */
     private JProgressBar progressBar = new JProgressBar();
+
+    /** To dump the current selection of glyphs used for training/validation */
+    private DumpAction dumpAction = new DumpAction();
 
     /** To refresh the application wrt to the training material on disk */
     private RefreshAction refreshAction = new RefreshAction();
@@ -104,9 +109,9 @@ class SelectionPanel
 
     //~ Constructors -----------------------------------------------------------
 
-    //-----------------//
+    //----------------//
     // SelectionPanel //
-    //-----------------//
+    //----------------//
     /**
      * Creates a new SelectionPanel object.
      * @param task the common training task object
@@ -143,7 +148,7 @@ class SelectionPanel
      *              just the core
      * @return the collection of selected glyphs names
      */
-    public Collection<String> getBase (boolean whole)
+    public List<String> getBase (boolean whole)
     {
         nbLoaded = 0;
         progressBar.setValue(nbLoaded);
@@ -243,6 +248,14 @@ class SelectionPanel
         }
     }
 
+    //------------------//
+    // setTrainingPanel //
+    //------------------//
+    void setTrainingPanel (TrainingPanel trainingPanel)
+    {
+        this.trainingPanel = trainingPanel;
+    }
+
     //------------//
     // defineCore //
     //------------//
@@ -271,7 +284,7 @@ class SelectionPanel
             }
         }
 
-        // QUickly train the regression evaluator
+        // Quickly train the regression evaluator
         regression.train(glyphs, null, Evaluator.StartingMode.SCRATCH);
 
         // Measure every glyph
@@ -382,11 +395,6 @@ class SelectionPanel
             standardWidth);
         PanelBuilder    builder = new PanelBuilder(layout, component);
         CellConstraints cst = new CellConstraints();
-        JButton         refreshButton = new JButton(refreshAction);
-        JButton         selectButton = new JButton(selectAction);
-        refreshButton.setToolTipText("Refresh trainer with disk information");
-        selectButton.setToolTipText(
-            "Build core selection out of whole glyph base");
         builder.setDefaultDialogBorder();
 
         int r = 1; // ----------------------------
@@ -394,7 +402,8 @@ class SelectionPanel
         builder.add(progressBar, cst.xyw(9, r, 7));
 
         r += 2; // ----------------------------
-        builder.add(refreshButton, cst.xy(3, r));
+        builder.add(new JButton(dumpAction), cst.xy(3, r));
+        builder.add(new JButton(refreshAction), cst.xy(5, r));
 
         builder.add(similar.getLabel(), cst.xy(9, r));
         builder.add(similar.getField(), cst.xy(11, r));
@@ -403,7 +412,7 @@ class SelectionPanel
         builder.add(totalFiles.getField(), cst.xy(15, r));
 
         r += 2; // ----------------------------
-        builder.add(selectButton, cst.xy(3, r));
+        builder.add(new JButton(selectAction), cst.xy(3, r));
         builder.add(nbSelectedFiles.getLabel(), cst.xy(9, r));
         builder.add(nbSelectedFiles.getField(), cst.xy(11, r));
 
@@ -441,6 +450,62 @@ class SelectionPanel
             " used in training");
     }
 
+    //------------//
+    // DumpAction //
+    //------------//
+    private class DumpAction
+        extends AbstractAction
+    {
+        public DumpAction ()
+        {
+            super("Dump");
+            putValue(
+                Action.SHORT_DESCRIPTION,
+                "Dump the current glyph selection");
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            List<String> gNames = getBase(trainingPanel.useWhole());
+            System.out.println(
+                "\nContent of " +
+                (trainingPanel.useWhole() ? "whole" : "core") +
+                " population (" + gNames.size() + "):");
+            Collections.sort(
+                gNames,
+                new Comparator<String>() {
+                        public int compare (String s1,
+                                            String s2)
+                        {
+                            String n1 = GlyphRepository.shapeNameOf(s1);
+                            String n2 = GlyphRepository.shapeNameOf(s2);
+
+                            return n1.compareTo(n2);
+                        }
+                    });
+
+            int    glyphNb = 0;
+            String prevName = null;
+
+            for (String gName : gNames) {
+                if (prevName != null) {
+                    if (!GlyphRepository.shapeNameOf(gName)
+                                        .equals(prevName)) {
+                        System.out.println(
+                            String.format("%4d %s", glyphNb, prevName));
+                        glyphNb = 1;
+                    }
+                }
+
+                glyphNb++;
+                prevName = GlyphRepository.shapeNameOf(gName);
+            }
+
+            System.out.println(String.format("%4d %s", glyphNb, prevName));
+        }
+    }
+
     //-------------//
     // ParamAction //
     //-------------//
@@ -467,6 +532,9 @@ class SelectionPanel
         public RefreshAction ()
         {
             super("Disk Refresh");
+            putValue(
+                Action.SHORT_DESCRIPTION,
+                "Refresh trainer with disk information");
         }
 
         @Implement(ActionListener.class)
@@ -485,6 +553,9 @@ class SelectionPanel
         public SelectAction ()
         {
             super("Select Core");
+            putValue(
+                Action.SHORT_DESCRIPTION,
+                "Build core selection out of whole glyph base");
         }
 
         @Implement(ActionListener.class)
