@@ -14,6 +14,7 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
 import omr.selection.Selection;
+import omr.selection.SelectionHint;
 
 import omr.util.Dumper;
 
@@ -21,7 +22,6 @@ import java.awt.event.*;
 import java.util.List;
 
 import javax.swing.*;
-import omr.selection.SelectionHint;
 
 /**
  * Class <code>GlyphMenu</code> defines the popup menu which is linked to the
@@ -67,12 +67,12 @@ public class GlyphMenu
      * @param glyphSelection the currently selected glyph
      * @param glyphSetSelection the currently selected glyphs
      */
-    public GlyphMenu (final SymbolsEditor symbolsBuilder,
+    public GlyphMenu (final SymbolsEditor symbolsEditor,
                       ShapeFocusBoard     shapeFocus,
                       Selection           glyphSelection,
                       Selection           glyphSetSelection)
     {
-        this.symbolsEditor = symbolsBuilder;
+        this.symbolsEditor = symbolsEditor;
         this.shapeFocus = shapeFocus;
         this.glyphSelection = glyphSelection;
         this.glyphSetSelection = glyphSetSelection;
@@ -95,7 +95,7 @@ public class GlyphMenu
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
                         Shape     shape = Shape.valueOf(source.getText());
-                        symbolsBuilder.assignSetShape(
+                        symbolsEditor.assignSetShape(
                             getCurrentGlyphs(),
                             shape,
                             /* compound => */ false);
@@ -111,7 +111,7 @@ public class GlyphMenu
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
                         Shape     shape = Shape.valueOf(source.getText());
-                        symbolsBuilder.assignSetShape(
+                        symbolsEditor.assignSetShape(
                             getCurrentGlyphs(),
                             shape,
                             /* compound => */ false);
@@ -131,7 +131,7 @@ public class GlyphMenu
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
                         Shape     shape = Shape.valueOf(source.getText());
-                        symbolsBuilder.assignSetShape(
+                        symbolsEditor.assignSetShape(
                             getCurrentGlyphs(),
                             shape,
                             /* compound => */ true);
@@ -331,7 +331,7 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             for (Glyph glyph : (List<Glyph>) glyphSetSelection.getEntity()) { // Compiler warning
-                Dumper.dump(glyph);
+                glyph.dump();
             }
         }
     }
