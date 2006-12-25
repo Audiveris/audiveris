@@ -26,7 +26,10 @@ public class GlyphSignature
 {
     //~ Instance fields --------------------------------------------------------
 
-    private final int       weight;
+    /** Glyph weight */
+    private final int weight;
+
+    /** Glyph contour box */
     private final Rectangle contourBox;
 
     //~ Constructors -----------------------------------------------------------
