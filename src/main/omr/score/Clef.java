@@ -13,7 +13,7 @@ package omr.score;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
-import omr.score.visitor.Visitor;
+import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Logger;
 
@@ -64,13 +64,69 @@ public class Clef
     {
         super(measure);
 
-        this.setStaff(staff);
+        setStaff(staff);
         this.shape = shape;
-        this.center = center;
+        setCenter(center);
         this.pitchPosition = pitchPosition;
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // noteStepOf //
+    //------------//
+    public static Note.Step noteStepOf (int   pitchPosition,
+                                        Shape clefShape)
+    {
+        switch (clefShape) {
+        case G_CLEF :
+        case G_CLEF_OTTAVA_ALTA :
+        case G_CLEF_OTTAVA_BASSA :
+            return Note.Step.values()[(71 - pitchPosition) % 7];
+
+        case F_CLEF :
+        case F_CLEF_OTTAVA_ALTA :
+        case F_CLEF_OTTAVA_BASSA :
+            return Note.Step.values()[(73 - pitchPosition) % 7];
+
+        default :
+            logger.severe("No note step defined for clef shape " + clefShape);
+
+            return Note.Step.A; // To keep compiler happy
+        }
+    }
+
+    //----------//
+    // octaveOf //
+    //----------//
+    public static int octaveOf (int   pitchPosition,
+                                Shape clefShape)
+    {
+        switch (clefShape) {
+        case G_CLEF :
+            return (34 - pitchPosition) / 7;
+
+        case G_CLEF_OTTAVA_ALTA :
+            return ((34 - pitchPosition) / 7) + 1;
+
+        case G_CLEF_OTTAVA_BASSA :
+            return ((34 - pitchPosition) / 7) - 1;
+
+        case F_CLEF :
+            return (22 - pitchPosition) / 7;
+
+        case F_CLEF_OTTAVA_ALTA :
+            return ((22 - pitchPosition) / 7) + 1;
+
+        case F_CLEF_OTTAVA_BASSA :
+            return ((22 - pitchPosition) / 7) - 1;
+
+        default :
+            logger.severe("No note octave defined for clef shape " + clefShape);
+
+            return 0; // To keep compiler happy
+        }
+    }
 
     //------------------//
     // getPitchPosition //
@@ -102,9 +158,28 @@ public class Clef
     // accept //
     //--------//
     @Override
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{Clef");
+        sb.append(" ")
+          .append(shape);
+
+        sb.append(" pp=")
+          .append((int) Math.rint(pitchPosition));
+
+        sb.append("}");
+
+        return sb.toString();
     }
 
     //----------//
