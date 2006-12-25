@@ -94,7 +94,7 @@ public class GlyphsBuilder
     public Glyph buildCompound (List<Glyph> list)
     {
         // Build a glyph from all sections
-        Glyph compound = new Glyph();
+        Glyph compound = new Stick();
 
         for (Glyph glyph : list) {
             compound.addGlyphSections(glyph, /* linkSections => */
