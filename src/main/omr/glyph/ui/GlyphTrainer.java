@@ -119,6 +119,7 @@ public class GlyphTrainer
             standardWidth,
             errorListener,
             selectionPanel);
+        selectionPanel.setTrainingPanel(networkPanel);
         validationPanel = new ValidationPanel(
             task,
             standardWidth,
