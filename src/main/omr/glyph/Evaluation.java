@@ -13,20 +13,29 @@ package omr.glyph;
 
 /**
  * Class <code>Evaluation</code> gathers a pair composed of a glyph shape and
- * its grade.
+ * its doubt.
+ *
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class Evaluation
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Absolutely no doubt for shape manually assigned */
+    public static final double MANUAL_NO_DOUBT = -1;
+
+    /** No doubt for shape structurally assigned */
+    public static final double NO_DOUBT = 0;
+
     //~ Instance fields --------------------------------------------------------
 
     /** The evaluated shape */
     public Shape shape;
 
-    /** The evaluation grade (smaller is better) */
-    public double grade;
+    /** The evaluation doubt (smaller is better) */
+    public double doubt;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -34,26 +43,17 @@ public class Evaluation
     // Evaluation //
     //------------//
     /**
-     * Create an uninitialized evaluation
-     */
-    public Evaluation ()
-    {
-    }
-
-    //------------//
-    // Evaluation //
-    //------------//
-    /**
      * Create an initialized evaluation
      *
+     *
      * @param shape the shape this evaluation measures
-     * @param grade the measurement result (smaller is better)
+     * @param doubt the measurement result (smaller is better)
      */
     public Evaluation (Shape  shape,
                        double grade)
     {
         this.shape = shape;
-        this.grade = grade;
+        this.doubt = grade;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -69,7 +69,7 @@ public class Evaluation
         StringBuffer sb = new StringBuffer();
         sb.append(shape);
         sb.append("(")
-          .append((float) grade)
+          .append((float) doubt)
           .append(")");
 
         return sb.toString();
