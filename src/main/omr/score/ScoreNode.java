@@ -10,8 +10,8 @@
 //
 package omr.score;
 
+import omr.score.visitor.ScoreVisitor;
 import omr.score.visitor.Visitable;
-import omr.score.visitor.Visitor;
 
 import omr.sheet.Scale;
 
@@ -85,7 +85,7 @@ public class ScoreNode
     //~ Instance fields --------------------------------------------------------
 
     /** The containing score */
-    protected Score score;
+    private Score score;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -113,19 +113,52 @@ public class ScoreNode
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------------//
+    // getContextString //
+    //------------------//
+    /**
+     * Report a string that describes the context (containment chain, score
+     * excluded) of this entity.
+     *
+     * @return the properly filled context string
+     */
+    public String getContextString ()
+    {
+        return ""; // Empty by default
+    }
+
     //----------//
     // getScale //
     //----------//
+    /**
+     * Report the global scale of this score (and sheet)
+     *
+     * @return the global scale
+     */
     public Scale getScale ()
     {
-        return score.getScale();
+        return getScore()
+                   .getScale();
+    }
+
+    //----------//
+    // getScore //
+    //----------//
+    /**
+     * Report the containing score
+     *
+     * @return the containing score
+     */
+    public Score getScore ()
+    {
+        return score;
     }
 
     //--------//
     // accept //
     //--------//
     @Implement(Visitable.class)
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
     }
@@ -138,7 +171,7 @@ public class ScoreNode
      *
      * @param visitor concrete visitor object to define the actual processing
      */
-    public void acceptChildren (Visitor visitor)
+    public void acceptChildren (ScoreVisitor visitor)
     {
         ///logger.info(children.size() + " children for " + this);
         for (TreeNode node : children) {
