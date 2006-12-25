@@ -10,9 +10,14 @@
 //
 package omr.score;
 
-import java.util.ArrayList;
-import java.util.List;
+import omr.math.GCD;
+
+import omr.score.visitor.ScoreReductor;
+
+import omr.util.Logger;
 import omr.util.TreeNode;
+
+import java.util.*;
 
 /**
  * Class <code>ScorePart</code> defines a part at score level. It is instantiated in
@@ -24,7 +29,14 @@ import omr.util.TreeNode;
  */
 public class ScorePart
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final Logger      logger = Logger.getLogger(ScorePart.class);
+
     //~ Instance fields --------------------------------------------------------
+
+    /** The related score */
+    private final Score score;
 
     /**
      * Distinguished id for this part (the same id is used by the corresponding
@@ -35,8 +47,14 @@ public class ScorePart
     /** Name for this part */
     private String name;
 
-    /** List of staff indices */
-    private List<Integer> indices = new ArrayList<Integer>();
+    /** List of staff ids */
+    private List<Integer> ids = new ArrayList<Integer>();
+
+    /** Set of all different duration values in this part */
+    private final SortedSet<Integer> durations = new TreeSet<Integer>();
+
+    /** Greatest duration divisor */
+    private Integer durationDivisor;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -47,18 +65,23 @@ public class ScorePart
      * Creates a new instance of ScorePart, built from a SystemPart
      *
      * @param systemPart the concrete SystemPart
+     * @param score the related score entity
      */
-    public ScorePart (SystemPart systemPart)
+    public ScorePart (SystemPart systemPart,
+                      Score      score)
     {
+        this.score = score;
+
         for (TreeNode node : systemPart.getStaves()) {
             Staff staff = (Staff) node;
-            indices.add(staff.getStaffIndex());
+            ids.add(staff.getId());
         }
     }
 
     /** Meant for XML binder only */
     private ScorePart ()
     {
+        score = null;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -87,19 +110,6 @@ public class ScorePart
     public int getId ()
     {
         return id;
-    }
-
-    //------------//
-    // getIndices //
-    //------------//
-    /**
-     * Report the staff indices for this part
-     *
-     * @return the list of staff indices
-     */
-    public List<Integer> getIndices ()
-    {
-        return indices;
     }
 
     //---------//
@@ -141,11 +151,46 @@ public class ScorePart
         return "P" + id;
     }
 
+    //-------------//
+    // getStaffIds //
+    //-------------//
+    /**
+     * Report the staff ids for this part
+     *
+     * @return the list of staff ids
+     */
+    public List<Integer> getStaffIds ()
+    {
+        return ids;
+    }
+
+    //-------------//
+    // addDuration //
+    //-------------//
+    public void addDuration (int duration)
+    {
+        durations.add(duration);
+    }
+
+    //------------------------//
+    // computeDurationDivisor //
+    //------------------------//
+    public void computeDurationDivisor ()
+    {
+        Integer[] durationArray = durations.toArray(
+            new Integer[durations.size()]);
+        durationDivisor = GCD.gcd(durationArray);
+        logger.info(
+            this + " durations=" + Arrays.deepToString(durationArray) +
+            " divisor=" + durationDivisor);
+    }
+
     //--------//
     // equals //
     //--------//
     /**
-     * Check whether the list of indices are identical
+     * Check whether the list of ids are identical
+     *
      *
      * @param obj the object to compare to
      * @return true if equal
@@ -156,12 +201,12 @@ public class ScorePart
         if (obj instanceof ScorePart) {
             ScorePart sp = (ScorePart) obj;
 
-            if (sp.indices.size() != indices.size()) {
+            if (sp.ids.size() != ids.size()) {
                 return false;
             }
 
-            for (int i = 0; i < indices.size(); i++) {
-                if (!(sp.indices.get(i).equals(indices.get(i)))) {
+            for (int i = 0; i < ids.size(); i++) {
+                if (!(sp.ids.get(i).equals(ids.get(i)))) {
                     return false;
                 }
             }
@@ -170,6 +215,34 @@ public class ScorePart
         } else {
             return false;
         }
+    }
+
+    //----------------//
+    // resetDurations //
+    //----------------//
+    public void resetDurations ()
+    {
+        durations.clear();
+    }
+
+    //------------------//
+    // simpleDurationOf //
+    //------------------//
+    /**
+     * Export a duration to its simplest form, based on the greates duration
+     * divisor of the part
+     *
+     * @param value the raw duration
+     * @return the simple duration expression, in the context of proper
+     * divisions
+     */
+    public int simpleDurationOf (int value)
+    {
+        if (durationDivisor == null) {
+            score.accept(new ScoreReductor());
+        }
+
+        return value / durationDivisor;
     }
 
     //----------//
@@ -193,7 +266,7 @@ public class ScorePart
 
         sb.append(" [");
 
-        for (Integer i : indices) {
+        for (Integer i : ids) {
             sb.append(i + " ");
         }
 
