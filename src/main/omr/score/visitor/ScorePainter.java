@@ -15,19 +15,19 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
+import static omr.glyph.Shape.*;
 
 import omr.score.Barline;
 import omr.score.Beam;
 import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
+import omr.score.Mark;
 import omr.score.Measure;
-import omr.score.MeasureNode;
 import omr.score.Note;
-import omr.score.PartNode;
 import omr.score.Score;
 import static omr.score.ScoreConstants.*;
-import omr.score.ScoreNode;
+import omr.score.ScoreController;
 import omr.score.ScorePoint;
 import omr.score.Slot;
 import omr.score.Slur;
@@ -38,15 +38,23 @@ import omr.score.SystemPoint;
 import omr.score.TimeSignature;
 import omr.score.UnitDimension;
 
-import omr.ui.icon.IconManager;
+import omr.sheet.Scale;
+
 import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
 
+import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
+
+import javax.swing.AbstractAction;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
 
 /**
  * Class <code>ScorePainter</code> defines for every node in Score hierarchy
@@ -56,7 +64,7 @@ import java.awt.geom.AffineTransform;
  * @version $Id$
  */
 public class ScorePainter
-    implements Visitor
+    extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -66,25 +74,39 @@ public class ScorePainter
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScorePainter.class);
 
-    /** Brace icon */
-    private static final SymbolIcon icon = IconManager.getInstance()
-                                                      .loadSymbolIcon("BRACE");
+    //    /** Brace icon */
+    //    private static final SymbolIcon braceIcon = IconManager.getInstance()
+    //                                                      .loadSymbolIcon("BRACE");
 
     /** Stroke to draw beams */
     private static final Stroke beamStroke = new BasicStroke(4f);
 
-    /** Sequence of colors for beams */
-    private static Color[] beamColors = new Color[] {
-                                            Color.RED, Color.CYAN, Color.ORANGE,
-                                            Color.GREEN
-                                        };
+    /** Stroke to draw stems */
+    private static final Stroke stemStroke = new BasicStroke(1f);
 
-    /** Color for slot axis */
-    private static final Color slotColor = new Color(
-        0,
-        0,
-        0,
-        constants.slotAlpha.getValue());
+    /** Sequence of colors for voices */
+    private static Color[] voiceColors = new Color[] {
+                                             Color.CYAN, Color.ORANGE,
+                                             Color.GREEN, Color.GRAY, Color.PINK,
+                                             Color.MAGENTA, Color.BLUE,
+                                             Color.YELLOW
+                                         };
+
+    //~ Enumerations -----------------------------------------------------------
+
+    /** How a symbol should be horizontally aligned wrt a given point */
+    private static enum HorizontalAlignment {
+        LEFT,
+        CENTER,
+        RIGHT;
+    }
+
+    /** How a symbol should be vertically aligned wrt a given point */
+    private static enum VerticalAlignment {
+        TOP,
+        CENTER,
+        BOTTOM;
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -97,8 +119,12 @@ public class ScorePainter
     /** Used for icon image transformation */
     private final AffineTransform transform = new AffineTransform();
 
-    /** Index for beam color */
-    private int beamIndex;
+    /** Color for slot axis */
+    private final Color slotColor = new Color(
+        0,
+        255,
+        0,
+        constants.slotAlpha.getValue());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -117,6 +143,7 @@ public class ScorePainter
         this.g = (Graphics2D) g;
         this.zoom = z;
 
+        // Anti-aliasing for beams especially
         this.g.setRenderingHint(
             RenderingHints.KEY_ANTIALIASING,
             RenderingHints.VALUE_ANTIALIAS_ON);
@@ -124,9 +151,31 @@ public class ScorePainter
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------------//
+    // insertMenuItems //
+    //-----------------//
+    public static void insertMenuItems (JMenu menu)
+    {
+        JCheckBoxMenuItem voiceItem = new JCheckBoxMenuItem(new VoiceAction());
+        voiceItem.setSelected(constants.voicePainting.getValue());
+        menu.add(voiceItem)
+            .setToolTipText("Show the different voices in every measure");
+
+        JCheckBoxMenuItem slotItem = new JCheckBoxMenuItem(new SlotAction());
+        slotItem.setSelected(constants.slotPainting.getValue());
+        menu.add(slotItem)
+            .setToolTipText("Show the different slots in every measure");
+
+        JCheckBoxMenuItem markItem = new JCheckBoxMenuItem(new MarkAction());
+        markItem.setSelected(constants.markPainting.getValue());
+        menu.add(markItem)
+            .setToolTipText("Show the different marks in every measure");
+    }
+
     //---------------//
     // visit Barline //
     //---------------//
+    @Override
     public boolean visit (Barline barline)
     {
         Shape shape = barline.getShape();
@@ -137,7 +186,7 @@ public class ScorePainter
 
             for (TreeNode node : part.getStaves()) {
                 Staff staff = (Staff) node;
-                part.paintSymbol(g, zoom, shape, barline.getCenter(), staff, 0);
+                paintSymbol(shape, barline.getCenter(), staff, 0);
             }
         } else {
             logger.warning("No shape for barline " + this);
@@ -149,18 +198,17 @@ public class ScorePainter
     //------------//
     // visit Beam //
     //------------//
+    @Override
     public boolean visit (Beam beam)
     {
         Stroke oldStroke = g.getStroke();
+        Color  oldColor = g.getColor();
+
+        // Draw the beam line, with a specific stroke
         g.setStroke(beamStroke);
-
-        // Choose beam color;
-        beamIndex = (beamIndex + 1) % beamColors.length;
-        //g.setColor(beamColors[beamIndex]);
         g.setColor(Color.black);
-
-        // Draw the beam line
-        drawLine(beam, beam.getLeft(), beam.getRight());
+        paintLine(beam.getDisplayOrigin(), beam.getLeft(), beam.getRight());
+        g.setColor(oldColor);
         g.setStroke(oldStroke);
 
         return true;
@@ -169,12 +217,107 @@ public class ScorePainter
     //-------------//
     // visit Chord //
     //-------------//
+    @Override
     public boolean visit (Chord chord)
     {
+        Color oldColor = g.getColor();
+
+        // Stem
         if (chord.getStem() != null) {
-            g.setColor(Color.black);
-            drawLine(chord, chord.getTailLocation(), chord.getHeadLocation());
+            Stroke      oldStroke = g.getStroke();
+            SystemPoint tail = chord.getTailLocation();
+            SystemPoint head = chord.getHeadLocation();
+            g.setStroke(stemStroke);
+            paintLine(chord.getDisplayOrigin(), tail, head);
+            g.setStroke(oldStroke);
+
+            // Flags ?
+            int fn = chord.getFlagsNumber();
+
+            if (fn != 0) {
+                Shape       shape;
+                SystemPoint center = new SystemPoint(tail);
+
+                if (tail.y < head.y) { // Flags down
+                    shape = Shape.values()[(COMBINING_FLAG_1.ordinal() + fn) -
+                            1];
+                    paintSymbol(
+                        shape,
+                        center,
+                        chord.getDisplayOrigin(),
+                        chord,
+                        VerticalAlignment.TOP);
+                } else { // Flags up
+                    shape = Shape.values()[(COMBINING_FLAG_1_UP.ordinal() + fn) -
+                            1];
+                    paintSymbol(
+                        shape,
+                        center,
+                        chord.getDisplayOrigin(),
+                        chord,
+                        VerticalAlignment.BOTTOM);
+                }
+            }
         }
+
+        // Voice indication ?
+        if (constants.voicePainting.getValue()) {
+            if (chord.getVoice() != null) {
+                try {
+                    g.setColor(voiceColors[chord.getVoice() - 1]);
+                } catch (Exception ex) {
+                    logger.warning(
+                        chord.getContextString() + " " + ex + " voice=" +
+                        chord.getVoice());
+                }
+
+                // Link to previous chord with same voice
+                Chord prev = chord.getPreviousChordInVoice();
+
+                if (prev != null) {
+                    paintLine(
+                        chord.getDisplayOrigin(),
+                        prev.getHeadLocation(),
+                        chord.getHeadLocation());
+                }
+            } else {
+                logger.warning("No voice for chord " + chord);
+            }
+        }
+
+        // Marks ?
+        if (constants.markPainting.getValue()) {
+            for (Mark mark : chord.getMarks()) {
+                HorizontalAlignment hAlign = (mark.getPosition() == Mark.Position.BEFORE)
+                                             ? HorizontalAlignment.RIGHT
+                                             : HorizontalAlignment.LEFT;
+                paintSymbol(
+                    mark.getShape(),
+                    mark.getLocation(),
+                    chord.getDisplayOrigin(),
+                    hAlign,
+                    VerticalAlignment.CENTER);
+
+                if (mark.getData() != null) {
+                    g.setColor(Color.RED);
+
+                    Point topLeft = toScaledPoint(
+                        mark.getLocation(),
+                        chord.getDisplayOrigin(),
+                        hAlign,
+                        10,
+                        VerticalAlignment.BOTTOM,
+                        -5);
+
+                    g.drawString(
+                        mark.getData().toString(),
+                        topLeft.x,
+                        topLeft.y);
+                }
+            }
+        }
+
+        g.setColor(oldColor);
 
         return true;
     }
@@ -182,13 +325,11 @@ public class ScorePainter
     //------------//
     // visit Clef //
     //------------//
+    @Override
     public boolean visit (Clef clef)
     {
         // Draw the clef symbol
-        clef.getPart()
-            .paintSymbol(
-            g,
-            zoom,
+        paintSymbol(
             clef.getShape(),
             clef.getCenter(),
             clef.getStaff(),
@@ -200,13 +341,11 @@ public class ScorePainter
     //--------------------//
     // visit KeySignature //
     //--------------------//
+    @Override
     public boolean visit (KeySignature keySignature)
     {
         if (keySignature.getPitchPosition() != null) {
-            keySignature.getPart()
-                        .paintSymbol(
-                g,
-                zoom,
+            paintSymbol(
                 keySignature.getShape(),
                 keySignature.getCenter(),
                 keySignature.getStaff(),
@@ -219,8 +358,10 @@ public class ScorePainter
     //---------------//
     // visit Measure //
     //---------------//
+    @Override
     public boolean visit (Measure measure)
     {
+        Color      oldColor = g.getColor();
         SystemPart part = measure.getPart();
 
         // Write the measure id, on the first staff  of the first part only
@@ -255,52 +396,122 @@ public class ScorePainter
             }
         }
 
+        // Flag for erroneous measure ?
+        if (measure.isErroneous()) {
+            ScorePoint staffOrigin = measure.getPart()
+                                            .getFirstStaff()
+                                            .getDisplayOrigin();
+            g.setColor(Color.red);
+            g.drawString(
+                "Error",
+                zoom.scaled(staffOrigin.x + measure.getLeftX()) + 10,
+                zoom.scaled(staffOrigin.y) - 15);
+        }
+
+        g.setColor(oldColor);
+
         return true;
     }
 
     //------------//
     // visit Note //
     //------------//
+    @Override
     public boolean visit (Note note)
     {
-        // If note is attached to a stem, link the note display to the stem one
-        Chord chord = note.getChord();
-        Glyph stem = chord.getStem();
+        SystemPart  part = note.getPart();
+        Staff       staff = note.getStaff();
+        Chord       chord = note.getChord();
+        Glyph       stem = chord.getStem();
+        Shape       shape = note.getShape();
+        int         pitch = (int) Math.rint(note.getPitchPosition());
+        SystemPoint center = note.getCenter();
+        Shape       displayShape; // What is really displayed
 
         if (stem != null) {
-            note.getPart()
-                .paintSymbol(g, zoom, note.getShape(), note.getCenter(), chord);
-        } else {
-            Shape shape = note.getShape();
-            Shape displayShape;
-
-            if (shape == Shape.MULTI_REST) {
-                displayShape = Shape.MULTI_REST_DISPLAY;
-            } else if ((shape == Shape.WHOLE_REST) ||
-                       (shape == Shape.HALF_REST)) {
-                displayShape = Shape.HALF_OR_WHOLE_REST_DISPLAY;
+            // Note is attached to a stem, link the note display to the stem one
+            if (Shape.HeadAndFlags.contains(shape)) {
+                displayShape = Shape.NOTEHEAD_BLACK;
             } else {
                 displayShape = shape;
             }
 
-            note.getPart()
-                .paintSymbol(g, zoom, displayShape, note.getCenter());
+            paintSymbol(displayShape, center, staff, pitch, chord);
+        } else {
+            // Use special display icons for some shapes
+            if (shape == Shape.MULTI_REST) {
+                displayShape = Shape.MULTI_REST_DISPLAY;
+            } else if ((shape == Shape.WHOLE_REST) ||
+                       (shape == Shape.HALF_REST)) {
+                displayShape = Shape.WHOLE_OR_HALF_REST;
+            } else {
+                displayShape = shape;
+            }
+
+            paintSymbol(displayShape, center, part.getDisplayOrigin());
         }
 
-        return true;
-    }
+        // Augmentation dots ?
+        if (chord.getDotsNumber() == 1) {
+            SystemPoint dotCenter = new SystemPoint(note.getCenter());
+            dotCenter.x += zoom.unscaled(
+                displayShape.getIcon().getIconWidth() / 2);
+            dotCenter.x += note.getScale()
+                               .toUnits(constants.dotDx);
 
-    //-----------------//
-    // visit ScoreNode //
-    //-----------------//
-    public boolean visit (ScoreNode musicNode)
-    {
+            if ((pitch % 2) == 0) {
+                pitch -= 1;
+            }
+
+            paintSymbol(Shape.DOT, dotCenter, staff, pitch);
+        } else if (chord.getDotsNumber() == 2) {
+            // TO BE IMPLEMENTED
+        }
+
+        // Accidental ?
+        if (note.getAccidental() != null) {
+            SystemPoint accidCenter = new SystemPoint(note.getCenter());
+            accidCenter.x -= zoom.unscaled(
+                displayShape.getIcon().getIconWidth() / 2);
+            accidCenter.x -= note.getScale()
+                                 .toUnits(constants.accidDx);
+            paintSymbol(
+                note.getAccidental(),
+                accidCenter,
+                staff,
+                pitch,
+                HorizontalAlignment.RIGHT);
+        }
+
+        // Ledgers ?
+        if (!note.isRest() && (Math.abs(pitch) >= 6)) {
+            int         halfLedger = note.getScale()
+                                         .toUnits(constants.halfLedgerLength);
+            SystemPoint left = new SystemPoint(center.x - halfLedger, 0);
+
+            if (pitch > 0) {
+                left.y += STAFF_HEIGHT;
+            }
+
+            SystemPoint right = new SystemPoint(
+                left.x + (2 * halfLedger),
+                left.y);
+            int         sign = Integer.signum(pitch);
+
+            for (int p = 6; p <= (pitch * sign); p = p + 2) {
+                left.y += (INTER_LINE * sign);
+                right.y += (INTER_LINE * sign);
+                paintLine(staff.getDisplayOrigin(), left, right);
+            }
+        }
+
         return true;
     }
 
     //-------------//
     // visit Score //
     //-------------//
+    @Override
     public boolean visit (Score score)
     {
         score.acceptChildren(this);
@@ -311,6 +522,7 @@ public class ScorePainter
     //------------//
     // visit Slur //
     //------------//
+    @Override
     public boolean visit (Slur slur)
     {
         slur.getArc()
@@ -322,6 +534,7 @@ public class ScorePainter
     //-------------//
     // visit Staff //
     //-------------//
+    @Override
     public boolean visit (Staff staff)
     {
         Point origin = staff.getDisplayOrigin();
@@ -341,25 +554,10 @@ public class ScorePainter
         return true;
     }
 
-    //-------------------//
-    // visit MeasureNode //
-    //-------------------//
-    public boolean visit (MeasureNode measureNode)
-    {
-        return true;
-    }
-
-    //----------------//
-    // visit PartNode //
-    //----------------//
-    public boolean visit (PartNode node)
-    {
-        return true;
-    }
-
     //--------------//
     // visit System //
     //--------------//
+    @Override
     public boolean visit (System system)
     {
         // Check whether our system is impacted)
@@ -397,6 +595,7 @@ public class ScorePainter
     //------------------//
     // visit SystemPart //
     //------------------//
+    @Override
     public boolean visit (SystemPart part)
     {
         // Draw a brace if there is more than one stave in the part
@@ -410,7 +609,8 @@ public class ScorePainter
             double     height = zoom.scaled(bot - top + 1);
 
             // Vertical ratio to extend the icon */
-            double     ratio = height / icon.getIconHeight();
+            SymbolIcon braceIcon = (SymbolIcon) Shape.BRACE.getIcon();
+            double     ratio = height / braceIcon.getIconHeight();
 
             // Offset on left of system
             int        dx = 10;
@@ -425,7 +625,7 @@ public class ScorePainter
                 zoom.scaled(part.getSystem()
                                 .getDisplayOrigin().x) - dx,
                 zoom.scaled(top));
-            g2.drawRenderedImage(icon.getImage(), transform);
+            g2.drawRenderedImage(braceIcon.getImage(), transform);
         }
 
         // Draw the starting barline, if any
@@ -440,6 +640,7 @@ public class ScorePainter
     //---------------------//
     // visit TimeSignature //
     //---------------------//
+    @Override
     public boolean visit (TimeSignature timeSignature)
     {
         Shape      shape = timeSignature.getShape();
@@ -460,7 +661,10 @@ public class ScorePainter
             case TIME_SIX_EIGHT :
             case COMMON_TIME :
             case CUT_TIME :
-                part.paintSymbol(g, zoom, shape, timeSignature.getCenter());
+                paintSymbol(
+                    shape,
+                    timeSignature.getCenter(),
+                    part.getDisplayOrigin());
 
                 break;
             }
@@ -474,7 +678,7 @@ public class ScorePainter
                         glyph);
                     Staff       staff = part.getStaffAt(center);
                     int         pitch = staff.unitToPitch(center.y);
-                    part.paintSymbol(g, zoom, s, center, staff, pitch);
+                    paintSymbol(s, center, staff, pitch);
                 }
             }
         }
@@ -482,22 +686,300 @@ public class ScorePainter
         return true;
     }
 
-    private void drawLine (PartNode    node,
-                           SystemPoint from,
-                           SystemPoint to)
+    //-----------//
+    // paintLine //
+    //-----------//
+    /**
+     * Draw a line from one SystemPoint to another SystemPoint within their
+     * containing system.
+     *
+     * @param displayOrigin the related system display origin
+     * @param from first point
+     * @param to second point
+     */
+    private void paintLine (ScorePoint  displayOrigin,
+                            SystemPoint from,
+                            SystemPoint to)
     {
-        ScorePoint origin = node.getDisplayOrigin();
         g.drawLine(
-            zoom.scaled(origin.x + from.x),
-            zoom.scaled(origin.y + from.y),
-            zoom.scaled(origin.x + to.x),
-            zoom.scaled(origin.y + to.y));
+            zoom.scaled(displayOrigin.x + from.x),
+            zoom.scaled(displayOrigin.y + from.y),
+            zoom.scaled(displayOrigin.x + to.x),
+            zoom.scaled(displayOrigin.y + to.y));
+    }
+
+    //-------------//
+    // paintSymbol //
+    //-------------//
+    /**
+     * Paint a symbol icon using the coordinates in units of its bounding point
+     * within the containing system part, assuming CENTER for both horizontal
+     * and vertical alignments
+     *
+     * @param shape the shape whose icon must be painted
+     * @param point system-based given point in units
+     * @param displayOrigin the related origin in score display
+     */
+    private void paintSymbol (Shape       shape,
+                              SystemPoint point,
+                              ScorePoint  displayOrigin)
+    {
+        paintSymbol(
+            shape,
+            point,
+            displayOrigin,
+            HorizontalAlignment.CENTER,
+            VerticalAlignment.CENTER);
+    }
+
+    //-------------//
+    // paintSymbol //
+    //-------------//
+    /**
+     * Paint a symbol icon using the coordinates in units of its bounding point
+     * within the containing system part
+     *
+     * @param shape the shape whose icon must be painted
+     * @param point system-based given point in units
+     * @param displayOrigin the related origin in score display
+     * @param hAlign the horizontal alignment wrt the point
+     * @param vAlign the vertical alignment wrt the point
+     */
+    private void paintSymbol (Shape               shape,
+                              SystemPoint         point,
+                              ScorePoint          displayOrigin,
+                              HorizontalAlignment hAlign,
+                              VerticalAlignment   vAlign)
+    {
+        SymbolIcon icon = (SymbolIcon) shape.getIcon();
+        Point      topLeft = toScaledPoint(
+            point,
+            displayOrigin,
+            hAlign,
+            icon.getActualWidth(),
+            vAlign,
+            icon.getIconHeight());
+        g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
+    }
+
+    //-------------//
+    // paintSymbol //
+    //-------------//
+    /**
+     * Paint a symbol icon using the coordinates in units of its bounding center
+     * within the containing system part, forcing adjacency with provided chord
+     * stem.
+     *
+     * @param shape the shape whose icon must be painted
+     * @param center system-based bounding center in units
+     * @param displayOrigin the related origin in score display
+     * @param chord the chord stem to attach the symbol to
+     */
+    private void paintSymbol (Shape       shape,
+                              SystemPoint center,
+                              ScorePoint  displayOrigin,
+                              Chord       chord)
+    {
+        paintSymbol(
+            shape,
+            center,
+            displayOrigin,
+            chord,
+            VerticalAlignment.CENTER);
+    }
+
+    //-------------//
+    // paintSymbol //
+    //-------------//
+    /**
+     * Paint a symbol icon using the coordinates in units of its bounding center
+     * within the containing system part, forcing adjacency with provided chord
+     * stem.
+     *
+     * @param shape the shape whose icon must be painted
+     * @param center system-based bounding center in units
+     * @param displayOrigin the related origin in score display
+     * @param chord the chord stem to attach the symbol to
+     * @param vAlign the vertical alignment wrt the point
+     */
+    private void paintSymbol (Shape             shape,
+                              SystemPoint       center,
+                              ScorePoint        displayOrigin,
+                              Chord             chord,
+                              VerticalAlignment vAlign)
+    {
+        SymbolIcon icon = (SymbolIcon) shape.getIcon();
+        Point      topLeft = new Point(
+            zoom.scaled(displayOrigin.x + chord.getTailLocation().x),
+            zoom.scaled(displayOrigin.y + center.y));
+
+        // Horizontal alignment
+        if (center.x < chord.getTailLocation().x) {
+            // Symbol is on left side of stem (-1 is for stem width)
+            topLeft.x -= (icon.getActualWidth() - 1);
+        }
+
+        // Vertical alignment
+        if (vAlign == VerticalAlignment.CENTER) {
+            topLeft.y -= (icon.getIconHeight() / 2);
+        } else if (vAlign == VerticalAlignment.BOTTOM) {
+            topLeft.y -= icon.getIconHeight();
+        }
+
+        g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
+    }
+
+    //-------------//
+    // paintSymbol //
+    //-------------//
+    /**
+     * Paint a symbol icon using the coordinates in units of its bounding center
+     * within the containing system part, forcing adjacency with provided chord
+     * stem.
+     *
+     * @param shape the shape whose icon must be painted
+     * @param center part-based bounding center in units
+     * @param chord the chord stem to attach the symbol to
+     */
+    private void paintSymbol (Shape       shape,
+                              SystemPoint center,
+                              Staff       staff,
+                              double      pitchPosition,
+                              Chord       chord)
+    {
+        SymbolIcon icon = (SymbolIcon) shape.getIcon();
+        ScorePoint displayOrigin = staff.getDisplayOrigin();
+        int        dy = staff.pitchToUnit(pitchPosition);
+
+        // Position of symbol wrt stem
+        int stemX = chord.getTailLocation().x;
+        int iconX = zoom.scaled(displayOrigin.x + stemX);
+
+        if (center.x < stemX) {
+            // Symbol is on left side of stem (-1 is for stem width)
+            iconX -= (icon.getActualWidth() - 1);
+        }
+
+        g.drawImage(
+            icon.getImage(),
+            iconX,
+            zoom.scaled(displayOrigin.y + dy) - icon.getCenter().y,
+            null);
+    }
+
+    //-------------//
+    // paintSymbol //
+    //-------------//
+    /**
+     * Paint a symbol using its pitch position for ordinate in the containing
+     * staff, assuming CENTER for horizontal alignment.
+     *
+     * @param shape the shape whose icon must be painted
+     * @param center system-based coordinates of bounding center in units (only
+     *               abscissa is actually used)
+     * @param staff the related staff
+     * @param pitchPosition staff-based ordinate in step lines
+     */
+    private void paintSymbol (Shape       shape,
+                              SystemPoint center,
+                              Staff       staff,
+                              double      pitchPosition)
+    {
+        paintSymbol(
+            shape,
+            center,
+            staff,
+            pitchPosition,
+            HorizontalAlignment.CENTER);
+    }
+
+    //-------------//
+    // paintSymbol //
+    //-------------//
+    /**
+     * Paint a symbol using its pitch position for ordinate in the containing
+     * staff
+     *
+     * @param shape the shape whose icon must be painted
+     * @param center system-based coordinates of bounding center in units (only
+     *               abscissa is actually used)
+     * @param staff the related staff
+     * @param pitchPosition staff-based ordinate in step lines
+     * @param hAlign the horizontal alignment wrt the point
+     */
+    private void paintSymbol (Shape               shape,
+                              SystemPoint         center,
+                              Staff               staff,
+                              double              pitchPosition,
+                              HorizontalAlignment hAlign)
+    {
+        SymbolIcon icon = (SymbolIcon) shape.getIcon();
+        Point      topLeft = new Point(
+            zoom.scaled(staff.getDisplayOrigin().x + center.x),
+            zoom.scaled(
+                staff.getDisplayOrigin().y + staff.pitchToUnit(pitchPosition)));
+
+        // Horizontal alignment
+        if (hAlign == HorizontalAlignment.CENTER) {
+            topLeft.x -= (icon.getActualWidth() / 2);
+        } else if (hAlign == HorizontalAlignment.RIGHT) {
+            topLeft.x -= icon.getActualWidth();
+        }
+
+        // Specific vertical alignment
+        topLeft.y -= icon.getCenter().y;
+
+        g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
+    }
+
+    //----------------//
+    // repaintDisplay //
+    //----------------//
+    private static void repaintDisplay ()
+    {
+        // Update current score display if any
+        Score score = ScoreController.getCurrentScore();
+
+        if (score != null) {
+            score.getView()
+                 .getComponent()
+                 .repaint();
+        }
+    }
+
+    //---------------//
+    // toScaledPoint //
+    //---------------//
+    private Point toScaledPoint (SystemPoint         sysPt,
+                                 ScorePoint          displayOrigin,
+                                 HorizontalAlignment hAlign,
+                                 int                 width,
+                                 VerticalAlignment   vAlign,
+                                 int                 height)
+    {
+        Point point = new Point(
+            zoom.scaled(displayOrigin.x + sysPt.x),
+            zoom.scaled(displayOrigin.y + sysPt.y));
+
+        if (hAlign == HorizontalAlignment.CENTER) {
+            point.x -= (width / 2);
+        } else if (hAlign == HorizontalAlignment.RIGHT) {
+            point.x -= width;
+        }
+
+        if (vAlign == VerticalAlignment.CENTER) {
+            point.y -= (height / 2);
+        } else if (vAlign == VerticalAlignment.BOTTOM) {
+            point.y -= height;
+        }
+
+        return point;
     }
 
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
-    // Constants //
+    // Constants //-
     //-----------//
     private static final class Constants
         extends ConstantSet
@@ -507,9 +989,108 @@ public class ScorePainter
             20,
             "Alpha parameter for slot axis transparency (0 .. 255)");
 
-        /** Should the slot be painted */
+        /** Should the slots be painted */
         Constant.Boolean slotPainting = new Constant.Boolean(
             true,
-            "Should the slot be painted");
+            "Should the slots be painted");
+
+        /** Should the voices be painted */
+        Constant.Boolean voicePainting = new Constant.Boolean(
+            false,
+            "Should the voices be painted");
+
+        /** Should the marks be painted */
+        Constant.Boolean markPainting = new Constant.Boolean(
+            true,
+            "Should the marks be painted");
+
+        /**
+         * dx between note and augmentation dot
+         */
+        Scale.Fraction dotDx = new Scale.Fraction(
+            0.3,
+            "dx (in interline fraction) between note and augmentation dot");
+
+        /**
+         * dy between note and augmentation dot, when on a line
+         */
+        Scale.Fraction dotDy = new Scale.Fraction(
+            0.3,
+            "dy (in interline fraction) between note and augmentation dot " +
+            "when on staff line");
+
+        /**
+         * dx between accidental and note
+         */
+        Scale.Fraction accidDx = new Scale.Fraction(
+            0.6,
+            "dx (in interline fraction) accidental and note");
+
+        /**
+         * Half length of a ledger
+         */
+        Scale.Fraction halfLedgerLength = new Scale.Fraction(
+            1,
+            "Half length of a ledger (in interline fraction)");
+    }
+
+    //------------//
+    // MarkAction //
+    //------------//
+    private static class MarkAction
+        extends AbstractAction
+    {
+        public MarkAction ()
+        {
+            super("Show score Marks");
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            constants.markPainting.setValue(item.isSelected());
+            repaintDisplay();
+        }
+    }
+
+    //------------//
+    // SlotAction //
+    //------------//
+    private static class SlotAction
+        extends AbstractAction
+    {
+        public SlotAction ()
+        {
+            super("Show score Slots");
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            constants.slotPainting.setValue(item.isSelected());
+            repaintDisplay();
+        }
+    }
+
+    //-------------//
+    // VoiceAction //
+    //-------------//
+    private static class VoiceAction
+        extends AbstractAction
+    {
+        public VoiceAction ()
+        {
+            super("Show score Voices");
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            constants.voicePainting.setValue(item.isSelected());
+            repaintDisplay();
+        }
     }
 }
