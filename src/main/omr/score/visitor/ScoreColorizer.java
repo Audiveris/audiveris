@@ -13,21 +13,8 @@ package omr.score.visitor;
 import omr.glyph.GlyphLag;
 
 import omr.score.Barline;
-import omr.score.Beam;
-import omr.score.Chord;
-import omr.score.Clef;
-import omr.score.KeySignature;
-import omr.score.Measure;
-import omr.score.MeasureNode;
-import omr.score.Note;
-import omr.score.PartNode;
 import omr.score.Score;
-import omr.score.ScoreNode;
-import omr.score.Slur;
-import omr.score.Staff;
-import omr.score.System;
 import omr.score.SystemPart;
-import omr.score.TimeSignature;
 
 import omr.stick.Stick;
 
@@ -43,7 +30,7 @@ import java.awt.Color;
  * @version $Id$
  */
 public class ScoreColorizer
-    implements Visitor
+    extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -84,6 +71,7 @@ public class ScoreColorizer
     //---------------//
     // visit Barline //
     //---------------//
+    @Override
     public boolean visit (Barline barline)
     {
         if (logger.isFineEnabled()) {
@@ -97,81 +85,10 @@ public class ScoreColorizer
         return true;
     }
 
-    //------------//
-    // visit Beam //
-    //------------//
-    public boolean visit (Beam beam)
-    {
-        return true;
-    }
-
-    //------------//
-    // visit Chord //
-    //------------//
-    public boolean visit (Chord chord)
-    {
-        return true;
-    }
-
-    //------------//
-    // visit Clef //
-    //------------//
-    public boolean visit (Clef clef)
-    {
-        return true;
-    }
-
-    //--------------------//
-    // visit KeySignature //
-    //--------------------//
-    public boolean visit (KeySignature keySignature)
-    {
-        return true;
-    }
-
-    //---------------//
-    // visit Measure //
-    //---------------//
-    public boolean visit (Measure measure)
-    {
-        return true;
-    }
-
-    //-------------------//
-    // visit MeasureNode //
-    //-------------------//
-    public boolean visit (MeasureNode node)
-    {
-        return true;
-    }
-
-    //------------//
-    // visit Note //
-    //------------//
-    public boolean visit (Note node)
-    {
-        return true;
-    }
-
-    //----------------//
-    // visit PartNode //
-    //----------------//
-    public boolean visit (PartNode node)
-    {
-        return true;
-    }
-
-    //-----------------//
-    // visit ScoreNode //
-    //-----------------//
-    public boolean visit (ScoreNode musicNode)
-    {
-        return true;
-    }
-
     //-------------//
     // visit Score //
     //-------------//
+    @Override
     public boolean visit (Score score)
     {
         if (logger.isFineEnabled()) {
@@ -183,50 +100,19 @@ public class ScoreColorizer
         return false;
     }
 
-    //------------//
-    // visit Slur //
-    //------------//
-    public boolean visit (Slur slur)
-    {
-        return true;
-    }
-
-    //-------------//
-    // visit Staff //
-    //-------------//
-    public boolean visit (Staff staff)
-    {
-        return true;
-    }
-
-    //--------------//
-    // visit System //
-    //--------------//
-    public boolean visit (System system)
-    {
-        return true;
-    }
-
     //------------------//
     // visit SystemPart //
     //------------------//
+    @Override
     public boolean visit (SystemPart part)
     {
-       // Set color for the starting bar line, if any
-       Barline startingBarline = part.getStartingBarline();
+        // Set color for the starting bar line, if any
+        Barline startingBarline = part.getStartingBarline();
 
-       if (startingBarline != null) {
-           startingBarline.accept(this);
-       }
+        if (startingBarline != null) {
+            startingBarline.accept(this);
+        }
 
-        return true;
-    }
-
-    //---------------------//
-    // visit TimeSignature //
-    //---------------------//
-    public boolean visit (TimeSignature timeSignature)
-    {
         return true;
     }
 }

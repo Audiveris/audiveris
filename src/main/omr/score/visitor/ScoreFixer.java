@@ -10,24 +10,12 @@
 //
 package omr.score.visitor;
 
-import omr.score.Barline;
-import omr.score.Beam;
-import omr.score.Chord;
-import omr.score.Clef;
-import omr.score.KeySignature;
 import omr.score.Measure;
-import omr.score.MeasureNode;
-import omr.score.Note;
-import omr.score.PartNode;
 import omr.score.Score;
 import static omr.score.ScoreConstants.*;
-import omr.score.ScoreNode;
 import omr.score.ScorePoint;
-import omr.score.Slur;
 import omr.score.Staff;
 import omr.score.System;
-import omr.score.SystemPart;
-import omr.score.TimeSignature;
 
 import omr.util.Dumper;
 import omr.util.Logger;
@@ -44,7 +32,7 @@ import java.awt.Point;
  * @version $Id$
  */
 public class ScoreFixer
-    implements Visitor
+    extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -66,48 +54,9 @@ public class ScoreFixer
     //~ Methods ----------------------------------------------------------------
 
     //---------------//
-    // visit Barline //
-    //---------------//
-    public boolean visit (Barline barline)
-    {
-        return true;
-    }
-
-    //------------//
-    // visit Beam //
-    //------------//
-    public boolean visit (Beam beam)
-    {
-        return true;
-    }
-
-    //------------//
-    // visit Chord //
-    //------------//
-    public boolean visit (Chord chord)
-    {
-        return true;
-    }
-
-    //------------//
-    // visit Clef //
-    //------------//
-    public boolean visit (Clef clef)
-    {
-        return true;
-    }
-
-    //--------------------//
-    // visit KeySignature //
-    //--------------------//
-    public boolean visit (KeySignature keySignature)
-    {
-        return true;
-    }
-
-    //---------------//
     // visit Measure //
     //---------------//
+    @Override
     public boolean visit (Measure measure)
     {
         // Set measure id
@@ -117,56 +66,24 @@ public class ScoreFixer
             measure.setId(prevMeasure.getId() + 1);
         } else {
             // Look for a previous system
-            System system = measure.getPart()
-                                   .getSystem();
+            System system = measure.getSystem();
             System prevSystem = (System) system.getPreviousSibling();
 
             if (prevSystem != null) {
                 measure.setId(
                     prevSystem.getFirstPart().getLastMeasure().getId() + 1);
             } else {
-                measure.setId(1);
+                measure.setId(measure.isImplicit() ? 0 : 1);
             }
         }
 
         return true;
     }
 
-    //-------------------//
-    // visit MeasureNode //
-    //-------------------//
-    public boolean visit (MeasureNode node)
-    {
-        return true;
-    }
-
-    //------------//
-    // visit Note //
-    //------------//
-    public boolean visit (Note node)
-    {
-        return true;
-    }
-
-    //----------------//
-    // visit PartNode //
-    //----------------//
-    public boolean visit (PartNode node)
-    {
-        return true;
-    }
-
-    //-----------------//
-    // visit ScoreNode //
-    //-----------------//
-    public boolean visit (ScoreNode node)
-    {
-        return true;
-    }
-
     //-------------//
     // visit Score //
     //-------------//
+    @Override
     public boolean visit (Score score)
     {
         score.acceptChildren(this);
@@ -174,17 +91,10 @@ public class ScoreFixer
         return false;
     }
 
-    //------------//
-    // visit Slur //
-    //------------//
-    public boolean visit (Slur slur)
-    {
-        return true;
-    }
-
     //-------------//
     // visit Staff //
     //-------------//
+    @Override
     public boolean visit (Staff staff)
     {
         // Display origin for the staff
@@ -202,6 +112,7 @@ public class ScoreFixer
     //--------------//
     // visit System //
     //--------------//
+    @Override
     public boolean visit (System system)
     {
         // Is there a Previous System ?
@@ -225,22 +136,6 @@ public class ScoreFixer
             Dumper.dump(system, "Computed");
         }
 
-        return true;
-    }
-
-    //------------------//
-    // visit SystemPart //
-    //------------------//
-    public boolean visit (SystemPart part)
-    {
-        return true;
-    }
-
-    //---------------------//
-    // visit TimeSignature //
-    //---------------------//
-    public boolean visit (TimeSignature timeSignature)
-    {
         return true;
     }
 }
