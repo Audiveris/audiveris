@@ -16,11 +16,13 @@ import omr.constant.ConstantSet;
 
 import omr.util.Logger;
 
+import java.awt.Color;
 import java.awt.image.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import javax.media.jai.PlanarImage;
 import javax.swing.*;
 import javax.xml.bind.*;
 
@@ -132,7 +134,9 @@ public class IconManager
     public SymbolIcon loadFromXmlStream (InputStream is)
     {
         try {
-            return (SymbolIcon) jaxbUnmarshal(is);
+            SymbolIcon icon = (SymbolIcon) jaxbUnmarshal(is);
+
+            return icon;
         } catch (Exception ex) {
             ex.printStackTrace();
 
@@ -300,42 +304,49 @@ public class IconManager
     // decodeImage //
     //-------------//
     /**
-     * Build an image out of an array of strings. This is meant to ease JAXB
-     * unmarshalling.
+     * Build a monochrome image out of an array of strings. This is meant to
+     * ease JAXB unmarshalling.
      *
      * @param rows the lines of characters
+     * @param baseColor the base color
+     *
      * @return the decoded image
      */
-    BufferedImage decodeImage (String[] rows)
+    BufferedImage decodeImage (String[] rows,
+                               Color    baseColor)
     {
         // Create the DataBuffer to hold the pixel samples
-        final int  width = rows[0].length();
-        final int  height = rows.length;
+        final int      width = rows[0].length();
+        final int      height = rows.length;
 
         // Create Raster
-        Raster     raster = Raster.createPackedRaster(
+        WritableRaster raster = Raster.createPackedRaster(
             DataBuffer.TYPE_INT,
             width,
             height,
             new int[] { 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000 }, // bandMasks RGBA
-            null);
+            null); // origin
 
         // Populate the data buffer
         DataBuffer dataBuffer = raster.getDataBuffer();
+        int        base = baseColor.getRGB() & 0x00ffffff; // No alpha kept here
         int        index = 0;
 
         for (String row : rows) {
             for (int x = 0; x < width; x++) {
-                dataBuffer.setElem(index++, toARGB(row.charAt(x)));
+                dataBuffer.setElem(
+                    index++,
+                    (getAlpha(row.charAt(x)) << 24) | base);
             }
         }
 
         // Create the image
+        ColorModel    model = ColorModel.getRGBdefault();
         BufferedImage bufferedImage = new BufferedImage(
-            width,
-            height,
-            BufferedImage.TYPE_INT_ARGB);
-        bufferedImage.setData(raster);
+            model,
+            raster,
+            false,
+            null);
 
         return bufferedImage;
     }
@@ -390,6 +401,20 @@ public class IconManager
         }
 
         return rows;
+    }
+
+    //----------//
+    // getAlpha //
+    //----------//
+    /**
+     * Compute the alpha that corresponds to the given char
+     *
+     * @param c the char
+     * @return the corresponding pixel alpha level
+     */
+    private int getAlpha (char c)
+    {
+        return 255 - toLevel(c);
     }
 
     //---------------------//
@@ -473,20 +498,6 @@ public class IconManager
                               .createUnmarshaller();
 
         return um.unmarshal(is);
-    }
-
-    //--------//
-    // toARGB //
-    //--------//
-    /**
-     * Compute the ARGB pixel that corresponds to the given char
-     *
-     * @param c the char
-     * @return the corresponding pixel value (ARGB format)
-     */
-    private int toARGB (char c)
-    {
-        return (255 - toLevel(c)) << 24;
     }
 
     //---------//
