@@ -127,7 +127,7 @@ public class VerticalsBuilder
         Scale        scale = sheet.getScale();
 
         // We cannot reuse the sticks, since thick sticks are allowed for bars
-        // but not for stems. So, let's rebuild the stick area from the initial
+        // but not for stems. So, let's build a new stick area from the initial
         // lag.
         VerticalArea verticalsArea = new VerticalArea(
             sheet,
@@ -568,7 +568,7 @@ public class VerticalsBuilder
     {
         public MyGlyphLagView (GlyphLag lag)
         {
-            super(lag, null, VerticalsBuilder.this, null);
+            super(lag, null, null, VerticalsBuilder.this, null);
             setName("VerticalsBuilder-MyView");
 
             // Pixel

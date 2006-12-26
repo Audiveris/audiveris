@@ -20,12 +20,12 @@ import omr.glyph.GlyphSection;
 
 import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionRatioPolicy;
-import omr.lag.SectionsBuilder;
 import omr.lag.LagView;
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 import omr.lag.SectionView;
+import omr.lag.SectionsBuilder;
 import static omr.selection.SelectionTag.*;
 
 import omr.stick.Stick;
@@ -140,7 +140,9 @@ public class SkewBuilder
         lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             sLag,
             new JunctionRatioPolicy(constants.maxHeightRatio.getValue())); // maxHeightRatio
-        lagBuilder.createSections(picture, scale.toPixels(constants.minRunLength)); // minRunLength
+        lagBuilder.createSections(
+            picture,
+            scale.toPixels(constants.minRunLength)); // minRunLength
 
         // Detect long sticks
         maxThickness = scale.mainFore();
@@ -462,7 +464,7 @@ public class SkewBuilder
         //-------------//
         public SkewLagView ()
         {
-            super(sLag, null);
+            super(sLag, null, null);
             setName("SkewBuilder-View");
 
             // Inject selection dependencies into this hlag, only when this
