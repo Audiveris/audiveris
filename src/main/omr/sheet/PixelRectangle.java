@@ -85,6 +85,7 @@ public class PixelRectangle
     public PixelRectangle union (PixelRectangle other)
     {
         Rectangle r = super.union(other);
+
         return new PixelRectangle(r.x, r.y, r.width, r.height);
     }
 }
