@@ -21,11 +21,14 @@ import omr.glyph.ui.GlyphVerifier;
 import omr.glyph.ui.ShapeColorChooser;
 
 import omr.score.ScoreController;
+import omr.score.visitor.ScorePainter;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
 
+import omr.sheet.HorizontalsBuilder;
+import omr.sheet.LinesBuilder;
 import omr.sheet.Sheet;
 import omr.sheet.SheetController;
 import omr.sheet.SheetManager;
@@ -85,7 +88,8 @@ public class Jui
     private final JMenu      fileMenu = new JMenu("File");
     private final JMenu      helpMenu = new JMenu("Help");
     private final JMenu      stepMenu = new StepMenu("Step").getMenu();
-    private final JMenu      toolMenu = new JMenu("Tool");
+    private final JMenu      viewMenu = new JMenu("Views");
+    private final JMenu      toolMenu = new JMenu("Tools");
     private final JSplitPane bigSplitPane;
 
     /** The splitted panes */
@@ -149,6 +153,23 @@ public class Jui
         // Frame title
         updateTitle();
 
+        // Views
+        ScorePainter.insertMenuItems(viewMenu);
+        viewMenu.addSeparator();
+
+        JCheckBoxMenuItem lineItem = new JCheckBoxMenuItem(new LineAction());
+        lineItem.setSelected(LinesBuilder.getDisplayOriginalStaffLines());
+        viewMenu.add(lineItem)
+                .setToolTipText("Show the original staff lines");
+
+        JCheckBoxMenuItem ledgerItem = new JCheckBoxMenuItem(
+            new LedgerAction());
+        ledgerItem.setSelected(HorizontalsBuilder.getDisplayLedgerLines());
+        viewMenu.add(ledgerItem)
+                .setToolTipText("Show the original ledger lines");
+        viewMenu.addSeparator();
+        new ClearLogAction(viewMenu);
+
         // Tools
         new ShapeAction(toolMenu);
         toolMenu.addSeparator();
@@ -156,9 +177,8 @@ public class Jui
         new TrainerAction(toolMenu);
         toolMenu.addSeparator();
         new MemoryAction(toolMenu);
-        new OptionAction(toolMenu);
         toolMenu.addSeparator();
-        new ClearLogAction(toolMenu);
+        new OptionAction(toolMenu);
 
         // Help
         new AboutAction(helpMenu);
@@ -170,6 +190,7 @@ public class Jui
         menuBar.add(sheetController.getMenu());
         menuBar.add(stepMenu);
         menuBar.add(scoreController.getMenu());
+        menuBar.add(viewMenu);
         menuBar.add(toolMenu);
         menuBar.add(Box.createHorizontalStrut(30));
         menuBar.add(helpMenu);
@@ -183,7 +204,7 @@ public class Jui
            +=================================================+============+
            | bigSplitPane                                    |            |
            | +=============================================+ |            |
-           | | sheetController                                   | | boardsPane |
+           | | sheetController                             | | boardsPane |
            | |                                             | |            |
            | |                                             | |            |
            | |                                             | |            |
@@ -377,7 +398,6 @@ public class Jui
     {
         JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
         htmlPane.setEditable(false);
-
         JOptionPane.showMessageDialog(frame, htmlPane);
     }
 
@@ -529,7 +549,8 @@ public class Jui
             // Remember internal split locations
             constants.logDivider.setValue(splitPane.getDividerLocation());
             constants.boardDivider.setValue(bigSplitPane.getDividerLocation());
-        } else { // Mamimized/Iconified window
+            SheetAssembly.storeScoreSheetDivider();
+        } else { // Maximized/Iconified window
 
             if (state == Frame.MAXIMIZED_BOTH) {
                 // Remember internal split locations
@@ -539,6 +560,7 @@ public class Jui
                     splitPane.getDividerLocation() - deltaDivider);
                 constants.boardDivider.setValue(
                     bigSplitPane.getDividerLocation() - deltaDivider);
+                SheetAssembly.storeScoreSheetDivider();
             }
         }
 
@@ -912,6 +934,44 @@ public class Jui
         public void actionPerformed (ActionEvent e)
         {
             GlyphTrainer.launch();
+        }
+    }
+
+    //--------------//
+    // LedgerAction //
+    //--------------//
+    private class LedgerAction
+        extends AbstractAction
+    {
+        public LedgerAction ()
+        {
+            super("Show original ledger lines");
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            HorizontalsBuilder.setDisplayLedgerLines(item.isSelected());
+        }
+    }
+
+    //------------//
+    // LineAction //
+    //------------//
+    private class LineAction
+        extends AbstractAction
+    {
+        public LineAction ()
+        {
+            super("Show original staff lines");
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            LinesBuilder.setDisplayOriginalStaffLines(item.isSelected());
         }
     }
 }
