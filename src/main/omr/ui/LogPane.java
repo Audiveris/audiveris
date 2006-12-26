@@ -15,9 +15,12 @@ import omr.constant.ConstantSet;
 
 import omr.util.Logger;
 
+import java.awt.*;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.logging.*;
 
 import javax.swing.*;
+import javax.swing.text.*;
 
 /**
  * Class <code>LogPane</code> defines the pane dedicated to application-level
@@ -42,13 +45,15 @@ public class LogPane
     //~ Instance fields --------------------------------------------------------
 
     /** Mail box for incoming messages */
-    private final ArrayBlockingQueue<String> logMbx;
+    private final ArrayBlockingQueue<LogRecord> logMbx;
 
     /** The scrolling text area */
     private JScrollPane component;
 
     /** Status/log area */
-    private final JTextArea logArea;
+    private final JTextPane logArea;
+    private final AbstractDocument   document;
+    private final SimpleAttributeSet attributes = new SimpleAttributeSet();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -64,16 +69,15 @@ public class LogPane
         component = new JScrollPane();
 
         // Allocate message mail box for several simultaneous msgs max
-        logMbx = new ArrayBlockingQueue<String>(
+        logMbx = new ArrayBlockingQueue<LogRecord>(
             constants.msgQueueSize.getValue());
 
         // log/status area
-        logArea = new JTextArea(
-            1, // nb of rows
-            60); // nb of columns
+        logArea = new JTextPane();
         logArea.setEditable(false);
+        logArea.setMargin(new Insets(5, 5, 5, 5));
+        document = (AbstractDocument) logArea.getStyledDocument();
 
-        //logArea.setMargin (new Insets (5,5,5,5));
         // Let the scroll pane display the log area
         component.setViewportView(logArea);
     }
@@ -112,14 +116,14 @@ public class LogPane
     /**
      * Display the given message in the dedicated status area.
      *
-     * @param msg a message to log/display
+     * @param record a log record to log/display
      */
-    public void log (String msg)
+    public void log (LogRecord record)
     {
         try {
-            logMbx.put(msg);
+            logMbx.put(record);
         } catch (Exception ex) {
-            logger.warning(ex.getMessage());
+            ex.printStackTrace();
 
             return;
         }
@@ -129,16 +133,51 @@ public class LogPane
                     public void run ()
                     {
                         while (logMbx.size() != 0) {
-                            String msg = logMbx.poll();
+                            LogRecord record = logMbx.poll();
 
-                            if (msg != null) {
-                                logArea.append(msg);
-                                logArea.setCaretPosition(
-                                    logArea.getDocument().getLength());
+                            if (record != null) {
+                                // Message text
+                                StringBuffer sbuf = new StringBuffer(128);
+                                sbuf.append(record.getLevel().toString());
+                                sbuf.append(" - ");
+                                sbuf.append(record.getMessage());
+                                sbuf.append("\n");
+
+                                // Color
+                                StyleConstants.setForeground(
+                                    attributes,
+                                    getLevelColor(record.getLevel()));
+
+                                try {
+                                    document.insertString(
+                                        document.getLength(),
+                                        sbuf.toString(),
+                                        attributes);
+                                } catch (BadLocationException ex) {
+                                    ex.printStackTrace();
+                                }
                             }
                         }
                     }
                 });
+    }
+
+    //---------------//
+    // getLevelColor //
+    //---------------//
+    private Color getLevelColor (Level level)
+    {
+        int val = level.intValue();
+
+        if (val >= Level.SEVERE.intValue()) {
+            return Color.RED;
+        } else if (val >= Level.WARNING.intValue()) {
+            return Color.BLUE;
+        } else if (val >= Level.INFO.intValue()) {
+            return Color.BLACK;
+        } else {
+            return Color.GRAY;
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
