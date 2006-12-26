@@ -13,6 +13,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.util.Implement;
+import omr.util.Logger;
 import omr.util.PointFacade;
 
 import java.awt.*;
@@ -21,25 +22,39 @@ import java.awt.image.*;
 import javax.swing.*;
 import javax.xml.bind.*;
 import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class <code>SymbolIcon</code> is an icon, built from a provided image,
  * with consistent width among all defined symbol icons to ease their
  * presentation in menus.
  *
+ * <p>A SymbolIcon may also be used to train the glyph evaluator when we don't
+ * have enough "real" glyphs available.
+ *
+ * <p>A SymbolIcon is also used to convey information on the related shape and
+ * especially the reference point of that shape. Most of shapes have no
+ * reference point, and thus we use their area center, which is the center of
+ * their bounding box. However, a few shapes (clefs to precisely position them
+ * on the staff, head/flags combos to handle the precise position of the head
+ * part) need a very precise reference center (actually the y ordinate) which is
+ * somewhat different from the area center. This is the difference between the
+ * {@link #getAreaCenter} and the {@link getCenter} methods.
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlType(name = "", propOrder =  {
-    "xmlRefPoint", "stemNumber", "withLedger", "pitchPosition", "bitmap"}
+    "baseColor", "xmlRefPoint", "stemNumber", "withLedger", "pitchPosition", "bitmap"}
 )
 @XmlRootElement(name = "icon")
 public class SymbolIcon
     implements Icon
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(SymbolIcon.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -53,8 +68,11 @@ public class SymbolIcon
     @XmlAttribute
     private String name;
 
+    /** Base color */
+    @XmlElement(name = "base-color")
+    private BaseColor baseColor;
+
     /** Symbol size (which must be consistent with image dimensions) */
-    ///@XmlElement
     private Dimension dimension;
 
     /** Mass center */
@@ -131,6 +149,26 @@ public class SymbolIcon
         }
     }
 
+    //---------------//
+    // getAreaCenter //
+    //---------------//
+    /**
+     * Report the area center for the symbol
+     * @return the area center (coordinates with origin at upper left)
+     */
+    public Point getAreaCenter ()
+    {
+        return new Point(getDimension().width / 2, getDimension().height / 2);
+    }
+
+    //--------------//
+    // getBaseColor //
+    //--------------//
+    public BaseColor getBaseColor ()
+    {
+        return baseColor;
+    }
+
     //-----------//
     // getBitmap //
     //-----------//
@@ -151,6 +189,18 @@ public class SymbolIcon
         }
 
         return bitmap;
+    }
+
+    //-----------//
+    // getCenter //
+    //-----------//
+    public Point getCenter ()
+    {
+        if (refPoint != null) {
+            return refPoint;
+        } else {
+            return getAreaCenter();
+        }
     }
 
     //-------------//
@@ -217,19 +267,6 @@ public class SymbolIcon
         }
 
         return dimension;
-    }
-
-    //---------------//
-    // setWithLedger //
-    //---------------//
-    /**
-     * Assign the connection to a ledger
-     *
-     * @param withLedger true if there is a connected ledger
-     */
-    public void setWithLedger (boolean withLedger)
-    {
-        this.withLedger = withLedger;
     }
 
     //---------------//
@@ -318,19 +355,20 @@ public class SymbolIcon
         SymbolIcon.standardWidth = standardWidth;
     }
 
-    //-----------//
-    // setBitmap //
-    //-----------//
-    /**
-     * Allows to define the bitmap, from an array of strings (meant for JAXB)
-     *
-     * @param rows the array of strings which describe the bitmap
-     */
-    public void setBitmap (String[] rows)
-    {
-        // Elaborate the image from the string array
-        setImage(IconManager.getInstance().decodeImage(rows));
-    }
+    //
+    //    //-----------//
+    //    // setBitmap //
+    //    //-----------//
+    //    /**
+    //     * Allows to define the bitmap, from an array of strings (meant for JAXB)
+    //     *
+    //     * @param rows the array of strings which describe the bitmap
+    //     */
+    //    public void setBitmap (String[] rows)
+    //    {
+    //        // Elaborate the image from the string array
+    //        setImage(IconManager.getInstance().decodeImage(rows));
+    //    }
 
     //---------//
     // setName //
@@ -359,19 +397,6 @@ public class SymbolIcon
     }
 
     //------------------//
-    // setPitchPosition //
-    //------------------//
-    /**
-     * Assign the pitch position within staff lines
-     *
-     * @param pitchPosition the position relative to the staff lines
-     */
-    public void setPitchPosition (Double pitchPosition)
-    {
-        this.pitchPosition = pitchPosition;
-    }
-
-    //------------------//
     // getPitchPosition //
     //------------------//
     /**
@@ -385,19 +410,6 @@ public class SymbolIcon
     }
 
     //-------------//
-    // setRefPoint //
-    //-------------//
-    /**
-     * Assign a reference point to the symbol
-     *
-     * @param refPoint the reference point
-     */
-    public void setRefPoint (Point refPoint)
-    {
-        this.refPoint = refPoint;
-    }
-
-    //-------------//
     // getRefPoint //
     //-------------//
     /**
@@ -408,19 +420,6 @@ public class SymbolIcon
     public Point getRefPoint ()
     {
         return refPoint;
-    }
-
-    //---------------//
-    // setStemNumber //
-    //---------------//
-    /**
-     * Report the number of stems that are connected to this entity
-     *
-     * @param stemNumber the number of stems
-     */
-    public void setStemNumber (Integer stemNumber)
-    {
-        this.stemNumber = stemNumber;
     }
 
     //---------------//
@@ -475,7 +474,7 @@ public class SymbolIcon
     @XmlElement(name = "ref-point")
     private void setXmlRefPoint (PointFacade xp)
     {
-        setRefPoint(xp.getPoint());
+        refPoint = xp.getPoint();
     }
 
     //----------------//
@@ -502,8 +501,16 @@ public class SymbolIcon
     {
         // Convert string bitmap -> image
         if (image == null) {
+            Color base;
+
+            if (baseColor != null) {
+                base = new Color(baseColor.R, baseColor.G, baseColor.B);
+            } else {
+                base = Color.BLACK;
+            }
+
             image = IconManager.getInstance()
-                               .decodeImage(bitmap);
+                               .decodeImage(bitmap, base);
         }
     }
 
@@ -511,27 +518,15 @@ public class SymbolIcon
     // beforeMarshal //
     //---------------//
     /**
-     * Called immediately before the marshalling of this object begins..
+     * Called immediately before the marshalling of this object begins.
      */
     private void beforeMarshal (Marshaller m)
     {
-        // Dimension
-        if (dimension == null) {
-            getDimension();
-        }
-
-        // Centroid
-        if (centroid == null) {
-            getCentroid();
-        }
-
         // Convert image -> string bitmap
         if (bitmap == null) {
             bitmap = IconManager.getInstance()
                                 .encodeImage(image);
         }
-
-        omr.util.Dumper.dump(this);
     }
 
     //~ Inner Classes ----------------------------------------------------------
