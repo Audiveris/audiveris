@@ -10,6 +10,8 @@
 //
 package omr.sheet;
 
+import omr.lag.PixelSource;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
@@ -20,6 +22,7 @@ import omr.util.Logger;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
@@ -69,7 +72,7 @@ import javax.media.jai.operator.MosaicDescriptor;
  * @version $Id$
  */
 public class Picture
-    implements SelectionObserver
+    implements PixelSource, SelectionObserver
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -83,8 +86,8 @@ public class Picture
 
     /**
      * Constant color of the picture foreground (generally black), which means
-     * that any pixel whose level is higher than or equal to this value will be
-     * considered as foreground
+     * that any pixel whose level is higher than this value will be considered
+     * as background.
      */
     public static final int FOREGROUND = 227;
 
@@ -134,6 +137,21 @@ public class Picture
     // Picture //
     //---------//
     /**
+     * Build a picture instance, using a given image.
+     *
+     * @param image the image provided
+     * @exception ImageFormatException
+     */
+    public Picture (BufferedImage image)
+        throws ImageFormatException
+    {
+        this(image, 1f);
+    }
+
+    //---------//
+    // Picture //
+    //---------//
+    /**
      * Build a picture instance, using a given image, and the scaling to apply
      * on the image
      *
@@ -147,7 +165,7 @@ public class Picture
     {
         RenderedImage src = image;
 
-        if (scaling != 1.0d) {
+        if (scaling != 1.0f) {
             ParameterBlock pb = new ParameterBlock().addSource(image)
                                                     .add(scaling)
                                                     .add(scaling)
@@ -159,6 +177,24 @@ public class Picture
         }
 
         setImage(src);
+    }
+
+    //---------//
+    // Picture //
+    //---------//
+    /**
+     * Build a picture instance, using a given image, and the scaling to apply
+     * on the image
+     *
+     * @param image the image provided
+     * @param scaling the scaling to apply (1.0 means no scaling)
+     * @exception ImageFormatException
+     */
+    public Picture (BufferedImage image,
+                    float         scaling)
+        throws ImageFormatException
+    {
+        setImage(image, scaling);
     }
 
     //---------//
@@ -321,6 +357,7 @@ public class Picture
      *
      * @return the height value
      */
+    @Implement(PixelSource.class)
     public int getHeight ()
     {
         return dimension.height;
@@ -338,6 +375,15 @@ public class Picture
     public void setLevelSelection (Selection levelSelection)
     {
         this.levelSelection = levelSelection;
+    }
+
+    //------------------//
+    // getMaxForeground //
+    //------------------//
+    @Implement(PixelSource.class)
+    public int getMaxForeground ()
+    {
+        return FOREGROUND;
     }
 
     //---------//
@@ -392,8 +438,8 @@ public class Picture
      * @param pt  pixel coordinates
      * @param val pixel value
      */
-    public void setPixel (Point pt,
-                          int   val)
+    public final void setPixel (Point pt,
+                                int   val)
     {
         dataBuffer.setElem(pt.x + (pt.y * dimensionWidth), val);
     }
@@ -409,8 +455,9 @@ public class Picture
      *
      * @return the pixel value
      */
-    public int getPixel (int x,
-                         int y)
+    @Implement(PixelSource.class)
+    public final int getPixel (int x,
+                               int y)
     {
         return dataBuffer.getElem(x + (y * dimensionWidth));
     }
@@ -437,6 +484,7 @@ public class Picture
      *
      * @return the current width value, in pixels.
      */
+    @Implement(PixelSource.class)
     public int getWidth ()
     {
         return dimensionWidth;
@@ -683,6 +731,71 @@ public class Picture
             null);
     }
 
+    //----------//
+    // setImage //
+    //----------//
+    private void setImage (RenderedImage renderedImage)
+        throws ImageFormatException
+    {
+        image = PlanarImage.wrapRenderedImage(renderedImage);
+
+        // Check that the whole image has been loaded
+        if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
+            throw new RuntimeException("Unusable image for Picture");
+        } else {
+            // Check image format, and convert to gray if needed. This may
+            // throw ImageFormatException
+            checkImageFormat();
+
+            // Cache dimensions
+            updateParams();
+
+            // Remember original dimension
+            originalDimension = getDimension();
+        }
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    private void setImage (BufferedImage bufferedImage,
+                           float         scaling)
+        throws ImageFormatException
+    {
+        //        logger.info(
+        //            "bufferedImage hasAlpha=" +
+        //            bufferedImage.getColorModel().hasAlpha());
+        image = PlanarImage.wrapRenderedImage(bufferedImage);
+        logger.info("planarImage hasAlpha=" + image.getColorModel().hasAlpha());
+
+        if (scaling != 1.0f) {
+            ParameterBlock pb = new ParameterBlock().addSource(image)
+                                                    .add(scaling)
+                                                    .add(scaling)
+                                                    .add(0f)
+                                                    .add(0f)
+                                                    .add(
+                new InterpolationNearest());
+            image = JAI.create("scale", pb);
+            logger.info("scaled hasAlpha=" + image.getColorModel().hasAlpha());
+        }
+
+        // Check that the whole image has been loaded
+        if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
+            throw new RuntimeException("Unusable image for Picture");
+        } else {
+            // Check image format, and convert to gray if needed. This may
+            // throw ImageFormatException
+            checkImageFormat();
+
+            // Cache dimensions
+            updateParams();
+
+            // Remember original dimension
+            originalDimension = getDimension();
+        }
+    }
+
     //------------------//
     // checkImageFormat //
     //------------------//
@@ -743,30 +856,6 @@ public class Picture
             new ParameterBlock().addSource(image).add(null).add(null).add(null).add(
                 null).add(null),
             null);
-    }
-
-    //----------//
-    // setImage //
-    //----------//
-    private void setImage (RenderedImage renderedImage)
-        throws ImageFormatException
-    {
-        image = PlanarImage.wrapRenderedImage(renderedImage);
-
-        // Check that the whole image has been loaded
-        if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
-            throw new RuntimeException("Unusable image for Picture");
-        } else {
-            // Check image format, and convert to gray if needed. This may
-            // throw ImageFormatException
-            checkImageFormat();
-
-            // Cache dimensions
-            updateParams();
-
-            // Remember original dimension
-            originalDimension = getDimension();
-        }
     }
 
     //--------------//
