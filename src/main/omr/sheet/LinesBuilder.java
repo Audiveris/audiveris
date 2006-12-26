@@ -23,11 +23,11 @@ import omr.glyph.ui.GlyphLagView;
 
 import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionDeltaPolicy;
-import omr.lag.SectionsBuilder;
 import omr.lag.Run;
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
+import omr.lag.SectionsBuilder;
 
 import omr.math.Population;
 import static omr.selection.SelectionTag.*;
@@ -37,7 +37,6 @@ import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import omr.ui.ToggleHandler;
 import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Logger;
@@ -144,6 +143,33 @@ public class LinesBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------------------------//
+    // setDisplayOriginalStaffLines //
+    //------------------------------//
+    public static void setDisplayOriginalStaffLines (boolean displayOriginalStaffLines)
+    {
+        constants.displayOriginalStaffLines.setValue(displayOriginalStaffLines);
+
+        // Trigger a repaint if needed
+        Sheet currentSheet = SheetManager.getSelectedSheet();
+
+        if (currentSheet != null) {
+            LinesBuilder builder = currentSheet.getLinesBuilder();
+
+            if ((builder != null) && (builder.lagView != null)) {
+                builder.lagView.repaint();
+            }
+        }
+    }
+
+    //------------------------------//
+    // getDisplayOriginalStaffLines //
+    //------------------------------//
+    public static boolean getDisplayOriginalStaffLines ()
+    {
+        return constants.displayOriginalStaffLines.getValue();
+    }
 
     //-----------//
     // getStaves //
@@ -270,12 +296,6 @@ public class LinesBuilder
         ScrollLagView slv = new ScrollLagView(lagView);
         sheet.getAssembly()
              .addViewTab("Lines", slv, boardsPane);
-        slv.getComponent()
-           .addAncestorListener(
-            new ToggleHandler(
-                "Lines",
-                lagView,
-                "Toggle before & after staff removal"));
     }
 
     //---------------//
@@ -570,21 +590,37 @@ public class LinesBuilder
     private static final class Constants
         extends ConstantSet
     {
+        /** Should we display a frame on Lags ? */
         Constant.Boolean displayFrame = new Constant.Boolean(
             false,
             "Should we display a frame on Lags ?");
-        Constant.Double  histoThresholdFrac = new Constant.Double(
+
+        /** Should we display original staff lines */
+        private Constant.Boolean displayOriginalStaffLines = new Constant.Boolean(
+            false,
+            "Should we display original staff lines?");
+
+        /** Peak threshold stated as a ratio of maximum histogram value */
+        Constant.Double histoThresholdFrac = new Constant.Double(
             0.5d,
             "Peak threshold stated as a ratio of maximum histogram value");
+
+        /** Maximum difference in length of two consecutives runs in the same section */
         Constant.Integer maxDeltaLength = new Constant.Integer(
             4,
             "Maximum difference in length of two consecutives runs in the same section");
-        Scale.Fraction   maxInterlineDeviation = new Scale.Fraction(
+
+        /** Maximum deviation in the series of interline values in a staff */
+        Scale.Fraction maxInterlineDeviation = new Scale.Fraction(
             0.15d,
             "Maximum deviation in the series of interline values in a staff");
-        Scale.Fraction   maxInterlineDiffFrac = new Scale.Fraction(
+
+        /** Maximum difference between a new interline and the current staff value */
+        Scale.Fraction maxInterlineDiffFrac = new Scale.Fraction(
             0.1d,
             "Maximum difference between a new interline and the current staff value");
+
+        /** Should we produce a chart of computed data ? */
         Constant.Boolean plotting = new Constant.Boolean(
             false,
             "Should we produce a chart of computed data ?");
@@ -602,7 +638,12 @@ public class LinesBuilder
         public MyLagView (GlyphLag           lag,
                           List<GlyphSection> specifics)
         {
-            super(lag, specifics, LinesBuilder.this, null);
+            super(
+                lag,
+                specifics,
+                constants.displayOriginalStaffLines,
+                LinesBuilder.this,
+                null);
             setName("LinesBuilder-View");
 
             setLocationSelection(sheet.getSelection(PIXEL));

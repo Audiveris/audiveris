@@ -44,7 +44,6 @@ import omr.stick.StickUtil;
 
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import omr.ui.ToggleHandler;
 import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.view.Zoom;
 
@@ -149,6 +148,33 @@ public class HorizontalsBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------------------//
+    // setDisplayLedgerLines //
+    //-----------------------//
+    public static void setDisplayLedgerLines (boolean displayLedgerLines)
+    {
+        constants.displayLedgerLines.setValue(displayLedgerLines);
+
+        // Trigger a repaint if needed
+        Sheet currentSheet = SheetManager.getSelectedSheet();
+
+        if (currentSheet != null) {
+            HorizontalsBuilder builder = currentSheet.getHorizontalsBuilder();
+
+            if ((builder != null) && (builder.lagView != null)) {
+                builder.lagView.repaint();
+            }
+        }
+    }
+
+    //-----------------------//
+    // getDisplayLedgerLines //
+    //-----------------------//
+    public static boolean getDisplayLedgerLines ()
+    {
+        return constants.displayLedgerLines.getValue();
+    }
 
     //-----------//
     // buildInfo //
@@ -312,12 +338,6 @@ public class HorizontalsBuilder
         ScrollLagView slv = new ScrollLagView(lagView);
         sheet.getAssembly()
              .addViewTab("Horizontals", slv, boardsPane);
-        slv.getComponent()
-           .addAncestorListener(
-            new ToggleHandler(
-                "Horizontals",
-                lagView,
-                "Toggle between before & after horizontal cleanup"));
     }
 
     //---------------------//
@@ -456,6 +476,10 @@ public class HorizontalsBuilder
     private static final class Constants
         extends ConstantSet
     {
+        /** Should we display original ledger lines */
+        private Constant.Boolean displayLedgerLines = new Constant.Boolean(
+            false,
+            "Should we display original ledger lines?");
         Scale.Fraction   chunkHeight = new Scale.Fraction(
             0.33,
             "Height of half area to look for chunks");
@@ -783,7 +807,12 @@ public class HorizontalsBuilder
         public MyView (GlyphLag           lag,
                        List<GlyphSection> members)
         {
-            super(lag, members, HorizontalsBuilder.this, null);
+            super(
+                lag,
+                members,
+                constants.displayLedgerLines,
+                HorizontalsBuilder.this,
+                null);
             setName("HorizontalsBuilder-View");
 
             setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
