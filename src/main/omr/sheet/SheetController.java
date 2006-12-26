@@ -82,9 +82,6 @@ public class SheetController
     /** Action for dumping all sheet instances */
     private final DumpAllAction dumpAllAction;
 
-    /** General purpose toggle */
-    private final JButton toggleButton;
-
     /** Menu dedicated to sheet-related actions */
     private final JMenu menu = new JMenu("Sheet");
 
@@ -138,13 +135,6 @@ public class SheetController
         new CloseAction();
         new ZoomWidthAction();
         new ZoomHeightAction();
-
-        // Toggle button
-        toggleButton = new JButton(
-            IconManager.getInstance().loadImageIcon("general/Refresh"));
-        toolBar.add(toggleButton);
-        toggleButton.setBorder(UIUtilities.getToolBorder());
-        toggleButton.setEnabled(false);
 
         menu.addSeparator();
         dumpAllAction = new DumpAllAction();
@@ -260,20 +250,6 @@ public class SheetController
         }
     }
 
-    //-----------------//
-    // getToggleButton //
-    //-----------------//
-    /**
-     * Give access to the button where display of specific entities can be
-     * toggled
-     *
-     * @return the toggle button
-     */
-    public JButton getToggleButton ()
-    {
-        return toggleButton;
-    }
-
     //-------//
     // close //
     //-------//
@@ -340,7 +316,8 @@ public class SheetController
             // User has selected a new tab
             final int index = component.getSelectedIndex();
 
-            ///logger.info("previous=" + previousIndex + " index=" + index);
+            logger.info("previous=" + previousIndex + " index=" + index);
+
             if (index != -1) {
                 if (previousIndex != -1) {
                     tabDeselected(previousIndex);
@@ -467,8 +444,9 @@ public class SheetController
     //---------------//
     private void tabDeselected (int previousIndex)
     {
+        logger.info("tabDeselected previousIndex=" + previousIndex);
         assemblies.get(previousIndex)
-                  .assemblyDeselected();
+                  .assemblyDeselected(previousIndex);
     }
 
     //-------------//
@@ -476,6 +454,8 @@ public class SheetController
     //-------------//
     private void tabSelected (int index)
     {
+        logger.info("tabSelected index=" + index);
+
         // Remember the new selected sheet
         Sheet sheet = getCurrentSheet();
 
@@ -505,9 +485,12 @@ public class SheetController
     private static final class Constants
         extends ConstantSet
     {
+        /** Default directory for selection of image files */
         Constant.String initImgDir = new Constant.String(
             "c:/",
             "Default directory for selection of image files");
+
+        /** Initial zoom ratio for displayed sheet pictures */
         Constant.Double initialZoomRatio = new Constant.Double(
             1d,
             "Initial zoom ratio for displayed sheet pictures");
@@ -648,9 +631,9 @@ public class SheetController
         }
     }
 
-    //-----------------//
+    //----------------//
     // LinePlotAction //
-    //-----------------//
+    //----------------//
     /**
      * Class <code>LinePlotAction</code> allows to display the plot of Line
      * Builder.
