@@ -12,12 +12,16 @@ package omr.ui;
 
 import omr.Main;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.score.ScoreView;
 
 import omr.selection.Selection;
 import omr.selection.SelectionTag;
 
 import omr.sheet.Sheet;
+import omr.sheet.SheetManager;
 
 import omr.ui.util.Panel;
 import omr.ui.view.LogSlider;
@@ -48,7 +52,7 @@ import javax.swing.event.*;
  * <li>a tabbed collection of {@link ScrollView}'s for all views of this sheet.
  *
  * </ul><p>Although not part of the same Swing container, the SheetAssembly also
- * refers to a collection of {@link BoardsPane} which is parallel to the
+ * refers to a collection of {@link BoardsPane}'s which is parallel to the
  * collection of ScrollView's.
  *
  * @author Herv&eacute; Bitteur
@@ -59,6 +63,9 @@ public class SheetAssembly
 
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SheetAssembly.class);
@@ -143,6 +150,7 @@ public class SheetAssembly
         views.add(slider, BorderLayout.WEST);
         views.add(tabbedPane, BorderLayout.CENTER);
         splitPane.setBottomComponent(views);
+        splitPane.setOneTouchExpandable(true);
         component.add(splitPane);
 
         splitPane.setBorder(null);
@@ -183,7 +191,7 @@ public class SheetAssembly
 
         // Position score view as the higher part of the splitPane
         splitPane.setTopComponent(scoreView.getComponent());
-        splitPane.setDividerLocation(220); // TO BE IMPROVED !!!
+        splitPane.setDividerLocation(constants.scoreSheetDivider.getValue());
 
         // Needed to make the scroll bars visible
         scoreView.getScrollPane()
@@ -311,14 +319,12 @@ public class SheetAssembly
     /**
      * Method called when this sheet assembly is no longer selected.
      */
-    public void assemblyDeselected ()
+    public void assemblyDeselected (int index)
     {
+        // Disconnect the corresponding tab
         if (logger.isFineEnabled()) {
-            logger.fine("assemblyDeselected");
+            logger.fine("assemblyDeselected index=" + index);
         }
-
-        // Disconnect the current tab
-        int index = tabbedPane.getSelectedIndex();
 
         if (index != -1) {
             tabs.get(index).boardsPane.hidden();
@@ -417,6 +423,19 @@ public class SheetAssembly
         previousIndex = index;
     }
 
+    //------------------------//
+    // storeScoreSheetDivider //
+    //------------------------//
+    static void storeScoreSheetDivider ()
+    {
+        Sheet sheet = SheetManager.getSelectedSheet();
+
+        if (sheet != null) {
+            constants.scoreSheetDivider.setValue(
+                sheet.getAssembly().splitPane.getDividerLocation());
+        }
+    }
+
     //----------------//
     // displayContext //
     //----------------//
@@ -496,6 +515,18 @@ public class SheetAssembly
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        /** Where the separation between score and sheet views should be */
+        Constant.Integer scoreSheetDivider = new Constant.Integer(
+            200,
+            "Where the separation between score and sheet views should be");
+    }
 
     //-----//
     // Tab //
