@@ -15,10 +15,10 @@ import omr.ProcessingException;
 import omr.Step;
 
 import omr.glyph.Glyph;
-import omr.glyph.GlyphsBuilder;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.GlyphsBuilder;
 import omr.glyph.ui.SymbolsEditor;
 
 import omr.score.Score;
@@ -26,9 +26,9 @@ import omr.score.ScoreBuilder;
 import omr.score.ScoreManager;
 import omr.score.visitor.ScoreChecker;
 import omr.score.visitor.ScoreColorizer;
+import omr.score.visitor.ScoreVisitor;
 import omr.score.visitor.SheetPainter;
 import omr.score.visitor.Visitable;
-import omr.score.visitor.Visitor;
 
 import omr.selection.Selection;
 import omr.selection.SelectionManager;
@@ -153,6 +153,9 @@ public class Sheet
     /** A staff line extractor for this sheet */
     private transient LinesBuilder linesBuilder;
 
+    /** A ledger line extractor for this sheet */
+    private transient HorizontalsBuilder horizontalsBuilder;
+
     /** All Current selections for this sheet */
     private transient SelectionManager selectionManager;
 
@@ -251,8 +254,8 @@ public class Sheet
         public void doit ()
             throws ProcessingException
         {
-            HorizontalsBuilder builder = new HorizontalsBuilder(Sheet.this);
-            result = builder.buildInfo();
+            horizontalsBuilder = new HorizontalsBuilder(Sheet.this);
+            result = horizontalsBuilder.buildInfo();
         }
     };
 
@@ -303,8 +306,8 @@ public class Sheet
                 .processGlyphs(getGlyphInspector().getSymbolMaxGrade());
 
             // Determine score parts based on braces found
-//            getGlyphInspector()
-//                .processBraces();
+            //            getGlyphInspector()
+            //                .processBraces();
         }
 
         public void displayUI ()
@@ -751,6 +754,19 @@ public class Sheet
         return hLag;
     }
 
+    //-----------------------//
+    // getHorizontalsBuilder //
+    //-----------------------//
+    /**
+     * Give access to the builder in charge of ledger lines
+     *
+     * @return the builder instance
+     */
+    public HorizontalsBuilder getHorizontalsBuilder ()
+    {
+        return horizontalsBuilder;
+    }
+
     //--------------//
     // getImageFile //
     //--------------//
@@ -787,9 +803,9 @@ public class Sheet
         }
     }
 
-    //----------------//
+    //-----------------//
     // getLinesBuilder //
-    //----------------//
+    //-----------------//
     /**
      * Give access to the builder in charge of staff lines
      *
@@ -1349,7 +1365,7 @@ public class Sheet
         return LINES.isDone();
     }
 
-    public boolean accept (Visitor visitor)
+    public boolean accept (ScoreVisitor visitor)
     {
         if (visitor instanceof SheetPainter) {
             ((SheetPainter) visitor).visit(this);
