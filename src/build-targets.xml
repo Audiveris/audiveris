@@ -31,6 +31,14 @@
 	</classpath>
     </taskdef>
     
+    <!-- Jalopy task definition -->
+    <taskdef name="jalopy"
+	     classname="de.hunsicker.jalopy.plugin.ant.AntPlugin">
+	<classpath>
+	    <fileset dir="${jalopy.dir}" includes="*.jar" />
+	</classpath>
+    </taskdef>
+    
     <!-- ========================= -->
     <!--  - B U I L D - I C O N S  -->
     <!-- ========================= -->
@@ -49,6 +57,26 @@
     <target name="-clean-icons">
 <!--         description="Remove the icons archive." -->
 	<delete verbose="${verbose}" file="${icons.music.jar}"/>
+    </target>
+    
+    <!-- =============== -->
+    <!--  - F O R M A T  -->
+    <!-- =============== -->
+    <target name="-format">
+	<!--          description="Format Java source with Jalopy." -->
+	<jalopy
+	    convention="${dev.dir}/java-convention.xml"
+	    history="file"
+	    historymethod="adler32"
+	    loglevel="info"
+	    threads="1"
+	    classpathref="build.classpath" >
+	    <fileset dir="${src.dir}">
+		<include name="**/*.java" />
+		<exclude name="**/Shape.java"/>
+		<exclude name="**/package-info.java"/>
+	    </fileset>
+	</jalopy>
     </target>
     
     <!-- ============================= -->
@@ -116,7 +144,7 @@
             <packageset dir="${src.dir}" includes="*/**"/>
 
             <!-- Define a logical grouping of packages -->
-             <group packages="omr:omr.sheet:omr.score:omr.glyph"
+             <group packages="omr:omr.sheet:omr.score:omr.score.visitor:omr.glyph"
                  title="Driving Packages"/>
              <group packages="omr.ui:omr.ui.*:omr.glyph.ui"
                  title="User interface Packages"/>
