@@ -46,7 +46,7 @@
         <pathelement path="${jfreechart.jar}"/>
         <pathelement path="${jgoodies.forms.jar}"/>
         <pathelement path="${jgoodies.looks.jar}"/>
-	<fileset dir="${jibx.dir}/lib" includes="*.jar"/>
+        <pathelement path="${proxymusic.jar}"/>
 	<fileset dir="${jaxb.dir}/lib" includes="*.jar"/>
     </path>
     
@@ -443,6 +443,13 @@
 	</ant>
 
     </target>
+
+    <!-- ============= -->
+    <!--  F O R M A T  -->
+    <!-- ============= -->
+    <target name="format"
+            depends="-format"
+            description="Format Java source with Jalopy."/>
     
     <!-- ======= -->
     <!--  J A R  -->
