@@ -46,7 +46,7 @@ public class LogGuiHandler
     // close //
     //-------//
     /**
-     * Flush any buffered output.. It's a void routine for the time being.
+     * Flush any buffered output. It's a void routine for the time being.
      */
     public void flush ()
     {
@@ -65,12 +65,7 @@ public class LogGuiHandler
         Jui jui = Main.getJui();
 
         if (jui != null) {
-            StringBuffer sbuf = new StringBuffer(128);
-            sbuf.append(record.getLevel().toString());
-            sbuf.append(" - ");
-            sbuf.append(record.getMessage());
-            sbuf.append("\n");
-            jui.logPane.log(sbuf.toString());
+            jui.logPane.log(record);
         }
     }
 }
