@@ -213,7 +213,7 @@ public class BarsBuilder
 
         // Check Measures using only score parameters
         checkMeasures();
-        
+
         // Define score parts
         defineScoreParts();
 
@@ -381,7 +381,7 @@ public class BarsBuilder
                 for (TreeNode node : systemInfo.getScoreSystem()
                                                .getParts()) {
                     SystemPart sp = (SystemPart) node;
-                    ScorePart  scorePart = new ScorePart(sp);
+                    ScorePart  scorePart = new ScorePart(sp, score);
                     logger.fine("Adding " + scorePart);
                     partList.add(scorePart);
                 }
@@ -393,7 +393,7 @@ public class BarsBuilder
                                                .getParts()) {
                     SystemPart sp = (SystemPart) node;
                     ScorePart  global = partList.get(i++);
-                    ScorePart  scorePart = new ScorePart(sp);
+                    ScorePart  scorePart = new ScorePart(sp, score);
                     logger.fine(
                         "Comparing global " + global + " with " + scorePart);
 
@@ -420,6 +420,16 @@ public class BarsBuilder
 
             // This is now the global score part list
             score.setPartList(partList);
+
+            // Link the SystemPart instances to their corresponding ScorePart
+            for (TreeNode node : score.getSystems()) {
+                System system = (System) node;
+
+                for (TreeNode n : system.getParts()) {
+                    SystemPart sp = (SystemPart) n;
+                    sp.setScorePart(score.getPartList().get(sp.getId() - 1));
+                }
+            }
         }
     }
 
@@ -911,7 +921,7 @@ public class BarsBuilder
     {
         private MyLagView (GlyphLag lag)
         {
-            super(lag, null, BarsBuilder.this, clutter);
+            super(lag, null, null, BarsBuilder.this, clutter);
             setName("BarsBuilder-View");
 
             // Pixel
