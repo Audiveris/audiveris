@@ -231,7 +231,7 @@ public abstract class Dumper
     //-----------------//
     /**
      * Predicate to determine if a given class is worth being printed. This
-     * method could be overridden to reflect customozed policy. Note that when
+     * method could be overridden to reflect customized policy. Note that when
      * walking up the inheritance tree, the browsing is stopped as soon as a
      * non-relevant class is encountered.
      *
@@ -250,7 +250,7 @@ public abstract class Dumper
     //-----------------//
     /**
      * Predicate to determine if a given field is worth being printed. This
-     * method could be overridden to reflect customozed policy.
+     * method could be overridden to reflect customized policy.
      *
      * @param field the field at stake
      *
@@ -321,10 +321,7 @@ public abstract class Dumper
         printClassProlog();
 
         // Process the class Fields
-        Field[] fields = cl.getDeclaredFields();
-
-        for (int i = 0; i < fields.length; i++) {
-            Field field = fields[i];
+        for (Field field : cl.getDeclaredFields()) {
             processField(field);
         }
 

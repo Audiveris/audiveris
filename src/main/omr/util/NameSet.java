@@ -41,7 +41,7 @@ public class NameSet
     //~ Static fields/initializers ---------------------------------------------
 
     /** Separator */
-    private static final String   SEPARATOR = ";";
+    private static final String SEPARATOR = ";";
 
     //~ Instance fields --------------------------------------------------------
 

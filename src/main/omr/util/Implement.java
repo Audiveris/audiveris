@@ -21,8 +21,7 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Target(ElementType.METHOD)
-public @interface Implement
-{
+public @interface Implement {
     /** Interface whose method is implemented */
     Class value();
 }

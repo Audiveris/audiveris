@@ -31,8 +31,7 @@ public abstract class SwingWorker<T>
     //~ Instance fields --------------------------------------------------------
 
     /** Used by getValue() & setValue() */
-    private T         value;
-
+    private T value;
     private ThreadVar threadVar;
 
     //~ Constructors -----------------------------------------------------------
