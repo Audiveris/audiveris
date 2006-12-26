@@ -341,7 +341,7 @@ public class ScoreManager
             score.setRadix(FileUtil.getNameSansExtension(file));
 
             // Fix the container relationships
-            score.setChildrenContainer();
+            score.setChildrenParent();
 
             // Insert in list of instances
             insertInstance(score);

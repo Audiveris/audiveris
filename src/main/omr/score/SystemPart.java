@@ -319,7 +319,7 @@ public class SystemPart
     @Override
     public System getSystem ()
     {
-        return (System) getContainer();
+        return (System) getParent();
     }
 
     //--------//

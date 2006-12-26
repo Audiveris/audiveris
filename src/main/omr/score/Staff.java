@@ -35,7 +35,8 @@ import java.util.List;
  * convert between a SystemPoint ordinate and a staff-based pitchPosition. But
  * it contains no further entities, the Measure's are the actual containers.
  * Within a measure, some entities may be assigned a staff, more like a tag than
- * like a container.
+ * like a parent.
+ *
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -97,7 +98,7 @@ public class Staff
         this.height = height;
 
         // Assign id
-        id = this.getContainer()
+        id = this.getParent()
                  .getChildren()
                  .indexOf(this) + 1;
     }
@@ -193,8 +194,8 @@ public class Staff
     {
         // Beware, staff is not a direct child of System, there is an
         // intermediate StaffList to skip
-        return (System) container.getContainer()
-                                 .getContainer();
+        return (System) parent.getParent()
+                              .getParent();
     }
 
     //------------//

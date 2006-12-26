@@ -872,11 +872,11 @@ public class KeySignature
         key = ks.getKey();
 
         // Beware of different clef kinds
-        Measure measure = (Measure) getContainer()
-                                        .getContainer();
+        Measure measure = (Measure) getParent()
+                                        .getParent();
         Clef    clef = measure.getClefBefore(ks.getCenter());
-        Measure ms = (Measure) ks.getContainer()
-                                 .getContainer();
+        Measure ms = (Measure) ks.getParent()
+                                 .getParent();
         Clef    c = ms.getClefBefore(ks.getCenter());
         Shape   kind = getClefKind(clef.getShape());
         Shape   k = getClefKind(c.getShape());

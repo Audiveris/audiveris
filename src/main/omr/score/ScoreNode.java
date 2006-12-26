@@ -102,7 +102,7 @@ public class ScoreNode
         super(container);
 
         // Set the score link
-        for (TreeNode c = this; c != null; c = c.getContainer()) {
+        for (TreeNode c = this; c != null; c = c.getParent()) {
             if (c instanceof Score) {
                 score = (Score) c;
 

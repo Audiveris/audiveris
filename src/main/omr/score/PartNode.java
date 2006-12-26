@@ -57,7 +57,7 @@ public abstract class PartNode
         super(container);
 
         // Set the part link
-        for (TreeNode c = this; c != null; c = c.getContainer()) {
+        for (TreeNode c = this; c != null; c = c.getParent()) {
             if (c instanceof SystemPart) {
                 part = (SystemPart) c;
 

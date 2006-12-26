@@ -154,7 +154,7 @@ public class Note
     //----------//
     public Chord getChord ()
     {
-        return (Chord) getContainer();
+        return (Chord) getParent();
     }
 
     //----------//

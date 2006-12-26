@@ -19,12 +19,13 @@ import java.util.List;
  *
  * <p/> A TreeNode has : <ul>
  *
- * <li> A container (which may be null) to which the TreeNode belongs
+ * <li> A parent (which may be null) to which the TreeNode belongs
  *
  * <li> A list (which may be empty) of contained chidren, for which the TreeNode
- * is the container.
+ * is the parent.
  *
  * </ul>
+ *
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -47,7 +48,7 @@ public class TreeNode
     /**
      * Container : the node just above in the tree
      */
-    protected TreeNode container;
+    protected TreeNode parent;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -55,18 +56,19 @@ public class TreeNode
     // TreeNode //
     //----------//
     /**
-     * Create a node in the tree, given its container
+     * Create a node in the tree, given its parent
      *
-     * @param container the containing node, or null otherwise
+     *
+     * @param parent the containing node, or null otherwise
      */
-    public TreeNode (TreeNode container)
+    public TreeNode (TreeNode parent)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("new TreeNode container=" + container);
+            logger.fine("new TreeNode parent=" + parent);
         }
 
-        if (container != null) {
-            container.addChild(this);
+        if (parent != null) {
+            parent.addChild(this);
         }
     }
 
@@ -110,91 +112,93 @@ public class TreeNode
         return children;
     }
 
-    //----------------------//
-    // setChildrenContainer //
-    //----------------------//
+    //-------------------//
+    // setChildrenParent //
+    //-------------------//
     /**
-     * Register this node as the container of all its children
+     * Register this node as the parent of all its children
      */
-    public void setChildrenContainer ()
+    public void setChildrenParent ()
     {
         if (logger.isFineEnabled()) {
-            logger.fine("setChildrenContainer of " + this);
+            logger.fine("setChildrenParent of " + this);
         }
 
-        // Make all children point to this node as container
+        // Make all children point to this node as parent
         for (TreeNode node : children) {
-            node.setContainer(this);
-            node.setChildrenContainer(); // Recursively
+            node.setParent(this);
+            node.setChildrenParent(); // Recursively
         }
-    }
-
-    //--------------//
-    // setContainer //
-    //--------------//
-    /**
-     * Modify the link to the container of this node
-     *
-     * @param container the (new) container
-     */
-    public void setContainer (TreeNode container)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setContainer container=" + container + " for " + this);
-        }
-
-        this.container = container;
-    }
-
-    //--------------//
-    // getContainer //
-    //--------------//
-    /**
-     * Report the container of this node
-     *
-     * @return the node just higher in the tree, or null if none
-     */
-    public TreeNode getContainer ()
-    {
-        return container;
     }
 
     //----------------//
     // getNextSibling //
     //----------------//
     /**
-     * Report the next node in the children of this node container
+     * Report the next node in the children of this node parent
+     *
      *
      * @return the next sibling node, or null if none
      */
     public TreeNode getNextSibling ()
     {
-        if (container != null) {
-            int index = container.children.indexOf(this);
+        if (parent != null) {
+            int index = parent.children.indexOf(this);
 
-            if (index < (container.children.size() - 1)) {
-                return container.children.get(index + 1);
+            if (index < (parent.children.size() - 1)) {
+                return parent.children.get(index + 1);
             }
         }
 
         return null;
     }
 
+    //-----------//
+    // setParent //
+    //-----------//
+    /**
+     * Modify the link to the parent of this node
+     *
+     * @param parent the (new) parent
+     */
+    public void setParent (TreeNode parent)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("setParent parent=" + parent + " for " + this);
+        }
+
+        this.parent = parent;
+    }
+
+    //-----------//
+    // getParent //
+    //-----------//
+    /**
+     * Report the parent of this node
+     *
+     * @return the node just higher in the tree, or null if none
+     */
+    public TreeNode getParent ()
+    {
+        return parent;
+    }
+
     //--------------------//
     // getPreviousSibling //
     //--------------------//
     /**
-     * Report the previous node in the children of this node container
+     * Report the previous node in the children of this node parent
+     *
      *
      * @return the previous sibling node, or null if none
      */
     public TreeNode getPreviousSibling ()
     {
-        if (container != null) {
-            int index = container.children.indexOf(this);
+        if (parent != null) {
+            int index = parent.children.indexOf(this);
 
             if (index > 0) {
-                return container.children.get(index - 1);
+                return parent.children.get(index - 1);
             }
         }
 
@@ -216,7 +220,7 @@ public class TreeNode
         }
 
         children.add(node);
-        node.setContainer(this);
+        node.setParent(this);
     }
 
     //--------------//

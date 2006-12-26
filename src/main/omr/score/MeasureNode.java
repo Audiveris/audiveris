@@ -80,7 +80,7 @@ public abstract class MeasureNode
         super(container);
 
         // Set the measure link
-        for (TreeNode c = this; c != null; c = c.getContainer()) {
+        for (TreeNode c = this; c != null; c = c.getParent()) {
             if (c instanceof Measure) {
                 measure = (Measure) c;
 

@@ -79,7 +79,7 @@ public class System
         this.topLeft = topLeft;
         this.dimension = dimension;
 
-        id = getContainer()
+        id = getParent()
                  .getChildren()
                  .indexOf(this) + 1;
     }

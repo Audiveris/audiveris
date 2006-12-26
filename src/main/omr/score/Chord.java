@@ -533,7 +533,7 @@ public class Chord
         clone.flagsNumber = flagsNumber;
 
         // Insure correct ordering of chords within their container
-        Collections.sort(getContainer().getChildren(), chordComparator);
+        Collections.sort(getParent().getChildren(), chordComparator);
 
         return clone;
     }
