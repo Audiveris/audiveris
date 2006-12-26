@@ -10,6 +10,7 @@
 //
 package omr.ui.icon;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -43,6 +44,7 @@ public class BitmapAdapter
     public String[] marshal (BufferedImage image)
     {
         System.out.println("BA marshal");
+
         return IconManager.getInstance()
                           .encodeImage(image);
     }
@@ -57,7 +59,8 @@ public class BitmapAdapter
     public BufferedImage unmarshal (String[] rows)
     {
         System.out.println("BA unmarshal rows.length=" + rows.length);
+
         return IconManager.getInstance()
-                          .decodeImage(rows);
+                          .decodeImage(rows, Color.BLACK);
     }
 }
