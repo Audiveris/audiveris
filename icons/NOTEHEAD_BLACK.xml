@@ -2,13 +2,13 @@
 <icon name="NOTEHEAD_BLACK">
     <stem-number>1</stem-number>
     <bitmap>
-        <row>---+*###0--</row>
-        <row>--*######$-</row>
-        <row>-$########.</row>
-        <row>0#########.</row>
-        <row>#########*-</row>
-        <row>#########.-</row>
-        <row>0######$.--</row>
-        <row>-o$##*+----</row>
+        <row>---+*###0-</row>
+        <row>--*######$</row>
+        <row>-$########</row>
+        <row>0#########</row>
+        <row>#########*</row>
+        <row>#########.</row>
+        <row>0######$.-</row>
+        <row>-o$##*+---</row>
     </bitmap>
 </icon>
