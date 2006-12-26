@@ -434,8 +434,6 @@ public class BarsChecker
                 SystemPart part = new SystemPart(system, ++partId);
 
                 // Allocate the staves in this part
-                int index = 0;
-
                 for (StaffInfo staffInfo : partInfo.getStaves()) {
                     LineInfo line = staffInfo.getFirstLine();
                     Staff    staff = new Staff(
@@ -447,8 +445,7 @@ public class BarsChecker
                                 line.getLine().yAt(line.getLeft()))),
                         scale.pixelsToUnits(
                             staffInfo.getRight() - staffInfo.getLeft()),
-                        64, // Staff vertical size in units
-                        index++);
+                        64); // Staff vertical size in units);
                 }
             }
         }
