@@ -161,7 +161,7 @@ public class BeamGroup
         BeamGroup.Split split;
 
         while ((split = checkBeamGroups(measure)) != null) {
-            java.lang.System.out.println("populate. processSplit " + split);
+            ///  java.lang.System.out.println("populate. processSplit " + split);
             split.group.processSplit(split);
         }
 
@@ -267,8 +267,8 @@ public class BeamGroup
     private static Split checkBeamGroups (Measure measure)
     {
         for (BeamGroup group : measure.getBeamGroups()) {
-            java.lang.System.out.println(
-                measure.getContextString() + " checkBeamGroups group=" + group);
+//             java.lang.System.out.println(
+//                 measure.getContextString() + " checkBeamGroups group=" + group);
 
             Split split = group.check();
 
