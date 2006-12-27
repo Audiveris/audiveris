@@ -734,7 +734,8 @@ public class Glyph
     /**
      * Setter for the glyph shape, with related grade
      *
-     * @param eval the glyph evaluation (shape and grade)
+     * @param shape the assigned shape
+     * @param doubt the related doubt
      */
     public void setShape (Shape  shape,
                           double doubt)
