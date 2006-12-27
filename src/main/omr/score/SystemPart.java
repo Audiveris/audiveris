@@ -225,6 +225,19 @@ public class SystemPart
         return slurs.getChildren();
     }
 
+    //-----------//
+    // getWedges //
+    //-----------//
+    /**
+     * Report the collection of wedges
+     *
+     * @return the wedge list, which may be empty but not null
+     */
+    public List<TreeNode> getWedges()
+    {
+        return wedges.getChildren();
+    }
+
     //------------//
     // getStaffAt //
     //------------//
@@ -371,6 +384,15 @@ public class SystemPart
         }
 
         return false; // Not found
+    }
+
+    //-------------//
+    // cleanupNode //
+    //-------------//
+    public void cleanupNode ()
+    {
+        getSlurs().clear();
+        getWedges().clear();
     }
 
     //----------//

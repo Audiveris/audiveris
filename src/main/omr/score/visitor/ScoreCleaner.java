@@ -13,6 +13,7 @@ package omr.score.visitor;
 import omr.score.Measure;
 import omr.score.Score;
 import omr.score.ScorePart;
+import omr.score.SystemPart;
 
 import omr.util.Logger;
 
@@ -73,5 +74,17 @@ public class ScoreCleaner
         score.acceptChildren(this);
 
         return false;
+    }
+
+    //------------------//
+    // visit SystemPart //
+    //------------------//
+    @Override
+    public boolean visit (SystemPart systemPart)
+    {
+        // Remove slurs and wedges
+        systemPart.cleanupNode();
+
+        return true;
     }
 }

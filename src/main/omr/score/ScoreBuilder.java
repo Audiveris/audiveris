@@ -108,8 +108,7 @@ public class ScoreBuilder
         translate(new FlagTranslator());
         translate(new AccidentalTranslator());
         translate(new DotTranslator());
-
-        ///translate(new WedgeTranslator());
+        translate(new WedgeTranslator());
 
         // Update score view if any
         if (score.getView() != null) {
@@ -357,7 +356,7 @@ public class ScoreBuilder
 
         public void translate (Glyph glyph)
         {
-            Slot.populateSlot(glyph, currentMeasure, currentCenter);
+            Slot.populate(glyph, currentMeasure, currentCenter);
         }
 
         private void dumpSystemSlots ()
@@ -618,6 +617,37 @@ public class ScoreBuilder
                 currentMeasure,
                 currentStaff,
                 currentCenter);
+        }
+    }
+
+    //-----------------//
+    // WedgeTranslator //
+    //-----------------//
+    private class WedgeTranslator
+        extends Translator
+    {
+        @Override
+        public void computeLocation (Glyph glyph)
+        {
+            // Take the left edge for glyph center
+            PixelRectangle box = glyph.getContourBox();
+            currentCenter = currentSystem.toSystemPoint(
+                new PixelPoint(box.x, box.y + (box.height / 2)));
+            currentStaff = currentSystem.getStaffAt(currentCenter); // Bof!
+            currentPart = currentStaff.getPart();
+            currentMeasure = currentPart.getMeasureAt(currentCenter);
+        }
+
+        public boolean isrelevant (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+
+            return (shape == Shape.CRESCENDO) || (shape == Shape.DECRESCENDO);
+        }
+
+        public void translate (Glyph glyph)
+        {
+            Wedge.populate(glyph, currentMeasure, currentCenter);
         }
     }
 }

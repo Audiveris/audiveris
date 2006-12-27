@@ -14,6 +14,8 @@ import static omr.score.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
+import omr.sheet.PixelRectangle;
+import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
@@ -498,5 +500,28 @@ public class System
                               .toPagePoint(pixPt);
 
         return new SystemPoint(pagPt.x - topLeft.x, pagPt.y - topLeft.y);
+    }
+
+    //-------------------//
+    // toSystemRectangle //
+    //-------------------//
+    /**
+     * Compute the system rectangle that correspond to a given pixel rectangle,
+     * which is basically a scaling plus a translation using the coordinates of
+     * the system topLeft corner.
+     *
+     * @param pixRect the rectangle in the sheet
+     * @return the system rectangle
+     */
+    public SystemRectangle toSystemRectangle (PixelRectangle pixRect)
+    {
+        PageRectangle pagRect = getScale()
+                                    .toUnits(pixRect);
+
+        return new SystemRectangle(
+            pagRect.x - topLeft.x,
+            pagRect.y - topLeft.y,
+            pagRect.width,
+            pagRect.height);
     }
 }

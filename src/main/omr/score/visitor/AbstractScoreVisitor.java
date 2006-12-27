@@ -27,6 +27,7 @@ import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
 import omr.score.TimeSignature;
+import omr.score.Wedge;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -179,6 +180,14 @@ public class AbstractScoreVisitor
     // visit TimeSignature //
     //---------------------//
     public boolean visit (TimeSignature timeSignature)
+    {
+        return true;
+    }
+
+    //-------------//
+    // visit Wedge //
+    //-------------//
+    public boolean visit (Wedge wedge)
     {
         return true;
     }

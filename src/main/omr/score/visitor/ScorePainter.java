@@ -35,9 +35,12 @@ import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
 import omr.score.SystemPoint;
+import omr.score.SystemRectangle;
 import omr.score.TimeSignature;
 import omr.score.UnitDimension;
+import omr.score.Wedge;
 
+import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
 
 import omr.ui.icon.SymbolIcon;
@@ -682,6 +685,39 @@ public class ScorePainter
                 }
             }
         }
+
+        return true;
+    }
+
+    //-------------//
+    // visit Wedge //
+    //-------------//
+    @Override
+    public boolean visit (Wedge wedge)
+    {
+        System          system = wedge.getSystem();
+        SystemRectangle box = system.toSystemRectangle(
+            wedge.getGlyph().getContourBox());
+
+        SystemPoint     single;
+        SystemPoint     top;
+        SystemPoint     bot;
+
+        if (wedge.getGlyph()
+                 .getShape() == Shape.CRESCENDO) {
+            single = new SystemPoint(box.x, box.y + (box.height / 2));
+            top = new SystemPoint(box.x + box.width, box.y);
+            bot = new SystemPoint(box.x + box.width, box.y + box.height);
+        } else {
+            single = new SystemPoint(
+                box.x + box.width,
+                box.y + (box.height / 2));
+            top = new SystemPoint(box.x, box.y);
+            bot = new SystemPoint(box.x, box.y + box.height);
+        }
+
+        paintLine(system.getDisplayOrigin(), single, top);
+        paintLine(system.getDisplayOrigin(), single, bot);
 
         return true;
     }

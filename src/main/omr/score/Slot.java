@@ -13,12 +13,14 @@ package omr.score;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
+import omr.glyph.Shape;
 
 import omr.math.Population;
 
 import omr.sheet.Scale;
 
 import omr.util.Logger;
+import omr.util.TreeNode;
 
 import java.util.*;
 
@@ -90,9 +92,6 @@ public class Slot
 
     /** Time offset since measure start */
     private Integer offset;
-
-    /** Chords dispatched per voice */
-    private List<Chord> voices = new ArrayList<Chord>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -188,6 +187,49 @@ public class Slot
         }
 
         return best;
+    }
+
+    //------------------//
+    // getSuitableChord //
+    //------------------//
+    public Chord getSuitableChord (SystemPoint point)
+    {
+        Chord chordAbove = null;
+        Chord chordBelow = null;
+
+        // We look for a chord just above or just below, 
+        // with a normal (non-rest) note
+        for (Chord chord : getChords()) {
+            if (chord.getHeadLocation().y < point.y) {
+                chordAbove = chord;
+            } else {
+                chordBelow = chord;
+
+                break;
+            }
+        }
+
+        if (chordAbove != null) {
+            for (TreeNode node : chordAbove.getNotes()) {
+                Note note = (Note) node;
+
+                if (!Shape.Rests.contains(note.getShape())) {
+                    return chordAbove;
+                }
+            }
+        }
+
+        if (chordBelow != null) {
+            for (TreeNode node : chordBelow.getNotes()) {
+                Note note = (Note) node;
+
+                if (!Shape.Rests.contains(note.getShape())) {
+                    return chordBelow;
+                }
+            }
+        }
+
+        return null;
     }
 
     //------//
@@ -441,18 +483,18 @@ public class Slot
         return sb.toString();
     }
 
-    //--------------//
-    // populateSlot //
-    //--------------//
+    //----------//
+    // populate //
+    //----------//
     /**
      * Populate a slot with this note glyph
      *
      * @param glyph a chord-relevant glyph (rest, note or notehead)
      * @param measure the containing measure
      */
-    static void populateSlot (Glyph       glyph,
-                              Measure     measure,
-                              SystemPoint sysPt)
+    static void populate (Glyph       glyph,
+                          Measure     measure,
+                          SystemPoint sysPt)
     {
         //        if (logger.isFineEnabled()) {
         //            logger.fine("Populating slot with " + glyph);

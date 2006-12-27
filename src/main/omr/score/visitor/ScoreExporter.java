@@ -22,6 +22,7 @@ import omr.score.Chord;
 import omr.score.Clef;
 import omr.score.KeySignature;
 import omr.score.Measure;
+import omr.score.PartNode;
 import omr.score.Score;
 import omr.score.ScoreFormat;
 import omr.score.ScorePart;
@@ -32,8 +33,10 @@ import omr.score.System;
 import omr.score.SystemPart;
 import omr.score.SystemPoint;
 import omr.score.TimeSignature;
+import omr.score.Wedge;
 
 import omr.sheet.PixelPoint;
+import omr.sheet.PixelRectangle;
 
 import omr.util.Logger;
 import omr.util.TreeNode;
@@ -489,9 +492,16 @@ public class ScoreExporter
         current.pmMeasure.getNoteOrBackupOrForward()
                          .add(pmNote);
 
-        // Chord indication for every note, except first one in chord
+        // Chord events for first note in chord
         if (chord.getNotes()
-                 .indexOf(note) != 0) {
+                 .indexOf(note) == 0) {
+            current.note = note;
+
+            for (PartNode node : chord.getEvents()) {
+                node.accept(this);
+            }
+        } else {
+            // Chord indication for every other note
             pmNote.setChord(new proxymusic.Chord());
         }
 
@@ -817,6 +827,92 @@ public class ScoreExporter
         return true;
     }
 
+    //-------------//
+    // visit Wedge //
+    //-------------//
+    @Override
+    public boolean visit (Wedge wedge)
+    {
+        Direction direction = new Direction();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(direction);
+
+        DirectionType directionType = new DirectionType();
+        direction.getDirectionType()
+                 .add(directionType);
+
+        proxymusic.Wedge pmWedge = new proxymusic.Wedge();
+        directionType.setWedge(pmWedge);
+
+        // Start or stop ?
+        PixelRectangle noteBox = current.note.getGlyph()
+                                             .getContourBox();
+        PixelPoint     pixelUl = new PixelPoint(noteBox.x, noteBox.y);
+        SystemPoint    noteUpperLeft = current.system.toSystemPoint(pixelUl);
+        SystemPoint    point; // The point we are using
+
+        if (Math.abs(wedge.getStartingPoint().x - noteUpperLeft.x) <= Math.abs(
+            wedge.getEndingPoint().x - noteUpperLeft.x)) {
+            // It's a start
+            point = wedge.getStartingPoint();
+
+            // Spread and type
+            if (wedge.getGlyph()
+                     .getShape() == Shape.CRESCENDO) {
+                pmWedge.setSpread("0");
+                pmWedge.setType("crescendo");
+            } else {
+                pmWedge.setSpread("" + unitsToTenths(wedge.getSpread()));
+                pmWedge.setType("diminuendo");
+            }
+
+            // Staff ?
+            Staff staff = current.note.getStaff();
+
+            if (current.note.getPart()
+                            .getStaves()
+                            .size() > 1) {
+                proxymusic.Staff pmStaff = new proxymusic.Staff();
+                direction.setStaff(pmStaff);
+                pmStaff.setContent("" + (staff.getId()));
+            }
+
+            // Placement
+            if (point.y < current.note.getCenter().y) {
+                direction.setPlacement("above");
+            } else {
+                direction.setPlacement("below");
+            }
+
+            // default-y
+            PixelPoint pix = current.system.toPixelPoint(point);
+            PixelPoint staffPix = new PixelPoint(
+                pix.x,
+                staff.getInfo().getFirstLine().getLine().yAt(pix.x));
+            pmWedge.setDefaultY(
+                "" +
+                unitsToTenths(
+                    current.system.getScale().pixelsToUnits(staffPix.y - pix.y)));
+        } else {
+            // It's a stop
+            point = wedge.getEndingPoint();
+            pmWedge.setType("stop");
+
+            // Spread
+            if (wedge.getGlyph()
+                     .getShape() == Shape.DECRESCENDO) {
+                pmWedge.setSpread("0");
+            } else {
+                pmWedge.setSpread("" + unitsToTenths(wedge.getSpread()));
+            }
+        }
+
+        // Relative-x (No offset for the time being) using note left side
+        pmWedge.setRelativeX("" + unitsToTenths(point.x - noteUpperLeft.x));
+
+        return true;
+    }
+
     //- Utility Methods --------------------------------------------------------
 
     //----------------//
@@ -1065,6 +1161,7 @@ public class ScoreExporter
         System                system;
         proxymusic.Measure    pmMeasure;
         Measure               measure;
+        omr.score.Note        note;
         proxymusic.Print      pmPrint;
         proxymusic.Attributes attributes;
         int                   voice;

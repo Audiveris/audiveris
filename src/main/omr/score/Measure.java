@@ -274,6 +274,26 @@ public class Measure
         return clefs.getChildren();
     }
 
+    //----------------//
+    // getClosestSlot //
+    //----------------//
+    public Slot getClosestSlot (SystemPoint point)
+    {
+        Slot bestSlot = null;
+        int  bestDx = Integer.MAX_VALUE;
+
+        for (Slot slot : getSlots()) {
+            int dx = Math.abs(slot.getX() - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestSlot = slot;
+            }
+        }
+
+        return bestSlot;
+    }
+
     //-------------------------//
     // getCurrentTimeSignature //
     //-------------------------//
@@ -893,6 +913,24 @@ public class Measure
         // Should this be a MeasureNode ??? TBD
         slots = new TreeSet<Slot>();
         beamGroups = new ArrayList<BeamGroup>();
+    }
+
+    //----------------//
+    // findEventChord //
+    //----------------//
+    /**
+     * Retrieve the most suitable chord to connect the event point to
+     *
+     * @param point the system-based location
+     * @return the most suitable chord, or null
+     */
+    public Chord findEventChord (SystemPoint point)
+    {
+        // Choose the x-closest slot
+        Slot slot = getClosestSlot(point);
+
+        // Choose the y-closest chord with normal (non-rest) note
+        return slot.getSuitableChord(point);
     }
 
     //----------------//

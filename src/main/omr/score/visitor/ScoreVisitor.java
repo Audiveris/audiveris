@@ -26,6 +26,7 @@ import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
 import omr.score.TimeSignature;
+import omr.score.Wedge;
 
 /**
  * Interface <code>ScoreVisitor</code> is meant to visit any node of the Score
@@ -69,4 +70,6 @@ public interface ScoreVisitor
     boolean visit (SystemPart node);
 
     boolean visit (TimeSignature node);
+
+    boolean visit (Wedge node);
 }

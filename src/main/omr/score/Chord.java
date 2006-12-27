@@ -84,7 +84,7 @@ public class Chord
     /** Location for chord tail */
     private SystemPoint tailLocation;
 
-    /** Ordered collection of beams */
+    /** Ordered collection of beams this chord is connected to */
     private SortedSet<Beam> beams = new TreeSet<Beam>();
 
     /** Voice this chord belongs to */
@@ -101,6 +101,9 @@ public class Chord
 
     /** Collection of marks for user */
     private List<Mark> marks = new ArrayList<Mark>();
+
+    /** Direction events linked to this chord */
+    private List<PartNode> events = new ArrayList<PartNode>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -369,6 +372,14 @@ public class Chord
         return chords;
     }
 
+    //-----------//
+    // getEvents //
+    //-----------//
+    public List<PartNode> getEvents ()
+    {
+        return events;
+    }
+
     //-----------------//
     // getTailLocation //
     //-----------------//
@@ -530,7 +541,7 @@ public class Chord
         }
 
         clone.dotsNumber = dotsNumber;
-        clone.flagsNumber = flagsNumber;
+        clone.flagsNumber = flagsNumber; // Not sure TBD
 
         // Insure correct ordering of chords within their container
         Collections.sort(getParent().getChildren(), chordComparator);
@@ -737,6 +748,14 @@ public class Chord
                     measure.getContextString() + " No chord for stem " + stem);
             }
         }
+    }
+
+    //----------//
+    // addEvent //
+    //----------//
+    void addEvent (PartNode node)
+    {
+        events.add(node);
     }
 
     //--------------//
