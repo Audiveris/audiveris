@@ -38,7 +38,7 @@ import javax.xml.bind.annotation.*;
  * on the staff, head/flags combos to handle the precise position of the head
  * part) need a very precise reference center (actually the y ordinate) which is
  * somewhat different from the area center. This is the difference between the
- * {@link #getAreaCenter} and the {@link getCenter} methods.
+ * {@link #getAreaCenter} and the {@link #getCenter} methods.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
