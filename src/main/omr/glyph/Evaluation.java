@@ -50,10 +50,10 @@ public class Evaluation
      * @param doubt the measurement result (smaller is better)
      */
     public Evaluation (Shape  shape,
-                       double grade)
+                       double doubt)
     {
         this.shape = shape;
-        this.doubt = grade;
+        this.doubt = doubt;
     }
 
     //~ Methods ----------------------------------------------------------------
