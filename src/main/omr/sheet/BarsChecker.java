@@ -31,7 +31,7 @@ import omr.score.Score;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
-import omr.score.UnitRectangle;
+import omr.score.PageRectangle;
 
 import omr.stick.Stick;
 
@@ -156,7 +156,7 @@ public class BarsChecker
                                    Glyph      glyph)
     {
         // Extrema of glyph
-        UnitRectangle box = scale.toUnits(glyph.getContourBox());
+        PageRectangle box = scale.toUnits(glyph.getContourBox());
         int           top = box.y;
         int           bot = box.y + box.height;
 
@@ -187,7 +187,7 @@ public class BarsChecker
     //                                    Glyph glyph)
     //    {
     //        // Extrema of glyph
-    //        UnitRectangle box = scale.toUnits(glyph.getContourBox());
+    //        PageRectangle box = scale.toUnits(glyph.getContourBox());
     //        int           top = box.y;
     //        int           bot = box.y + box.height;
     //

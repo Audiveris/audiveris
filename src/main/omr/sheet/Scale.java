@@ -15,7 +15,7 @@ import omr.constant.Constant;
 import omr.score.PagePoint;
 import static omr.score.ScoreConstants.*;
 import omr.score.UnitDimension;
-import omr.score.UnitRectangle;
+import omr.score.PageRectangle;
 
 import omr.util.Logger;
 
@@ -530,7 +530,7 @@ public class Scale
      *
      * @return the result in units
      */
-    public UnitRectangle toUnits (PixelRectangle pixelRect)
+    public PageRectangle toUnits (PixelRectangle pixelRect)
     {
         return toUnits(pixelRect, null);
     }
@@ -548,11 +548,11 @@ public class Scale
      *
      * @return the result in units
      */
-    public UnitRectangle toUnits (PixelRectangle pixelRect,
-                                  UnitRectangle  unitRect)
+    public PageRectangle toUnits (PixelRectangle pixelRect,
+                                  PageRectangle  unitRect)
     {
         if (unitRect == null) {
-            unitRect = new UnitRectangle();
+            unitRect = new PageRectangle();
         }
 
         unitRect.x = pixelsToUnits(pixelRect.x);
