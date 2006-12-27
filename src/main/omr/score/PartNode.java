@@ -27,6 +27,9 @@ import java.util.Collection;
  * ScoreNode that is contained in a system part. So this class encapsulates a
  * direct link to the enclosing part.
  *
+ * <p>A link to a related staff is provided as a potential tag only, since all
+ * PartNode instances (Slur for example) are not related to a specific staff,
+ * whereas a Wedge is.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -38,6 +41,9 @@ public abstract class PartNode
 
     /** Containing part */
     private SystemPart part;
+
+    /** Related staff, if relevant */
+    private Staff staff;
 
     /** Location of the center of this entity WRT system top-left corner */
     private SystemPoint center;
@@ -140,6 +146,32 @@ public abstract class PartNode
     public SystemPart getPart ()
     {
         return part;
+    }
+
+    //----------//
+    // setStaff //
+    //----------//
+    /**
+     * Assign the related staff
+     *
+     * @param staff the related staff
+     */
+    public void setStaff (Staff staff)
+    {
+        this.staff = staff;
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    /**
+     * Report the related staff if any
+     *
+     * @return the related staff, or null
+     */
+    public Staff getStaff ()
+    {
+        return staff;
     }
 
     //-----------//

@@ -20,9 +20,7 @@ import java.util.Comparator;
 /**
  * Class <code>MeasureNode</code> is an abstract class that is subclassed for
  * any PartNode with a containing measure. So this class encapsulates a direct
- * link to the enclosing measure. A link to a related staff is provided as a
- * potential tag only, since all MeasureNode instances (Beam for example) are
- * not contained in a staff.
+ * link to the enclosing measure. 
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -61,9 +59,6 @@ public abstract class MeasureNode
 
     /** Containing measure */
     private Measure measure;
-
-    /** Related staff, if relevant */
-    private Staff staff;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -123,32 +118,6 @@ public abstract class MeasureNode
     public Measure getMeasure ()
     {
         return measure;
-    }
-
-    //----------//
-    // setStaff //
-    //----------//
-    /**
-     * Assign the related staff
-     *
-     * @param staff the related staff
-     */
-    public void setStaff (Staff staff)
-    {
-        this.staff = staff;
-    }
-
-    //----------//
-    // getStaff //
-    //----------//
-    /**
-     * Report the related staff if any
-     *
-     * @return the related staff, or null
-     */
-    public Staff getStaff ()
-    {
-        return staff;
     }
 
     //--------//
