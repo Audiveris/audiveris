@@ -12,8 +12,8 @@ package omr.score;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import static omr.glyph.Shape.*;
 
+////import static omr.glyph.Shape.*;
 import omr.score.visitor.ScoreCleaner;
 import omr.score.visitor.ScoreFixer;
 
@@ -21,8 +21,6 @@ import omr.sheet.PixelPoint;
 import omr.sheet.PixelRectangle;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-
-import omr.ui.icon.SymbolIcon;
 
 import omr.util.Logger;
 import omr.util.TreeNode;
@@ -109,6 +107,8 @@ public class ScoreBuilder
         translate(new AccidentalTranslator());
         translate(new DotTranslator());
         translate(new WedgeTranslator());
+        translate(new PedalTranslator());
+        translate(new DynamicsTranslator());
 
         // Update score view if any
         if (score.getView() != null) {
@@ -159,7 +159,7 @@ public class ScoreBuilder
     {
         for (Glyph glyph : currentSystem.getInfo()
                                         .getGlyphs()) {
-            if (glyph.isWellKnown() && (glyph.getShape() != CLUTTER)) {
+            if (glyph.isWellKnown() && (glyph.getShape() != Shape.CLUTTER)) {
                 // Check for glyph relevance
                 if (translator.isrelevant(glyph)) {
                     // Determine part/staff containment
@@ -309,8 +309,8 @@ public class ScoreBuilder
 
         public boolean isrelevant (Glyph glyph)
         {
-            return (glyph.getShape() == BEAM) ||
-                   (glyph.getShape() == BEAM_HOOK);
+            return (glyph.getShape() == Shape.BEAM) ||
+                   (glyph.getShape() == Shape.BEAM_HOOK);
         }
 
         public void translate (Glyph glyph)
@@ -478,6 +478,26 @@ public class ScoreBuilder
         }
     }
 
+    //--------------------//
+    // DynamicsTranslator //
+    //--------------------//
+    private class DynamicsTranslator
+        extends Translator
+    {
+        public boolean isrelevant (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+
+            return Shape.Dynamics.contains(shape) &&
+                   (shape != Shape.CRESCENDO) && (shape != Shape.DECRESCENDO);
+        }
+
+        public void translate (Glyph glyph)
+        {
+            Dynamics.populate(glyph, currentMeasure, currentCenter);
+        }
+    }
+
     //----------------//
     // FlagTranslator //
     //----------------//
@@ -585,7 +605,8 @@ public class ScoreBuilder
 
         public boolean isrelevant (Glyph glyph)
         {
-            return (glyph.getShape() == SHARP) || (glyph.getShape() == FLAT);
+            return (glyph.getShape() == Shape.SHARP) ||
+                   (glyph.getShape() == Shape.FLAT);
         }
 
         public void translate (Glyph glyph)
@@ -596,6 +617,26 @@ public class ScoreBuilder
                 currentMeasure,
                 currentStaff,
                 currentCenter);
+        }
+    }
+
+    //-----------------//
+    // PedalTranslator //
+    //-----------------//
+    private class PedalTranslator
+        extends Translator
+    {
+        public boolean isrelevant (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+
+            return (shape == Shape.PEDAL_MARK) ||
+                   (shape == Shape.PEDAL_UP_MARK);
+        }
+
+        public void translate (Glyph glyph)
+        {
+            Pedal.populate(glyph, currentMeasure, currentCenter);
         }
     }
 

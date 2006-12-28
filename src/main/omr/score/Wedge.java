@@ -10,15 +10,13 @@
 //
 package omr.score;
 
-import omr.constant.ConstantSet;
-
 import omr.glyph.Glyph;
+import omr.glyph.Shape;
 
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
 import omr.sheet.PixelRectangle;
-import omr.sheet.Scale;
 
 import omr.util.Logger;
 
@@ -29,32 +27,14 @@ import omr.util.Logger;
  * @version $Id$
  */
 public class Wedge
-    extends PartNode
+    extends Direction
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Wedge.class);
 
     //~ Instance fields --------------------------------------------------------
-
-    /** Underlying glyph */
-    private final Glyph glyph;
-
-    /** Starting point */
-    private final SystemPoint startingPoint;
-
-    /** Starting chord (in starting measure) */
-    private final Chord startingChord;
-
-    /** Ending point */
-    private final SystemPoint endingPoint;
-
-    /** Ending chord (in ending measure). If null, end is the measure end */
-    private final Chord endingChord;
 
     /** Vertical spread in units */
     private final int spread;
@@ -65,78 +45,34 @@ public class Wedge
     // Wedge //
     //-------//
     /**
-     * Creates a new instance of Wedge
+     * Creates a new instance of Wedge edge (there must be one for the wedge start, and one for the wedge stop).
      *
-     * @param part the containing system part
-     * @param startingMeasure measure that contains the left side of the wedge
-     * @param startingPoint middle point on left side
+     * @param start indicate a wedge start
+     * @param measure measure that contains this wedge edge
+     * @param point middle point on wedge edge
      * @param glyph the underlying glyph
      */
-    public Wedge (SystemPart  part,
-                  Measure     startingMeasure,
-                  SystemPoint startingPoint,
+    public Wedge (boolean     start,
+                  Measure     measure,
+                  SystemPoint point,
+                  Chord       chord,
                   Glyph       glyph)
     {
-        super(part);
-
-        this.glyph = glyph;
-
-        System         system = part.getSystem();
-        PixelRectangle box = glyph.getContourBox();
-
-        // Shift on abscissa (because of left side of note heads)
-        int dx = getSystem()
-                     .getScale()
-                     .toUnits(constants.slotShift);
-
-        // Determine starting
-        this.startingPoint = startingPoint;
-        startingChord = startingMeasure.findEventChord(
-            new SystemPoint(startingPoint.x + dx, startingPoint.y));
-        startingChord.addEvent(this);
-
-        // Determine ending
-        endingPoint = system.toSystemPoint(
-            new PixelPoint(box.x + box.width, box.y + (box.height / 2)));
-
-        Measure endingMeasure = part.getMeasureAt(endingPoint);
-        endingChord = endingMeasure.findEventChord(
-            new SystemPoint(endingPoint.x + dx, endingPoint.y));
-        endingChord.addEvent(this);
+        super(start, measure, point, chord);
+        addGlyph(glyph);
 
         // Spread
-        spread = getSystem()
-                     .getScale()
-                     .pixelsToUnits(glyph.getContourBox().height);
+        if ((start && (getShape() == Shape.DECRESCENDO)) ||
+            (!start && (getShape() == Shape.CRESCENDO))) {
+            spread = getSystem()
+                         .getScale()
+                         .pixelsToUnits(glyph.getContourBox().height);
+        } else {
+            spread = 0;
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //----------------//
-    // getEndingPoint //
-    //----------------//
-    /**
-     * Report the right point of the wedge
-     *
-     * @return right wedge point
-     */
-    public SystemPoint getEndingPoint ()
-    {
-        return endingPoint;
-    }
-
-    //----------//
-    // getGlyph //
-    //----------//
-    /**
-     * report the underlying glyph
-     *
-     * @return the underlying glyph (shape is crescendo or decrescendo)
-     */
-    public Glyph getGlyph ()
-    {
-        return glyph;
-    }
 
     //-----------//
     // getSpread //
@@ -149,19 +85,6 @@ public class Wedge
     public int getSpread ()
     {
         return spread;
-    }
-
-    //------------------//
-    // getStartingPoint //
-    //------------------//
-    /**
-     * Report the left side of the wedge
-     *
-     * @return left side point
-     */
-    public SystemPoint getStartingPoint ()
-    {
-        return startingPoint;
     }
 
     //--------//
@@ -180,13 +103,8 @@ public class Wedge
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Wedge ")
-          .append(glyph.getShape());
-        sb.append(" from ")
-          .append(startingChord.getContextString());
-        sb.append(" to ")
-          .append(endingChord.getContextString());
-
+        sb.append("{Wedge ");
+        sb.append(super.toString());
         sb.append("}");
 
         return sb.toString();
@@ -206,27 +124,27 @@ public class Wedge
                           Measure     startingMeasure,
                           SystemPoint startingPoint)
     {
+        System         system = startingMeasure.getSystem();
+        SystemPart     part = startingMeasure.getPart();
+        PixelRectangle box = glyph.getContourBox();
+
+        // Start
         new Wedge(
-            startingMeasure.getPart(),
+            true,
             startingMeasure,
             startingPoint,
+            findChord(startingMeasure, startingPoint),
             glyph);
-    }
 
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        /**
-         * Abscissa shift when looking for time slot (half a note head)
-         */
-        Scale.Fraction slotShift = new Scale.Fraction(
-            0.5,
-            "Abscissa shift (in interline fraction) when looking for time slot " +
-            "(half a note head)");
+        // Stop
+        SystemPoint endingPoint = system.toSystemPoint(
+            new PixelPoint(box.x + box.width, box.y + (box.height / 2)));
+        Measure     endingMeasure = part.getMeasureAt(endingPoint);
+        new Wedge(
+            false,
+            endingMeasure,
+            endingPoint,
+            findChord(endingMeasure, endingPoint),
+            glyph);
     }
 }

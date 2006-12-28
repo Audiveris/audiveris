@@ -56,9 +56,6 @@ public class SystemPart
     /** Specific child : list of slurs */
     private final SlurList slurs;
 
-    /** Specific child : list of wedges */
-    private final WedgeList wedges;
-
     /** Lonesome child : Starting barline (the others are linked to measures) */
     private Barline startingBarline;
 
@@ -83,7 +80,6 @@ public class SystemPart
         staves = new StaffList(this);
         measures = new MeasureList(this);
         slurs = new SlurList(this);
-        wedges = new WedgeList(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -225,19 +221,6 @@ public class SystemPart
         return slurs.getChildren();
     }
 
-    //-----------//
-    // getWedges //
-    //-----------//
-    /**
-     * Report the collection of wedges
-     *
-     * @return the wedge list, which may be empty but not null
-     */
-    public List<TreeNode> getWedges()
-    {
-        return wedges.getChildren();
-    }
-
     //------------//
     // getStaffAt //
     //------------//
@@ -362,8 +345,6 @@ public class SystemPart
             measures.addChild(node);
         } else if (node instanceof Slur) {
             slurs.addChild(node);
-        } else if (node instanceof Wedge) {
-            wedges.addChild(node);
         } else {
             super.addChild(node);
         }
@@ -392,7 +373,6 @@ public class SystemPart
     public void cleanupNode ()
     {
         getSlurs().clear();
-        getWedges().clear();
     }
 
     //----------//
@@ -449,18 +429,6 @@ public class SystemPart
         extends ScoreNode
     {
         StaffList (SystemPart container)
-        {
-            super(container);
-        }
-    }
-
-    //-----------//
-    // WedgeList //
-    //-----------//
-    private static class WedgeList
-        extends ScoreNode
-    {
-        WedgeList (SystemPart container)
         {
             super(container);
         }

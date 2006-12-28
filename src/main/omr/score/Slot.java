@@ -213,9 +213,9 @@ public class Slot
             for (TreeNode node : chordAbove.getNotes()) {
                 Note note = (Note) node;
 
-                if (!Shape.Rests.contains(note.getShape())) {
+                ///if (!Shape.Rests.contains(note.getShape())) {
                     return chordAbove;
-                }
+                ///}
             }
         }
 
@@ -223,9 +223,9 @@ public class Slot
             for (TreeNode node : chordBelow.getNotes()) {
                 Note note = (Note) node;
 
-                if (!Shape.Rests.contains(note.getShape())) {
+                ///if (!Shape.Rests.contains(note.getShape())) {
                     return chordBelow;
-                }
+                ///}
             }
         }
 

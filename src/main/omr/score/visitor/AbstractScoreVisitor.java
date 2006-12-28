@@ -14,23 +14,21 @@ import omr.score.Barline;
 import omr.score.Beam;
 import omr.score.Chord;
 import omr.score.Clef;
+import omr.score.Dynamics;
 import omr.score.KeySignature;
 import omr.score.Measure;
 import omr.score.MeasureNode;
 import omr.score.Note;
 import omr.score.PartNode;
+import omr.score.Pedal;
 import omr.score.Score;
 import omr.score.ScoreNode;
-import omr.score.ScorePart;
 import omr.score.Slur;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
 import omr.score.TimeSignature;
 import omr.score.Wedge;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Class <code>AbstractScoreVisitor</code> provides a basic implementation of
@@ -88,6 +86,14 @@ public class AbstractScoreVisitor
         return true;
     }
 
+    //----------------//
+    // visit Dynamics //
+    //----------------//
+    public boolean visit (Dynamics dynamics)
+    {
+        return true;
+    }
+
     //--------------------//
     // visit KeySignature //
     //--------------------//
@@ -124,6 +130,14 @@ public class AbstractScoreVisitor
     // visit PartNode //
     //----------------//
     public boolean visit (PartNode partNode)
+    {
+        return true;
+    }
+
+    //-------------//
+    // visit Pedal //
+    //-------------//
+    public boolean visit (Pedal pedal)
     {
         return true;
     }

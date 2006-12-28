@@ -21,10 +21,12 @@ import omr.score.Barline;
 import omr.score.Beam;
 import omr.score.Chord;
 import omr.score.Clef;
+import omr.score.Dynamics;
 import omr.score.KeySignature;
 import omr.score.Mark;
 import omr.score.Measure;
 import omr.score.Note;
+import omr.score.Pedal;
 import omr.score.Score;
 import static omr.score.ScoreConstants.*;
 import omr.score.ScoreController;
@@ -40,7 +42,6 @@ import omr.score.TimeSignature;
 import omr.score.UnitDimension;
 import omr.score.Wedge;
 
-import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
 
 import omr.ui.icon.SymbolIcon;
@@ -337,6 +338,19 @@ public class ScorePainter
             clef.getCenter(),
             clef.getStaff(),
             clef.getPitchPosition());
+
+        return true;
+    }
+
+    //----------------//
+    // visit Dynamics //
+    //----------------//
+    public boolean visit (Dynamics dynamics)
+    {
+        paintSymbol(
+            dynamics.getShape(),
+            dynamics.getPoint(),
+            dynamics.getDisplayOrigin());
 
         return true;
     }
@@ -690,34 +704,48 @@ public class ScorePainter
     }
 
     //-------------//
+    // visit Pedal //
+    //-------------//
+    public boolean visit (Pedal pedal)
+    {
+        paintSymbol(
+            pedal.getShape(),
+            pedal.getPoint(),
+            pedal.getDisplayOrigin());
+
+        return true;
+    }
+
+    //-------------//
     // visit Wedge //
     //-------------//
     @Override
     public boolean visit (Wedge wedge)
     {
-        System          system = wedge.getSystem();
-        SystemRectangle box = system.toSystemRectangle(
-            wedge.getGlyph().getContourBox());
+        if (wedge.isStart()) {
+            System          system = wedge.getSystem();
+            SystemRectangle box = system.toSystemRectangle(
+                wedge.getGlyph().getContourBox());
 
-        SystemPoint     single;
-        SystemPoint     top;
-        SystemPoint     bot;
+            SystemPoint     single;
+            SystemPoint     top;
+            SystemPoint     bot;
 
-        if (wedge.getGlyph()
-                 .getShape() == Shape.CRESCENDO) {
-            single = new SystemPoint(box.x, box.y + (box.height / 2));
-            top = new SystemPoint(box.x + box.width, box.y);
-            bot = new SystemPoint(box.x + box.width, box.y + box.height);
-        } else {
-            single = new SystemPoint(
-                box.x + box.width,
-                box.y + (box.height / 2));
-            top = new SystemPoint(box.x, box.y);
-            bot = new SystemPoint(box.x, box.y + box.height);
+            if (wedge.getShape() == Shape.CRESCENDO) {
+                single = new SystemPoint(box.x, box.y + (box.height / 2));
+                top = new SystemPoint(box.x + box.width, box.y);
+                bot = new SystemPoint(box.x + box.width, box.y + box.height);
+            } else {
+                single = new SystemPoint(
+                    box.x + box.width,
+                    box.y + (box.height / 2));
+                top = new SystemPoint(box.x, box.y);
+                bot = new SystemPoint(box.x, box.y + box.height);
+            }
+
+            paintLine(system.getDisplayOrigin(), single, top);
+            paintLine(system.getDisplayOrigin(), single, bot);
         }
-
-        paintLine(system.getDisplayOrigin(), single, top);
-        paintLine(system.getDisplayOrigin(), single, bot);
 
         return true;
     }

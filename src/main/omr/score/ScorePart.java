@@ -180,9 +180,12 @@ public class ScorePart
         Integer[] durationArray = durations.toArray(
             new Integer[durations.size()]);
         durationDivisor = GCD.gcd(durationArray);
-        logger.info(
-            this + " durations=" + Arrays.deepToString(durationArray) +
-            " divisor=" + durationDivisor);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                this + " durations=" + Arrays.deepToString(durationArray) +
+                " divisor=" + durationDivisor);
+        }
     }
 
     //--------//

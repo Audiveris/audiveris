@@ -20,9 +20,11 @@ import omr.score.Barline;
 import omr.score.Beam;
 import omr.score.Chord;
 import omr.score.Clef;
+import omr.score.Dynamics;
 import omr.score.KeySignature;
 import omr.score.Measure;
 import omr.score.PartNode;
+import omr.score.Pedal;
 import omr.score.Score;
 import omr.score.ScoreFormat;
 import omr.score.ScorePart;
@@ -73,6 +75,9 @@ public class ScoreExporter
 
     /** "yes" token, to avoid case typos */
     private static final String YES = "yes";
+
+    /** "no" token, to avoid case typos */
+    private static final String NO = "no";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -283,6 +288,67 @@ public class ScoreExporter
         return true;
     }
 
+    //----------------//
+    // visit Dynamics //
+    //----------------//
+    @Override
+    public boolean visit (Dynamics dynamics)
+    {
+        Direction direction = new Direction();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(direction);
+
+        DirectionType directionType = new DirectionType();
+        direction.getDirectionType()
+                 .add(directionType);
+
+        proxymusic.Dynamics pmDynamics = new proxymusic.Dynamics();
+        directionType.getDynamics()
+                     .add(pmDynamics);
+
+        // Precise dynamic signature
+        pmDynamics.getPOrPpOrPpp()
+                  .add(getDynamicsObject(dynamics.getShape()));
+
+        // Staff ?
+        Staff staff = current.note.getStaff();
+
+        if (current.note.getPart()
+                        .getStaves()
+                        .size() > 1) {
+            proxymusic.Staff pmStaff = new proxymusic.Staff();
+            direction.setStaff(pmStaff);
+            pmStaff.setContent("" + (staff.getId()));
+        }
+
+        // Placement
+        if (dynamics.getPoint().y < current.note.getCenter().y) {
+            direction.setPlacement("above");
+        } else {
+            direction.setPlacement("below");
+        }
+
+        // default-y
+        PixelPoint pix = current.system.toPixelPoint(dynamics.getPoint());
+        PixelPoint staffPix = new PixelPoint(
+            pix.x,
+            staff.getInfo().getFirstLine().getLine().yAt(pix.x));
+        pmDynamics.setDefaultY(
+            "" +
+            unitsToTenths(
+                current.system.getScale().pixelsToUnits(staffPix.y - pix.y)));
+
+        // Relative-x (No offset for the time being) using note left side
+        PixelRectangle noteBox = current.note.getGlyph()
+                                             .getContourBox();
+        PixelPoint     pixelUl = new PixelPoint(noteBox.x, noteBox.y);
+        SystemPoint    noteUpperLeft = current.system.toSystemPoint(pixelUl);
+        pmDynamics.setRelativeX(
+            "" + unitsToTenths(dynamics.getPoint().x - noteUpperLeft.x));
+
+        return true;
+    }
+
     //--------------------//
     // visit KeySignature //
     //--------------------//
@@ -430,9 +496,14 @@ public class ScoreExporter
             }
         }
 
-        // Forward browsing down the measure (a bit simplistic TBD)
-        current.voice = 0;
-        measure.acceptChildren(this);
+        // Specific browsing down the measure
+        // Clefs, KeySignatures, TimeSignatures
+        measure.getClefList()
+               .acceptChildren(this);
+        measure.getKeySigList()
+               .acceptChildren(this);
+        measure.getTimeSigList()
+               .acceptChildren(this);
 
         // Now voice per voice
         int timeCounter = 0;
@@ -498,6 +569,7 @@ public class ScoreExporter
             current.note = note;
 
             for (PartNode node : chord.getEvents()) {
+                ///logger.info("Calling accept on " + node);
                 node.accept(this);
             }
         } else {
@@ -828,6 +900,73 @@ public class ScoreExporter
     }
 
     //-------------//
+    // visit Pedal //
+    //-------------//
+    @Override
+    public boolean visit (Pedal pedal)
+    {
+        Direction direction = new Direction();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(direction);
+
+        DirectionType directionType = new DirectionType();
+        direction.getDirectionType()
+                 .add(directionType);
+
+        proxymusic.Pedal pmPedal = new proxymusic.Pedal();
+        directionType.setPedal(pmPedal);
+
+        // No line (for the time being)
+        pmPedal.setLine(NO);
+
+        // Staff ?
+        Staff staff = current.note.getStaff();
+
+        if (current.note.getPart()
+                        .getStaves()
+                        .size() > 1) {
+            proxymusic.Staff pmStaff = new proxymusic.Staff();
+            direction.setStaff(pmStaff);
+            pmStaff.setContent("" + (staff.getId()));
+        }
+
+        // Placement
+        if (pedal.getPoint().y < current.note.getCenter().y) {
+            direction.setPlacement("above");
+        } else {
+            direction.setPlacement("below");
+        }
+
+        // default-y
+        PixelPoint pix = current.system.toPixelPoint(pedal.getPoint());
+        PixelPoint staffPix = new PixelPoint(
+            pix.x,
+            staff.getInfo().getFirstLine().getLine().yAt(pix.x));
+        pmPedal.setDefaultY(
+            "" +
+            unitsToTenths(
+                current.system.getScale().pixelsToUnits(staffPix.y - pix.y)));
+
+        // Start / Stop
+        if (pedal.isStart()) {
+            // type
+            pmPedal.setType("start");
+        } else {
+            pmPedal.setType("stop");
+        }
+
+        // Relative-x (No offset for the time being) using note left side
+        PixelRectangle noteBox = current.note.getGlyph()
+                                             .getContourBox();
+        PixelPoint     pixelUl = new PixelPoint(noteBox.x, noteBox.y);
+        SystemPoint    noteUpperLeft = current.system.toSystemPoint(pixelUl);
+        pmPedal.setRelativeX(
+            "" + unitsToTenths(pedal.getPoint().x - noteUpperLeft.x));
+
+        return true;
+    }
+
+    //-------------//
     // visit Wedge //
     //-------------//
     @Override
@@ -844,25 +983,15 @@ public class ScoreExporter
         proxymusic.Wedge pmWedge = new proxymusic.Wedge();
         directionType.setWedge(pmWedge);
 
+        // Spread
+        pmWedge.setSpread("" + unitsToTenths(wedge.getSpread()));
+
         // Start or stop ?
-        PixelRectangle noteBox = current.note.getGlyph()
-                                             .getContourBox();
-        PixelPoint     pixelUl = new PixelPoint(noteBox.x, noteBox.y);
-        SystemPoint    noteUpperLeft = current.system.toSystemPoint(pixelUl);
-        SystemPoint    point; // The point we are using
-
-        if (Math.abs(wedge.getStartingPoint().x - noteUpperLeft.x) <= Math.abs(
-            wedge.getEndingPoint().x - noteUpperLeft.x)) {
-            // It's a start
-            point = wedge.getStartingPoint();
-
-            // Spread and type
-            if (wedge.getGlyph()
-                     .getShape() == Shape.CRESCENDO) {
-                pmWedge.setSpread("0");
+        if (wedge.isStart()) {
+            // Type
+            if (wedge.getShape() == Shape.CRESCENDO) {
                 pmWedge.setType("crescendo");
             } else {
-                pmWedge.setSpread("" + unitsToTenths(wedge.getSpread()));
                 pmWedge.setType("diminuendo");
             }
 
@@ -878,14 +1007,14 @@ public class ScoreExporter
             }
 
             // Placement
-            if (point.y < current.note.getCenter().y) {
+            if (wedge.getPoint().y < current.note.getCenter().y) {
                 direction.setPlacement("above");
             } else {
                 direction.setPlacement("below");
             }
 
             // default-y
-            PixelPoint pix = current.system.toPixelPoint(point);
+            PixelPoint pix = current.system.toPixelPoint(wedge.getPoint());
             PixelPoint staffPix = new PixelPoint(
                 pix.x,
                 staff.getInfo().getFirstLine().getLine().yAt(pix.x));
@@ -893,27 +1022,58 @@ public class ScoreExporter
                 "" +
                 unitsToTenths(
                     current.system.getScale().pixelsToUnits(staffPix.y - pix.y)));
-        } else {
-            // It's a stop
-            point = wedge.getEndingPoint();
+        } else { // It's a stop
             pmWedge.setType("stop");
-
-            // Spread
-            if (wedge.getGlyph()
-                     .getShape() == Shape.DECRESCENDO) {
-                pmWedge.setSpread("0");
-            } else {
-                pmWedge.setSpread("" + unitsToTenths(wedge.getSpread()));
-            }
         }
 
         // Relative-x (No offset for the time being) using note left side
-        pmWedge.setRelativeX("" + unitsToTenths(point.x - noteUpperLeft.x));
+        PixelRectangle noteBox = current.note.getGlyph()
+                                             .getContourBox();
+        PixelPoint     pixelUl = new PixelPoint(noteBox.x, noteBox.y);
+        SystemPoint    noteUpperLeft = current.system.toSystemPoint(pixelUl);
+        pmWedge.setRelativeX(
+            "" + unitsToTenths(wedge.getPoint().x - noteUpperLeft.x));
 
         return true;
     }
 
     //- Utility Methods --------------------------------------------------------
+
+    //-------------------//
+    // getDynamicsObject //
+    //-------------------//
+    private Object getDynamicsObject (Shape shape)
+    {
+        switch (shape) {
+        case PIANISSISSIMO :
+            return new Ppp();
+
+        case PIANISSIMO :
+            return new Pp();
+
+        case PIANO :
+            return new P();
+
+        case MEZZO_PIANO :
+            return new Mp();
+
+        case MEZZO_FORTE :
+            return new Mf();
+
+        case FORTE :
+            return new F();
+
+        case FORTISSIMO :
+            return new Ff();
+
+        case FORTISSISSIMO :
+            return new Fff();
+        }
+
+        logger.severe("Unsupported dynamics shape:" + shape);
+
+        return null;
+    }
 
     //----------------//
     // getJaxbContext //
@@ -1001,6 +1161,25 @@ public class ScoreExporter
 
         return true; // Since no previous key found
     }
+
+    //    //------------------//
+    //    // getNoteDirection //
+    //    //------------------//
+    //    /**
+    //     * Report (after creating it if necessary) the note direction element
+    //     *
+    //     * @return the measure attributes element
+    //     */
+    //    private Direction getNoteDirection ()
+    //    {
+    //        if (current.direction == null) {
+    //            current.direction = new Direction();
+    //            current.pmMeasure.getNoteOrBackupOrForward()
+    //                             .add(current.direction);
+    //        }
+    //
+    //        return current.direction;
+    //    }
 
     //------------------//
     // accidentalNameOf //

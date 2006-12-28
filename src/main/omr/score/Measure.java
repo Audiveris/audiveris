@@ -261,6 +261,19 @@ public class Measure
         return null; // No clef previously defined
     }
 
+    //-------------//
+    // getClefList //
+    //-------------//
+    /**
+     * Report the node that collect the clefs
+     *
+     * @return the clef list node
+     */
+    public ClefList getClefList ()
+    {
+        return clefs;
+    }
+
     //----------//
     // getClefs //
     //----------//
@@ -584,6 +597,14 @@ public class Measure
         return null; // Not found !!!
     }
 
+    //---------------//
+    // getKeySigList //
+    //---------------//
+    public KeySigList getKeySigList ()
+    {
+        return keysigs;
+    }
+
     //------------------//
     // getKeySignatures //
     //------------------//
@@ -688,6 +709,14 @@ public class Measure
     public SortedSet<Slot> getSlots ()
     {
         return slots;
+    }
+
+    //----------------//
+    // getTimeSigList //
+    //----------------//
+    public TimeSigList getTimeSigList ()
+    {
+        return timesigs;
     }
 
     //------------------//
@@ -984,33 +1013,9 @@ public class Measure
     //~ Inner Classes ----------------------------------------------------------
 
     //----------//
-    // BeamList //
-    //----------//
-    private static class BeamList
-        extends MeasureNode
-    {
-        BeamList (Measure measure)
-        {
-            super(measure);
-        }
-    }
-
-    //-----------//
-    // ChordList //
-    //-----------//
-    private static class ChordList
-        extends MeasureNode
-    {
-        ChordList (Measure measure)
-        {
-            super(measure);
-        }
-    }
-
-    //----------//
     // ClefList //
     //----------//
-    private static class ClefList
+    public static class ClefList
         extends MeasureNode
     {
         ClefList (Measure measure)
@@ -1034,7 +1039,7 @@ public class Measure
     //------------//
     // KeySigList //
     //------------//
-    private static class KeySigList
+    public static class KeySigList
         extends MeasureNode
     {
         KeySigList (Measure measure)
@@ -1070,10 +1075,34 @@ public class Measure
     //-------------//
     // TimeSigList //
     //-------------//
-    private static class TimeSigList
+    public static class TimeSigList
         extends MeasureNode
     {
         TimeSigList (Measure measure)
+        {
+            super(measure);
+        }
+    }
+
+    //----------//
+    // BeamList //
+    //----------//
+    private static class BeamList
+        extends MeasureNode
+    {
+        BeamList (Measure measure)
+        {
+            super(measure);
+        }
+    }
+
+    //-----------//
+    // ChordList //
+    //-----------//
+    private static class ChordList
+        extends MeasureNode
+    {
+        ChordList (Measure measure)
         {
             super(measure);
         }

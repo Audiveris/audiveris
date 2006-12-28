@@ -14,11 +14,13 @@ import omr.score.Barline;
 import omr.score.Beam;
 import omr.score.Chord;
 import omr.score.Clef;
+import omr.score.Dynamics;
 import omr.score.KeySignature;
 import omr.score.Measure;
 import omr.score.MeasureNode;
 import omr.score.Note;
 import omr.score.PartNode;
+import omr.score.Pedal;
 import omr.score.Score;
 import omr.score.ScoreNode;
 import omr.score.Slur;
@@ -47,6 +49,8 @@ public interface ScoreVisitor
 
     boolean visit (Clef node);
 
+    boolean visit (Dynamics node);
+
     boolean visit (KeySignature node);
 
     boolean visit (Measure node);
@@ -56,6 +60,8 @@ public interface ScoreVisitor
     boolean visit (Note node);
 
     boolean visit (PartNode node);
+
+    boolean visit (Pedal node);
 
     boolean visit (Score node);
 
