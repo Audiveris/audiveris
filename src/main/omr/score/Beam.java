@@ -458,14 +458,7 @@ public class Beam
         sb.append(" right=")
           .append(getRight());
 
-        sb.append(" glyphs[");
-
-        for (Glyph glyph : glyphs) {
-            sb.append("#")
-              .append(glyph.getId());
-        }
-
-        sb.append("]");
+        sb.append(Glyph.toString(glyphs));
         sb.append("}");
 
         return sb.toString();
@@ -488,15 +481,7 @@ public class Beam
               .append(getLevel());
         }
 
-        sb.append(" glyphs[");
-
-        for (Glyph glyph : glyphs) {
-            sb.append("#")
-              .append(glyph.getId());
-        }
-
-        sb.append("]");
-
+        sb.append(Glyph.toString(glyphs));
         sb.append("}");
 
         return sb.toString();
