@@ -492,7 +492,7 @@ public class Note
               .append("rest");
         }
 
-        if (alter != 0) {
+        if (alter != null) {
             sb.append(" alter=")
               .append(alter);
         }
