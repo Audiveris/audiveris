@@ -161,6 +161,19 @@ public class Glyph
 
     //~ Methods ----------------------------------------------------------------
 
+    public static String toString(Collection<? extends Glyph> glyphs)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(" glyphs[");
+        for (Glyph glyph : glyphs) {
+            sb.append("#")
+              .append(glyph.getId());
+        }
+        sb.append("]");
+
+        return sb.toString();
+    
+    }
     //---------------//
     // getAreaCenter //
     //---------------//
