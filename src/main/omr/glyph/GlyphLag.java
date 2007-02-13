@@ -330,7 +330,7 @@ public class GlyphLag
 
         // Additional tasks
         switch (selection.getTag()) {
-        case PIXEL :
+        case SHEET_RECTANGLE :
 
             if ((hint == LOCATION_ADD) || (hint == LOCATION_INIT)) {
                 Rectangle rect = (Rectangle) selection.getEntity();
