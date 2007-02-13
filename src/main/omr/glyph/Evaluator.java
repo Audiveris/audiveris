@@ -141,8 +141,7 @@ public abstract class Evaluator
      */
     public static boolean isBigEnough (Glyph glyph)
     {
-        return glyph.getMoments()
-                    .getWeight() >= constants.minWeight.getValue();
+        return glyph.getNormalizedWeight() >= constants.minWeight.getValue();
     }
 
     //----------//
@@ -283,18 +282,17 @@ public abstract class Evaluator
     //------//
     /**
      * Run the evaluator with the specified glyph, and infer a shape.
-     *
-     *
+     * 
      * @param glyph the glyph to be examined
-     * @param maxGrade the maximum doubt to be accepted
+     * @param maxDoubt the maximum doubt to be accepted
      * @return the best acceptable evaluation, or null
      */
     public Evaluation vote (Glyph  glyph,
-                            double maxGrade)
+                            double maxDoubt)
     {
         Evaluation[] evaluations = getEvaluations(glyph);
 
-        if ((evaluations.length > 0) && (evaluations[0].doubt <= maxGrade)) {
+        if ((evaluations.length > 0) && (evaluations[0].doubt <= maxDoubt)) {
             return evaluations[0];
         } else {
             return null;
@@ -369,6 +367,12 @@ public abstract class Evaluator
             // A note / rest cannot be too far from a staff
             if (Math.abs(glyph.getPitchPosition()) >= 15) {
                 return null;
+            }
+
+            if (shape == Shape.NOTEHEAD_BLACK) {
+                if (glyph.getNormalizedWeight() > constants.maxHeadBlackWeight.getValue()) {
+                    return null;
+                }
             }
         }
 
@@ -445,5 +449,8 @@ public abstract class Evaluator
         Constant.Double minWeight = new Constant.Double(
             0.19,
             "Minimum normalized weight to be considered not a noise");
+        Constant.Double maxHeadBlackWeight = new Constant.Double(
+            1.2,
+            "Maximum normalized weight for a NOTEHEAD_BLACK");
     }
 }
