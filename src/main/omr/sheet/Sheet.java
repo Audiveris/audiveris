@@ -296,14 +296,14 @@ public class Sheet
             // We need the glyphs that result from extraction
             if (firstSymbolId == -1) {
                 firstSymbolId = getGlyphBuilder()
-                                    .buildInfo();
+                                    .retrieveGlyphs();
             }
 
             result = Boolean.valueOf(true);
 
             // Perform the initial recognition of all glyphs built
             getGlyphInspector()
-                .processGlyphs(getGlyphInspector().getSymbolMaxGrade());
+                .evaluateGlyphs(getGlyphInspector().getSymbolMaxDoubt());
 
             // Determine score parts based on braces found
             //            getGlyphInspector()
@@ -329,9 +329,9 @@ public class Sheet
             SYMBOLS.getResult();
 
             GlyphInspector inspector = getGlyphInspector();
-            inspector.processCompounds(inspector.getSymbolMaxGrade());
+            inspector.retrieveCompounds(inspector.getSymbolMaxDoubt());
             result = Boolean.valueOf(true);
-            inspector.processGlyphs(inspector.getSymbolMaxGrade());
+            inspector.evaluateGlyphs(inspector.getSymbolMaxDoubt());
         }
 
         public void displayUI ()
@@ -354,7 +354,7 @@ public class Sheet
             SYMBOLS_COMPOUNDS.getResult();
 
             getGlyphInspector()
-                .processVerticals();
+                .retrieveVerticals();
             result = Boolean.valueOf(true);
         }
 
@@ -377,10 +377,10 @@ public class Sheet
             VERTICALS.getResult();
 
             getGlyphInspector()
-                .processLeaves();
+                .retrieveLeaves();
             result = Boolean.valueOf(true);
             getGlyphInspector()
-                .processGlyphs(GlyphInspector.getLeafMaxGrade());
+                .evaluateGlyphs(GlyphInspector.getLeafMaxDoubt());
         }
 
         public void displayUI ()
@@ -402,10 +402,10 @@ public class Sheet
             LEAVES.getResult();
 
             getGlyphInspector()
-                .processCompounds(GlyphInspector.getLeafMaxGrade());
+                .retrieveCompounds(GlyphInspector.getLeafMaxDoubt());
             result = Boolean.valueOf(true);
             getGlyphInspector()
-                .processGlyphs(GlyphInspector.getLeafMaxGrade());
+                .evaluateGlyphs(GlyphInspector.getLeafMaxDoubt());
         }
 
         public void displayUI ()
@@ -419,17 +419,19 @@ public class Sheet
      * Step to clean up undue constructions, such as wrong stems..
      */
     public final InstanceStep<Boolean> CLEANUP = new InstanceStep<Boolean>(
-        "Cleanup undue stems") {
+        "Cleanup stems and slurs") {
         public void doit ()
             throws ProcessingException
         {
             LEAVES_COMPOUNDS.getResult();
 
             getGlyphInspector()
-                .processUndueStems();
+                .verifyStems();
+            getGlyphInspector()
+                .verifySlurs();
             result = Boolean.valueOf(true);
             getGlyphInspector()
-                .processGlyphs(GlyphInspector.getCleanupMaxGrade());
+                .evaluateGlyphs(GlyphInspector.getCleanupMaxDoubt());
         }
 
         public void displayUI ()
@@ -719,14 +721,14 @@ public class Sheet
         getSelectionManager()
             .addObserver(
             hLag,
-            PIXEL,
+            SHEET_RECTANGLE,
             HORIZONTAL_SECTION,
             HORIZONTAL_SECTION_ID,
             HORIZONTAL_GLYPH,
             HORIZONTAL_GLYPH_ID);
 
         // Output
-        hLag.setLocationSelection(getSelection(PIXEL));
+        hLag.setLocationSelection(getSelection(SHEET_RECTANGLE));
         hLag.setRunSelection(getSelection(HORIZONTAL_RUN));
         hLag.setSectionSelection(getSelection(HORIZONTAL_SECTION));
         hLag.setGlyphSelection(getSelection(HORIZONTAL_GLYPH));
@@ -1282,14 +1284,14 @@ public class Sheet
         getSelectionManager()
             .addObserver(
             vLag,
-            PIXEL,
+            SHEET_RECTANGLE,
             VERTICAL_SECTION,
             VERTICAL_SECTION_ID,
             VERTICAL_GLYPH,
             VERTICAL_GLYPH_ID);
 
         // Output
-        vLag.setLocationSelection(getSelection(PIXEL));
+        vLag.setLocationSelection(getSelection(SHEET_RECTANGLE));
         vLag.setRunSelection(getSelection(VERTICAL_RUN));
         vLag.setSectionSelection(getSelection(VERTICAL_SECTION));
         vLag.setGlyphSelection(getSelection(VERTICAL_GLYPH));
@@ -1642,8 +1644,8 @@ public class Sheet
 
                 // Attach proper Selection objects
                 // (reading from pixel location & writing to grey level)
-                result.setLevelSelection(getSelection(SelectionTag.LEVEL));
-                getSelection(SelectionTag.PIXEL)
+                result.setLevelSelection(getSelection(SelectionTag.PIXEL_LEVEL));
+                getSelection(SelectionTag.SHEET_RECTANGLE)
                     .addObserver(result);
 
                 // Display sheet picture if not batch mode
