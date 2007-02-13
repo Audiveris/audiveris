@@ -85,8 +85,8 @@ public class ScoreSheetBridge
         sheet = score.getSheet();
 
         // Keep reference of the bridged selections
-        pixelSelection = sheet.getSelection(SelectionTag.PIXEL);
-        scoreSelection = sheet.getSelection(SelectionTag.SCORE);
+        pixelSelection = sheet.getSelection(SelectionTag.SHEET_RECTANGLE);
+        scoreSelection = sheet.getSelection(SelectionTag.SCORE_RECTANGLE);
 
         // Register to  Selections
         pixelSelection.addObserver(this);
@@ -139,7 +139,7 @@ public class ScoreSheetBridge
             Rectangle rect = (Rectangle) entity;
 
             switch (selection.getTag()) {
-            case PIXEL :
+            case SHEET_RECTANGLE :
 
                 // Forward to Score side
                 if (rect != null) {
@@ -159,7 +159,7 @@ public class ScoreSheetBridge
 
                 break;
 
-            case SCORE :
+            case SCORE_RECTANGLE :
 
                 // Forward to Sheet side
                 if (rect != null) {
