@@ -16,7 +16,8 @@ import omr.Step;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.score.PagePoint;
+import omr.glyph.ui.GlyphRepository;
+
 import omr.score.Score;
 
 import omr.selection.Selection;
@@ -25,6 +26,7 @@ import omr.ui.Jui;
 import omr.ui.SheetAssembly;
 import omr.ui.icon.IconManager;
 import omr.ui.util.FileFilter;
+import omr.ui.util.SwingWorker;
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
@@ -36,7 +38,6 @@ import java.util.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.tree.TreeModel;
 
 /**
  * Class <code>SheetController</code> encapsulates the display of (possibly
@@ -79,8 +80,8 @@ public class SheetController
     /** Collection of sheet-dependent actions */
     private final Collection<AbstractAction> sheetDependentActions = new ArrayList<AbstractAction>();
 
-    /** Action for dumping all sheet instances */
-    private final DumpAllAction dumpAllAction;
+    //    /** Action for dumping all sheet instances */
+    //    private final DumpAllAction dumpAllAction;
 
     /** Menu dedicated to sheet-related actions */
     private final JMenu menu = new JMenu("Sheet");
@@ -128,16 +129,17 @@ public class SheetController
         historyMenu.setIcon(
             IconManager.getInstance().loadImageIcon("general/History"));
         menu.add(historyMenu);
-        menu.addSeparator();
 
         // Various actions
         new SelectSheetAction();
-        new CloseAction();
-        new ZoomWidthAction();
-        new ZoomHeightAction();
 
         menu.addSeparator();
-        dumpAllAction = new DumpAllAction();
+        new ZoomWidthAction();
+        new ZoomHeightAction();
+        new RecordAction();
+
+        //        menu.addSeparator();
+        //        dumpAllAction = new DumpAllAction();
 
         // Tool actions
         menu.addSeparator();
@@ -146,8 +148,11 @@ public class SheetController
         new SkewPlotAction();
         new LinePlotAction();
 
+        menu.addSeparator();
+        new CloseAction();
+
         // Initially disabled actions
-        dumpAllAction.setEnabled(false);
+        //        dumpAllAction.setEnabled(false);
         UIUtilities.enableActions(sheetDependentActions, false);
 
         // Listener on tab operations
@@ -310,13 +315,13 @@ public class SheetController
 
         if (source instanceof SheetManager) {
             // Number of sheet instances has changed
-            dumpAllAction.setEnabled(
-                SheetManager.getInstance().getSheets().size() > 0);
+            //            dumpAllAction.setEnabled(
+            //                SheetManager.getInstance().getSheets().size() > 0);
         } else if (source == component) {
             // User has selected a new tab
             final int index = component.getSelectedIndex();
-            ///logger.info("previous=" + previousIndex + " index=" + index);
 
+            ///logger.info("previous=" + previousIndex + " index=" + index);
             if (index != -1) {
                 if (previousIndex != -1) {
                     tabDeselected(previousIndex);
@@ -604,31 +609,31 @@ public class SheetController
         }
     }
 
-    //---------------//
-    // DumpAllAction //
-    //---------------//
-    private class DumpAllAction
-        extends AbstractAction
-    {
-        public DumpAllAction ()
-        {
-            super(
-                "Dump all sheets",
-                IconManager.getInstance().loadImageIcon("general/Find"));
-
-            final String tiptext = "Dump all sheet instances";
-
-            menu.add(this)
-                .setToolTipText(tiptext);
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            SheetManager.getInstance()
-                        .dumpAllSheets();
-        }
-    }
+    //    //---------------//
+    //    // DumpAllAction //
+    //    //---------------//
+    //    private class DumpAllAction
+    //        extends AbstractAction
+    //    {
+    //        public DumpAllAction ()
+    //        {
+    //            super(
+    //                "Dump all sheets",
+    //                IconManager.getInstance().loadImageIcon("general/Find"));
+    //
+    //            final String tiptext = "Dump all sheet instances";
+    //
+    //            menu.add(this)
+    //                .setToolTipText(tiptext);
+    //        }
+    //
+    //        @Implement(ActionListener.class)
+    //        public void actionPerformed (ActionEvent e)
+    //        {
+    //            SheetManager.getInstance()
+    //                        .dumpAllSheets();
+    //        }
+    //    }
 
     //----------------//
     // LinePlotAction //
@@ -664,6 +669,49 @@ public class SheetController
                         "Data from staff line builder" + " is not available");
                 }
             }
+        }
+    }
+
+    //--------------//
+    // RecordAction //
+    //--------------//
+    private class RecordAction
+        extends SheetAction
+    {
+        public RecordAction ()
+        {
+            super(
+                false,
+                "Record Glyphs",
+                "Record sheet glyph descriptions for training",
+                IconManager.getInstance().loadImageIcon("general/Bookmarks"),
+                false);
+        }
+
+        public void actionPerformed (ActionEvent e)
+        {
+            int answer = JOptionPane.showConfirmDialog(
+                component,
+                "Are you sure of all the symbols of this sheet ?");
+
+            if (answer != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            final SwingWorker worker = new SwingWorker() {
+                public Object construct ()
+                {
+                    Sheet sheet = getCurrentSheet();
+                    GlyphRepository.getInstance()
+                                   .recordSheetGlyphs(
+                        sheet, /* emptyStructures => */
+                        sheet.isOnSymbols());
+
+                    return null;
+                }
+            };
+
+            worker.start();
         }
     }
 

@@ -84,8 +84,8 @@ public class ScoreController
        a current score. */
     private final List<Object> scoreDependentActions = new ArrayList<Object>();
 
-    /** Action for dumping all instances */
-    private final DumpAllAction dumpAllAction;
+    //    /** Action for dumping all instances */
+    //    private final DumpAllAction dumpAllAction;
 
     /** Should we synchronize the sheet view */
     private boolean synchroWanted = true;
@@ -105,28 +105,28 @@ public class ScoreController
         this.toolBar = toolBar;
 
         // Binary actions
-        new History(BINARY);
-        new OpenAction(BINARY);
-        new StoreAction(BINARY);
-        scoreMenu.addSeparator();
-
-        // XML Actions
-        new History(XML);
-        new OpenAction(XML);
-        new StoreAction(XML);
-        scoreMenu.addSeparator();
+        //        new History(BINARY);
+        //        new OpenAction(BINARY);
+        //        new StoreAction(BINARY);
+        //        scoreMenu.addSeparator();
 
         // Display Actions
         new BrowseAction();
         new DumpAction();
-        dumpAllAction = new DumpAllAction();
+        //        dumpAllAction = new DumpAllAction();
         scoreMenu.addSeparator();
 
+        // XML Actions
+        //        new History(XML);
+        //        new OpenAction(XML);
+        new StoreAction(XML);
+
         // Close
-        new CloseAction();
+//        scoreMenu.addSeparator();
+//        new CloseAction();
 
         // Initially disabled actions
-        dumpAllAction.setEnabled(false);
+        //        dumpAllAction.setEnabled(false);
         enableActions(scoreDependentActions, false);
 
         // Register interest in ScoreManager
@@ -227,12 +227,12 @@ public class ScoreController
     @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
-        // Event from ScoreManager ?
-        if (e.getSource() instanceof ScoreManager) {
-            // Action that depends on number of handled scores
-            dumpAllAction.setEnabled(
-                ScoreManager.getInstance().getScores().size() > 0);
-        }
+        //        // Event from ScoreManager ?
+        //        if (e.getSource() instanceof ScoreManager) {
+        //            // Action that depends on number of handled scores
+        //            dumpAllAction.setEnabled(
+        //                ScoreManager.getInstance().getScores().size() > 0);
+        //        }
     }
 
     //--------//
@@ -387,7 +387,7 @@ public class ScoreController
                 false,
                 "Browse Score",
                 "Browse through the score document",
-                IconManager.getInstance().loadImageIcon("general/PrintPreview"));
+                IconManager.getInstance().loadImageIcon("general/Search"));
         }
 
         public void actionPerformed (ActionEvent e)
@@ -416,7 +416,11 @@ public class ScoreController
     {
         public DumpAction ()
         {
-            super(false, "Dump Score", "Dump the current score", null);
+            super(
+                false,
+                "Dump Score",
+                "Dump the current score",
+                IconManager.getInstance().loadImageIcon("general/PrintPreview"));
         }
 
         public void actionPerformed (ActionEvent e)

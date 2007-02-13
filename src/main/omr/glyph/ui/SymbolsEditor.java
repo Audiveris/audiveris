@@ -152,7 +152,7 @@ public class SymbolsEditor
                 sheet.getSelection(VERTICAL_SECTION),
                 sheet.getSelection(VERTICAL_SECTION_ID)),
             glyphBoard,
-            new ActionsBoard(sheet, this),
+            //new ActionsBoard(sheet, this),
             focus,
             new EvaluationBoard(
                 "Evaluation-ActiveBoard",

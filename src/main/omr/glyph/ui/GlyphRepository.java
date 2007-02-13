@@ -146,6 +146,112 @@ public class GlyphRepository
         return isIcon(new File(gName));
     }
 
+    //-------------------//
+    // recordSheetGlyphs //
+    //-------------------//
+    /**
+     * Store all known glyphs of the provided sheet as separate XML files, so
+     * that they can be later re-loaded to train an evaluator. We store glyph
+     * for which Shape is not null, and different from NOISE and STEM (CLUTTER
+     * is thus stored as well).
+     *
+     * <p>STRUCTURE shapes are stored in a parallel sub-directory so that they
+     * don't get erased by shpes of their leaves.
+     *
+     * @param sheet the sheet whose glyphs are to be stored
+     * @param emptyStructures flag to specify if the Structure directory must be
+     * emptied beforehand
+     */
+    public void recordSheetGlyphs (Sheet   sheet,
+                                   boolean emptyStructures)
+    {
+        try {
+            // Prepare target directory
+            File sheetDir = new File(getSheetsFolder(), sheet.getRadix());
+
+            if (!sheetDir.exists()) {
+                // Make sure related directory chain exists
+                logger.info("Creating directory " + sheetDir);
+                sheetDir.mkdirs();
+            } else {
+                deleteXmlFiles(sheetDir);
+            }
+
+            // Prepare structures directory
+            File structuresDir = new File(
+                getSheetsFolder(),
+                sheet.getRadix() + STRUCTURES_NAME);
+
+            if (!structuresDir.exists()) {
+                // Make sure related structure subdirectory exists
+                logger.info("Creating subdirectory " + structuresDir);
+                structuresDir.mkdirs();
+            } else if (emptyStructures) {
+                deleteXmlFiles(structuresDir);
+            }
+
+            // Now record each relevant glyph
+            int glyphNb = 0;
+            int structuresNb = 0;
+
+            ///final long startTime = System.currentTimeMillis();
+            for (SystemInfo system : sheet.getSystems()) {
+                for (Glyph glyph : system.getGlyphs()) {
+                    if (glyph.getShape() != null) {
+                        Shape shape = glyph.getShape()
+                                           .getTrainingShape();
+
+                        if ((shape != Shape.NOISE) &&
+                            (shape != Shape.COMBINING_STEM)) {
+                            if (logger.isFineEnabled()) {
+                                logger.fine("Storing " + glyph);
+                            }
+
+                            glyph.setInterline(sheet.getScale().interline());
+
+                            // Build the proper glyph file
+                            StringBuffer sb = new StringBuffer();
+                            sb.append(shape);
+                            sb.append(".");
+                            sb.append(String.format("%04d", glyph.getId()));
+                            sb.append(FILE_EXTENSION);
+
+                            File glyphFile;
+
+                            if (shape != Shape.STRUCTURE) {
+                                glyphFile = new File(sheetDir, sb.toString());
+                            } else {
+                                structuresNb++;
+                                glyphFile = new File(
+                                    structuresDir,
+                                    sb.toString());
+                            }
+
+                            OutputStream os = new FileOutputStream(glyphFile);
+
+                            // Store the glyph
+                            jaxbMarshal(glyph, os);
+
+                            glyphNb++;
+                        }
+                    }
+                }
+            }
+
+            // Refresh glyph populations
+            refreshBases();
+
+            logger.info(
+                glyphNb + " glyphs stored from " + sheet.getRadix() +
+                ((structuresNb == 0) ? ""
+                 : (" (including " + structuresNb + " structures)")));
+
+            /// + " in " + (System.currentTimeMillis() - startTime) + " ms");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     //--------------//
     // refreshBases //
     //--------------//
@@ -376,112 +482,6 @@ public class GlyphRepository
             return nameWithExt.substring(0, firstDot);
         } else {
             return nameWithExt;
-        }
-    }
-
-    //-------------------//
-    // recordSheetGlyphs //
-    //-------------------//
-    /**
-     * Store all known glyphs of the provided sheet as separate XML files, so
-     * that they can be later re-loaded to train an evaluator. We store glyph
-     * for which Shape is not null, and different from NOISE and STEM (CLUTTER
-     * is thus stored as well).
-     *
-     * <p>STRUCTURE shapes are stored in a parallel sub-directory so that they
-     * don't get erased by shpes of their leaves.
-     *
-     * @param sheet the sheet whose glyphs are to be stored
-     * @param emptyStructures flag to specify if the Structure directory must be
-     * emptied beforehand
-     */
-    void recordSheetGlyphs (Sheet   sheet,
-                            boolean emptyStructures)
-    {
-        try {
-            // Prepare target directory
-            File sheetDir = new File(getSheetsFolder(), sheet.getRadix());
-
-            if (!sheetDir.exists()) {
-                // Make sure related directory chain exists
-                logger.info("Creating directory " + sheetDir);
-                sheetDir.mkdirs();
-            } else {
-                deleteXmlFiles(sheetDir);
-            }
-
-            // Prepare structures directory
-            File structuresDir = new File(
-                getSheetsFolder(),
-                sheet.getRadix() + STRUCTURES_NAME);
-
-            if (!structuresDir.exists()) {
-                // Make sure related structure subdirectory exists
-                logger.info("Creating subdirectory " + structuresDir);
-                structuresDir.mkdirs();
-            } else if (emptyStructures) {
-                deleteXmlFiles(structuresDir);
-            }
-
-            // Now record each relevant glyph
-            int glyphNb = 0;
-            int structuresNb = 0;
-
-            ///final long startTime = System.currentTimeMillis();
-            for (SystemInfo system : sheet.getSystems()) {
-                for (Glyph glyph : system.getGlyphs()) {
-                    if (glyph.getShape() != null) {
-                        Shape shape = glyph.getShape()
-                                           .getTrainingShape();
-
-                        if ((shape != Shape.NOISE) &&
-                            (shape != Shape.COMBINING_STEM)) {
-                            if (logger.isFineEnabled()) {
-                                logger.fine("Storing " + glyph);
-                            }
-
-                            glyph.setInterline(sheet.getScale().interline());
-
-                            // Build the proper glyph file
-                            StringBuffer sb = new StringBuffer();
-                            sb.append(shape);
-                            sb.append(".");
-                            sb.append(String.format("%04d", glyph.getId()));
-                            sb.append(FILE_EXTENSION);
-
-                            File glyphFile;
-
-                            if (shape != Shape.STRUCTURE) {
-                                glyphFile = new File(sheetDir, sb.toString());
-                            } else {
-                                structuresNb++;
-                                glyphFile = new File(
-                                    structuresDir,
-                                    sb.toString());
-                            }
-
-                            OutputStream os = new FileOutputStream(glyphFile);
-
-                            // Store the glyph
-                            jaxbMarshal(glyph, os);
-
-                            glyphNb++;
-                        }
-                    }
-                }
-            }
-
-            // Refresh glyph populations
-            refreshBases();
-
-            logger.info(
-                glyphNb + " glyphs stored from " + sheet.getRadix() +
-                ((structuresNb == 0) ? ""
-                 : (" (including " + structuresNb + " structures)")));
-
-            /// + " in " + (System.currentTimeMillis() - startTime) + " ms");
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
     }
 

@@ -147,8 +147,14 @@ public class Jui
 
         // Test actions
         toolBar.addSeparator();
-        new TestAction();
-        new FineAction();
+
+        if (constants.showTestAction.getValue()) {
+            new TestAction();
+        }
+
+        if (constants.showFineAction.getValue()) {
+            new FineAction();
+        }
 
         // Frame title
         updateTitle();
@@ -765,7 +771,7 @@ public class Jui
         {
             super(
                 "Training Material",
-                IconManager.getInstance().loadImageIcon("general/Properties"));
+                IconManager.getInstance().loadImageIcon("media/Movie"));
             menu.add(this)
                 .setToolTipText("Verify training material");
         }
@@ -804,11 +810,15 @@ public class Jui
               .append(Main.getToolName())
               .append("</B> ")
               .append("<I>version ")
-              .append(Main.getToolVersion())
-              .append("<BR>")
-              .append(" build ")
-              .append(Main.getToolBuild())
-              .append("</I>")
+              .append(Main.getToolVersion());
+
+            if (Main.getToolBuild() != null) {
+                sb.append("<BR>")
+                  .append(" build ")
+                  .append(Main.getToolBuild());
+            }
+
+            sb.append("</I>")
               .append("<BR>")
               .append("Refer to <B>https://audiveris.dev.java.net</B>")
               .append("</HTML>");
@@ -850,6 +860,12 @@ public class Jui
         Constant.Integer paramWidth = new Constant.Integer(
             900,
             "Width in pixels of the param frame");
+        Constant.Boolean showTestAction = new Constant.Boolean(
+            false,
+            "DEBUG- Should we show the Test button ?");
+        Constant.Boolean showFineAction = new Constant.Boolean(
+            false,
+            "DEBUG- Should we show the Fine button ?");
     }
 
     //-------------//
@@ -923,7 +939,7 @@ public class Jui
         {
             super(
                 "Trainer",
-                IconManager.getInstance().loadImageIcon("media/Movie"));
+                IconManager.getInstance().loadImageIcon("media/Play"));
 
             final String tiptext = "Launch trainer interface";
             menu.add(this)
