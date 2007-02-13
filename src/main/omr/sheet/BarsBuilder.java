@@ -236,9 +236,16 @@ public class BarsBuilder
         }
 
         // Report number of measures retrieved
-        logger.info(
-            score.getLastSystem().getLastPart().getLastMeasure().getId() +
-            " measure(s) found");
+        int nb = score.getLastSystem()
+                      .getLastPart()
+                      .getLastMeasure()
+                      .getId();
+
+        if (nb > 0) {
+            logger.info(nb + " measure" + ((nb > 1) ? "s" : "") + " found");
+        } else {
+            logger.warning("No measure found");
+        }
 
         // Split everything, including horizontals, per system
         SystemSplit.computeSystemLimits(sheet);
@@ -925,7 +932,8 @@ public class BarsBuilder
             setName("BarsBuilder-View");
 
             // Pixel
-            setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
+            setLocationSelection(
+                sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
 
             // Glyph set
             Selection glyphSetSelection = sheet.getSelection(

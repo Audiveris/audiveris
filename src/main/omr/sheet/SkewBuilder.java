@@ -471,14 +471,14 @@ public class SkewBuilder
             // display is activated, since there is no other consumer
 
             // Location input / output
-            setLocationSelection(sheet.getSelection(PIXEL));
+            setLocationSelection(sheet.getSelection(SHEET_RECTANGLE));
 
             // Run input & Section input/output
-            sLag.setLocationSelection(sheet.getSelection(PIXEL));
+            sLag.setLocationSelection(sheet.getSelection(SHEET_RECTANGLE));
             sLag.setRunSelection(sheet.getSelection(SKEW_RUN));
             sLag.setSectionSelection(sheet.getSelection(SKEW_SECTION));
 
-            sheet.getSelection(PIXEL)
+            sheet.getSelection(SHEET_RECTANGLE)
                  .addObserver(sLag);
             sheet.getSelection(SKEW_SECTION)
                  .addObserver(sLag);

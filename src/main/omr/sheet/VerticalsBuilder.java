@@ -139,18 +139,22 @@ public class VerticalsBuilder
         SystemSplit.splitVerticalSticks(sheet, verticalsArea.getSticks());
 
         // Now process each system area on turn
-        int totalStemNb = 0;
+        int nb = 0;
 
         // Iterate on systems
         for (SystemInfo system : sheet.getSystems()) {
-            totalStemNb += retrieveVerticals(system);
+            nb += retrieveVerticals(system);
         }
 
         if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
             displayFrame();
         }
 
-        logger.info(totalStemNb + " stem(s) found");
+        if (nb > 0) {
+            logger.info(nb + " stem" + ((nb > 1) ? "s" : "") + " found");
+        } else {
+            logger.info("No stem found");
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -546,7 +550,7 @@ public class VerticalsBuilder
 
                     Stick      stick = (Stick) entity;
                     Rectangle  rect = (Rectangle) sheet.getSelection(
-                        SelectionTag.PIXEL)
+                        SelectionTag.SHEET_RECTANGLE)
                                                        .getEntity();
                     Point      pt = rect.getLocation();
                     SystemInfo system = sheet.getSystemAtY(pt.y);
@@ -572,7 +576,8 @@ public class VerticalsBuilder
             setName("VerticalsBuilder-MyView");
 
             // Pixel
-            setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
+            setLocationSelection(
+                sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
 
             // Glyph
             Selection glyphSelection = sheet.getSelection(
