@@ -1,0 +1,43 @@
+
+#saveTest {
+	display: none;
+}
+
+.zoomer {
+	display: none;
+}
+
+#messageArea {
+	display: none;
+}
+
+#copyright {
+	display: none;
+}
+
+.popup {
+	position: absolute;
+}
+
+#storeArea {
+	display: none;
+	margin: 4em 10em 3em;
+}
+
+#storeArea div {
+ padding: 0.5em;
+ margin: 1em 0em 0em 0em;
+ border-color: #f0f0f0 #606060 #404040 #d0d0d0; 
+ border-style: solid; 
+ border-width: 2px;
+ overflow: auto;
+}
+
+#javascriptWarning {
+	width: 100%;
+	text-align: center;
+	font-weight: bold;
+	background-color: #dd1100;
+	color: #fff;
+	padding:1em 0em; 
+}
