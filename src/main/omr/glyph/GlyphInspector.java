@@ -15,13 +15,14 @@ import omr.ProcessingException;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.math.Circle;
+
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.SystemSplit;
-import omr.sheet.VerticalArea;
 import omr.sheet.VerticalsBuilder;
 
+import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Predicate;
 
@@ -30,9 +31,9 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Class <code>GlyphInspector</code> is dedicated to processing of retrieved
- * glyphs, their recognition is based on features as used by a neural network
- * evaluator.
+ * Class <code>GlyphInspector</code> is dedicated to the inspection of retrieved
+ * glyphs, their recognition being usually based on features used by a neural
+ * network evaluator.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -82,7 +83,7 @@ public class GlyphInspector
      * Create an GlyphInspector instance.
      *
      * @param sheet the sheet to inspect
-     * @param builder the glyph builder
+     * @param builder the related glyph builder
      */
     public GlyphInspector (Sheet         sheet,
                            GlyphsBuilder builder)
@@ -96,7 +97,7 @@ public class GlyphInspector
     //~ Methods ----------------------------------------------------------------
 
     //--------------------//
-    // getCleanupMaxGrade //
+    // getCleanupMaxDoubt //
     //--------------------//
     /**
      * Report the maximum doubt for a cleanup
@@ -104,13 +105,13 @@ public class GlyphInspector
      *
      * @return maximum acceptable doubt value
      */
-    public static double getCleanupMaxGrade ()
+    public static double getCleanupMaxDoubt ()
     {
-        return constants.cleanupMaxGrade.getValue();
+        return constants.cleanupMaxDoubt.getValue();
     }
 
     //-----------------//
-    // getLeafMaxGrade //
+    // getLeafMaxDoubt //
     //-----------------//
     /**
      * Report the maximum doubt for a leaf
@@ -118,120 +119,42 @@ public class GlyphInspector
      *
      * @return maximum acceptable doubt value
      */
-    public static double getLeafMaxGrade ()
+    public static double getLeafMaxDoubt ()
     {
-        return constants.leafMaxGrade.getValue();
+        return constants.leafMaxDoubt.getValue();
+    }
+
+    //-------------------------//
+    // getMinCompoundPartDoubt //
+    //-------------------------//
+    public static double getMinCompoundPartDoubt ()
+    {
+        return constants.minCompoundPartDoubt.getValue();
     }
 
     //-------------------//
-    // getSymbolMaxGrade //
+    // getSymbolMaxDoubt //
     //-------------------//
     /**
      * Report the maximum doubt for a symbol
      *
-     *
      * @return maximum acceptable doubt value
      */
-    public static double getSymbolMaxGrade ()
+    public static double getSymbolMaxDoubt ()
     {
-        return constants.symbolMaxGrade.getValue();
+        return constants.symbolMaxDoubt.getValue();
     }
 
-    //------------------------//
-    // extractNewSystemGlyphs //
-    //------------------------//
+    //----------------//
+    // evaluateGlyphs //
+    //----------------//
     /**
-     * In the specified system, build new glyphs from unknown sections (sections
-     * not linked to a known glyph)
+     * All new symbol glyphs of the sheet, for which we can get a positive vote
+     * of the evaluator, are assigned the voted shape.
      *
-     * @param system the specified system
+     * @param maxDoubt maximum value for acceptable doubt
      */
-    public void extractNewSystemGlyphs (SystemInfo system)
-    {
-        removeSystemUnknowns(system);
-        sheet.getGlyphBuilder()
-             .retrieveSystemGlyphs(system);
-        system.sortGlyphs();
-    }
-
-    //---------------//
-    // processBraces //
-    //---------------//
-    /**
-     * Look for braces and get back to the BarsBuilder to organize the score
-     * parts
-     */
-    public void processBraces ()
-    {
-        // Collect braces recognized, system per system
-        List<List<Glyph>> braceLists = new ArrayList<List<Glyph>>();
-        int               nb = 0;
-
-        for (SystemInfo system : sheet.getSystems()) {
-            List<Glyph> braces = new ArrayList<Glyph>();
-
-            for (Glyph glyph : system.getGlyphs()) {
-                if (glyph.getShape() == Shape.BRACE) {
-                    braces.add(glyph);
-                    nb++;
-                }
-            }
-
-            braceLists.add(braces);
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Found " + nb + " brace(s)");
-        }
-
-        // Pass this data to the glyph inspector
-        //        sheet.getBarsBuilder()
-        //             .setBraces(braceLists);
-    }
-
-    //------------------//
-    // processCompounds //
-    //------------------//
-    /**
-     * Look for glyphs portions that should be considered as parts of compound
-     * glyphs
-     *
-     *
-     * @param maxGrade mamximum acceptance doubt
-     */
-    public void processCompounds (double maxGrade)
-    {
-        List<Glyph> compounds = new ArrayList<Glyph>();
-
-        for (SystemInfo system : sheet.getSystems()) {
-            processSystemCompounds(system, maxGrade, compounds);
-        }
-
-        if (compounds.size() > 1) {
-            logger.info(
-                "Built " + compounds.size() + " compounds " +
-                compounds.get(0).getId() + " .. " +
-                compounds.get(compounds.size() - 1).getId());
-        } else if (compounds.size() == 1) {
-            logger.info(
-                "Built compound " + compounds.get(0).getId() + " as " +
-                compounds.get(0).getShape());
-        } else {
-            logger.fine("No compound built");
-        }
-    }
-
-    //---------------//
-    // processGlyphs //
-    //---------------//
-    /**
-     * All symbol glyphs of the sheet, for which we can get a positive vote of
-     * the evaluator, are assigned the voted shape.
-     *
-     *
-     * @param maxGrade maximum value for acceptable doubt
-     */
-    public void processGlyphs (double maxGrade)
+    public void evaluateGlyphs (double maxDoubt)
     {
         // For temporary use only ...
         if (constants.inspectorDisabled.getValue()) {
@@ -257,7 +180,7 @@ public class GlyphInspector
                     glyph.setInterline(sheet.getScale().interline());
 
                     // Get vote
-                    Evaluation vote = evaluator.vote(glyph, maxGrade);
+                    Evaluation vote = evaluator.vote(glyph, maxDoubt);
 
                     if (vote != null) {
                         glyph.setShape(vote.shape, vote.doubt);
@@ -279,24 +202,92 @@ public class GlyphInspector
 
         if (acceptNb > 0) {
             logger.info(
-                acceptNb + " glyph(s) accepted (" + noiseNb + " as noise, " +
-                structureNb + " as structure, " + clutterNb + " as clutter, " +
-                knownNb + " as known)");
+                acceptNb + " glyph" + ((acceptNb > 1) ? "s" : "") +
+                " assigned (" + noiseNb + " as noise, " + structureNb +
+                " as structure, " + clutterNb + " as clutter, " + knownNb +
+                " as known)");
         }
     }
 
-    //---------------//
-    // processLeaves //
-    //---------------//
+    //    //---------------//
+    //    // processBraces //
+    //    //---------------//
+    //    /**
+    //     * Look for braces and get back to the BarsBuilder to organize the score
+    //     * parts (TBD: is it used anymore?)
+    //     */
+    //    public void processBraces ()
+    //    {
+    //        // Collect braces recognized, system per system
+    //        List<List<Glyph>> braceLists = new ArrayList<List<Glyph>>();
+    //
+    //        int               nb = 0;
+    //
+    //        for (SystemInfo system : sheet.getSystems()) {
+    //            List<Glyph> braces = new ArrayList<Glyph>();
+    //
+    //            for (Glyph glyph : system.getGlyphs()) {
+    //                if (glyph.getShape() == Shape.BRACE) {
+    //                    braces.add(glyph);
+    //                    nb++;
+    //                }
+    //            }
+    //
+    //            braceLists.add(braces);
+    //        }
+    //
+    //        if (logger.isFineEnabled()) {
+    //            logger.fine("Found " + nb + " brace(s)");
+    //        }
+    //
+    //        // Pass this data to the glyph inspector
+    //        //        sheet.getBarsBuilder()
+    //        //             .setBraces(braceLists);
+    //    }
+
+    //-------------------//
+    // retrieveCompounds //
+    //-------------------//
+    /**
+     * Look for glyphs portions that should be considered as parts of compound
+     * glyphs
+     *
+     * @param maxDoubt maximum doubt for a compound glyph to be accepted
+     */
+    public void retrieveCompounds (double maxDoubt)
+    {
+        List<Glyph> compounds = new ArrayList<Glyph>();
+
+        for (SystemInfo system : sheet.getSystems()) {
+            retrieveSystemCompounds(system, compounds, maxDoubt);
+        }
+
+        // Feedback to the user
+        if (compounds.size() > 1) {
+            logger.info(
+                "Built " + compounds.size() + " compounds #" +
+                compounds.get(0).getId() + " .. #" +
+                compounds.get(compounds.size() - 1).getId());
+        } else if (compounds.size() == 1) {
+            logger.info(
+                "Built compound #" + compounds.get(0).getId() + " as " +
+                compounds.get(0).getShape());
+        } else {
+            logger.fine("No compound built");
+        }
+    }
+
+    //----------------//
+    // retrieveLeaves //
+    //----------------//
     /**
      * Retrieve leaves that appear thanks to segmentation due to stems
      * extraction.
      */
-    public void processLeaves ()
+    public void retrieveLeaves ()
     {
-        // Nota: Leaves are already added to the proper system glyph
-        // collection
-        builder.buildInfo();
+        // Nota: Leaves are already added to the proper system glyph collection
+        builder.retrieveGlyphs();
 
         // Sort glyphs on their abscissa
         for (SystemInfo system : sheet.getSystems()) {
@@ -305,39 +296,17 @@ public class GlyphInspector
     }
 
     //-------------------//
-    // processUndueStems //
+    // retrieveVerticals //
     //-------------------//
-    /**
-     * Look for all stems that should not be kept, rebuild surrounding glyphs
-     * and try to recognize them
-     *
-     * @return the number of symbols recognized
-     */
-    public int processUndueStems ()
-    {
-        int symbolNb = 0;
-
-        for (SystemInfo system : sheet.getSystems()) {
-            symbolNb += processSystemUndueStems(system);
-        }
-
-        logger.info(symbolNb + " symbol(s) from stem cancellation");
-
-        return symbolNb;
-    }
-
-    //------------------//
-    // processVerticals //
-    //------------------//
     /**
      * Look for vertical sticks (stems actually, though we could have endings
      * verticals as well), and rebuild glyphs after the stem extraction
      */
-    public void processVerticals ()
+    public void retrieveVerticals ()
     {
         // Get rid of former non-recognized symbols
         for (SystemInfo system : sheet.getSystems()) {
-            removeSystemUnknowns(system);
+            builder.removeSystemUnknowns(system);
         }
 
         // Retrieve stem/endings vertical candidates
@@ -349,147 +318,147 @@ public class GlyphInspector
     }
 
     //-------------//
-    // removeGlyph //
+    // tryCompound //
     //-------------//
     /**
-     * Remove a glyph stick
+     * Try to build a compound, starting from given seed and looking into the
+     * collection of suitable glyphs.
      *
-     * @param glyph the specified glyph
-     * @param system the system it belongs to
-     * @param cutSections should glyph <- section link be cut
+     * @param seed the initial glyph around which the compound is built
+     * @param suitables collection of potential glyphs
+     * @param adapter the specific behavior of the compound tests
+     * @return the compound built if successful, null otherwise
      */
-    public void removeGlyph (Glyph      glyph,
-                             SystemInfo system,
-                             boolean    cutSections)
+    public Glyph tryCompound (Glyph           seed,
+                              List<Glyph>     suitables,
+                              CompoundAdapter adapter)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Removing glyph " + glyph);
-        }
+        // Build box extended around the seed
+        Rectangle   rect = seed.getContourBox();
+        Rectangle   box = new Rectangle(
+            rect.x - adapter.getBoxDx(),
+            rect.y - adapter.getBoxDy(),
+            rect.width + (2 * adapter.getBoxDx()),
+            rect.height + (2 * adapter.getBoxDy()));
 
-        // Remove from system glyph list
-        if (!system.getGlyphs()
-                   .remove(glyph)) {
-            logger.warning(
-                "Could not remove glyph from system glyphs" + system.getId());
-        }
+        // Retrieve good neighbors among the suitable glyphs
+        List<Glyph> neighbors = new ArrayList<Glyph>();
 
-        // Remove from lag
-        glyph.destroy(cutSections);
-    }
+        // Include the seed in the compound glyphs
+        neighbors.add(seed);
 
-    //-------------//
-    // compoundBox //
-    //-------------//
-    /**
-     * Build a rectangular box, slightly extended to check intersection with
-     * neighbouring glyphs
-     *
-     * @param rect the specified box
-     * @param dxy the extension on every side side
-     * @return the extended box
-     */
-    private static Rectangle compoundBox (Rectangle rect,
-                                          int       dxy)
-    {
-        return new Rectangle(
-            rect.x - dxy,
-            rect.y - dxy,
-            rect.width + (2 * dxy),
-            rect.height + (2 * dxy));
-    }
+        for (Glyph g : suitables) {
+            if (!adapter.isSuitable(g)) {
+                continue;
+            }
 
-    //----------------------//
-    // removeSystemUnknowns //
-    //----------------------//
-    /**
-     * On a specified system, look for all unknown glyphs (including glyphs
-     * classified as STRUCTURE shape), and remove them from its glyphs
-     * collection as well as from the containing lag.  Purpose is to prepare
-     * room for a new glyph extraction
-     *
-     * @param system the specified system
-     */
-    private static void removeSystemUnknowns (SystemInfo system)
-    {
-        List<Glyph> toremove = new ArrayList<Glyph>();
-
-        for (Glyph glyph : system.getGlyphs()) {
-            // We remove shapes : null, NOISE, STRUCTURE (not CLUTTER)
-            if (!glyph.isWellKnown()) {
-                toremove.add(glyph);
+            if (box.intersects(g.getContourBox())) {
+                neighbors.add(g);
             }
         }
 
-        // Remove from system list
-        system.getGlyphs()
-              .removeAll(toremove);
+        if (neighbors.size() > 1) {
+            if (logger.isFineEnabled()) {
+                logger.finest(
+                    "neighbors=" + Glyph.idsOf(neighbors) + " seed=" + seed);
+            }
 
-        // Remove from lag
-        for (Glyph glyph : toremove) {
-            glyph.destroy( /* cutSections => */
-            true);
+            Glyph compound = builder.buildCompound(neighbors);
+
+            if (adapter.isValid(compound)) {
+                builder.insertCompound(compound, neighbors);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("Inserted compound " + compound);
+                }
+
+                return compound;
+            }
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // verifySlurs //
+    //-------------//
+    /**
+     * Browse through all slur glyphs, run additional checks, and correct
+     * spurious glyphs if any
+     */
+    public void verifySlurs ()
+    {
+        int fixedNb = 0;
+
+        for (SystemInfo system : sheet.getSystems()) {
+            fixedNb += verifySystemSlurs(system);
+        }
+
+        // Feedback
+        if (fixedNb > 1) {
+            logger.info(fixedNb + " slurs fixed");
+        } else if (fixedNb > 0) {
+            logger.info(fixedNb + " slur fixed");
+        } else {
+            logger.fine("No slur fixed");
         }
     }
 
-    //-----------------------//
-    // isSuitableForCompound //
-    //-----------------------//
-    private boolean isSuitableForCompound (Glyph glyph)
+    //-------------//
+    // verifyStems //
+    //-------------//
+    /**
+     * Look for all stems that should not be kept, rebuild surrounding glyphs
+     * and try to recognize them
+     */
+    public void verifyStems ()
     {
-        return !glyph.isKnown() ||
-               (!glyph.isManualShape() &&
-               ((glyph.getShape() == Shape.DOT) ||
-               (glyph.getShape() == Shape.SLUR) ||
-               (glyph.getShape() == Shape.CLUTTER) ||
-               (glyph.getDoubt() >= constants.minCompoundPartDoubt.getValue())));
-    }
+        int symbolNb = 0;
 
-    //-------//
-    // idsOf //
-    //-------//
-    private String idsOf (List<Glyph> list)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-
-        for (Glyph glyph : list) {
-            sb.append(' ')
-              .append(glyph.getId());
+        for (SystemInfo system : sheet.getSystems()) {
+            symbolNb += verifySystemStems(system);
         }
 
-        sb.append("]");
-
-        return sb.toString();
+        // User feedback
+        if (symbolNb > 1) {
+            logger.info(symbolNb + " new symbols from stem cancellation");
+        } else if (symbolNb > 0) {
+            logger.info(symbolNb + " new symbol from stem cancellation");
+        } else if (logger.isFineEnabled()) {
+            logger.fine("No new symbol from stem cancellation");
+        }
     }
 
-    //------------------------//
-    // processSystemCompounds //
-    //------------------------//
+    //-------------------------//
+    // retrieveSystemCompounds //
+    //-------------------------//
     /**
      * In the specified system, look for glyphs portions that should be
      * considered as parts of compound glyphs
      *
-     *
      * @param system the system where splitted glyphs are looked for
-     * @param maxGrade maximum acceptance doubt
      * @param compounds resulting global list of compounds to expend
+     * @param maxDoubt maximum doubt value for a compound
      */
-    private void processSystemCompounds (SystemInfo  system,
-                                         double      maxGrade,
-                                         List<Glyph> compounds)
+    private void retrieveSystemCompounds (SystemInfo  system,
+                                          List<Glyph> compounds,
+                                          double      maxDoubt)
     {
+        BasicAdapter adapter = new BasicAdapter(maxDoubt);
+
         // Collect glyphs suitable for participating in compound building
-        List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs().size());
+        List<Glyph>  suitables = new ArrayList<Glyph>(
+            system.getGlyphs().size());
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (isSuitableForCompound(glyph)) {
-                glyphs.add(glyph);
+            if (adapter.isSuitable(glyph)) {
+                suitables.add(glyph);
             }
         }
 
-        // Sort unknown glyphs by decreasing weight
+        // Sort suitable glyphs by decreasing weight
         Collections.sort(
-            glyphs,
+            suitables,
             new Comparator<Glyph>() {
                     public int compare (Glyph o1,
                                         Glyph o2)
@@ -498,70 +467,86 @@ public class GlyphInspector
                     }
                 });
 
-        // Process each glyph in turn, by looking at smaller ones
-        Evaluator   evaluator = GlyphNetwork.getInstance();
-        List<Glyph> neighbors = new ArrayList<Glyph>();
+        // Now process each seed in turn, by looking at smaller ones
+        for (int index = 0; index < suitables.size(); index++) {
+            Glyph seed = suitables.get(index);
+            adapter.setSeed(seed);
 
-        for (int index = 0; index < glyphs.size(); index++) {
-            Glyph glyph = glyphs.get(index);
+            Glyph compound = tryCompound(
+                seed,
+                suitables.subList(index + 1, suitables.size()),
+                adapter);
 
-            // Since the glyphs are modified on the fly ...
-            if (!isSuitableForCompound(glyph)) {
-                continue;
-            }
-
-            // Use an extended contour box
-            int       dxy = sheet.getScale()
-                                 .toPixels(constants.boxWiden);
-            Rectangle box = compoundBox(glyph.getContourBox(), dxy);
-
-            // Consider neighboring glyphs, which are glyphs whose contour
-            // intersect the extended contour of glyph at hand
-            neighbors.clear();
-
-            for (Glyph g : glyphs.subList(index + 1, glyphs.size())) {
-                if (!isSuitableForCompound(glyph)) {
-                    continue;
-                }
-
-                if (box.intersects(g.getContourBox())) {
-                    neighbors.add(g);
-                }
-            }
-
-            if (neighbors.size() > 0) {
-                // Let's try a compound
-                neighbors.add(glyph);
-
-                Glyph      compound = builder.buildCompound(neighbors);
-                Evaluation vote = evaluator.vote(compound, maxGrade);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        glyph.getId() + " " + glyph.getShape() + "(" +
-                        String.format("%.3f", glyph.getDoubt()) + ") : " +
-                        idsOf(neighbors) + " -> " + vote);
-                }
-
-                if ((vote != null) &&
-                    vote.shape.isWellKnown() &&
-                    (vote.shape != Shape.CLUTTER) &&
-                    (!glyph.isKnown() || (vote.doubt < glyph.getDoubt()))) {
-                    compound.setShape(vote.shape, vote.doubt);
-                    builder.insertCompound(compound, neighbors);
-                    compounds.add(compound);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Insert compound " + compound);
-                    }
-                }
+            //                if (logger.isFineEnabled()) {
+            //                    logger.finest(
+            //                        seed.getId() + " " + seed.getShape() + "(" +
+            //                        String.format("%.3f", seed.getDoubt()) + ") : " +
+            //                        Glyph.idsOf(neighbors) + " -> " + vote);
+            //                }
+            if (compound != null) {
+                compound.setShape(
+                    adapter.getVote().shape,
+                    adapter.getVote().doubt);
+                compounds.add(compound);
             }
         }
     }
 
-    //-------------------------//
-    // processSystemUndueStems //
-    //-------------------------//
+    //-------------------//
+    // verifySystemSlurs //
+    //-------------------//
+    /**
+     * Process all the slur glyphs in the given system, and try to correct the
+     * spurious ones if any
+     *
+     * @param system the system at hand
+     * @return the number of slurs fixed in this system
+     */
+    private int verifySystemSlurs (SystemInfo system)
+    {
+        int         fixedNb = 0;
+        List<Glyph> oldGlyphs = new ArrayList<Glyph>();
+        List<Glyph> newGlyphs = new ArrayList<Glyph>();
+
+        // First, make up a list of all slur glyphs in this system
+        // (So as to free the system glyph list for on-the-fly modifications)
+        List<Glyph> slurs = new ArrayList<Glyph>();
+
+        for (Glyph glyph : system.getGlyphs()) {
+            if (glyph.getShape() == Shape.SLUR) {
+                slurs.add(glyph);
+            }
+        }
+
+        // Then verify each slur seed in turn
+        for (Glyph seed : slurs) {
+            // Check this slur has not just been 'merged' with another one
+            if (seed.getMembers()
+                    .get(0)
+                    .getGlyph() != seed) {
+                continue;
+            }
+
+            Circle circle = SlurGlyph.computeCircle(seed);
+
+            if (!circle.isValid(SlurGlyph.getMaxCircleDistance())) {
+                if (SlurGlyph.fixSpuriousSlur(seed, system)) {
+                    fixedNb++;
+                }
+            } else if (logger.isFineEnabled()) {
+                logger.finest("Valid slur " + seed.getId());
+            }
+        }
+
+        // Extract & evaluate brand new glyphs
+        builder.extractNewSystemGlyphs(system);
+
+        return fixedNb;
+    }
+
+    //-------------------//
+    // verifySystemStems //
+    //-------------------//
     /**
      * In a specified system, look for all stems that should not be kept,
      * rebuild surrounding glyphs and try to recognize them. If this action does
@@ -570,14 +555,13 @@ public class GlyphInspector
      * @param system the specified system
      * @return the number of symbols recognized
      */
-    private int processSystemUndueStems (SystemInfo system)
+    private int verifySystemStems (SystemInfo system)
     {
-        logger.fine("processSystemUndueStems " + system);
+        logger.finest("verifySystemStems " + system);
 
         int         nb = 0;
 
         // Use very close stems to detect sharps and naturals ?
-
         // Collect all undue stems
         List<Glyph> SuspectedStems = new ArrayList<Glyph>();
 
@@ -590,7 +574,7 @@ public class GlyphInspector
 
                 if (goods.size() == 0) {
                     if (logger.isFineEnabled()) {
-                        logger.fine("Suspected Stem " + glyph);
+                        logger.finest("Suspected Stem " + glyph);
                     }
 
                     SuspectedStems.add(glyph);
@@ -605,28 +589,29 @@ public class GlyphInspector
 
         // Remove these stems since nearby stems are used for recognition
         for (Glyph glyph : SuspectedStems) {
-            removeGlyph(glyph, system, /*cutSections=>*/
-                        true);
+            builder.removeGlyph(glyph, system, /*cutSections=>*/
+                                true);
         }
 
         // Extract brand new glyphs
-        extractNewSystemGlyphs(system);
+        builder.extractNewSystemGlyphs(system);
 
         // Try to recognize each glyph in turn
         List<Glyph>     symbols = new ArrayList<Glyph>();
+
         final Evaluator evaluator = GlyphNetwork.getInstance();
-        final double    maxGrade = getCleanupMaxGrade();
+        final double    maxDoubt = getCleanupMaxDoubt();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
-                Evaluation vote = evaluator.vote(glyph, maxGrade);
+                Evaluation vote = evaluator.vote(glyph, maxDoubt);
 
                 if (vote != null) {
                     glyph.setShape(vote.shape, vote.doubt);
 
                     if (glyph.isWellKnown()) {
                         if (logger.isFineEnabled()) {
-                            logger.fine("New symbol " + glyph);
+                            logger.finest("New symbol " + glyph);
                         }
 
                         symbols.add(glyph);
@@ -656,8 +641,10 @@ public class GlyphInspector
             if (!known) {
                 // Remove the newly created glyph
                 if (glyph != null) {
-                    removeGlyph(glyph, system, /* cutSections => */
-                                true);
+                    builder.removeGlyph(
+                        glyph,
+                        system, /* cutSections => */
+                        true);
                 }
 
                 // Restore the stem
@@ -672,12 +659,115 @@ public class GlyphInspector
         }
 
         // Extract brand new glyphs
-        extractNewSystemGlyphs(system);
+        builder.extractNewSystemGlyphs(system);
 
         return nb;
     }
 
+    //~ Inner Interfaces -------------------------------------------------------
+
+    //-----------------//
+    // CompoundAdapter //
+    //-----------------//
+    /**
+     * Interface <code>CompoundAdapter</code> provides the needed features for a
+     * generic compound building.
+     */
+    public static interface CompoundAdapter
+    {
+        /** Extension in abscissa to look for neighbors */
+        int getBoxDx ();
+
+        /** Extension in ordinate to look for neighbors */
+        int getBoxDy ();
+
+        /**
+         * Predicate for a glyph to be a potential part of the building (the
+         * location criteria is handled separately)
+         */
+        boolean isSuitable (Glyph glyph);
+
+        /** Predicate to check the success of the newly built compound */
+        boolean isValid (Glyph compound);
+    }
+
     //~ Inner Classes ----------------------------------------------------------
+
+    //--------------//
+    // BasicAdapter //
+    //--------------//
+    /**
+     * Class <code>BasicAdapter</code> is a CompoundAdapter meant to retrieve
+     * all compounds (in a system). It is reusable from one candidate to the
+     * other, by using the setSeed() method.
+     */
+    private class BasicAdapter
+        implements CompoundAdapter
+    {
+        /** Maximum doubt for a compound */
+        private final double maxDoubt;
+
+        /** The seed being considered */
+        private Glyph seed;
+
+        /** The result of compound evaluation */
+        private Evaluation vote;
+
+        public BasicAdapter (double maxDoubt)
+        {
+            this.maxDoubt = maxDoubt;
+        }
+
+        @Implement(CompoundAdapter.class)
+        public int getBoxDx ()
+        {
+            return sheet.getScale()
+                        .toPixels(constants.boxWiden);
+        }
+
+        @Implement(CompoundAdapter.class)
+        public int getBoxDy ()
+        {
+            return sheet.getScale()
+                        .toPixels(constants.boxWiden);
+        }
+
+        public void setSeed (Glyph seed)
+        {
+            this.seed = seed;
+        }
+
+        @Implement(CompoundAdapter.class)
+        public boolean isSuitable (Glyph glyph)
+        {
+            return !glyph.isKnown() ||
+                   (!glyph.isManualShape() &&
+                   ((glyph.getShape() == Shape.DOT) ||
+                   (glyph.getShape() == Shape.SLUR) ||
+                   (glyph.getShape() == Shape.CLUTTER) ||
+                   (glyph.getDoubt() >= getMinCompoundPartDoubt())));
+        }
+
+        @Implement(CompoundAdapter.class)
+        public boolean isValid (Glyph compound)
+        {
+            vote = GlyphNetwork.getInstance()
+                               .vote(compound, maxDoubt);
+
+            if (vote != null) {
+                compound.setShape(vote.shape, vote.doubt);
+            }
+
+            return (vote != null) && vote.shape.isWellKnown() &&
+                   (vote.shape != Shape.CLUTTER) &&
+                   (!seed.isKnown() || (vote.doubt < seed.getDoubt()));
+        }
+
+        public Evaluation getVote ()
+        {
+            return vote;
+        }
+    }
 
     //-----------//
     // Constants //
@@ -691,17 +781,17 @@ public class GlyphInspector
         Scale.Fraction   boxWiden = new Scale.Fraction(
             0.15,
             "Box widening to check intersection with compound");
-        Constant.Double  cleanupMaxGrade = new Constant.Double(
+        Constant.Double  cleanupMaxDoubt = new Constant.Double(
             1.2,
-            "Maximum grade for cleanup phase");
-        Constant.Double  leafMaxGrade = new Constant.Double(
+            "Maximum doubt for cleanup phase");
+        Constant.Double  leafMaxDoubt = new Constant.Double(
             1.01,
-            "Maximum acceptance grade for a leaf");
-        Constant.Double  symbolMaxGrade = new Constant.Double(
+            "Maximum acceptance doubt for a leaf");
+        Constant.Double  symbolMaxDoubt = new Constant.Double(
             1.0001,
             "Maximum doubt for a symbol");
         Constant.Double  minCompoundPartDoubt = new Constant.Double(
             1.020,
-            "Minimum doubt for a compound part");
+            "Minimum doubt for a suitable compound part");
     }
 }
