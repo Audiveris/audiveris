@@ -13,8 +13,11 @@ package omr.glyph.ui;
 import omr.constant.Constant;
 
 import omr.glyph.*;
+import omr.glyph.Shape;
 
 import omr.lag.LagView;
+
+import omr.math.Circle;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -24,6 +27,8 @@ import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.*;
+import java.awt.geom.CubicCurve2D;
+import static java.lang.Math.*;
 import java.util.*;
 import java.util.List;
 
@@ -260,7 +265,7 @@ public class GlyphLagView
         super.update(selection, hint);
 
         switch (selection.getTag()) {
-        case PIXEL :
+        case SHEET_RECTANGLE :
 
             if ((hint == SelectionHint.LOCATION_ADD) ||
                 (hint == SelectionHint.LOCATION_INIT)) {
@@ -368,8 +373,52 @@ public class GlyphLagView
 
                 for (Glyph glyph : glyphs) {
                     glyph.renderBoxArea(g, z);
+
+                    // Draw circle arc here ?
+                    if (glyph.getShape() == Shape.SLUR) {
+                        Circle circle = SlurGlyph.computeCircle(glyph);
+
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                String.format(
+                                    "dist=%g " + circle.toString(),
+                                    circle.getDistance()));
+                        }
+
+                        drawCircle(circle, g, z);
+                    }
                 }
             }
+        }
+    }
+
+    private void drawCircle (Circle   circle,
+                             Graphics g,
+                             Zoom     z)
+    {
+        CubicCurve2D.Double curve = circle.getCurve();
+        Graphics2D          g2 = (Graphics2D) g;
+
+        if (curve != null) {
+            // Draw the bezier arc
+            g2.draw(
+                new CubicCurve2D.Double(
+                    z.scaled(curve.getX1()),
+                    z.scaled(curve.getY1()),
+                    z.scaled(curve.getCtrlX1()),
+                    z.scaled(curve.getCtrlY1()),
+                    z.scaled(curve.getCtrlX2()),
+                    z.scaled(curve.getCtrlY2()),
+                    z.scaled(curve.getX2()),
+                    z.scaled(curve.getY2())));
+        } else {
+            // Draw the full circle
+            int radius = z.scaled(circle.getRadius());
+            g2.drawOval(
+                z.scaled(circle.getCenter().x) - radius,
+                z.scaled(circle.getCenter().y) - radius,
+                2 * radius,
+                2 * radius);
         }
     }
 }
