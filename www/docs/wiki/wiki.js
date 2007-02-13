@@ -6962,4 +6962,26 @@ var regexpCarriageReturn = new RegExp("\r","mg");
 // ---------------------------------------------------------------------------------
 // End of scripts
 // ---------------------------------------------------------------------------------
+
+
+// Manual additions by H.Bitteur
+
+// listTag plugin
+version.extensions.listTags = {major: 0, minor: 1, revision: 0, date: new Date(2005, 6,16)};
+
+config.macros.listTags = {
+   text: "Hello"
+};
+
+config.macros.listTags.handler = function(place,macroName,params)
+{
+    var tagged = store.getTaggedTiddlers(params[0], params[1]);
+    var string = "";
+    for(var r=0;r<tagged.length;r++)
+    {
+       if(params[2]) string = string + params[2] + " ";
+       string = string + "[[" + tagged[r].title + "]]\n";
+    }
+    wikify(string, place, null, null);
+}
 //]]>
