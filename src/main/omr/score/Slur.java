@@ -10,17 +10,27 @@
 //
 package omr.score;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
+import omr.glyph.Glyph;
+import omr.glyph.SlurGlyph;
+
+import omr.math.Circle;
+
 import omr.score.visitor.ScoreVisitor;
 
-import omr.ui.view.Zoom;
+import omr.sheet.PixelPoint;
+import omr.sheet.Scale;
 
-import omr.util.Dumper;
 import omr.util.Logger;
+import omr.util.TreeNode;
 
-import java.awt.*;
+import java.awt.geom.*;
+import java.util.*;
 
 /**
- * Class <code>Slur</code> encapsulates a slur (a circle arc) in a system
+ * Class <code>Slur</code> encapsulates a slur (a curve) in a system
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -30,28 +40,47 @@ public class Slur
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Slur.class);
 
+    /** To order slurs vertically within a measure */
+    private static final Comparator<Slur> slurComparator = new Comparator<Slur>() {
+        public int compare (Slur s1,
+                            Slur s2)
+        {
+            return Double.compare(s1.getCurve().getY1(), s2.getCurve().getY1());
+        }
+    };
+
+
     //~ Instance fields --------------------------------------------------------
 
-    /** Additional drawing data */
-    private Arc arc;
+    /** Underlying glyph */
+    private final Glyph glyph;
 
-    /** Column for left point */
-    private int leftcolumn;
+    /** Underlying curve, where points are SystemPoint instances (in Double) */
+    private final CubicCurve2D curve;
 
-    /** Row for left point */
-    private int leftrow;
+    /** Note on left side */
+    private final Note leftNote;
 
-    /** Value of circle radius */
-    private int radius;
+    /** Note on right side */
+    private final Note rightNote;
 
-    /** Column for right point */
-    private int rightcolumn;
+    /** Extension on left side */
+    private Slur leftExtension;
 
-    /** Row for right point */
-    private int rightrow;
+    /** Extension on right side */
+    private Slur rightExtension;
+
+    /** Placement / orientation */
+    private final boolean below;
+
+    /** Is a Tie (else a plain slur) */
+    private boolean isTie;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -61,127 +90,119 @@ public class Slur
     /**
      * Create a slur with all the specified parameters
      *
-     * @param part      the containing system part
-     * @param leftrow y (in units) of the left point, wrt the system origin
-     * @param leftcolumn  x (in units) of the left point
-     * @param rightrow    y (in units) of the right point
-     * @param rightcolumn x (in units) of the right point
-     * @param radius the radius of the circle, in units, &lt;0 if center if
-     *                    above, &gt;0 if center is below
+     * @param part  the containing system part
+     * @param glyph the underlying glyph
+     * @param curve the underlying bezier curve
+     * @param below true if below, false if above
+     * @param leftNote the note on the left
+     * @param rightNote the note on the right
      */
-    public Slur (SystemPart part,
-                 int        leftrow,
-                 int        leftcolumn,
-                 int        rightrow,
-                 int        rightcolumn,
-                 int        radius)
+    public Slur (SystemPart   part,
+                 Glyph        glyph,
+                 CubicCurve2D curve,
+                 boolean      below,
+                 Note         leftNote,
+                 Note         rightNote)
     {
         super(part);
+        this.glyph = glyph;
+        this.curve = curve;
+        this.below = below;
+        this.leftNote = leftNote;
+        this.rightNote = rightNote;
 
-        this.leftrow = leftrow;
-        this.leftcolumn = leftcolumn;
-        this.rightrow = rightrow;
-        this.rightcolumn = rightcolumn;
-        this.radius = radius;
-
-        if (logger.isFineEnabled()) {
-            Dumper.dump(this, "Constructed");
+        // Link embraced notes to this slur instance
+        if (leftNote != null) {
+            leftNote.addSlur(this);
         }
-    }
 
-    //------//
-    // Slur //
-    //------//
-    /**
-     * NoArg constructor (needed by XML binder)
-     */
-    private Slur ()
-    {
-        super(null);
+        if (rightNote != null) {
+            rightNote.addSlur(this);
+        }
+
+        // Tie ?
+        isTie = haveSameHeight(leftNote, rightNote);
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // getArc //
-    //--------//
+    //----------//
+    // getCurve //
+    //----------//
     /**
-     * Report the arc of the slur (lazily built)
+     * Report the curve of the slur
      *
-     * @return the arc to draw
+     * @return the curve to draw
      */
-    public Arc getArc ()
+    public CubicCurve2D getCurve ()
     {
-        if (arc == null) {
-            arc = new Arc(leftcolumn, leftrow, rightcolumn, rightrow, radius);
-        }
-
-        return arc;
+        return curve;
     }
 
-    //---------------//
-    // getLeftcolumn //
-    //---------------//
+    //------------------//
+    // getLeftExtension //
+    //------------------//
     /**
-     * Report the abscissa of the left point
+     * Report the slur (if any) at the end of previous system that could be
+     * considered as an extension of this slur
      *
-     * @return x in units for left point
+     * @return the connected slur on left, or null if none
      */
-    public int getLeftcolumn ()
+    public Slur getLeftExtension ()
     {
-        return leftcolumn;
-    }
-
-    //------------//
-    // getLeftrow //
-    //------------//
-    /**
-     * Report the ordinate of the left point
-     *
-     * @return y in units for left point
-     */
-    public int getLeftrow ()
-    {
-        return leftrow;
-    }
-
-    //-----------//
-    // getRadius //
-    //-----------//
-    /**
-     * Report the radius of the slur
-     *
-     * @return radius in units, &lt;0 upwards, &gt;0 downwards
-     */
-    public int getRadius ()
-    {
-        return radius;
-    }
-
-    //----------------//
-    // getRightcolumn //
-    //----------------//
-    /**
-     * Report the abscissa of the right point
-     *
-     * @return x in units for the right point
-     */
-    public int getRightcolumn ()
-    {
-        return rightcolumn;
+        return leftExtension;
     }
 
     //-------------//
-    // getRightrow //
+    // getLeftNote //
     //-------------//
     /**
-     * Report the ordinate of the right point
-     *
-     * @return y in units for the right point
+     * Report the note embraced by the left side of this slur
+     * @return the embraced note
      */
-    public int getRightrow ()
+    public Note getLeftNote ()
     {
-        return rightrow;
+        return leftNote;
+    }
+
+    //-------------------//
+    // getRightExtension //
+    //-------------------//
+    /**
+     * Report the slur (if any) at the beginning of next system that could be
+     * considered as an extension of this slur
+     *
+     * @return the connected slur on right, or null if none
+     */
+    public Slur getRightExtension ()
+    {
+        return rightExtension;
+    }
+
+    //--------------//
+    // getRightNote //
+    //--------------//
+    /**
+     * Report the note embraced by the right side of this slur
+     * @return the embraced note
+     */
+    public Note getRightNote ()
+    {
+        return rightNote;
+    }
+
+    //-------//
+    // isTie //
+    //-------//
+    /**
+     * Report whether this slur is actually a isTie
+     *
+     *
+     * @return true if a isTie
+     */
+    public boolean isTie ()
+    {
+        return isTie;
     }
 
     //--------//
@@ -194,80 +215,563 @@ public class Slur
     }
 
     //----------//
+    // populate //
+    //----------//
+    /**
+     * Given a glyph (potentially representing a Slur), allocate the Slur
+     * entity that corresponds to this glyph.
+     *
+     * @param glyph The glyph to process
+     * @param system The system which will contain the allocate Slur
+     */
+    public static void populate (Glyph  glyph,
+                                 System system)
+    {
+        // Compute (and check) the approximating circle
+        Circle circle = SlurGlyph.computeCircle(glyph);
+
+        if (!circle.isValid(SlurGlyph.getMaxCircleDistance())) {
+            logger.warning("Still spurious slur #" + glyph.getId());
+
+            if (SlurGlyph.fixSpuriousSlur(glyph, system.getInfo())) {
+                logger.info("Slur fixed  ...");
+
+                system.getScore()
+                      .getSheet()
+                      .getGlyphBuilder()
+                      .extractNewSystemGlyphs(system.getInfo());
+
+                throw new ScoreBuilder.RebuildException("Slur");
+            }
+        } else {
+            // Build a curve using system-based coordinates
+            CubicCurve2D      pixelCurve = circle.getCurve();
+            SystemPoint       p1 = system.toSystemPoint(
+                new PixelPoint(
+                    (int) Math.rint(pixelCurve.getX1()),
+                    (int) Math.rint(pixelCurve.getY1())));
+            SystemPoint       c1 = system.toSystemPoint(
+                new PixelPoint(
+                    (int) Math.rint(pixelCurve.getCtrlX1()),
+                    (int) Math.rint(pixelCurve.getCtrlY1())));
+            SystemPoint       c2 = system.toSystemPoint(
+                new PixelPoint(
+                    (int) Math.rint(pixelCurve.getCtrlX2()),
+                    (int) Math.rint(pixelCurve.getCtrlY2())));
+            SystemPoint       p2 = system.toSystemPoint(
+                new PixelPoint(
+                    (int) Math.rint(pixelCurve.getX2()),
+                    (int) Math.rint(pixelCurve.getY2())));
+            CubicCurve2D      curve = new CubicCurve2D.Double(
+                p1.x,
+                p1.y,
+                c1.x,
+                c1.y,
+                c2.x,
+                c2.y,
+                p2.x,
+                p2.y);
+
+            // Retrieve and sort notes
+            List<MeasureNode> leftNodes = new ArrayList<MeasureNode>();
+            List<MeasureNode> rightNodes = new ArrayList<MeasureNode>();
+
+            boolean           below = retrieveEmbracedNotes(
+                glyph,
+                system,
+                curve,
+                leftNodes,
+                rightNodes);
+
+            MeasureNode       leftNode = null;
+            Note              leftNote = null;
+            MeasureNode       rightNode = null;
+            Note              rightNote = null;
+
+            if (!leftNodes.isEmpty()) {
+                leftNode = leftNodes.get(0);
+
+                if (leftNode instanceof Note) {
+                    leftNote = (Note) leftNode;
+                } else {
+                    Chord chord = (Chord) leftNode;
+                    // Take the first note (closest to the tail)
+                    leftNote = (Note) chord.getNotes()
+                                           .get(0);
+                }
+            }
+
+            if (!rightNodes.isEmpty()) {
+                rightNode = rightNodes.get(0);
+
+                if (rightNode instanceof Note) {
+                    rightNote = (Note) rightNode;
+                } else {
+                    Chord chord = (Chord) rightNode;
+                    // Take the first note (closest to the tail)
+                    rightNote = (Note) chord.getNotes()
+                                            .get(0);
+                }
+            }
+
+            if ((leftNote != null) || (rightNote != null)) {
+                SystemPart part = (leftNote != null) ? leftNode.getPart()
+                                  : rightNote.getPart();
+                Slur       slur = new Slur(
+                    part,
+                    glyph,
+                    curve,
+                    below,
+                    leftNote,
+                    rightNote);
+
+                if (logger.isFineEnabled()) {
+                    //                    logger.fine(
+                    //                        String.format(
+                    //                            "Glyph %d dist=%g %s",
+                    //                            glyph.getId(),
+                    //                            circle.getDistance(),
+                    //                            circle.toString()));
+                    logger.finest(slur.toString());
+                }
+            } else {
+                logger.warning(
+                    "Slur " + glyph.getId() + " with no embraced notes");
+            }
+        }
+    }
+
+    //---------//
+    // isBelow //
+    //---------//
+    /**
+     * Report whether the placement of this slur is below
+     *
+     * @return true if below, false if above
+     */
+    public boolean isBelow ()
+    {
+        return below;
+    }
+
+    //----------//
     // toString //
     //----------//
     /**
      * Report a readable description for this slur
-     *
      * @return a string with all slur parameters
      */
     @Override
     public String toString ()
     {
-        return "{Slur:" + " leftrow=" + leftrow + " leftcolumn=" + leftcolumn +
-               " rightrow=" + rightrow + " rightcolumn=" + rightcolumn +
-               " radius=" + radius + "}";
+        StringBuilder sb = new StringBuilder();
+
+        if (isTie) {
+            sb.append("{Tie");
+        } else {
+            sb.append("{Slur");
+        }
+
+        sb.append("#")
+          .append(glyph.getId());
+
+        sb.append(" P1[")
+          .append((int) Math.rint(curve.getX1()))
+          .append(",")
+          .append((int) Math.rint(curve.getY1()))
+          .append("]");
+
+        sb.append(" C1[")
+          .append((int) Math.rint(curve.getCtrlX1()))
+          .append(",")
+          .append((int) Math.rint(curve.getCtrlY1()))
+          .append("]");
+
+        sb.append(" C2[")
+          .append((int) Math.rint(curve.getCtrlX2()))
+          .append(",")
+          .append((int) Math.rint(curve.getCtrlY2()))
+          .append("]");
+
+        sb.append(" P2[")
+          .append((int) Math.rint(curve.getX2()))
+          .append(",")
+          .append((int) Math.rint(curve.getY2()))
+          .append("]");
+
+        if (leftNote != null) {
+            sb.append(" L=")
+              .append(leftNote.getStep())
+              .append(leftNote.getOctave());
+        } else if ((leftExtension != null) && (leftExtension.leftNote != null)) {
+            sb.append(" LE=")
+              .append(leftExtension.leftNote.getStep())
+              .append(leftExtension.leftNote.getOctave());
+        }
+
+        if (rightNote != null) {
+            sb.append(" R=")
+              .append(rightNote.getStep())
+              .append(rightNote.getOctave());
+        } else if ((rightExtension != null) &&
+                   (rightExtension.rightNote != null)) {
+            sb.append(" RE=")
+              .append(rightExtension.rightNote.getStep())
+              .append(rightExtension.rightNote.getOctave());
+        }
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    //-------------------------//
+    // retrieveSlurConnections //
+    //-------------------------//
+    /**
+     * Retrieve the connections between the (orphan) slurs at the beginning of
+     * this system and the (orphan) slurs at the end of the previous system
+     *
+     * @param system the current system
+     */
+    static void retrieveSlurConnections (System system)
+    {
+        // Part by part,
+        // Check whether orphan slurs in first measure can be connected to
+        // corresponding orphans slurs in last leasure of previous system
+        System prevSystem = (System) system.getPreviousSibling();
+
+        if (prevSystem == null) {
+            return;
+        }
+
+        // Do we have slurs with no left note in current system ?
+        for (TreeNode pNode : system.getParts()) {
+            SystemPart part = (SystemPart) pNode;
+            List<Slur> orphans = new ArrayList<Slur>();
+
+            for (TreeNode sNode : part.getSlurs()) {
+                Slur slur = (Slur) sNode;
+
+                if (slur.getLeftNote() == null) {
+                    // Check we are in first measure
+                    Point2D p1 = slur.getCurve()
+                                     .getP1();
+                    Measure measure = part.getMeasureAt(
+                        new SystemPoint(p1.getX(), p1.getY()));
+
+                    if (measure == part.getFirstMeasure()) {
+                        orphans.add(slur);
+                    }
+                }
+            }
+
+            if (orphans.size() == 0) {
+                continue;
+            }
+
+            Collections.sort(orphans, slurComparator);
+
+            // Get orphans in previous measure
+            SystemPart prevPart = (SystemPart) prevSystem.getParts()
+                                                         .get(part.getId() - 1);
+            List<Slur> prevOrphans = new ArrayList<Slur>();
+
+            for (TreeNode sNode : prevPart.getSlurs()) {
+                Slur slur = (Slur) sNode;
+
+                if (slur.getRightNote() == null) {
+                    // Check we are in last measure
+                    Point2D p2 = slur.getCurve()
+                                     .getP2();
+                    Measure measure = prevPart.getMeasureAt(
+                        new SystemPoint(p2.getX(), p2.getY()));
+
+                    if (measure == prevPart.getLastMeasure()) {
+                        prevOrphans.add(slur);
+                    }
+                }
+            }
+
+            Collections.sort(prevOrphans, slurComparator);
+
+            // Connect the orphans as much as possible
+            SlurLoop: 
+            for (int i = 0; i < orphans.size(); i++) {
+                Slur slur = orphans.get(i);
+
+                for (int j = 0; j < prevOrphans.size(); j++) {
+                    Slur prevSlur = prevOrphans.get(j);
+
+                    if ((prevSlur.rightExtension == null) &&
+                        arePositionCompatible(prevPart, prevSlur, part, slur)) {
+                        connectSlurs(prevSlur, slur);
+
+                        continue SlurLoop;
+                    }
+                }
+
+                // No connection for this orphan
+                logger.warning(
+                    part.getContextString() + " Could not connect slur #" +
+                    slur.glyph.getId());
+            }
+
+            // Check previous orphans
+            for (int j = 0; j < prevOrphans.size(); j++) {
+                Slur prevSlur = prevOrphans.get(j);
+
+                if (prevSlur.rightExtension == null) {
+                    logger.warning(
+                        prevPart.getContextString() +
+                        " Could not connect slur #" + prevSlur.glyph.getId());
+                }
+            }
+        }
+    }
+
+    //-----------------------//
+    // arePositionCompatible //
+    //-----------------------//
+    /**
+     * Check whether two slurs to-be-connected are roughly compatible with each other
+     *
+     * @param prevPart the part containing the previous slur
+     * @param prevSlur the previous slur
+     * @param part the part containing the following slur
+     * @param slur the following slur
+     * @return true if found compatible
+     */
+    private static boolean arePositionCompatible (SystemPart prevPart,
+                                                  Slur       prevSlur,
+                                                  SystemPart part,
+                                                  Slur       slur)
+    {
+        // Retrieve prev position
+        SystemPoint prevPt = new SystemPoint(
+            prevSlur.curve.getX2(),
+            prevSlur.curve.getY2());
+        Staff       prevStaff = prevPart.getStaffAt(prevPt);
+        double      prevPp = prevStaff.pitchPositionOf(prevPt);
+
+        // Retrieve position
+        SystemPoint pt = new SystemPoint(
+            slur.curve.getX1(),
+            slur.curve.getY1());
+        Staff       staff = part.getStaffAt(pt);
+        double      pp = staff.pitchPositionOf(pt);
+
+        // Compare pitch positions (very roughly)
+        double deltaPitch = pp - prevPp;
+
+        if (logger.isFineEnabled()) {
+            logger.finest("deltaPitch=" + deltaPitch);
+        }
+
+        return (prevStaff.getId() == staff.getId()) &&
+               (Math.abs(deltaPitch) <= constants.maxDeltaPitch.getValue());
+    }
+
+    //--------------//
+    // connectSlurs //
+    //--------------//
+    /**
+     * Actually connect two slur chunks over a system border
+     *
+     * @param prevSlur slur at the end of previous system
+     * @param slur slur at the beginning of the following system
+     */
+    private static void connectSlurs (Slur prevSlur,
+                                      Slur slur)
+    {
+        // Cross-extensions
+        slur.leftExtension = prevSlur;
+        prevSlur.rightExtension = slur;
+
+        // Tie ?
+        boolean tie = haveSameHeight(prevSlur.leftNote, slur.rightNote);
+        prevSlur.isTie = tie;
+        slur.isTie = tie;
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                (tie ? "Tie" : "Slur") + " connection #" +
+                prevSlur.glyph.getId() + " -> #" + slur.glyph.getId());
+        }
+    }
+
+    //----------------//
+    // haveSameHeight //
+    //----------------//
+    /**
+     * Check whether two notes represent the same pitch (same octave, same step,
+     * same alteration). This is needed to detects tie slurs.
+     *
+     * @param n1 one note
+     * @param n2 the other note
+     * @return true if the notes are equivalent.
+     */
+    private static boolean haveSameHeight (Note n1,
+                                           Note n2)
+    {
+        return (n1 != null) && (n2 != null) && (n1.getStep() == n2.getStep()) &&
+               (n1.getOctave() == n2.getOctave());
+
+        // TBD: what about alteration, if we have not processed them yet ???
+    }
+
+    //-----------------------//
+    // retrieveEmbracedNotes //
+    //-----------------------//
+    /**
+     * Retrieve the notes that ar embraced on the left side and on the right
+     * side of a slur glyph. Actually, we could retrieve just the first note on
+     * left and first note on right. TBD.
+     *
+     * @param glyph the given slur glyph
+     * @param system the containing system
+     * @param curve the slur underlying curve
+     * @param leftNodes output: the ordered list of notes found on left side
+     * @param rightNodes output: the ordered list of notes found on right side
+     * @return true if the placement is 'below'
+     */
+    private static boolean retrieveEmbracedNotes (Glyph             glyph,
+                                                  System            system,
+                                                  CubicCurve2D      curve,
+                                                  List<MeasureNode> leftNodes,
+                                                  List<MeasureNode> rightNodes)
+    {
+        // Determine arc orientation (above or below)
+        final double          DX = curve.getX2() - curve.getX1();
+        final double          DY = curve.getY2() - curve.getY1();
+        final double          power = (curve.getCtrlX1() * DY) -
+                                      (curve.getCtrlY1() * DX) -
+                                      (curve.getX1() * DY) +
+                                      (curve.getY1() * DX);
+        final boolean         below = power < 0;
+
+        // Determine left and right search areas
+        final Scale           scale = system.getScale();
+        final int             dx = scale.toUnits(constants.areaDx);
+        final int             dy = scale.toUnits(constants.areaDy);
+        final int             xMg = scale.toUnits(constants.areaXMargin);
+        final SystemRectangle leftRect = new SystemRectangle(
+            (int) Math.rint(curve.getX1() - dx),
+            (int) Math.rint(curve.getY1()),
+            dx + xMg,
+            dy);
+        final SystemRectangle rightRect = new SystemRectangle(
+            (int) Math.rint(curve.getX2() - xMg),
+            (int) Math.rint(curve.getY2()),
+            dx + xMg,
+            dy);
+
+        if (below) {
+            leftRect.y -= dy;
+            rightRect.y -= dy;
+        }
+
+        // System > Part > Measure > Chord > Note
+        for (TreeNode pNode : system.getParts()) {
+            SystemPart part = (SystemPart) pNode;
+
+            for (TreeNode mNode : part.getMeasures()) {
+                Measure measure = (Measure) mNode;
+
+                for (TreeNode cNode : measure.getChords()) {
+                    Chord chord = (Chord) cNode;
+
+                    if (leftRect.contains(chord.getTailLocation())) {
+                        leftNodes.add(chord);
+                    }
+
+                    if (rightRect.contains(chord.getTailLocation())) {
+                        rightNodes.add(chord);
+                    }
+
+                    for (TreeNode nNode : chord.getNotes()) {
+                        Note note = (Note) nNode;
+
+                        if (leftRect.contains(note.getCenter())) {
+                            leftNodes.add(note);
+                        }
+
+                        if (rightRect.contains(note.getCenter())) {
+                            rightNodes.add(note);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Sort the collections of notes
+        Collections.sort(
+            leftNodes,
+            new NodeComparator(curve.getX1(), curve.getY1()));
+        Collections.sort(
+            rightNodes,
+            new NodeComparator(curve.getX2(), curve.getY2()));
+
+        return below;
     }
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-----//
-    // Arc //
-    //-----//
-    /**
-     * Class <code>Arc</code> defines the underlying geometric arc of a slur
-     */
-    public static class Arc
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
     {
-        private final Point upperleft;
-        private final int   arcangle;
-        private final int   squareside;
-        private final int   startangle;
+        /** Abscissa extension when looking for embraced notes */
+        Scale.Fraction areaDx = new Scale.Fraction(
+            2,
+            "Abscissa extension when looking for embraced notes");
 
-        //-----//
-        // Arc //
-        //-----//
-        public Arc (int x1,
-                    int y1,
-                    int x2,
-                    int y2,
-                    int radius)
+        /** Abscissa margin when looking for embraced notes */
+        Scale.Fraction areaXMargin = new Scale.Fraction(
+            1,
+            "Abscissa margin when looking for embraced notes");
+
+        /** Ordinate extension when looking for embraced notes */
+        Scale.Fraction areaDy = new Scale.Fraction(
+            6,
+            "Ordinate extension when looking for embraced notes");
+
+        /** Maximum difference in pitch position between connecting slurs */
+        Constant.Double maxDeltaPitch = new Constant.Double(
+            8,
+            "Maximum difference in pitch position between connecting slurs");
+    }
+
+    //----------------//
+    // NodeComparator //
+    //----------------//
+    /**
+     * Class <code>NodeComparator</code> implements a Slur comparator, where
+     * slurs are ordered according to the ordinate of the left point (whether
+     * its'a Note or a chord tail location, from top to bottom.
+     */
+    private static final class NodeComparator
+        implements Comparator<MeasureNode>
+    {
+        final SystemPoint ref;
+
+        public NodeComparator (double x,
+                               double y)
         {
-            int    rad = Math.abs(radius);
-            int    sign = radius / rad;
-            double dx = x2 - x1;
-            double dy = y2 - y1;
-            double L2 = (dx * dx) + (dy * dy);
-            double L = Math.sqrt(L2);
-
-            double xm = x1 + (dx / 2);
-            double ym = y1 + (dy / 2);
-
-            double h = Math.sqrt((radius * radius) - (L2 / 4));
-
-            double x0 = xm + ((sign * dy * h) / L);
-            double y0 = ym - ((sign * dx * h) / L);
-
-            squareside = 2 * rad;
-            upperleft = new Point((int) x0 - rad, (int) y0 - rad);
-            startangle = -(int) Math.toDegrees(Math.atan2(y1 - y0, x1 - x0));
-            arcangle = sign * (int) Math.toDegrees(2 * Math.acos(h / rad));
+            ref = new SystemPoint(x, y);
         }
 
-        //------//
-        // draw //
-        //------//
-        public void draw (Graphics g,
-                          Point    origin,
-                          Zoom     zoom)
+        public int compare (MeasureNode n1,
+                            MeasureNode n2)
         {
-            g.drawArc(
-                zoom.scaled(origin.x + upperleft.x),
-                zoom.scaled(origin.y + upperleft.y),
-                zoom.scaled(squareside),
-                zoom.scaled(squareside),
-                startangle,
-                arcangle);
+            SystemPoint p1 = (n1 instanceof Chord)
+                             ? ((Chord) n1).getTailLocation() : n1.getCenter();
+            SystemPoint p2 = (n2 instanceof Chord)
+                             ? ((Chord) n2).getTailLocation() : n2.getCenter();
+
+            return Double.compare(p1.distance(ref), p2.distance(ref));
         }
     }
 }
