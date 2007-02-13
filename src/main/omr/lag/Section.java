@@ -99,6 +99,31 @@ public class Section<L extends Lag, S extends Section<L, S>>
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------//
+    // idsOf //
+    //-------//
+    /**
+     * Convenient method, to build a string with just the ids of the section
+     * collection
+     *
+     * @param list the collection of sections
+     * @return the string built
+     */
+    public static String idsOf (List<?extends Section> list)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+
+        for (Section section : list) {
+            sb.append('#')
+              .append(section.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
     //-----------//
     // getAspect //
     //-----------//
@@ -634,6 +659,27 @@ public class Section<L extends Lag, S extends Section<L, S>>
     public int cumulatePoints (int[] coord,
                                int[] pos,
                                int   nb)
+    {
+        int p = firstPos;
+
+        for (Run run : runs) {
+            final int start = run.getStart();
+
+            for (int ic = run.getLength() - 1; ic >= 0; ic--) {
+                coord[nb] = start + ic;
+                pos[nb] = p;
+                nb++;
+            }
+
+            p++;
+        }
+
+        return nb;
+    }
+
+    public int cumulatePoints (double[] coord,
+                               double[] pos,
+                               int      nb)
     {
         int p = firstPos;
 
