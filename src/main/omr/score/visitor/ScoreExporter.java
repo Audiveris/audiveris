@@ -83,7 +83,6 @@ public class ScoreExporter
     private static final String CUT = "cut";
     private static final String DOWN = "down";
     private static final String END = "end";
-    private static final String END = "end";
     private static final String FORWARD_HOOK = "forward hook";
     private static final String NO = "no";
     private static final String OVER = "over";
