@@ -56,7 +56,7 @@ public class SystemPoint
     // SystemPoint //
     //-------------//
     /**
-     * Creates a new SystemPoint object, by cloning an untyped point
+     * Creates a new SystemPoint object
      *
      * @param x abscissa
      * @param y ordinate
@@ -67,20 +67,29 @@ public class SystemPoint
         super(x, y);
     }
 
+    //-------------//
+    // SystemPoint //
+    //-------------//
+    /**
+     * Creates a new SystemPoint object
+     *
+     * @param x abscissa
+     * @param y ordinate
+     */
+    public SystemPoint (double x,
+                        double y)
+    {
+        super((int) Math.rint(x), (int) Math.rint(y));
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     //----------//
     // distance //
     //----------//
-    @Override
-    public double distance (Point2D pt)
+    public double distance (SystemPoint pt)
     {
-        if (!(pt instanceof SystemPoint)) {
-            throw new RuntimeException(
-                "Trying to compute distance between heterogeneous points");
-        }
-
-        return super.distance(pt);
+        return Math.hypot(pt.x - x, pt.y - y);
     }
 
     //----------//
