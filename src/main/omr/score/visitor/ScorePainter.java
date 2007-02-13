@@ -55,6 +55,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.CubicCurve2D;
 
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
@@ -427,6 +428,23 @@ public class ScorePainter
 
         g.setColor(oldColor);
 
+        //        //DEBUG
+        //        if ((measure.getPart()
+        //                    .getId() == 2) && (measure.getId() == 1)) {
+        //            //<slur bezier-x="42" bezier-y="68" default-x="13" default-y="57" number="1" placement="above" type="start"/>
+        //            //<slur bezier-x="-72" bezier-y="34" default-x="8" default-y="16" number="1" type="stop"/>
+        //            CubicCurve2D.Double b = new CubicCurve2D.Double(
+        //                10, //x1
+        //                20, //y1
+        //                30, //ctrlx1
+        //                40, //ctrly1
+        //                80, //ctrlx2
+        //                60, //ctrly2
+        //                100, //x2,
+        //                40 //y2
+        //            );
+        //            g.draw(b);
+        //        }
         return true;
     }
 
@@ -542,8 +560,19 @@ public class ScorePainter
     @Override
     public boolean visit (Slur slur)
     {
-        slur.getArc()
-            .draw(g, slur.getDisplayOrigin(), zoom);
+        // Build a new curve, w/ translation and zoom
+        Point        origin = slur.getDisplayOrigin();
+        CubicCurve2D curve = slur.getCurve();
+        g.draw(
+            new CubicCurve2D.Double(
+                zoom.scaled(0.5 + curve.getX1() + origin.x),
+                zoom.scaled(0.5 + curve.getY1() + origin.y),
+                zoom.scaled(0.5 + curve.getCtrlX1() + origin.x),
+                zoom.scaled(0.5 + curve.getCtrlY1() + origin.y),
+                zoom.scaled(0.5 + curve.getCtrlX2() + origin.x),
+                zoom.scaled(0.5 + curve.getCtrlY2() + origin.y),
+                zoom.scaled(0.5 + curve.getX2() + origin.x),
+                zoom.scaled(0.5 + curve.getY2() + origin.y)));
 
         return true;
     }
