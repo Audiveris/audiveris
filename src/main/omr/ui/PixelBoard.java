@@ -128,7 +128,7 @@ public class PixelBoard
         }
 
         switch (selection.getTag()) {
-        case PIXEL : // Display rectangle characteristics
+        case SHEET_RECTANGLE : // Display rectangle characteristics
 
             Rectangle rect = (Rectangle) entity;
 
@@ -146,7 +146,7 @@ public class PixelBoard
 
             break;
 
-        case LEVEL : // Display pixel grey level
+        case PIXEL_LEVEL : // Display pixel grey level
 
             Integer val = (Integer) entity;
 

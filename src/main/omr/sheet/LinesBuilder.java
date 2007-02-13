@@ -134,7 +134,14 @@ public class LinesBuilder
         // Determine limits in ordinate for each staff area
         computeStaffLimits();
 
-        logger.info(staves.size() + " staff(s) found");
+        // User feedback
+        if (staves.size() > 1) {
+            logger.info(staves.size() + " staves found");
+        } else if (staves.size() > 0) {
+            logger.info(staves.size() + " staff found");
+        } else {
+            logger.warning("No staff found");
+        }
 
         // Display the resulting lag is so asked for
         if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
@@ -646,7 +653,7 @@ public class LinesBuilder
                 null);
             setName("LinesBuilder-View");
 
-            setLocationSelection(sheet.getSelection(PIXEL));
+            setLocationSelection(sheet.getSelection(SHEET_RECTANGLE));
             setSpecificSelections(
                 sheet.getSelection(HORIZONTAL_RUN),
                 sheet.getSelection(HORIZONTAL_SECTION));

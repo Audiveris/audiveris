@@ -382,8 +382,8 @@ public class ZoomedPanel
     {
         ///logger.info("ZoomedPanel. selection=" + selection + " hint=" + hint);
         switch (selection.getTag()) {
-        case PIXEL : // For sheet display
-        case SCORE : // For score display
+        case SHEET_RECTANGLE : // For sheet display
+        case SCORE_RECTANGLE : // For score display
 
             Rectangle rect = (Rectangle) locationSelection.getEntity();
 

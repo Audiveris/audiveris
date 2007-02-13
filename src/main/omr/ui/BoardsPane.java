@@ -114,11 +114,11 @@ public class BoardsPane
                 // inputs
                 pixelBoard.setInputSelectionList(
                     Arrays.asList(
-                        sheet.getSelection(SelectionTag.PIXEL),
-                        sheet.getSelection(SelectionTag.LEVEL)));
+                        sheet.getSelection(SelectionTag.SHEET_RECTANGLE),
+                        sheet.getSelection(SelectionTag.PIXEL_LEVEL)));
                 // output
                 pixelBoard.setOutputSelection(
-                    sheet.getSelection(SelectionTag.PIXEL));
+                    sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
             }
 
             r += 2;

@@ -211,9 +211,8 @@ public class HorizontalsBuilder
             displayFrame();
         }
 
-        logger.info(
-            info.getLedgers().size() + " ledger(s), " +
-            info.getEndings().size() + " ending(s)");
+        // User feedback
+        feedback(info.getLedgers().size(), info.getEndings().size());
 
         return info;
     }
@@ -408,6 +407,44 @@ public class HorizontalsBuilder
 
         return sheet.getScale()
                     .pixelsToFrac(dist);
+    }
+
+    //----------//
+    // feedback //
+    //----------//
+    private void feedback (int nl,
+                           int ne)
+    {
+        // A bit tedious !!! TBI
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (nl > 0) {
+                sb.append(nl)
+                  .append(" ledger")
+                  .append((nl > 1) ? "s" : "");
+            } else if (logger.isFineEnabled()) {
+                sb.append("No ledger");
+            }
+
+            if (ne > 0) {
+                if (sb.length() > 0) {
+                    sb.append(" ,");
+                }
+
+                sb.append(ne)
+                  .append(" ending")
+                  .append((ne > 1) ? "s" : "");
+            } else if (logger.isFineEnabled()) {
+                sb.append("No ending");
+            }
+
+            if ((nl + ne) > 0) {
+                logger.info(sb.toString());
+            } else if (logger.isFineEnabled()) {
+                logger.fine(sb.toString());
+            }
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -815,7 +852,8 @@ public class HorizontalsBuilder
                 null);
             setName("HorizontalsBuilder-View");
 
-            setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
+            setLocationSelection(
+                sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
 
             setSpecificSelections(
                 sheet.getSelection(SelectionTag.HORIZONTAL_RUN),

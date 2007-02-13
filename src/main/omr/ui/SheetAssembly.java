@@ -134,7 +134,7 @@ public class SheetAssembly
         this.sheet = sheet;
         sheet.setAssembly(this);
 
-        locationSelection = sheet.getSelection(SelectionTag.PIXEL);
+        locationSelection = sheet.getSelection(SelectionTag.SHEET_RECTANGLE);
 
         // GUI stuff
         slider.setToolTipText("Adjust Zoom Ratio");
