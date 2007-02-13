@@ -73,11 +73,25 @@ public class ScoreExporter
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreExporter.class);
 
-    /** "yes" token, to avoid case typos */
-    private static final String YES = "yes";
-
-    /** "no" token, to avoid case typos */
+    // To avoid typos
+    private static final String ABOVE = "above";
+    private static final String BACKWARD_HOOK = "backward hook";
+    private static final String BEGIN = "begin";
+    private static final String BELOW = "below";
+    private static final String COMMON = "common";
+    private static final String CONTINUE = "continue";
+    private static final String CUT = "cut";
+    private static final String DOWN = "down";
+    private static final String END = "end";
+    private static final String END = "end";
+    private static final String FORWARD_HOOK = "forward hook";
     private static final String NO = "no";
+    private static final String OVER = "over";
+    private static final String START = "start";
+    private static final String STOP = "stop";
+    private static final String UNDER = "under";
+    private static final String UP = "up";
+    private static final String YES = "yes";
 
     /** The xml document statement */
     private static final String XML_LINE = "<?xml version=\"1.0\"" +
@@ -348,9 +362,9 @@ public class ScoreExporter
 
         // Placement
         if (dynamics.getPoint().y < current.note.getCenter().y) {
-            direction.setPlacement("above");
+            direction.setPlacement(ABOVE);
         } else {
-            direction.setPlacement("below");
+            direction.setPlacement(BELOW);
         }
 
         // default-y
@@ -359,8 +373,7 @@ public class ScoreExporter
             pix.x,
             staff.getInfo().getFirstLine().getLine().yAt(pix.x));
         pmDynamics.setDefaultY(
-            toTenths(
-                current.system.getScale().pixelsToUnits(staffPix.y - pix.y)));
+            toTenths(dynamics.getScale().pixelsToUnits(staffPix.y - pix.y)));
 
         // Relative-x (No offset for the time being) using note left side
         PixelRectangle noteBox = current.note.getGlyph()
@@ -672,9 +685,9 @@ public class ScoreExporter
             pmStem.setDefaultY(yOf(tail.y, staff));
 
             if (tail.y < note.getCenter().y) {
-                pmStem.setContent("up");
+                pmStem.setContent(UP);
             } else {
-                pmStem.setContent("down");
+                pmStem.setContent(DOWN);
             }
         }
 
@@ -713,19 +726,19 @@ public class ScoreExporter
             if (glyph.getShape() == BEAM_HOOK) {
                 if (glyph.getCenter().x > chord.getStem()
                                                .getCenter().x) {
-                    pmBeam.setContent("forward hook");
+                    pmBeam.setContent(FORWARD_HOOK);
                 } else {
-                    pmBeam.setContent("backward hook");
+                    pmBeam.setContent(BACKWARD_HOOK);
                 }
             } else {
                 if (beam.getChords()
                         .first() == chord) {
-                    pmBeam.setContent("begin");
+                    pmBeam.setContent(BEGIN);
                 } else if (beam.getChords()
                                .last() == chord) {
-                    pmBeam.setContent("end");
+                    pmBeam.setContent(END);
                 } else {
-                    pmBeam.setContent("continue");
+                    pmBeam.setContent(CONTINUE);
                 }
             }
         }
@@ -746,7 +759,7 @@ public class ScoreExporter
                 Tie tie = new Tie();
                 pmNote.getTie()
                       .add(tie);
-                tie.setType(isStart ? "start" : "stop");
+                tie.setType(isStart ? START : STOP);
 
                 // Tied element
                 Tied tied = new Tied();
@@ -754,11 +767,11 @@ public class ScoreExporter
                          .add(tied);
 
                 // Type
-                tied.setType(isStart ? "start" : "stop");
+                tied.setType(isStart ? START : STOP);
 
                 // Orientation
                 if (isStart) {
-                    tied.setOrientation(slur.isBelow() ? "under" : "over");
+                    tied.setOrientation(slur.isBelow() ? UNDER : OVER);
                 }
 
                 // Bezier
@@ -819,11 +832,11 @@ public class ScoreExporter
                 }
 
                 // Type
-                pmSlur.setType(isStart ? "start" : "stop");
+                pmSlur.setType(isStart ? START : STOP);
 
                 // Placement
                 if (isStart) {
-                    pmSlur.setPlacement(slur.isBelow() ? "below" : "above");
+                    pmSlur.setPlacement(slur.isBelow() ? BELOW : ABOVE);
                 }
 
                 // Bezier
@@ -1032,12 +1045,12 @@ public class ScoreExporter
         // Symbol ?
         switch (timeSignature.getShape()) {
         case COMMON_TIME :
-            time.setSymbol("common");
+            time.setSymbol(COMMON);
 
             break;
 
         case CUT_TIME :
-            time.setSymbol("cut");
+            time.setSymbol(CUT);
 
             break;
         }
@@ -1078,9 +1091,9 @@ public class ScoreExporter
 
         // Placement
         if (pedal.getPoint().y < current.note.getCenter().y) {
-            direction.setPlacement("above");
+            direction.setPlacement(ABOVE);
         } else {
-            direction.setPlacement("below");
+            direction.setPlacement(BELOW);
         }
 
         // default-y
@@ -1089,15 +1102,14 @@ public class ScoreExporter
             pix.x,
             staff.getInfo().getFirstLine().getLine().yAt(pix.x));
         pmPedal.setDefaultY(
-            toTenths(
-                current.system.getScale().pixelsToUnits(staffPix.y - pix.y)));
+            toTenths(pedal.getScale().pixelsToUnits(staffPix.y - pix.y)));
 
         // Start / Stop
         if (pedal.isStart()) {
             // type
-            pmPedal.setType("start");
+            pmPedal.setType(START);
         } else {
-            pmPedal.setType("stop");
+            pmPedal.setType(STOP);
         }
 
         // Relative-x (No offset for the time being) using note left side
@@ -1152,9 +1164,9 @@ public class ScoreExporter
 
             // Placement
             if (wedge.getPoint().y < current.note.getCenter().y) {
-                direction.setPlacement("above");
+                direction.setPlacement(ABOVE);
             } else {
-                direction.setPlacement("below");
+                direction.setPlacement(BELOW);
             }
 
             // default-y
@@ -1163,10 +1175,9 @@ public class ScoreExporter
                 pix.x,
                 staff.getInfo().getFirstLine().getLine().yAt(pix.x));
             pmWedge.setDefaultY(
-                toTenths(
-                    current.system.getScale().pixelsToUnits(staffPix.y - pix.y)));
+                toTenths(wedge.getScale().pixelsToUnits(staffPix.y - pix.y)));
         } else { // It's a stop
-            pmWedge.setType("stop");
+            pmWedge.setType(STOP);
         }
 
         // Relative-x (No offset for the time being) using note left side
