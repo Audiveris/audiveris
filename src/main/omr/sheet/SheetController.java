@@ -315,8 +315,7 @@ public class SheetController
         } else if (source == component) {
             // User has selected a new tab
             final int index = component.getSelectedIndex();
-
-            logger.info("previous=" + previousIndex + " index=" + index);
+            ///logger.info("previous=" + previousIndex + " index=" + index);
 
             if (index != -1) {
                 if (previousIndex != -1) {
@@ -454,7 +453,7 @@ public class SheetController
     //-------------//
     private void tabSelected (int index)
     {
-        logger.info("tabSelected index=" + index);
+        ///logger.info("tabSelected index=" + index);
 
         // Remember the new selected sheet
         Sheet sheet = getCurrentSheet();
