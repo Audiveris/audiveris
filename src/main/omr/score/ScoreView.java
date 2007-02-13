@@ -98,8 +98,8 @@ public class ScoreView
 
         // Explicitly register the display to Score Selection
         Sheet sheet = score.getSheet();
-        panel.setLocationSelection(sheet.getSelection(SelectionTag.SCORE));
-        sheet.getSelection(SelectionTag.SCORE)
+        panel.setLocationSelection(sheet.getSelection(SelectionTag.SCORE_RECTANGLE));
+        sheet.getSelection(SelectionTag.SCORE_RECTANGLE)
              .addObserver(panel);
 
         info.setHorizontalAlignment(SwingConstants.LEFT);
@@ -118,7 +118,7 @@ public class ScoreView
         new ScoreSheetBridge(score);
 
         // Force selection update
-        Selection pixelSelection = sheet.getSelection(SelectionTag.PIXEL);
+        Selection pixelSelection = sheet.getSelection(SelectionTag.SHEET_RECTANGLE);
         pixelSelection.reNotifyObservers(null);
     }
 
