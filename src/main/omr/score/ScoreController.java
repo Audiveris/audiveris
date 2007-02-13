@@ -11,13 +11,16 @@
 package omr.score;
 
 import omr.Main;
-import omr.Step;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import static omr.score.ScoreFormat.*;
 
-import omr.sheet.InstanceStep;
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
+import omr.selection.SelectionObserver;
+import omr.selection.SelectionTag;
+
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
@@ -55,7 +58,7 @@ import javax.swing.event.*;
  * @version $Id$
  */
 public class ScoreController
-    implements ChangeListener
+    implements ChangeListener, SelectionObserver
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -129,6 +132,10 @@ public class ScoreController
         // Register interest in ScoreManager
         ScoreManager.getInstance()
                     .setChangeListener(this);
+
+        // Stay informed on sheet selection
+        SheetManager.getSelection()
+                    .addObserver(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -165,6 +172,15 @@ public class ScoreController
     public JMenu getMenu ()
     {
         return scoreMenu;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    @Implement(SelectionObserver.class)
+    public String getName ()
+    {
+        return "ScoreController";
     }
 
     //--------------//
@@ -213,8 +229,24 @@ public class ScoreController
     {
         // Event from ScoreManager ?
         if (e.getSource() instanceof ScoreManager) {
+            // Action that depends on number of handled scores
             dumpAllAction.setEnabled(
                 ScoreManager.getInstance().getScores().size() > 0);
+        }
+    }
+
+    //--------//
+    // update //
+    //--------//
+    @Implement(SelectionObserver.class)
+    public void update (Selection     selection,
+                        SelectionHint hint)
+    {
+        if (selection.getTag() == SelectionTag.SHEET) {
+            Sheet sheet = (Sheet) selection.getEntity();
+            enableActions(
+                scoreDependentActions,
+                (sheet != null) && (sheet.getScore() != null));
         }
     }
 
