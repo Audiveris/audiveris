@@ -51,7 +51,7 @@ public class PictureView
 
         // Inject dependency of pixel location
         view.setLocationSelection(
-            sheet.getSelection(SelectionTag.PIXEL));
+            sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
 
         // Insert view
         setView(view);

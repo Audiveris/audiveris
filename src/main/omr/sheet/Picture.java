@@ -671,7 +671,7 @@ public class Picture
                         SelectionHint hint)
     {
         switch (selection.getTag()) {
-        case PIXEL :
+        case SHEET_RECTANGLE :
 
             Integer level = null;
 
