@@ -22,11 +22,11 @@ public enum SelectionTag {
     /** Current Sheet, entity type is a Sheet. */
     SHEET,
     /** Rectangle in Score display, entity type is a Rectangle. */
-    SCORE, 
+    SCORE_RECTANGLE, 
     /** Rectangle in Sheet display, entity type is a Rectangle. */
-    PIXEL, 
+    SHEET_RECTANGLE, 
     /** Pixel grey level, entity type is an Integer. */
-    LEVEL, 
+    PIXEL_LEVEL, 
     /** Run of initial skewed lag, entity type is a Run. */
     SKEW_RUN, 
     /** Section of initial skewed lag, entity type is a Section. */
