@@ -67,10 +67,10 @@ public class Note
         /** La */ A,
 
         /** Si */ B,
-        /** Do */ C, 
-        /** Ré */ D, 
-        /** Mi */ E, 
-        /** Fa */ F, 
+        /** Do */ C,
+        /** Ré */ D,
+        /** Mi */ E,
+        /** Fa */ F,
         /** Sol */ G;
     }
 
@@ -97,7 +97,8 @@ public class Note
     /** Octave */
     private Integer octave;
 
-    /** Tie ??? */
+    /** Tie / slurs */
+    private List<Slur> slurs = new ArrayList<Slur>();
 
     /** Pitch position */
     private final double pitchPosition;
@@ -189,6 +190,14 @@ public class Note
         return shape;
     }
 
+    //----------//
+    // getSlurs //
+    //----------//
+    public List<Slur> getSlurs ()
+    {
+        return slurs;
+    }
+
     //-----------------//
     // getTypeDuration //
     //-----------------//
@@ -264,6 +273,14 @@ public class Note
         return 0;
     }
 
+    //---------//
+    // addSlur //
+    //---------//
+    public void addSlur (Slur slur)
+    {
+        slurs.add(slur);
+    }
+
     //--------------------//
     // populateAccidental //
     //--------------------//
@@ -278,7 +295,7 @@ public class Note
         Set<Note> candidates = new HashSet<Note>();
 
         // An accidental impacts the note right after (even if duplicated)
-        ChordLoop: 
+        ChordLoop:
         for (TreeNode node : measure.getChords()) {
             Chord chord = (Chord) node;
 
