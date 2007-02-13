@@ -163,6 +163,12 @@ public class ScaleBuilder
         logger.info(
             "Scale black is " + mainFore + ", white is " + mainBack +
             ", interline is " + (mainFore + mainBack));
+
+        // Check picture resolution
+        if ((mainFore + mainBack) < constants.minInterline.getValue()) {
+            logger.warning(
+                "Picture resolution is too low: " + (mainFore + mainBack));
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -328,8 +334,14 @@ public class ScaleBuilder
     private static final class Constants
         extends ConstantSet
     {
+        /** Should we produce a chart on computed scale data ? */
         Constant.Boolean plotting = new Constant.Boolean(
             false,
             "Should we produce a chart on computed scale data ?");
+
+        /** Minimum number of pixels per interline */
+        Constant.Integer minInterline = new Constant.Integer(
+            15,
+            "Minimum number of pixels per interline");
     }
 }
