@@ -84,7 +84,7 @@ class GlyphBrowser
     private final GlyphVerifier verifier;
 
     /** Local pixel selection */
-    private final Selection localPixelSelection = new Selection(PIXEL);
+    private final Selection localPixelSelection = new Selection(SHEET_RECTANGLE);
 
     /** Local section selection */
     private final Selection localSectionSelection = new Selection(
@@ -450,7 +450,7 @@ class GlyphBrowser
 
             // Additional tasks
             switch (selection.getTag()) {
-            case PIXEL : // Triggered by mouse
+            case SHEET_RECTANGLE : // Triggered by mouse
 
                 if (hint == LOCATION_INIT) {
                     Rectangle rect = (Rectangle) selection.getEntity();

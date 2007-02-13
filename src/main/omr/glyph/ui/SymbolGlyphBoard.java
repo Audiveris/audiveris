@@ -220,7 +220,7 @@ class SymbolGlyphBoard
                 stems.setValue(glyph.getStemNumber());
 
                 Moments moments = glyph.getMoments();
-                weight.setValue(moments.getWeight());
+                weight.setValue(moments.getWeight()); // Normalized
                 width.setValue(moments.getWidth());
                 height.setValue(moments.getHeight());
             } else {

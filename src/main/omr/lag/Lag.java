@@ -505,7 +505,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
                         SelectionHint hint)
     {
         switch (selection.getTag()) {
-        case PIXEL :
+        case SHEET_RECTANGLE :
 
             // Lookup for Run/Section pointed by this pixel location
             if ((hint == SelectionHint.LOCATION_ADD) ||

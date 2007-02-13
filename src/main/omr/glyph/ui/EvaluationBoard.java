@@ -278,7 +278,7 @@ class EvaluationBoard
 
         public EvalButton ()
         {
-            grade.setToolTipText("Grade of the evaluation");
+            grade.setToolTipText("Doubt of the evaluation");
 
             if (sheet != null) {
                 button = new JButton();
@@ -329,7 +329,7 @@ class EvaluationBoard
 
                 comp.setVisible(true);
 
-                if (eval.doubt <= GlyphInspector.getSymbolMaxGrade()) {
+                if (eval.doubt <= GlyphInspector.getSymbolMaxDoubt()) {
                     comp.setForeground(EVAL_GOOD_COLOR);
                 } else {
                     comp.setForeground(EVAL_SOSO_COLOR);
@@ -454,7 +454,7 @@ class EvaluationBoard
         {
             int          ok = 0;
             int          total = 0;
-            final double maxGrade = GlyphInspector.getSymbolMaxGrade();
+            final double maxDoubt = GlyphInspector.getSymbolMaxDoubt();
 
             for (SystemInfo system : sheet.getSystems()) {
                 for (Glyph glyph : system.getGlyphs()) {
@@ -462,7 +462,7 @@ class EvaluationBoard
                         (glyph.getShape() != Shape.COMBINING_STEM)) {
                         total++;
 
-                        Evaluation guess = evaluator.vote(glyph, maxGrade);
+                        Evaluation guess = evaluator.vote(glyph, maxDoubt);
 
                         if (glyph.getShape() == guess.shape) {
                             ok++;

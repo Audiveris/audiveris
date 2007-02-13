@@ -187,7 +187,7 @@ public class ActionsBoard
 
         public void actionPerformed (ActionEvent e)
         {
-            inspector.processUndueStems();
+            inspector.verifyStems();
             refresh();
         }
     }
@@ -205,7 +205,7 @@ public class ActionsBoard
 
         public void actionPerformed (ActionEvent e)
         {
-            inspector.processCompounds(inspector.getLeafMaxGrade());
+            inspector.retrieveCompounds(inspector.getSymbolMaxDoubt());
             refresh();
         }
     }
@@ -223,7 +223,7 @@ public class ActionsBoard
 
         public void actionPerformed (ActionEvent e)
         {
-            inspector.processGlyphs(inspector.getLeafMaxGrade());
+            inspector.evaluateGlyphs(inspector.getLeafMaxDoubt());
             refresh();
         }
     }
@@ -241,8 +241,8 @@ public class ActionsBoard
 
         public void actionPerformed (ActionEvent e)
         {
-            inspector.processLeaves();
-            inspector.processGlyphs(inspector.getLeafMaxGrade());
+            inspector.retrieveLeaves();
+            inspector.evaluateGlyphs(inspector.getLeafMaxDoubt());
             refresh();
         }
     }
@@ -337,7 +337,7 @@ public class ActionsBoard
 
         public void actionPerformed (ActionEvent e)
         {
-            inspector.processVerticals();
+            inspector.retrieveVerticals();
             refresh();
         }
     }

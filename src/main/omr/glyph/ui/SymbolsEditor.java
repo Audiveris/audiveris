@@ -113,7 +113,7 @@ public class SymbolsEditor
 
         // Allocation of components
         view = new MyView(lag);
-        view.setLocationSelection(sheet.getSelection(SelectionTag.PIXEL));
+        view.setLocationSelection(sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
 
         focus = new ShapeFocusBoard(
             sheet,
@@ -277,7 +277,7 @@ public class SymbolsEditor
 
         for (Glyph stem : stems) {
             SystemInfo system = sheet.getSystemAtY(stem.getContourBox().y);
-            inspector.removeGlyph(stem, system, /* cutSections => */
+            builder.removeGlyph(stem, system, /* cutSections => */
                                   true);
             assignGlyphShape(stem, null);
             systems.add(system);
@@ -285,7 +285,7 @@ public class SymbolsEditor
 
         // Extract brand new glyphs from impacted systems
         for (SystemInfo system : systems) {
-            inspector.extractNewSystemGlyphs(system);
+            builder.extractNewSystemGlyphs(system);
         }
 
         // Update the UI
@@ -428,6 +428,7 @@ public class SymbolsEditor
         if (sheet.SCORE.isDone()) {
             try {
                 sheet.LEAVES_COMPOUNDS.doit();
+                sheet.CLEANUP.doit();
                 sheet.SCORE.doit();
             } catch (ProcessingException ex) {
                 ex.printStackTrace();

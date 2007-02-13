@@ -384,7 +384,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
             showingSpecifics.getValue() &&
             (sectionSelection != null)) {
             switch (selection.getTag()) {
-            case PIXEL :
+            case SHEET_RECTANGLE :
 
                 if ((hint == SelectionHint.LOCATION_ADD) ||
                     (hint == SelectionHint.LOCATION_INIT)) {

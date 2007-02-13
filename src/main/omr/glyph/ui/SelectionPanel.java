@@ -307,7 +307,7 @@ class SelectionPanel
             }
         }
 
-        // Sort the palmares, shape by shape, by decreasing grade, so that
+        // Sort the palmares, shape by shape, by decreasing doubt, so that
         // the worst glyphs are found first
         Collections.sort(
             palmares,
@@ -315,15 +315,7 @@ class SelectionPanel
                     public int compare (NotedGlyph ng1,
                                         NotedGlyph ng2)
                     {
-                        if (ng1.grade < ng2.grade) {
-                            return +1;
-                        }
-
-                        if (ng1.grade > ng2.grade) {
-                            return -1;
-                        }
-
-                        return 0;
+                        return Double.compare(ng2.grade, ng1.grade);
                     }
                 });
 

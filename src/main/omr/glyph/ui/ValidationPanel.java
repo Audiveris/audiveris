@@ -253,7 +253,7 @@ class ValidationPanel
         falsePositives.clear();
 
         int                positives = 0;
-        final double       maxGrade = constants.maxGrade.getValue();
+        final double       maxDoubt = constants.maxDoubt.getValue();
         Collection<String> gNames = selectionPanel.getBase(
             trainingPanel.useWhole());
 
@@ -268,7 +268,7 @@ class ValidationPanel
             Glyph glyph = repository.getGlyph(gName, selectionPanel);
 
             if (glyph != null) {
-                Evaluation vote = evaluator.vote(glyph, maxGrade);
+                Evaluation vote = evaluator.vote(glyph, maxDoubt);
 
                 if (vote == null) {
                     negatives.add(gName);
@@ -308,9 +308,9 @@ class ValidationPanel
     private static final class Constants
         extends ConstantSet
     {
-        Constant.Double maxGrade = new Constant.Double(
+        Constant.Double maxDoubt = new Constant.Double(
             1.2,
-            "Maximum acceptance grade");
+            "Maximum acceptance doubt");
     }
 
     //---------------------//
