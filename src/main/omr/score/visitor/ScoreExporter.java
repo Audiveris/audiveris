@@ -44,14 +44,17 @@ import omr.util.Logger;
 import omr.util.TreeNode;
 
 import proxymusic.*;
-import proxymusic.Scaling;
+
+import proxymusic.util.Marshalling;
 
 import java.io.*;
 import java.lang.String;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
@@ -70,14 +73,21 @@ public class ScoreExporter
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreExporter.class);
 
-    /** Un/marshalling context for use with JAXB */
-    private static JAXBContext jaxbContext;
-
     /** "yes" token, to avoid case typos */
     private static final String YES = "yes";
 
     /** "no" token, to avoid case typos */
     private static final String NO = "no";
+
+    /** The xml document statement */
+    private static final String XML_LINE = "<?xml version=\"1.0\"" +
+                                           " encoding=\"UTF-8\"" +
+                                           " standalone=\"no\"?>\n";
+
+    /** The DOCTYPE statement for xml */
+    private static final String DOCTYPE_LINE = "<!DOCTYPE score-partwise PUBLIC" +
+                                               " \"-//Recordare//DTD MusicXML 1.1 Partwise//EN\"" +
+                                               " \"http://www.musicxml.org/dtds/partwise.dtd\">";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -92,6 +102,9 @@ public class ScoreExporter
 
     /** Current flags */
     private IsFirst isFirst = new IsFirst();
+
+    /** Slur numbers */
+    private Map<Slur, Integer> slurNumbers = new HashMap<Slur, Integer>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -129,8 +142,20 @@ public class ScoreExporter
 
         //  Finally, marshal the proxy
         try {
-            OutputStream os = new FileOutputStream(xmlFile);
-            jaxbMarshal(scorePartwise, os);
+            final OutputStream os = new FileOutputStream(xmlFile);
+
+            // Take care of first statements
+            os.write(XML_LINE.getBytes());
+            os.write(DOCTYPE_LINE.getBytes());
+
+            // Then the object to marshal
+            Marshaller m = Marshalling.getContext()
+                                      .createMarshaller();
+
+            m.setProperty(Marshaller.JAXB_FRAGMENT, true);
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            m.marshal(scorePartwise, os);
+
             logger.info("Score exported to " + xmlFile);
             os.close();
         } catch (FileNotFoundException ex) {
@@ -157,7 +182,7 @@ public class ScoreExporter
             public void run ()
             {
                 try {
-                    getJaxbContext();
+                    Marshalling.getContext();
                 } catch (JAXBException ex) {
                     ex.printStackTrace();
                     logger.warning("Error preloading JaxbContext");
@@ -334,8 +359,7 @@ public class ScoreExporter
             pix.x,
             staff.getInfo().getFirstLine().getLine().yAt(pix.x));
         pmDynamics.setDefaultY(
-            "" +
-            unitsToTenths(
+            toTenths(
                 current.system.getScale().pixelsToUnits(staffPix.y - pix.y)));
 
         // Relative-x (No offset for the time being) using note left side
@@ -344,7 +368,7 @@ public class ScoreExporter
         PixelPoint     pixelUl = new PixelPoint(noteBox.x, noteBox.y);
         SystemPoint    noteUpperLeft = current.system.toSystemPoint(pixelUl);
         pmDynamics.setRelativeX(
-            "" + unitsToTenths(dynamics.getPoint().x - noteUpperLeft.x));
+            toTenths(dynamics.getPoint().x - noteUpperLeft.x));
 
         return true;
     }
@@ -392,7 +416,7 @@ public class ScoreExporter
         current.pmPart.getMeasure()
                       .add(current.pmMeasure);
         current.pmMeasure.setNumber("" + measure.getId());
-        current.pmMeasure.setWidth("" + (unitsToTenths(measure.getWidth())));
+        current.pmMeasure.setWidth(toTenths(measure.getWidth()));
 
         if (measure.isImplicit()) {
             current.pmMeasure.setImplicit(YES);
@@ -415,6 +439,18 @@ public class ScoreExporter
                     "" +
                     measure.getPart().getScorePart().simpleDurationOf(
                         omr.score.Note.QUARTER_DURATION));
+
+                // Number of staves, if > 1
+                int stavesNb = measure.getPart()
+                                      .getStaves()
+                                      .size();
+
+                if (stavesNb > 1) {
+                    Staves staves = new Staves();
+                    getMeasureAttributes()
+                        .setStaves(staves);
+                    staves.setContent("" + stavesNb);
+                }
             } else {
                 // New system
                 current.pmPrint.setNewSystem(YES);
@@ -431,14 +467,12 @@ public class ScoreExporter
 
                 LeftMargin leftMargin = new LeftMargin();
                 systemMargins.setLeftMargin(leftMargin);
-                leftMargin.setContent(
-                    "" + unitsToTenths(current.system.getTopLeft().x));
+                leftMargin.setContent(toTenths(current.system.getTopLeft().x));
 
                 RightMargin rightMargin = new RightMargin();
                 systemMargins.setRightMargin(rightMargin);
                 rightMargin.setContent(
-                    "" +
-                    unitsToTenths(
+                    toTenths(
                         score.getDimension().width -
                         current.system.getTopLeft().x -
                         current.system.getDimension().width));
@@ -448,7 +482,7 @@ public class ScoreExporter
                     TopSystemDistance topSystemDistance = new TopSystemDistance();
                     systemLayout.setTopSystemDistance(topSystemDistance);
                     topSystemDistance.setContent(
-                        "" + unitsToTenths(current.system.getTopLeft().y));
+                        toTenths(current.system.getTopLeft().y));
                 } else {
                     // SystemDistance
                     SystemDistance systemDistance = new SystemDistance();
@@ -456,8 +490,7 @@ public class ScoreExporter
 
                     System prevSystem = (System) current.system.getPreviousSibling();
                     systemDistance.setContent(
-                        "" +
-                        unitsToTenths(
+                        toTenths(
                             current.system.getTopLeft().y -
                             prevSystem.getTopLeft().y -
                             prevSystem.getDimension().height -
@@ -474,7 +507,7 @@ public class ScoreExporter
                     StaffLayout staffLayout = new StaffLayout();
                     current.pmPrint.getStaffLayout()
                                    .add(staffLayout);
-                    staffLayout.setNumber("" + (staff.getId()));
+                    staffLayout.setNumber("" + staff.getId());
 
                     StaffDistance staffDistance = new StaffDistance();
                     staffLayout.setStaffDistance(staffDistance);
@@ -488,8 +521,7 @@ public class ScoreExporter
                     }
 
                     staffDistance.setContent(
-                        "" +
-                        unitsToTenths(
+                        toTenths(
                             staff.getTopLeft().y - prevStaff.getTopLeft().y -
                             prevStaff.getHeight()));
                 }
@@ -557,9 +589,11 @@ public class ScoreExporter
     public boolean visit (omr.score.Note note)
     {
         ///logger.info("Visiting " + note);
-        Chord chord = note.getChord();
+        Staff     staff = note.getStaff();
+        Chord     chord = note.getChord();
+        Notations notations = null;
 
-        Note  pmNote = new Note();
+        Note      pmNote = new Note();
         current.pmMeasure.getNoteOrBackupOrForward()
                          .add(pmNote);
 
@@ -610,7 +644,7 @@ public class ScoreExporter
                 note.getGlyph()
                     .getContourBox().y));
         pmNote.setDefaultX(
-            "" + unitsToTenths(noteTopLeft.x - note.getMeasure().getLeftX()));
+            toTenths(noteTopLeft.x - note.getMeasure().getLeftX()));
 
         // Duration
         Duration duration = new Duration();
@@ -635,11 +669,7 @@ public class ScoreExporter
             pmNote.setStem(pmStem);
 
             SystemPoint tail = chord.getTailLocation();
-            pmStem.setDefaultY(
-                "" +
-                unitsToTenths(
-                    note.getStaff().getTopLeft().y -
-                    note.getSystem().getTopLeft().y - tail.y));
+            pmStem.setDefaultY(yOf(tail.y, staff));
 
             if (tail.y < note.getCenter().y) {
                 pmStem.setContent("up");
@@ -654,7 +684,7 @@ public class ScoreExporter
                 .size() > 1) {
             proxymusic.Staff pmStaff = new proxymusic.Staff();
             pmNote.setStaff(pmStaff);
-            pmStaff.setContent("" + (note.getStaff().getId()));
+            pmStaff.setContent("" + staff.getId());
         }
 
         // Dots
@@ -696,6 +726,121 @@ public class ScoreExporter
                     pmBeam.setContent("end");
                 } else {
                     pmBeam.setContent("continue");
+                }
+            }
+        }
+
+        // Tie / Slur
+        for (Slur slur : note.getSlurs()) {
+            boolean isStart = slur.getLeftNote() == note;
+
+            // Notations element
+            if (notations == null) {
+                notations = new Notations();
+                pmNote.getNotations()
+                      .add(notations);
+            }
+
+            if (slur.isTie()) {
+                // Tie element
+                Tie tie = new Tie();
+                pmNote.getTie()
+                      .add(tie);
+                tie.setType(isStart ? "start" : "stop");
+
+                // Tied element
+                Tied tied = new Tied();
+                notations.getTiedOrSlurOrTuplet()
+                         .add(tied);
+
+                // Type
+                tied.setType(isStart ? "start" : "stop");
+
+                // Orientation
+                if (isStart) {
+                    tied.setOrientation(slur.isBelow() ? "under" : "over");
+                }
+
+                // Bezier
+                if (isStart) {
+                    tied.setDefaultX(
+                        toTenths(slur.getCurve().getX1() - noteTopLeft.x));
+                    tied.setDefaultY(yOf(slur.getCurve().getY1(), staff));
+                    tied.setBezierX(
+                        toTenths(slur.getCurve().getCtrlX1() - noteTopLeft.x));
+                    tied.setBezierY(yOf(slur.getCurve().getCtrlY1(), staff));
+                } else {
+                    tied.setDefaultX(
+                        toTenths(slur.getCurve().getX2() - noteTopLeft.x));
+                    tied.setDefaultY(yOf(slur.getCurve().getY2(), staff));
+                    tied.setBezierX(
+                        toTenths(slur.getCurve().getCtrlX2() - noteTopLeft.x));
+                    tied.setBezierY(yOf(slur.getCurve().getCtrlY2(), staff));
+                }
+            } else {
+                // Slur element
+                proxymusic.Slur pmSlur = new proxymusic.Slur();
+                notations.getTiedOrSlurOrTuplet()
+                         .add(pmSlur);
+
+                // Number attribute
+                Integer num = slurNumbers.get(slur);
+
+                if (num != null) {
+                    pmSlur.setNumber(num.toString());
+                    slurNumbers.remove(slur);
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            note.getContextString() + " last use " + num +
+                            " -> " + slurNumbers.toString());
+                    }
+                } else {
+                    // Determine first available number
+                    for (num = 1; num <= 6; num++) {
+                        if (!slurNumbers.containsValue(num)) {
+                            if (slur.getRightExtension() != null) {
+                                slurNumbers.put(slur.getRightExtension(), num);
+                            } else {
+                                slurNumbers.put(slur, num);
+                            }
+
+                            pmSlur.setNumber(num.toString());
+
+                            if (logger.isFineEnabled()) {
+                                logger.fine(
+                                    note.getContextString() + " first use " +
+                                    num + " -> " + slurNumbers.toString());
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
+                // Type
+                pmSlur.setType(isStart ? "start" : "stop");
+
+                // Placement
+                if (isStart) {
+                    pmSlur.setPlacement(slur.isBelow() ? "below" : "above");
+                }
+
+                // Bezier
+                if (isStart) {
+                    pmSlur.setDefaultX(
+                        toTenths(slur.getCurve().getX1() - noteTopLeft.x));
+                    pmSlur.setDefaultY(yOf(slur.getCurve().getY1(), staff));
+                    pmSlur.setBezierX(
+                        toTenths(slur.getCurve().getCtrlX1() - noteTopLeft.x));
+                    pmSlur.setBezierY(yOf(slur.getCurve().getCtrlY1(), staff));
+                } else {
+                    pmSlur.setDefaultX(
+                        toTenths(slur.getCurve().getX2() - noteTopLeft.x));
+                    pmSlur.setDefaultY(yOf(slur.getCurve().getY2(), staff));
+                    pmSlur.setBezierX(
+                        toTenths(slur.getCurve().getCtrlX2() - noteTopLeft.x));
+                    pmSlur.setBezierY(yOf(slur.getCurve().getCtrlY2(), staff));
                 }
             }
         }
@@ -773,11 +918,11 @@ public class ScoreExporter
 
         PageWidth pageWidth = new PageWidth();
         pageLayout.setPageWidth(pageWidth);
-        pageWidth.setContent("" + unitsToTenths(score.getDimension().width));
+        pageWidth.setContent(toTenths(score.getDimension().width));
 
         PageHeight pageHeight = new PageHeight();
         pageLayout.setPageHeight(pageHeight);
-        pageHeight.setContent("" + unitsToTenths(score.getDimension().height));
+        pageHeight.setContent(toTenths(score.getDimension().height));
 
         // PartList
         PartList partList = new PartList();
@@ -806,6 +951,7 @@ public class ScoreExporter
             // Delegate to children the filling of measures
             logger.fine("Populating " + current.part);
             isFirst.system = true; // TBD: to be reviewed when adding pages
+            slurNumbers.clear(); // Reset slur numbers
             score.acceptChildren(this);
 
             // Next part, if any
@@ -927,7 +1073,7 @@ public class ScoreExporter
                         .size() > 1) {
             proxymusic.Staff pmStaff = new proxymusic.Staff();
             direction.setStaff(pmStaff);
-            pmStaff.setContent("" + (staff.getId()));
+            pmStaff.setContent("" + staff.getId());
         }
 
         // Placement
@@ -943,8 +1089,7 @@ public class ScoreExporter
             pix.x,
             staff.getInfo().getFirstLine().getLine().yAt(pix.x));
         pmPedal.setDefaultY(
-            "" +
-            unitsToTenths(
+            toTenths(
                 current.system.getScale().pixelsToUnits(staffPix.y - pix.y)));
 
         // Start / Stop
@@ -960,8 +1105,7 @@ public class ScoreExporter
                                              .getContourBox();
         PixelPoint     pixelUl = new PixelPoint(noteBox.x, noteBox.y);
         SystemPoint    noteUpperLeft = current.system.toSystemPoint(pixelUl);
-        pmPedal.setRelativeX(
-            "" + unitsToTenths(pedal.getPoint().x - noteUpperLeft.x));
+        pmPedal.setRelativeX(toTenths(pedal.getPoint().x - noteUpperLeft.x));
 
         return true;
     }
@@ -984,7 +1128,7 @@ public class ScoreExporter
         directionType.setWedge(pmWedge);
 
         // Spread
-        pmWedge.setSpread("" + unitsToTenths(wedge.getSpread()));
+        pmWedge.setSpread(toTenths(wedge.getSpread()));
 
         // Start or stop ?
         if (wedge.isStart()) {
@@ -1003,7 +1147,7 @@ public class ScoreExporter
                             .size() > 1) {
                 proxymusic.Staff pmStaff = new proxymusic.Staff();
                 direction.setStaff(pmStaff);
-                pmStaff.setContent("" + (staff.getId()));
+                pmStaff.setContent("" + staff.getId());
             }
 
             // Placement
@@ -1019,8 +1163,7 @@ public class ScoreExporter
                 pix.x,
                 staff.getInfo().getFirstLine().getLine().yAt(pix.x));
             pmWedge.setDefaultY(
-                "" +
-                unitsToTenths(
+                toTenths(
                     current.system.getScale().pixelsToUnits(staffPix.y - pix.y)));
         } else { // It's a stop
             pmWedge.setType("stop");
@@ -1031,8 +1174,7 @@ public class ScoreExporter
                                              .getContourBox();
         PixelPoint     pixelUl = new PixelPoint(noteBox.x, noteBox.y);
         SystemPoint    noteUpperLeft = current.system.toSystemPoint(pixelUl);
-        pmWedge.setRelativeX(
-            "" + unitsToTenths(wedge.getPoint().x - noteUpperLeft.x));
+        pmWedge.setRelativeX(toTenths(wedge.getPoint().x - noteUpperLeft.x));
 
         return true;
     }
@@ -1073,28 +1215,6 @@ public class ScoreExporter
         logger.severe("Unsupported dynamics shape:" + shape);
 
         return null;
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    /**
-     * Get access to (and elaborate if not yet done) the needed JAXB context
-     *
-     * @return the ready to use JAXB context
-     * @exception JAXBException if anything goes wrong
-     */
-    private static synchronized JAXBContext getJaxbContext ()
-        throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            logger.fine("Creating JAXBContext ...");
-            jaxbContext = JAXBContext.newInstance(ScorePartwise.class);
-            logger.fine("JAXBContext created");
-        }
-
-        return jaxbContext;
     }
 
     //----------------------//
@@ -1161,25 +1281,6 @@ public class ScoreExporter
 
         return true; // Since no previous key found
     }
-
-    //    //------------------//
-    //    // getNoteDirection //
-    //    //------------------//
-    //    /**
-    //     * Report (after creating it if necessary) the note direction element
-    //     *
-    //     * @return the measure attributes element
-    //     */
-    //    private Direction getNoteDirection ()
-    //    {
-    //        if (current.direction == null) {
-    //            current.direction = new Direction();
-    //            current.pmMeasure.getNoteOrBackupOrForward()
-    //                             .add(current.direction);
-    //        }
-    //
-    //        return current.direction;
-    //    }
 
     //------------------//
     // accidentalNameOf //
@@ -1291,40 +1392,36 @@ public class ScoreExporter
         }
     }
 
-    //-------------//
-    // jaxbMarshal //
-    //-------------//
+    //----------//
+    // toTenths //
+    //----------//
     /**
-     * Marshal the hierarchy rooted at provided ScorePartwise instance to an
-     * OutputStream
-     *
-     * @param scorePartwise the root element
-     * @param os the output stream
-     * @exception JAXBException if marshalling goes wrong
-     */
-    private void jaxbMarshal (ScorePartwise scorePartwise,
-                              OutputStream  os)
-        throws JAXBException
-    {
-        Marshaller m = getJaxbContext()
-                           .createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(scorePartwise, os);
-    }
-
-    //---------------//
-    // unitsToTenths //
-    //---------------//
-    /**
-     * Convert a value expressed in units to a value expressed in tenths
+     * Convert a value expressed in units to a string value expressed in tenths
      *
      * @param units the number of units
-     * @return the number of tenths
+     * @return the number of tenths as a string
      */
-    private int unitsToTenths (int units)
+    private String toTenths (double units)
     {
         // Divide by 1.6 with rounding to nearest integer value
-        return (int) Math.rint(units / 1.6);
+        return Integer.toString((int) Math.rint(units / 1.6));
+    }
+
+    //-----//
+    // yOf //
+    //-----//
+    /**
+     * Report the musicXML Y value of a SystemPoint ordinate.
+     *
+     * @param y the system-based ordinate (in units)
+     * @param staff the related staff
+     * @return the upward-oriented ordinate wrt to staff top line (in tenths string)
+     */
+    private String yOf (double y,
+                        Staff  staff)
+    {
+        return toTenths(
+            staff.getTopLeft().y - staff.getSystem().getTopLeft().y - y);
     }
 
     //~ Inner Classes ----------------------------------------------------------
