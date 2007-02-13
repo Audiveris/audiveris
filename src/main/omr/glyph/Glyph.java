@@ -161,19 +161,21 @@ public class Glyph
 
     //~ Methods ----------------------------------------------------------------
 
-    public static String toString(Collection<? extends Glyph> glyphs)
+    public static String toString (Collection<?extends Glyph> glyphs)
     {
         StringBuilder sb = new StringBuilder();
         sb.append(" glyphs[");
+
         for (Glyph glyph : glyphs) {
             sb.append("#")
               .append(glyph.getId());
         }
+
         sb.append("]");
 
         return sb.toString();
-    
     }
+
     //---------------//
     // getAreaCenter //
     //---------------//
@@ -464,6 +466,31 @@ public class Glyph
         }
     }
 
+    //-------//
+    // idsOf //
+    //-------//
+    /**
+     * Convenient method, to build a string with just the ids of the glyph
+     * collection
+     *
+     * @param list the collection of glyphs
+     * @return the string built
+     */
+    public static String idsOf (List<Glyph> list)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+
+        for (Glyph glyph : list) {
+            sb.append("#")
+              .append(glyph.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
     //--------------//
     // getInterline //
     //--------------//
@@ -488,9 +515,10 @@ public class Glyph
     //---------//
     /**
      * A glyph is considered as known if it has a registered shape other than
-     * noise (clutter is considered as known)
+     * NOISE (Notice that CLUTTER as well as NO_LEGAL_SHAPE are considered as
+     * being known).
      *
-     * @return true if so
+     * @return true if known
      */
     public boolean isKnown ()
     {
@@ -623,6 +651,15 @@ public class Glyph
         return moments;
     }
 
+    //---------------------//
+    // getNormalizedWeight //
+    //---------------------//
+    public double getNormalizedWeight ()
+    {
+        return getMoments()
+                   .getWeight();
+    }
+
     //-------------//
     // setOriginal //
     //-------------//
@@ -745,7 +782,7 @@ public class Glyph
     // setShape //
     //----------//
     /**
-     * Setter for the glyph shape, with related grade
+     * Setter for the glyph shape, with related doubt
      *
      * @param shape the assigned shape
      * @param doubt the related doubt
@@ -1051,7 +1088,8 @@ public class Glyph
      * Add a section as a member of this glyph.
      *
      * @param section The section to be included
-     * @param link Should we set the link from section to glyph ?
+     * @param link While adding a section to this glyph members, should we also 
+     *             set the link from section back to the glyph ?
      */
     public void addSection (GlyphSection section,
                             boolean      link)
@@ -1350,12 +1388,12 @@ public class Glyph
         return sb.toString();
     }
 
-    protected void setGrade (double grade)
+    protected void setDoubt (double doubt)
     {
         if (original != null) {
-            original.setGrade(grade);
+            original.setDoubt(doubt);
         } else {
-            this.doubt = grade;
+            this.doubt = doubt;
         }
     }
 
