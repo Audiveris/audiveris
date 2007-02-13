@@ -10,10 +10,11 @@
 //
 package omr.score;
 
+import omr.ProcessingException;
+
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
-////import static omr.glyph.Shape.*;
 import omr.score.visitor.ScoreCleaner;
 import omr.score.visitor.ScoreFixer;
 
@@ -25,7 +26,9 @@ import omr.sheet.SystemInfo;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Class <code>ScoreBuilder</code> is in charge of translating each relevant
@@ -93,45 +96,82 @@ public class ScoreBuilder
      */
     public void buildInfo ()
     {
-        // First, cleanup the score, keeping only the systems, slurs(?), staves,
-        // measures, barlines
-        score.accept(new ScoreCleaner());
+        try {
+            // First, cleanup the score, keeping only the systems, staves,
+            // measures, barlines
+            score.accept(new ScoreCleaner());
 
-        // Translations in proper order
-        translate(new ClefTranslator());
-        translate(new TimeTranslator());
-        translate(new KeyTranslator());
-        translate(new ChordTranslator());
-        translate(new BeamTranslator());
-        translate(new FlagTranslator());
-        translate(new AccidentalTranslator());
-        translate(new DotTranslator());
-        translate(new WedgeTranslator());
-        translate(new PedalTranslator());
-        translate(new DynamicsTranslator());
+            // Translations in proper order
 
-        // Update score view if any
-        if (score.getView() != null) {
-            score.getView()
-                 .getScrollPane()
-                 .getComponent()
-                 .repaint();
+            // Clef
+            translate(new ClefTranslator());
+
+            // Time signature
+            translate(new TimeTranslator());
+
+            // Key
+            translate(new KeyTranslator());
+
+            // Slot, Chord, Note
+            translate(new ChordTranslator());
+
+            // Slur
+            translate(new SlurTranslator());
+
+            // Beam (-> chord), BeamGroup
+            translate(new BeamTranslator());
+
+            // Flag (-> chord)
+            translate(new FlagTranslator());
+
+            // Accidental (-> note)
+            translate(new AccidentalTranslator());
+
+            // Augmentation dots (-> chord)
+            translate(new DotTranslator());
+
+            // Crescendo / decrescendo
+            translate(new WedgeTranslator());
+
+            // Pedal on / off
+            translate(new PedalTranslator());
+
+            // Dynamics
+            translate(new DynamicsTranslator());
+
+            // Update score view if any
+            if (score.getView() != null) {
+                score.getView()
+                     .getScrollPane()
+                     .getComponent()
+                     .repaint();
+            }
+        } catch (RebuildException rex) {
+            logger.warning("Rebuilding ...");
+
+            try {
+                sheet.LEAVES_COMPOUNDS.doit();
+                sheet.CLEANUP.doit();
+                sheet.SCORE.doit();
+            } catch (ProcessingException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
-    //---------------//
-    // deassignGlyph //
-    //---------------//
-    private void deassignGlyph (Glyph glyph)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Deassigning " + glyph);
-        }
-
-        // AIE AIE AIE TBD, should not depend on a UI element !!!
-        sheet.getSymbolsEditor()
-             .deassignGlyphShape(glyph);
-    }
+    //    //---------------//
+    //    // deassignGlyph //
+    //    //---------------//
+    //    private void deassignGlyph (Glyph glyph)
+    //    {
+    //        if (logger.isFineEnabled()) {
+    //            logger.fine("Deassigning " + glyph);
+    //        }
+    //
+    //        // AIE AIE AIE TBD, should not depend on a UI element !!!
+    //        sheet.getSymbolsEditor()
+    //             .deassignGlyphShape(glyph);
+    //    }
 
     //-----------//
     // translate //
@@ -157,11 +197,14 @@ public class ScoreBuilder
     //-----------------//
     private void translateSystem (Translator translator)
     {
-        for (Glyph glyph : currentSystem.getInfo()
-                                        .getGlyphs()) {
+        // Browse a COPY of the system collection of glyphs
+        List<Glyph> copy = new ArrayList<Glyph>(
+            currentSystem.getInfo().getGlyphs());
+
+        for (Glyph glyph : copy) {
             if (glyph.isWellKnown() && (glyph.getShape() != Shape.CLUTTER)) {
                 // Check for glyph relevance
-                if (translator.isrelevant(glyph)) {
+                if (translator.isRelevant(glyph)) {
                     // Determine part/staff containment
                     translator.computeLocation(glyph);
                     // Perform the translation on this glyph
@@ -175,6 +218,18 @@ public class ScoreBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //------------------//
+    // RebuildException //
+    //------------------//
+    public static class RebuildException
+        extends RuntimeException
+    {
+        public RebuildException (String message)
+        {
+            super(message);
+        }
+    }
 
     //------------//
     // Translator //
@@ -193,8 +248,13 @@ public class ScoreBuilder
         }
 
         /**
+         * Check if provided glyph is relevant
+         * @param glyph the glyph at hand
+         */
+        public abstract boolean isRelevant (Glyph glyph);
+
+        /**
          * Specific browsing of a given measure
-         *
          * @param measure the given measure
          */
         public void browse (Measure measure)
@@ -219,7 +279,6 @@ public class ScoreBuilder
         /**
          * Compute the location system environment of the provided glyph.
          * Results are written in global variables currentXXX.
-         *
          * @param glyph the glyph to locate
          */
         public void computeLocation (Glyph glyph)
@@ -231,15 +290,7 @@ public class ScoreBuilder
         }
 
         /**
-         * Check if provided glyph is relevant
-         *
-         * @param glyph the glyph at hand
-         */
-        public abstract boolean isrelevant (Glyph glyph);
-
-        /**
          * Perform the desired translation
-         *
          * @param glyph the glyph at hand
          */
         public abstract void translate (Glyph glyph);
@@ -267,7 +318,7 @@ public class ScoreBuilder
     private class AccidentalTranslator
         extends Translator
     {
-        public boolean isrelevant (Glyph glyph)
+        public boolean isRelevant (Glyph glyph)
         {
             return Shape.Accidentals.contains(glyph.getShape());
         }
@@ -284,6 +335,12 @@ public class ScoreBuilder
     private class BeamTranslator
         extends Translator
     {
+        public boolean isRelevant (Glyph glyph)
+        {
+            return (glyph.getShape() == Shape.BEAM) ||
+                   (glyph.getShape() == Shape.BEAM_HOOK);
+        }
+
         @Override
         public void browse (Measure measure)
         {
@@ -307,12 +364,6 @@ public class ScoreBuilder
             }
         }
 
-        public boolean isrelevant (Glyph glyph)
-        {
-            return (glyph.getShape() == Shape.BEAM) ||
-                   (glyph.getShape() == Shape.BEAM_HOOK);
-        }
-
         public void translate (Glyph glyph)
         {
             Beam.populate(glyph, currentMeasure);
@@ -325,6 +376,16 @@ public class ScoreBuilder
     private class ChordTranslator
         extends Translator
     {
+        public boolean isRelevant (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+
+            return Shape.Rests.contains(shape) ||
+                   Shape.NoteHeads.contains(shape) ||
+                   Shape.Notes.contains(shape) ||
+                   Shape.HeadAndFlags.contains(shape);
+        }
+
         @Override
         public void browse (Measure measure)
         {
@@ -342,16 +403,6 @@ public class ScoreBuilder
             if (logger.isFineEnabled()) {
                 dumpSystemSlots();
             }
-        }
-
-        public boolean isrelevant (Glyph glyph)
-        {
-            Shape shape = glyph.getShape();
-
-            return Shape.Rests.contains(shape) ||
-                   Shape.NoteHeads.contains(shape) ||
-                   Shape.Notes.contains(shape) ||
-                   Shape.HeadAndFlags.contains(shape);
         }
 
         public void translate (Glyph glyph)
@@ -388,16 +439,16 @@ public class ScoreBuilder
     private class ClefTranslator
         extends Translator
     {
+        public boolean isRelevant (Glyph glyph)
+        {
+            return Shape.Clefs.contains(glyph.getShape());
+        }
+
         @Override
         public void browse (Measure measure)
         {
             // Sort the clefs according to containing staff
             Collections.sort(measure.getClefs(), MeasureNode.staffComparator);
-        }
-
-        public boolean isrelevant (Glyph glyph)
-        {
-            return Shape.Clefs.contains(glyph.getShape());
         }
 
         public void translate (Glyph glyph)
@@ -412,6 +463,11 @@ public class ScoreBuilder
     private class DotTranslator
         extends Translator
     {
+        public boolean isRelevant (Glyph glyph)
+        {
+            return glyph.getShape() == Shape.DOT;
+        }
+
         @Override
         public void browse (Measure measure)
         {
@@ -467,11 +523,6 @@ public class ScoreBuilder
             }
         }
 
-        public boolean isrelevant (Glyph glyph)
-        {
-            return glyph.getShape() == Shape.DOT;
-        }
-
         public void translate (Glyph glyph)
         {
             Chord.populateDot(glyph, currentMeasure, currentCenter);
@@ -484,7 +535,7 @@ public class ScoreBuilder
     private class DynamicsTranslator
         extends Translator
     {
-        public boolean isrelevant (Glyph glyph)
+        public boolean isRelevant (Glyph glyph)
         {
             Shape shape = glyph.getShape();
 
@@ -504,6 +555,14 @@ public class ScoreBuilder
     private class FlagTranslator
         extends Translator
     {
+        public boolean isRelevant (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+
+            return Shape.Flags.contains(shape) ||
+                   Shape.HeadAndFlags.contains(shape);
+        }
+
         @Override
         public void browse (Measure measure)
         {
@@ -548,14 +607,6 @@ public class ScoreBuilder
             }
         }
 
-        public boolean isrelevant (Glyph glyph)
-        {
-            Shape shape = glyph.getShape();
-
-            return Shape.Flags.contains(shape) ||
-                   Shape.HeadAndFlags.contains(shape);
-        }
-
         public void translate (Glyph glyph)
         {
             Chord.populateFlag(glyph, currentMeasure);
@@ -568,45 +619,16 @@ public class ScoreBuilder
     private class KeyTranslator
         extends Translator
     {
+        public boolean isRelevant (Glyph glyph)
+        {
+            return (glyph.getShape() == Shape.SHARP) ||
+                   (glyph.getShape() == Shape.FLAT);
+        }
+
         @Override
         public void completeSystem ()
         {
             KeySignature.verifySystemKeys(currentSystem);
-
-            //            // Dummy
-            //            if (false) {
-            //                int is = 0;
-            //
-            //                for (TreeNode node : systemInfo.getScoreSystem()
-            //                                               .getStaves()) {
-            //                    Staff staff = (Staff) node;
-            //                    int   im = 0;
-            //
-            //                    for (TreeNode n : staff.getMeasures()) {
-            //                        Measure measure = (Measure) n;
-            //
-            //                        if (im > 0) {
-            //                            int k = (is * 3) + im;
-            //
-            //                            if (Math.abs(k) <= 7) {
-            //                                KeySignature sig = new KeySignature(
-            //                                    measure,
-            //                                    -k);
-            //                            }
-            //                        }
-            //
-            //                        im++;
-            //                    }
-            //
-            //                    is++;
-            //                }
-            //            }
-        }
-
-        public boolean isrelevant (Glyph glyph)
-        {
-            return (glyph.getShape() == Shape.SHARP) ||
-                   (glyph.getShape() == Shape.FLAT);
         }
 
         public void translate (Glyph glyph)
@@ -626,7 +648,7 @@ public class ScoreBuilder
     private class PedalTranslator
         extends Translator
     {
-        public boolean isrelevant (Glyph glyph)
+        public boolean isRelevant (Glyph glyph)
         {
             Shape shape = glyph.getShape();
 
@@ -641,12 +663,44 @@ public class ScoreBuilder
     }
 
     //----------------//
+    // SlurTranslator //
+    //----------------//
+    private class SlurTranslator
+        extends Translator
+    {
+        public boolean isRelevant (Glyph glyph)
+        {
+            return (glyph.getShape() == Shape.SLUR);
+        }
+
+        @Override
+        public void completeSystem ()
+        {
+            super.completeSystem();
+
+            // Retrieve inter-system slur connections
+            Slur.retrieveSlurConnections(currentSystem);
+        }
+
+        @Override
+        public void computeLocation (Glyph glyph)
+        {
+            // We do not compute location here
+        }
+
+        public void translate (Glyph glyph)
+        {
+            Slur.populate(glyph, currentSystem);
+        }
+    }
+
+    //----------------//
     // TimeTranslator //
     //----------------//
     private class TimeTranslator
         extends Translator
     {
-        public boolean isrelevant (Glyph glyph)
+        public boolean isRelevant (Glyph glyph)
         {
             return Shape.Times.contains(glyph.getShape());
         }
@@ -667,6 +721,13 @@ public class ScoreBuilder
     private class WedgeTranslator
         extends Translator
     {
+        public boolean isRelevant (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+
+            return (shape == Shape.CRESCENDO) || (shape == Shape.DECRESCENDO);
+        }
+
         @Override
         public void computeLocation (Glyph glyph)
         {
@@ -677,13 +738,6 @@ public class ScoreBuilder
             currentStaff = currentSystem.getStaffAt(currentCenter); // Bof!
             currentPart = currentStaff.getPart();
             currentMeasure = currentPart.getMeasureAt(currentCenter);
-        }
-
-        public boolean isrelevant (Glyph glyph)
-        {
-            Shape shape = glyph.getShape();
-
-            return (shape == Shape.CRESCENDO) || (shape == Shape.DECRESCENDO);
         }
 
         public void translate (Glyph glyph)
