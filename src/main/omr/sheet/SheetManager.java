@@ -184,6 +184,11 @@ public class SheetManager
                 changeListener.stateChanged(changeEvent);
             }
         }
+
+        // Remove from selection if needed
+        if (selection.getEntity() == sheet) {
+            selection.setEntity(null, null);
+        }
     }
 
     //----------//
