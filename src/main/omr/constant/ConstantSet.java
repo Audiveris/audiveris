@@ -102,9 +102,10 @@ public abstract class ConstantSet
         for (Constant constant : getMap()
                                      .values()) {
             System.out.printf(
-                "%-25s = %s\n",
+                "%-25s = %-20s\t%s\n",
                 constant.getName(),
-                constant.currentString());
+                constant.currentString(),
+                constant.getDescription());
         }
     }
 
