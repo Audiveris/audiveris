@@ -190,7 +190,7 @@ public class Glyph
      * Convenient method, to build a string with just the ids of the glyph
      * collection
      *
-     * @param list the collection of glyphs
+     * @param glyphs the collection of glyphs
      * @return the string built
      */
     public static String toString (Collection<?extends Glyph> glyphs)
@@ -229,14 +229,6 @@ public class Glyph
     }
 
     //-----------//
-    // setBounds //
-    //-----------//
-    public void setBounds (Rectangle bounds)
-    {
-        this.bounds = bounds;
-    }
-
-    //-----------//
     // getBounds //
     //-----------//
     /**
@@ -257,14 +249,6 @@ public class Glyph
         }
 
         return bounds;
-    }
-
-    //-----------//
-    // setCenter //
-    //-----------//
-    public void setCenter (PixelPoint center)
-    {
-        this.center = center;
     }
 
     //-----------//
@@ -296,14 +280,6 @@ public class Glyph
         } else {
             return getAreaCenter();
         }
-    }
-
-    //-------------//
-    // setCentroid //
-    //-------------//
-    public void setCentroid (PixelPoint centroid)
-    {
-        this.centroid = centroid;
     }
 
     //-------------//
@@ -376,50 +352,6 @@ public class Glyph
         }
     }
 
-    //------------------//
-    // getGlyphIndexAtX //
-    //------------------//
-    /**
-     * Retrieve the index of the very first glyph in the provided ordered list,
-     * whose left abscissa is equal or greater than the provided x value.
-     *
-     * @param list the list to search, ordered by increasing abscissa
-     * @param x the desired abscissa
-     * @return the index of the first suitable glyph, or list.size() if no such
-     *         glyph can be found.
-     */
-    public static int getGlyphIndexAtX (List<?extends Glyph> list,
-                                        int                  x)
-    {
-        int low = 0;
-        int high = list.size() - 1;
-
-        while (low <= high) {
-            int mid = (low + high) >> 1;
-            int gx = list.get(mid)
-                         .getContourBox().x;
-
-            if (gx < x) {
-                low = mid + 1;
-            } else if (gx > x) {
-                high = mid - 1;
-            } else {
-                // We are pointing to a glyph with desired x
-                // Let's now pick the very first one
-                for (mid = mid - 1; mid >= 0; mid--) {
-                    if (list.get(mid)
-                            .getContourBox().x < x) {
-                        break;
-                    }
-                }
-
-                return mid + 1;
-            }
-        }
-
-        return low;
-    }
-
     //----------//
     // getDoubt //
     //----------//
@@ -470,31 +402,6 @@ public class Glyph
     public void setInterline (int interline)
     {
         this.interline = interline;
-    }
-
-    //-------//
-    // idsOf //
-    //-------//
-    /**
-     * Convenient method, to build a string with just the ids of the glyph
-     * collection
-     *
-     * @param list the collection of glyphs
-     * @return the string built
-     */
-    public static String idsOf (List<Glyph> list)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-
-        for (Glyph glyph : list) {
-            sb.append("#")
-              .append(glyph.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
     }
 
     //--------------//
@@ -580,11 +487,6 @@ public class Glyph
     public Glyph getLeftStem ()
     {
         return leftStem;
-    }
-
-    public Logger getLogger ()
-    {
-        return logger;
     }
 
     //---------------//
@@ -784,9 +686,7 @@ public class Glyph
     //------------------//
     public boolean isShapeForbidden (Shape shape)
     {
-        return (getForbiddenShapes() != null) &&
-               getForbiddenShapes()
-                   .contains(shape);
+        return (forbiddenShapes != null) && forbiddenShapes.contains(shape);
     }
 
     //--------------//
@@ -908,14 +808,6 @@ public class Glyph
                 }
             }
         }
-    }
-
-    //------------------//
-    // setTrainingShape //
-    //------------------//
-    public void setTrainingShape (Shape shape)
-    {
-        setShape(shape);
     }
 
     //------------------//
@@ -1048,10 +940,8 @@ public class Glyph
     //------------//
     public void allowShape (Shape shape)
     {
-        Set<Shape> forbiddens = getForbiddenShapes();
-
-        if (forbiddens != null) {
-            forbiddens.remove(shape);
+        if (forbiddenShapes != null) {
+            forbiddenShapes.remove(shape);
         }
     }
 
@@ -1220,23 +1110,7 @@ public class Glyph
         System.out.println("   center=" + getCenter());
         System.out.println("   centroid=" + getCentroid());
         System.out.println("   bounds=" + getBounds());
-        System.out.println("   forbiddenShapes=" + getForbiddenShapes());
-    }
-
-    //-------------//
-    // erasePixels //
-    //-------------//
-    /**
-     * In the provided Picture, remove the pixels that correspond to the member
-     * sections
-     *
-     * @param picture the provided picture
-     */
-    public void erasePixels (Picture picture)
-    {
-        for (GlyphSection section : members) {
-            section.write(picture, Picture.BACKGROUND);
-        }
+        System.out.println("   forbiddenShapes=" + forbiddenShapes);
     }
 
     //------------//
@@ -1255,26 +1129,6 @@ public class Glyph
             view.resetColor();
         }
     }
-
-    //
-    //    //---------------//
-    //    // removeSection //
-    //    //---------------//
-    //    /**
-    //     * Remove a section from this glyph.
-    //     *
-    //     * @param section The section to be removed
-    //     */
-    //    public void removeSection (GlyphSection section)
-    //    {
-    //        section.setGlyph(null);
-    //
-    //        if (!members.remove(section)) {
-    //            logger.warning("removeSection " + section + " not part of " + this);
-    //        }
-    //
-    //        invalidateCache();
-    //    }
 
     //---------------//
     // renderBoxArea //
@@ -1417,22 +1271,6 @@ public class Glyph
         }
     }
 
-    //--------------------//
-    // setForbiddenShapes //
-    //--------------------//
-    private void setForbiddenShapes (Set<Shape> forbiddenShapes)
-    {
-        this.forbiddenShapes = forbiddenShapes;
-    }
-
-    //--------------------//
-    // getForbiddenShapes //
-    //--------------------//
-    private Set<Shape> getForbiddenShapes ()
-    {
-        return forbiddenShapes;
-    }
-
     //----------------//
     // cumulatePoints //
     //----------------//
@@ -1463,14 +1301,11 @@ public class Glyph
     //-------------//
     private void forbidShape (Shape shape)
     {
-        Set<Shape> forbiddens = getForbiddenShapes();
-
-        if (forbiddens == null) {
-            forbiddens = new HashSet<Shape>();
-            setForbiddenShapes(forbiddens);
+        if (forbiddenShapes == null) {
+            forbiddenShapes = new HashSet<Shape>();
         }
 
-        forbiddens.add(shape);
+        forbiddenShapes.add(shape);
     }
 
     //-----------------//
@@ -1478,9 +1313,9 @@ public class Glyph
     //-----------------//
     private void invalidateCache ()
     {
-        setCentroid(null);
-        setMoments(null);
-        setBounds(null);
+        centroid = null;
+        moments = null;
+        bounds = null;
         contourBox = null;
         weight = null;
         signature = null;

@@ -339,7 +339,7 @@ public class GlyphInspector
         if (neighbors.size() > 1) {
             if (logger.isFineEnabled()) {
                 logger.finest(
-                    "neighbors=" + Glyph.idsOf(neighbors) + " seed=" + seed);
+                    "neighbors=" + Glyph.toString(neighbors) + " seed=" + seed);
             }
 
             Glyph compound = builder.buildCompound(neighbors);

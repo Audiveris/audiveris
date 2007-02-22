@@ -106,15 +106,15 @@ public class Section<L extends Lag, S extends Section<L, S>>
      * Convenient method, to build a string with just the ids of the section
      * collection
      *
-     * @param list the collection of sections
+     * @param sections the collection of sections
      * @return the string built
      */
-    public static String toString (Collection<?extends Section> collection)
+    public static String toString (Collection<?extends Section> sections)
     {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
 
-        for (Section section : collection) {
+        for (Section section : sections) {
             sb.append('#')
               .append(section.getId());
         }
