@@ -135,7 +135,7 @@ public class SymbolsEditor
         glyphBoard = new SymbolGlyphBoard(
             "Editor-SymbolGlyphBoard",
             this,
-            sheet.getFirstSymbolId(),
+            0,
             sheet.getSelection(VERTICAL_GLYPH),
             sheet.getSelection(VERTICAL_GLYPH_ID),
             sheet.getSelection(GLYPH_SET));

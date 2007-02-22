@@ -101,6 +101,18 @@ public class Glyph
 
     // Below are properties to be retrieved in the glyph original if any
 
+    /** Contained leaves and stems */
+    protected Set<Glyph> leaves = new HashSet<Glyph>();
+
+    /** Link to the glyph this one is a leaf of */
+    protected Glyph leafOf;
+
+    /** Contained parts, if this glyph is a compound */
+    protected Set<Glyph> parts = new HashSet<Glyph>();
+
+    /** Link to the compound this one is a part of */
+    protected Glyph partOf;
+
     /** Current recognized shape of this glyph */
     protected Shape shape;
 
@@ -174,6 +186,13 @@ public class Glyph
     //----------//
     // toString //
     //----------//
+    /**
+     * Convenient method, to build a string with just the ids of the glyph
+     * collection
+     *
+     * @param list the collection of glyphs
+     * @return the string built
+     */
     public static String toString (Collection<?extends Glyph> glyphs)
     {
         StringBuilder sb = new StringBuilder();
@@ -1063,7 +1082,7 @@ public class Glyph
      * ordinate.
      *
      * @param other the other glyph to compare to
-     * @return th result of ordering
+     * @return the result of ordering
      */
     @Implement(Comparable.class)
     public int compareTo (Glyph other)
@@ -1081,7 +1100,14 @@ public class Glyph
         }
 
         // Vertically aligned, so use ordinates
-        return ref.y - otherRef.y;
+        int dy = ref.y - otherRef.y;
+
+        if (dy != 0) {
+            return dy;
+        }
+
+        // Finally, use id ...
+        return this.getId() - other.getId();
     }
 
     //----------------//
@@ -1173,6 +1199,10 @@ public class Glyph
         System.out.println("   id=" + getId());
         System.out.println("   lag=" + getLag());
         System.out.println("   members=" + getMembers());
+        System.out.println("   parts=" + parts);
+        System.out.println("   partOf=" + partOf);
+        System.out.println("   leaves=" + leaves);
+        System.out.println("   leafOf=" + leafOf);
         System.out.println("   contourBox=" + getContourBox());
         System.out.println("   weight=" + getWeight());
         System.out.println("   result=" + getResult());
@@ -1226,24 +1256,25 @@ public class Glyph
         }
     }
 
-    //---------------//
-    // removeSection //
-    //---------------//
-    /**
-     * Remove a section from this glyph.
-     *
-     * @param section The section to be removed
-     */
-    public void removeSection (GlyphSection section)
-    {
-        section.setGlyph(null);
-
-        if (!members.remove(section)) {
-            logger.warning("removeSection " + section + " not part of " + this);
-        }
-
-        invalidateCache();
-    }
+    //
+    //    //---------------//
+    //    // removeSection //
+    //    //---------------//
+    //    /**
+    //     * Remove a section from this glyph.
+    //     *
+    //     * @param section The section to be removed
+    //     */
+    //    public void removeSection (GlyphSection section)
+    //    {
+    //        section.setGlyph(null);
+    //
+    //        if (!members.remove(section)) {
+    //            logger.warning("removeSection " + section + " not part of " + this);
+    //        }
+    //
+    //        invalidateCache();
+    //    }
 
     //---------------//
     // renderBoxArea //
@@ -1300,6 +1331,26 @@ public class Glyph
             }
         }
 
+        if (leafOf != null) {
+            sb.append(" leafOf #")
+              .append(leafOf.getId());
+        }
+
+        if (leaves.size() > 0) {
+            sb.append(" leaves")
+              .append(toString(leaves));
+        }
+
+        if (partOf != null) {
+            sb.append(" partOf #")
+              .append(partOf.getId());
+        }
+
+        if (parts.size() > 0) {
+            sb.append(" parts")
+              .append(toString(parts));
+        }
+
         if (centroid != null) {
             sb.append(" centroid=[")
               .append(centroid.x)
@@ -1335,6 +1386,35 @@ public class Glyph
     protected String getPrefix ()
     {
         return "Glyph";
+    }
+
+    //-----------//
+    // setPartOf //
+    //-----------//
+    /**
+     * Record the link from this glyph as part of a larger compound
+     *
+     * @param compound the containing compound
+     */
+    void setPartOf (Glyph compound)
+    {
+        partOf = compound;
+    }
+
+    //----------//
+    // setParts //
+    //----------//
+    /**
+     * Record the parts that compose this compound gmyph
+     *
+     * @param parts the contained parts
+     */
+    void setParts (List<?extends Glyph> parts)
+    {
+        if (this.parts != parts) {
+            this.parts.clear();
+            this.parts.addAll(parts);
+        }
     }
 
     //--------------------//

@@ -141,7 +141,14 @@ public class GlyphSection
         }
 
         // Vertically aligned, so use ordinates
-        return ref.y - otherRef.y;
+        int dy = ref.y - otherRef.y;
+
+        if (dy != 0) {
+            return dy;
+        }
+        
+        // Finally, use id ...
+        return this.getId() - other.getId();
     }
 
     //----------//

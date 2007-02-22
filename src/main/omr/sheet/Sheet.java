@@ -133,9 +133,6 @@ public class Sheet
     /** Link with related score. Set by BARS. */
     private Score score;
 
-    /** Glyph id of the first symbol */
-    private int firstSymbolId = -1;
-
     // Below: transient members
 
     /** A bar line extractor for this sheet */
@@ -294,10 +291,8 @@ public class Sheet
             throws ProcessingException
         {
             // We need the glyphs that result from extraction
-            if (firstSymbolId == -1) {
-                firstSymbolId = getGlyphBuilder()
-                                    .retrieveGlyphs();
-            }
+            getGlyphBuilder()
+                .retrieveGlyphs();
 
             result = Boolean.valueOf(true);
 
@@ -1038,19 +1033,6 @@ public class Sheet
         }
 
         return steps;
-    }
-
-    //------------------//
-    // getFirstSymbolId //
-    //------------------//
-    /**
-     * Report the id of the first symbol glyph
-     *
-     * @return the first symbol glyph id
-     */
-    public int getFirstSymbolId ()
-    {
-        return firstSymbolId;
     }
 
     //----------------//

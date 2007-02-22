@@ -170,34 +170,31 @@ public class GlyphInspector
         int       clutterNb = 0;
         int       structureNb = 0;
         Evaluator evaluator = GlyphNetwork.getInstance();
+        for (Glyph glyph : vLag.getActiveGlyphs()) {
+            ///if (glyph != null) {
+            if (glyph.getShape() == null) {
+                glyph.setInterline(sheet.getScale().interline());
 
-        for (int id = sheet.getFirstSymbolId(); id <= vLag.getLastGlyphId();
-             id++) {
-            Glyph glyph = vLag.getGlyph(id);
+                // Get vote
+                Evaluation vote = evaluator.vote(glyph, maxDoubt);
 
-            if (glyph != null) {
-                if (glyph.getShape() == null) {
-                    glyph.setInterline(sheet.getScale().interline());
+                if (vote != null) {
+                    glyph.setShape(vote.shape, vote.doubt);
+                    acceptNb++;
 
-                    // Get vote
-                    Evaluation vote = evaluator.vote(glyph, maxDoubt);
-
-                    if (vote != null) {
-                        glyph.setShape(vote.shape, vote.doubt);
-                        acceptNb++;
-
-                        if (vote.shape == Shape.NOISE) {
-                            noiseNb++;
-                        } else if (vote.shape == Shape.CLUTTER) {
-                            clutterNb++;
-                        } else if (vote.shape == Shape.STRUCTURE) {
-                            structureNb++;
-                        } else {
-                            knownNb++;
-                        }
+                    if (vote.shape == Shape.NOISE) {
+                        noiseNb++;
+                    } else if (vote.shape == Shape.CLUTTER) {
+                        clutterNb++;
+                    } else if (vote.shape == Shape.STRUCTURE) {
+                        structureNb++;
+                    } else {
+                        knownNb++;
                     }
                 }
             }
+
+            ///}
         }
 
         if (acceptNb > 0) {

@@ -252,6 +252,7 @@ public class GlyphLag
             section.setGlyph(glyph);
         }
 
+
         return glyph;
     }
 
@@ -516,10 +517,6 @@ public class GlyphLag
 
         // Invalidate the collection of active glyphs
         activeGlyphs = null;
-
-        //        logger.info(getName() + " mapSection " + section);
-        //        logger.info("map.size=" + glyphMap.size() + " map.entrySet=" + glyphMap.entrySet());
-        //        logger.info("map.values.size=" + glyphMap.values().size());
     }
 
     //

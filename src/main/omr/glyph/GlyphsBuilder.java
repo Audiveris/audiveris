@@ -81,9 +81,6 @@ public class GlyphsBuilder
     /** Lag of vertical runs */
     private final GlyphLag vLag;
 
-    /** First glyph id as built by this builder */
-    private int firstGlyphId;
-
     //~ Constructors -----------------------------------------------------------
 
     //---------------//
@@ -164,10 +161,13 @@ public class GlyphsBuilder
     {
         SystemInfo system = sheet.getSystemAtY(compound.getContourBox().y);
 
+        //compound.setParts(parts);
+
         // Get rid of composing glyphs
-        for (Glyph glyph : parts) {
-            glyph.setShape(Shape.NO_LEGAL_SHAPE);
-            removeGlyph(glyph, system, /* cutSections => */
+        for (Glyph part : parts) {
+            //part.setPartOf(compound);
+            part.setShape(Shape.NO_LEGAL_SHAPE);
+            removeGlyph(part, system, /* cutSections => */
                         false);
         }
 
@@ -280,21 +280,17 @@ public class GlyphsBuilder
     //----------------//
     /**
      * Retrieve the new glyphs that can be built in all systems of the sheet
-     *
-     * @return the number of glyphs created
      */
-    public Integer retrieveGlyphs ()
+    public void retrieveGlyphs ()
     {
         // Make sure horizontals (such as ledgers) & verticals (such as
         // stems) have been retrieved
         sheet.getHorizontals();
 
-        List<SystemInfo> systems = sheet.getSystems();
-
-        // Now considerConnection each system area on turn
         int nb = 0;
 
-        for (SystemInfo system : systems) {
+        // Now considerConnection each system area on turn
+        for (SystemInfo system : sheet.getSystems()) {
             nb += retrieveSystemGlyphs(system);
         }
 
@@ -304,8 +300,6 @@ public class GlyphsBuilder
         } else {
             logger.info("No glyph found");
         }
-
-        return new Integer(firstGlyphId);
     }
 
     //----------------------//
@@ -335,7 +329,7 @@ public class GlyphsBuilder
                 computeGlyphFeatures(system, glyph);
 
                 // And insert this newly built glyph at proper location
-                insertGlyph(glyph, system);
+                glyph = insertGlyph(glyph, system);
                 nb++;
             }
         }
@@ -371,7 +365,7 @@ public class GlyphsBuilder
     //--------------------//
     private boolean checkStemIntersect (Collection<Glyph> glyphs,
                                         //int               maxItemWidth,
-                                        Glyph             glyph,
+    Glyph                                                 glyph,
                                         boolean           onLeft)
     {
         ///logger.info("checkStemIntersect glyph#" + glyph.getId() + " among" + Glyph.toString(glyphs));
@@ -445,17 +439,13 @@ public class GlyphsBuilder
         // Number of connected stems
         int stemNb = 0;
 
-        if (checkStemIntersect(
-            system.getGlyphs(),
-            glyph,
-            /* onLeft => */ true)) {
+        if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
+                               true)) {
             stemNb++;
         }
 
-        if (checkStemIntersect(
-            system.getGlyphs(),
-            glyph,
-            /* onLeft => */ false)) {
+        if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
+                               false)) {
             stemNb++;
         }
 
