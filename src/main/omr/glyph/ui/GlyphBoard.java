@@ -479,8 +479,7 @@ public class GlyphBoard
                     glyphModel.deassignSetShape(glyphs);
 
                     // Update focus on current glyph, if reused in a compound
-                    Glyph newGlyph = glyph.getMembers()
-                                          .get(0)
+                    Glyph newGlyph = glyph.getFirstSection()
                                           .getGlyph();
 
                     if (glyph != newGlyph) {

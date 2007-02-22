@@ -103,6 +103,7 @@ public class SystemSplit
     //-----------//
     /**
      * Split the various bar  entities
+     * (Used once at end of BarsBuilder).
      *
      * @param sheet the containing sheet
      * @param bars the whole collection of bars to split
@@ -131,87 +132,13 @@ public class SystemSplit
                 });
     }
 
-    //-------------------------//
-    // splitHorizontalSections //
-    //-------------------------//
-    /**
-     * Split the various horizontal sections [Unused].
-     * @param sheet the containing sheet
-     */
-    public static void splitHorizontalSections (Sheet sheet)
-    {
-        process(
-            sheet,
-            sheet.getHorizontalLag().getSections(),
-            new Adapter<GlyphSection>() {
-                    public List<GlyphSection> getTarget (SystemInfo info)
-                    {
-                        return info.getHorizontalSections();
-                    }
-
-                    public int getXMin (GlyphSection section)
-                    {
-                        Rectangle box = section.getContourBox();
-
-                        return box.x;
-                    }
-
-                    public int getYMin (GlyphSection section)
-                    {
-                        Rectangle box = section.getContourBox();
-
-                        return box.y;
-                    }
-
-                    public boolean isValid (GlyphSection section)
-                    {
-                        return section.getGlyph() == null;
-                    }
-                });
-    }
-
-    //-----------------------//
-    // splitHorizontalSticks //
-    //-----------------------//
-    /**
-     * Split the collection of provided horizontal sticks [Unused].
-     *
-     * @param sheet the containing sheet
-     * @param sticks the entities to be dispatched
-     */
-    public static void splitHorizontalSticks (Sheet       sheet,
-                                              List<Stick> sticks)
-    {
-        process(
-            sheet,
-            sticks,
-            new Adapter<Stick>() {
-                    public List<Stick> getTarget (SystemInfo info)
-                    {
-                        return info.getHorizontalSticks();
-                    }
-
-                    public int getXMin (Stick stick)
-                    {
-                        Rectangle box = stick.getContourBox();
-
-                        return box.x;
-                    }
-
-                    public int getYMin (Stick stick)
-                    {
-                        Rectangle box = stick.getContourBox();
-
-                        return box.y;
-                    }
-                });
-    }
-
     //------------------//
     // splitHorizontals //
     //------------------//
     /**
-     * Split the various horizontals among systems (Used by Systems).
+     * Split the various horizontals among systems
+     * (Used once at end of BarsBuilder).
+     *
      * @param sheet the containing sheet
      */
     public static void splitHorizontals (Sheet sheet)
@@ -269,6 +196,8 @@ public class SystemSplit
     //-----------------------//
     /**
      * Split the various horizontal sections (Used by Glyphs).
+     * (Used once at end of BarsBuilder).
+     *
      * @param sheet the containing sheet
      */
     public static void splitVerticalSections (Sheet sheet)
@@ -304,6 +233,7 @@ public class SystemSplit
     /**
      * Split the collection of provided vertical sticks (Used by
      * VerticalsBuilder).
+     * (Used at every run of VerticalsBuilder).
      *
      * @param sheet the containing sheet
      * @param sticks the entities to be dispatched

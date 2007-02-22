@@ -76,8 +76,7 @@ public class IconGlyph
             SymbolPicture picture = new SymbolPicture(icon, descReduction);
 
             // Build related vertical lag
-            GlyphLag vLag = new GlyphLag(new VerticalOrientation());
-            vLag.setName("iconLag");
+            GlyphLag vLag = new GlyphLag("iLag", new VerticalOrientation());
             vLag.setVertexClass(GlyphSection.class);
 
             SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;

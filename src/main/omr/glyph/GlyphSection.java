@@ -16,6 +16,8 @@ import omr.lag.Section;
 
 import omr.util.Implement;
 
+import java.awt.Point;
+
 /**
  * Class <code>GlyphSection</code> implements a specific class of section, meant
  * for easy glyph elaboration.
@@ -63,6 +65,10 @@ public class GlyphSection
     public void setGlyph (Glyph glyph)
     {
         this.glyph = glyph;
+
+        // Update the glyphMap of the containing GlyphLag
+        getGraph()
+            .mapSection(this, glyph);
     }
 
     //----------//
@@ -122,15 +128,20 @@ public class GlyphSection
     @Implement(Comparable.class)
     public int compareTo (GlyphSection other)
     {
-        // Are pos values different?
-        int dPos = getCentroid().y - other.getCentroid().y;
+        Point ref = this.getContourBox()
+                        .getLocation();
+        Point otherRef = other.getContourBox()
+                              .getLocation();
 
-        if (dPos != 0) {
-            return dPos;
+        // Are x values different?
+        int dx = ref.x - otherRef.x;
+
+        if (dx != 0) {
+            return dx;
         }
 
-        // Use coordinates
-        return getCentroid().x - other.getCentroid().x;
+        // Vertically aligned, so use ordinates
+        return ref.y - otherRef.y;
     }
 
     //----------//
@@ -149,7 +160,7 @@ public class GlyphSection
         sb.append(super.toString());
 
         if (glyph != null) {
-            sb.append(" glyph=")
+            sb.append(" glyph#")
               .append(glyph.getId());
         }
 

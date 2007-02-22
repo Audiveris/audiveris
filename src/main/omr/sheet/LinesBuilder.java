@@ -106,7 +106,7 @@ public class LinesBuilder
     public LinesBuilder (Sheet sheet)
         throws omr.ProcessingException
     {
-        super(sheet, new GlyphLag(new HorizontalOrientation()));
+        super(sheet, new GlyphLag("hLag", new HorizontalOrientation()));
 
         // Check output needed from previous steps
         this.scale = sheet.getScale(); // Will run Scale if not yet done
@@ -115,7 +115,6 @@ public class LinesBuilder
         Picture picture = sheet.getPicture();
 
         // Augment the horizontal lag of runs
-        lag.setName("hLag");
         lag.setVertexClass(StickSection.class);
 
         // Populate the lag

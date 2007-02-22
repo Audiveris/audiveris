@@ -12,7 +12,7 @@ package omr.stick;
 
 import omr.glyph.GlyphSection;
 
-import omr.stick.SticksBuilder.SectionPredicate;
+import omr.util.Predicate;
 
 import java.util.*;
 
@@ -28,7 +28,7 @@ public class SticksSource
     //~ Instance fields --------------------------------------------------------
 
     /** the predicate to check whether section is to be processed */
-    protected final SectionPredicate predicate;
+    protected final Predicate<GlyphSection> predicate;
 
     /** the section iterator for the source */
     protected ListIterator<GlyphSection> vi;
@@ -63,7 +63,7 @@ public class SticksSource
      * @param predicate the predicate to check for candidate sections
      */
     public SticksSource (Collection<GlyphSection> collection,
-                         SectionPredicate         predicate)
+                         Predicate<GlyphSection>  predicate)
     {
         this.predicate = predicate;
 
@@ -116,7 +116,11 @@ public class SticksSource
 
             if (predicate.check(section)) {
                 if (section instanceof StickSection) {
-                    ((StickSection) section).role = null; // Safer ?
+                    StickRelation relation = ((StickSection) section).getRelation();
+
+                    if (relation != null) {
+                        relation.role = null; // Safer ?
+                    }
                 }
 
                 section.setGlyph(null); // Safer ?

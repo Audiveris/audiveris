@@ -77,11 +77,11 @@ public class Glyph
     protected GlyphLag lag;
 
     /**
-     * Sections that compose this glyph. The collection should be kept sorted
-     * on centroid abscissa then ordinate
+     * Sections that compose this glyph. The collection is kept sorted
+     * on GlyphSection order
      */
     @XmlElement(name = "section")
-    protected List<GlyphSection> members = new ArrayList<GlyphSection>();
+    protected SortedSet<GlyphSection> members = new TreeSet<GlyphSection>();
 
     /**
      * Display box (always properly oriented), so that rectangle width is
@@ -98,9 +98,6 @@ public class Glyph
 
     /** A signature to retrieve this glyph */
     private GlyphSignature signature;
-
-    /** Original if any */
-    protected Glyph original;
 
     // Below are properties to be retrieved in the glyph original if any
 
@@ -161,6 +158,22 @@ public class Glyph
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------------//
+    // getFirstSection //
+    //-----------------//
+    /**
+     * Report the first section in the ordered collection of glyph members
+     *
+     * @return the first section of the glyph
+     */
+    public GlyphSection getFirstSection ()
+    {
+        return members.first();
+    }
+
+    //----------//
+    // toString //
+    //----------//
     public static String toString (Collection<?extends Glyph> glyphs)
     {
         StringBuilder sb = new StringBuilder();
@@ -186,9 +199,7 @@ public class Glyph
      */
     public PixelPoint getAreaCenter ()
     {
-        if (original != null) {
-            return original.getAreaCenter();
-        } else if (center == null) {
+        if (center == null) {
             PixelRectangle box = getContourBox();
             center = new PixelPoint(
                 box.x + (box.width / 2),
@@ -203,11 +214,7 @@ public class Glyph
     //-----------//
     public void setBounds (Rectangle bounds)
     {
-        if (original != null) {
-            original.setBounds(bounds);
-        } else {
-            this.bounds = bounds;
-        }
+        this.bounds = bounds;
     }
 
     //-----------//
@@ -220,9 +227,7 @@ public class Glyph
      */
     public Rectangle getBounds ()
     {
-        if (original != null) {
-            return original.getBounds();
-        } else if (bounds == null) {
+        if (bounds == null) {
             for (Section section : members) {
                 if (bounds == null) {
                     bounds = new Rectangle(section.getBounds());
@@ -240,11 +245,7 @@ public class Glyph
     //-----------//
     public void setCenter (PixelPoint center)
     {
-        if (original != null) {
-            original.setCenter(center);
-        } else {
-            this.center = center;
-        }
+        this.center = center;
     }
 
     //-----------//
@@ -283,11 +284,7 @@ public class Glyph
     //-------------//
     public void setCentroid (PixelPoint centroid)
     {
-        if (original != null) {
-            original.setCentroid(centroid);
-        } else {
-            this.centroid = centroid;
-        }
+        this.centroid = centroid;
     }
 
     //-------------//
@@ -300,9 +297,7 @@ public class Glyph
      */
     public PixelPoint getCentroid ()
     {
-        if (original != null) {
-            return original.getCentroid();
-        } else if (centroid == null) {
+        if (centroid == null) {
             centroid = getMoments()
                            .getCentroid();
         }
@@ -416,11 +411,7 @@ public class Glyph
      */
     public double getDoubt ()
     {
-        if (original != null) {
-            return original.getDoubt();
-        } else {
-            return doubt;
-        }
+        return doubt;
     }
 
     //-------//
@@ -459,11 +450,7 @@ public class Glyph
      */
     public void setInterline (int interline)
     {
-        if (original != null) {
-            original.setInterline(interline);
-        } else {
-            this.interline = interline;
-        }
+        this.interline = interline;
     }
 
     //-------//
@@ -503,11 +490,7 @@ public class Glyph
     @XmlAttribute
     public int getInterline ()
     {
-        if (original != null) {
-            return original.getInterline();
-        } else {
-            return interline;
-        }
+        return interline;
     }
 
     //---------//
@@ -564,11 +547,7 @@ public class Glyph
      */
     public void setLeftStem (Glyph leftStem)
     {
-        if (original != null) {
-            original.setLeftStem(leftStem);
-        } else {
-            this.leftStem = leftStem;
-        }
+        this.leftStem = leftStem;
     }
 
     //-------------//
@@ -581,11 +560,7 @@ public class Glyph
      */
     public Glyph getLeftStem ()
     {
-        if (original != null) {
-            return original.getLeftStem();
-        } else {
-            return leftStem;
-        }
+        return leftStem;
     }
 
     public Logger getLogger ()
@@ -615,7 +590,7 @@ public class Glyph
      *
      * @return member sections
      */
-    public List<GlyphSection> getMembers ()
+    public Collection<GlyphSection> getMembers ()
     {
         return members;
     }
@@ -625,11 +600,7 @@ public class Glyph
     //------------//
     public void setMoments (Moments moments)
     {
-        if (original != null) {
-            original.setMoments(moments);
-        } else {
-            this.moments = moments;
-        }
+        this.moments = moments;
     }
 
     //------------//
@@ -642,9 +613,7 @@ public class Glyph
      */
     public Moments getMoments ()
     {
-        if (original != null) {
-            return original.getMoments();
-        } else if (moments == null) {
+        if (moments == null) {
             computeMoments();
         }
 
@@ -660,14 +629,6 @@ public class Glyph
                    .getWeight();
     }
 
-    //-------------//
-    // setOriginal //
-    //-------------//
-    public void setOriginal (Glyph original)
-    {
-        this.original = original;
-    }
-
     //------------------//
     // setPitchPosition //
     //------------------//
@@ -679,11 +640,7 @@ public class Glyph
      */
     public void setPitchPosition (double pitchPosition)
     {
-        if (original != null) {
-            original.setPitchPosition(pitchPosition);
-        } else {
-            this.pitchPosition = pitchPosition;
-        }
+        this.pitchPosition = pitchPosition;
     }
 
     //------------------//
@@ -697,11 +654,7 @@ public class Glyph
     @XmlElement(name = "pitch-position")
     public double getPitchPosition ()
     {
-        if (original != null) {
-            return original.getPitchPosition();
-        } else {
-            return pitchPosition;
-        }
+        return pitchPosition;
     }
 
     //-----------//
@@ -741,11 +694,7 @@ public class Glyph
      */
     public void setRightStem (Glyph rightStem)
     {
-        if (original != null) {
-            original.setRightStem(rightStem);
-        } else {
-            this.rightStem = rightStem;
-        }
+        this.rightStem = rightStem;
     }
 
     //--------------//
@@ -758,11 +707,7 @@ public class Glyph
      */
     public Glyph getRightStem ()
     {
-        if (original != null) {
-            return original.getRightStem();
-        } else {
-            return rightStem;
-        }
+        return rightStem;
     }
 
     //----------//
@@ -790,20 +735,16 @@ public class Glyph
     public void setShape (Shape  shape,
                           double doubt)
     {
-        if (original != null) {
-            original.setShape(shape, doubt);
-        } else {
-            // Blacklist the previous shape if any
-            if (getShape() != null) {
-                forbidShape(getShape());
-            }
-
-            // Now remove the assigned shape from the blacklist if any
-            allowShape(shape);
-
-            this.shape = shape;
-            this.doubt = doubt;
+        // Blacklist the previous shape if any
+        if (getShape() != null) {
+            forbidShape(getShape());
         }
+
+        // Now remove the assigned shape from the blacklist if any
+        allowShape(shape);
+
+        this.shape = shape;
+        this.doubt = doubt;
     }
 
     //----------//
@@ -816,11 +757,7 @@ public class Glyph
      */
     public Shape getShape ()
     {
-        if (original != null) {
-            return original.getShape();
-        } else {
-            return shape;
-        }
+        return shape;
     }
 
     //------------------//
@@ -873,11 +810,7 @@ public class Glyph
      */
     public void setStemNumber (int stemNumber)
     {
-        if (original != null) {
-            original.setStemNumber(stemNumber);
-        } else {
-            this.stemNumber = stemNumber;
-        }
+        this.stemNumber = stemNumber;
     }
 
     //---------------//
@@ -891,11 +824,7 @@ public class Glyph
     @XmlElement(name = "stem-number")
     public int getStemNumber ()
     {
-        if (original != null) {
-            return original.getStemNumber();
-        } else {
-            return stemNumber;
-        }
+        return stemNumber;
     }
 
     //-----------------//
@@ -1037,11 +966,7 @@ public class Glyph
     @XmlElement(name = "with-ledger")
     public void setWithLedger (boolean withLedger)
     {
-        if (original != null) {
-            original.setWithLedger(withLedger);
-        } else {
-            this.withLedger = withLedger;
-        }
+        this.withLedger = withLedger;
     }
 
     //--------------//
@@ -1054,11 +979,7 @@ public class Glyph
      */
     public boolean isWithLedger ()
     {
-        if (original != null) {
-            return original.isWithLedger();
-        } else {
-            return withLedger;
-        }
+        return withLedger;
     }
 
     //------------------//
@@ -1088,7 +1009,7 @@ public class Glyph
      * Add a section as a member of this glyph.
      *
      * @param section The section to be included
-     * @param link While adding a section to this glyph members, should we also 
+     * @param link While adding a section to this glyph members, should we also
      *             set the link from section back to the glyph ?
      */
     public void addSection (GlyphSection section,
@@ -1147,15 +1068,20 @@ public class Glyph
     @Implement(Comparable.class)
     public int compareTo (Glyph other)
     {
+        Point ref = this.getContourBox()
+                        .getLocation();
+        Point otherRef = other.getContourBox()
+                              .getLocation();
+
         // Are x values different?
-        int dx = getCentroid().x - other.getCentroid().x;
+        int dx = ref.x - otherRef.x;
 
         if (dx != 0) {
             return dx;
         }
 
-        // Glyphs are vertically aligned, so use ordinates
-        return getCentroid().y - other.getCentroid().y;
+        // Vertically aligned, so use ordinates
+        return ref.y - otherRef.y;
     }
 
     //----------------//
@@ -1177,7 +1103,12 @@ public class Glyph
 
         // Then compute the moments, swapping pos & coord since the lag is
         // vertical
-        setMoments(new Moments(pos, coord, weight, getInterline()));
+        try {
+            setMoments(new Moments(pos, coord, weight, getInterline()));
+        } catch (Exception ex) {
+            logger.warning(
+                "Glyph #" + id + " Cannot compute moments with unit set to 0");
+        }
     }
 
     //---------//
@@ -1198,11 +1129,11 @@ public class Glyph
             }
         }
 
-        // We do not destroy the sections, just the glyph which must be
-        // removed from its containing lag.
-        if (lag != null) {
-            lag.removeGlyph(this);
-        }
+        //        // We do not destroy the sections, just the glyph which must be
+        //        // removed from its containing lag.
+        //        if (lag != null) {
+        //            lag.removeGlyph(this);
+        //        }
     }
 
     //-----------//
@@ -1240,7 +1171,6 @@ public class Glyph
     {
         System.out.println(getClass().getName());
         System.out.println("   id=" + getId());
-        System.out.println("   original=" + original);
         System.out.println("   lag=" + getLag());
         System.out.println("   members=" + getMembers());
         System.out.println("   contourBox=" + getContourBox());
@@ -1370,11 +1300,11 @@ public class Glyph
             }
         }
 
-        if (getCentroid() != null) {
+        if (centroid != null) {
             sb.append(" centroid=[")
-              .append(getCentroid().x)
+              .append(centroid.x)
               .append(",")
-              .append(getCentroid().y)
+              .append(centroid.y)
               .append("]");
         }
 
@@ -1390,11 +1320,7 @@ public class Glyph
 
     protected void setDoubt (double doubt)
     {
-        if (original != null) {
-            original.setDoubt(doubt);
-        } else {
-            this.doubt = doubt;
-        }
+        this.doubt = doubt;
     }
 
     //-----------//
@@ -1416,11 +1342,7 @@ public class Glyph
     //--------------------//
     private void setForbiddenShapes (Set<Shape> forbiddenShapes)
     {
-        if (original != null) {
-            original.setForbiddenShapes(forbiddenShapes);
-        } else {
-            this.forbiddenShapes = forbiddenShapes;
-        }
+        this.forbiddenShapes = forbiddenShapes;
     }
 
     //--------------------//
@@ -1428,11 +1350,7 @@ public class Glyph
     //--------------------//
     private Set<Shape> getForbiddenShapes ()
     {
-        if (original != null) {
-            return original.getForbiddenShapes();
-        } else {
-            return forbiddenShapes;
-        }
+        return forbiddenShapes;
     }
 
     //----------------//

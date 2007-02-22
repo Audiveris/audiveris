@@ -810,18 +810,21 @@ public class Stick
               .append(result);
         }
 
-        sb.append(" th=")
-          .append(getThickness());
-        sb.append(" lg=")
-          .append(getLength());
-        sb.append(" l/t=")
-          .append(String.format("%.2f", getAspect()));
-        sb.append(" fa=")
-          .append((100 * getFirstStuck()) / getLength())
-          .append("%");
-        sb.append(" la=")
-          .append((100 * getLastStuck()) / getLength())
-          .append("%");
+        if (this.getMembers()
+                .size() > 0) {
+            sb.append(" th=")
+              .append(getThickness());
+            sb.append(" lg=")
+              .append(getLength());
+            sb.append(" l/t=")
+              .append(String.format("%.2f", getAspect()));
+            sb.append(" fa=")
+              .append((100 * getFirstStuck()) / getLength())
+              .append("%");
+            sb.append(" la=")
+              .append((100 * getLastStuck()) / getLength())
+              .append("%");
+        }
 
         if (line != null) {
             sb.append(" ")

@@ -376,8 +376,8 @@ public class Sheet
         {
             VERTICALS.getResult();
 
-            getGlyphInspector()
-                .retrieveLeaves();
+            getGlyphBuilder()
+                .retrieveGlyphs();
             result = Boolean.valueOf(true);
             getGlyphInspector()
                 .evaluateGlyphs(GlyphInspector.getLeafMaxDoubt());
@@ -1644,7 +1644,8 @@ public class Sheet
 
                 // Attach proper Selection objects
                 // (reading from pixel location & writing to grey level)
-                result.setLevelSelection(getSelection(SelectionTag.PIXEL_LEVEL));
+                result.setLevelSelection(
+                    getSelection(SelectionTag.PIXEL_LEVEL));
                 getSelection(SelectionTag.SHEET_RECTANGLE)
                     .addObserver(result);
 

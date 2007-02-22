@@ -93,7 +93,7 @@ public class Moments
     {
         // Safety check
         if (unit == 0) {
-            logger.warning("Cannot compute moments with unit set to 0");
+            ///logger.warning("Cannot compute moments with unit set to 0");
             throw new RuntimeException("Zero-valued unit");
         }
 

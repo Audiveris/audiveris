@@ -277,24 +277,6 @@ public class GlyphInspector
         }
     }
 
-    //----------------//
-    // retrieveLeaves //
-    //----------------//
-    /**
-     * Retrieve leaves that appear thanks to segmentation due to stems
-     * extraction.
-     */
-    public void retrieveLeaves ()
-    {
-        // Nota: Leaves are already added to the proper system glyph collection
-        builder.retrieveGlyphs();
-
-        // Sort glyphs on their abscissa
-        for (SystemInfo system : sheet.getSystems()) {
-            system.sortGlyphs();
-        }
-    }
-
     //-------------------//
     // retrieveVerticals //
     //-------------------//
@@ -521,8 +503,7 @@ public class GlyphInspector
         // Then verify each slur seed in turn
         for (Glyph seed : slurs) {
             // Check this slur has not just been 'merged' with another one
-            if (seed.getMembers()
-                    .get(0)
+            if (seed.getFirstSection()
                     .getGlyph() != seed) {
                 continue;
             }

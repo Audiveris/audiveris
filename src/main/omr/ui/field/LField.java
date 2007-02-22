@@ -129,4 +129,13 @@ public class LField
     {
         return field.getText();
     }
+
+    //------------//
+    // setVisible //
+    //------------//
+    public void setVisible (boolean bool)
+    {
+        field.setVisible(bool);
+        label.setVisible(bool);
+    }
 }

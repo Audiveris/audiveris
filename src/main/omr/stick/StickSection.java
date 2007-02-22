@@ -10,10 +10,8 @@
 //
 package omr.stick;
 
-import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 
-import omr.lag.Lag;
 import omr.lag.Run;
 
 import omr.math.BasicLine;
@@ -34,25 +32,10 @@ public class StickSection
 {
     //~ Instance fields --------------------------------------------------------
 
-    /**
-     * The role of the section in the enclosing stick. Not final, since it may
-     * be modified afterhand
-     */
-    public SectionRole role;
+    /** Relation between section and stick */
+    protected StickRelation relation;
 
-    /**
-     * Position with respect to line core center
-     */
-    public int direction;
-
-    /**
-     * Layer of this section in the stick
-     */
-    public int layer;
-
-    /**
-     * Approximating line for this section
-     */
+    /** Approximating line for this section */
     protected Line line;
 
     //~ Constructors -----------------------------------------------------------
@@ -80,24 +63,11 @@ public class StickSection
      */
     public boolean isAggregable ()
     {
-        if (!isCandidate()) {
+        if ((relation == null) || !relation.isCandidate()) {
             return false;
         }
 
         return !isKnown();
-    }
-
-    //-------------//
-    // isCandidate //
-    //-------------//
-    /**
-     * Checks whether the section is a good candidate to be a member of a stick
-     *
-     * @return the result of the test
-     */
-    public boolean isCandidate ()
-    {
-        return (role != null) && (role.ordinal() < BORDER.ordinal());
     }
 
     //----------//
@@ -111,8 +81,8 @@ public class StickSection
      */
     public Color getColor ()
     {
-        if (role != null) {
-            return role.getColor();
+        if (relation != null) {
+            return relation.getColor();
         } else {
             return null;
         }
@@ -163,9 +133,19 @@ public class StickSection
                            int         layer,
                            int         direction)
     {
-        this.role = role;
-        this.layer = layer;
-        this.direction = direction;
+        if (relation == null) {
+            relation = new StickRelation();
+        }
+
+        relation.setParams(role, layer, direction);
+    }
+
+    //-------------//
+    // getRelation //
+    //-------------//
+    public StickRelation getRelation ()
+    {
+        return relation;
     }
 
     //----------//
@@ -183,14 +163,9 @@ public class StickSection
 
         sb.append(super.toString());
 
-        sb.append(" L=")
-          .append(layer);
-        sb.append(" D=")
-          .append(direction);
-
-        if (role != null) {
+        if (relation != null) {
             sb.append(" ")
-              .append(role);
+              .append(relation);
         }
 
         if (this.getClass()

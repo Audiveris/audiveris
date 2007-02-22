@@ -17,7 +17,6 @@ import omr.score.System;
 
 import omr.stick.Stick;
 
-import java.awt.Rectangle;
 import java.util.*;
 
 /**
@@ -30,47 +29,46 @@ import java.util.*;
  * @version $Id$
  */
 public class SystemInfo
-    implements java.io.Serializable
 {
     //~ Instance fields --------------------------------------------------------
 
     /** Related sheet */
     private final Sheet sheet;
 
-    /** Retrieved bar lines in this system */
-    private List<Stick> bars = new ArrayList<Stick>();
-
-    /** Retrieved endings in this system */
-    private List<Ending> endings = new ArrayList<Ending>();
-
-    /** Sections */
-    private transient List<GlyphSection> hSections = new ArrayList<GlyphSection>();
-
-    /** Glyphs & Sticks */
-    private List<Glyph> glyphs = new ArrayList<Glyph>();
-    private transient List<Stick> hSticks = new ArrayList<Stick>();
-
-    /** Retrieved ledgers in this system */
-    private List<Ledger> ledgers = new ArrayList<Ledger>();
-
     /** Staves of this system */
-    private List<StaffInfo> staves = new ArrayList<StaffInfo>();
+    private final List<StaffInfo> staves = new ArrayList<StaffInfo>();
 
     /** Parts in this system */
-    private List<PartInfo> parts = new ArrayList<PartInfo>();
+    private final List<PartInfo> parts = new ArrayList<PartInfo>();
 
-    /** Vertical sections of this system */
-    private List<GlyphSection> vSections = new ArrayList<GlyphSection>();
+    /** Retrieved bar lines in this system */
+    private final List<Stick> bars = new ArrayList<Stick>();
 
-    /** Vertical sticks of this system */
-    private List<Stick> vSticks = new ArrayList<Stick>();
+    /** Retrieved endings in this system */
+    private final List<Ending> endings = new ArrayList<Ending>();
+
+    /** Retrieved ledgers in this system */
+    private final List<Ledger> ledgers = new ArrayList<Ledger>();
 
     /** Related System in Score hierarchy */
     private System scoreSystem;
 
-    // SYSTEMS step
-    // ============
-    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Vertical sections of this system, assigned once for all */
+    private final List<GlyphSection> vSections = new ArrayList<GlyphSection>();
+
+    /** Vertical sticks of this system */
+    private final List<Stick> vSticks = new ArrayList<Stick>();
+
+    /** Glyphs (& Sticks) in this system */
+    private final SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Unique Id for this system (in the sheet) */
+    private final int id;
+
     /** Bottom of system related area */
     private int areaBottom = -1;
 
@@ -84,9 +82,6 @@ public class SystemInfo
        staff. */
     private int deltaY;
 
-    /** Unique Id for this system (in the sheet) */
-    private final int id;
-
     /** Abscissa of beginning of system. */
     private int left = -1;
 
@@ -95,13 +90,6 @@ public class SystemInfo
 
     /** Width of widest Ledger in this system */
     private int maxLedgerWidth = -1;
-
-    // NOTA: Following items are listed in the chronological order of their
-    // filling/computation step
-    //
-    // BARS step
-    // =========
-    //
 
     /** Index of first staff of the system, counted from 0 within all staves of
        the score */
@@ -250,40 +238,13 @@ public class SystemInfo
     // getGlyphs //
     //-----------//
     /**
-     * Report the list of glyphs within the system area
+     * Report the collection of glyphs within the system area
      *
      * @return the list of glyphs
      */
-    public List<Glyph> getGlyphs ()
+    public Collection<Glyph> getGlyphs ()
     {
         return glyphs;
-    }
-
-    //-----------------------//
-    // getHorizontalSections //
-    //-----------------------//
-    /**
-     * Report the collection of horizontal sections in the system related area
-     *
-     * @return the area horizontal sections
-     */
-    public List<GlyphSection> getHorizontalSections ()
-    {
-        return hSections;
-    }
-
-    //---------------------//
-    // getHorizontalSticks //
-    //---------------------//
-    /**
-     * Report the collection of horizontal sticks left over in the system
-     * related area
-     *
-     * @return the area horizontal sticks
-     */
-    public List<Stick> getHorizontalSticks ()
-    {
-        return hSticks;
     }
 
     //-------//
@@ -323,27 +284,6 @@ public class SystemInfo
     public int getLeft ()
     {
         return left;
-    }
-
-    //------------------//
-    // getMaxGlyphWidth //
-    //------------------//
-    /**
-     * Report the maximum width of glyphs found within the system
-     *
-     * @return the maximum width in pixels
-     */
-    public int getMaxGlyphWidth ()
-    {
-        if (maxGlyphWidth == -1) {
-            for (Glyph glyph : glyphs) {
-                maxGlyphWidth = Math.max(
-                    maxGlyphWidth,
-                    glyph.getContourBox().width);
-            }
-        }
-
-        return maxGlyphWidth;
     }
 
     //-------------------//
@@ -462,19 +402,6 @@ public class SystemInfo
     }
 
     //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * Assign list of staves that compose this system
-     *
-     * @param staves the list of staves
-     */
-    public void setStaves (List<StaffInfo> staves)
-    {
-        this.staves = staves;
-    }
-
-    //-----------//
     // getStaves //
     //-----------//
     /**
@@ -553,6 +480,14 @@ public class SystemInfo
         return width;
     }
 
+    //----------//
+    // addGlyph //
+    //----------//
+    public void addGlyph (Glyph glyph)
+    {
+        glyphs.add(glyph);
+    }
+
     //---------//
     // addPart //
     //---------//
@@ -618,15 +553,11 @@ public class SystemInfo
     {
         List<Glyph> found = new ArrayList<Glyph>();
 
-        // System glyphs are (assumed to be) sorted on abscissa
+        // System glyphs are kept sorted on abscissa then ordinate of topLeft
         for (Glyph glyph : getGlyphs()) {
             if (glyph != excluded) {
                 if (rect.intersects(glyph.getContourBox())) {
                     found.add(glyph);
-
-                    //            } else if (glyph.getContourBox().x > rect.x) {
-                    //                // No more possible intersection
-                    //                break;
                 }
             }
         }
@@ -647,26 +578,6 @@ public class SystemInfo
     public List<Glyph> lookupIntersectedGlyphs (PixelRectangle rect)
     {
         return lookupIntersectedGlyphs(rect, null);
-    }
-
-    //------------//
-    // sortGlyphs //
-    //------------//
-    /**
-     * Sort all glyphs in the system, according to the left abscissa of their
-     * contour box
-     */
-    public void sortGlyphs ()
-    {
-        Collections.sort(
-            glyphs,
-            new Comparator<Glyph>() {
-                    public int compare (Glyph o1,
-                                        Glyph o2)
-                    {
-                        return o1.getContourBox().x - o2.getContourBox().x;
-                    }
-                });
     }
 
     //----------//

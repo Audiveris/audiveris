@@ -87,8 +87,10 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     /**
      * Constructor with specified orientation
      */
-    protected Lag (Oriented orientation)
+    protected Lag (String   name,
+                   Oriented orientation)
     {
+        super(name);
         this.orientation = orientation;
     }
 
@@ -299,7 +301,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     {
         Point target = switchRef(pt, null); // Involutive!
 
-        // Just in case...
+        // Just in case we have not moved a lot since previous lookup ...
         S foundSection = (S) sectionSelection.getEntity(); // Compiler warning
 
         if ((foundSection != null) &&
@@ -325,49 +327,6 @@ public class Lag<L extends Lag<L, S>, S extends Section>
 
         return foundSection;
     }
-
-    //    //---------------//
-    //    // lookupSection //
-    //    //---------------//
-    //    /**
-    //     * Given an absolute rectangle, retrieve the <b>first</b> contained section if any,
-    //     * using the provided collection of sections
-    //     *
-    //     * @param collection the desired collection of sections
-    //     * @param rect       the given rectangle
-    //     *
-    //     * @return the (first) section found, or null otherwise
-    //     */
-    //    public S lookupSection (Collection<S> collection,
-    //                            Rectangle     rect)
-    //    {
-    //        Rectangle target = switchRef(rect, null); // Involutive!
-    //
-    //        // Just in case...
-    //        S foundSection = (S) sectionSelection.getEntity(); // Compiler warning
-    //
-    //        if ((foundSection != null) &&
-    //            target.contains(foundSection.getContourBox())) {
-    //            return foundSection;
-    //        }
-    //
-    //        foundSection = null;
-    //
-    //        for (S section : collection) {
-    //            if (target.contains(section.getContourBox())) {
-    //                foundSection = section;
-    //
-    //                break;
-    //            }
-    //        }
-    //
-    //        sectionSelection.setEntity(
-    //            foundSection,
-    //            null, // hint
-    //            false); //  notify
-    //
-    //        return foundSection;
-    //    }
 
     //---------------//
     // purgeSections //
@@ -481,6 +440,13 @@ public class Lag<L extends Lag<L, S>, S extends Section>
 
         sb.append(super.toString());
 
+        // Orientation
+        if (orientation.isVertical()) {
+            sb.append(" VERTICAL");
+        } else {
+            sb.append(" HORIZONTAL");
+        }
+
         if (this.getClass()
                 .getName()
                 .equals(Lag.class.getName())) {
@@ -494,8 +460,9 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     // update //
     //--------//
     /**
-     * Call-back triggered when location Selection, or section id, has been
-     * modified.  We forward the related run and section informations.
+     * Call-back triggered when selection of sheet location, section or section
+     * id, has been modified.
+     * We forward the related run and section informations.
      *
      * @param selection the notified Selection
      * @param hint potential notification hint
@@ -505,6 +472,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
                         SelectionHint hint)
     {
         switch (selection.getTag()) {
+        // Interest in sheet location
         case SHEET_RECTANGLE :
 
             // Lookup for Run/Section pointed by this pixel location
@@ -541,6 +509,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
 
             break;
 
+        // Interest in section
         case SKEW_SECTION :
         case HORIZONTAL_SECTION :
         case VERTICAL_SECTION :
@@ -555,6 +524,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
 
             break;
 
+        // Interest in section ID
         case SKEW_SECTION_ID :
         case HORIZONTAL_SECTION_ID :
         case VERTICAL_SECTION_ID :

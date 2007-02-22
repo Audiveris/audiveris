@@ -132,8 +132,7 @@ public class SkewBuilder
         minSectionLength = scale.toPixels(constants.minSectionLength);
 
         // Retrieve the horizontal lag of runs
-        sLag = new GlyphLag(new HorizontalOrientation());
-        sLag.setName("Skew-HLag");
+        sLag = new GlyphLag("sLag", new HorizontalOrientation());
         sLag.setVertexClass(StickSection.class);
 
         SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
@@ -238,14 +237,14 @@ public class SkewBuilder
                 } else {
                     // Otherwise, start a brand new stick
                     stick = new Stick();
-                    sLag.addGlyph(stick);
-
-                    // Store this new stick into the stick table
-                    sticks.add(stick);
 
                     // Include this section in the stick list
                     stick.addSection(section, /* link => */
                                      true);
+                    
+                    // Register the stick in containing lag
+                    // Store this new stick into the stick table
+                    sticks.add((Stick) sLag.addGlyph(stick));
                 }
 
                 // Now, from this stick section, Look at following connected

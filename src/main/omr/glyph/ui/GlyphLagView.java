@@ -239,7 +239,7 @@ public class GlyphLagView
         if (specificGlyphs.size() > 0) {
             found = lag.lookupGlyphs(specificGlyphs, rect);
         } else {
-            found = lag.lookupGlyphs(lag.getGlyphs(), rect);
+            found = lag.lookupGlyphs(lag.getActiveGlyphs(), rect);
         }
 
         return found;

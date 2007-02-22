@@ -294,8 +294,7 @@ class GlyphBrowser
         }
 
         // Reset model
-        vLag = new GlyphLag(new VerticalOrientation());
-        vLag.setName("TrainingLag");
+        vLag = new GlyphLag("tLag", new VerticalOrientation());
         vLag.setSectionSelection(localSectionSelection);
         localSectionSelection.addObserver(vLag);
         vLag.setRunSelection(localRunSelection);

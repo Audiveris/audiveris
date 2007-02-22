@@ -15,15 +15,17 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 
+import omr.stick.SectionPredicate;
 import omr.stick.Stick;
 import omr.stick.SticksBuilder;
-import omr.stick.SticksBuilder.SectionPredicate;
 import omr.stick.SticksSource;
 
 import omr.util.Logger;
 
 import java.util.Collections;
 import java.util.Comparator;
+import omr.glyph.GlyphSection;
+import omr.util.Predicate;
 
 /**
  * Class <code>VerticalArea</code> processes a vertical lag to extract vertical
@@ -84,10 +86,10 @@ public class VerticalArea
      * @exception omr.ProcessingException raised when step processing must stop,
      *                                 due to encountered error
      */
-    public VerticalArea (Sheet            sheet,
-                         GlyphLag         vLag,
-                         SectionPredicate predicate,
-                         int              maxThickness)
+    public VerticalArea (Sheet                   sheet,
+                         GlyphLag                vLag,
+                         Predicate<GlyphSection> predicate,
+                         int                     maxThickness)
         throws omr.ProcessingException
     {
         super(

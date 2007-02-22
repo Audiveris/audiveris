@@ -16,13 +16,12 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import static omr.stick.SectionRole.*;
 
-import omr.util.Implement;
 import omr.util.Logger;
-import omr.util.Predicate;
 
 import java.util.*;
 
@@ -59,11 +58,11 @@ public class SticksBuilder
 
     /** A stick whose slope is not correct */
     private static final FailureResult NOT_STRAIGHT = new FailureResult(
-        "StickArea-NotStraight");
+        "SticksBuilder-NotStraight");
 
     /** A stick correctly assigned */
     private static final SuccessResult ASSIGNED = new SuccessResult(
-        "StickArea-Assigned");
+        "SticksBuilder-Assigned");
 
     //~ Instance fields --------------------------------------------------------
 
@@ -99,7 +98,7 @@ public class SticksBuilder
     private List<GlyphSection> members = new ArrayList<GlyphSection>();
 
     /** Used to flag sections already visited wrt a given stick */
-    private int[] visited;
+    private Map<GlyphSection, Glyph> visited;
 
     /** Minimum aspect (length / thickness) for a section */
     private double minSectionAspect = constants.minSectionAspect.getValue();
@@ -162,9 +161,8 @@ public class SticksBuilder
                 longAlignment);
         }
 
-        // Use a sized array
-        visited = new int[lag.getLastVertexId() + 1];
-        Arrays.fill(visited, 0);
+        // Use a brand new glyph map
+        visited = new HashMap<GlyphSection, Glyph>();
 
         // Do we have pre-candidates to start with ?
         if (preCandidates != null) {
@@ -429,7 +427,7 @@ public class SticksBuilder
                 if (thick > maxThickness) {
                     if (logger.isFineEnabled()) {
                         logger.fine(
-                            "Too thick real line " + thick + " " + section);
+                            "Too thick real line (" + thick + ") " + section);
                     }
 
                     return false;
@@ -452,7 +450,9 @@ public class SticksBuilder
      */
     private boolean isDiscarded (StickSection section)
     {
-        return section.role == DISCARDED;
+        StickRelation relation = section.getRelation();
+
+        return (relation != null) && (relation.role == DISCARDED);
     }
 
     //--------//
@@ -460,7 +460,9 @@ public class SticksBuilder
     //--------//
     private boolean isFree (StickSection section)
     {
-        return section.role == null;
+        StickRelation relation = section.getRelation();
+
+        return (relation == null) || (relation.role == null);
     }
 
     //------------//
@@ -491,27 +493,23 @@ public class SticksBuilder
     private void aggregate (StickSection section,
                             Stick        stick)
     {
-        int id = section.getId();
+        if (visited.get(section) != stick) {
+            visited.put(section, stick);
 
-        if (visited[id] == stick.getId()) {
-            return;
-        }
+            if (section.isAggregable()) {
+                // Check that resulting stick thickness would still be OK
+                if (isClose(stick.getMembers(), section, maxThickness + 1)) {
+                    stick.addSection(section, /* link => */
+                                     true);
 
-        visited[id] = stick.getId();
+                    // Aggregate recursively other sections
+                    for (GlyphSection source : section.getSources()) {
+                        aggregate((StickSection) source, stick);
+                    }
 
-        if (section.isAggregable()) {
-            // Check that resulting stick thickness would still be OK
-            if (isClose(stick.getMembers(), section, maxThickness + 1)) {
-                stick.addSection(section, /* link => */
-                                 true);
-
-                // Aggregate recursively other sections
-                for (GlyphSection source : section.getSources()) {
-                    aggregate((StickSection) source, stick);
-                }
-
-                for (GlyphSection target : section.getTargets()) {
-                    aggregate((StickSection) target, stick);
+                    for (GlyphSection target : section.getTargets()) {
+                        aggregate((StickSection) target, stick);
+                    }
                 }
             }
         }
@@ -533,11 +531,10 @@ public class SticksBuilder
 
             if (section.isAggregable()) {
                 Stick stick = new Stick();
-                stick.setId(lag.getLastGlyphId() + 1); // Needed by aggregate
                 stick.setResult(ASSIGNED);
-                sticks.add(stick);
                 aggregate(section, stick);
-                lag.addGlyph(stick);
+                stick = (Stick) lag.addGlyph(stick);
+                sticks.add(stick);
             }
         }
     }
@@ -657,8 +654,10 @@ public class SticksBuilder
      */
     private void discard (StickSection section)
     {
-        if (section.isCandidate()) {
-            section.role = DISCARDED;
+        StickRelation relation = section.getRelation();
+
+        if (relation.isCandidate()) {
+            relation.role = DISCARDED;
             section.setGlyph(null);
         }
     }
@@ -697,16 +696,18 @@ public class SticksBuilder
         int minLevel = constants.minSectionGrayLevel.getValue();
 
         for (Iterator<GlyphSection> it = list.iterator(); it.hasNext();) {
-            StickSection section = (StickSection) it.next();
+            StickSection  section = (StickSection) it.next();
 
             // We purge internal sections which don't exhibit sufficient
             // foreground density (they are too dark)
-            if (section.role == INTERNAL) {
+            StickRelation relation = section.getRelation();
+
+            if (relation.role == INTERNAL) {
                 if ((section.getLevel() < minLevel) ||
                     (section.getRunNb() > 2)) {
                     // We purge this internal section
                     it.remove();
-                    section.role = PURGED;
+                    relation.role = PURGED;
                 }
             }
         }
@@ -734,19 +735,21 @@ public class SticksBuilder
                     public int compare (GlyphSection gs1,
                                         GlyphSection gs2)
                     {
-                        StickSection s1 = (StickSection) gs1;
-                        StickSection s2 = (StickSection) gs2;
+                        StickSection  s1 = (StickSection) gs1;
+                        StickSection  s2 = (StickSection) gs2;
 
                         // Criteria #1 is layer number (small layer numbers
                         // first) Plus section thickness for non layer zero
                         // sections
-                        int layerDiff;
+                        int           layerDiff;
+                        StickRelation r1 = s1.getRelation();
+                        StickRelation r2 = s2.getRelation();
 
-                        if ((s1.layer == 0) || (s2.layer == 0)) {
-                            layerDiff = s1.layer - s2.layer;
+                        if ((r1.layer == 0) || (r2.layer == 0)) {
+                            layerDiff = r1.layer - r2.layer;
                         } else {
-                            layerDiff = (s1.layer + s1.getRunNb()) -
-                                        (s2.layer + s2.getRunNb());
+                            layerDiff = (r1.layer + s1.getRunNb()) -
+                                        (r2.layer + s2.getRunNb());
                         }
 
                         if (layerDiff != 0) {
@@ -779,35 +782,6 @@ public class SticksBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //------------------//
-    // SectionPredicate //
-    //------------------//
-    public static class SectionPredicate
-        implements Predicate<GlyphSection>
-    {
-        @Implement(Predicate.class)
-        public boolean check (GlyphSection section)
-        {
-            boolean result;
-
-            // Check whether this section is not already assigned to a
-            // recognized glyph
-            if (section instanceof StickSection) {
-                StickSection ss = (StickSection) section;
-                result = (ss.getGlyph() == null) || (ss.role == null) ||
-                         !(ss.getGlyph()
-                             .getResult() instanceof SuccessResult);
-            } else {
-                result = (section.getGlyph() == null) ||
-                         !(section.getGlyph()
-                                  .getResult() instanceof SuccessResult);
-            }
-
-            //System.out.println(result + " " + section);
-            return result;
-        }
-    }
 
     //-----------//
     // Constants //

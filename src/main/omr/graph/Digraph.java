@@ -57,7 +57,7 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     /**
      * Name for debugging
      */
-    protected String name;
+    protected final String name;
 
     /**
      * Global id to uniquely identify a vertex
@@ -77,8 +77,9 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     /**
      * Default constructor.
      */
-    public Digraph ()
+    public Digraph (String name)
     {
+        this.name = name;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -100,23 +101,10 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     }
 
     //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign a name to the graph (debug)
-     *
-     * @param name the new name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
-    }
-
-    //---------//
     // getName //
     //---------//
     /**
-     * Report the name (if any) assigned to this graph instance
+     * Report the name assigned to this graph instance
      *
      * @return the readable name
      */
@@ -302,10 +290,8 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
         sb.append("{")
           .append(getPrefix());
 
-        if (name != null) {
-            sb.append("#")
-              .append(name);
-        }
+        sb.append("#")
+          .append(name);
 
         sb.append(" vertices=")
           .append(getVertexCount());

@@ -13,6 +13,7 @@ package omr.lag;
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
+import omr.stick.StickRelation;
 import omr.stick.StickSection;
 
 import omr.ui.Board;
@@ -72,6 +73,9 @@ public class SectionBoard
 
     // Output for plain Section
     //
+    /** Label for lag name */
+    private final JLabel lagName = new JLabel();
+    
     /** Field for left abscissa */
     private final LIntegerField x = new LIntegerField(
         false,
@@ -194,7 +198,10 @@ public class SectionBoard
                 });
         id.setModel(new SpinnerNumberModel(0, 0, maxSectionId, 1));
 
-        // Role
+        // Relation
+        direction.setVisible(false);
+        layer.setVisible(false);
+        role.setVisible(false);
         role.setEditable(false);
         role.setHorizontalAlignment(JTextField.CENTER);
         role.setToolTipText("Role in the composition of the containing stick");
@@ -248,6 +255,7 @@ public class SectionBoard
             emptyFields(getComponent());
 
             if (section == null) {
+                lagName.setText("");
                 // If the user is currently using the Id spinner, make sure we
                 // display the right Id value in the spinner, even if there is
                 // no corresponding section
@@ -256,8 +264,13 @@ public class SectionBoard
                 } else {
                     id.setValue(NO_VALUE);
                 }
+
+                layer.setVisible(false);
+                direction.setVisible(false);
+                role.setVisible(false);
             } else {
                 // We have a valid section, let's display its fields
+                lagName.setText(section.getGraph().getName());
                 id.setValue(section.getId());
 
                 Rectangle box = section.getContourBox();
@@ -267,14 +280,27 @@ public class SectionBoard
                 height.setValue(box.height);
                 weight.setValue(section.getWeight());
 
-                // Additional fields for a StickSection
+                // Additional relation fields for a StickSection
                 if (section instanceof StickSection) {
                     StickSection ss = (StickSection) section;
-                    layer.setValue(ss.layer);
-                    direction.setValue(ss.direction);
+                    StickRelation relation = ss.getRelation();
 
-                    if (ss.role != null) {
-                        role.setText(ss.role.toString());
+                    if (relation != null) {
+                        layer.setVisible(true);
+                        layer.setValue(relation.layer);
+                        direction.setVisible(true);
+                        direction.setValue(relation.direction);
+
+                        if (relation.role != null) {
+                            role.setText(relation.role.toString());
+                            role.setVisible(true);
+                        } else {
+                            role.setVisible(false);
+                        }
+                    } else {
+                        layer.setVisible(false);
+                        direction.setVisible(false);
+                        role.setVisible(false);
                     }
                 }
             }
@@ -300,7 +326,8 @@ public class SectionBoard
         CellConstraints cst = new CellConstraints();
 
         int             r = 1; // --------------------------------
-        builder.addSeparator("Section", cst.xyw(1, r, 9));
+        builder.addSeparator("Section", cst.xyw(1, r, 8));
+        builder.add(lagName, cst.xy(9, r));
         builder.add(dump, cst.xy(11, r));
 
         r += 2; // --------------------------------

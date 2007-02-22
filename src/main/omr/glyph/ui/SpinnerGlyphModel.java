@@ -126,7 +126,7 @@ public class SpinnerGlyphModel
 
         if (cur == NO_VALUE) {
             // Return first suitable glyph in lag
-            for (Glyph glyph : lag.getGlyphs()) {
+            for (Glyph glyph : lag.getAllGlyphs()) {
                 if ((predicate == null) || predicate.check(glyph)) {
                     return glyph.getId();
                 }
@@ -144,7 +144,7 @@ public class SpinnerGlyphModel
             // Return first suitable glyph after current glyph in lag
             boolean found = false;
 
-            for (Glyph glyph : lag.getGlyphs()) {
+            for (Glyph glyph : lag.getAllGlyphs()) {
                 if (!found) {
                     if (glyph.getId() == cur) {
                         found = true;
@@ -194,7 +194,7 @@ public class SpinnerGlyphModel
         }
 
         // Lag
-        for (Glyph glyph : lag.getGlyphs()) {
+        for (Glyph glyph : lag.getAllGlyphs()) {
             if (glyph.getId() == cur) {
                 return (prevGlyph != null) ? prevGlyph.getId() : NO_VALUE;
             }

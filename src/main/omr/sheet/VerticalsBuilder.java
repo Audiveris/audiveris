@@ -51,6 +51,7 @@ import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Implement;
 import omr.util.Logger;
+import omr.util.Predicate;
 
 import java.awt.*;
 import java.util.List;
@@ -249,7 +250,7 @@ public class VerticalsBuilder
         if (logger.isFineEnabled()) {
             logger.fine(
                 "Searching verticals among " + sticks.size() + " sticks from " +
-                system);
+                system + " sticks" + Glyph.toString(sticks));
         }
 
         for (Stick stick : sticks) {
@@ -264,16 +265,13 @@ public class VerticalsBuilder
                 stick.setResult(STEM);
                 stick.setShape(Shape.COMBINING_STEM);
                 stick.setInterline(sheet.getScale().interline());
-                system.getGlyphs()
-                      .add(stick);
                 stemNb++;
             } else {
                 stick.setResult(TOO_LIMITED);
             }
-        }
 
-        // (Re)Sort the modified list of glyphs, by abscissa
-        system.sortGlyphs();
+            system.addGlyph(stick);
+        }
 
         if (logger.isFineEnabled()) {
             logger.fine("Found " + stemNb + " stems");
@@ -643,7 +641,7 @@ public class VerticalsBuilder
     // MySectionPredicate //
     //--------------------//
     private static class MySectionPredicate
-        extends VerticalArea.SectionPredicate
+        implements Predicate<GlyphSection>
     {
         public boolean check (GlyphSection section)
         {

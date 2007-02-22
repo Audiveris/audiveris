@@ -83,7 +83,7 @@ public class SlurGlyph
      * @param sections The collection of sections to fit the circle on
      * @return The best circle possible
      */
-    public static Circle computeCircle (List<?extends Section> sections)
+    public static Circle computeCircle (Collection<?extends Section> sections)
     {
         // First cumulate point from sections
         int weight = 0;
@@ -274,7 +274,7 @@ public class SlurGlyph
             }
 
             newGlyph.setShape(Shape.SLUR);
-            builder.insertGlyph(newGlyph, system);
+            newGlyph = builder.insertGlyph(newGlyph, system);
 
             // Remove former slur glyph
             builder.removeGlyph(slur, system, /*cutSections=>*/
@@ -290,7 +290,7 @@ public class SlurGlyph
                 double distance = circle.getDistance();
                 logger.finest(
                     "Built slur #" + newGlyph.getId() + " distance=" +
-                    (float) distance + " sections=" + Section.idsOf(kept));
+                    (float) distance + " sections=" + Section.toString(kept));
 
                 logger.fine(
                     "Fixed large slur #" + slur.getId() + " as smaller #" +

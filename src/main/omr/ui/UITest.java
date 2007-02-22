@@ -9,11 +9,16 @@
 //-----------------------------------------------------------------------//
 package omr.ui;
 
-import omr.glyph.ui.GlyphVerifier;
+import omr.glyph.Glyph;
 
-import omr.selection.SelectionManager;
+import omr.sheet.Sheet;
+import omr.sheet.SheetManager;
+import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A utility class, just used for small test action triggered from UI
@@ -38,9 +43,45 @@ public class UITest
 
     public static void test ()
     {
-        SelectionManager.dumpAllSelections();
+        Sheet sheet = SheetManager.getSelectedSheet();
+        sheet.getVerticalLag()
+             .dump("Sheet vLag");
 
-        //        GlyphVerifier.getInstance()
-        //                     .dumpSelections();
+        List<Glyph> actives = new ArrayList<Glyph>(
+            sheet.getVerticalLag().getActiveGlyphs());
+        List<Glyph> inactives = new ArrayList<Glyph>(
+            sheet.getVerticalLag().getAllGlyphs());
+        inactives.removeAll(actives);
+
+        for (SystemInfo system : sheet.getSystems()) {
+            System.out.println("\n" + system);
+            System.out.println(
+                "system " + system.getGlyphs().size() +
+                Glyph.toString(system.getGlyphs()));
+
+            for (Glyph glyph : system.getGlyphs()) {
+                System.out.println(glyph.toString());
+            }
+
+            actives.removeAll(system.getGlyphs());
+            actives.removeAll(system.getBars());
+        }
+
+        System.out.println("\nActives in no system (" + actives.size() + ") :");
+
+        for (Glyph glyph : actives) {
+            System.out.println(glyph.toString());
+        }
+
+        System.out.println("\nInactives in systems :");
+        for (SystemInfo system : sheet.getSystems()) {
+            System.out.println(system);
+
+            for (Glyph glyph : system.getGlyphs()) {
+                if (inactives.contains(glyph)) {
+                    System.out.println("Inactive :" + glyph.toString());
+                }
+            }
+        }
     }
 }

@@ -12,6 +12,7 @@ package omr.glyph;
 
 import omr.lag.Lag;
 import omr.lag.Oriented;
+import omr.lag.Section;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -59,8 +60,17 @@ public class GlyphLag
 
     //~ Instance fields --------------------------------------------------------
 
-    /** All glyphs of this GlyphLag, indexed by glyph id */
-    protected final SortedMap<Integer, Glyph> glyphs = new TreeMap<Integer, Glyph>();
+    /**
+     * Collection of all glyphs ever inserted in this GlyphLag, indexed by
+     * glyph id
+     */
+    protected final SortedMap<Integer, Glyph> allGlyphs = new TreeMap<Integer, Glyph>();
+
+    /** Current map of section -> glyphs */
+    protected final SortedMap<GlyphSection, Glyph> glyphMap = new TreeMap<GlyphSection, Glyph>();
+
+    /** Collection of active glyphs */
+    private SortedSet<Glyph> activeGlyphs;
 
     /** Selection on glyph, output where found glyph is written */
     protected transient Selection glyphSelection;
@@ -85,27 +95,46 @@ public class GlyphLag
     /**
      * Create a glyph lag, with a pre-defined orientation
      *
+     * @param name the distinguished name for this instance
      * @param orientation the desired orientation of the lag
      */
-    public GlyphLag (Oriented orientation)
+    public GlyphLag (String   name,
+                     Oriented orientation)
     {
-        super(orientation);
+        super(name, orientation);
         originals = new TreeMap<GlyphSignature, Glyph>();
     }
 
     //~ Methods ----------------------------------------------------------------
 
     //-----------------//
-    // getFirstGlyphId //
+    // getActiveGlyphs //
     //-----------------//
     /**
-     * Report the first glyph id in this lag
+     * Export the active glyphs of the lag.
      *
-     * @return the first glyph id in the glyph lag
+     * @return the collection of glyphs for which at least a section is assigned
      */
-    public int getFirstGlyphId ()
+    public Collection<Glyph> getActiveGlyphs ()
     {
-        return glyphs.firstKey();
+        if (activeGlyphs == null) {
+            activeGlyphs = new TreeSet<Glyph>(glyphMap.values());
+        }
+
+        return activeGlyphs;
+    }
+
+    //--------------//
+    // getAllGlyphs //
+    //--------------//
+    /**
+     * Export the whole collection of glyphs of the lag.
+     *
+     * @return the collection of glyphs, both active and inactive
+     */
+    public Collection<Glyph> getAllGlyphs ()
+    {
+        return allGlyphs.values();
     }
 
     //----------//
@@ -119,7 +148,7 @@ public class GlyphLag
      */
     public Glyph getGlyph (Integer id)
     {
-        return glyphs.get(id);
+        return allGlyphs.get(id);
     }
 
     //-------------------//
@@ -148,19 +177,6 @@ public class GlyphLag
         this.glyphSetSelection = glyphSetSelection;
     }
 
-    //-----------//
-    // getGlyphs //
-    //-----------//
-    /**
-     * Export the glyphs of the lag. TBD: should be unmutable ?
-     *
-     * @return the collection of glyphs
-     */
-    public Collection<Glyph> getGlyphs ()
-    {
-        return glyphs.values();
-    }
-
     //----------------//
     // getLastGlyphId //
     //----------------//
@@ -172,14 +188,6 @@ public class GlyphLag
     public int getLastGlyphId ()
     {
         return globalGlyphId;
-    }
-
-    //------------------//
-    // getOriginalGlyph //
-    //------------------//
-    public Glyph getOriginalGlyph (Glyph glyph)
-    {
-        return originals.get(glyph.getSignature());
     }
 
     //-----------------------//
@@ -194,37 +202,57 @@ public class GlyphLag
     // addGlyph //
     //----------//
     /**
-     * Add a glyph in the graph
+     * Add a glyph in the graph, making sure we do not duplicate an existing
+     * glyph ( a glyph being really defined by the set of its member sections)
      *
      * @param glyph the glyph to add to the lag
+     * @return the actual glyph (existing or new)
      */
-    public void addGlyph (Glyph glyph)
+    public Glyph addGlyph (Glyph glyph)
     {
-        glyphs.put(++globalGlyphId, glyph);
-        glyph.setId(globalGlyphId);
-        glyph.setLag(this);
-
+        // First check this glyph does not already exist
         // Use originals if so desired
+        boolean brandNew = true;
+
         if (originalsSupported) {
-            Glyph original = getOriginalGlyph(glyph);
+            Glyph original = originals.get(glyph.getSignature());
 
             if ((original != null) && (original != glyph)) {
-                glyph.setOriginal(original);
-
+                // Reuse the existing glyph
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        "Glyph #" + glyph.getId() + " is avatar of #" +
-                        original.getId());
+                        "new avatar of #" + original.getId() + " members =" +
+                        Section.toString(glyph.getMembers()) + " original=" +
+                        Section.toString(original.getMembers()));
                 }
-            } else {
-                originals.put(glyph.getSignature(), glyph);
 
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Registered glyph #" + glyph.getId() + " as original");
-                }
+                glyph = original;
+                brandNew = false;
             }
         }
+
+        if (brandNew) {
+            // Create a brand new glyph
+            allGlyphs.put(++globalGlyphId, glyph);
+            glyph.setId(globalGlyphId);
+            glyph.setLag(this);
+
+            if (originalsSupported) {
+                originals.put(glyph.getSignature(), glyph);
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Registered glyph #" + glyph.getId() + " as original");
+            }
+        }
+
+        // Make all its sections point to it
+        for (GlyphSection section : glyph.getMembers()) {
+            section.setGlyph(glyph);
+        }
+
+        return glyph;
     }
 
     //------//
@@ -238,11 +266,23 @@ public class GlyphLag
     @Override
     public void dump (String title)
     {
-        // Normal dump of sections
-        super.dump(title);
+        // Normal dump of all sections
+        ///super.dump(title);
 
-        // Dump of glyphs
-        for (Glyph glyph : getGlyphs()) {
+        // Dump of active glyphs
+        System.out.println(
+            "\nActive glyphs (" + getActiveGlyphs().size() + ") :");
+
+        for (Glyph glyph : getActiveGlyphs()) {
+            System.out.println(glyph.toString());
+        }
+
+        // Dump of inactive glyphs
+        Collection<Glyph> inactives = new ArrayList<Glyph>(getAllGlyphs());
+        inactives.removeAll(getActiveGlyphs());
+        System.out.println("\nInactive glyphs (" + inactives.size() + ") :");
+
+        for (Glyph glyph : inactives) {
             System.out.println(glyph.toString());
         }
     }
@@ -299,8 +339,11 @@ public class GlyphLag
 
         sb.append(super.toString());
 
+        // Active/All glyphs
         sb.append(" glyphs=")
-          .append(glyphs.size());
+          .append(getActiveGlyphs().size())
+          .append("/")
+          .append(allGlyphs.size());
 
         if (this.getClass()
                 .getName()
@@ -326,10 +369,12 @@ public class GlyphLag
                         SelectionHint hint)
     {
         // Keep normal lag behavior
+        // (interest in sheet location, section and section ID)
         super.update(selection, hint);
 
         // Additional tasks
         switch (selection.getTag()) {
+        // Interest in sheet location => active glyph(s)
         case SHEET_RECTANGLE :
 
             if ((hint == LOCATION_ADD) || (hint == LOCATION_INIT)) {
@@ -337,11 +382,12 @@ public class GlyphLag
 
                 if (rect != null) {
                     if ((rect.width > 0) || (rect.height > 0)) {
-                        // Look for enclosed glyphs
+                        // This is a non-degenerated rectangle
+                        // Look for enclosed active glyphs
                         if ((glyphSetSelection != null) &&
                             (glyphSetSelection.countObservers() > 0)) {
                             List<Glyph> glyphsFound = lookupGlyphs(
-                                glyphs.values(),
+                                getActiveGlyphs(),
                                 rect);
 
                             if (glyphsFound.size() > 0) {
@@ -355,8 +401,9 @@ public class GlyphLag
                             glyphSetSelection.setEntity(glyphsFound, hint);
                         }
                     } else {
+                        // This is just a point
                         // If a section has just been found,
-                        // forward its related glyph if any
+                        // forward its assigned glyph if any
                         if ((glyphSelection != null) &&
                             (glyphSelection.countObservers() > 0) &&
                             (sectionSelection != null) &&
@@ -377,6 +424,7 @@ public class GlyphLag
 
             break;
 
+        // Interest in Section => assigned glyph
         case HORIZONTAL_SECTION :
         case VERTICAL_SECTION :
 
@@ -391,6 +439,7 @@ public class GlyphLag
 
             break;
 
+        // Interest in Glyph => glyph contour
         case HORIZONTAL_GLYPH :
         case VERTICAL_GLYPH : {
             Glyph glyph = (Glyph) selection.getEntity();
@@ -410,6 +459,7 @@ public class GlyphLag
 
         break;
 
+        // Interest in Glyph ID => glyph
         case HORIZONTAL_GLYPH_ID :
         case VERTICAL_GLYPH_ID : {
             // Lookup a glyph with proper ID
@@ -445,18 +495,46 @@ public class GlyphLag
         return "GlyphLag";
     }
 
-    //-------------//
-    // removeGlyph //
-    //-------------//
+    //------------//
+    // mapSection //
+    //------------//
     /**
-     * (package access from {@link Glyph}) to remove a glyph from the graph
+     * (package access from {@link GlyphSection})
+     * Map a section to a glyph, making the glyph active
      *
-     * @param glyph the glyph to remove
+     * @param section the section to map
+     * @param glyph the assigned glyph
      */
-    void removeGlyph (Glyph glyph)
+    void mapSection (GlyphSection section,
+                     Glyph        glyph)
     {
-        glyphs.remove(glyph.getId());
+        if (glyph != null) {
+            glyphMap.put(section, glyph);
+        } else {
+            glyphMap.remove(section);
+        }
+
+        // Invalidate the collection of active glyphs
+        activeGlyphs = null;
+
+        //        logger.info(getName() + " mapSection " + section);
+        //        logger.info("map.size=" + glyphMap.size() + " map.entrySet=" + glyphMap.entrySet());
+        //        logger.info("map.values.size=" + glyphMap.values().size());
     }
+
+    //
+    //    //-------------//
+    //    // removeGlyph //
+    //    //-------------//
+    //    /**
+    //     * (package access from {@link Glyph}) to remove a glyph from the graph
+    //     *
+    //     * @param glyph the glyph to remove
+    //     */
+    //    void removeGlyph (Glyph glyph)
+    //    {
+    //        allGlyphs.remove(glyph.getId());
+    //    }
 
     //----------------//
     // updateGlyphSet //

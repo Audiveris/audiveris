@@ -136,8 +136,7 @@ public class BarsBuilder
      */
     public BarsBuilder (Sheet sheet)
     {
-        super(sheet, new GlyphLag(new VerticalOrientation()));
-        lag.setName("vLag");
+        super(sheet, new GlyphLag("vLag", new VerticalOrientation()));
         lag.setOriginalsSupported(true);
     }
 
@@ -251,6 +250,7 @@ public class BarsBuilder
         SystemSplit.computeSystemLimits(sheet);
         SystemSplit.splitHorizontals(sheet);
         SystemSplit.splitBars(sheet, bars);
+        SystemSplit.splitVerticalSections(sheet);
 
         // Display the resulting stickarea if so asked for
         if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
