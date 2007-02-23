@@ -28,6 +28,7 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphSection;
+import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
@@ -98,8 +99,8 @@ public class VerticalsBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Area of vertical runs */
-    ///private final VerticalArea verticalsArea;
+    /** GlyphsBuilder */
+    private final GlyphsBuilder builder;
 
     /** Related user display if any */
     private GlyphLagView view;
@@ -124,6 +125,7 @@ public class VerticalsBuilder
     {
         // We re-use the same vertical lag (but not the sticks) from Bars.
         super(sheet, sheet.getVerticalLag());
+        builder = sheet.getGlyphBuilder();
 
         Scale        scale = sheet.getScale();
 
@@ -270,7 +272,7 @@ public class VerticalsBuilder
                 stick.setResult(TOO_LIMITED);
             }
 
-            system.addGlyph(stick);
+            builder.insertGlyph(stick, system);
         }
 
         if (logger.isFineEnabled()) {

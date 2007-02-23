@@ -64,7 +64,6 @@ public class UITest
             }
 
             actives.removeAll(system.getGlyphs());
-            actives.removeAll(system.getBars());
         }
 
         System.out.println("\nActives in no system (" + actives.size() + ") :");
@@ -74,6 +73,7 @@ public class UITest
         }
 
         System.out.println("\nInactives in systems :");
+
         for (SystemInfo system : sheet.getSystems()) {
             System.out.println(system);
 

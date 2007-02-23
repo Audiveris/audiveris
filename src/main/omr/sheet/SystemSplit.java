@@ -10,6 +10,7 @@
 //
 package omr.sheet;
 
+import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
 
 import omr.stick.Stick;
@@ -54,27 +55,27 @@ public class SystemSplit
     public static void computeSystemLimits (Sheet sheet)
     {
         // Compute the dimensions of the picture area of every system
-        SystemInfo prevInfo = null;
+        SystemInfo prevSystem = null;
 
-        for (SystemInfo info : sheet.getSystems()) {
+        for (SystemInfo system : sheet.getSystems()) {
             // Very first system
-            if (prevInfo == null) {
-                info.setAreaTop(0);
+            if (prevSystem == null) {
+                system.setAreaTop(0);
             } else {
                 // Top of system area, defined as middle ordinate between
                 // ordinate of last line of last staff of previous system and
                 // ordinate of first line of first staff of current system
-                int middle = (prevInfo.getBottom() + info.getTop()) / 2;
-                prevInfo.setAreaBottom(middle);
-                info.setAreaTop(middle);
+                int middle = (prevSystem.getBottom() + system.getTop()) / 2;
+                prevSystem.setAreaBottom(middle);
+                system.setAreaTop(middle);
             }
 
             // Remember this info for next system
-            prevInfo = info;
+            prevSystem = system;
         }
 
         // Bottom of last system
-        prevInfo.setAreaBottom(Integer.MAX_VALUE);
+        prevSystem.setAreaBottom(Integer.MAX_VALUE);
     }
 
     //------//
@@ -91,43 +92,47 @@ public class SystemSplit
 
         int i = 0;
 
-        for (SystemInfo info : sheet.getSystems()) {
-            Dumper.dump(info, "#" + i++);
+        for (SystemInfo system : sheet.getSystems()) {
+            Dumper.dump(system, "#" + i++);
         }
 
         System.out.println("--- SystemInfos end ---");
     }
 
-    //-----------//
-    // splitBars //
-    //-----------//
+    //----------------//
+    // splitBarSticks //
+    //----------------//
     /**
-     * Split the various bar  entities
-     * (Used once at end of BarsBuilder).
+     * Split the collection of provided bar sticks
+     * (Used by BarsBuilder).
      *
      * @param sheet the containing sheet
-     * @param bars the whole collection of bars to split
+     * @param glyphs the entities to be dispatched
      */
-    public static void splitBars (Sheet             sheet,
-                                  Collection<Stick> bars)
+    public static void splitBarSticks (Sheet                      sheet,
+                                       Collection<?extends Glyph> glyphs)
     {
         process(
             sheet,
-            bars,
-            new Adapter<Stick>() {
-                    public List<Stick> getTarget (SystemInfo info)
+            glyphs,
+            new Adapter<Glyph>() {
+                    public Collection<Glyph> getTarget (SystemInfo system)
                     {
-                        return info.getBars();
+                        return system.getGlyphs();
                     }
 
-                    public int getXMin (Stick bar)
+                    public int getXMin (Glyph glyph)
                     {
-                        return bar.getContourBox().x;
+                        Rectangle box = glyph.getContourBox();
+
+                        return box.x;
                     }
 
-                    public int getYMin (Stick bar)
+                    public int getYMin (Glyph glyph)
                     {
-                        return bar.getContourBox().y;
+                        Rectangle box = glyph.getContourBox();
+
+                        return box.y;
                     }
                 });
     }
@@ -147,9 +152,9 @@ public class SystemSplit
             sheet,
             sheet.getHorizontals().getLedgers(),
             new Adapter<Ledger>() {
-                    public List<Ledger> getTarget (SystemInfo info)
+                    public List<Ledger> getTarget (SystemInfo system)
                     {
-                        return info.getLedgers();
+                        return system.getLedgers();
                     }
 
                     public int getXMin (Ledger ledger)
@@ -170,9 +175,9 @@ public class SystemSplit
             sheet,
             sheet.getHorizontals().getEndings(),
             new Adapter<Ending>() {
-                    public List<Ending> getTarget (SystemInfo info)
+                    public List<Ending> getTarget (SystemInfo system)
                     {
-                        return info.getEndings();
+                        return system.getEndings();
                     }
 
                     public int getXMin (Ending ending)
@@ -206,9 +211,9 @@ public class SystemSplit
             sheet,
             sheet.getVerticalLag().getSections(),
             new Adapter<GlyphSection>() {
-                    public List<GlyphSection> getTarget (SystemInfo info)
+                    public List<GlyphSection> getTarget (SystemInfo system)
                     {
-                        return info.getVerticalSections();
+                        return system.getVerticalSections();
                     }
 
                     public int getXMin (GlyphSection section)
@@ -231,8 +236,7 @@ public class SystemSplit
     // splitVerticalSticks //
     //---------------------//
     /**
-     * Split the collection of provided vertical sticks (Used by
-     * VerticalsBuilder).
+     * Split the collection of provided vertical sticks
      * (Used at every run of VerticalsBuilder).
      *
      * @param sheet the containing sheet
@@ -245,9 +249,9 @@ public class SystemSplit
             sheet,
             sticks,
             new Adapter<Stick>() {
-                    public List<Stick> getTarget (SystemInfo info)
+                    public List<Stick> getTarget (SystemInfo system)
                     {
-                        return info.getVerticalSticks();
+                        return system.getVerticalSticks();
                     }
 
                     public int getXMin (Stick stick)
@@ -279,9 +283,9 @@ public class SystemSplit
      * @param adapter generic mediator to specify how each entity has to be
      *                 processed
      */
-    private static <T> void process (Sheet            sheet,
-                                     Collection<T>    entities,
-                                     final Adapter<T> adapter)
+    private static <T> void process (Sheet                  sheet,
+                                     Collection<?extends T> entities,
+                                     final Adapter<T>       adapter)
     {
         // Sort entities according to their starting ordinate, in order to split
         // them vertically per systems.
@@ -308,12 +312,12 @@ public class SystemSplit
 
         // Iterator on systems (info)
         systemloop: 
-        for (SystemInfo info : sheet.getSystems()) {
-            List<T> target = adapter.getTarget(info);
+        for (SystemInfo system : sheet.getSystems()) {
+            Collection<T> target = adapter.getTarget(system);
 
             while (true) {
                 // Check end of system
-                if (adapter.getYMin(obj) > info.getAreaBottom()) {
+                if (adapter.getYMin(obj) > system.getAreaBottom()) {
                     break; // Move to next system
                 }
 
@@ -331,19 +335,19 @@ public class SystemSplit
             }
         }
 
-        // Sort entities, system by system, according to their left abscissa.
-        for (SystemInfo info : sheet.getSystems()) {
-            List<T> target = adapter.getTarget(info);
-            Collections.sort(
-                target,
-                new Comparator<T>() {
-                        public int compare (T o1,
-                                            T o2)
-                        {
-                            return adapter.getXMin(o1) - adapter.getXMin(o2);
-                        }
-                    });
-        }
+        //        // Sort entities, system by system, according to their left abscissa.
+        //        for (SystemInfo system : sheet.getSystems()) {
+        //            Collection<T> target = adapter.getTarget(system);
+        //            Collections.sort(
+        //                target,
+        //                new Comparator<T>() {
+        //                        public int compare (T o1,
+        //                                            T o2)
+        //                        {
+        //                            return adapter.getXMin(o1) - adapter.getXMin(o2);
+        //                        }
+        //                    });
+        //        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -358,11 +362,11 @@ public class SystemSplit
          * Report the target collection within each system info structure for
          * each SystemInfo
          *
-         * @param info the SystemInfo which contains the target collection
+         * @param system the SystemInfo which contains the target collection
          *
          * @return the target list to fill
          */
-        public abstract List<T> getTarget (SystemInfo info);
+        public abstract Collection<T> getTarget (SystemInfo system);
 
         /**
          * Report the first abscissa of the entity, to be able to split them

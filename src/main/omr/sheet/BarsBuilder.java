@@ -249,7 +249,7 @@ public class BarsBuilder
         // Split everything, including horizontals, per system
         SystemSplit.computeSystemLimits(sheet);
         SystemSplit.splitHorizontals(sheet);
-        SystemSplit.splitBars(sheet, bars);
+        SystemSplit.splitBarSticks(sheet, bars);
         SystemSplit.splitVerticalSections(sheet);
 
         // Display the resulting stickarea if so asked for
@@ -295,49 +295,56 @@ public class BarsBuilder
 
             if (system == null) {
                 return;
-            } else {
-                system.getBars()
-                      .remove(bar);
             }
 
             // Remove from the containing Measure
-            //            System scoreSystem = system.getScoreSystem();
-            //
-            //            for (Iterator it = scoreSystem.getStaves()
-            //                                          .iterator(); it.hasNext();) {
-            //                Staff staff = (Staff) it.next();
-            //
-            //                if (checker.isStaffEmbraced(staff, bar)) {
-            //                    for (Iterator mit = staff.getMeasures()
-            //                                             .iterator(); mit.hasNext();) {
-            //                        Measure measure = (Measure) mit.next();
-            //
-            //                        //                    for (Iterator bit = measure.getInfos().iterator();
-            //                        //                         bit.hasNext();) {
-            //                        //                        BarInfo info = (BarInfo) bit.next();
-            //                        //                        if (info == bar) {
-            //                        //                            // Remove the bar info
-            //                        //                            if (logger.isFineEnabled()) {
-            //                        //                                logger.fine("Removing " + info +
-            //                        //                                             " from " + measure);
-            //                        //                            }
-            //                        //                            bit.remove();
-            //                        //
-            //                        //                            // Remove measure as well ?
-            //                        //                            if (measure.getInfos().size() == 0) {
-            //                        //                                if (logger.isFineEnabled()) {
-            //                        //                                    logger.fine("Removing " + measure);
-            //                        //                                }
-            //                        //                                mit.remove();
-            //                        //                            }
-            //                        //
-            //                        //                            break;
-            //                        //                        }
-            //                        //                    }
-            //                    }
-            //                }
-            //            }
+            System scoreSystem = system.getScoreSystem();
+
+            for (TreeNode pNode : scoreSystem.getParts()) {
+                SystemPart part = (SystemPart) pNode;
+
+                if (checker.isPartEmbraced(part, bar)) {
+                    for (Iterator mit = part.getMeasures()
+                                            .iterator(); mit.hasNext();) {
+                        Measure measure = (Measure) mit.next();
+
+                        for (Iterator sit = measure.getBarline()
+                                                   .getSticks()
+                                                   .iterator(); sit.hasNext();) {
+                            Stick stick = (Stick) sit.next();
+
+                            if (stick == bar) {
+                                // Remove the bar stick
+                                if (logger.isFineEnabled()) {
+                                    logger.fine(
+                                        "Removing " + stick + " from " +
+                                        measure);
+                                }
+
+                                sit.remove();
+
+                                // Remove measure as well ?
+                                if (measure.getBarline()
+                                           .getSticks()
+                                           .size() == 0) {
+                                    if (logger.isFineEnabled()) {
+                                        logger.fine("Removing " + measure);
+                                    }
+
+                                    mit.remove();
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             assignGlyphShape(glyph, null);
+
+            // Update score internal data
+            score.accept(new ScoreFixer());
 
             // Update the view accordingly
             if (lagView != null) {

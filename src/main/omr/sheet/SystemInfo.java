@@ -41,8 +41,10 @@ public class SystemInfo
     /** Parts in this system */
     private final List<PartInfo> parts = new ArrayList<PartInfo>();
 
-    /** Retrieved bar lines in this system */
-    private final List<Stick> bars = new ArrayList<Stick>();
+    /** Related System in Score hierarchy */
+    private System scoreSystem;
+
+    ///   HORIZONTALS   ////////////////////////////////////////////////////////
 
     /** Retrieved endings in this system */
     private final List<Ending> endings = new ArrayList<Ending>();
@@ -50,10 +52,7 @@ public class SystemInfo
     /** Retrieved ledgers in this system */
     private final List<Ledger> ledgers = new ArrayList<Ledger>();
 
-    /** Related System in Score hierarchy */
-    private System scoreSystem;
-
-    ////////////////////////////////////////////////////////////////////////////
+    ///   VERTICALS   //////////////////////////////////////////////////////////
 
     /** Vertical sections of this system, assigned once for all */
     private final List<GlyphSection> vSections = new ArrayList<GlyphSection>();
@@ -177,19 +176,6 @@ public class SystemInfo
     public int getAreaTop ()
     {
         return areaTop;
-    }
-
-    //---------//
-    // getBars //
-    //---------//
-    /**
-     * Report the list of bar lines in this system
-     *
-     * @return the (abscissa ordered) collection of bar lines
-     */
-    public List<Stick> getBars ()
-    {
-        return bars;
     }
 
     //-----------//

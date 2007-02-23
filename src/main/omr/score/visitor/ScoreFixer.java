@@ -59,6 +59,9 @@ public class ScoreFixer
     @Override
     public boolean visit (Measure measure)
     {
+        // Adjust measure abscissae
+        measure.resetAbscissae();
+        
         // Set measure id
         Measure prevMeasure = (Measure) measure.getPreviousSibling();
 

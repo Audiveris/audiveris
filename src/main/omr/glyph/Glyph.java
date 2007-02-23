@@ -170,6 +170,19 @@ public class Glyph
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------//
+    // isBar //
+    //-------//
+    /**
+     * Convenient method which tests if the glyph is a Bar line
+     *
+     * @return true if glyph shape is a bar
+     */
+    public boolean isBar ()
+    {
+        return Shape.Barlines.contains(getShape());
+    }
+
     //-----------------//
     // getFirstSection //
     //-----------------//

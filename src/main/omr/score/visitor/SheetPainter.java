@@ -182,14 +182,9 @@ public class SheetPainter
                         staff.render(g, z);
                     }
 
-                    // Bar lines
-                    for (Stick bar : system.getBars()) {
-                        bar.renderLine(g, z);
-                    }
-
                     g.setColor(Color.black);
 
-                    // Stems
+                    // Stems 
                     for (Glyph glyph : system.getGlyphs()) {
                         if (glyph.isStem()) {
                             Stick stick = (Stick) glyph;

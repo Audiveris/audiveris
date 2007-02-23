@@ -1576,16 +1576,6 @@ public class Sheet
     private Glyph lookupSystemGlyph (SystemInfo system,
                                      Point      source)
     {
-        /// Check this loop is really needed TBD TBD
-        for (Stick bar : system.getBars()) {
-            for (GlyphSection section : bar.getMembers()) {
-                // Swap of x & y, since this is a vertical lag
-                if (section.contains(source.y, source.x)) {
-                    return bar;
-                }
-            }
-        }
-
         for (Glyph glyph : system.getGlyphs()) {
             for (GlyphSection section : glyph.getMembers()) {
                 // Swap of x & y, since this is a vertical lag

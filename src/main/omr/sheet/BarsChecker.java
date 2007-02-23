@@ -27,11 +27,11 @@ import omr.glyph.Shape;
 
 import omr.score.Barline;
 import omr.score.Measure;
+import omr.score.PageRectangle;
 import omr.score.Score;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
-import omr.score.PageRectangle;
 
 import omr.stick.Stick;
 
@@ -172,30 +172,30 @@ public class BarsChecker
         return (midPart > top) && (midPart < bot);
     }
 
-    //    //-----------------//
-    //    // isStaffEmbraced //
-    //    //-----------------//
-    //    /**
-    //     * Check whether the given staff is within the vertical range of the given
-    //     * glyph (bar stick or brace glyph)
-    //     *
-    //     * @param staff the given staff
-    //     * @param glyph the given glyph
-    //     * @return true if staff is embraced by the bar
-    //     */
-    //    public boolean isStaffEmbraced (Staff staff,
-    //                                    Glyph glyph)
-    //    {
-    //        // Extrema of glyph
-    //        PageRectangle box = scale.toUnits(glyph.getContourBox());
-    //        int           top = box.y;
-    //        int           bot = box.y + box.height;
-    //
-    //        // Check that middle of staff is within bar top & bottom
-    //        final int midStaff = staff.getTopLeft().y + (staff.getHeight() / 2);
-    //
-    //        return (midStaff > top) && (midStaff < bot);
-    //    }
+//    //-----------------//
+//    // isStaffEmbraced //
+//    //-----------------//
+//    /**
+//     * Check whether the given staff is within the vertical range of the given
+//     * glyph (bar stick or brace glyph)
+//     *
+//     * @param staff the given staff
+//     * @param glyph the given glyph
+//     * @return true if staff is embraced by the bar
+//     */
+//    public boolean isStaffEmbraced (Staff staff,
+//                                    Glyph glyph)
+//    {
+//        // Extrema of glyph
+//        PageRectangle box = scale.toUnits(glyph.getContourBox());
+//        int           top = box.y;
+//        int           bot = box.y + box.height;
+//
+//        // Check that middle of staff is within bar top & bottom
+//        final int midStaff = staff.getTopLeft().y + (staff.getHeight() / 2);
+//
+//        return (midStaff > top) && (midStaff < bot);
+//    }
 
     //----------//
     // getSuite //
