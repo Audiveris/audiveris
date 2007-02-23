@@ -281,18 +281,22 @@ public class Glyph
         }
 
         SymbolIcon icon = (SymbolIcon) shape.getIcon();
-        Point      iconRefPoint = icon.getRefPoint();
 
-        if (iconRefPoint != null) {
-            double         refRatio = (double) iconRefPoint.y / icon.getIconHeight();
-            PixelRectangle box = getContourBox();
+        if (icon != null) {
+            Point iconRefPoint = icon.getRefPoint();
 
-            return new PixelPoint(
-                getAreaCenter().x,
-                (int) Math.rint(box.y + (box.height * refRatio)));
-        } else {
-            return getAreaCenter();
+            if (iconRefPoint != null) {
+                double         refRatio = (double) iconRefPoint.y / icon.getIconHeight();
+                PixelRectangle box = getContourBox();
+
+                return new PixelPoint(
+                    getAreaCenter().x,
+                    (int) Math.rint(box.y + (box.height * refRatio)));
+            }
         }
+
+        // Default
+        return getAreaCenter();
     }
 
     //-------------//

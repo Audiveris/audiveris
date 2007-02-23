@@ -161,11 +161,11 @@ public class GlyphsBuilder
     {
         SystemInfo system = sheet.getSystemAtY(compound.getContourBox().y);
 
-        //compound.setParts(parts);
+        compound.setParts(parts);
 
         // Get rid of composing glyphs
         for (Glyph part : parts) {
-            //part.setPartOf(compound);
+            part.setPartOf(compound);
             part.setShape(Shape.NO_LEGAL_SHAPE);
             removeGlyph(part, system, /* cutSections => */
                         false);
