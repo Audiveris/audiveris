@@ -224,13 +224,11 @@ public class GlyphsBuilder
             system = sheet.getSystemAtY(y);
         }
 
-        if (!system.getGlyphs()
-                   .remove(glyph)) {
+        if (!system.removeGlyph(glyph)) {
             SystemInfo closest = sheet.getClosestSystem(system, y);
 
             if (closest != null) {
-                if (!closest.getGlyphs()
-                            .remove(glyph)) {
+                if (!closest.removeGlyph(glyph)) {
                     logger.warning(
                         "Cannot find " + glyph + " close to " + system +
                         " closest was " + closest);
@@ -253,25 +251,15 @@ public class GlyphsBuilder
      *
      * @param system the specified system
      */
-    public static void removeSystemUnknowns (SystemInfo system)
+    public void removeSystemUnknowns (SystemInfo system)
     {
-        List<Glyph> toremove = new ArrayList<Glyph>();
-
         for (Glyph glyph : system.getGlyphs()) {
             // We remove shapes : null, NOISE, STRUCTURE (not CLUTTER)
             if (!glyph.isWellKnown()) {
-                toremove.add(glyph);
+                // Remove from system (& lag)
+                removeGlyph(glyph, system, /* cutSections => */
+                            true);
             }
-        }
-
-        // Remove from system list
-        system.getGlyphs()
-              .removeAll(toremove);
-
-        // Remove from lag
-        for (Glyph glyph : toremove) {
-            glyph.destroy( /* cutSections => */
-            true);
         }
     }
 

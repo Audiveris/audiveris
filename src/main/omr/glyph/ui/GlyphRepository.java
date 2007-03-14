@@ -195,45 +195,41 @@ public class GlyphRepository
             int structuresNb = 0;
 
             ///final long startTime = System.currentTimeMillis();
-            for (SystemInfo system : sheet.getSystems()) {
-                for (Glyph glyph : system.getGlyphs()) {
-                    if (glyph.getShape() != null) {
-                        Shape shape = glyph.getShape()
-                                           .getTrainingShape();
+            for (Glyph glyph : sheet.getActiveGlyphs()) {
+                if (glyph.getShape() != null) {
+                    Shape shape = glyph.getShape()
+                                       .getTrainingShape();
 
-                        if ((shape != Shape.NOISE) &&
-                            (shape != Shape.COMBINING_STEM)) {
-                            if (logger.isFineEnabled()) {
-                                logger.fine("Storing " + glyph);
-                            }
-
-                            glyph.setInterline(sheet.getScale().interline());
-
-                            // Build the proper glyph file
-                            StringBuffer sb = new StringBuffer();
-                            sb.append(shape);
-                            sb.append(".");
-                            sb.append(String.format("%04d", glyph.getId()));
-                            sb.append(FILE_EXTENSION);
-
-                            File glyphFile;
-
-                            if (shape != Shape.STRUCTURE) {
-                                glyphFile = new File(sheetDir, sb.toString());
-                            } else {
-                                structuresNb++;
-                                glyphFile = new File(
-                                    structuresDir,
-                                    sb.toString());
-                            }
-
-                            OutputStream os = new FileOutputStream(glyphFile);
-
-                            // Store the glyph
-                            jaxbMarshal(glyph, os);
-
-                            glyphNb++;
+                    if ((shape != Shape.NOISE) &&
+                        (shape != Shape.COMBINING_STEM)) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Storing " + glyph);
                         }
+
+                        glyph.setInterline(sheet.getScale().interline());
+
+                        // Build the proper glyph file
+                        StringBuffer sb = new StringBuffer();
+                        sb.append(shape);
+                        sb.append(".");
+                        sb.append(String.format("%04d", glyph.getId()));
+                        sb.append(FILE_EXTENSION);
+
+                        File glyphFile;
+
+                        if (shape != Shape.STRUCTURE) {
+                            glyphFile = new File(sheetDir, sb.toString());
+                        } else {
+                            structuresNb++;
+                            glyphFile = new File(structuresDir, sb.toString());
+                        }
+
+                        OutputStream os = new FileOutputStream(glyphFile);
+
+                        // Store the glyph
+                        jaxbMarshal(glyph, os);
+
+                        glyphNb++;
                     }
                 }
             }

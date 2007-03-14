@@ -626,13 +626,7 @@ public class GlyphInspector
                 }
 
                 // Restore the stem
-                system.getGlyphs()
-                      .add(stem);
-
-                // Restore the stem <- section link
-                for (GlyphSection section : stem.getMembers()) {
-                    section.setGlyph(stem);
-                }
+                builder.insertGlyph(stem, system);
             }
         }
 

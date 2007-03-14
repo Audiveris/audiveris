@@ -113,7 +113,8 @@ public class SymbolsEditor
 
         // Allocation of components
         view = new MyView(lag);
-        view.setLocationSelection(sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
+        view.setLocationSelection(
+            sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
 
         focus = new ShapeFocusBoard(
             sheet,
@@ -278,7 +279,7 @@ public class SymbolsEditor
         for (Glyph stem : stems) {
             SystemInfo system = sheet.getSystemAtY(stem.getContourBox().y);
             builder.removeGlyph(stem, system, /* cutSections => */
-                                  true);
+                                true);
             assignGlyphShape(stem, null);
             systems.add(system);
         }
@@ -471,10 +472,8 @@ public class SymbolsEditor
          */
         public void colorizeAllGlyphs ()
         {
-            for (SystemInfo system : sheet.getSystems()) {
-                for (Glyph glyph : system.getGlyphs()) {
-                    colorizeGlyph(glyph);
-                }
+            for (Glyph glyph : sheet.getActiveGlyphs()) {
+                colorizeGlyph(glyph);
             }
 
             repaint();

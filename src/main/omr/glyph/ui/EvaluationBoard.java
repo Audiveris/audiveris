@@ -456,20 +456,18 @@ class EvaluationBoard
             int          total = 0;
             final double maxDoubt = GlyphInspector.getSymbolMaxDoubt();
 
-            for (SystemInfo system : sheet.getSystems()) {
-                for (Glyph glyph : system.getGlyphs()) {
-                    if (glyph.isKnown() &&
-                        (glyph.getShape() != Shape.COMBINING_STEM)) {
-                        total++;
+            for (Glyph glyph : sheet.getActiveGlyphs()) {
+                if (glyph.isKnown() &&
+                    (glyph.getShape() != Shape.COMBINING_STEM)) {
+                    total++;
 
-                        Evaluation guess = evaluator.vote(glyph, maxDoubt);
+                    Evaluation guess = evaluator.vote(glyph, maxDoubt);
 
-                        if (glyph.getShape() == guess.shape) {
-                            ok++;
-                            view.colorizeGlyph(glyph, Shape.okColor);
-                        } else {
-                            view.colorizeGlyph(glyph, Shape.missedColor);
-                        }
+                    if (glyph.getShape() == guess.shape) {
+                        ok++;
+                        view.colorizeGlyph(glyph, Shape.okColor);
+                    } else {
+                        view.colorizeGlyph(glyph, Shape.missedColor);
                     }
                 }
             }

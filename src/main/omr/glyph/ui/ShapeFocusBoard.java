@@ -201,11 +201,9 @@ class ShapeFocusBoard
             selectButton.setIcon(currentShape.getIcon());
 
             // Count the number of glyphs assigned to current shape
-            for (SystemInfo system : sheet.getSystems()) {
-                for (Glyph glyph : system.getGlyphs()) {
-                    if (glyph.getShape() == currentShape) {
-                        assignedCounter.addId(glyph.getId());
-                    }
+            for (Glyph glyph : sheet.getActiveGlyphs()) {
+                if (glyph.getShape() == currentShape) {
+                    assignedCounter.addId(glyph.getId());
                 }
             }
         } else {
