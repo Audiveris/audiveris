@@ -600,8 +600,7 @@ public class VerticalsBuilder
         {
             super.colorize();
 
-            final int viewIndex = lag.getViews()
-                                     .indexOf(this);
+            final int viewIndex = lag.viewIndexOf(this);
 
             // All remaining vertical sticks clutter
             //            for (Stick stick : verticalsArea.getSticks()) {
@@ -614,14 +613,11 @@ public class VerticalsBuilder
             // Use light gray color for past successful entities
             sheet.colorize(lag, viewIndex, Color.lightGray);
 
-            // Iterate on systems
-            for (SystemInfo system : sheet.getSystems()) {
-                // Use bright yellow color for recognized stems
-                for (Glyph glyph : system.getGlyphs()) {
-                    if (glyph.isStem()) {
-                        Stick stick = (Stick) glyph;
-                        stick.colorize(lag, viewIndex, Color.yellow);
-                    }
+            // Use bright yellow color for recognized stems
+            for (Glyph glyph : sheet.getActiveGlyphs()) {
+                if (glyph.isStem()) {
+                    Stick stick = (Stick) glyph;
+                    stick.colorize(lag, viewIndex, Color.yellow);
                 }
             }
         }

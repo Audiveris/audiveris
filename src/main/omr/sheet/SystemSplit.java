@@ -118,7 +118,7 @@ public class SystemSplit
             new Adapter<Glyph>() {
                     public Collection<Glyph> getTarget (SystemInfo system)
                     {
-                        return system.getGlyphs();
+                        return system.getMutableGlyphs();
                     }
 
                     public int getXMin (Glyph glyph)

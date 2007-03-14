@@ -47,8 +47,7 @@ public class UITest
         sheet.getVerticalLag()
              .dump("Sheet vLag");
 
-        List<Glyph> actives = new ArrayList<Glyph>(
-            sheet.getVerticalLag().getActiveGlyphs());
+        List<Glyph> actives = new ArrayList<Glyph>(sheet.getActiveGlyphs());
         List<Glyph> inactives = new ArrayList<Glyph>(
             sheet.getVerticalLag().getAllGlyphs());
         inactives.removeAll(actives);
