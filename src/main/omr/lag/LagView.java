@@ -133,8 +133,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         setBackground(Color.white);
 
         // Colorize all sections of the lag
-        viewIndex = lag.getViews()
-                       .indexOf(this);
+        viewIndex = lag.viewIndexOf(this);
         colorize();
     }
 
@@ -208,8 +207,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     public void setZoom (Zoom zoom)
     {
         // What is my view Index in all views on this lag
-        int viewIndex = lag.getViews()
-                           .indexOf(this);
+        int viewIndex = lag.viewIndexOf(this);
 
         // Update standard vertices as well as specific ones
         setCollectionZoom(lag.getVertices(), viewIndex, zoom);
@@ -344,8 +342,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     public void render (Graphics g)
     {
         // Determine my view index in the lag views
-        final int viewIndex = lag.getViews()
-                                 .indexOf(this);
+        final int viewIndex = lag.viewIndexOf(this);
 
         // Render all sections, using the colors they have been assigned
         renderCollection(g, lag.getVertices(), viewIndex);

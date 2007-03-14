@@ -62,13 +62,13 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     //~ Instance fields --------------------------------------------------------
 
     /** Orientation of the lag */
-    protected final Oriented orientation;
+    private final Oriented orientation;
 
     /**
      * List of Runs found in each column. So this is a list of lists of Runs.
      * It will be allocated in the adapter
      */
-    protected List<List<Run>> runs;
+    private List<List<Run>> runs;
 
     /** Selection object where selected pixel location is to be written */
     protected transient Selection locationSelection;
@@ -192,9 +192,9 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      *
      * @return the sections collection
      */
-    public Collection<S> getSections ()
+    public final Collection<S> getSections ()
     {
-        return vertices.values();
+        return getVertices();
     }
 
     //---------------//

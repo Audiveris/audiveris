@@ -197,11 +197,9 @@ public class ScoreBuilder
     //-----------------//
     private void translateSystem (Translator translator)
     {
-        // Browse a COPY of the system collection of glyphs
-        List<Glyph> copy = new ArrayList<Glyph>(
-            currentSystem.getInfo().getGlyphs());
-
-        for (Glyph glyph : copy) {
+        // Browse the system collection of glyphs
+        for (Glyph glyph : currentSystem.getInfo()
+                                        .getGlyphs()) {
             if (glyph.isWellKnown() && (glyph.getShape() != Shape.CLUTTER)) {
                 // Check for glyph relevance
                 if (translator.isRelevant(glyph)) {
@@ -222,9 +220,16 @@ public class ScoreBuilder
     //------------------//
     // RebuildException //
     //------------------//
+    /**
+     * Exception used to trigger a rebuild
+     */
     public static class RebuildException
         extends RuntimeException
     {
+        /**
+         * Annotate the exception with a message
+         * @param message a meaningful explanation
+         */
         public RebuildException (String message)
         {
             super(message);
@@ -306,7 +311,14 @@ public class ScoreBuilder
                 for (TreeNode mn : part.getMeasures()) {
                     Measure measure = (Measure) mn;
 
-                    browse(measure);
+                    try {
+                        browse(measure);
+                    } catch (Exception ex) {
+                        logger.warning(
+                            measure.getContextString() +
+                            " Exception in measure browsing",
+                            ex);
+                    }
                 }
             }
         }

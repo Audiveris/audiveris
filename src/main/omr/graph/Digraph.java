@@ -47,22 +47,22 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     /**
      * All Vertices of the graph
      */
-    protected final SortedMap<Integer, V> vertices = new TreeMap<Integer, V>();
+    private final SortedMap<Integer, V> vertices = new TreeMap<Integer, V>();
 
     /**
      * All Views on this graph
      */
-    protected transient List<DigraphView> views;
+    private transient List<DigraphView> views = new ArrayList<DigraphView>();
 
     /**
      * Name for debugging
      */
-    protected final String name;
+    private final String name;
 
     /**
      * Global id to uniquely identify a vertex
      */
-    protected int globalVertexId = 0;
+    private int globalVertexId = 0;
 
     /**
      * Related Vertex (sub)class, to create vertices of the proper type
@@ -163,30 +163,39 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     // getVertices //
     //-------------//
     /**
-     * Export the vertices of the graph. TBD: should be unmutable ?
+     * Export the unmodifiable collection of vertices of the graph.
      *
-     * @return the collection of vertices
+     * @return the unmodifiable collection of vertices
      */
     public Collection<V> getVertices ()
     {
-        return vertices.values();
+        return Collections.unmodifiableCollection(vertices.values());
     }
 
     //----------//
     // getViews //
     //----------//
     /**
-     * Give access to the ordered collection of related views if any
+     * Give access to the (unmodifiable) collection of related views if any
      *
-     * @return the views
+     * @return the unmodifiable collection of views
      */
-    public List<DigraphView> getViews ()
+    public Collection<DigraphView> getViews ()
     {
-        if (views == null) {
-            views = new ArrayList<DigraphView>();
-        }
+        return Collections.unmodifiableCollection(views);
+    }
 
-        return views;
+    //-------------//
+    // viewIndexOf //
+    //-------------//
+    /**
+     * Return the index of the given view
+     *
+     * @return the view index, or -1 if not found
+     */
+    public int viewIndexOf (DigraphView view)
+    {
+        return views.indexOf(view);
     }
 
     //-----------//
@@ -220,8 +229,7 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
      */
     public void addView (DigraphView view)
     {
-        getViews()
-            .add(view);
+        views.add(view);
     }
 
     //--------------//
