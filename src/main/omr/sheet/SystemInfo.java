@@ -18,6 +18,7 @@ import omr.score.System;
 import omr.stick.Stick;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Class <code>SystemInfo</code> gathers information from the original picture
@@ -57,11 +58,11 @@ public class SystemInfo
     /** Vertical sections of this system, assigned once for all */
     private final List<GlyphSection> vSections = new ArrayList<GlyphSection>();
 
-    /** Vertical sticks of this system */
+    /** Vertical sticks of this system, only temporarily used by VerticalsBuilder */
     private final List<Stick> vSticks = new ArrayList<Stick>();
 
-    /** Glyphs (& Sticks) in this system */
-    private final SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
+    /** Active glyphs in this system, allowing concurrent access */
+    private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>();
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -224,11 +225,24 @@ public class SystemInfo
     // getGlyphs //
     //-----------//
     /**
-     * Report the collection of glyphs within the system area
+     * Report the unmodifiable collection of glyphs within the system area
      *
-     * @return the list of glyphs
+     * @return the unmodifiable collection of glyphs
      */
     public Collection<Glyph> getGlyphs ()
+    {
+        return Collections.unmodifiableCollection(glyphs);
+    }
+
+    //------------------//
+    // getMutableGlyphs //
+    //------------------//
+    /**
+     * Report the modifiable collection of glyphs within the system area
+     *
+     * @return the modifiable collection of glyphs
+     */
+    public Collection<Glyph> getMutableGlyphs ()
     {
         return glyphs;
     }
@@ -472,6 +486,14 @@ public class SystemInfo
     public void addGlyph (Glyph glyph)
     {
         glyphs.add(glyph);
+    }
+
+    //-------------//
+    // removeGlyph //
+    //-------------//
+    public boolean removeGlyph (Glyph glyph)
+    {
+        return glyphs.remove(glyph);
     }
 
     //---------//
