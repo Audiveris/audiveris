@@ -528,6 +528,7 @@ public class Sheet
      * Create a sheet as a score companion
      *
      * @param score the existing score
+     * @throws omr.ProcessingException
      */
     public Sheet (Score score)
         throws ProcessingException
@@ -1299,6 +1300,19 @@ public class Sheet
         }
 
         return vLag;
+    }
+
+    //-----------------//
+    // getActiveGlyphs //
+    //-----------------//
+    /**
+     * Export the active glyphs of the vertical lag.
+     *
+     * @return the collection of glyphs for which at least a section is assigned
+     */
+    public Collection<Glyph> getActiveGlyphs ()
+    {
+        return vLag.getActiveGlyphs();
     }
 
     //--------------//

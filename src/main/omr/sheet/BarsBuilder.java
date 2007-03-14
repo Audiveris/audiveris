@@ -137,7 +137,6 @@ public class BarsBuilder
     public BarsBuilder (Sheet sheet)
     {
         super(sheet, new GlyphLag("vLag", new VerticalOrientation()));
-        lag.setOriginalsSupported(true);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -961,8 +960,7 @@ public class BarsBuilder
             super.colorize();
 
             // Determine my view index in the lag views
-            final int viewIndex = lag.getViews()
-                                     .indexOf(this);
+            final int viewIndex = lag.viewIndexOf(this);
 
             // All remaining vertical sticks clutter
             for (Stick stick : clutter) {

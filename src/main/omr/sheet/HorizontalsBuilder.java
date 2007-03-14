@@ -873,12 +873,9 @@ public class HorizontalsBuilder
         {
             super.colorize();
 
-            final int viewIndex = lag.getViews()
-                                     .indexOf(this);
+            final int viewIndex = lag.viewIndexOf(this);
 
-            // All checked sticks. Perhaps, recognized sticks should no longer
-            // be part of the list, since they'll be colorized a few lines
-            // below... TBD
+            // All checked sticks.
             for (Stick stick : horizontalsArea.getSticks()) {
                 if ((stick.getResult() != LEDGER) &&
                     (stick.getResult() != ENDING)) {
