@@ -147,8 +147,6 @@ public class SlurGlyph
     private static boolean fixLargeSlur (Glyph      slur,
                                          SystemInfo system)
     {
-        logger.setLevel((slur.getId() == 1402) ? "FINEST" : "INFO"); ////////////////////////////////////////////////////////////////////////////////////////////////
-
         /**
          * Sections are first ordered by decreasing weight and continuously
          * tested via the distance to the best approximating circle.  Sections
@@ -299,7 +297,9 @@ public class SlurGlyph
 
             return true;
         } else {
-            logger.warning("No section left from large slur #" + slur.getId());
+            logger.warning(
+                system.getScoreSystem().getContextString() +
+                " No section left from large slur #" + slur.getId());
 
             return false;
         }
