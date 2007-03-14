@@ -134,7 +134,8 @@ public class Dynamics
         Shape shape = shapes.get(sig);
 
         if (shape == null) {
-            logger.warning("Invalid dynamics signature:" + sig);
+            logger.warning(
+                getContextString() + " Invalid dynamics signature:" + sig);
         }
 
         return shape;
