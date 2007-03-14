@@ -348,10 +348,12 @@ public class ScorePainter
     //----------------//
     public boolean visit (Dynamics dynamics)
     {
-        paintSymbol(
-            dynamics.getShape(),
-            dynamics.getPoint(),
-            dynamics.getDisplayOrigin());
+        if (dynamics.getShape() != null) {
+            paintSymbol(
+                dynamics.getShape(),
+                dynamics.getPoint(),
+                dynamics.getDisplayOrigin());
+        }
 
         return true;
     }
