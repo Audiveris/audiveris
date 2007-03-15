@@ -257,8 +257,9 @@ public class GlyphsBuilder
             // We remove shapes : null, NOISE, STRUCTURE (not CLUTTER)
             if (!glyph.isWellKnown()) {
                 // Remove from system (& lag)
+                logger.info("removing " + glyph + " first=" + glyph.getMembers());
                 removeGlyph(glyph, system, /* cutSections => */
-                            true);
+                            false);
             }
         }
     }
