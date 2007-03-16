@@ -256,8 +256,12 @@ public class GlyphsBuilder
         for (Glyph glyph : system.getGlyphs()) {
             // We remove shapes : null, NOISE, STRUCTURE (not CLUTTER)
             if (!glyph.isWellKnown()) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "removing " + glyph + " first=" + glyph.getMembers());
+                }
+
                 // Remove from system (& lag)
-                logger.info("removing " + glyph + " first=" + glyph.getMembers());
                 removeGlyph(glyph, system, /* cutSections => */
                             false);
             }
