@@ -376,9 +376,8 @@ public class VerticalsBuilder
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
-            int   length = stick.getLength();
 
-            return (double) stick.getFirstStuck() / (double) length;
+            return (double) stick.getFirstStuck() / stick.getLength();
         }
     }
 
@@ -404,9 +403,8 @@ public class VerticalsBuilder
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
-            int   length = stick.getLength();
 
-            return (double) stick.getLastStuck() / (double) length;
+            return (double) stick.getLastStuck() / stick.getLength();
         }
     }
 

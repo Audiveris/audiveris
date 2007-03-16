@@ -71,6 +71,23 @@ public class Run
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------------//
+    // getCommonLength //
+    //-----------------//
+    /**
+     * Report the length of the common part with another run (assumed to be
+     * adjacent)
+     *
+     * @return the length of the common part
+     */
+    public int getCommonLength (Run other)
+    {
+        int startCommon = Math.max(this.getStart(), other.getStart());
+        int stopCommon = Math.min(this.getStop(), other.getStop());
+
+        return stopCommon - startCommon + 1;
+    }
+
     //-----------//
     // getLength //
     //-----------//

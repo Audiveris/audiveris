@@ -338,10 +338,11 @@ public class Stick
         int stuck = 0;
 
         for (GlyphSection section : members) {
+            Run sectionRun = section.getFirstRun();
+
             for (GlyphSection sct : section.getSources()) {
                 if (!sct.isGlyphMember() || (sct.getGlyph() != this)) {
-                    stuck += sct.getLastRun()
-                                .getLength();
+                    stuck += sectionRun.getCommonLength(sct.getLastRun());
                 }
             }
         }
@@ -376,10 +377,11 @@ public class Stick
         int stuck = 0;
 
         for (GlyphSection section : members) {
+            Run sectionRun = section.getLastRun();
+
             for (GlyphSection sct : section.getTargets()) {
                 if (!sct.isGlyphMember() || (sct.getGlyph() != this)) {
-                    stuck += sct.getFirstRun()
-                                .getLength();
+                    stuck += sectionRun.getCommonLength(sct.getFirstRun());
                 }
             }
         }
