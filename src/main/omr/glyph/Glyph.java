@@ -170,6 +170,39 @@ public class Glyph
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------//
+    // isActive //
+    //----------//
+    /**
+     * Tests whether this glyph is active (its member sections point to it) or
+     * not
+     *
+     * @return true if glyph is active
+     */
+    public boolean isActive ()
+    {
+        // Some sanity check, to be removed later
+        if (true) {
+            boolean foundMembers = false;
+            boolean foundAliens = false;
+
+            for (GlyphSection section : members) {
+                if (section.getGlyph() == this) {
+                    foundMembers = true;
+                } else {
+                    foundAliens = true;
+                }
+
+                if (foundAliens && foundMembers) {
+                    logger.warning("Mixed aliens & members in " + this);
+                }
+            }
+        }
+
+        return members.first()
+                      .getGlyph() == this;
+    }
+
     //-------//
     // isBar //
     //-------//

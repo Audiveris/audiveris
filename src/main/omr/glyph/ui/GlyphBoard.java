@@ -94,6 +94,9 @@ public class GlyphBoard
     /** The related glyph model */
     protected final GlyphModel glyphModel;
 
+    /** An active label */
+    protected final JLabel active = new JLabel("");
+
     /** A dump action */
     protected final JButton dump = new JButton("Dump");
 
@@ -333,6 +336,17 @@ public class GlyphBoard
 
             Glyph glyph = (Glyph) entity;
 
+            // Active ?
+            if (glyph != null) {
+                if (glyph.isActive()) {
+                    active.setText("Active");
+                } else {
+                    active.setText("Non Active");
+                }
+            } else {
+                active.setText("");
+            }
+
             // Dump button and deassign button
             dump.setEnabled(glyph != null);
             deassignButton.setEnabled((glyph != null) && glyph.isKnown());
@@ -398,7 +412,8 @@ public class GlyphBoard
     protected void defineLayout ()
     {
         int r = 1; // --------------------------------
-        builder.addSeparator("Glyph", cst.xyw(1, r, 8));
+        builder.addSeparator("Glyph", cst.xyw(1, r, 6));
+        builder.add(active, cst.xy(7, r));
         builder.add(count, cst.xy(9, r));
         builder.add(dump, cst.xy(11, r));
 
