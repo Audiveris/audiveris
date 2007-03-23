@@ -1042,16 +1042,18 @@ public class ScoreExporter
         beatType.setContent("" + timeSignature.getDenominator());
 
         // Symbol ?
-        switch (timeSignature.getShape()) {
-        case COMMON_TIME :
-            time.setSymbol(COMMON);
+        if (timeSignature.getShape() != null) {
+            switch (timeSignature.getShape()) {
+            case COMMON_TIME :
+                time.setSymbol(COMMON);
 
-            break;
+                break;
 
-        case CUT_TIME :
-            time.setSymbol(CUT);
+            case CUT_TIME :
+                time.setSymbol(CUT);
 
-            break;
+                break;
+            }
         }
 
         return true;
