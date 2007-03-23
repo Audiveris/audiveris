@@ -26,8 +26,8 @@ import omr.util.Logger;
 import java.util.*;
 
 /**
- * Class <code>SticksBuilder</code> introduces the scanning of rectangular
- * areas, to retrieve sticks.
+ * Class <code>SticksBuilder</code> introduces the scanning of a source of
+ * sections,  to retrieve sticks.
  *
  * <p> The same algorithms are used for all kinds of sticks with only one
  * difference, depending on length of sticks we are looking for, since long

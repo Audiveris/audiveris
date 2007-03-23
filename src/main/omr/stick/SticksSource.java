@@ -49,7 +49,7 @@ public class SticksSource
      */
     public SticksSource (Collection<GlyphSection> collection)
     {
-        this(collection, new SectionPredicate());
+        this(collection, new UnknownSectionPredicate());
     }
 
     //--------------//
