@@ -24,6 +24,7 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphSection;
+import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
@@ -248,8 +249,16 @@ public class BarsBuilder
         // Split everything, including horizontals, per system
         SystemSplit.computeSystemLimits(sheet);
         SystemSplit.splitHorizontals(sheet);
-        SystemSplit.splitBarSticks(sheet, bars);
         SystemSplit.splitVerticalSections(sheet);
+
+        // Assign the bar stick to the proper system glyphs collection
+        GlyphsBuilder glyphsBuilder = sheet.getGlyphsBuilder();
+
+        for (Stick stick : bars) {
+            glyphsBuilder.insertGlyph(
+                stick,
+                sheet.getSystemAtY(stick.getContourBox().y));
+        }
 
         // Display the resulting stickarea if so asked for
         if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
@@ -365,7 +374,7 @@ public class BarsBuilder
      * @param glyphs the collection of glyphs to be de-assigned
      */
     @Override
-    public void deassignSetShape (List<Glyph> glyphs)
+    public void deassignSetShape (Collection<Glyph> glyphs)
     {
         for (Glyph glyph : glyphs) {
             deassignGlyphShape(glyph);
