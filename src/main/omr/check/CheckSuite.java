@@ -220,6 +220,8 @@ public class CheckSuite<C extends Checkable>
 
         System.out.println(" Check Suite: threshold=" + threshold);
 
+        dumpSpecific();
+
         System.out.println(
             "Weight    Name             Covariant    Low       High");
         System.out.println(
@@ -228,7 +230,6 @@ public class CheckSuite<C extends Checkable>
         int index = 0;
 
         for (Check check : checks) {
-            //   %[argument_index$][flags][width][.precision]conversion
             System.out.printf(
                 "%4.1f      %-19s  %5b  % 6.2f    % 6.2f \n",
                 weights.get(index++),
@@ -330,6 +331,10 @@ public class CheckSuite<C extends Checkable>
 
         // Final grade
         return grade / totalWeight;
+    }
+
+    protected void dumpSpecific ()
+    {
     }
 
     //     //----------//

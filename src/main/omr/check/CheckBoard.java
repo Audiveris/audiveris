@@ -61,7 +61,10 @@ public class CheckBoard<C extends Checkable>
     {
         super(Board.Tag.CHECK, name + "-CheckBoard");
         checkPanel = new CheckPanel<C>(suite);
-        defineLayout(suite.getName());
+
+        if (suite != null) {
+            defineLayout(suite.getName());
+        }
 
         setInputSelectionList(Collections.singletonList(inputSelection));
 

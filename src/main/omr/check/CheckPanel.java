@@ -67,15 +67,12 @@ public class CheckPanel<C extends Checkable>
      */
     public CheckPanel (CheckSuite<C> suite)
     {
-        this.suite = suite;
-
         // Global field (for global result)
         globalField = new JTextField(FIELD_WIDTH);
         globalField.setEditable(false);
         globalField.setHorizontalAlignment(JTextField.CENTER);
 
-        createValueFields(); // Assign values
-        buildComponent(); // Create/update component
+        setSuite(suite);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -104,12 +101,17 @@ public class CheckPanel<C extends Checkable>
     public void setSuite (CheckSuite<C> suite)
     {
         this.suite = suite;
-        createValueFields(); // Assign values
-        buildComponent(); // Create/update component
+
+        if (suite != null) {
+            createValueFields(); // Assign values
+            buildComponent(); // Create/update component
+        }
 
         // Refresh the display
-        component.validate();
-        component.repaint();
+        if (component != null) {
+            component.validate();
+            component.repaint();
+        }
     }
 
     //----------//
