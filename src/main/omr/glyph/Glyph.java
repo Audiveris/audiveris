@@ -12,13 +12,13 @@ package omr.glyph;
 
 import omr.check.Checkable;
 import omr.check.Result;
+import omr.check.SuccessResult;
 
 import omr.lag.Section;
 import omr.lag.SectionView;
 
 import omr.math.Moments;
 
-import omr.sheet.Picture;
 import omr.sheet.PixelPoint;
 import omr.sheet.PixelRectangle;
 
@@ -900,6 +900,14 @@ public class Glyph
         return weight;
     }
 
+    //--------------//
+    // isSuccessful //
+    //--------------//
+    public boolean isSuccessful ()
+    {
+        return result instanceof SuccessResult;
+    }
+
     //-------------//
     // isWellKnown //
     //-------------//
@@ -1313,7 +1321,7 @@ public class Glyph
      *
      * @param parts the contained parts
      */
-    void setParts (List<?extends Glyph> parts)
+    void setParts (Collection<?extends Glyph> parts)
     {
         if (this.parts != parts) {
             this.parts.clear();
