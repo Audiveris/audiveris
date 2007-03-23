@@ -403,9 +403,8 @@ public class TimeSignature
                 numerator = denominator = null;
 
                 for (Glyph glyph : glyphs) {
-                    int     pitch = getStaff()
-                                        .unitToPitch(
-                        computeGlyphCenter(glyph).y);
+                    int     pitch = (int) Math.rint(
+                        getStaff().pitchPositionOf(computeGlyphCenter(glyph)));
                     Integer value = getNumericValue(glyph);
 
                     if (logger.isFineEnabled()) {
