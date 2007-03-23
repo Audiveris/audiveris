@@ -109,10 +109,8 @@ public class GlyphSection
      */
     public boolean isKnown ()
     {
-        return isGlyphMember() &&
-               (((glyph.getResult() != null) &&
-                glyph.getResult() instanceof SuccessResult) ||
-               glyph.isWellKnown());
+        return (glyph != null) &&
+               (glyph.isSuccessful() || glyph.isWellKnown());
     }
 
     //-----------//
@@ -146,7 +144,7 @@ public class GlyphSection
         if (dy != 0) {
             return dy;
         }
-        
+
         // Finally, use id ...
         return this.getId() - other.getId();
     }
@@ -169,6 +167,11 @@ public class GlyphSection
         if (glyph != null) {
             sb.append(" glyph#")
               .append(glyph.getId());
+
+            if (glyph.getShape() != null) {
+                sb.append(":")
+                  .append(glyph.getShape());
+            }
         }
 
         if (this.getClass()
