@@ -55,11 +55,8 @@ public class SystemInfo
 
     ///   VERTICALS   //////////////////////////////////////////////////////////
 
-    /** Vertical sections of this system, assigned once for all */
+    /** Vertical sections, assigned once for all to this system */
     private final List<GlyphSection> vSections = new ArrayList<GlyphSection>();
-
-    /** Vertical sticks of this system, only temporarily used by VerticalsBuilder */
-    private final List<Stick> vSticks = new ArrayList<Stick>();
 
     /** Active glyphs in this system, allowing concurrent access */
     private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>();
@@ -234,19 +231,6 @@ public class SystemInfo
         return Collections.unmodifiableCollection(glyphs);
     }
 
-    //------------------//
-    // getMutableGlyphs //
-    //------------------//
-    /**
-     * Report the modifiable collection of glyphs within the system area
-     *
-     * @return the modifiable collection of glyphs
-     */
-    public Collection<Glyph> getMutableGlyphs ()
-    {
-        return glyphs;
-    }
-
     //-------//
     // getId //
     //-------//
@@ -305,6 +289,33 @@ public class SystemInfo
         }
 
         return maxLedgerWidth;
+    }
+
+    //---------------------//
+    // getModifiableGlyphs //
+    //---------------------//
+    /**
+     * Report the modifiable collection of glyphs within the system area
+     *
+     * @return the modifiable collection of glyphs
+     */
+    public Collection<Glyph> getModifiableGlyphs ()
+    {
+        return glyphs;
+    }
+
+    //-------------------------------//
+    // getModifiableVerticalSections //
+    //-------------------------------//
+    /**
+     * Report the (modifiable)collection of vertical sections in the system
+     * related area
+     *
+     * @return the area vertical sections
+     */
+    public Collection<GlyphSection> getModifiableVerticalSections ()
+    {
+        return vSections;
     }
 
     //----------//
@@ -444,27 +455,14 @@ public class SystemInfo
     // getVerticalSections //
     //---------------------//
     /**
-     * Report the collection of vertical sections in the system related area
+     * Report the (unmodifiable) collection of vertical sections in the system
+     * related area
      *
      * @return the area vertical sections
      */
-    public List<GlyphSection> getVerticalSections ()
+    public Collection<GlyphSection> getVerticalSections ()
     {
-        return vSections;
-    }
-
-    //-------------------//
-    // getVerticalSticks //
-    //-------------------//
-    /**
-     * Report the collection of vertical sticks left over in the system related
-     * area
-     *
-     * @return the area vertical sticks clutter
-     */
-    public List<Stick> getVerticalSticks ()
-    {
-        return vSticks;
+        return Collections.unmodifiableCollection(vSections);
     }
 
     //----------//
@@ -486,14 +484,6 @@ public class SystemInfo
     public void addGlyph (Glyph glyph)
     {
         glyphs.add(glyph);
-    }
-
-    //-------------//
-    // removeGlyph //
-    //-------------//
-    public boolean removeGlyph (Glyph glyph)
-    {
-        return glyphs.remove(glyph);
     }
 
     //---------//
@@ -545,6 +535,70 @@ public class SystemInfo
                          .yAt(lastLine.getLeft());
     }
 
+    //------------//
+    // dumpGlyphs //
+    //------------//
+    /**
+     * Dump all glyphs handled by this system
+     */
+    public void dumpGlyphs ()
+    {
+        dumpGlyphs(null);
+    }
+
+    //------------//
+    // dumpGlyphs //
+    //------------//
+    /**
+     * Dump the glyphs handled by this system and that are contained by the
+     * provided rectangle
+     *
+     * @param rect the region of interest
+     */
+    public void dumpGlyphs (PixelRectangle rect)
+    {
+        for (Glyph glyph : getGlyphs()) {
+            if ((rect == null) || (rect.contains(glyph.getContourBox()))) {
+                java.lang.System.out.println(
+                    (glyph.isActive() ? "active " : "       ") +
+                    (glyph.isKnown() ? "known " : "      ") +
+                    (glyph.isWellKnown() ? "wellKnown " : "          ") +
+                    glyph.toString());
+            }
+        }
+    }
+
+    //--------------//
+    // dumpSections //
+    //--------------//
+    /**
+     * Dump all (vertical) sections handled by this system
+     */
+    public void dumpSections ()
+    {
+        dumpSections(null);
+    }
+
+    //--------------//
+    // dumpSections //
+    //--------------//
+    /**
+     * Dump the (vertical) sections handled by this system and that are
+     * contained by the provided rectangle
+     *
+     * @param rect the region of interest
+     */
+    public void dumpSections (PixelRectangle rect)
+    {
+        for (GlyphSection section : getVerticalSections()) {
+            if ((rect == null) || (rect.contains(section.getContourBox()))) {
+                java.lang.System.out.println(
+                    (section.isKnown() ? "known " : "      ") +
+                    section.toString());
+            }
+        }
+    }
+
     //-------------------------//
     // lookupIntersectedGlyphs //
     //-------------------------//
@@ -586,6 +640,14 @@ public class SystemInfo
     public List<Glyph> lookupIntersectedGlyphs (PixelRectangle rect)
     {
         return lookupIntersectedGlyphs(rect, null);
+    }
+
+    //-------------//
+    // removeGlyph //
+    //-------------//
+    public boolean removeGlyph (Glyph glyph)
+    {
+        return glyphs.remove(glyph);
     }
 
     //----------//
