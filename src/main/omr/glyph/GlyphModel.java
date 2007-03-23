@@ -11,13 +11,13 @@
 package omr.glyph;
 
 import omr.selection.SelectionHint;
-import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
 
 import omr.sheet.Sheet;
 
 import omr.util.Logger;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -158,9 +158,9 @@ public class GlyphModel
      * @param compound flag to build one compound, rather than assign each
      *                 individual glyph
      */
-    public void assignSetShape (List<Glyph> glyphs,
-                                Shape       shape,
-                                boolean     compound)
+    public void assignSetShape (Collection<Glyph> glyphs,
+                                Shape             shape,
+                                boolean           compound)
     {
         // Empty by default
         logger.warning("No assignSetShape in current model for " + shape);
@@ -189,7 +189,7 @@ public class GlyphModel
      *
      * @param glyphs the collection of glyphs to be de-assigned
      */
-    public void deassignSetShape (List<Glyph> glyphs)
+    public void deassignSetShape (Collection<Glyph> glyphs)
     {
         // Empty by default
         logger.warning("No deassignSetShape in current model");
