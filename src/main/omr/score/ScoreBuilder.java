@@ -148,14 +148,7 @@ public class ScoreBuilder
             }
         } catch (RebuildException rex) {
             logger.warning("Rebuilding ...");
-
-            try {
-                sheet.LEAVES_COMPOUNDS.doit();
-                sheet.CLEANUP.doit();
-                sheet.SCORE.doit();
-            } catch (ProcessingException ex) {
-                ex.printStackTrace();
-            }
+            sheet.updateSteps();
         }
     }
 
@@ -520,8 +513,10 @@ public class ScoreBuilder
             }
 
             if ((finalDuration != null) && (finalDuration < 0)) {
-                logger.info(
-                    "Found an introduction measure for " + finalDuration);
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Found an introduction measure for " + finalDuration);
+                }
 
                 // Flag these measures as implicit, and get rid of their final
                 // forward marks if any
