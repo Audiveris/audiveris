@@ -128,6 +128,7 @@ public class SymbolsEditor
                 });
 
         glyphMenu = new GlyphMenu(
+            sheet,
             this,
             focus,
             sheet.getSelection(VERTICAL_GLYPH),
@@ -163,7 +164,7 @@ public class SymbolsEditor
                 view));
 
         // Link with glyph builder & glyph inspector
-        builder = sheet.getGlyphBuilder();
+        builder = sheet.getGlyphsBuilder();
         inspector = sheet.getGlyphInspector();
 
         // Create a hosting pane for the view
@@ -196,8 +197,6 @@ public class SymbolsEditor
                     if (logger.isFineEnabled()) {
                         logger.fine("assign " + shape + " -> updateScore");
                     }
-
-                    updateScore();
                 }
             } else {
                 logger.warning(
@@ -218,9 +217,9 @@ public class SymbolsEditor
      * @param compound flag to indicate a compound is desired
      */
     @Override
-    public void assignSetShape (List<Glyph> glyphs,
-                                Shape       shape,
-                                boolean     compound)
+    public void assignSetShape (Collection<Glyph> glyphs,
+                                Shape             shape,
+                                boolean           compound)
     {
         if ((glyphs != null) && (glyphs.size() > 0)) {
             if (compound) {
@@ -240,12 +239,9 @@ public class SymbolsEditor
                     }
                 }
 
-                if (noiseNb > 0) {
-                    logger.info(noiseNb + " noise glyphs skipped");
+                if (logger.isFineEnabled() && (noiseNb > 0)) {
+                    logger.fine(noiseNb + " noise glyphs skipped");
                 }
-
-                sheet.getSelection(SelectionTag.GLYPH_SET)
-                     .setEntity(glyphsCopy, null);
             }
         }
     }
@@ -274,18 +270,18 @@ public class SymbolsEditor
          * (GlyphBuilder). Should work on a micro scale : just the former stem
          * and the neighboring (non-assigned) glyphs.
          */
-        Set<SystemInfo> systems = new HashSet<SystemInfo>();
+        Set<SystemInfo> impactedSystems = new HashSet<SystemInfo>();
 
         for (Glyph stem : stems) {
             SystemInfo system = sheet.getSystemAtY(stem.getContourBox().y);
             builder.removeGlyph(stem, system, /* cutSections => */
                                 true);
             assignGlyphShape(stem, null);
-            systems.add(system);
+            impactedSystems.add(system);
         }
 
-        // Extract brand new glyphs from impacted systems
-        for (SystemInfo system : systems) {
+        // Extract brand new glyphs from impacted impactedSystems
+        for (SystemInfo system : impactedSystems) {
             builder.extractNewSystemGlyphs(system);
         }
 
@@ -344,7 +340,7 @@ public class SymbolsEditor
      * @param glyphs the collection of glyphs to deassign
      */
     @Override
-    public void deassignSetShape (List<Glyph> glyphs)
+    public void deassignSetShape (Collection<Glyph> glyphs)
     {
         // First phase, putting the stems apart
         List<Glyph> stems = new ArrayList<Glyph>();
@@ -362,18 +358,6 @@ public class SymbolsEditor
         if (stems.size() > 0) {
             cancelStems(stems);
         }
-
-        view.colorizeAllGlyphs(); // TBI
-
-        sheet.getSelection(SelectionTag.GLYPH_SET)
-             .setEntity(glyphsCopy, null);
-
-        // Forward to score
-        if (logger.isFineEnabled()) {
-            logger.info("deassignSetShape -> updateScore");
-        }
-
-        updateScore();
     }
 
     //---------//
@@ -386,6 +370,26 @@ public class SymbolsEditor
     public void refresh ()
     {
         view.colorizeAllGlyphs();
+    }
+
+    //-------------//
+    // stemSegment //
+    //-------------//
+    public void stemSegment (Collection<Glyph> givenGlyphs)
+    {
+        // Use a copy of glyphs selection
+        Collection<Glyph> glyphs = new ArrayList<Glyph>(givenGlyphs);
+
+        deassignSetShape(glyphs);
+
+        for (Glyph glyph : glyphs) {
+            SystemInfo system = sheet.getSystemAtY(glyph.getContourBox().y);
+            logger.info("Calling stemSegment for " + glyph);
+            sheet.getVerticalsBuilder()
+                 .stemSegment(Collections.singletonList(glyph), system);
+        }
+
+        sheet.updateSteps();
     }
 
     //---------------//
@@ -419,24 +423,6 @@ public class SymbolsEditor
         toolMenu.add(networkMenu);
 
         return menuBar;
-    }
-
-    //-------------//
-    // updateScore //
-    //-------------//
-    private void updateScore ()
-    {
-        if (sheet.SCORE.isDone()) {
-            try {
-                sheet.LEAVES_COMPOUNDS.doit();
-                sheet.CLEANUP.doit();
-                sheet.SCORE.doit();
-            } catch (ProcessingException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        refresh(); // Always refresh sheet view
     }
 
     //~ Inner Classes ----------------------------------------------------------
