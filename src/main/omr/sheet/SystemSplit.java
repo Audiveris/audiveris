@@ -99,44 +99,6 @@ public class SystemSplit
         System.out.println("--- SystemInfos end ---");
     }
 
-    //----------------//
-    // splitBarSticks //
-    //----------------//
-    /**
-     * Split the collection of provided bar sticks
-     * (Used by BarsBuilder).
-     *
-     * @param sheet the containing sheet
-     * @param glyphs the entities to be dispatched
-     */
-    public static void splitBarSticks (Sheet                      sheet,
-                                       Collection<?extends Glyph> glyphs)
-    {
-        process(
-            sheet,
-            glyphs,
-            new Adapter<Glyph>() {
-                    public Collection<Glyph> getTarget (SystemInfo system)
-                    {
-                        return system.getMutableGlyphs();
-                    }
-
-                    public int getXMin (Glyph glyph)
-                    {
-                        Rectangle box = glyph.getContourBox();
-
-                        return box.x;
-                    }
-
-                    public int getYMin (Glyph glyph)
-                    {
-                        Rectangle box = glyph.getContourBox();
-
-                        return box.y;
-                    }
-                });
-    }
-
     //------------------//
     // splitHorizontals //
     //------------------//
@@ -211,9 +173,9 @@ public class SystemSplit
             sheet,
             sheet.getVerticalLag().getSections(),
             new Adapter<GlyphSection>() {
-                    public List<GlyphSection> getTarget (SystemInfo system)
+                    public Collection<GlyphSection> getTarget (SystemInfo system)
                     {
-                        return system.getVerticalSections();
+                        return system.getModifiableVerticalSections();
                     }
 
                     public int getXMin (GlyphSection section)
@@ -226,44 +188,6 @@ public class SystemSplit
                     public int getYMin (GlyphSection section)
                     {
                         Rectangle box = section.getContourBox();
-
-                        return box.y;
-                    }
-                });
-    }
-
-    //---------------------//
-    // splitVerticalSticks //
-    //---------------------//
-    /**
-     * Split the collection of provided vertical sticks
-     * (Used at every run of VerticalsBuilder).
-     *
-     * @param sheet the containing sheet
-     * @param sticks the entities to be dispatched
-     */
-    public static void splitVerticalSticks (Sheet       sheet,
-                                            List<Stick> sticks)
-    {
-        process(
-            sheet,
-            sticks,
-            new Adapter<Stick>() {
-                    public List<Stick> getTarget (SystemInfo system)
-                    {
-                        return system.getVerticalSticks();
-                    }
-
-                    public int getXMin (Stick stick)
-                    {
-                        Rectangle box = stick.getContourBox();
-
-                        return box.x;
-                    }
-
-                    public int getYMin (Stick stick)
-                    {
-                        Rectangle box = stick.getContourBox();
 
                         return box.y;
                     }
