@@ -14,18 +14,19 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
+import omr.glyph.GlyphSection;
 
-import omr.stick.SectionPredicate;
+import omr.stick.UnknownSectionPredicate;
 import omr.stick.Stick;
 import omr.stick.SticksBuilder;
 import omr.stick.SticksSource;
 
 import omr.util.Logger;
+import omr.util.Predicate;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import omr.glyph.GlyphSection;
-import omr.util.Predicate;
 
 /**
  * Class <code>VerticalArea</code> processes a vertical lag to extract vertical
@@ -69,7 +70,7 @@ public class VerticalArea
                          int      maxThickness)
         throws omr.ProcessingException
     {
-        this(sheet, vLag, new SectionPredicate(), maxThickness);
+        this(sheet, vLag, new UnknownSectionPredicate(), maxThickness);
     }
 
     //--------------//
@@ -92,9 +93,33 @@ public class VerticalArea
                          int                     maxThickness)
         throws omr.ProcessingException
     {
+        this(vLag.getVertices(), sheet, vLag, predicate, maxThickness);
+    }
+
+    //--------------//
+    // VerticalArea //
+    //--------------//
+    /**
+     * Build a family of vertical sticks, that will later be checked for finer
+     * recognition
+     *
+     * @param sheet the sheet to process
+     * @param vLag  the vertical lag from which bar sticks are built
+     * @param predicate a specific predicate for sections to consider
+     * @param maxThickness max value for vertical stick thickness
+     * @exception omr.ProcessingException raised when step processing must stop,
+     *                                 due to encountered error
+     */
+    public VerticalArea (Collection<GlyphSection> sections,
+                         Sheet                    sheet,
+                         GlyphLag                 vLag,
+                         Predicate<GlyphSection>  predicate,
+                         int                      maxThickness)
+        throws omr.ProcessingException
+    {
         super(
             vLag,
-            new SticksSource(vLag.getVertices(), predicate), // source for adequate sections
+            new SticksSource(sections, predicate), // source for adequate sections
             sheet.getScale().toPixels(constants.coreSectionLength), // minCoreLength
             constants.maxAdjacency.getValue(), // maxAdjacency
             maxThickness, // maxThickness
@@ -115,7 +140,7 @@ public class VerticalArea
             scale.toPixels(constants.maxDeltaPos),
             constants.maxDeltaSlope.getValue());
 
-        // Sort sticks found
+        // Sort sticks found (TBD: is this useful?)
         Collections.sort(
             sticks,
             new Comparator<Stick>() {
