@@ -165,6 +165,9 @@ public class Sheet
     /** Specific pane dealing with glyphs */
     private transient SymbolsEditor symbolsEditor;
 
+    /** Related verticals builder */
+    private transient VerticalsBuilder verticalsBuilder;
+
     /** To avoid concurrent modifications */
     private transient volatile boolean busy = false;
 
@@ -291,7 +294,7 @@ public class Sheet
             throws ProcessingException
         {
             // We need the glyphs that result from extraction
-            getGlyphBuilder()
+            getGlyphsBuilder()
                 .retrieveGlyphs();
 
             result = Boolean.valueOf(true);
@@ -326,7 +329,6 @@ public class Sheet
             GlyphInspector inspector = getGlyphInspector();
             inspector.retrieveCompounds(inspector.getSymbolMaxDoubt());
             result = Boolean.valueOf(true);
-            inspector.evaluateGlyphs(inspector.getSymbolMaxDoubt());
         }
 
         public void displayUI ()
@@ -371,7 +373,7 @@ public class Sheet
         {
             VERTICALS.getResult();
 
-            getGlyphBuilder()
+            getGlyphsBuilder()
                 .retrieveGlyphs();
             result = Boolean.valueOf(true);
             getGlyphInspector()
@@ -653,23 +655,6 @@ public class Sheet
         return null;
     }
 
-    //-----------------//
-    // getGlyphBuilder //
-    //-----------------//
-    /**
-     * Give access to the glyph builder for this sheet
-     *
-     * @return the builder instance
-     */
-    public GlyphsBuilder getGlyphBuilder ()
-    {
-        if (glyphBuilder == null) {
-            glyphBuilder = new GlyphsBuilder(this);
-        }
-
-        return glyphBuilder;
-    }
-
     //-------------------//
     // getGlyphInspector //
     //-------------------//
@@ -682,10 +667,27 @@ public class Sheet
     public GlyphInspector getGlyphInspector ()
     {
         if (glyphInspector == null) {
-            glyphInspector = new GlyphInspector(this, getGlyphBuilder());
+            glyphInspector = new GlyphInspector(this, getGlyphsBuilder());
         }
 
         return glyphInspector;
+    }
+
+    //------------------//
+    // getGlyphsBuilder //
+    //------------------//
+    /**
+     * Give access to the glyphs builder for this sheet
+     *
+     * @return the builder instance
+     */
+    public GlyphsBuilder getGlyphsBuilder ()
+    {
+        if (glyphBuilder == null) {
+            glyphBuilder = new GlyphsBuilder(this);
+        }
+
+        return glyphBuilder;
     }
 
     //-----------//
@@ -1036,6 +1038,19 @@ public class Sheet
         return steps;
     }
 
+    //-----------------//
+    // getActiveGlyphs //
+    //-----------------//
+    /**
+     * Export the active glyphs of the vertical lag.
+     *
+     * @return the collection of glyphs for which at least a section is assigned
+     */
+    public Collection<Glyph> getActiveGlyphs ()
+    {
+        return vLag.getActiveGlyphs();
+    }
+
     //----------------//
     // getHorizontals //
     //----------------//
@@ -1302,19 +1317,6 @@ public class Sheet
         return vLag;
     }
 
-    //-----------------//
-    // getActiveGlyphs //
-    //-----------------//
-    /**
-     * Export the active glyphs of the vertical lag.
-     *
-     * @return the collection of glyphs for which at least a section is assigned
-     */
-    public Collection<Glyph> getActiveGlyphs ()
-    {
-        return vLag.getActiveGlyphs();
-    }
-
     //--------------//
     // getVerticals //
     //--------------//
@@ -1330,6 +1332,18 @@ public class Sheet
 
             return null;
         }
+    }
+
+    //---------------------//
+    // getVerticalsBuilder //
+    //---------------------//
+    public VerticalsBuilder getVerticalsBuilder ()
+    {
+        if (verticalsBuilder == null) {
+            verticalsBuilder = new VerticalsBuilder(this);
+        }
+
+        return verticalsBuilder;
     }
 
     //----------//
@@ -1582,6 +1596,38 @@ public class Sheet
     public String toString ()
     {
         return "{Sheet " + getPath() + "}";
+    }
+
+    //-------------//
+    // updateSteps //
+    //-------------//
+    public void updateSteps ()
+    {
+        try {
+            if (LEAVES.isDone()) {
+                LEAVES.doit();
+            }
+
+            if (LEAVES_COMPOUNDS.isDone()) {
+                LEAVES_COMPOUNDS.doit();
+            }
+
+            if (CLEANUP.isDone()) {
+                CLEANUP.doit();
+            }
+
+            if (SCORE.isDone()) {
+                SCORE.doit();
+            }
+        } catch (ProcessingException ex) {
+            ex.printStackTrace();
+        }
+
+        // Always refresh sheet views
+        getSymbolsEditor()
+            .refresh();
+        getVerticalsBuilder()
+            .refresh();
     }
 
     //-------------------//
