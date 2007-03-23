@@ -384,7 +384,6 @@ public class SymbolsEditor
 
         for (Glyph glyph : glyphs) {
             SystemInfo system = sheet.getSystemAtY(glyph.getContourBox().y);
-            logger.info("Calling stemSegment for " + glyph);
             sheet.getVerticalsBuilder()
                  .stemSegment(Collections.singletonList(glyph), system);
         }
