@@ -527,32 +527,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         }
     }
 
-    //    //---------------//
-    //    // lookupSection //
-    //    //---------------//
-    //    /**
-    //     * Given an absolute rectangle, retrieve the first contained section if any,
-    //     * using the provided collection of sections
-    //     *
-    //     * @param collection the desired collection of sections
-    //     * @param rect       the given rectangle
-    //     *
-    //     * @return the (first) section found, or null otherwise
-    //     */
-    //    private S lookupSection (Collection<S> collection,
-    //                             Rectangle     rect)
-    //    {
-    //        Rectangle target = lag.switchRef(rect, null); // Involutive!
-    //
-    //        for (S section : collection) {
-    //            if (target.contains(section.getContourBox())) {
-    //                return section;
-    //            }
-    //        }
-    //
-    //        return null;
-    //    }
-
     //------------------//
     // renderCollection //
     //------------------//

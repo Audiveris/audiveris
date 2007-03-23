@@ -238,7 +238,7 @@ public class Slur
 
                 system.getScore()
                       .getSheet()
-                      .getGlyphBuilder()
+                      .getGlyphsBuilder()
                       .extractNewSystemGlyphs(system.getInfo());
 
                 throw new ScoreBuilder.RebuildException("Slur");
