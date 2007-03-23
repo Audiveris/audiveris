@@ -261,7 +261,7 @@ public class SlurGlyph
             GlyphsBuilder builder = system.getScoreSystem()
                                           .getScore()
                                           .getSheet()
-                                          .getGlyphBuilder();
+                                          .getGlyphsBuilder();
 
             // Build new slur glyph with sections kept
             Glyph newGlyph = new Stick();
