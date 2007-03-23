@@ -74,11 +74,19 @@ public class ScoreChecker
         Shape shape = timeSignature.getShape();
 
         if (shape == null) {
-            logger.warning("CheckNode. Time signature with no assigned shape");
+            if ((timeSignature.getNumerator() == null) ||
+                (timeSignature.getDenominator() == null)) {
+                logger.warning(
+                    timeSignature.getContextString() +
+                    " Time signature with no rational value");
+            }
         } else if (shape == Shape.NO_LEGAL_SHAPE) {
-            logger.warning("CheckNode. Illegal " + this);
+            logger.warning(
+                timeSignature.getContextString() + " Illegal " + this);
         } else if (Shape.SingleTimes.contains(shape)) {
-            logger.warning("CheckNode. Orphan time signature shape : " + shape);
+            logger.warning(
+                timeSignature.getContextString() +
+                " Orphan time signature shape : " + shape);
         }
 
         return true;
