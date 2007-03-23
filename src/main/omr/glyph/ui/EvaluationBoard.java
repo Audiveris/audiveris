@@ -20,10 +20,10 @@ import omr.glyph.Shape;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
+import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
 
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 
 import omr.ui.Board;
 import omr.ui.util.Panel;
@@ -37,7 +37,7 @@ import com.jgoodies.forms.layout.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -347,11 +347,18 @@ class EvaluationBoard
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            // Assign current glyph with selected shape
+            // Assign current glyph(s) with selected shape
             if (glyphModel != null) {
-                glyphModel.assignGlyphShape(
-                    (Glyph) inputSelectionList.get(0).getEntity(),
-                    Shape.valueOf(button.getText()));
+                Selection   glyphSetSelection = sheet.getSelection(
+                    SelectionTag.GLYPH_SET);
+                List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+                glyphModel.assignSetShape(
+                    glyphs,
+                    Shape.valueOf(button.getText()),
+                    false); // Compound
+
+                // Update user interface ? (view / selection)
+                sheet.updateSteps();
             }
         }
     }
