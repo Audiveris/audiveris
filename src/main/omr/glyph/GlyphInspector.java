@@ -73,7 +73,6 @@ public class GlyphInspector
         }
     };
 
-
     //~ Constructors -----------------------------------------------------------
 
     //----------------//
@@ -164,14 +163,40 @@ public class GlyphInspector
             return;
         }
 
-        int       acceptNb = 0;
-        int       knownNb = 0;
-        int       noiseNb = 0;
-        int       clutterNb = 0;
-        int       structureNb = 0;
+        Counters counters = new Counters();
+
+        for (SystemInfo system : sheet.getSystems()) {
+            evaluateSystemGlyphs(system, maxDoubt, counters);
+        }
+
+        if (counters.acceptNb > 0) {
+            logger.info(
+                counters.acceptNb + " glyph" +
+                ((counters.acceptNb > 1) ? "s" : "") + " assigned (" +
+                counters.noiseNb + " as noise, " + counters.structureNb +
+                " as structure, " + counters.clutterNb + " as clutter, " +
+                counters.knownNb + " as known)");
+        }
+    }
+
+    //----------------------//
+    // evaluateSystemGlyphs //
+    //----------------------//
+    /**
+     * All new symbol glyphs of a given system, for which we can get a positive
+     * vote of the evaluator, are assigned the voted shape.
+     *
+     * @param system the system to consider
+     * @param maxDoubt maximum value for acceptable doubt
+     * @param counters counters to increment, or null
+     */
+    public void evaluateSystemGlyphs (SystemInfo system,
+                                      double     maxDoubt,
+                                      Counters   counters)
+    {
         Evaluator evaluator = GlyphNetwork.getInstance();
-        for (Glyph glyph : vLag.getActiveGlyphs()) {
-            ///if (glyph != null) {
+
+        for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
                 glyph.setInterline(sheet.getScale().interline());
 
@@ -180,29 +205,23 @@ public class GlyphInspector
 
                 if (vote != null) {
                     glyph.setShape(vote.shape, vote.doubt);
-                    acceptNb++;
 
-                    if (vote.shape == Shape.NOISE) {
-                        noiseNb++;
-                    } else if (vote.shape == Shape.CLUTTER) {
-                        clutterNb++;
-                    } else if (vote.shape == Shape.STRUCTURE) {
-                        structureNb++;
-                    } else {
-                        knownNb++;
+                    // Increment counters if any
+                    if (counters != null) {
+                        counters.acceptNb++;
+
+                        if (vote.shape == Shape.NOISE) {
+                            counters.noiseNb++;
+                        } else if (vote.shape == Shape.CLUTTER) {
+                            counters.clutterNb++;
+                        } else if (vote.shape == Shape.STRUCTURE) {
+                            counters.structureNb++;
+                        } else {
+                            counters.knownNb++;
+                        }
                     }
                 }
             }
-
-            ///}
-        }
-
-        if (acceptNb > 0) {
-            logger.info(
-                acceptNb + " glyph" + ((acceptNb > 1) ? "s" : "") +
-                " assigned (" + noiseNb + " as noise, " + structureNb +
-                " as structure, " + clutterNb + " as clutter, " + knownNb +
-                " as known)");
         }
     }
 
@@ -282,18 +301,10 @@ public class GlyphInspector
      * verticals as well), and rebuild glyphs after the stem extraction
      */
     public void retrieveVerticals ()
+        throws ProcessingException
     {
-        // Get rid of former non-recognized symbols
-        for (SystemInfo system : sheet.getSystems()) {
-            builder.removeSystemUnknowns(system);
-        }
-
-        // Retrieve stem/endings vertical candidates
-        try {
-            new VerticalsBuilder(sheet);
-        } catch (ProcessingException ex) {
-            // User has already been warned
-        }
+        sheet.getVerticalsBuilder()
+            .retrieveAllVerticals();
     }
 
     //-------------//
@@ -423,6 +434,8 @@ public class GlyphInspector
                                           List<Glyph> compounds,
                                           double      maxDoubt)
     {
+        builder.removeSystemInactives(system);
+
         BasicAdapter adapter = new BasicAdapter(maxDoubt);
 
         // Collect glyphs suitable for participating in compound building
@@ -490,6 +503,7 @@ public class GlyphInspector
         // First, make up a list of all slur glyphs in this system
         // (So as to free the system glyph list for on-the-fly modifications)
         List<Glyph> slurs = new ArrayList<Glyph>();
+        builder.removeSystemInactives(system);
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == Shape.SLUR) {
@@ -535,16 +549,17 @@ public class GlyphInspector
      */
     private int verifySystemStems (SystemInfo system)
     {
-        logger.finest("verifySystemStems " + system);
-
         int         nb = 0;
 
         // Use very close stems to detect sharps and naturals ?
+        // TBD
+        //
         // Collect all undue stems
         List<Glyph> SuspectedStems = new ArrayList<Glyph>();
+        builder.removeSystemInactives(system);
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.isStem()) {
+            if (glyph.isStem() && glyph.isActive()) {
                 Set<Glyph> goods = new HashSet<Glyph>();
                 Set<Glyph> bads = new HashSet<Glyph>();
                 glyph.getSymbolsBefore(reliableStemSymbols, goods, bads);
@@ -665,6 +680,15 @@ public class GlyphInspector
 
     //~ Inner Classes ----------------------------------------------------------
 
+    public static class Counters
+    {
+        int acceptNb = 0;
+        int knownNb = 0;
+        int noiseNb = 0;
+        int clutterNb = 0;
+        int structureNb = 0;
+    }
+
     //--------------//
     // BasicAdapter //
     //--------------//
@@ -712,12 +736,13 @@ public class GlyphInspector
         @Implement(CompoundAdapter.class)
         public boolean isSuitable (Glyph glyph)
         {
-            return !glyph.isKnown() ||
+            return glyph.isActive() &&
+                   (!glyph.isKnown() ||
                    (!glyph.isManualShape() &&
                    ((glyph.getShape() == Shape.DOT) ||
                    (glyph.getShape() == Shape.SLUR) ||
                    (glyph.getShape() == Shape.CLUTTER) ||
-                   (glyph.getDoubt() >= getMinCompoundPartDoubt())));
+                   (glyph.getDoubt() >= getMinCompoundPartDoubt()))));
         }
 
         @Implement(CompoundAdapter.class)
