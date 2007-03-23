@@ -114,7 +114,7 @@ public class GlyphsBuilder
      * @param parts the collection of (sub) glyphs
      * @return the brand new (compound) glyph
      */
-    public Glyph buildCompound (List<Glyph> parts)
+    public Glyph buildCompound (Collection<Glyph> parts)
     {
         // Build a glyph from all sections
         Glyph compound = new Stick();
@@ -142,7 +142,7 @@ public class GlyphsBuilder
      */
     public void extractNewSystemGlyphs (SystemInfo system)
     {
-        removeSystemUnknowns(system);
+        removeSystemInactives(system);
         retrieveSystemGlyphs(system);
     }
 
@@ -156,8 +156,8 @@ public class GlyphsBuilder
      * @param compound the brand new (compound) glyph
      * @param parts the list of (sub) glyphs
      */
-    public void insertCompound (Glyph       compound,
-                                List<Glyph> parts)
+    public void insertCompound (Glyph             compound,
+                                Collection<Glyph> parts)
     {
         SystemInfo system = sheet.getSystemAtY(compound.getContourBox().y);
 
@@ -240,27 +240,20 @@ public class GlyphsBuilder
         glyph.destroy(cutSections);
     }
 
-    //----------------------//
-    // removeSystemUnknowns //
-    //----------------------//
+    //-----------------------//
+    // removeSystemInactives //
+    //-----------------------//
     /**
-     * On a specified system, look for all unknown glyphs (including glyphs
-     * classified as STRUCTURE shape), and remove them from its glyphs
-     * collection as well as from the containing lag.  Purpose is to prepare
-     * room for a new glyph extraction
+     * On a specified system, look for all inactive glyphs and remove them from
+     * its glyphs collection as well as from the containing lag.
+     * Purpose is to prepare room for a new glyph extraction
      *
      * @param system the specified system
      */
-    public void removeSystemUnknowns (SystemInfo system)
+    public void removeSystemInactives (SystemInfo system)
     {
         for (Glyph glyph : system.getGlyphs()) {
-            // We remove shapes : null, NOISE, STRUCTURE (not CLUTTER)
-            if (!glyph.isWellKnown()) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "removing " + glyph + " first=" + glyph.getMembers());
-                }
-
+            if (!glyph.isActive()) {
                 // Remove from system (& lag)
                 removeGlyph(glyph, system, /* cutSections => */
                             false);
@@ -288,10 +281,10 @@ public class GlyphsBuilder
         }
 
         // Report result
-        if (nb > 0) {
-            logger.info(nb + " glyph" + ((nb > 1) ? "s" : "") + " found");
+        if (logger.isFineEnabled() && (nb > 0)) {
+            logger.fine(nb + " glyph" + ((nb > 1) ? "s" : "") + " found");
         } else {
-            logger.info("No glyph found");
+            logger.fine("No glyph found");
         }
     }
 
