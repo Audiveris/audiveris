@@ -1,11 +1,19 @@
+//-----------------------------------------------------------------------//
+//                                                                       //
+//                    V e r t i c a l s B u i l d e r                    //
+//                                                                       //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.          //
+//  This software is released under the terms of the GNU General Public  //
+//  License. Please contact the author at herve.bitteur@laposte.net      //
+//  to report bugs & suggestions.                                        //
+//-----------------------------------------------------------------------//
 //----------------------------------------------------------------------------//
 //                                                                            //
 //                      V e r t i c a l s B u i l d e r                       //
 //                                                                            //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
-//  This software is released under the terms of the GNU General Public       //
-//  License. Please contact the author at herve.bitteur@laposte.net           //
-//  to report bugs & suggestions.                                             //
+//  Copyright (C) Herve Bitteur 2007. All rights reserved.                    //
+//  This software is released under the GNU General Public License.           //
+//  Please contact author at herve.bitteur@laposte.net for bugs & suggestions //
 //----------------------------------------------------------------------------//
 //
 package omr.sheet;
@@ -35,6 +43,7 @@ import omr.glyph.ui.GlyphLagView;
 
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
+import omr.lag.Section;
 import omr.lag.SectionBoard;
 
 import omr.score.visitor.SheetPainter;
@@ -55,6 +64,8 @@ import omr.util.Logger;
 import omr.util.Predicate;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -94,19 +105,14 @@ public class VerticalsBuilder
         "Stem-OutsideSystem");
     private static final FailureResult TOO_HOLLOW = new FailureResult(
         "Stem-TooHollow");
-    private static final FailureResult NO_CHUNK = new FailureResult(
-        "Stem-NoChunk");
 
     //~ Instance fields --------------------------------------------------------
-
-    /** GlyphsBuilder */
-    private final GlyphsBuilder builder;
 
     /** Related user display if any */
     private GlyphLagView view;
 
-    /** Suite of checks for a stem glyph */
-    private StemCheckSuite suite = new StemCheckSuite();
+    /** Global sheet scale */
+    private final Scale scale;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -121,43 +127,10 @@ public class VerticalsBuilder
      * @throws ProcessingException when processing had to stop
      */
     public VerticalsBuilder (Sheet sheet)
-        throws ProcessingException
     {
-        // We re-use the same vertical lag (but not the sticks) from Bars.
+        // We work with the sheet vertical lag
         super(sheet, sheet.getVerticalLag());
-        builder = sheet.getGlyphBuilder();
-
-        Scale        scale = sheet.getScale();
-
-        // We cannot reuse the sticks, since thick sticks are allowed for bars
-        // but not for stems. So, let's build a new stick area from the initial
-        // lag.
-        VerticalArea verticalsArea = new VerticalArea(
-            sheet,
-            lag,
-            new MySectionPredicate(),
-            scale.toPixels(constants.maxStemThickness));
-
-        // Split these candidates per system
-        SystemSplit.splitVerticalSticks(sheet, verticalsArea.getSticks());
-
-        // Now process each system area on turn
-        int nb = 0;
-
-        // Iterate on systems
-        for (SystemInfo system : sheet.getSystems()) {
-            nb += retrieveVerticals(system);
-        }
-
-        if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
-            displayFrame();
-        }
-
-        if (nb > 0) {
-            logger.info(nb + " stem" + ((nb > 1) ? "s" : "") + " found");
-        } else {
-            logger.info("No stem found");
-        }
+        scale = sheet.getScale();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -195,10 +168,91 @@ public class VerticalsBuilder
      * @param glyphs the collection of glyphs to be de-assigned
      */
     @Override
-    public void deassignSetShape (List<Glyph> glyphs)
+    public void deassignSetShape (Collection<Glyph> glyphs)
     {
         sheet.getSymbolsEditor()
              .deassignSetShape(glyphs);
+    }
+
+    //---------//
+    // refresh //
+    //---------//
+    /**
+     * Refresh the display, with proper colors for sections
+     */
+    public void refresh ()
+    {
+        if (view != null) {
+            for (Glyph glyph : sheet.getVerticalLag()
+                                    .getActiveGlyphs()) {
+                view.colorizeGlyph(glyph, null);
+            }
+
+            view.repaint();
+        }
+    }
+
+    //----------------------//
+    // retrieveAllVerticals //
+    //----------------------//
+    public void retrieveAllVerticals ()
+        throws ProcessingException
+    {
+        // Process each system area on turn
+        int nb = 0;
+
+        for (SystemInfo system : sheet.getSystems()) {
+            nb += retrieveSystemVerticals(system);
+        }
+
+        if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
+            displayFrame();
+        }
+
+        if (nb > 0) {
+            logger.info(nb + " stem" + ((nb > 1) ? "s" : "") + " found");
+        } else {
+            logger.info("No stem found");
+        }
+    }
+
+    //-------------//
+    // stemSegment //
+    //-------------//
+    public void stemSegment (Collection<Glyph> glyphs,
+                             SystemInfo        system)
+    {
+        // Gather all sections to be browsed
+        Collection<GlyphSection> sections = new ArrayList<GlyphSection>();
+
+        for (Glyph glyph : glyphs) {
+            sections.addAll(glyph.getMembers());
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Sections browsed: " + Section.toString(sections));
+        }
+
+        // Retrieve vertical sticks as stem candidates
+        try {
+            VerticalArea verticalsArea = new VerticalArea(
+                sections,
+                sheet,
+                lag,
+                new MySectionPredicate(),
+                scale.toPixels(constants.maxStemThickness));
+
+            // Retrieve stems
+            int nb = retrieveVerticals(verticalsArea.getSticks(), system);
+
+            if (nb > 0) {
+                logger.info(nb + " stem" + ((nb > 1) ? "s" : "") + " found");
+            } else {
+                logger.info("No stem found");
+            }
+        } catch (omr.ProcessingException ex) {
+            logger.warning("stemSegment. Error in retrieving verticals");
+        }
     }
 
     //--------------//
@@ -212,6 +266,7 @@ public class VerticalsBuilder
 
         // Create a hosting frame for the view
         final String unit = "VerticalsBuilder";
+
         sheet.getAssembly()
              .addViewTab(
             "Verticals",
@@ -235,29 +290,59 @@ public class VerticalsBuilder
                     sheet.getSelection(GLYPH_SET)),
                 new MyCheckBoard(
                     unit,
-                    suite,
+                    null, // System-dependent suite will be provided later
                     sheet.getSelection(VERTICAL_GLYPH))));
+    }
+
+    private int retrieveSystemVerticals (SystemInfo system)
+        throws ProcessingException
+    {
+        // Get rid of former symbols
+        sheet.getGlyphsBuilder()
+             .removeSystemInactives(system);
+
+        // We cannot reuse the sticks, since thick sticks are allowed for bars
+        // but not for stems.
+        VerticalArea verticalsArea = new VerticalArea(
+            system.getVerticalSections(),
+            sheet,
+            lag,
+            new MySectionPredicate(),
+            scale.toPixels(constants.maxStemThickness));
+
+        return retrieveVerticals(verticalsArea.getSticks(), system);
     }
 
     //-------------------//
     // retrieveVerticals //
     //-------------------//
-    private int retrieveVerticals (SystemInfo system)
+    /**
+     * This method retrieve compliant vertical entities (stems) within a
+     * collection of vertical sticks, and in the context of a system
+     *
+     * @param sticks the provided collection of vertical sticks
+     * @param system the containing system whose "glyphs" collection will be
+     * augmented by the stems found
+     * @return the number of stems found
+     */
+    private int retrieveVerticals (Collection<Stick> sticks,
+                                   SystemInfo        system)
         throws ProcessingException
     {
-        double      minResult = constants.minCheckResult.getValue();
-        int         stemNb = 0;
-        List<Stick> sticks = system.getVerticalSticks();
+        /** Suite of checks for a stem glyph */
+        StemCheckSuite suite = new StemCheckSuite(system);
+        double minResult = constants.minCheckResult.getValue();
+        int    stemNb = 0;
 
         if (logger.isFineEnabled()) {
             logger.fine(
                 "Searching verticals among " + sticks.size() + " sticks from " +
-                system + " sticks" + Glyph.toString(sticks));
+                Glyph.toString(sticks));
         }
 
         for (Stick stick : sticks) {
             // Run the various Checks
-            double res = suite.pass(new Context(stick, system));
+            double res = suite.pass(stick);
 
             if (logger.isFineEnabled()) {
                 logger.fine("suite=> " + res + " for " + stick);
@@ -272,7 +357,8 @@ public class VerticalsBuilder
                 stick.setResult(TOO_LIMITED);
             }
 
-            builder.insertGlyph(stick, system);
+            sheet.getGlyphsBuilder()
+                 .insertGlyph(stick, system);
         }
 
         if (logger.isFineEnabled()) {
@@ -290,12 +376,6 @@ public class VerticalsBuilder
     private static final class Constants
         extends ConstantSet
     {
-        Scale.Fraction   chunkHeight = new Scale.Fraction(
-            0.33,
-            "Height of half area to look for chunks");
-        Scale.Fraction   chunkWidth = new Scale.Fraction(
-            0.33,
-            "Width of half area to look for chunks");
         Constant.Boolean displayFrame = new Constant.Boolean(
             true,
             "Should we display a frame on the stem sticks");
@@ -331,34 +411,11 @@ public class VerticalsBuilder
             "Maximum thickness of an interesting vertical stick");
     }
 
-    //---------//
-    // Context //
-    //---------//
-    private static class Context
-        implements Checkable
-    {
-        Stick      stick;
-        SystemInfo system;
-
-        public Context (Stick      stick,
-                        SystemInfo system)
-        {
-            this.stick = stick;
-            this.system = system;
-        }
-
-        @Implement(Checkable.class)
-        public void setResult (Result result)
-        {
-            stick.setResult(result);
-        }
-    }
-
     //---------------------//
     // FirstAdjacencyCheck //
     //---------------------//
     private static class FirstAdjacencyCheck
-        extends Check<Context>
+        extends Check<Stick>
     {
         protected FirstAdjacencyCheck ()
         {
@@ -373,10 +430,8 @@ public class VerticalsBuilder
 
         // Retrieve the adjacency value
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (Stick stick)
         {
-            Stick stick = context.stick;
-
             return (double) stick.getFirstStuck() / stick.getLength();
         }
     }
@@ -385,7 +440,7 @@ public class VerticalsBuilder
     // LastAdjacencyCheck //
     //--------------------//
     private static class LastAdjacencyCheck
-        extends Check<Context>
+        extends Check<Stick>
     {
         protected LastAdjacencyCheck ()
         {
@@ -400,10 +455,8 @@ public class VerticalsBuilder
 
         // Retrieve the adjacency value
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (Stick stick)
         {
-            Stick stick = context.stick;
-
             return (double) stick.getLastStuck() / stick.getLength();
         }
     }
@@ -412,7 +465,7 @@ public class VerticalsBuilder
     // MinAspectCheck //
     //----------------//
     private static class MinAspectCheck
-        extends Check<Context>
+        extends Check<Stick>
     {
         protected MinAspectCheck ()
         {
@@ -428,9 +481,9 @@ public class VerticalsBuilder
 
         // Retrieve the ratio length / thickness
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (Stick stick)
         {
-            return context.stick.getAspect();
+            return stick.getAspect();
         }
     }
 
@@ -438,9 +491,11 @@ public class VerticalsBuilder
     // LeftCheck //
     //-----------//
     private class LeftCheck
-        extends Check<Context>
+        extends Check<Stick>
     {
-        protected LeftCheck ()
+        private final SystemInfo system;
+
+        protected LeftCheck (SystemInfo system)
             throws ProcessingException
         {
             super(
@@ -450,17 +505,17 @@ public class VerticalsBuilder
                 0,
                 true,
                 OUTSIDE_SYSTEM);
+            this.system = system;
         }
 
         // Retrieve the stick abscissa
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (Stick stick)
         {
-            Stick stick = context.stick;
-            int   x = stick.getMidPos();
+            int x = stick.getMidPos();
 
             return sheet.getScale()
-                        .pixelsToFrac(x - context.system.getLeft());
+                        .pixelsToFrac(x - system.getLeft());
         }
     }
 
@@ -468,7 +523,7 @@ public class VerticalsBuilder
     // MinDensityCheck //
     //-----------------//
     private static class MinDensityCheck
-        extends Check<Context>
+        extends Check<Stick>
     {
         protected MinDensityCheck ()
         {
@@ -484,9 +539,8 @@ public class VerticalsBuilder
 
         // Retrieve the density
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (Stick stick)
         {
-            Stick     stick = context.stick;
             Rectangle rect = stick.getBounds();
             double    area = rect.width * rect.height;
 
@@ -498,7 +552,7 @@ public class VerticalsBuilder
     // MinLengthCheck //
     //----------------//
     private class MinLengthCheck
-        extends Check<Context>
+        extends Check<Stick>
     {
         protected MinLengthCheck ()
             throws ProcessingException
@@ -514,10 +568,10 @@ public class VerticalsBuilder
 
         // Retrieve the length data
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (Stick stick)
         {
             return sheet.getScale()
-                        .pixelsToFrac(context.stick.getLength());
+                        .pixelsToFrac(stick.getLength());
         }
     }
 
@@ -525,11 +579,11 @@ public class VerticalsBuilder
     // MyCheckBoard //
     //--------------//
     private class MyCheckBoard
-        extends CheckBoard<Context>
+        extends CheckBoard<Stick>
     {
-        public MyCheckBoard (String              unit,
-                             CheckSuite<Context> suite,
-                             Selection           inputSelection)
+        public MyCheckBoard (String            unit,
+                             CheckSuite<Stick> suite,
+                             Selection         inputSelection)
         {
             super(unit, suite, inputSelection);
         }
@@ -538,27 +592,20 @@ public class VerticalsBuilder
         public void update (Selection     selection,
                             SelectionHint hint)
         {
-            Context context = null;
-            Object  entity = selection.getEntity();
+            Object entity = selection.getEntity();
 
             if (entity instanceof Stick) {
                 try {
-                    // Get a fresh suite
-                    setSuite(new StemCheckSuite());
-
                     Stick      stick = (Stick) entity;
-                    Rectangle  rect = (Rectangle) sheet.getSelection(
-                        SelectionTag.SHEET_RECTANGLE)
-                                                       .getEntity();
-                    Point      pt = rect.getLocation();
-                    SystemInfo system = sheet.getSystemAtY(pt.y);
-                    context = new Context(stick, system);
+                    SystemInfo system = sheet.getSystemAtY(
+                        stick.getContourBox().y);
+                    // Get a fresh suite
+                    setSuite(new StemCheckSuite(system));
+                    tellObject(stick);
                 } catch (ProcessingException ex) {
                     logger.warning("Glyph cannot be processed");
                 }
             }
-
-            tellObject(context);
         }
     }
 
@@ -599,14 +646,6 @@ public class VerticalsBuilder
             super.colorize();
 
             final int viewIndex = lag.viewIndexOf(this);
-
-            // All remaining vertical sticks clutter
-            //            for (Stick stick : verticalsArea.getSticks()) {
-            //                stick.colorize(lag, viewIndex, Color.red);
-            //            }
-            //            for (Glyph glyph : lag.getGlyphs()) {
-            //                glyph.colorize(lag, viewIndex, Color.red);
-            //            }
 
             // Use light gray color for past successful entities
             sheet.colorize(lag, viewIndex, Color.lightGray);
@@ -654,9 +693,11 @@ public class VerticalsBuilder
     // RightCheck //
     //------------//
     private class RightCheck
-        extends Check<Context>
+        extends Check<Stick>
     {
-        protected RightCheck ()
+        private final SystemInfo system;
+
+        protected RightCheck (SystemInfo system)
             throws ProcessingException
         {
             super(
@@ -666,19 +707,16 @@ public class VerticalsBuilder
                 0,
                 true,
                 OUTSIDE_SYSTEM);
+            this.system = system;
         }
 
         // Retrieve the stick abscissa
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (Stick stick)
         {
-            Stick stick = context.stick;
-            int   x = stick.getMidPos();
-
             return sheet.getScale()
                         .pixelsToFrac(
-                (context.system.getLeft() + context.system.getWidth()) -
-                context.stick.getFirstPos());
+                (system.getLeft() + system.getWidth()) - stick.getMidPos());
         }
     }
 
@@ -686,9 +724,11 @@ public class VerticalsBuilder
     // StemCheckSuite //
     //----------------//
     private class StemCheckSuite
-        extends CheckSuite<Context>
+        extends CheckSuite<Stick>
     {
-        public StemCheckSuite ()
+        private final SystemInfo system;
+
+        public StemCheckSuite (SystemInfo system)
             throws ProcessingException
         {
             super("Stem", constants.minCheckResult.getValue());
@@ -696,15 +736,21 @@ public class VerticalsBuilder
             add(1, new MinAspectCheck());
             add(1, new FirstAdjacencyCheck());
             add(1, new LastAdjacencyCheck());
-            add(0, new LeftCheck());
-            add(0, new RightCheck());
+            add(0, new LeftCheck(system));
+            add(0, new RightCheck(system));
             add(2, new MinDensityCheck());
 
-            // This step is much too expensive (and not really useful ...)
-            ////add(2, new MinChunkCheck());
+            this.system = system;
+
             if (logger.isFineEnabled()) {
                 dump();
             }
+        }
+
+        @Override
+        protected void dumpSpecific ()
+        {
+            System.out.println(system.toString());
         }
     }
 }
