@@ -725,7 +725,8 @@ public class ScorePainter
                     SystemPoint center = timeSignature.computeGlyphCenter(
                         glyph);
                     Staff       staff = part.getStaffAt(center);
-                    int         pitch = staff.unitToPitch(center.y);
+                    int         pitch = (int) Math.rint(
+                        staff.pitchPositionOf(center));
                     paintSymbol(s, center, staff, pitch);
                 }
             }
