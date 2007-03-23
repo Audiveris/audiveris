@@ -16,7 +16,8 @@ import omr.glyph.Shape;
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
-import omr.util.Dumper;
+import omr.sheet.Sheet;
+import omr.sheet.SheetManager;
 
 import java.awt.event.*;
 import java.util.List;
@@ -34,24 +35,27 @@ public class GlyphMenu
 {
     //~ Instance fields --------------------------------------------------------
 
-    private final DeassignAction  deassignAction = new DeassignAction();
-    private final DumpAction      dumpAction = new DumpAction();
-    private final JMenu           assignMenu;
-    private final JMenu           compoundMenu;
-    private final JMenuItem       deassignItem;
-    private final JMenuItem       dumpItem;
-    private final JMenuItem       latestAssign;
-    private final JMenuItem       similarItem;
+    private final Sheet             sheet;
+    private final DeassignAction    deassignAction = new DeassignAction();
+    private final StemSegmentAction stemSegmentAction = new StemSegmentAction();
+    private final DumpAction        dumpAction = new DumpAction();
+    private final JMenu             assignMenu;
+    private final JMenu             compoundMenu;
+    private final JMenuItem         deassignItem;
+    private final JMenuItem         stemSegmentItem;
+    private final JMenuItem         dumpItem;
+    private final JMenuItem         latestAssign;
+    private final JMenuItem         similarItem;
 
     /** Concrete popup menu */
     private final JPopupMenu popup;
 
     /** Current selection of glyphs */
     private final Selection glyphSelection;
-    private final Selection       glyphSetSelection;
-    private final ShapeFocusBoard shapeFocus;
-    private final SimilarAction   similarAction = new SimilarAction();
-    private final SymbolsEditor   symbolsEditor;
+    private final Selection         glyphSetSelection;
+    private final ShapeFocusBoard   shapeFocus;
+    private final SimilarAction     similarAction = new SimilarAction();
+    private final SymbolsEditor     symbolsEditor;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -61,30 +65,25 @@ public class GlyphMenu
     /**
      * Create the popup menu
      *
-     *
+     * @param sheet the related sheet
      * @param symbolsEditor the top companion
      * @param shapeFocus the current shape focus
      * @param glyphSelection the currently selected glyph
      * @param glyphSetSelection the currently selected glyphs
      */
-    public GlyphMenu (final SymbolsEditor symbolsEditor,
+    public GlyphMenu (final Sheet         sheet,
+                      final SymbolsEditor symbolsEditor,
                       ShapeFocusBoard     shapeFocus,
                       Selection           glyphSelection,
                       Selection           glyphSetSelection)
     {
+        this.sheet = sheet;
         this.symbolsEditor = symbolsEditor;
         this.shapeFocus = shapeFocus;
         this.glyphSelection = glyphSelection;
         this.glyphSetSelection = glyphSetSelection;
 
         popup = new JPopupMenu();
-
-        // Deassign selected glyph(s)
-        deassignItem = popup.add(deassignAction);
-        deassignItem.setToolTipText("Deassign selected glyph(s)");
-
-        // Manually assign a shape
-        assignMenu = new JMenu("Force to");
 
         // Direct link to latest shape assigned
         latestAssign = new JMenuItem("no shape", null);
@@ -99,10 +98,17 @@ public class GlyphMenu
                             getCurrentGlyphs(),
                             shape,
                             /* compound => */ false);
+                        sheet.updateSteps();
                     }
                 });
-        assignMenu.add(latestAssign);
-        assignMenu.addSeparator();
+        popup.add(latestAssign);
+
+        // Deassign selected glyph(s)
+        deassignItem = popup.add(deassignAction);
+        deassignItem.setToolTipText("Deassign selected glyph(s)");
+
+        // Manually assign a shape
+        assignMenu = new JMenu("Force to");
 
         Shape.addShapeItems(
             assignMenu,
@@ -115,12 +121,16 @@ public class GlyphMenu
                             getCurrentGlyphs(),
                             shape,
                             /* compound => */ false);
+                        sheet.updateSteps();
                     }
                 });
         assignMenu.setToolTipText("Manually force an assignment");
         popup.add(assignMenu);
 
         popup.addSeparator();
+
+        // Segment the glyph into stems & leaves
+        stemSegmentItem = popup.add(stemSegmentAction);
 
         // Build a compound
         compoundMenu = new JMenu("Build compound");
@@ -135,6 +145,7 @@ public class GlyphMenu
                             getCurrentGlyphs(),
                             shape,
                             /* compound => */ true);
+                        sheet.updateSteps();
                     }
                 });
         compoundMenu.setToolTipText("Manually build a compound");
@@ -306,6 +317,8 @@ public class GlyphMenu
             Glyph glyph = (Glyph) glyphSelection.getEntity();
             symbolsEditor.deassignSetShape(getCurrentGlyphs());
 
+            sheet.updateSteps();
+
             // Update focus on current glyph, if reused in a compound
             Glyph newGlyph = glyph.getFirstSection()
                                   .getGlyph();
@@ -357,6 +370,24 @@ public class GlyphMenu
                     shapeFocus.setCurrentShape(glyph.getShape());
                 }
             }
+        }
+    }
+
+    //-------------------//
+    // StemSegmentAction //
+    //-------------------//
+    private class StemSegmentAction
+        extends AbstractAction
+    {
+        public StemSegmentAction ()
+        {
+            super("Segment on Stems");
+        }
+
+        public void actionPerformed (ActionEvent e)
+        {
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+            symbolsEditor.stemSegment(glyphs);
         }
     }
 }
