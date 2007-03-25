@@ -1094,14 +1094,15 @@ public class Section<L extends Lag, S extends Section<L, S>>
      */
     protected void computeContour ()
     {
-        if (graph != null) {
-            Polygon p = getContour();
+        Polygon p = getContour();
 
-            if (graph.isVertical()) {
-                computeContour(p.ypoints, p.xpoints);
-            } else {
-                computeContour(p.xpoints, p.ypoints);
-            }
+        // Here, we assume that a section with no graph is vertical
+        // This trick is needed when JAXB unmarshalls the section since it needs
+        // the contour in order to determine the section position in the set container
+        if ((graph == null) || graph.isVertical()) {
+            computeContour(p.ypoints, p.xpoints);
+        } else {
+            computeContour(p.xpoints, p.ypoints);
         }
     }
 
