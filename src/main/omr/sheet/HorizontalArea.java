@@ -83,6 +83,11 @@ public class HorizontalArea
         Scale scale = sheet.getScale();
         createSticks(null);
 
+        // Safety
+        for (Stick stick : sticks) {
+            stick.setInterline(scale.interline());
+        }
+
         // Merge aligned horizontals
         merge(
             scale.toPixels(constants.maxDeltaCoord),

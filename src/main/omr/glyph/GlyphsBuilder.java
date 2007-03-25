@@ -188,13 +188,13 @@ public class GlyphsBuilder
     public Glyph insertGlyph (Glyph      glyph,
                               SystemInfo system)
     {
-        // Insert in lag, which assigns an id to the glyph
-        glyph = vLag.addGlyph(glyph);
-
         // Record related scale ?
         if (glyph.getInterline() == 0) {
             glyph.setInterline(system.getScoreSystem().getScale().interline());
         }
+
+        // Insert in lag, which assigns an id to the glyph
+        glyph = vLag.addGlyph(glyph);
 
         system.addGlyph(glyph);
 
