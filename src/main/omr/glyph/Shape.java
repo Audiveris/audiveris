@@ -394,7 +394,7 @@ public enum Shape
         /*1D13B*/ WHOLE_REST("Rest for whole measure", WHOLE_OR_HALF_REST),
         /*1D13C*/ HALF_REST("Rest for a 1/2", WHOLE_OR_HALF_REST),
 
-        /** The following shape is a kludge to get proper icon */
+        /** This shape is a kludge to get proper icon, to be improved */
         /*-----*/ MULTI_REST_DISPLAY,
 
         /*-----*/ FORWARD,
