@@ -531,9 +531,10 @@ public class SticksBuilder
 
             if (section.isAggregable()) {
                 Stick stick = new Stick();
-                stick.setResult(ASSIGNED);
+                stick.setResult(ASSIGNED); // Needed to flag the stick
                 aggregate(section, stick);
                 stick = (Stick) lag.addGlyph(stick);
+                stick.setResult(ASSIGNED); // In case we are reusing a glyph
                 sticks.add(stick);
             }
         }
