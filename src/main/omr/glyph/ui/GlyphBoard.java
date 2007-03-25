@@ -21,6 +21,8 @@ import omr.glyph.Shape;
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
+import omr.sheet.Sheet;
+
 import omr.ui.Board;
 import omr.ui.field.SField;
 import omr.ui.field.SpinnerUtilities;
@@ -42,7 +44,6 @@ import java.util.List;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import omr.sheet.SheetManager;
 
 /**
  * Class <code>GlyphBoard</code> defines a board dedicated to the display of
@@ -493,7 +494,12 @@ public class GlyphBoard
                     Selection   glyphSetSelection = inputSelectionList.get(1);
                     List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
                     glyphModel.deassignSetShape(glyphs);
-                    SheetManager.getSelectedSheet().updateSteps();
+
+                    Sheet sheet = glyphModel.getSheet();
+
+                    if (sheet != null) {
+                        sheet.updateSteps();
+                    }
 
                     // Update focus on current glyph, if reused in a compound
                     Glyph newGlyph = glyph.getFirstSection()
@@ -507,7 +513,12 @@ public class GlyphBoard
                 } else if (inputSelectionList.size() == 1) {
                     glyphModel.deassignGlyphShape(
                         (Glyph) inputSelectionList.get(0).getEntity());
-                    SheetManager.getSelectedSheet().updateSteps();
+
+                    Sheet sheet = glyphModel.getSheet();
+
+                    if (sheet != null) {
+                        sheet.updateSteps();
+                    }
                 }
             }
         }
