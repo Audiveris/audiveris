@@ -689,6 +689,7 @@ public class Glyph
      *
      * @param shape the assigned shape, which may be null
      */
+    @XmlAttribute(name = "shape")
     public void setShape (Shape shape)
     {
         setShape(shape, Evaluation.NO_DOUBT);
@@ -796,6 +797,14 @@ public class Glyph
         return stemNumber;
     }
 
+    //--------------//
+    // isSuccessful //
+    //--------------//
+    public boolean isSuccessful ()
+    {
+        return result instanceof SuccessResult;
+    }
+
     //-----------------//
     // getSymbolsAfter //
     //-----------------//
@@ -898,14 +907,6 @@ public class Glyph
         }
 
         return weight;
-    }
-
-    //--------------//
-    // isSuccessful //
-    //--------------//
-    public boolean isSuccessful ()
-    {
-        return result instanceof SuccessResult;
     }
 
     //-------------//
