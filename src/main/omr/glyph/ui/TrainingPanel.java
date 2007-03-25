@@ -268,20 +268,17 @@ class TrainingPanel
 
         for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
             Glyph glyph = it.next();
+            Shape shape = glyph.getShape();
 
             try {
-                int index = glyph.getShape()
-                                 .ordinal();
-
-                if (index >= present.length) {
-                    logger.warning(
-                        "Removing not trainable shape:" + glyph.getShape());
-                    it.remove();
+                if (shape.isTrainable()) {
+                    present[shape.ordinal()] = true;
                 } else {
-                    present[index] = true;
+                    logger.warning("Removing non trainable shape:" + shape);
+                    it.remove();
                 }
             } catch (Exception ex) {
-                logger.warning("Removing weird shape: " + glyph.getShape());
+                logger.warning("Removing weird shape: " + shape);
                 it.remove();
             }
         }
