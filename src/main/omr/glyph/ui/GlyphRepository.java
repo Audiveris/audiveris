@@ -200,8 +200,8 @@ public class GlyphRepository
                     Shape shape = glyph.getShape()
                                        .getTrainingShape();
 
-                    if ((shape != Shape.NOISE) &&
-                        (shape != Shape.COMBINING_STEM)) {
+                    if (shape.isTrainable() &&
+                        (shape != Shape.NOISE)) {
                         if (logger.isFineEnabled()) {
                             logger.fine("Storing " + glyph);
                         }
