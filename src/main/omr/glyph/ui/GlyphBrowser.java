@@ -84,7 +84,8 @@ class GlyphBrowser
     private final GlyphVerifier verifier;
 
     /** Local pixel selection */
-    private final Selection localPixelSelection = new Selection(SHEET_RECTANGLE);
+    private final Selection localPixelSelection = new Selection(
+        SHEET_RECTANGLE);
 
     /** Local section selection */
     private final Selection localSectionSelection = new Selection(
@@ -671,7 +672,6 @@ class GlyphBrowser
         //-----------//
         public Glyph getGlyph (String gName)
         {
-            ///logger.info("Loading " + gName);
             Glyph glyph = repository.getGlyph(gName, null);
 
             if ((glyph != null) && (glyph.getLag() != vLag)) {
