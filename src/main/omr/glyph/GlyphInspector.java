@@ -680,7 +680,8 @@ public class GlyphInspector
 
     //~ Inner Classes ----------------------------------------------------------
 
-    public static class Counters
+    /** To pass a set of counters back & forth */
+    private static class Counters
     {
         int acceptNb = 0;
         int knownNb = 0;
