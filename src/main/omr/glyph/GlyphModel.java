@@ -117,6 +117,14 @@ public class GlyphModel
         return latestShapeAssigned;
     }
 
+    //----------//
+    // getSheet //
+    //----------//
+    public Sheet getSheet ()
+    {
+        return sheet;
+    }
+
     //------------------//
     // assignGlyphShape //
     //------------------//
