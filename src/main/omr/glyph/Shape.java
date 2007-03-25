@@ -479,6 +479,19 @@ public enum Shape
     //~ Methods ----------------------------------------------------------------
 
     //-------------//
+    // isTrainable //
+    //-------------//
+    /**
+     * Report whether this shape can be used to train an evaluator
+     *
+     * @return true if trainable, false otherwise
+     */
+    public boolean isTrainable()
+    {
+        return ordinal() <= LastPhysicalShape.ordinal();
+    }
+
+    //-------------//
     // isWellKnown //
     //-------------//
     /**
@@ -961,6 +974,7 @@ public enum Shape
                 }
             }
         }
+        WHOLE_OR_HALF_REST.createShapeColor(Rests.getColor());
     }
 
     /** Symbols that can be attached to a stem */
