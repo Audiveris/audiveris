@@ -46,11 +46,14 @@ public abstract class Direction
     /** The precise direction shape */
     private Shape shape;
 
-    /** The glyph(s) that compose this direction */
+    /** The glyph(s) that compose this direction, sorted by abscissa */
     private final SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
 
     /** Is this a start (or a stop) */
     private final boolean start;
+
+    /** Bounding box */
+    private SystemRectangle box;
 
     /** Edge point */
     private SystemPoint point;
@@ -75,6 +78,18 @@ public abstract class Direction
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------//
+    // getBox //
+    //--------//
+    public SystemRectangle getBox ()
+    {
+        if (box == null) {
+            computeGeometry();
+        }
+
+        return box;
+    }
 
     //----------//
     // getChord //
@@ -106,7 +121,7 @@ public abstract class Direction
     public SystemPoint getPoint ()
     {
         if (point == null) {
-            point = computePoint();
+            computeGeometry();
         }
 
         return point;
@@ -139,10 +154,8 @@ public abstract class Direction
     {
         // Reset
         shape = null;
-
-        if (glyphs.size() > 0) {
-            point = null;
-        }
+        point = null;
+        box = null;
 
         glyphs.add(glyph);
     }
@@ -168,10 +181,21 @@ public abstract class Direction
           .append(chord.getContextString());
 
         // Point
-        sb.append(" [x=")
+        sb.append(" point[x=")
           .append(getPoint().x)
           .append(",y=")
           .append(getPoint().y)
+          .append("]");
+
+        // Box
+        sb.append(" box[x=")
+          .append(getBox().x)
+          .append(",y=")
+          .append(getBox().y)
+          .append(",w=")
+          .append(getBox().width)
+          .append(",h=")
+          .append(getBox().height)
           .append("]");
 
         // Glyphs
@@ -203,29 +227,27 @@ public abstract class Direction
         return measure.findEventChord(new SystemPoint(point.x + dx, point.y));
     }
 
-    //--------------//
-    // computePoint //
-    //--------------//
-    protected SystemPoint computePoint ()
+    //-----------------//
+    // computeGeometry //
+    //-----------------//
+    protected void computeGeometry ()
     {
-        PixelRectangle box = null;
+        PixelRectangle pbox = null;
 
         for (Glyph glyph : glyphs) {
-            if (box == null) {
-                box = glyph.getContourBox();
+            if (pbox == null) {
+                pbox = glyph.getContourBox();
             } else {
-                box.union(glyph.getContourBox());
+                pbox.union(glyph.getContourBox());
             }
         }
 
-        if (box != null) {
-            return this.getSystem()
-                       .toSystemPoint(
-                new PixelPoint(
-                    box.x + (box.width / 2),
-                    box.y + (box.height / 2)));
-        } else {
-            return null;
+        if (pbox != null) {
+            box = getSystem()
+                      .toSystemRectangle(pbox);
+            point = new SystemPoint(
+                box.x + (box.width / 2),
+                box.y + (box.height / 2));
         }
     }
 
