@@ -10,16 +10,16 @@
 //
 package omr.glyph;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
+import omr.glyph.Evaluator.StartingMode;
+import omr.glyph.ui.GlyphRepository;
 
 import omr.math.Population;
 
 import omr.util.Logger;
 
-import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -228,7 +228,9 @@ public class GlyphRegression
                                                  .ordinal()];
                 desc.include(feedInput(glyph, ins));
             } catch (Exception ex) {
-                logger.warning("Weird glyph: " + glyph.getShape());
+                logger.warning(
+                    "Weird glyph shape: " + glyph.getShape() + " file=" +
+                    GlyphRepository.getInstance().getGlyphName(glyph));
             }
         }
 
