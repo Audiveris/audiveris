@@ -277,15 +277,35 @@ public enum Shape
 
         // Dynamics
         //
-        /*-----*/ PIANISSISSIMO,                        // PPP
-        /*-----*/ PIANISSIMO,                           // PP
-        /*1D18F*/ PIANO,                                // P
-        /*-----*/ MEZZO_PIANO,                          // MP
-        /*1D190*/ MEZZO,                                // M
-        /*-----*/ MEZZO_FORTE,                          // MF
-        /*1D191*/ FORTE,                                // F
-        /*-----*/ FORTISSIMO,                           // FF
-        /*-----*/ FORTISSISSIMO,                        // FFF
+        /*-----*/ DYNAMICS_CHAR_M,
+        /*-----*/ DYNAMICS_CHAR_R,
+        /*-----*/ DYNAMICS_CHAR_S,
+        /*-----*/ DYNAMICS_CHAR_Z,
+        //
+        /*-----*/ DYNAMICS_F,
+        /*-----*/ DYNAMICS_FF,
+        /*-----*/ DYNAMICS_FFF,
+        /*-----*/ DYNAMICS_FFFF,
+        /*-----*/ DYNAMICS_FFFFF,
+        /*-----*/ DYNAMICS_FFFFFF,
+        /*-----*/ DYNAMICS_FP,
+        /*-----*/ DYNAMICS_FZ,
+        /*-----*/ DYNAMICS_MF,
+        /*-----*/ DYNAMICS_MP,
+        /*-----*/ DYNAMICS_P,
+        /*-----*/ DYNAMICS_PP,
+        /*-----*/ DYNAMICS_PPP,
+        /*-----*/ DYNAMICS_PPPP,
+        /*-----*/ DYNAMICS_PPPPP,
+        /*-----*/ DYNAMICS_PPPPPP,
+        /*-----*/ DYNAMICS_RF,
+        /*-----*/ DYNAMICS_RFZ,
+        /*-----*/ DYNAMICS_SF,
+        /*-----*/ DYNAMICS_SFFZ,
+        /*-----*/ DYNAMICS_SFP,
+        /*-----*/ DYNAMICS_SFPP,
+        /*-----*/ DYNAMICS_SFZ,
+        //
         /*1D192*/ CRESCENDO,                            // <
         /*1D193*/ DECRESCENDO,                          // >
 
@@ -949,7 +969,7 @@ public enum Shape
     public static final Range HeadAndFlags  = new Range(EnumSet.range(HEAD_AND_FLAG_1, HEAD_AND_FLAG_5_UP));
     public static final Range Beams         = new Range(EnumSet.range(BEAM, SLUR));
     public static final Range Articulations = new Range(EnumSet.range(ARPEGGIATO_UP, ARPEGGIATO_DOWN));
-    public static final Range Dynamics      = new Range(EnumSet.range(PIANISSISSIMO, DECRESCENDO));
+    public static final Range Dynamics      = new Range(EnumSet.range(DYNAMICS_CHAR_M, DECRESCENDO));
     public static final Range Ornaments     = new Range(EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
     public static final Range Pedals        = new Range(EnumSet.range(PEDAL_MARK, PEDAL_UP_MARK));
     //
