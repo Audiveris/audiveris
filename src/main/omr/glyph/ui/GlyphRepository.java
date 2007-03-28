@@ -112,6 +112,9 @@ public class GlyphRepository
      */
     private final Map<String, Glyph> glyphsMap = new TreeMap<String, Glyph>();
 
+    /** Inverse map */
+    private final Map<Glyph, String> namesMap = new HashMap<Glyph, String>();
+
     //~ Constructors -----------------------------------------------------------
 
     /** Private singleton constructor */
@@ -136,6 +139,14 @@ public class GlyphRepository
         }
 
         return INSTANCE;
+    }
+
+    //--------------//
+    // getGlyphName //
+    //--------------//
+    public String getGlyphName (Glyph glyph)
+    {
+        return namesMap.get(glyph);
     }
 
     //--------//
@@ -200,8 +211,7 @@ public class GlyphRepository
                     Shape shape = glyph.getShape()
                                        .getTrainingShape();
 
-                    if (shape.isTrainable() &&
-                        (shape != Shape.NOISE)) {
+                    if (shape.isTrainable() && (shape != Shape.NOISE)) {
                         if (logger.isFineEnabled()) {
                             logger.fine("Storing " + glyph);
                         }
@@ -330,6 +340,7 @@ public class GlyphRepository
 
             if (glyph != null) {
                 glyphsMap.put(gName, glyph);
+                namesMap.put(glyph, gName);
             }
         }
 
@@ -352,18 +363,15 @@ public class GlyphRepository
      */
     synchronized List<File> getGlyphsIn (File dir)
     {
-        List<File> glyphFiles = new ArrayList<File>();
-        File[]     files = listLegalFiles(dir);
+        File[] files = listLegalFiles(dir);
 
         if (files != null) {
-            for (File file : files) {
-                glyphFiles.add(file);
-            }
+            return Arrays.asList(files);
         } else {
             logger.warning("Cannot get files list from dir " + dir);
-        }
 
-        return glyphFiles;
+            return new ArrayList<File>();
+        }
     }
 
     //---------------//
@@ -802,7 +810,7 @@ public class GlyphRepository
                                 List<File> all)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("Recursing through directory " + dir);
+            logger.fine("Browsing directory " + dir);
         }
 
         File[] files = listLegalFiles(dir);
