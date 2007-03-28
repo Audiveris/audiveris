@@ -660,13 +660,10 @@ public class Chord
             Chord chord = (Chord) node;
 
             for (TreeNode n : chord.getNotes()) {
-                Note           note = (Note) n;
-                PixelRectangle box = note.getGlyph()
-                                         .getContourBox();
-                SystemPoint    noteRef = measure.getSystem()
-                                                .toSystemPoint(
-                    new PixelPoint(box.x + box.width, box.y + (box.height / 2)));
-                SystemPoint    toDot = new SystemPoint(
+                Note        note = (Note) n;
+
+                SystemPoint noteRef = note.getCenterRight();
+                SystemPoint toDot = new SystemPoint(
                     dotCenter.x - noteRef.x,
                     dotCenter.y - noteRef.y);
 
@@ -854,8 +851,7 @@ public class Chord
             } else {
                 Note note = (Note) getNotes()
                                        .get(0);
-                headLocation = system.toSystemPoint(
-                    note.getGlyph().getCenter());
+                headLocation = note.getCenter();
                 tailLocation = headLocation;
             }
         }
