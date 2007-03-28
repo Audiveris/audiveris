@@ -214,7 +214,8 @@ public class Slot
                 Note note = (Note) node;
 
                 ///if (!Shape.Rests.contains(note.getShape())) {
-                    return chordAbove;
+                return chordAbove;
+
                 ///}
             }
         }
@@ -224,7 +225,8 @@ public class Slot
                 Note note = (Note) node;
 
                 ///if (!Shape.Rests.contains(note.getShape())) {
-                    return chordBelow;
+                return chordBelow;
+
                 ///}
             }
         }
@@ -290,17 +292,17 @@ public class Slot
                 // in order to actually have two chords.
                 if (glyph.getLeftStem() != null) {
                     Chord chord = getStemChord(glyph.getLeftStem());
-                    new Note(chord, glyph);
+                    Note.createPack(chord, glyph);
                 }
 
                 if (glyph.getRightStem() != null) {
                     Chord chord = getStemChord(glyph.getRightStem());
-                    new Note(chord, glyph);
+                    Note.createPack(chord, glyph);
                 }
             } else {
                 Chord chord = new Chord(measure);
                 chords.add(chord);
-                new Note(chord, glyph);
+                Note.createPack(chord, glyph);
             }
         }
     }
