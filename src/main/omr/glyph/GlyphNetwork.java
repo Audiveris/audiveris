@@ -13,6 +13,8 @@ package omr.glyph;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Evaluator.StartingMode;
+
 import omr.math.NeuralNetwork;
 
 import omr.util.Logger;
@@ -20,6 +22,7 @@ import omr.util.Logger;
 import java.io.*;
 import java.util.*;
 
+import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
 /**
@@ -64,14 +67,17 @@ public class GlyphNetwork
         // Basic check
         if (network != null) {
             if (network.getOutputSize() != outSize) {
-                logger.warning(
-                    "Obsolete Network data," + " reconstructing from scratch");
+                final String msg = "Neural Network data is obsolete," +
+                                   " it must be retrained from scratch";
+                logger.warning(msg);
+                JOptionPane.showMessageDialog(null, msg);
+
                 network = null;
             }
         }
 
         if (network == null) {
-            // Get a brand new one
+            // Get a brand new one (not trained)
             logger.info("Creating a brand new GlyphNetwork");
             network = createNetwork();
         }
@@ -400,17 +406,19 @@ public class GlyphNetwork
             int     card = 0;
             boolean first = true;
 
-            while (card < quorum) {
-                for (int i = 0; i < l.size(); i++) {
-                    newGlyphs.add((Glyph) l.get(i));
-                    card++;
+            if (l.size() > 0) {
+                while (card < quorum) {
+                    for (int i = 0; i < l.size(); i++) {
+                        newGlyphs.add((Glyph) l.get(i));
+                        card++;
 
-                    if (!first && (card >= quorum)) {
-                        break;
+                        if (!first && (card >= quorum)) {
+                            break;
+                        }
                     }
-                }
 
-                first = false;
+                    first = false;
+                }
             }
         }
 
