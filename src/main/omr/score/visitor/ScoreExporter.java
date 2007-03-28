@@ -375,12 +375,8 @@ public class ScoreExporter
             toTenths(dynamics.getScale().pixelsToUnits(staffPix.y - pix.y)));
 
         // Relative-x (No offset for the time being) using note left side
-        PixelRectangle noteBox = current.note.getGlyph()
-                                             .getContourBox();
-        PixelPoint     pixelUl = new PixelPoint(noteBox.x, noteBox.y);
-        SystemPoint    noteUpperLeft = current.system.toSystemPoint(pixelUl);
         pmDynamics.setRelativeX(
-            toTenths(dynamics.getPoint().x - noteUpperLeft.x));
+            toTenths(dynamics.getPoint().x - current.note.getCenterLeft().x));
 
         return true;
     }
@@ -648,15 +644,8 @@ public class ScoreExporter
         }
 
         // Default-x (use left side of the note wrt measure)
-        SystemPoint noteTopLeft = note.getSystem()
-                                      .toSystemPoint(
-            new PixelPoint(
-                note.getGlyph()
-                    .getContourBox().x,
-                note.getGlyph()
-                    .getContourBox().y));
-        pmNote.setDefaultX(
-            toTenths(noteTopLeft.x - note.getMeasure().getLeftX()));
+        int noteLeft = note.getCenterLeft().x;
+        pmNote.setDefaultX(toTenths(noteLeft - note.getMeasure().getLeftX()));
 
         // Duration
         Duration duration = new Duration();
@@ -776,17 +765,17 @@ public class ScoreExporter
                 // Bezier
                 if (isStart) {
                     tied.setDefaultX(
-                        toTenths(slur.getCurve().getX1() - noteTopLeft.x));
+                        toTenths(slur.getCurve().getX1() - noteLeft));
                     tied.setDefaultY(yOf(slur.getCurve().getY1(), staff));
                     tied.setBezierX(
-                        toTenths(slur.getCurve().getCtrlX1() - noteTopLeft.x));
+                        toTenths(slur.getCurve().getCtrlX1() - noteLeft));
                     tied.setBezierY(yOf(slur.getCurve().getCtrlY1(), staff));
                 } else {
                     tied.setDefaultX(
-                        toTenths(slur.getCurve().getX2() - noteTopLeft.x));
+                        toTenths(slur.getCurve().getX2() - noteLeft));
                     tied.setDefaultY(yOf(slur.getCurve().getY2(), staff));
                     tied.setBezierX(
-                        toTenths(slur.getCurve().getCtrlX2() - noteTopLeft.x));
+                        toTenths(slur.getCurve().getCtrlX2() - noteLeft));
                     tied.setBezierY(yOf(slur.getCurve().getCtrlY2(), staff));
                 }
             } else {
@@ -841,17 +830,17 @@ public class ScoreExporter
                 // Bezier
                 if (isStart) {
                     pmSlur.setDefaultX(
-                        toTenths(slur.getCurve().getX1() - noteTopLeft.x));
+                        toTenths(slur.getCurve().getX1() - noteLeft));
                     pmSlur.setDefaultY(yOf(slur.getCurve().getY1(), staff));
                     pmSlur.setBezierX(
-                        toTenths(slur.getCurve().getCtrlX1() - noteTopLeft.x));
+                        toTenths(slur.getCurve().getCtrlX1() - noteLeft));
                     pmSlur.setBezierY(yOf(slur.getCurve().getCtrlY1(), staff));
                 } else {
                     pmSlur.setDefaultX(
-                        toTenths(slur.getCurve().getX2() - noteTopLeft.x));
+                        toTenths(slur.getCurve().getX2() - noteLeft));
                     pmSlur.setDefaultY(yOf(slur.getCurve().getY2(), staff));
                     pmSlur.setBezierX(
-                        toTenths(slur.getCurve().getCtrlX2() - noteTopLeft.x));
+                        toTenths(slur.getCurve().getCtrlX2() - noteLeft));
                     pmSlur.setBezierY(yOf(slur.getCurve().getCtrlY2(), staff));
                 }
             }
@@ -1114,11 +1103,8 @@ public class ScoreExporter
         }
 
         // Relative-x (No offset for the time being) using note left side
-        PixelRectangle noteBox = current.note.getGlyph()
-                                             .getContourBox();
-        PixelPoint     pixelUl = new PixelPoint(noteBox.x, noteBox.y);
-        SystemPoint    noteUpperLeft = current.system.toSystemPoint(pixelUl);
-        pmPedal.setRelativeX(toTenths(pedal.getPoint().x - noteUpperLeft.x));
+        pmPedal.setRelativeX(
+            toTenths(pedal.getPoint().x - current.note.getCenterLeft().x));
 
         return true;
     }
@@ -1182,11 +1168,8 @@ public class ScoreExporter
         }
 
         // Relative-x (No offset for the time being) using note left side
-        PixelRectangle noteBox = current.note.getGlyph()
-                                             .getContourBox();
-        PixelPoint     pixelUl = new PixelPoint(noteBox.x, noteBox.y);
-        SystemPoint    noteUpperLeft = current.system.toSystemPoint(pixelUl);
-        pmWedge.setRelativeX(toTenths(wedge.getPoint().x - noteUpperLeft.x));
+        pmWedge.setRelativeX(
+            toTenths(wedge.getPoint().x - current.note.getCenterLeft().x));
 
         return true;
     }
@@ -1199,29 +1182,74 @@ public class ScoreExporter
     private Object getDynamicsObject (Shape shape)
     {
         switch (shape) {
-        case PIANISSISSIMO :
-            return new Ppp();
-
-        case PIANISSIMO :
-            return new Pp();
-
-        case PIANO :
-            return new P();
-
-        case MEZZO_PIANO :
-            return new Mp();
-
-        case MEZZO_FORTE :
-            return new Mf();
-
-        case FORTE :
+        case DYNAMICS_F :
             return new F();
 
-        case FORTISSIMO :
+        case DYNAMICS_FF :
             return new Ff();
 
-        case FORTISSISSIMO :
+        case DYNAMICS_FFF :
             return new Fff();
+
+        case DYNAMICS_FFFF :
+            return new Ffff();
+
+        case DYNAMICS_FFFFF :
+            return new Fffff();
+
+        case DYNAMICS_FFFFFF :
+            return new Ffffff();
+
+        case DYNAMICS_FP :
+            return new Fp();
+
+        case DYNAMICS_FZ :
+            return new Fz();
+
+        case DYNAMICS_MF :
+            return new Mf();
+
+        case DYNAMICS_MP :
+            return new Mp();
+
+        case DYNAMICS_P :
+            return new P();
+
+        case DYNAMICS_PP :
+            return new Pp();
+
+        case DYNAMICS_PPP :
+            return new Ppp();
+
+        case DYNAMICS_PPPP :
+            return new Pppp();
+
+        case DYNAMICS_PPPPP :
+            return new Ppppp();
+
+        case DYNAMICS_PPPPPP :
+            return new Pppppp();
+
+        case DYNAMICS_RF :
+            return new Rf();
+
+        case DYNAMICS_RFZ :
+            return new Rfz();
+
+        case DYNAMICS_SF :
+            return new Sf();
+
+        case DYNAMICS_SFFZ :
+            return new Sffz();
+
+        case DYNAMICS_SFP :
+            return new Sfp();
+
+        case DYNAMICS_SFPP :
+            return new Sfpp();
+
+        case DYNAMICS_SFZ :
+            return new Sfz();
         }
 
         logger.severe("Unsupported dynamics shape:" + shape);
