@@ -1255,7 +1255,7 @@ public class Glyph
         }
 
         if (partOf != null) {
-            sb.append(" partOf #")
+            sb.append(" partOf#")
               .append(partOf.getId());
         }
 
