@@ -104,39 +104,51 @@ public class ScoreBuilder
             // Translations in proper order
 
             // Clef
+            logger.fine("Starting ClefTranslator...");
             translate(new ClefTranslator());
 
             // Time signature
+            logger.fine("Starting TimeTranslator...");
             translate(new TimeTranslator());
 
             // Key
+            logger.fine("Starting KeyTranslator...");
             translate(new KeyTranslator());
 
             // Slot, Chord, Note
+            logger.fine("Starting ChordTranslator...");
             translate(new ChordTranslator());
 
             // Slur
+            logger.fine("Starting SlurTranslator...");
             translate(new SlurTranslator());
 
             // Beam (-> chord), BeamGroup
+            logger.fine("Starting BeamTranslator...");
             translate(new BeamTranslator());
 
             // Flag (-> chord)
+            logger.fine("Starting FlagTranslator...");
             translate(new FlagTranslator());
 
             // Accidental (-> note)
+            logger.fine("Starting AccidentalTranslator...");
             translate(new AccidentalTranslator());
 
             // Augmentation dots (-> chord)
+            logger.fine("Starting DotTranslator...");
             translate(new DotTranslator());
 
             // Crescendo / decrescendo
+            logger.fine("Starting WedgeTranslator...");
             translate(new WedgeTranslator());
 
             // Pedal on / off
+            logger.fine("Starting PedalTranslator...");
             translate(new PedalTranslator());
 
             // Dynamics
+            logger.fine("Starting DynamicsTranslator...");
             translate(new DynamicsTranslator());
 
             // Update score view if any
