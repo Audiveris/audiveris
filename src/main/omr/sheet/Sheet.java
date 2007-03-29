@@ -450,11 +450,11 @@ public class Sheet
 
             // Perform the glyphs translation
             ScoreBuilder builder = new ScoreBuilder(score, Sheet.this);
+            result = Boolean.valueOf(true);
             builder.buildInfo();
 
             // Perform global checks recursively
             score.accept(new ScoreChecker());
-            result = Boolean.valueOf(true);
         }
 
         public void displayUI ()
