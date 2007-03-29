@@ -261,8 +261,9 @@ public enum Shape
         /*1D180*/ // COMBINING_MARCATO_STACCATO,
         /*1D181*/ // COMBINING_ACCENT_STACCATO,
         /*1D182*/ // COMBINING_LOURE,
-        /*1D183*/ ARPEGGIATO_UP,
-        /*1D184*/ ARPEGGIATO_DOWN,
+        /*-----*/ ARPEGGIATO,
+        /*1D183*/ // ARPEGGIATO_UP,
+        /*1D184*/ // ARPEGGIATO_DOWN,
 
         /*1D185*/ // COMBINING_DOIT,
         /*1D186*/ // COMBINING_RIP,
@@ -968,7 +969,7 @@ public enum Shape
     public static final Range Flags         = new Range(EnumSet.range(COMBINING_FLAG_1, COMBINING_FLAG_5_UP));
     public static final Range HeadAndFlags  = new Range(EnumSet.range(HEAD_AND_FLAG_1, HEAD_AND_FLAG_5_UP));
     public static final Range Beams         = new Range(EnumSet.range(BEAM, SLUR));
-    public static final Range Articulations = new Range(EnumSet.range(ARPEGGIATO_UP, ARPEGGIATO_DOWN));
+    public static final Range Articulations = new Range(EnumSet.range(ARPEGGIATO, ARPEGGIATO));
     public static final Range Dynamics      = new Range(EnumSet.range(DYNAMICS_CHAR_M, DECRESCENDO));
     public static final Range Ornaments     = new Range(EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
     public static final Range Pedals        = new Range(EnumSet.range(PEDAL_MARK, PEDAL_UP_MARK));
