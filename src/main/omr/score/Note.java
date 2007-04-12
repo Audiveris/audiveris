@@ -18,7 +18,6 @@ import omr.glyph.Shape;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
-import omr.sheet.PixelRectangle;
 import omr.sheet.Scale;
 
 import omr.util.Logger;
@@ -242,14 +241,6 @@ public class Note
         return pitchPosition;
     }
 
-    //--------//
-    // isRest //
-    //--------//
-    public boolean isRest ()
-    {
-        return isRest;
-    }
-
     //----------//
     // getShape //
     //----------//
@@ -343,6 +334,14 @@ public class Note
         slurs.add(slur);
     }
 
+    //--------//
+    // isRest //
+    //--------//
+    public boolean isRest ()
+    {
+        return isRest;
+    }
+
     //--------------------//
     // populateAccidental //
     //--------------------//
@@ -371,7 +370,7 @@ public class Note
                         noteRef.y - accidCenter.y);
 
                     if (logger.isFineEnabled()) {
-                        logger.info(measure.getContextString() + " " + toNote);
+                        logger.fine(measure.getContextString() + " " + toNote);
                     }
 
                     if (toNote.x > (2 * maxDx)) {
@@ -416,6 +415,15 @@ public class Note
         }
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //---------------//
     // getAccidental //
     //---------------//
@@ -424,6 +432,9 @@ public class Note
         return accidental;
     }
 
+    //-----------------//
+    // getAccidentalDx //
+    //-----------------//
     public int getAccidentalDx ()
     {
         return accidentalDx;
@@ -554,15 +565,6 @@ public class Note
         int index = (int) Math.rint(Math.log(dur) / Math.log(2));
 
         return typeNames[index];
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
     }
 
     //----------//
