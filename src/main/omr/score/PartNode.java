@@ -15,12 +15,13 @@ import static omr.score.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
-import omr.sheet.Scale;
 
 import omr.util.TreeNode;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Class <code>PartNode</code> is an abstract class that is subclassed for any
@@ -74,17 +75,54 @@ public abstract class PartNode
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // setCenter //
-    //-----------//
-    /**
-     * Remember the center of this part node
-     *
-     * @param center the system-based center of the part node
-     */
-    public void setCenter (SystemPoint center)
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
     {
-        this.center = center;
+        return visitor.visit(this);
+    }
+
+    //--------------------//
+    // computeGlyphCenter //
+    //--------------------//
+    /**
+     * Compute the bounding center of a glyph
+     *
+     * @param glyph the glyph
+     *
+     * @return the glyph center
+     */
+    public SystemPoint computeGlyphCenter (Glyph glyph)
+    {
+        return computeRectangleCenter(glyph.getContourBox());
+    }
+
+    //---------------------//
+    // computeGlyphsCenter //
+    //---------------------//
+    /**
+     * Compute the bounding center of a collection of glyphs
+     *
+     * @param glyphs the collection of glyph components
+     *
+     * @return the area center
+     */
+    public SystemPoint computeGlyphsCenter (Collection<?extends Glyph> glyphs)
+    {
+        // We compute the bounding center of all glyphs
+        Rectangle rect = null;
+
+        for (Glyph glyph : glyphs) {
+            if (rect == null) {
+                rect = new Rectangle(glyph.getContourBox());
+            } else {
+                rect = rect.union(glyph.getContourBox());
+            }
+        }
+
+        return computeRectangleCenter(rect);
     }
 
     //-----------//
@@ -149,19 +187,6 @@ public abstract class PartNode
     }
 
     //----------//
-    // setStaff //
-    //----------//
-    /**
-     * Assign the related staff
-     *
-     * @param staff the related staff
-     */
-    public void setStaff (Staff staff)
-    {
-        this.staff = staff;
-    }
-
-    //----------//
     // getStaff //
     //----------//
     /**
@@ -188,54 +213,68 @@ public abstract class PartNode
                    .getSystem();
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //--------------------//
-    // computeGlyphCenter //
-    //--------------------//
+    //------------------//
+    // retrieveSequence //
+    //------------------//
     /**
-     * Compute the bounding center of a glyph
+     * Starting from a glyph, build a sequence of glyphs Ok with a provided
+     * criteria, up to a sequence final criteria or when it's over.
      *
-     * @param glyph the glyph
-     *
-     * @return the glyph center
+     * @param seed the first glyph of the sequence
+     * @return the sequence of glyphs captured
      */
-    public SystemPoint computeGlyphCenter (Glyph glyph)
+    public static List<Glyph> retrieveSequence (Glyph             seed,
+                                                Collection<Glyph> glyphs,
+                                                SequenceAdapter   adapter)
     {
-        return computeRectangleCenter(glyph.getContourBox());
-    }
+        List<Glyph> sequence = new ArrayList<Glyph>();
+        boolean     started = false;
 
-    //---------------------//
-    // computeGlyphsCenter //
-    //---------------------//
-    /**
-     * Compute the bounding center of a collection of glyphs
-     *
-     * @param glyphs the collection of glyph components
-     *
-     * @return the area center
-     */
-    public SystemPoint computeGlyphsCenter (Collection<?extends Glyph> glyphs)
-    {
-        // We compute the bounding center of all glyphs
-        Rectangle rect = null;
-
+        // Browse the provided glyphs, & start from the seed
         for (Glyph glyph : glyphs) {
-            if (rect == null) {
-                rect = new Rectangle(glyph.getContourBox());
-            } else {
-                rect = rect.union(glyph.getContourBox());
+            if (glyph == seed) {
+                started = true;
+                sequence.add(glyph);
+            } else if (started) {
+                if (adapter.isFinal(glyph)) {
+                    sequence.add(glyph);
+
+                    break;
+                } else if (adapter.isOver(glyph)) {
+                    break;
+                } else if (adapter.isOk(glyph)) {
+                    sequence.add(glyph);
+                }
             }
         }
 
-        return computeRectangleCenter(rect);
+        return sequence;
+    }
+
+    //-----------//
+    // setCenter //
+    //-----------//
+    /**
+     * Remember the center of this part node
+     *
+     * @param center the system-based center of the part node
+     */
+    public void setCenter (SystemPoint center)
+    {
+        this.center = center;
+    }
+
+    //----------//
+    // setStaff //
+    //----------//
+    /**
+     * Assign the related staff
+     *
+     * @param staff the related staff
+     */
+    public void setStaff (Staff staff)
+    {
+        this.staff = staff;
     }
 
     //---------------//
@@ -262,5 +301,26 @@ public abstract class PartNode
 
         return getSystem()
                    .toSystemPoint(pixPt);
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
+
+    //-----------------//
+    // SequenceAdapter //
+    //-----------------//
+    /**
+     * Interface <code>SequenceAdapter</code> defines the checks that drive
+     * the retrieval of a glyph sequence.
+     */
+    public static interface SequenceAdapter
+    {
+        /** Check whether this glyph completes the sequence */
+        boolean isFinal (Glyph glyph);
+
+        /** Check whether this glyph should be part of the sequence */
+        boolean isOk (Glyph glyph);
+
+        /** Check whether this glyph leads to give up the sequence */
+        boolean isOver (Glyph glyph);
     }
 }
