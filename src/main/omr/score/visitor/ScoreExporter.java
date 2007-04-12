@@ -15,6 +15,7 @@ import omr.Main;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
+import static omr.score.visitor.MusicXML.*;
 
 import omr.score.Barline;
 import omr.score.Beam;
@@ -73,35 +74,6 @@ public class ScoreExporter
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreExporter.class);
 
-    // To avoid typos
-    private static final String ABOVE = "above";
-    private static final String BACKWARD_HOOK = "backward hook";
-    private static final String BEGIN = "begin";
-    private static final String BELOW = "below";
-    private static final String COMMON = "common";
-    private static final String CONTINUE = "continue";
-    private static final String CUT = "cut";
-    private static final String DOWN = "down";
-    private static final String END = "end";
-    private static final String FORWARD_HOOK = "forward hook";
-    private static final String NO = "no";
-    private static final String OVER = "over";
-    private static final String START = "start";
-    private static final String STOP = "stop";
-    private static final String UNDER = "under";
-    private static final String UP = "up";
-    private static final String YES = "yes";
-
-    /** The xml document statement */
-    private static final String XML_LINE = "<?xml version=\"1.0\"" +
-                                           " encoding=\"UTF-8\"" +
-                                           " standalone=\"no\"?>\n";
-
-    /** The DOCTYPE statement for xml */
-    private static final String DOCTYPE_LINE = "<!DOCTYPE score-partwise PUBLIC" +
-                                               " \"-//Recordare//DTD MusicXML 1.1 Partwise//EN\"" +
-                                               " \"http://www.musicxml.org/dtds/partwise.dtd\">";
-
     //~ Instance fields --------------------------------------------------------
 
     /** The related score */
@@ -156,19 +128,7 @@ public class ScoreExporter
         //  Finally, marshal the proxy
         try {
             final OutputStream os = new FileOutputStream(xmlFile);
-
-            // Take care of first statements
-            os.write(XML_LINE.getBytes());
-            os.write(DOCTYPE_LINE.getBytes());
-
-            // Then the object to marshal
-            Marshaller m = Marshalling.getContext()
-                                      .createMarshaller();
-
-            m.setProperty(Marshaller.JAXB_FRAGMENT, true);
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            m.marshal(scorePartwise, os);
-
+            Marshalling.marshal(scorePartwise, os);
             logger.info("Score exported to " + xmlFile);
             os.close();
         } catch (FileNotFoundException ex) {
@@ -611,7 +571,6 @@ public class ScoreExporter
             current.note = note;
 
             for (PartNode node : chord.getEvents()) {
-                ///logger.info("Calling accept on " + node);
                 node.accept(this);
             }
         } else {
@@ -849,9 +808,9 @@ public class ScoreExporter
         return true;
     }
 
-    //-------//
-    // Score //
-    //-------//
+    //-------------//
+    // visit Score //
+    //-------------//
     /**
      * Allocate/populate everything that directly relates to the score instance.
      * The rest of processing is delegated to the score children, that is to
@@ -863,8 +822,9 @@ public class ScoreExporter
     public boolean visit (Score score)
     {
         ///logger.info("Visiting " + score);
-        // Version
-        scorePartwise.setVersion("1.1");
+        
+        // No version inserted
+        // Let the marshalling class handle it
 
         // Identification
         Identification identification = new Identification();
@@ -940,6 +900,7 @@ public class ScoreExporter
             scorePart.setId(current.part.getPid());
 
             PartName partName = new PartName();
+
             scorePart.setPartName(partName);
             partName.setContent(current.part.getName());
 
@@ -972,9 +933,9 @@ public class ScoreExporter
         return true;
     }
 
-    //--------//
-    // System //
-    //--------//
+    //--------------//
+    // visit System //
+    //--------------//
     /**
      * Allocate/populate everything that directly relates to this system in the
      * current part. The rest of processing is directly delegated to the
@@ -1176,87 +1137,6 @@ public class ScoreExporter
 
     //- Utility Methods --------------------------------------------------------
 
-    //-------------------//
-    // getDynamicsObject //
-    //-------------------//
-    private Object getDynamicsObject (Shape shape)
-    {
-        switch (shape) {
-        case DYNAMICS_F :
-            return new F();
-
-        case DYNAMICS_FF :
-            return new Ff();
-
-        case DYNAMICS_FFF :
-            return new Fff();
-
-        case DYNAMICS_FFFF :
-            return new Ffff();
-
-        case DYNAMICS_FFFFF :
-            return new Fffff();
-
-        case DYNAMICS_FFFFFF :
-            return new Ffffff();
-
-        case DYNAMICS_FP :
-            return new Fp();
-
-        case DYNAMICS_FZ :
-            return new Fz();
-
-        case DYNAMICS_MF :
-            return new Mf();
-
-        case DYNAMICS_MP :
-            return new Mp();
-
-        case DYNAMICS_P :
-            return new P();
-
-        case DYNAMICS_PP :
-            return new Pp();
-
-        case DYNAMICS_PPP :
-            return new Ppp();
-
-        case DYNAMICS_PPPP :
-            return new Pppp();
-
-        case DYNAMICS_PPPPP :
-            return new Ppppp();
-
-        case DYNAMICS_PPPPPP :
-            return new Pppppp();
-
-        case DYNAMICS_RF :
-            return new Rf();
-
-        case DYNAMICS_RFZ :
-            return new Rfz();
-
-        case DYNAMICS_SF :
-            return new Sf();
-
-        case DYNAMICS_SFFZ :
-            return new Sffz();
-
-        case DYNAMICS_SFP :
-            return new Sfp();
-
-        case DYNAMICS_SFPP :
-            return new Sfpp();
-
-        case DYNAMICS_SFZ :
-            return new Sfz();
-        }
-
-        logger.severe("Unsupported dynamics shape:" + shape);
-
-        return null;
-    }
-
     //----------------------//
     // getMeasureAttributes //
     //----------------------//
@@ -1274,6 +1154,48 @@ public class ScoreExporter
         }
 
         return current.attributes;
+    }
+
+    //--------------//
+    // insertBackup //
+    //--------------//
+    private void insertBackup (int delta)
+    {
+        Backup backup = new Backup();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(backup);
+
+        Duration duration = new Duration();
+        backup.setDuration(duration);
+        duration.setContent("" + current.part.simpleDurationOf(delta));
+    }
+
+    //---------------//
+    // insertForward //
+    //---------------//
+    private void insertForward (int   delta,
+                                Chord chord)
+    {
+        Forward forward = new Forward();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(forward);
+
+        Duration duration = new Duration();
+        forward.setDuration(duration);
+        duration.setContent("" + current.part.simpleDurationOf(delta));
+
+        Voice voice = new Voice();
+        forward.setVoice(voice);
+        voice.setContent("" + current.voice);
+
+        // Staff ? (only if more than one staff in part)
+        if (chord.getPart()
+                 .getStaves()
+                 .size() > 1) {
+            proxymusic.Staff pmStaff = new proxymusic.Staff();
+            forward.setStaff(pmStaff);
+            pmStaff.setContent("" + (chord.getStaff().getId()));
+        }
     }
 
     //-----------//
@@ -1320,148 +1242,6 @@ public class ScoreExporter
         }
 
         return true; // Since no previous key found
-    }
-
-    //------------------//
-    // accidentalNameOf //
-    //------------------//
-    private String accidentalNameOf (Shape shape)
-    {
-        ///sharp, natural, flat, double-sharp, sharp-sharp, flat-flat
-        switch (shape) {
-        case SHARP :
-            return "sharp";
-
-        case NATURAL :
-            return "natural";
-
-        case FLAT :
-            return "flat";
-
-        case DOUBLE_SHARP :
-            return "double-sharp";
-
-        case DOUBLE_FLAT :
-            return "flat-flat";
-        }
-
-        logger.warning("Illegal shape for accidental: " + shape);
-
-        return "";
-    }
-
-    //------------//
-    // barStyleOf //
-    //------------//
-    /**
-     * Report the MusicXML bar style for a recognized Barline shape
-     *
-     * @param shape the barline shape
-     * @return the bar style
-     */
-    private String barStyleOf (Shape shape)
-    {
-        //      Bar-style contains style information. Choices are
-        //      regular, dotted, dashed, heavy, light-light,
-        //      light-heavy, heavy-light, heavy-heavy, and none.
-        switch (shape) {
-        case SINGLE_BARLINE :
-            return "light";
-
-        case DOUBLE_BARLINE :
-            return "light-light";
-
-        case FINAL_BARLINE :
-            return "light-heavy";
-
-        case REVERSE_FINAL_BARLINE :
-            return "heavy-light";
-
-        case LEFT_REPEAT_SIGN :
-            return "heavy-light";
-
-        case RIGHT_REPEAT_SIGN :
-            return "light-heavy";
-
-        case BACK_TO_BACK_REPEAT_SIGN :
-            return "heavy-heavy"; // ?
-        }
-
-        return "???";
-    }
-
-    //--------------//
-    // insertBackup //
-    //--------------//
-    private void insertBackup (int delta)
-    {
-        Backup backup = new Backup();
-        current.pmMeasure.getNoteOrBackupOrForward()
-                         .add(backup);
-
-        Duration duration = new Duration();
-        backup.setDuration(duration);
-        duration.setContent("" + current.part.simpleDurationOf(delta));
-    }
-
-    //---------------//
-    // insertForward //
-    //---------------//
-    private void insertForward (int   delta,
-                                Chord chord)
-    {
-        Forward forward = new Forward();
-        current.pmMeasure.getNoteOrBackupOrForward()
-                         .add(forward);
-
-        Duration duration = new Duration();
-        forward.setDuration(duration);
-        duration.setContent("" + current.part.simpleDurationOf(delta));
-
-        Voice voice = new Voice();
-        forward.setVoice(voice);
-        voice.setContent("" + current.voice);
-
-        // Staff ? (only if more than one staff in part)
-        if (chord.getPart()
-                 .getStaves()
-                 .size() > 1) {
-            proxymusic.Staff pmStaff = new proxymusic.Staff();
-            forward.setStaff(pmStaff);
-            pmStaff.setContent("" + (chord.getStaff().getId()));
-        }
-    }
-
-    //----------//
-    // toTenths //
-    //----------//
-    /**
-     * Convert a value expressed in units to a string value expressed in tenths
-     *
-     * @param units the number of units
-     * @return the number of tenths as a string
-     */
-    private String toTenths (double units)
-    {
-        // Divide by 1.6 with rounding to nearest integer value
-        return Integer.toString((int) Math.rint(units / 1.6));
-    }
-
-    //-----//
-    // yOf //
-    //-----//
-    /**
-     * Report the musicXML Y value of a SystemPoint ordinate.
-     *
-     * @param y the system-based ordinate (in units)
-     * @param staff the related staff
-     * @return the upward-oriented ordinate wrt to staff top line (in tenths string)
-     */
-    private String yOf (double y,
-                        Staff  staff)
-    {
-        return toTenths(
-            staff.getTopLeft().y - staff.getSystem().getTopLeft().y - y);
     }
 
     //~ Inner Classes ----------------------------------------------------------
