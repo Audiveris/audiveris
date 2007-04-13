@@ -220,11 +220,15 @@ public class LineBuilder
      */
     public void cleanup ()
     {
+        final int extensionMinLength = sheet.getScale()
+                                            .toPixels(
+            constants.extensionMinLength);
+
         for (Stick stick : sticks) {
             StickUtil.cleanup(
                 stick,
                 lag,
-                constants.extensionMinPointNb.getValue(),
+                extensionMinLength,
                 sheet.getPicture());
         }
     }
@@ -573,31 +577,31 @@ public class LineBuilder
     private static final class Constants
         extends ConstantSet
     {
-        Scale.Fraction   coreSectionLength = new Scale.Fraction(
+        Scale.Fraction coreSectionLength = new Scale.Fraction(
             10d,
             "Minimum section length to be considered a staff line core section");
-        Constant.Integer extensionMinPointNb = new Constant.Integer(
-            4,
-            "Minimum number of points to compute extension of crossing objects during cleanup");
-        Constant.Double  maxAdjacency = new Constant.Double(
+        Scale.Fraction extensionMinLength = new Scale.Fraction(
+            0.25d,
+            "Minimum length to compute extension of crossing objects during cleanup");
+        Constant.Ratio maxAdjacency = new Constant.Ratio(
             0.5d,
             "Maximum adjacency ratio to flag a section as peripheral to a staff line");
-        Scale.Fraction   maxGapWidth = new Scale.Fraction(
+        Scale.Fraction maxGapWidth = new Scale.Fraction(
             1.0d,
             "Maximum value for horizontal gap between 2 sticks");
-        Constant.Double  maxSlope = new Constant.Double(
+        Constant.Angle maxSlope = new Constant.Angle(
             0.04d,
             "Maximum difference in slope to allow merging of two sticks");
-        Scale.Fraction   maxThickness = new Scale.Fraction(
+        Scale.Fraction maxThickness = new Scale.Fraction(
             0.3d,
             "Maximum value for staff line thickness ");
-        Scale.Fraction   xHoleMargin = new Scale.Fraction(
+        Scale.Fraction xHoleMargin = new Scale.Fraction(
             0.2d,
             "Margin on hole abscissa to define the area where hole sections are searched");
-        Scale.Fraction   yHoleMargin = new Scale.Fraction(
+        Scale.Fraction yHoleMargin = new Scale.Fraction(
             0.1d,
             "Margin on hole ordinates to define the area where hole sections are searched");
-        Scale.Fraction   yMargin = new Scale.Fraction(
+        Scale.Fraction yMargin = new Scale.Fraction(
             0.2d,
             "Margin on peak ordinates to define the area where line sections are searched ");
     }
@@ -658,16 +662,6 @@ public class LineBuilder
             reset();
         }
 
-        //----------//
-        // isInArea //
-        //----------//
-        @Override
-        public boolean isInArea (GlyphSection section)
-        {
-            return (section.getFirstPos() >= yMin) &&
-                   (section.getLastPos() <= yMax);
-        }
-
         //--------//
         // backup //
         //--------//
@@ -684,6 +678,16 @@ public class LineBuilder
         public boolean hasNext ()
         {
             return vi.hasNext();
+        }
+
+        //----------//
+        // isInArea //
+        //----------//
+        @Override
+        public boolean isInArea (GlyphSection section)
+        {
+            return (section.getFirstPos() >= yMin) &&
+                   (section.getLastPos() <= yMax);
         }
 
         //------//

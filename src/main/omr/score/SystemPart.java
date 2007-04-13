@@ -372,7 +372,8 @@ public class SystemPart
     //-------------//
     public void cleanupNode ()
     {
-        getSlurs().clear();
+        getSlurs()
+            .clear();
     }
 
     //----------//

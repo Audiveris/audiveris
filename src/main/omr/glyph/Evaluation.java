@@ -10,6 +10,7 @@
 //
 package omr.glyph;
 
+import omr.constant.Constant;
 
 /**
  * Class <code>Evaluation</code> gathers a pair composed of a glyph shape and
@@ -73,5 +74,29 @@ public class Evaluation
           .append(")");
 
         return sb.toString();
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-------//
+    // Doubt //
+    //-------//
+    /**
+     * A subclass of Constant.Double, meant to store a doubt constant.
+     */
+    public static class Doubt
+        extends Constant.Double
+    {
+        /**
+         * Specific constructor, where 'unit' and 'name' are assigned later
+         *
+         * @param defaultValue the (double) default value
+         * @param description  the semantic of the constant
+         */
+        public Doubt (double           defaultValue,
+                      java.lang.String description)
+        {
+            super("Doubt", defaultValue, description);
+        }
     }
 }

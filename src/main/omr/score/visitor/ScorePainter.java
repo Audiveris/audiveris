@@ -1061,6 +1061,7 @@ public class ScorePainter
     {
         /** Alpha parameter for slot axis transparency (0 .. 255) */
         final Constant.Integer slotAlpha = new Constant.Integer(
+            "ByteLevel",
             20,
             "Alpha parameter for slot axis transparency (0 .. 255)");
 
@@ -1082,18 +1083,17 @@ public class ScorePainter
         /** dx between note and augmentation dot */
         final Scale.Fraction dotDx = new Scale.Fraction(
             0.3,
-            "dx (in interline fraction) between note and augmentation dot");
+            "dx between note and augmentation dot");
 
         /** dy between note and augmentation dot, when on a line */
         final Scale.Fraction dotDy = new Scale.Fraction(
             0.3,
-            "dy (in interline fraction) between note and augmentation dot " +
-            "when on staff line");
+            "dy between note and augmentation dot " + "when on staff line");
 
         /** Half length of a ledger */
         final Scale.Fraction halfLedgerLength = new Scale.Fraction(
             1,
-            "Half length of a ledger (in interline fraction)");
+            "Half length of a ledger");
     }
 
     //------------//

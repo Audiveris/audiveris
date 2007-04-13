@@ -437,6 +437,7 @@ class SelectionPanel
         extends ConstantSet
     {
         Constant.Integer maxSimilar = new Constant.Integer(
+            "Glyphs",
             20,
             "Absolute maximum number of instances for the same shape" +
             " used in training");

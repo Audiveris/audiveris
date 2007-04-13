@@ -205,6 +205,7 @@ public class LogSlider
         extends ConstantSet
     {
         Constant.Integer resolution = new Constant.Integer(
+            "Values",
             480,
             "Number of values between two major ticks");
     }

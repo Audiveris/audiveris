@@ -212,7 +212,7 @@ public class Dynamics
     //------------------//
     private boolean isCompatibleWith (SystemPoint point)
     {
-        // Check x-proximity and y-alignment 
+        // Check x-proximity and y-alignment
         Scale scale = getSystem()
                           .getScale();
         int   dx = scale.toUnits(constants.maxDx);
@@ -240,11 +240,11 @@ public class Dynamics
         /** Maximum abscissa difference */
         Scale.Fraction maxDx = new Scale.Fraction(
             1,
-            "Maximum abscissa difference (in interline fraction)");
+            "Maximum abscissa difference");
 
         /** Maximum ordinate difference */
         Scale.Fraction maxDy = new Scale.Fraction(
             0.5,
-            "Maximum ordinate difference (in interline fraction)");
+            "Maximum ordinate difference");
     }
 }

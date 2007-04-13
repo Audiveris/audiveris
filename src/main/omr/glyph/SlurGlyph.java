@@ -159,7 +159,7 @@ public class SlurGlyph
 
         int                minChunkWeight = system.getScoreSystem()
                                                   .getScale()
-                                                  .toSquarePixels(
+                                                  .toPixels(
             constants.minChunkWeight);
 
         // Get a COPY of the member list */
@@ -177,7 +177,7 @@ public class SlurGlyph
                     }
                 });
 
-        // Find the suitable seed, which is chosen as the section with best 
+        // Find the suitable seed, which is chosen as the section with best
         // circle distance among the sections whose weight is significant
         GlyphSection seedSection = null;
         double       seedDist = Double.MAX_VALUE;
@@ -379,22 +379,20 @@ public class SlurGlyph
         extends ConstantSet
     {
         /** Maximum distance to approximating circle for a slur */
-        Constant.Double maxCircleDistance = new Constant.Double(
+        Scale.Fraction maxCircleDistance = new Scale.Fraction(
             0.12,
-            "Maximum distance (in interline fraction) to approximating circle" +
-            " for a slur");
+            "Maximum distance to approximating circle" + " for a slur");
 
         /** Normalized weight threshold between small and large spurious slurs */
-        Constant.Double spuriousWeightThreshold = new Constant.Double(
+        Scale.AreaFraction spuriousWeightThreshold = new Scale.AreaFraction(
             1.5,
             "Normalized weight threshold between small and large spurious" +
             " slurs");
 
         /** Minimum weight of a chunk to be part of slur computation */
-        Scale.Fraction minChunkWeight = new Scale.Fraction(
+        Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
             0.5,
-            "Minimum weight (interline fraction) of a chunk to be part of slur" +
-            " computation");
+            "Minimum weight of a chunk to be part of slur" + " computation");
 
         /** Extension abscissa when looking for slur compound */
         Scale.Fraction slurBoxDx = new Scale.Fraction(

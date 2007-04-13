@@ -197,7 +197,7 @@ public class Slot
         Chord chordAbove = null;
         Chord chordBelow = null;
 
-        // We look for a chord just above or just below, 
+        // We look for a chord just above or just below,
         // with a normal (non-rest) note
         for (Chord chord : getChords()) {
             if (chord.getHeadLocation().y < point.y) {
@@ -597,7 +597,6 @@ public class Slot
          */
         Scale.Fraction maxDx = new Scale.Fraction(
             1.25,
-            "Maximum horizontal distance (interline fraction) between a slot" +
-            " and a glyph candidate");
+            "Maximum horizontal distance between a slot and a glyph candidate");
     }
 }

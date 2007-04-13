@@ -189,6 +189,7 @@ public class LogPane
         extends ConstantSet
     {
         Constant.Integer msgQueueSize = new Constant.Integer(
+            "Messages",
             1000,
             "Size of message queue");
     }

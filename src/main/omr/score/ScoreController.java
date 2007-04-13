@@ -122,8 +122,8 @@ public class ScoreController
         new StoreAction(XML);
 
         // Close
-//        scoreMenu.addSeparator();
-//        new CloseAction();
+        //        scoreMenu.addSeparator();
+        //        new CloseAction();
 
         // Initially disabled actions
         //        dumpAllAction.setEnabled(false);
@@ -404,6 +404,7 @@ public class ScoreController
         extends ConstantSet
     {
         Constant.Integer maxHistorySize = new Constant.Integer(
+            "Files",
             10,
             "Maximum number of score files kept in history");
     }

@@ -516,21 +516,21 @@ public class TimeSignature
         extends ConstantSet
     {
         /**
-         * Maximum euclidian distance (in interline fraction) between two parts
+         * Maximum euclidian distance between two parts
          * of a time signature
          */
         Scale.Fraction maxTimeDistance = new Scale.Fraction(
             4d,
-            "Maximum euclidian distance (in interline fraction) between two" +
+            "Maximum euclidian distance between two" +
             " parts of a time signature");
 
         /**
-         * Minimum horizontal offset (in interline fraction) for a time
+         * Minimum horizontal offset for a time
          * signature since start of measure
          */
         Scale.Fraction minTimeOffset = new Scale.Fraction(
             3d,
-            "Minimum horizontal offset (in interline fraction) for a time" +
+            "Minimum horizontal offset for a time" +
             " signature since start of measure");
     }
 }

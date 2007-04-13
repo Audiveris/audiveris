@@ -150,16 +150,16 @@ public class UnitManager
 
         for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {
-                UnitNode unit = (UnitNode) node;
+                UnitNode    unit = (UnitNode) node;
 
-                // Logger?
-                Logger logger = unit.getLogger();
-
-                if (logger != null) {
-                    System.out.println(
-                        "\n[" + unit.getName() + "] Logger -> " +
-                        logger.getEffectiveLevel());
-                }
+                //                // Logger?
+                //                Logger logger = unit.getLogger();
+                //
+                //                if (logger != null) {
+                //                    System.out.println(
+                //                        "\n[" + unit.getName() + "] Logger -> " +
+                //                        logger.getEffectiveLevel());
+                //                }
 
                 // ConstantSet?
                 ConstantSet set = unit.getConstantSet();

@@ -696,20 +696,20 @@ public class Note
          */
         Scale.Fraction minAccidDx = new Scale.Fraction(
             0.3d,
-            "Minimum dx (in interline fraction) between accidental and note");
+            "Minimum dx between accidental and note");
 
         /**
          * Maximum dx between accidental and note
          */
         Scale.Fraction maxAccidDx = new Scale.Fraction(
             1d,
-            "Maximum dx (in interline fraction) between accidental and note");
+            "Maximum dx between accidental and note");
 
         /**
          * Maximum absolute dy between note and accidental
          */
         Scale.Fraction maxAccidDy = new Scale.Fraction(
             1d,
-            "Maximum absolute dy (in interline fraction) between note and accidental");
+            "Maximum absolute dy between note and accidental");
     }
 }

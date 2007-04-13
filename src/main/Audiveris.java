@@ -24,7 +24,7 @@ public final class Audiveris
     // Audiveris //
     //-----------//
     /** To avoid instantiation */
-    private Audiveris () 
+    private Audiveris ()
     {
     }
 

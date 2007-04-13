@@ -530,6 +530,7 @@ public class Selection
         extends ConstantSet
     {
         Constant.Integer maxNotificationLevel = new Constant.Integer(
+            "Notifs",
             10,
             "Reasonable maximum level for stacked selection notifications");
     }

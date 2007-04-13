@@ -301,9 +301,9 @@ public class Beam
 
                 if (result == 0) {
                     // This should not happen
-                    logger.warning(other.getContextString() + 
-                        " equality between " + this.toLongString() + " and " +
-                        other.toLongString());
+                    logger.warning(
+                        other.getContextString() + " equality between " +
+                        this.toLongString() + " and " + other.toLongString());
                     logger.warning(
                         "x=" + x + " y=" + y + " yOther=" + yOther + " yHead=" +
                         yHead);

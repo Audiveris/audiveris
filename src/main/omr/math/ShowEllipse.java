@@ -43,7 +43,7 @@ public class ShowEllipse
         });
 
     // Rotation
-    private final double         theta =  0.3;
+    private final double         theta = 0.3;
     private final Matrix         rotation = new Matrix(
         new double[][] {
             { cos(theta), -sin(theta), 0 },

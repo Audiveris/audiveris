@@ -379,25 +379,25 @@ public class VerticalsBuilder
         Constant.Boolean displayFrame = new Constant.Boolean(
             true,
             "Should we display a frame on the stem sticks");
-        Constant.Double  maxStemAdjacencyHigh = new Constant.Double(
+        Constant.Ratio   maxStemAdjacencyHigh = new Constant.Ratio(
             0.70,
             "High Maximum adjacency ratio for a stem stick");
-        Constant.Double  maxStemAdjacencyLow = new Constant.Double(
+        Constant.Ratio   maxStemAdjacencyLow = new Constant.Ratio(
             0.60,
             "Low Maximum adjacency ratio for a stem stick");
-        Constant.Double  minCheckResult = new Constant.Double(
+        Check.Grade      minCheckResult = new Check.Grade(
             0.50,
             "Minimum result for suite of check");
-        Constant.Double  minDensityHigh = new Constant.Double(
+        Constant.Ratio   minDensityHigh = new Constant.Ratio(
             0.9,
             "High Minimum density for a stem");
-        Constant.Double  minDensityLow = new Constant.Double(
+        Constant.Ratio   minDensityLow = new Constant.Ratio(
             0.8,
             "Low Minimum density for a stem");
-        Constant.Double  minStemAspectHigh = new Constant.Double(
+        Constant.Ratio   minStemAspectHigh = new Constant.Ratio(
             12.5,
             "High Minimum aspect ratio for a stem stick");
-        Constant.Double  minStemAspectLow = new Constant.Double(
+        Constant.Ratio   minStemAspectLow = new Constant.Ratio(
             10.0,
             "Low Minimum aspect ratio for a stem stick");
         Scale.Fraction   minStemLengthHigh = new Scale.Fraction(

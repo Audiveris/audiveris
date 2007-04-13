@@ -234,14 +234,16 @@ public class MemoryMeter
     private static final class Constants
         extends ConstantSet
     {
-        /** Display period, in milli-seconds */
+        /** Display period */
         Constant.Integer displayPeriod = new Constant.Integer(
+            "MilliSeconds",
             2000,
-            "Display period, in milli-seconds");
+            "Display period");
 
-        /** Alarm threshold, in MB */
+        /** Alarm threshold */
         Constant.Integer alarmThreshold = new Constant.Integer(
+            "MegaBytes",
             70,
-            "Alarm threshold, in MB");
+            "Alarm threshold");
     }
 }

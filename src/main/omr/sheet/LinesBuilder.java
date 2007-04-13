@@ -109,7 +109,7 @@ public class LinesBuilder
         super(sheet, new GlyphLag("hLag", new HorizontalOrientation()));
 
         // Check output needed from previous steps
-        this.scale = sheet.getScale(); // Will run Scale if not yet done
+        scale = sheet.getScale(); // Will run Scale if not yet done
         sheet.getSkew(); // Will run Skew  if not yet done
 
         Picture picture = sheet.getPicture();
@@ -121,7 +121,7 @@ public class LinesBuilder
         SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
         lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             lag,
-            new JunctionDeltaPolicy(constants.maxDeltaLength.getValue()));
+            new JunctionDeltaPolicy(scale.toPixels(constants.maxDeltaLength)));
         lagBuilder.createSections(picture, 0); // 0 = minRunLength
         sheet.setHorizontalLag(lag);
 
@@ -151,6 +151,14 @@ public class LinesBuilder
     //~ Methods ----------------------------------------------------------------
 
     //------------------------------//
+    // getDisplayOriginalStaffLines //
+    //------------------------------//
+    public static boolean getDisplayOriginalStaffLines ()
+    {
+        return constants.displayOriginalStaffLines.getValue();
+    }
+
+    //------------------------------//
     // setDisplayOriginalStaffLines //
     //------------------------------//
     public static void setDisplayOriginalStaffLines (boolean displayOriginalStaffLines)
@@ -169,12 +177,15 @@ public class LinesBuilder
         }
     }
 
-    //------------------------------//
-    // getDisplayOriginalStaffLines //
-    //------------------------------//
-    public static boolean getDisplayOriginalStaffLines ()
+    //--------------//
+    // displayChart //
+    //--------------//
+    /**
+     * Build and display the histogram of projections
+     */
+    public void displayChart ()
     {
-        return constants.displayOriginalStaffLines.getValue();
+        writePlot(histo, threshold);
     }
 
     //-----------//
@@ -188,17 +199,6 @@ public class LinesBuilder
     public List<StaffInfo> getStaves ()
     {
         return staves;
-    }
-
-    //--------------//
-    // displayChart //
-    //--------------//
-    /**
-     * Build and display the histogram of projections
-     */
-    public void displayChart ()
-    {
-        writePlot(histo, threshold);
     }
 
     //---------//
@@ -602,18 +602,18 @@ public class LinesBuilder
             "Should we display a frame on Lags ?");
 
         /** Should we display original staff lines */
-        private Constant.Boolean displayOriginalStaffLines = new Constant.Boolean(
+        Constant.Boolean displayOriginalStaffLines = new Constant.Boolean(
             false,
             "Should we display original staff lines?");
 
         /** Peak threshold stated as a ratio of maximum histogram value */
-        Constant.Double histoThresholdFrac = new Constant.Double(
+        Constant.Ratio histoThresholdFrac = new Constant.Ratio(
             0.5d,
             "Peak threshold stated as a ratio of maximum histogram value");
 
         /** Maximum difference in length of two consecutives runs in the same section */
-        Constant.Integer maxDeltaLength = new Constant.Integer(
-            4,
+        Scale.Fraction maxDeltaLength = new Scale.Fraction(
+            0.2d,
             "Maximum difference in length of two consecutives runs in the same section");
 
         /** Maximum deviation in the series of interline values in a staff */

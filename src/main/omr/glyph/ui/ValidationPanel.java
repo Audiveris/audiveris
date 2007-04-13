@@ -10,7 +10,6 @@
 //
 package omr.glyph.ui;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
@@ -308,7 +307,7 @@ class ValidationPanel
     private static final class Constants
         extends ConstantSet
     {
-        Constant.Double maxDoubt = new Constant.Double(
+        Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
             1.2,
             "Maximum acceptance doubt");
     }

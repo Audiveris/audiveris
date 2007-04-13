@@ -18,11 +18,7 @@ import omr.constant.ConstantSet;
 import omr.math.Moments;
 import omr.math.NeuralNetwork;
 
-import omr.score.ScoreConstants;
-
 import omr.sheet.Scale;
-import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
 
@@ -111,6 +107,14 @@ public abstract class Evaluator
 
     //~ Methods ----------------------------------------------------------------
 
+    //------//
+    // dump //
+    //------//
+    /**
+     * Dump the internals of the evaluator
+     */
+    public abstract void dump ();
+
     //---------//
     // getName //
     //---------//
@@ -120,43 +124,6 @@ public abstract class Evaluator
      * @return the evaluator declared name
      */
     public abstract String getName ();
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Dump the internals of the evaluator
-     */
-    public abstract void dump ();
-
-    //-------------//
-    // isBigEnough //
-    //-------------//
-    /**
-     * Use a threshold on glyph weight, to tell if the provided glyph is just
-     * {@link Shape#NOISE}, or a real glyph
-     *
-     * @param glyph the glyph to be checked
-     * @return true if not noise, false otherwise
-     */
-    public static boolean isBigEnough (Glyph glyph)
-    {
-        return glyph.getNormalizedWeight() >= constants.minWeight.getValue();
-    }
-
-    //----------//
-    // getLabel //
-    //----------//
-    /**
-     * Report the label assigned to a given variable
-     *
-     * @param index the variable index
-     * @return the assigned label
-     */
-    public static String getLabel (int index)
-    {
-        return getLabels()[index];
-    }
 
     //-----------//
     // feedInput //
@@ -195,6 +162,35 @@ public abstract class Evaluator
 
         // We skip moments 17 & 18 (xMean and yMean) ???
         return ins;
+    }
+
+    //----------//
+    // getLabel //
+    //----------//
+    /**
+     * Report the label assigned to a given variable
+     *
+     * @param index the variable index
+     * @return the assigned label
+     */
+    public static String getLabel (int index)
+    {
+        return getLabels()[index];
+    }
+
+    //-------------//
+    // isBigEnough //
+    //-------------//
+    /**
+     * Use a threshold on glyph weight, to tell if the provided glyph is just
+     * {@link Shape#NOISE}, or a real glyph
+     *
+     * @param glyph the glyph to be checked
+     * @return true if not noise, false otherwise
+     */
+    public static boolean isBigEnough (Glyph glyph)
+    {
+        return glyph.getNormalizedWeight() >= constants.minWeight.getValue();
     }
 
     //-------------------//
@@ -249,32 +245,31 @@ public abstract class Evaluator
                                 Monitor      monitor,
                                 StartingMode mode);
 
-    //----------------//
-    // getMaxDistance //
-    //----------------//
+    //-------------//
+    // getMaxDoubt //
+    //-------------//
     /**
      * Report the maximum doubt value for an evaluation to be accepted
      *
-     *
      * @return the maximum doubt value
      */
-    public double getMaxDistance ()
+    public double getMaxDoubt ()
     {
-        return constants.maxDistance.getValue();
+        return constants.maxDoubt.getValue();
     }
 
-    //---------------------//
-    // getMaxDistanceRatio //
-    //---------------------//
+    //------------------//
+    // getMaxDoubtRatio //
+    //------------------//
     /**
      * Report the maximum ratio (with respect to the best evaluation) for
      * secondary evaluations to be also considered
      *
      * @return the maximum "degrading" ratio
      */
-    public double getMaxDistanceRatio ()
+    public double getMaxDoubtRatio ()
     {
-        return constants.maxDistanceRatio.getValue();
+        return constants.maxDoubtRatio.getValue();
     }
 
     //------//
@@ -282,7 +277,7 @@ public abstract class Evaluator
     //------//
     /**
      * Run the evaluator with the specified glyph, and infer a shape.
-     * 
+     *
      * @param glyph the glyph to be examined
      * @param maxDoubt the maximum doubt to be accepted
      * @return the best acceptable evaluation, or null
@@ -380,6 +375,18 @@ public abstract class Evaluator
         return shape;
     }
 
+    //--------------//
+    // boolAsDouble //
+    //--------------//
+    private static double boolAsDouble (boolean b)
+    {
+        if (b) {
+            return 1d;
+        } else {
+            return 0d;
+        }
+    }
+
     //-----------//
     // getLabels // Lazy initialization
     //-----------//
@@ -400,18 +407,6 @@ public abstract class Evaluator
         }
 
         return labels;
-    }
-
-    //--------------//
-    // boolAsDouble //
-    //--------------//
-    private static double boolAsDouble (boolean b)
-    {
-        if (b) {
-            return 1d;
-        } else {
-            return 0d;
-        }
     }
 
     //~ Inner Interfaces -------------------------------------------------------
@@ -440,16 +435,16 @@ public abstract class Evaluator
     private static final class Constants
         extends ConstantSet
     {
-        Constant.Double maxDistance = new Constant.Double(
+        Evaluation.Doubt   maxDoubt = new Evaluation.Doubt(
             5.0,
-            "Threshold on displayable distance");
-        Constant.Double maxDistanceRatio = new Constant.Double(
+            "Threshold on displayable doubt");
+        Constant.Ratio     maxDoubtRatio = new Constant.Ratio(
             3.0,
-            "Max ratio, WRT the best evaluation");
-        Constant.Double minWeight = new Constant.Double(
+            "Max ratio, WRT the best evaluation doubt");
+        Scale.AreaFraction minWeight = new Scale.AreaFraction(
             0.19,
             "Minimum normalized weight to be considered not a noise");
-        Constant.Double maxHeadBlackWeight = new Constant.Double(
+        Scale.AreaFraction maxHeadBlackWeight = new Scale.AreaFraction(
             1.2,
             "Maximum normalized weight for a NOTEHEAD_BLACK");
     }

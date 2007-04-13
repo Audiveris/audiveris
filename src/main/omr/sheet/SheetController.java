@@ -495,7 +495,7 @@ public class SheetController
             "Default directory for selection of image files");
 
         /** Initial zoom ratio for displayed sheet pictures */
-        Constant.Double initialZoomRatio = new Constant.Double(
+        Constant.Ratio initialZoomRatio = new Constant.Ratio(
             1d,
             "Initial zoom ratio for displayed sheet pictures");
     }

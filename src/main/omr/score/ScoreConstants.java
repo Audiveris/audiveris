@@ -13,6 +13,8 @@ package omr.score;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.ui.PixelCount;
+
 /**
  * Class <code>ScoreConstants</code> gathers all constants related to the
  * display of a score.
@@ -76,26 +78,27 @@ public class ScoreConstants
     private static final class Constants
         extends ConstantSet
     {
-        Constant.Integer interPage = new Constant.Integer(
-            200,
-            "Horizontal gutter in pixels between two pages");
-        Constant.Integer interSystem = new Constant.Integer(
-            100,
-            "Horizontal gutter in pixels between two systems");
         Constant.Integer lineNb = new Constant.Integer(
+            "Lines",
             5,
             "Number of lines in a staff");
-        Constant.Integer scoreInitX = new Constant.Integer(
+        PixelCount       interPage = new PixelCount(
+            200,
+            "Horizontal gutter between two pages");
+        PixelCount       interSystem = new PixelCount(
             100,
-            "Horizontal offset in pixels of the score origin");
-        Constant.Integer scoreInitY = new Constant.Integer(
+            "Horizontal gutter between two systems");
+        PixelCount       scoreInitX = new PixelCount(
+            100,
+            "Horizontal offset of the score origin");
+        PixelCount       scoreInitY = new PixelCount(
             150,
-            "Vertical offset in pixels of the score origin");
-        Constant.Integer staffAreaheight = new Constant.Integer(
+            "Vertical offset of the score origin");
+        PixelCount       staffAreaheight = new PixelCount(
             100,
-            "Height in pixels of a staff display");
-        Constant.Integer staffMarginHeight = new Constant.Integer(
+            "Height of a staff display");
+        PixelCount       staffMarginHeight = new PixelCount(
             40,
-            "Height in pixels above/under a staff display : ");
+            "Height above/under a staff display : ");
     }
 }

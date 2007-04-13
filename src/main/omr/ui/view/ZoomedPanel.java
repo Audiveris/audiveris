@@ -9,13 +9,14 @@
 //-----------------------------------------------------------------------//
 package omr.ui.view;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionObserver;
+
+import omr.ui.PixelCount;
 
 import omr.util.Implement;
 import omr.util.Logger;
@@ -431,8 +432,8 @@ public class ZoomedPanel
     private static final class Constants
         extends ConstantSet
     {
-        Constant.Integer focusMargin = new Constant.Integer(
+        PixelCount focusMargin = new PixelCount(
             20,
-            "Margin (in pixels) visible around a focus");
+            "Margin visible around a focus");
     }
 }

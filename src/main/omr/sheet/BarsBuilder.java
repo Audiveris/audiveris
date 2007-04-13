@@ -192,7 +192,7 @@ public class BarsBuilder
         SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
         lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             lag,
-            new JunctionDeltaPolicy(constants.maxDeltaLength.getValue()));
+            new JunctionDeltaPolicy(scale.toPixels(constants.maxDeltaLength)));
         lagBuilder.createSections(sheet.getPicture(), 0); // 0 = minRunLength
         sheet.setVerticalLag(lag);
 
@@ -455,101 +455,6 @@ public class BarsBuilder
         }
     }
 
-    //----------//
-    // getBarOf //
-    //----------//
-    private Stick getBarOf (Glyph glyph)
-    {
-        for (Stick bar : bars) {
-            if (bar == glyph) {
-                return bar;
-            }
-        }
-
-        logger.warning("Cannot find bar for " + glyph);
-
-        return null;
-    }
-
-    //-----------------//
-    // setSystemBraces //
-    //-----------------//
-    /**
-     * Pass the braces symbols found for one system
-     *
-     * @param braces list of braces for this system
-     */
-    private void setSystemBraces (System      system,
-                                  List<Glyph> braces)
-    {
-        //        // Map Staff -> its containing staves ensemble (= ScorePart)
-        //        Map<Staff, List<Staff>> ensembles = new HashMap<Staff, List<Staff>>();
-        //
-        //        // Inspect each brace in turn
-        //        for (Glyph brace : braces) {
-        //            List<Staff> ensemble = new ArrayList<Staff>();
-        //
-        //            // Inspect all staves for this brace
-        //            for (TreeNode node : system.getStaves()) {
-        //                Staff staff = (Staff) node;
-        //
-        //                if (checker.isStaffEmbraced(staff, brace)) {
-        //                    ensemble.add(staff);
-        //                    ensembles.put(staff, ensemble);
-        //                }
-        //            }
-        //
-        //            if (ensemble.size() == 0) {
-        //                logger.warning(
-        //                    "Brace with no embraced staves at all: " + brace.getId());
-        //            }
-        //        }
-        //
-        //        // Now build the parts by looking back at all staves
-        //        List<SystemPart> parts = new ArrayList<SystemPart>();
-        //        List<Staff>      currentEnsemble = null;
-        //
-        //        for (TreeNode node : system.getStaves()) {
-        //            Staff       staff = (Staff) node;
-        //            List<Staff> ensemble = ensembles.get(staff);
-        //
-        //            if (ensemble == null) {
-        //                // Standalone staff, a part by itself
-        //                parts.add(new SystemPart(Arrays.asList(staff)));
-        //            } else {
-        //                // Staff is in a part
-        //                if (ensemble != currentEnsemble) {
-        //                    parts.add(new SystemPart(ensemble));
-        //                } else {
-        //                    // Nothing to do
-        //                }
-        //            }
-        //
-        //            currentEnsemble = ensemble;
-        //        }
-        //
-        //        // Dump this system parts
-        //        if (logger.isFineEnabled()) {
-        //            StringBuilder sb = new StringBuilder();
-        //
-        //            for (SystemPart part : parts) {
-        //                sb.append("[");
-        //
-        //                for (Staff staff : part.getStaves()) {
-        //                    sb.append(" ")
-        //                      .append(staff.getStaffIndex());
-        //                }
-        //
-        //                sb.append("] ");
-        //            }
-        //
-        //            logger.fine(system + " Parts: " + sb);
-        //        }
-        //
-        //        // Assign the parts to the system
-        //        system.setParts(parts);
-    }
-
     //--------------------//
     // checkBarAlignments //
     //--------------------//
@@ -756,6 +661,22 @@ public class BarsBuilder
              .addViewTab("Bars", slv, boardsPane);
     }
 
+    //----------//
+    // getBarOf //
+    //----------//
+    private Stick getBarOf (Glyph glyph)
+    {
+        for (Stick bar : bars) {
+            if (bar == glyph) {
+                return bar;
+            }
+        }
+
+        logger.warning("Cannot find bar for " + glyph);
+
+        return null;
+    }
+
     //---------------//
     // mergeBarlines //
     //---------------//
@@ -865,6 +786,85 @@ public class BarsBuilder
         }
     }
 
+    //-----------------//
+    // setSystemBraces //
+    //-----------------//
+    /**
+     * Pass the braces symbols found for one system
+     *
+     * @param braces list of braces for this system
+     */
+    private void setSystemBraces (System      system,
+                                  List<Glyph> braces)
+    {
+        //        // Map Staff -> its containing staves ensemble (= ScorePart)
+        //        Map<Staff, List<Staff>> ensembles = new HashMap<Staff, List<Staff>>();
+        //
+        //        // Inspect each brace in turn
+        //        for (Glyph brace : braces) {
+        //            List<Staff> ensemble = new ArrayList<Staff>();
+        //
+        //            // Inspect all staves for this brace
+        //            for (TreeNode node : system.getStaves()) {
+        //                Staff staff = (Staff) node;
+        //
+        //                if (checker.isStaffEmbraced(staff, brace)) {
+        //                    ensemble.add(staff);
+        //                    ensembles.put(staff, ensemble);
+        //                }
+        //            }
+        //
+        //            if (ensemble.size() == 0) {
+        //                logger.warning(
+        //                    "Brace with no embraced staves at all: " + brace.getId());
+        //            }
+        //        }
+        //
+        //        // Now build the parts by looking back at all staves
+        //        List<SystemPart> parts = new ArrayList<SystemPart>();
+        //        List<Staff>      currentEnsemble = null;
+        //
+        //        for (TreeNode node : system.getStaves()) {
+        //            Staff       staff = (Staff) node;
+        //            List<Staff> ensemble = ensembles.get(staff);
+        //
+        //            if (ensemble == null) {
+        //                // Standalone staff, a part by itself
+        //                parts.add(new SystemPart(Arrays.asList(staff)));
+        //            } else {
+        //                // Staff is in a part
+        //                if (ensemble != currentEnsemble) {
+        //                    parts.add(new SystemPart(ensemble));
+        //                } else {
+        //                    // Nothing to do
+        //                }
+        //            }
+        //
+        //            currentEnsemble = ensemble;
+        //        }
+        //
+        //        // Dump this system parts
+        //        if (logger.isFineEnabled()) {
+        //            StringBuilder sb = new StringBuilder();
+        //
+        //            for (SystemPart part : parts) {
+        //                sb.append("[");
+        //
+        //                for (Staff staff : part.getStaves()) {
+        //                    sb.append(" ")
+        //                      .append(staff.getStaffIndex());
+        //                }
+        //
+        //                sb.append("] ");
+        //            }
+        //
+        //            logger.fine(system + " Parts: " + sb);
+        //        }
+        //
+        //        // Assign the parts to the system
+        //        system.setParts(parts);
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -889,8 +889,8 @@ public class BarsBuilder
             "Maximum thickness of an interesting vertical stick");
 
         /** Maximum difference in run length to be part of the same section */
-        Constant.Integer maxDeltaLength = new Constant.Integer(
-            4,
+        Scale.Fraction maxDeltaLength = new Scale.Fraction(
+            0.2,
             "Maximum difference in run length to be part of the same section");
 
         /** Maximum horizontal distance between the two bars of a double bar */

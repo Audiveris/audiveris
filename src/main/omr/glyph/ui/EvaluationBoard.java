@@ -407,8 +407,8 @@ class EvaluationBoard
                 return;
             }
 
-            double maxDist = evaluator.getMaxDistance();
-            double maxRatio = evaluator.getMaxDistanceRatio();
+            double maxDist = evaluator.getMaxDoubt();
+            double maxRatio = evaluator.getMaxDoubtRatio();
             double best = -1; // i.e. Not set
 
             int    iBound = Math.min(EVAL_NB, evals.length);

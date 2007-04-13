@@ -20,7 +20,6 @@ import omr.math.Circle;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.VerticalsBuilder;
 
 import omr.util.Implement;
 import omr.util.Logger;
@@ -72,6 +71,7 @@ public class GlyphInspector
             return res;
         }
     };
+
 
     //~ Constructors -----------------------------------------------------------
 
@@ -304,7 +304,7 @@ public class GlyphInspector
         throws ProcessingException
     {
         sheet.getVerticalsBuilder()
-            .retrieveAllVerticals();
+             .retrieveAllVerticals();
     }
 
     //-------------//
@@ -779,16 +779,16 @@ public class GlyphInspector
         Scale.Fraction   boxWiden = new Scale.Fraction(
             0.15,
             "Box widening to check intersection with compound");
-        Constant.Double  cleanupMaxDoubt = new Constant.Double(
+        Evaluation.Doubt cleanupMaxDoubt = new Evaluation.Doubt(
             1.2,
             "Maximum doubt for cleanup phase");
-        Constant.Double  leafMaxDoubt = new Constant.Double(
+        Evaluation.Doubt leafMaxDoubt = new Evaluation.Doubt(
             1.01,
             "Maximum acceptance doubt for a leaf");
-        Constant.Double  symbolMaxDoubt = new Constant.Double(
+        Evaluation.Doubt symbolMaxDoubt = new Evaluation.Doubt(
             1.0001,
             "Maximum doubt for a symbol");
-        Constant.Double  minCompoundPartDoubt = new Constant.Double(
+        Evaluation.Doubt minCompoundPartDoubt = new Evaluation.Doubt(
             1.020,
             "Minimum doubt for a suitable compound part");
     }

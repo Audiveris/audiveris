@@ -880,13 +880,13 @@ public class Chord
          */
         Scale.Fraction maxDotDx = new Scale.Fraction(
             1d,
-            "Maximum dx (in interline fraction) between note and augmentation dot");
+            "Maximum dx between note and augmentation dot");
 
         /**
          * Maximum absolute dy between note and augmentation dot
          */
         Scale.Fraction maxDotDy = new Scale.Fraction(
             1d,
-            "Maximum absolute dy (in interline fraction) between note and augmentation dot");
+            "Maximum absolute dy between note and augmentation dot");
     }
 }

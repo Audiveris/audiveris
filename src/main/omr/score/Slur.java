@@ -126,6 +126,15 @@ public class Slur
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // getCurve //
     //----------//
@@ -203,15 +212,6 @@ public class Slur
     public boolean isTie ()
     {
         return isTie;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
     }
 
     //----------//
@@ -569,7 +569,7 @@ public class Slur
         }
 
         return (prevStaff.getId() == staff.getId()) &&
-               (Math.abs(deltaPitch) <= constants.maxDeltaPitch.getValue());
+               (Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2));
     }
 
     //--------------//
@@ -738,10 +738,10 @@ public class Slur
             6,
             "Ordinate extension when looking for embraced notes");
 
-        /** Maximum difference in pitch position between connecting slurs */
-        Constant.Double maxDeltaPitch = new Constant.Double(
-            8,
-            "Maximum difference in pitch position between connecting slurs");
+        /** Maximum difference in vertical position between connecting slurs */
+        Scale.Fraction maxDeltaY = new Scale.Fraction(
+            4,
+            "Maximum difference in vertical position between connecting slurs");
     }
 
     //----------------//

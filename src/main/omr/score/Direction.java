@@ -262,7 +262,7 @@ public abstract class Direction
         /** Abscissa shift when looking for time slot (half a note head) */
         Scale.Fraction slotShift = new Scale.Fraction(
             0.5,
-            "Abscissa shift (in interline fraction) when looking for time slot " +
+            "Abscissa shift when looking for time slot " +
             "(half a note head)");
     }
 }

@@ -267,9 +267,8 @@ public class BeamGroup
     private static Split checkBeamGroups (Measure measure)
     {
         for (BeamGroup group : measure.getBeamGroups()) {
-//             java.lang.System.out.println(
-//                 measure.getContextString() + " checkBeamGroups group=" + group);
-
+            //             java.lang.System.out.println(
+            //                 measure.getContextString() + " checkBeamGroups group=" + group);
             Split split = group.check();
 
             if (split != null) {

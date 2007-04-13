@@ -75,7 +75,7 @@ public class SectionBoard
     //
     /** Label for lag name */
     private final JLabel lagName = new JLabel();
-    
+
     /** Field for left abscissa */
     private final LIntegerField x = new LIntegerField(
         false,
@@ -256,6 +256,7 @@ public class SectionBoard
 
             if (section == null) {
                 lagName.setText("");
+
                 // If the user is currently using the Id spinner, make sure we
                 // display the right Id value in the spinner, even if there is
                 // no corresponding section
@@ -282,7 +283,7 @@ public class SectionBoard
 
                 // Additional relation fields for a StickSection
                 if (section instanceof StickSection) {
-                    StickSection ss = (StickSection) section;
+                    StickSection  ss = (StickSection) section;
                     StickRelation relation = ss.getRelation();
 
                     if (relation != null) {

@@ -61,7 +61,7 @@ public class ScoreFixer
     {
         // Adjust measure abscissae
         measure.resetAbscissae();
-        
+
         // Set measure id
         Measure prevMeasure = (Measure) measure.getPreviousSibling();
 

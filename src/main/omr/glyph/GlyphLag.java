@@ -60,7 +60,7 @@ public class GlyphLag
 
     //~ Instance fields --------------------------------------------------------
 
-    /** 
+    /**
      * Smart glyph map, usable across several glyph extractions, to ensure glyph
      * unicity. A glyph is never removed, it can be active or inactive.
      */

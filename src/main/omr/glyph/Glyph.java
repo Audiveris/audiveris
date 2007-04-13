@@ -39,9 +39,9 @@ import javax.xml.bind.annotation.*;
  * Class <code>Glyph</code> represents any glyph found, such as stem, ledger,
  * accidental, note head, etc...
  *
- * <p>A Glyph is basically a collection of sections. It can be split into 
- * smaller glyphs, which may later be re-assembled into another instance of 
- * glyph. There is a means, based on a simple signature (weight and bounding 
+ * <p>A Glyph is basically a collection of sections. It can be split into
+ * smaller glyphs, which may later be re-assembled into another instance of
+ * glyph. There is a means, based on a simple signature (weight and bounding
  * box), to detect if the glyph at hand is identical to a previous one, which is
  * then reused.
  *

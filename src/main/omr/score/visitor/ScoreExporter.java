@@ -15,7 +15,6 @@ import omr.Main;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
-import static omr.score.visitor.MusicXML.*;
 
 import omr.score.Barline;
 import omr.score.Beam;
@@ -37,6 +36,7 @@ import omr.score.SystemPart;
 import omr.score.SystemPoint;
 import omr.score.TimeSignature;
 import omr.score.Wedge;
+import static omr.score.visitor.MusicXML.*;
 
 import omr.sheet.PixelPoint;
 import omr.sheet.PixelRectangle;
@@ -822,7 +822,7 @@ public class ScoreExporter
     public boolean visit (Score score)
     {
         ///logger.info("Visiting " + score);
-        
+
         // No version inserted
         // Let the marshalling class handle it
 

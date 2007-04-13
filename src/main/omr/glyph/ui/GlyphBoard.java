@@ -10,7 +10,6 @@
 //
 package omr.glyph.ui;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
@@ -24,6 +23,7 @@ import omr.selection.SelectionHint;
 import omr.sheet.Sheet;
 
 import omr.ui.Board;
+import omr.ui.PixelCount;
 import omr.ui.field.SField;
 import omr.ui.field.SpinnerUtilities;
 import static omr.ui.field.SpinnerUtilities.*;
@@ -463,12 +463,12 @@ public class GlyphBoard
         extends ConstantSet
     {
         /** Exact pixel height for the shape icon field */
-        Constant.Integer shapeIconHeight = new Constant.Integer(
+        PixelCount shapeIconHeight = new PixelCount(
             70,
             "Exact pixel height for the shape icon field");
 
         /** Exact pixel width for the shape icon field */
-        Constant.Integer shapeIconWidth = new Constant.Integer(
+        PixelCount shapeIconWidth = new PixelCount(
             50,
             "Exact pixel width for the shape icon field");
     }

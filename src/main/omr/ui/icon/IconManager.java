@@ -11,8 +11,9 @@ package omr.ui.icon;
 
 import omr.Main;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
+import omr.ui.PixelCount;
 
 import omr.util.Logger;
 
@@ -22,7 +23,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import javax.media.jai.PlanarImage;
 import javax.swing.*;
 import javax.xml.bind.*;
 
@@ -538,7 +538,7 @@ public class IconManager
     private static final class Constants
         extends ConstantSet
     {
-        Constant.Integer buttonIconSize = new Constant.Integer(
+        PixelCount buttonIconSize = new PixelCount(
             16,
             "Size of toolbar icons (16 or 24)");
     }

@@ -833,33 +833,34 @@ public class Jui
     private static final class Constants
         extends ConstantSet
     {
-        Constant.Integer boardDivider = new Constant.Integer(
+        PixelCount       boardDivider = new PixelCount(
             200,
             "Where the separation on left of board pane should be");
-        Constant.Integer frameHeight = new Constant.Integer(
+        PixelCount       frameHeight = new PixelCount(
             740,
-            "Height in pixels of the main frame");
+            "Height of the main frame");
         Constant.Integer frameState = new Constant.Integer(
+            null,
             Frame.NORMAL,
-            "Initial frame state (0=normal, 1=iconified, 6=maximized");
-        Constant.Integer frameWidth = new Constant.Integer(
+            "Initial frame state (0=normal, 1=iconified, 6=maximized)");
+        PixelCount       frameWidth = new PixelCount(
             1024,
-            "Width in pixels of the main frame");
-        Constant.Integer frameX = new Constant.Integer(
+            "Width of the main frame");
+        PixelCount       frameX = new PixelCount(
             0,
-            "Left position in pixels of the main frame");
-        Constant.Integer frameY = new Constant.Integer(
+            "Left position of the main frame");
+        PixelCount       frameY = new PixelCount(
             0,
-            "Top position in pixels of the main frame");
-        Constant.Integer logDivider = new Constant.Integer(
+            "Top position of the main frame");
+        PixelCount       logDivider = new PixelCount(
             622,
             "Where the separation above log pane should be");
-        Constant.Integer paramHeight = new Constant.Integer(
+        PixelCount       paramHeight = new PixelCount(
             500,
-            "Height in pixels of the param frame");
-        Constant.Integer paramWidth = new Constant.Integer(
+            "Height of the param frame");
+        PixelCount       paramWidth = new PixelCount(
             900,
-            "Width in pixels of the param frame");
+            "Width of the param frame");
         Constant.Boolean showTestAction = new Constant.Boolean(
             false,
             "DEBUG- Should we show the Test button ?");

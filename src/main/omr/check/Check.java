@@ -10,6 +10,8 @@
 //
 package omr.check;
 
+import omr.constant.Constant;
+
 import omr.util.Logger;
 
 /**
@@ -125,19 +127,6 @@ public abstract class Check<C extends Checkable>
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // isCovariant //
-    //-------------//
-    /**
-     * Report the covariant flag
-     *
-     * @return the value of covariant flag
-     */
-    public boolean isCovariant ()
-    {
-        return covariant;
-    }
-
     //----------------//
     // getDescription //
     //----------------//
@@ -177,23 +166,6 @@ public abstract class Check<C extends Checkable>
         return low;
     }
 
-    //------------//
-    // setLowHigh //
-    //------------//
-    /**
-     * Allows to set the pair of low and high value. They are set in one shot to
-     * allow the sanity check of 'low' less than or equal to 'high'
-     *
-     * @param low the new low value
-     */
-    public void setLowHigh (double low,
-                            double high)
-    {
-        this.low = low;
-        this.high = high;
-        verifyRange();
-    }
-
     //---------//
     // getName //
     //---------//
@@ -205,6 +177,19 @@ public abstract class Check<C extends Checkable>
     public String getName ()
     {
         return name;
+    }
+
+    //-------------//
+    // isCovariant //
+    //-------------//
+    /**
+     * Report the covariant flag
+     *
+     * @return the value of covariant flag
+     */
+    public boolean isCovariant ()
+    {
+        return covariant;
     }
 
     //------//
@@ -262,6 +247,23 @@ public abstract class Check<C extends Checkable>
         return result;
     }
 
+    //------------//
+    // setLowHigh //
+    //------------//
+    /**
+     * Allows to set the pair of low and high value. They are set in one shot to
+     * allow the sanity check of 'low' less than or equal to 'high'
+     *
+     * @param low the new low value
+     */
+    public void setLowHigh (double low,
+                            double high)
+    {
+        this.low = low;
+        this.high = high;
+        verifyRange();
+    }
+
     //----------//
     // toString //
     //----------//
@@ -305,6 +307,30 @@ public abstract class Check<C extends Checkable>
     {
         if (low > high) {
             logger.severe("Illegal low-high range for " + this);
+        }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-------//
+    // Grade //
+    //-------//
+    /**
+     * A subclass of Constant.Double, meant to store a check result grade.
+     */
+    public static class Grade
+        extends Constant.Double
+    {
+        /**
+         * Specific constructor, where 'unit' and 'name' are assigned later
+         *
+         * @param defaultValue the (double) default value
+         * @param description  the semantic of the constant
+         */
+        public Grade (double           defaultValue,
+                      java.lang.String description)
+        {
+            super("Grade", defaultValue, description);
         }
     }
 }

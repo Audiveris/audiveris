@@ -150,6 +150,14 @@ public class HorizontalsBuilder
     //~ Methods ----------------------------------------------------------------
 
     //-----------------------//
+    // getDisplayLedgerLines //
+    //-----------------------//
+    public static boolean getDisplayLedgerLines ()
+    {
+        return constants.displayLedgerLines.getValue();
+    }
+
+    //-----------------------//
     // setDisplayLedgerLines //
     //-----------------------//
     public static void setDisplayLedgerLines (boolean displayLedgerLines)
@@ -166,14 +174,6 @@ public class HorizontalsBuilder
                 builder.lagView.repaint();
             }
         }
-    }
-
-    //-----------------------//
-    // getDisplayLedgerLines //
-    //-----------------------//
-    public static boolean getDisplayLedgerLines ()
-    {
-        return constants.displayLedgerLines.getValue();
     }
 
     //-----------//
@@ -222,11 +222,15 @@ public class HorizontalsBuilder
     //---------//
     private void cleanup (List<?extends Dash> dashes)
     {
+        final int extensionMinPointNb = sheet.getScale()
+                                             .toPixels(
+            constants.extensionMinPointNb);
+
         for (Dash dash : dashes) {
             StickUtil.cleanup(
                 dash.getStick(),
                 lag,
-                constants.extensionMinPointNb.getValue(),
+                extensionMinPointNb,
                 sheet.getPicture());
         }
     }
@@ -514,16 +518,16 @@ public class HorizontalsBuilder
         extends ConstantSet
     {
         /** Should we display original ledger lines */
-        private Constant.Boolean displayLedgerLines = new Constant.Boolean(
+        Constant.Boolean displayLedgerLines = new Constant.Boolean(
             false,
             "Should we display original ledger lines?");
         Scale.Fraction   chunkHeight = new Scale.Fraction(
             0.33,
             "Height of half area to look for chunks");
-        Constant.Double  chunkRatioHigh = new Constant.Double(
+        Constant.Ratio   chunkRatioHigh = new Constant.Ratio(
             0.25,
             "HighMaximum ratio of alien pixels to detect chunks");
-        Constant.Double  chunkRatioLow = new Constant.Double(
+        Constant.Ratio   chunkRatioLow = new Constant.Ratio(
             0.25,
             "LowMaximum ratio of alien pixels to detect chunks");
         Scale.Fraction   chunkWidth = new Scale.Fraction(
@@ -532,14 +536,14 @@ public class HorizontalsBuilder
         Constant.Boolean displayFrame = new Constant.Boolean(
             false,
             "Should we display a frame on the horizontal sticks");
-        Constant.Integer extensionMinPointNb = new Constant.Integer(
-            4,
+        Scale.Fraction   extensionMinPointNb = new Scale.Fraction(
+            0.2,
             "Minimum number of points to compute extension of" +
             " crossing objects during cleanup");
-        Constant.Double  maxAdjacencyHigh = new Constant.Double(
+        Constant.Ratio   maxAdjacencyHigh = new Constant.Ratio(
             0.70,
             "High Maximum adjacency ratio for an ending");
-        Constant.Double  maxAdjacencyLow = new Constant.Double(
+        Constant.Ratio   maxAdjacencyLow = new Constant.Ratio(
             0.60,
             "Low Maximum adjacency ratio for an ending");
         Scale.Fraction   maxLengthHigh = new Scale.Fraction(
@@ -560,13 +564,13 @@ public class HorizontalsBuilder
         Scale.Fraction   maxThicknessLow = new Scale.Fraction(
             0.3,
             " Low Maximum thickness of an interesting stick");
-        Constant.Double  minCheckResult = new Constant.Double(
+        Check.Grade      minCheckResult = new Check.Grade(
             0.50,
             "Minimum result for suite of check");
-        Constant.Double  minDensityHigh = new Constant.Double(
+        Constant.Ratio   minDensityHigh = new Constant.Ratio(
             0.9,
             "High Minimum density for a horizontal");
-        Constant.Double  minDensityLow = new Constant.Double(
+        Constant.Ratio   minDensityLow = new Constant.Ratio(
             0.8,
             "Low Minimum density for a horizontal");
         Scale.Fraction   minEndingLengthHigh = new Scale.Fraction(

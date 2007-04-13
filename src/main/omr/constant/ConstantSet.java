@@ -68,6 +68,29 @@ public abstract class ConstantSet
 
     //~ Methods ----------------------------------------------------------------
 
+    //------//
+    // dump //
+    //------//
+    /**
+     * A utility method to dump current value of each constant in the set.
+     */
+    public void dump ()
+    {
+        System.out.println("\n[" + unit + "]");
+
+        for (Constant constant : getMap()
+                                     .values()) {
+            System.out.printf(
+                "%-25s %12s %-14s = %-20s\t%s\n",
+                constant.getName(),
+                constant.getShortTypeName(),
+                (constant.getQuantityUnit() != null)
+                                ? ("(" + constant.getQuantityUnit() + ")") : "",
+                constant.currentString(),
+                constant.getDescription());
+        }
+    }
+
     //------------//
     // isModified //
     //------------//
@@ -87,26 +110,6 @@ public abstract class ConstantSet
         }
 
         return false;
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * A utility method to dump current value of each constant in the set.
-     */
-    public void dump ()
-    {
-        System.out.println("\n[" + unit + "]");
-
-        for (Constant constant : getMap()
-                                     .values()) {
-            System.out.printf(
-                "%-25s = %-20s\t%s\n",
-                constant.getName(),
-                constant.currentString(),
-                constant.getDescription());
-        }
     }
 
     //----------//

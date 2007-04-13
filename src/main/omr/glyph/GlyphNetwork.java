@@ -520,22 +520,24 @@ public class GlyphNetwork
     private static final class Constants
         extends ConstantSet
     {
-        Constant.Double  amplitude = new Constant.Double(
+        Constant.Ratio   amplitude = new Constant.Ratio(
             0.5,
             "Initial weight amplitude");
-        Constant.Double  learningRate = new Constant.Double(
+        Constant.Ratio   learningRate = new Constant.Ratio(
             0.25,
             "Learning Rate");
         Constant.Integer listEpochs = new Constant.Integer(
+            "Epochs",
             2000,
             "Number of epochs for training on list of glyphs");
         Constant.Integer quorum = new Constant.Integer(
+            "Glyphs",
             10,
             "Minimum number of glyphs for each shape");
-        Constant.Double  maxError = new Constant.Double(
+        Evaluation.Doubt maxError = new Evaluation.Doubt(
             1E-4,
             "Threshold to stop training");
-        Constant.Double  momentum = new Constant.Double(
+        Constant.Ratio   momentum = new Constant.Ratio(
             0.02,
             "Training momentum");
     }

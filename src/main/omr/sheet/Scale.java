@@ -13,9 +13,9 @@ package omr.sheet;
 import omr.constant.Constant;
 
 import omr.score.PagePoint;
+import omr.score.PageRectangle;
 import static omr.score.ScoreConstants.*;
 import omr.score.UnitDimension;
-import omr.score.PageRectangle;
 
 import omr.util.Logger;
 
@@ -410,6 +410,21 @@ public class Scale
         return pixRect;
     }
 
+    //----------//
+    // toPixels //
+    //----------//
+    /**
+     * Compute the squared-normalized number of pixels, according to the scale.
+     *
+     * @param areaFrac a measure based on interline (1 = one interline square)
+     *
+     * @return the actual squared number of pixels with the current scale
+     */
+    public int toPixels (AreaFraction areaFrac)
+    {
+        return (int) Math.rint(interline * interline * areaFrac.getValue());
+    }
+
     //----------------//
     // toPixelsDouble //
     //----------------//
@@ -423,23 +438,6 @@ public class Scale
     public double toPixelsDouble (Fraction frac)
     {
         return (double) interline * frac.getValue();
-    }
-
-    //----------------//
-    // toSquarePixels //
-    //----------------//
-    /**
-     * Compute the squared-normalized number of pixels, according to the scale.
-     *
-     * @param frac a measure based on interline (1 = one interline)
-     *
-     * @return the actual squared number of pixels with the current scale
-     */
-    public int toSquarePixels (Fraction frac)
-    {
-        double val = toPixelsDouble(frac);
-
-        return (int) Math.rint(val * val);
     }
 
     //----------//
@@ -609,6 +607,28 @@ public class Scale
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //--------------//
+    // AreaFraction //
+    //--------------//
+    /**
+     * A subclass of Double, meant to store a fraction of interline-based area.
+     */
+    public static class AreaFraction
+        extends Constant.Double
+    {
+        /**
+         * Specific constructor, where 'unit' and 'name' are assigned later
+         *
+         * @param defaultValue the (double) default value
+         * @param description  the semantic of the constant
+         */
+        public AreaFraction (double           defaultValue,
+                             java.lang.String description)
+        {
+            super("Interline**2", defaultValue, description);
+        }
+    }
+
     //----------//
     // Fraction //
     //----------//
@@ -620,22 +640,6 @@ public class Scale
         extends Constant.Double
     {
         /**
-         * Normal constructor, with a double type for default value
-         *
-         * @param unit         the enclosing unit
-         * @param name         the constant name
-         * @param defaultValue the default (double) value
-         * @param description  the semantic of the constant
-         */
-        public Fraction (java.lang.String unit,
-                         java.lang.String name,
-                         double           defaultValue,
-                         java.lang.String description)
-        {
-            super(unit, name, defaultValue, description);
-        }
-
-        /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
          * @param defaultValue the (double) default value
@@ -644,7 +648,7 @@ public class Scale
         public Fraction (double           defaultValue,
                          java.lang.String description)
         {
-            super(defaultValue, description);
+            super("Interline", defaultValue, description);
         }
     }
 }

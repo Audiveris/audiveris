@@ -12,16 +12,16 @@ package omr.ui.util;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.ui.PixelCount;
+
 import omr.util.Logger;
 
-import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Graphics;
 import java.awt.Insets;
 
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 /**
  * Class <code>Panel</code> is a JPanel with specific features to define
@@ -315,37 +315,31 @@ public class Panel
     private static final class Constants
         extends ConstantSet
     {
-        Constant.String  buttonWidth = new Constant.String(
+        Constant.String buttonWidth = new Constant.String(
             "45dlu",
             "Width of a standard button");
-        Constant.String  fieldInterline = new Constant.String(
+        Constant.String fieldInterline = new Constant.String(
             "1dlu",
             "Vertical Gap between two lines");
-        Constant.String  fieldInterval = new Constant.String(
+        Constant.String fieldInterval = new Constant.String(
             "3dlu",
             "Horizontal gap between two fields");
-        Constant.String  fieldWidth = new Constant.String(
+        Constant.String fieldWidth = new Constant.String(
             "35dlu",
             "Width of a field value");
-        Constant.Integer insetBottom = new Constant.Integer(
+        PixelCount      insetBottom = new PixelCount(
             6,
             "Value of Bottom inset");
-        Constant.Integer insetLeft = new Constant.Integer(
-            6,
-            "Value of Left inset");
-        Constant.Integer insetRight = new Constant.Integer(
-            6,
-            "Value of Right inset");
-        Constant.Integer insetTop = new Constant.Integer(
-            6,
-            "Value of Top inset");
-        Constant.String  labelInterval = new Constant.String(
+        PixelCount      insetLeft = new PixelCount(6, "Value of Left inset");
+        PixelCount      insetRight = new PixelCount(6, "Value of Right inset");
+        PixelCount      insetTop = new PixelCount(6, "Value of Top inset");
+        Constant.String labelInterval = new Constant.String(
             "1dlu",
             "Gap between a field label and its field value");
-        Constant.String  labelWidth = new Constant.String(
+        Constant.String labelWidth = new Constant.String(
             "25dlu",
             "Width of the label of a field");
-        Constant.String  panelInterline = new Constant.String(
+        Constant.String panelInterline = new Constant.String(
             "6dlu",
             "Vertical Gap between two panels");
     }

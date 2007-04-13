@@ -142,16 +142,16 @@ public class ActionsBoard
         r += 2; // --------------------------------
 
         // Add a Verticals action
-//        VerticalsAction verticalsAction = new VerticalsAction();
-//        JButton         verticalsButton = new JButton(verticalsAction);
-//        verticalsButton.setToolTipText("Extract Verticals like Stems");
-//        builder.add(verticalsButton, cst.xy(1, r));
+        //        VerticalsAction verticalsAction = new VerticalsAction();
+        //        JButton         verticalsButton = new JButton(verticalsAction);
+        //        verticalsButton.setToolTipText("Extract Verticals like Stems");
+        //        builder.add(verticalsButton, cst.xy(1, r));
 
         // Add a Leaves action
-//        LeavesAction leavesAction = new LeavesAction();
-//        JButton      leavesButton = new JButton(leavesAction);
-//        leavesButton.setToolTipText("Extract stem Leaves");
-//        builder.add(leavesButton, cst.xy(3, r));
+        //        LeavesAction leavesAction = new LeavesAction();
+        //        JButton      leavesButton = new JButton(leavesAction);
+        //        leavesButton.setToolTipText("Extract stem Leaves");
+        //        builder.add(leavesButton, cst.xy(3, r));
 
         // Add a Compounds action
         CompoundsAction compoundsAction = new CompoundsAction();
@@ -304,22 +304,23 @@ public class ActionsBoard
             worker.start();
         }
     }
-//
-//    //-----------------//
-//    // VerticalsAction //
-//    //-----------------//
-//    private class VerticalsAction
-//        extends AbstractAction
-//    {
-//        public VerticalsAction ()
-//        {
-//            super("Verticals");
-//        }
-//
-//        public void actionPerformed (ActionEvent e)
-//        {
-//            inspector.retrieveVerticals();
-//            refresh();
-//        }
-//    }
+
+    //
+    //    //-----------------//
+    //    // VerticalsAction //
+    //    //-----------------//
+    //    private class VerticalsAction
+    //        extends AbstractAction
+    //    {
+    //        public VerticalsAction ()
+    //        {
+    //            super("Verticals");
+    //        }
+    //
+    //        public void actionPerformed (ActionEvent e)
+    //        {
+    //            inspector.retrieveVerticals();
+    //            refresh();
+    //        }
+    //    }
 }

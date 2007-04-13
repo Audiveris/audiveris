@@ -334,13 +334,13 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
     private static final class Constants
         extends ConstantSet
     {
-        Constant.Double  brightness = new Constant.Double(
-            0.4d,
-            "Color brightness (range 0.0 .. 1.0)");
         Constant.Boolean displayDensity = new Constant.Boolean(
             false,
             "Should we render the section foreground density");
-        Constant.Double  saturation = new Constant.Double(
+        Constant.Ratio   brightness = new Constant.Ratio(
+            0.4d,
+            "Color brightness (range 0.0 .. 1.0)");
+        Constant.Ratio   saturation = new Constant.Ratio(
             0.4d,
             "Color saturation (range 0.0 .. 1.0)");
     }

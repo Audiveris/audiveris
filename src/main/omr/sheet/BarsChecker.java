@@ -172,30 +172,30 @@ public class BarsChecker
         return (midPart > top) && (midPart < bot);
     }
 
-//    //-----------------//
-//    // isStaffEmbraced //
-//    //-----------------//
-//    /**
-//     * Check whether the given staff is within the vertical range of the given
-//     * glyph (bar stick or brace glyph)
-//     *
-//     * @param staff the given staff
-//     * @param glyph the given glyph
-//     * @return true if staff is embraced by the bar
-//     */
-//    public boolean isStaffEmbraced (Staff staff,
-//                                    Glyph glyph)
-//    {
-//        // Extrema of glyph
-//        PageRectangle box = scale.toUnits(glyph.getContourBox());
-//        int           top = box.y;
-//        int           bot = box.y + box.height;
-//
-//        // Check that middle of staff is within bar top & bottom
-//        final int midStaff = staff.getTopLeft().y + (staff.getHeight() / 2);
-//
-//        return (midStaff > top) && (midStaff < bot);
-//    }
+    //    //-----------------//
+    //    // isStaffEmbraced //
+    //    //-----------------//
+    //    /**
+    //     * Check whether the given staff is within the vertical range of the given
+    //     * glyph (bar stick or brace glyph)
+    //     *
+    //     * @param staff the given staff
+    //     * @param glyph the given glyph
+    //     * @return true if staff is embraced by the bar
+    //     */
+    //    public boolean isStaffEmbraced (Staff staff,
+    //                                    Glyph glyph)
+    //    {
+    //        // Extrema of glyph
+    //        PageRectangle box = scale.toUnits(glyph.getContourBox());
+    //        int           top = box.y;
+    //        int           bot = box.y + box.height;
+    //
+    //        // Check that middle of staff is within bar top & bottom
+    //        final int midStaff = staff.getTopLeft().y + (staff.getHeight() / 2);
+    //
+    //        return (midStaff > top) && (midStaff < bot);
+    //    }
 
     //----------//
     // getSuite //
@@ -846,37 +846,37 @@ public class BarsChecker
     private static final class Constants
         extends ConstantSet
     {
-        Scale.Fraction  chunkHeight = new Scale.Fraction(
+        Scale.Fraction chunkHeight = new Scale.Fraction(
             0.33,
             "Height of half area to look for chunks");
-        Constant.Double chunkRatioHigh = new Constant.Double(
+        Constant.Ratio chunkRatioHigh = new Constant.Ratio(
             0.25,
             "HighMinimum ratio of alien pixels to detect chunks");
-        Constant.Double chunkRatioLow = new Constant.Double(
+        Constant.Ratio chunkRatioLow = new Constant.Ratio(
             0.25,
             "LowMinimum ratio of alien pixels to detect chunks");
-        Scale.Fraction  chunkWidth = new Scale.Fraction(
+        Scale.Fraction chunkWidth = new Scale.Fraction(
             0.33,
             "Width of half area to look for chunks");
-        Constant.Double maxAdjacencyHigh = new Constant.Double(
+        Constant.Ratio maxAdjacencyHigh = new Constant.Ratio(
             0.25d,
             "HighMaximum adjacency ratio for a bar stick");
-        Constant.Double maxAdjacencyLow = new Constant.Double(
+        Constant.Ratio maxAdjacencyLow = new Constant.Ratio(
             0.25d,
             "LowMaximum adjacency ratio for a bar stick");
-        Scale.Fraction  maxBarOffset = new Scale.Fraction(
+        Scale.Fraction maxBarOffset = new Scale.Fraction(
             1.0,
             "Vertical offset used to detect that a bar extends past a staff");
-        Scale.Fraction  maxStaveshiftDyHigh = new Scale.Fraction(
+        Scale.Fraction maxStaveshiftDyHigh = new Scale.Fraction(
             10,
             "HighMaximum vertical distance between a bar edge and the staff line");
-        Scale.Fraction  maxStaveshiftDyLow = new Scale.Fraction(
+        Scale.Fraction maxStaveshiftDyLow = new Scale.Fraction(
             0.125,
             "LowMaximum vertical distance between a bar edge and the staff line");
-        Scale.Fraction  maxThinWidth = new Scale.Fraction(
+        Scale.Fraction maxThinWidth = new Scale.Fraction(
             0.3,
             "Maximum width of a normal bar, versus a thick bar");
-        Constant.Double minCheckResult = new Constant.Double(
+        Check.Grade    minCheckResult = new Check.Grade(
             0.50,
             "Minimum result for suite of check");
     }

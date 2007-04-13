@@ -16,10 +16,10 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 
-import omr.stick.UnknownSectionPredicate;
 import omr.stick.Stick;
 import omr.stick.SticksBuilder;
 import omr.stick.SticksSource;
+import omr.stick.UnknownSectionPredicate;
 
 import omr.util.Logger;
 import omr.util.Predicate;
@@ -168,22 +168,22 @@ public class VerticalArea
     private static final class Constants
         extends ConstantSet
     {
-        Scale.Fraction  coreSectionLength = new Scale.Fraction(
+        Scale.Fraction coreSectionLength = new Scale.Fraction(
             2.0,
             "Minimum length of a section to be processed");
-        Constant.Double maxAdjacency = new Constant.Double(
+        Constant.Ratio maxAdjacency = new Constant.Ratio(
             0.5d,
             "Maximum adjacency ratio to be a true vertical line");
-        Scale.Fraction  maxDeltaCoord = new Scale.Fraction(
+        Scale.Fraction maxDeltaCoord = new Scale.Fraction(
             0.25,
             "Maximum difference of ordinates when merging two sticks");
-        Scale.Fraction  maxDeltaPos = new Scale.Fraction(
+        Scale.Fraction maxDeltaPos = new Scale.Fraction(
             0.2,
             "Maximum difference of abscissa (in units) when merging two sticks");
-        Constant.Double maxDeltaSlope = new Constant.Double(
+        Constant.Angle maxDeltaSlope = new Constant.Angle(
             0.01d,
             "Maximum difference in slope (in radians) when merging two sticks");
-        Constant.Double maxSlope = new Constant.Double(
+        Constant.Angle maxSlope = new Constant.Angle(
             0.04d,
             "Maximum slope value for a stick to be vertical");
     }

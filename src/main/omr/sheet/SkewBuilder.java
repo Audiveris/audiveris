@@ -241,7 +241,7 @@ public class SkewBuilder
                     // Include this section in the stick list
                     stick.addSection(section, /* link => */
                                      true);
-                    
+
                     // Register the stick in containing lag
                     // Store this new stick into the stick table
                     sticks.add((Stick) sLag.addGlyph(stick));
@@ -429,13 +429,13 @@ public class SkewBuilder
         Constant.Boolean displayFrame = new Constant.Boolean(
             false,
             "Should we display a frame on Lags found ?");
-        Constant.Double  maxDeltaSlope = new Constant.Double(
+        Constant.Angle   maxDeltaSlope = new Constant.Angle(
             0.05,
             "Maximum difference in slope between two sections in the same stick");
-        Constant.Double  maxHeightRatio = new Constant.Double(
+        Constant.Ratio   maxHeightRatio = new Constant.Ratio(
             2.5,
             "Maximum ratio in height for a run to be combined with an existing section");
-        Constant.Double  maxSkewAngle = new Constant.Double(
+        Constant.Angle   maxSkewAngle = new Constant.Angle(
             0.001,
             "Maximum value for skew angle before a rotation is performed");
         Scale.Fraction   minRunLength = new Scale.Fraction(
@@ -447,7 +447,7 @@ public class SkewBuilder
         Constant.Boolean plotting = new Constant.Boolean(
             false,
             "Should we produce a GnuPlot about computed skew data ?");
-        Constant.Double  sizeRatio = new Constant.Double(
+        Constant.Ratio   sizeRatio = new Constant.Ratio(
             0.5,
             "Only sticks with length higher than this threshold are used for final computation");
     }

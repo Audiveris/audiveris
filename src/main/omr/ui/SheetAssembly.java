@@ -523,7 +523,7 @@ public class SheetAssembly
         extends ConstantSet
     {
         /** Where the separation between score and sheet views should be */
-        Constant.Integer scoreSheetDivider = new Constant.Integer(
+        PixelCount scoreSheetDivider = new PixelCount(
             200,
             "Where the separation between score and sheet views should be");
     }
