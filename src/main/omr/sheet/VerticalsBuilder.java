@@ -290,7 +290,6 @@ public class VerticalsBuilder
                     sheet.getSelection(GLYPH_SET)),
                 new MyCheckBoard(
                     unit,
-                    null, // System-dependent suite will be provided later
                     sheet.getSelection(VERTICAL_GLYPH))));
     }
 
@@ -582,10 +581,9 @@ public class VerticalsBuilder
         extends CheckBoard<Stick>
     {
         public MyCheckBoard (String            unit,
-                             CheckSuite<Stick> suite,
                              Selection         inputSelection)
         {
-            super(unit, suite, inputSelection);
+            super(unit, null, inputSelection);
         }
 
         @Override

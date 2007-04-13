@@ -84,7 +84,12 @@ public class CheckBoard<C extends Checkable>
      */
     public void setSuite (CheckSuite<C> suite)
     {
+        final boolean toBuild = checkPanel.getComponent() == null;
         checkPanel.setSuite(suite);
+
+        if (toBuild) {
+            defineLayout(suite.getName());
+        }
     }
 
     //--------//
