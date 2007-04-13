@@ -408,6 +408,12 @@ public class VerticalsBuilder
         Scale.Fraction   maxStemThickness = new Scale.Fraction(
             0.4,
             "Maximum thickness of an interesting vertical stick");
+        Scale.Fraction minStaffDxHigh = new Scale.Fraction(
+            0,
+            "HighMinimum horizontal distance between a stem and a staff edge");
+        Scale.Fraction minStaffDxLow = new Scale.Fraction(
+            0,
+            "LowMinimum horizontal distance between a stem and a staff edge");
     }
 
     //---------------------//
@@ -421,8 +427,8 @@ public class VerticalsBuilder
             super(
                 "LeftAdj",
                 "Check that stick is open on left side (dimension-less)",
-                constants.maxStemAdjacencyLow.getValue(),
-                constants.maxStemAdjacencyHigh.getValue(),
+                constants.maxStemAdjacencyLow,
+                constants.maxStemAdjacencyHigh,
                 false,
                 TOO_HIGH_ADJACENCY);
         }
@@ -446,8 +452,8 @@ public class VerticalsBuilder
             super(
                 "RightAdj",
                 "Check that stick is open on right side (dimension-less)",
-                constants.maxStemAdjacencyLow.getValue(),
-                constants.maxStemAdjacencyHigh.getValue(),
+                constants.maxStemAdjacencyLow,
+                constants.maxStemAdjacencyHigh,
                 false,
                 TOO_HIGH_ADJACENCY);
         }
@@ -470,10 +476,9 @@ public class VerticalsBuilder
         {
             super(
                 "MinAspect",
-                "Check that stick aspect (length/thickness) is" +
-                " high enough (dimension-less)",
-                constants.minStemAspectLow.getValue(),
-                constants.minStemAspectHigh.getValue(),
+                "Check that stick aspect (length/thickness) is high enough",
+                constants.minStemAspectLow,
+                constants.minStemAspectHigh,
                 true,
                 TOO_FAT);
         }
@@ -500,8 +505,8 @@ public class VerticalsBuilder
             super(
                 "LeftLimit",
                 "Check stick is on right of the system beginning bar",
-                0,
-                0,
+                constants.minStaffDxLow,
+                constants.minStaffDxHigh,
                 true,
                 OUTSIDE_SYSTEM);
             this.system = system;
@@ -528,10 +533,9 @@ public class VerticalsBuilder
         {
             super(
                 "MinDensity",
-                "Check that stick fills its bounding rectangle" +
-                " (unit is interline squared)",
-                constants.minDensityLow.getValue(),
-                constants.minDensityHigh.getValue(),
+                "Check that stick fills its bounding rectangle",
+                constants.minDensityLow,
+                constants.minDensityHigh,
                 true,
                 TOO_HOLLOW);
         }
@@ -558,9 +562,9 @@ public class VerticalsBuilder
         {
             super(
                 "MinLength",
-                "Check that stick is long enough (unit is interline)",
-                constants.minStemLengthLow.getValue(),
-                constants.minStemLengthHigh.getValue(),
+                "Check that stick is long enough",
+                constants.minStemLengthLow,
+                constants.minStemLengthHigh,
                 true,
                 TOO_SHORT);
         }
@@ -701,8 +705,8 @@ public class VerticalsBuilder
             super(
                 "RightLimit",
                 "Check stick is on left of the system ending bar",
-                0,
-                0,
+                constants.minStaffDxLow,
+                constants.minStaffDxHigh,
                 true,
                 OUTSIDE_SYSTEM);
             this.system = system;

@@ -74,13 +74,13 @@ public abstract class Check<C extends Checkable>
      * Lower bound for ORANGE range. Whatever the value of 'covariant', we must
      * always have low <= high
      */
-    private double low;
+    private Constant.Double low;
 
     /**
      * Higher bound for ORANGE range. Whatever the value of 'covariant', we must
      * always have low <= high
      */
-    private double high;
+    private Constant.Double high;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -97,12 +97,12 @@ public abstract class Check<C extends Checkable>
      * @param covariant true if higher is better, false otherwise
      * @param redResult result code to be assigned when result is RED
      */
-    protected Check (String        name,
-                     String        description,
-                     double        low,
-                     double        high,
-                     boolean       covariant,
-                     FailureResult redResult)
+    protected Check (String          name,
+                     String          description,
+                     Constant.Double low,
+                     Constant.Double high,
+                     boolean         covariant,
+                     FailureResult   redResult)
     {
         this.name = name;
         this.description = description;
@@ -112,17 +112,6 @@ public abstract class Check<C extends Checkable>
         this.redResult = redResult;
 
         verifyRange();
-    }
-
-    /** For temporary compatibility */
-    @Deprecated
-    protected Check (String        name,
-                     double        low,
-                     double        high,
-                     boolean       covariant,
-                     FailureResult redResult)
-    {
-        this(name, null, low, high, covariant, redResult);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -150,7 +139,7 @@ public abstract class Check<C extends Checkable>
      */
     public double getHigh ()
     {
-        return high;
+        return high.getValue();
     }
 
     //--------//
@@ -163,7 +152,7 @@ public abstract class Check<C extends Checkable>
      */
     public double getLow ()
     {
-        return low;
+        return low.getValue();
     }
 
     //---------//
@@ -219,21 +208,21 @@ public abstract class Check<C extends Checkable>
         result.value = getValue(obj);
 
         if (covariant) {
-            if (result.value < low) {
+            if (result.value < low.getValue()) {
                 if (update) {
                     obj.setResult(redResult);
                 }
 
                 result.flag = RED;
-            } else if (result.value >= high) {
+            } else if (result.value >= high.getValue()) {
                 result.flag = GREEN;
             } else {
                 result.flag = ORANGE;
             }
         } else {
-            if (result.value <= low) {
+            if (result.value <= low.getValue()) {
                 result.flag = GREEN;
-            } else if (result.value > high) {
+            } else if (result.value > high.getValue()) {
                 if (update) {
                     obj.setResult(redResult);
                 }
@@ -256,8 +245,8 @@ public abstract class Check<C extends Checkable>
      *
      * @param low the new low value
      */
-    public void setLowHigh (double low,
-                            double high)
+    public void setLowHigh (Constant.Double low,
+                            Constant.Double high)
     {
         this.low = low;
         this.high = high;
@@ -305,7 +294,7 @@ public abstract class Check<C extends Checkable>
     //-------------//
     private void verifyRange ()
     {
-        if (low > high) {
+        if (low.getValue() > high.getValue()) {
             logger.severe("Illegal low-high range for " + this);
         }
     }

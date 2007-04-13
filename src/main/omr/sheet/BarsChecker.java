@@ -141,37 +141,6 @@ public class BarsChecker
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // isPartEmbraced //
-    //----------------//
-    /**
-     * Check whether the given part is within the vertical range of the given
-     * glyph (bar stick or brace glyph)
-     *
-     * @param part the given part
-     * @param glyph the given glyph
-     * @return true if part is embraced by the bar
-     */
-    public boolean isPartEmbraced (SystemPart part,
-                                   Glyph      glyph)
-    {
-        // Extrema of glyph
-        PageRectangle box = scale.toUnits(glyph.getContourBox());
-        int           top = box.y;
-        int           bot = box.y + box.height;
-
-        // Check that middle of part is within bar top & bottom
-        // TO BE REALLY IMPROVED !!!!!!!
-        final int midPart = (part.getFirstStaff()
-                                 .getTopLeft().y +
-                            part.getLastStaff()
-                                .getTopLeft().y +
-                            part.getLastStaff()
-                                .getHeight()) / 2;
-
-        return (midPart > top) && (midPart < bot);
-    }
-
     //    //-----------------//
     //    // isStaffEmbraced //
     //    //-----------------//
@@ -261,6 +230,37 @@ public class BarsChecker
         return null;
     }
 
+    //----------------//
+    // isPartEmbraced //
+    //----------------//
+    /**
+     * Check whether the given part is within the vertical range of the given
+     * glyph (bar stick or brace glyph)
+     *
+     * @param part the given part
+     * @param glyph the given glyph
+     * @return true if part is embraced by the bar
+     */
+    public boolean isPartEmbraced (SystemPart part,
+                                   Glyph      glyph)
+    {
+        // Extrema of glyph
+        PageRectangle box = scale.toUnits(glyph.getContourBox());
+        int           top = box.y;
+        int           bot = box.y + box.height;
+
+        // Check that middle of part is within bar top & bottom
+        // TO BE REALLY IMPROVED !!!!!!!
+        final int midPart = (part.getFirstStaff()
+                                 .getTopLeft().y +
+                            part.getLastStaff()
+                                .getTopLeft().y +
+                            part.getLastStaff()
+                                .getHeight()) / 2;
+
+        return (midPart > top) && (midPart < bot);
+    }
+
     //------------------//
     // retrieveMeasures //
     //------------------//
@@ -289,28 +289,6 @@ public class BarsChecker
 
         // Build Measures
         buildMeasures();
-    }
-
-    //------------//
-    // isThickBar //
-    //------------//
-    /**
-     * Check if the stick/bar is a thick one
-     *
-     * @param stick the bar stick to check
-     *
-     * @return true if thick
-     */
-    private boolean isThickBar (Stick stick)
-    {
-        // Max width of a thin bar line, otherwise this must be a thick bar
-        final int maxThinWidth = scale.toPixels(constants.maxThinWidth);
-
-        // Average width of the stick
-        final int meanWidth = (int) Math.rint(
-            (double) stick.getWeight() / (double) stick.getLength());
-
-        return meanWidth > maxThinWidth;
     }
 
     //---------------//
@@ -345,8 +323,6 @@ public class BarsChecker
 
             if (systemInfo == null) { // Should not occur, but that's safer
                 logger.warning("Bar not belonging to any system");
-                logger.fine("bar = " + bar);
-                Dumper.dump(bar);
 
                 continue;
             }
@@ -398,9 +374,8 @@ public class BarsChecker
             }
         }
 
-        //
         //        if (logger.isFineEnabled()) {
-        //            score.dump();
+        //        score.dump();
         //        }
     }
 
@@ -524,6 +499,28 @@ public class BarsChecker
     private void createSuite ()
     {
         suite = new BarCheckSuite();
+    }
+
+    //------------//
+    // isThickBar //
+    //------------//
+    /**
+     * Check if the stick/bar is a thick one
+     *
+     * @param stick the bar stick to check
+     *
+     * @return true if thick
+     */
+    private boolean isThickBar (Stick stick)
+    {
+        // Max width of a thin bar line, otherwise this must be a thick bar
+        final int maxThinWidth = scale.toPixels(constants.maxThinWidth);
+
+        // Average width of the stick
+        final int meanWidth = (int) Math.rint(
+            (double) stick.getWeight() / (double) stick.getLength());
+
+        return meanWidth > maxThinWidth;
     }
 
     //------------------//
@@ -691,7 +688,7 @@ public class BarsChecker
             // Be very careful with check order, because of side-effects
             add(1, new TopCheck());
             add(1, new BottomCheck());
-            add(1, new MinLengthCheck());
+            add(1, new HeightDiffCheck());
             add(1, new AnchorCheck());
             add(1, new LeftCheck());
             add(1, new RightCheck());
@@ -716,9 +713,9 @@ public class BarsChecker
         {
             super(
                 "Anchor",
-                "Check that thick bars are top and bottom aligned with staff",
-                0.5,
-                0.5,
+                "Check top and bottom alignment of bars (thick/thin) with staff",
+                constants.booleanThreshold,
+                constants.booleanThreshold,
                 true,
                 NOT_STAFF_ANCHORED);
         }
@@ -755,10 +752,9 @@ public class BarsChecker
         {
             super(
                 "Bottom",
-                "Check that bottom of stick is close to bottom of staff" +
-                " (unit is interline)",
-                constants.maxStaveshiftDyLow.getValue(),
-                constants.maxStaveshiftDyHigh.getValue(),
+                "Check that bottom of stick is close to bottom of staff",
+                constants.maxStaffShiftDyLow,
+                constants.maxStaffShiftDyHigh,
                 false,
                 null);
         }
@@ -802,10 +798,14 @@ public class BarsChecker
     private class BottomChunkCheck
         extends Check<Context>
     {
-        private final int nHeight;
+        // Half width for chunk window at bottom
+        private final int    nWidth;
 
-        // Half-dimensions for window at bottom, checking for chunks
-        private final int nWidth;
+        // Half height for chunk window at bottom
+        private final int    nHeight;
+
+        // Total area for chunk window
+        private final double area;
 
         protected BottomChunkCheck ()
         {
@@ -813,8 +813,8 @@ public class BarsChecker
                 "BotChunk",
                 "Check there is no big chunck stuck on bottom of stick" +
                 " (unit is interline squared)",
-                0,
-                0,
+                constants.chunkRatioLow,
+                constants.chunkRatioHigh,
                 false,
                 CHUNK_AT_BOTTOM);
 
@@ -823,11 +823,7 @@ public class BarsChecker
             Scale scale = sheet.getScale();
             nWidth = scale.toPixels(constants.chunkWidth);
             nHeight = scale.toPixels(constants.chunkHeight);
-
-            int area = 4 * nWidth * nHeight;
-            setLowHigh(
-                area * constants.chunkRatioLow.getValue(),
-                area * constants.chunkRatioHigh.getValue());
+            area = 4 * nWidth * nHeight;
         }
 
         @Implement(Check.class)
@@ -835,8 +831,8 @@ public class BarsChecker
         {
             Stick stick = context.stick;
 
-            // Retrieve the stick chunk at bottom
-            return stick.getAliensAtStop(nHeight, nWidth);
+            // Retrieve the stick chunk ratio at bottom
+            return stick.getAliensAtStop(nHeight, nWidth) / area;
         }
     }
 
@@ -867,18 +863,27 @@ public class BarsChecker
         Scale.Fraction maxBarOffset = new Scale.Fraction(
             1.0,
             "Vertical offset used to detect that a bar extends past a staff");
-        Scale.Fraction maxStaveshiftDyHigh = new Scale.Fraction(
+        Scale.Fraction maxStaffShiftDyHigh = new Scale.Fraction(
             10,
             "HighMaximum vertical distance between a bar edge and the staff line");
-        Scale.Fraction maxStaveshiftDyLow = new Scale.Fraction(
+        Scale.Fraction maxStaffShiftDyLow = new Scale.Fraction(
             0.125,
             "LowMaximum vertical distance between a bar edge and the staff line");
+        Scale.Fraction minStaffDxHigh = new Scale.Fraction(
+            0,
+            "HighMinimum horizontal distance between a bar and a staff edge");
+        Scale.Fraction minStaffDxLow = new Scale.Fraction(
+            0,
+            "LowMinimum horizontal distance between a bar and a staff edge");
         Scale.Fraction maxThinWidth = new Scale.Fraction(
             0.3,
             "Maximum width of a normal bar, versus a thick bar");
         Check.Grade    minCheckResult = new Check.Grade(
             0.50,
             "Minimum result for suite of check");
+        Constant.Ratio booleanThreshold = new Constant.Ratio(
+            0.5,
+            "* DO NOT EDIT * - switch between true & false for a boolean");
     }
 
     //--------------------//
@@ -891,10 +896,9 @@ public class BarsChecker
         {
             super(
                 "LeftAdj",
-                "Check that left side of the stick is open enough" +
-                " (dimension-less)",
-                constants.maxAdjacencyLow.getValue(),
-                constants.maxAdjacencyHigh.getValue(),
+                "Check that left side of the stick is open enough",
+                constants.maxAdjacencyLow,
+                constants.maxAdjacencyHigh,
                 false,
                 TOO_HIGH_ADJACENCY);
         }
@@ -910,6 +914,43 @@ public class BarsChecker
         }
     }
 
+    //-----------------//
+    // HeightDiffCheck //
+    //-----------------//
+    private class HeightDiffCheck
+        extends Check<Context>
+    {
+        protected HeightDiffCheck ()
+        {
+            super(
+                "HeightDiff",
+                "Check that stick is as long as staff height",
+                constants.maxStaffShiftDyLow,
+                constants.maxStaffShiftDyHigh,
+                false,
+                TOO_SHORT_BAR);
+        }
+
+        // Retrieve the length data
+        @Implement(Check.class)
+        protected double getValue (Context context)
+        {
+            Stick stick = context.stick;
+            int   x = stick.getMidPos();
+            int   height = Integer.MAX_VALUE;
+
+            // Check wrt every staff in the stick range
+            for (int i = context.topArea; i <= context.bottomArea; i++) {
+                StaffInfo area = sheet.getStaves()
+                                      .get(i);
+                height = Math.min(height, area.getHeight());
+            }
+
+            return sheet.getScale()
+                        .pixelsToFrac(height - stick.getLength());
+        }
+    }
+
     //-----------//
     // LeftCheck //
     //-----------//
@@ -922,8 +963,8 @@ public class BarsChecker
                 "Left",
                 "Check that stick is on the right of staff beginning bar" +
                 " (diff is in interline unit)",
-                0,
-                0,
+                constants.minStaffDxLow,
+                constants.minStaffDxHigh,
                 true,
                 OUTSIDE_STAFF_WIDTH);
         }
@@ -948,44 +989,6 @@ public class BarsChecker
         }
     }
 
-    //----------------//
-    // MinLengthCheck //
-    //----------------//
-    private class MinLengthCheck
-        extends Check<Context>
-    {
-        protected MinLengthCheck ()
-        {
-            super(
-                "MinLength",
-                "Check that stick is as long as staff height" +
-                " (diff is in interline unit)",
-                -constants.maxStaveshiftDyLow.getValue(),
-                0,
-                true,
-                TOO_SHORT_BAR);
-        }
-
-        // Retrieve the length data
-        @Implement(Check.class)
-        protected double getValue (Context context)
-        {
-            Stick stick = context.stick;
-            int   x = stick.getMidPos();
-            int   height = Integer.MAX_VALUE;
-
-            // Check wrt every staff in the stick range
-            for (int i = context.topArea; i <= context.bottomArea; i++) {
-                StaffInfo area = sheet.getStaves()
-                                      .get(i);
-                height = Math.min(height, area.getHeight());
-            }
-
-            return sheet.getScale()
-                        .pixelsToFrac(stick.getLength() - height);
-        }
-    }
-
     //---------------------//
     // RightAdjacencyCheck //
     //---------------------//
@@ -996,10 +999,9 @@ public class BarsChecker
         {
             super(
                 "RightAdj",
-                "Check that right side of the stick is open enough" +
-                " (dimension-less)",
-                constants.maxAdjacencyLow.getValue(),
-                constants.maxAdjacencyHigh.getValue(),
+                "Check that right side of the stick is open enough",
+                constants.maxAdjacencyLow,
+                constants.maxAdjacencyHigh,
                 false,
                 TOO_HIGH_ADJACENCY);
         }
@@ -1027,8 +1029,8 @@ public class BarsChecker
                 "Right",
                 "Check that stick is on the left of staff ending bar" +
                 " (diff is in interline unit)",
-                0,
-                0,
+                constants.minStaffDxLow,
+                constants.minStaffDxHigh,
                 true,
                 OUTSIDE_STAFF_WIDTH);
         }
@@ -1063,10 +1065,9 @@ public class BarsChecker
         {
             super(
                 "Top",
-                "Check that top of stick is close to top of staff" +
-                " (unit is interline)",
-                constants.maxStaveshiftDyLow.getValue(),
-                constants.maxStaveshiftDyHigh.getValue(),
+                "Check that top of stick is close to top of staff",
+                constants.maxStaffShiftDyLow,
+                constants.maxStaffShiftDyHigh,
                 false,
                 null);
         }
@@ -1110,10 +1111,14 @@ public class BarsChecker
     private class TopChunkCheck
         extends Check<Context>
     {
-        private final int nHeight;
+        // Half width for chunk window at top
+        private final int    nWidth;
 
-        // Half-dimensions for window at top, checking for chunks
-        private final int nWidth;
+        // Half height for chunk window at top
+        private final int    nHeight;
+
+        // Total area for chunk window
+        private final double area;
 
         protected TopChunkCheck ()
         {
@@ -1121,8 +1126,8 @@ public class BarsChecker
                 "TopChunk",
                 "Check there is no big chunck stuck on top of stick" +
                 " (unit is interline squared)",
-                0,
-                0,
+                constants.chunkRatioLow,
+                constants.chunkRatioHigh,
                 false,
                 CHUNK_AT_TOP);
 
@@ -1131,11 +1136,7 @@ public class BarsChecker
             Scale scale = sheet.getScale();
             nWidth = scale.toPixels(constants.chunkWidth);
             nHeight = scale.toPixels(constants.chunkHeight);
-
-            int area = 4 * nWidth * nHeight;
-            setLowHigh(
-                area * constants.chunkRatioLow.getValue(),
-                area * constants.chunkRatioHigh.getValue());
+            area = 4 * nWidth * nHeight;
         }
 
         @Implement(Check.class)
@@ -1143,8 +1144,8 @@ public class BarsChecker
         {
             Stick stick = context.stick;
 
-            // Retrieve the stick chunk at top
-            return stick.getAliensAtStart(nHeight, nWidth);
+            // Retrieve the stick chunk ratio at top
+            return stick.getAliensAtStart(nHeight, nWidth) / area;
         }
     }
 }

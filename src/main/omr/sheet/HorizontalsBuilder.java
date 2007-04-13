@@ -256,8 +256,8 @@ public class HorizontalsBuilder
         ledgerSuite.add(
             1,
             new MinLengthCheck(
-                constants.minLedgerLengthLow.getValue(),
-                constants.minLedgerLengthHigh.getValue())); // Minimum length
+                constants.minLedgerLengthLow,
+                constants.minLedgerLengthHigh)); // Minimum length
         ledgerSuite.add(1, new MaxLengthCheck()); // Maximum length
         ledgerSuite.add(1, new MinDensityCheck());
         ledgerSuite.add(1, new ChunkCheck()); // At least one edge WITHOUT a chunk
@@ -274,8 +274,8 @@ public class HorizontalsBuilder
         endingSuite.add(
             1,
             new MinLengthCheck(
-                constants.minEndingLengthLow.getValue(),
-                constants.minEndingLengthHigh.getValue())); // Minimum length
+                constants.minEndingLengthLow,
+                constants.minEndingLengthHigh)); // Minimum length
         endingSuite.add(1, new FirstAdjacencyCheck());
         endingSuite.add(1, new LastAdjacencyCheck());
 
@@ -463,19 +463,22 @@ public class HorizontalsBuilder
     private class ChunkCheck
         extends Check<Stick>
     {
-        private final int nHeight;
+        // Half width for chunk window at top and bottom
+        private final int    nWidth;
 
-        // Half-dimensions for window at top and bottom, checking for chunks
-        private final int nWidth;
+        // Half height for chunk window at top and bottom
+        private final int    nHeight;
+
+        // Total area for chunk window
+        private final double area;
 
         protected ChunkCheck ()
         {
             super(
                 "Chunk",
-                "Check not chunk is stuck on either side of the stick" +
-                " (unit is interline squared)",
-                0,
-                0,
+                "Check not chunk is stuck on either side of the stick",
+                constants.chunkRatioLow,
+                constants.chunkRatioHigh,
                 false,
                 BI_CHUNK);
 
@@ -484,11 +487,7 @@ public class HorizontalsBuilder
             Scale scale = sheet.getScale();
             nWidth = scale.toPixels(constants.chunkWidth);
             nHeight = scale.toPixels(constants.chunkHeight);
-
-            int area = 4 * nWidth * nHeight;
-            setLowHigh(
-                area * constants.chunkRatioLow.getValue(),
-                area * constants.chunkRatioHigh.getValue());
+            area = 4 * nWidth * nHeight;
 
             if (logger.isFineEnabled()) {
                 logger.fine(
@@ -499,12 +498,13 @@ public class HorizontalsBuilder
         protected double getValue (Stick stick)
         {
             // Retrieve the smallest stick chunk either at top or bottom
-            int res = Math.min(
+            double res = Math.min(
                 stick.getAliensAtStart(nHeight, nWidth),
                 stick.getAliensAtStop(nHeight, nWidth));
+            res /= area;
 
             if (logger.isFineEnabled()) {
-                logger.fine("MaxAliens= " + res + " for " + stick);
+                logger.fine("MinAliensRatio= " + res + " for " + stick);
             }
 
             return res;
@@ -610,8 +610,8 @@ public class HorizontalsBuilder
             super(
                 "TopAdj",
                 "Check that stick is open on top side (dimension-less)",
-                constants.maxAdjacencyLow.getValue(),
-                constants.maxAdjacencyHigh.getValue(),
+                constants.maxAdjacencyLow,
+                constants.maxAdjacencyHigh,
                 false,
                 TOO_ADJA);
         }
@@ -635,10 +635,9 @@ public class HorizontalsBuilder
         {
             super(
                 "BottomAdj",
-                "Check that stick is open on bottom side" +
-                " (dimension-less)",
-                constants.maxAdjacencyLow.getValue(),
-                constants.maxAdjacencyHigh.getValue(),
+                "Check that stick is open on bottom side",
+                constants.maxAdjacencyLow,
+                constants.maxAdjacencyHigh,
                 false,
                 TOO_ADJA);
         }
@@ -662,15 +661,11 @@ public class HorizontalsBuilder
         {
             super(
                 "MaxDist",
-                "Check that stick is not too far from staff" +
-                " (unit is interline)",
-                0,
-                0,
+                "Check that stick is not too far from staff",
+                constants.maxStaffDistanceLow,
+                constants.maxStaffDistanceHigh,
                 false,
                 TOO_FAR);
-            setLowHigh(
-                constants.maxStaffDistanceLow.getValue(),
-                constants.maxStaffDistanceHigh.getValue());
         }
 
         // Retrieve the position with respect to the various staves of the
@@ -691,9 +686,9 @@ public class HorizontalsBuilder
         {
             super(
                 "MaxLength",
-                "Check that stick is not too long (unit is interline)",
-                constants.maxLengthLow.getValue(),
-                constants.maxLengthHigh.getValue(),
+                "Check that stick is not too long",
+                constants.maxLengthLow,
+                constants.maxLengthHigh,
                 false,
                 TOO_LONG);
         }
@@ -716,9 +711,9 @@ public class HorizontalsBuilder
         {
             super(
                 "MaxThickness",
-                "Check that stick is not too thick (unit is interline)",
-                constants.maxThicknessLow.getValue(),
-                constants.maxThicknessHigh.getValue(),
+                "Check that stick is not too thick",
+                constants.maxThicknessLow,
+                constants.maxThicknessHigh,
                 false,
                 TOO_THICK);
         }
@@ -741,10 +736,9 @@ public class HorizontalsBuilder
         {
             super(
                 "MinDensity",
-                "Check that stick fills its bounding rectangle" +
-                " (dimension-less)",
-                constants.minDensityLow.getValue(),
-                constants.minDensityHigh.getValue(),
+                "Check that stick fills its bounding rectangle",
+                constants.minDensityLow,
+                constants.minDensityHigh,
                 true,
                 TOO_HOLLOW);
         }
@@ -769,15 +763,11 @@ public class HorizontalsBuilder
         {
             super(
                 "MinDist",
-                "Check that stick is not within staff height" +
-                " (unit is interline)",
-                0,
-                0,
+                "Check that stick is not within staff height",
+                constants.minStaffDistanceLow,
+                constants.minStaffDistanceHigh,
                 true,
                 IN_STAFF);
-            setLowHigh(
-                constants.minStaffDistanceLow.getValue(),
-                constants.minStaffDistanceHigh.getValue());
         }
 
         // Retrieve the position with respect to the various staves of the
@@ -794,8 +784,8 @@ public class HorizontalsBuilder
     private class MinLengthCheck
         extends Check<Stick>
     {
-        protected MinLengthCheck (double low,
-                                  double high)
+        protected MinLengthCheck (Constant.Double low,
+                                  Constant.Double high)
         {
             super(
                 "MinLength",
@@ -825,8 +815,8 @@ public class HorizontalsBuilder
             super(
                 "MinThickness",
                 "Check that stick is thick enough (unit is interline)",
-                constants.minThicknessLow.getValue(),
-                constants.minThicknessHigh.getValue(),
+                constants.minThicknessLow,
+                constants.minThicknessHigh,
                 true,
                 TOO_THIN);
         }
