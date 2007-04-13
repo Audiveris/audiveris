@@ -10,6 +10,9 @@
 //
 package omr.lag;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
@@ -57,6 +60,9 @@ public class SectionBoard
     extends Board
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SectionBoard.class);
@@ -199,9 +205,12 @@ public class SectionBoard
         id.setModel(new SpinnerNumberModel(0, 0, maxSectionId, 1));
 
         // Relation
-        direction.setVisible(false);
-        layer.setVisible(false);
-        role.setVisible(false);
+        if (constants.hideRelationFields.getValue()) {
+            direction.setVisible(false);
+            layer.setVisible(false);
+            role.setVisible(false);
+        }
+
         role.setEditable(false);
         role.setHorizontalAlignment(JTextField.CENTER);
         role.setToolTipText("Role in the composition of the containing stick");
@@ -266,9 +275,11 @@ public class SectionBoard
                     id.setValue(NO_VALUE);
                 }
 
-                layer.setVisible(false);
-                direction.setVisible(false);
-                role.setVisible(false);
+                if (constants.hideRelationFields.getValue()) {
+                    direction.setVisible(false);
+                    layer.setVisible(false);
+                    role.setVisible(false);
+                }
             } else {
                 // We have a valid section, let's display its fields
                 lagName.setText(section.getGraph().getName());
@@ -287,20 +298,32 @@ public class SectionBoard
                     StickRelation relation = ss.getRelation();
 
                     if (relation != null) {
-                        layer.setVisible(true);
+                        if (constants.hideRelationFields.getValue()) {
+                            layer.setVisible(true);
+                        }
+
                         layer.setValue(relation.layer);
-                        direction.setVisible(true);
+
+                        if (constants.hideRelationFields.getValue()) {
+                            direction.setVisible(true);
+                        }
+
                         direction.setValue(relation.direction);
 
                         if (relation.role != null) {
                             role.setText(relation.role.toString());
-                            role.setVisible(true);
+
+                            if (constants.hideRelationFields.getValue()) {
+                                role.setVisible(true);
+                            }
                         } else {
-                            role.setVisible(false);
+                            if (constants.hideRelationFields.getValue()) {
+                                role.setVisible(false);
+                            }
                         }
-                    } else {
-                        layer.setVisible(false);
+                    } else if (constants.hideRelationFields.getValue()) {
                         direction.setVisible(false);
+                        layer.setVisible(false);
                         role.setVisible(false);
                     }
                 }
@@ -359,5 +382,18 @@ public class SectionBoard
         builder.add(direction.getField(), cst.xy(7, r));
 
         builder.add(role, cst.xyw(9, r, 3));
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        Constant.Boolean hideRelationFields = new Constant.Boolean(
+            false,
+            "Should we hide section relation fields when empty?");
     }
 }
