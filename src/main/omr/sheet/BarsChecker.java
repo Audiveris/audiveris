@@ -811,8 +811,7 @@ public class BarsChecker
         {
             super(
                 "BotChunk",
-                "Check there is no big chunck stuck on bottom of stick" +
-                " (unit is interline squared)",
+                "Check there is no big chunck stuck on bottom of stick" ,
                 constants.chunkRatioLow,
                 constants.chunkRatioHigh,
                 false,
@@ -961,8 +960,7 @@ public class BarsChecker
         {
             super(
                 "Left",
-                "Check that stick is on the right of staff beginning bar" +
-                " (diff is in interline unit)",
+                "Check that stick is on the right of staff beginning bar",
                 constants.minStaffDxLow,
                 constants.minStaffDxHigh,
                 true,
@@ -1027,8 +1025,7 @@ public class BarsChecker
         {
             super(
                 "Right",
-                "Check that stick is on the left of staff ending bar" +
-                " (diff is in interline unit)",
+                "Check that stick is on the left of staff ending bar",
                 constants.minStaffDxLow,
                 constants.minStaffDxHigh,
                 true,
@@ -1124,8 +1121,7 @@ public class BarsChecker
         {
             super(
                 "TopChunk",
-                "Check there is no big chunck stuck on top of stick" +
-                " (unit is interline squared)",
+                "Check there is no big chunck stuck on top of stick",
                 constants.chunkRatioLow,
                 constants.chunkRatioHigh,
                 false,

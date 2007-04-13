@@ -142,6 +142,19 @@ public abstract class Check<C extends Checkable>
         return high.getValue();
     }
 
+    //-----------------//
+    // getHighConstant //
+    //-----------------//
+    /**
+     * Report the higher bound constant
+     *
+     * @return the high bound constant
+     */
+    public Constant.Double getHighConstant ()
+    {
+        return high;
+    }
+
     //--------//
     // getLow //
     //--------//
@@ -153,6 +166,19 @@ public abstract class Check<C extends Checkable>
     public double getLow ()
     {
         return low.getValue();
+    }
+
+    //----------------//
+    // getLowConstant //
+    //----------------//
+    /**
+     * Report the lower bound constant
+     *
+     * @return the low bound constant
+     */
+    public Constant.Double getLowConstant ()
+    {
+        return low;
     }
 
     //---------//

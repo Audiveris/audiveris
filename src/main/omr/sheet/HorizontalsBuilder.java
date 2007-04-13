@@ -609,7 +609,7 @@ public class HorizontalsBuilder
         {
             super(
                 "TopAdj",
-                "Check that stick is open on top side (dimension-less)",
+                "Check that stick is open on top side",
                 constants.maxAdjacencyLow,
                 constants.maxAdjacencyHigh,
                 false,
@@ -789,7 +789,7 @@ public class HorizontalsBuilder
         {
             super(
                 "MinLength",
-                "Check that stick is long enough (unit is interline)",
+                "Check that stick is long enough",
                 low,
                 high,
                 true,
@@ -814,7 +814,7 @@ public class HorizontalsBuilder
         {
             super(
                 "MinThickness",
-                "Check that stick is thick enough (unit is interline)",
+                "Check that stick is thick enough",
                 constants.minThicknessLow,
                 constants.minThicknessHigh,
                 true,

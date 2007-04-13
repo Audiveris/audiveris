@@ -426,7 +426,7 @@ public class VerticalsBuilder
         {
             super(
                 "LeftAdj",
-                "Check that stick is open on left side (dimension-less)",
+                "Check that stick is open on left side",
                 constants.maxStemAdjacencyLow,
                 constants.maxStemAdjacencyHigh,
                 false,
@@ -451,7 +451,7 @@ public class VerticalsBuilder
         {
             super(
                 "RightAdj",
-                "Check that stick is open on right side (dimension-less)",
+                "Check that stick is open on right side",
                 constants.maxStemAdjacencyLow,
                 constants.maxStemAdjacencyHigh,
                 false,

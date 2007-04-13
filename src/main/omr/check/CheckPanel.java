@@ -10,6 +10,8 @@
 //
 package omr.check;
 
+import omr.constant.Constant;
+
 import omr.ui.util.Panel;
 
 import omr.util.Logger;
@@ -19,9 +21,6 @@ import com.jgoodies.forms.layout.*;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import javax.swing.*;
 
@@ -267,7 +266,22 @@ public class CheckPanel<C extends Checkable>
             JLabel nameLabel = new JLabel(check.getName());
 
             if (check.getDescription() != null) {
-                nameLabel.setToolTipText(check.getDescription());
+                StringBuilder sb = new StringBuilder();
+                sb.append(check.getDescription());
+
+                Constant constant = check.getLowConstant();
+
+                if (constant.getQuantityUnit() != null) {
+                    sb.append(" (Unit=")
+                      .append(constant.getQuantityUnit())
+                      .append(")");
+                } else {
+                    sb.append(" [Type=")
+                      .append(constant.getShortTypeName())
+                      .append("]");
+                }
+
+                nameLabel.setToolTipText(sb.toString());
             }
 
             b.add(nameLabel, c.xy(5, r));
