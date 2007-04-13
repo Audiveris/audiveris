@@ -593,10 +593,10 @@ public class HorizontalsBuilder
             "Low Minimum staff distance for a horizontal");
         Scale.Fraction   minThicknessHigh = new Scale.Fraction(
             0.3,
-            " High Minimum thickness of an interesting stick");
+            "High Minimum thickness of an interesting stick");
         Scale.Fraction   minThicknessLow = new Scale.Fraction(
             0.3,
-            " Low Minimum thickness of an interesting stick");
+            "Low Minimum thickness of an interesting stick");
     }
 
     //---------------------//
