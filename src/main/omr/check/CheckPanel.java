@@ -20,7 +20,8 @@ import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
 import java.awt.Color;
-import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.util.*;
 
 import javax.swing.*;
 
@@ -40,19 +41,36 @@ public class CheckPanel<C extends Checkable>
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(CheckPanel.class);
+
+    // Colors
     private static final Color  GREEN_COLOR = new Color(100, 150, 0);
     private static final Color  ORANGE_COLOR = new Color(255, 150, 0);
     private static final Color  RED_COLOR = new Color(255, 0, 0);
+
+    // Sizes
     private static final String LINE_GAP = "1dlu";
     private static final String COLUMN_GAP = "1dlu";
     private static final int    FIELD_WIDTH = 4;
 
     //~ Instance fields --------------------------------------------------------
 
-    private CheckSuite<C>  suite;
-    private JTextField     globalField;
-    private Panel          component;
+    /** The related check suite (the model) */
+    private CheckSuite<C> suite;
+
+    /** The swing component that includes all the fields */
+    private Panel component;
+
+    /** The field for global result */
+    private JTextField globalField;
+
+    /** Matrix of all value fields */
     private JTextField[][] values;
+
+    /** Matrix of all bound fields */
+    private JTextField[][] bounds;
+
+    /** Last object checked */
+    private C object;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -100,14 +118,8 @@ public class CheckPanel<C extends Checkable>
      */
     public void passForm (C object)
     {
-        // Empty all text fields
-        for (Component comp : component.getComponents()) {
-            if (comp instanceof JTextField) {
-                JTextField field = (JTextField) comp;
-                field.setText("");
-                field.setToolTipText(null);
-            }
-        }
+        // Remember the 'current' object'
+        this.object = object;
 
         if (object == null) {
             return;
@@ -168,7 +180,7 @@ public class CheckPanel<C extends Checkable>
                 break;
             }
 
-            field.setText(String.format("%5.2f", result.value));
+            field.setText(textOf(result.value));
         }
 
         // Global suite result
@@ -187,7 +199,7 @@ public class CheckPanel<C extends Checkable>
                 globalField.setToolTipText("Check has failed!");
             }
 
-            globalField.setText(String.format("%5.2f", grade));
+            globalField.setText(textOf(grade));
         }
     }
 
@@ -204,7 +216,8 @@ public class CheckPanel<C extends Checkable>
         this.suite = suite;
 
         if (suite != null) {
-            createValueFields(); // Assign values
+            createValueFields(); // Values
+            createBoundFields(); // Bounds
             buildComponent(); // Create/update component
         }
 
@@ -224,6 +237,13 @@ public class CheckPanel<C extends Checkable>
         if (component == null) {
             component = new Panel();
             component.setNoInsets();
+
+            // Needed to process user input when RETURN/ENTER is pressed
+            component.getInputMap(
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                     .put(KeyStroke.getKeyStroke("ENTER"), "ParamAction");
+            component.getActionMap()
+                     .put("ParamAction", new ParamAction());
         } else {
             component.removeAll();
         }
@@ -262,44 +282,40 @@ public class CheckPanel<C extends Checkable>
             weightLabel.setToolTipText("Relative weight for this check");
             b.add(weightLabel, c.xy(3, r));
 
-            // Name label
+            // Name label with proper tooltip
             JLabel nameLabel = new JLabel(check.getName());
 
             if (check.getDescription() != null) {
                 StringBuilder sb = new StringBuilder();
+                sb.append("<html>");
                 sb.append(check.getDescription());
 
                 Constant constant = check.getLowConstant();
 
+                // Tell data unit if relevant
+                sb.append("<br/>");
+
                 if (constant.getQuantityUnit() != null) {
-                    sb.append(" (Unit=")
-                      .append(constant.getQuantityUnit())
-                      .append(")");
+                    sb.append("Unit=")
+                      .append(constant.getQuantityUnit());
                 } else {
-                    sb.append(" [Type=")
-                      .append(constant.getShortTypeName())
-                      .append("]");
+                    // Otherwise, simply tell the data type
+                    sb.append("Type=")
+                      .append(constant.getShortTypeName());
                 }
+
+                sb.append("</html>");
 
                 nameLabel.setToolTipText(sb.toString());
             }
 
             b.add(nameLabel, c.xy(5, r));
 
+            // Value & bound fields
             b.add(values[ic][0], c.xy(7, r));
-
-            JLabel lowLabel = new JLabel(
-                String.format("%5.2f", check.getLow()));
-            lowLabel.setToolTipText("Lower limit of orange zone");
-            b.add(lowLabel, c.xy(9, r));
-
+            b.add(bounds[ic][0], c.xy(9, r));
             b.add(values[ic][1], c.xy(11, r));
-
-            JLabel highLabel = new JLabel(
-                String.format("%5.2f", check.getHigh()));
-            highLabel.setToolTipText("Higher limit of orange zone");
-            b.add(highLabel, c.xy(13, r));
-
+            b.add(bounds[ic][1], c.xy(13, r));
             b.add(values[ic][2], c.xy(15, r));
         }
 
@@ -310,6 +326,37 @@ public class CheckPanel<C extends Checkable>
         globalLabel.setToolTipText("Global check result");
         b.add(globalLabel, c.xy(7, r));
         b.add(globalField, c.xy(11, r));
+    }
+
+    //-------------------//
+    // createBoundFields //
+    //-------------------//
+    private void createBoundFields ()
+    {
+        // Allocate bound fields (2 per check)
+        final int checkNb = suite.getChecks()
+                                 .size();
+        bounds = new JTextField[checkNb][];
+
+        for (int ic = 0; ic < checkNb; ic++) {
+            Check check = suite.getChecks()
+                               .get(ic);
+            bounds[ic] = new JTextField[2];
+
+            for (int i = 0; i <= 1; i++) {
+                JTextField field = new JTextField(FIELD_WIDTH);
+                field.setHorizontalAlignment(JTextField.CENTER);
+                bounds[ic][i] = field;
+
+                Constant.Double constant = (i == 0) ? check.getLowConstant()
+                                           : check.getHighConstant();
+
+                field.setText(textOf(constant.getValue()));
+                field.setToolTipText(
+                    "<html>" + constant.getName() + "<br/>" +
+                    constant.getDescription() + "</html>");
+            }
+        }
     }
 
     //--------------//
@@ -378,7 +425,7 @@ public class CheckPanel<C extends Checkable>
     //-------------------//
     private void createValueFields ()
     {
-        // Allocate value fields
+        // Allocate value fields (3 per check)
         final int checkNb = suite.getChecks()
                                  .size();
         values = new JTextField[checkNb][];
@@ -391,6 +438,124 @@ public class CheckPanel<C extends Checkable>
                 field.setEditable(false);
                 field.setHorizontalAlignment(JTextField.CENTER);
                 values[n][i] = field;
+            }
+        }
+    }
+
+    //--------//
+    // textOf //
+    //--------//
+    private String textOf (double val)
+    {
+        return String.format(Locale.getDefault(), "%5.2f", val);
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    private double valueOf (String text)
+    {
+        Scanner scanner = new Scanner(text);
+        scanner.useLocale(Locale.getDefault());
+
+        while (scanner.hasNext()) {
+            if (scanner.hasNextDouble()) {
+                return scanner.nextDouble();
+            } else {
+                scanner.next();
+            }
+        }
+
+        // Kludge!
+        return Double.NaN;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-------------//
+    // ParamAction //
+    //-------------//
+    private class ParamAction
+        extends AbstractAction
+    {
+        // Method run whenever user presses Return/Enter in one of the parameter
+        // fields
+        public void actionPerformed (ActionEvent e)
+        {
+            // Any & several bounds may have been modified by the user
+            // Since the same constant can be used in several fields, we have to
+            // take a snapshot of all constants values, before modifying any one
+            Map<Constant.Double, Double> values = new HashMap<Constant.Double, Double>();
+
+            for (Check check : suite.getChecks()) {
+                values.put(
+                    check.getLowConstant(),
+                    check.getLowConstant().getValue());
+                values.put(
+                    check.getHighConstant(),
+                    check.getHighConstant().getValue());
+            }
+
+            boolean modified = false;
+            int     ic = -1;
+
+            for (Check check : suite.getChecks()) {
+                ic++;
+
+                // Check the bounds wrt the corresponding fields
+                for (int i = 0; i < 2; i++) {
+                    final Constant.Double constant = (i == 0)
+                                                     ? check.getLowConstant()
+                                                     : check.getHighConstant();
+
+                    // Simplistic test to detect modification
+                    final JTextField field = bounds[ic][i];
+                    final String     oldString = textOf(values.get(constant))
+                                                     .trim();
+                    final String     newString = field.getText()
+                                                      .trim();
+
+                    if (!oldString.equals(newString)) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("Check '")
+                          .append(check.getName())
+                          .append("':");
+
+                        if (i == 0) {
+                            sb.append(" Low");
+                        } else {
+                            sb.append(" High");
+                        }
+
+                        sb.append(" bound '")
+                          .append(constant.getName())
+                          .append("'");
+
+                        final String context = sb.toString();
+
+                        // Actually convert the value and update the constant
+                        try {
+                            constant.setValue(valueOf(newString));
+                            modified = true;
+                            sb.append(" modified from ")
+                              .append(oldString)
+                              .append(" to ")
+                              .append(newString);
+                            logger.info(sb.toString());
+                        } catch (Exception ex) {
+                            logger.warning(
+                                "Error in " + context + ", " +
+                                ex.getLocalizedMessage());
+                        }
+                    }
+                }
+            }
+
+            // If at least one modification has been made, update the whole 
+            // table with both suite parameters and object results
+            if (modified) {
+                setSuite(suite);
+                passForm(object);
             }
         }
     }
