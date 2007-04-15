@@ -440,9 +440,9 @@ public class Main
         }
     }
 
-    //----------------//
-    // getIconsFolder //
-    //----------------//
+    //-------------//
+    // checkLocale //
+    //-------------//
     private void checkLocale ()
     {
         final String country = constants.localeCountry.getValue();
