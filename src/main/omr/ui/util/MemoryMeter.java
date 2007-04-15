@@ -2,7 +2,7 @@
 //                                                                          //
 //                          M e m o r y M e t e r                           //
 //                                                                          //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.             //
+//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.             //
 //  This software is released under the terms of the GNU General Public     //
 //  License. Please contact the author at herve.bitteur@laposte.net         //
 //  to report bugs & suggestions.                                           //

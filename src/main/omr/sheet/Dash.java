@@ -2,10 +2,9 @@
 //                                                                            //
 //                                  D a s h                                   //
 //                                                                            //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
-//  This software is released under the terms of the GNU General Public       //
-//  License. Please contact the author at herve.bitteur@laposte.net           //
-//  to report bugs & suggestions.                                             //
+//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
 package omr.sheet;
