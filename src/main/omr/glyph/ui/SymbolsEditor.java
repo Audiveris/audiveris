@@ -9,14 +9,13 @@
 //
 package omr.glyph.ui;
 
-import omr.ProcessingException;
-
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 
@@ -26,6 +25,8 @@ import omr.lag.SectionBoard;
 
 import omr.score.visitor.SheetPainter;
 
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
 
@@ -41,8 +42,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
-
-import javax.swing.*;
 
 /**
  * Class <code>SymbolsEditor</code> defines a UI pane from which all symbol
@@ -224,7 +223,7 @@ public class SymbolsEditor
             if (compound) {
                 // Build & insert a compound
                 Glyph glyph = builder.buildCompound(glyphs);
-                builder.insertCompound(glyph, glyphs);
+                builder.insertCompound(glyph);
                 assignGlyphShape(glyph, shape);
             } else {
                 int              noiseNb = 0;
@@ -390,39 +389,6 @@ public class SymbolsEditor
         sheet.updateSteps();
     }
 
-    //---------------//
-    // createMenuBar //
-    //---------------//
-    private JMenuBar createMenuBar ()
-    {
-        // Menus in the frame
-        JMenuBar  menuBar = new JMenuBar();
-        JMenuItem item;
-
-        // Tools menu
-        JMenu toolMenu = new JMenu("Tools");
-        menuBar.add(toolMenu);
-
-        // Focus mode
-        JMenu focusMenu = new JMenu("Focus");
-        Shape.addShapeItems(
-            focusMenu,
-            new ActionListener() {
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        JMenuItem source = (JMenuItem) e.getSource();
-                        focus.setCurrentShape(Shape.valueOf(source.getText()));
-                    }
-                });
-        toolMenu.add(focusMenu);
-
-        // Neural Network
-        JMenu networkMenu = new JMenu("Network");
-        toolMenu.add(networkMenu);
-
-        return menuBar;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -534,6 +500,41 @@ public class SymbolsEditor
         {
             super.deassignGlyph(glyph);
             refresh();
+        }
+
+        //--------//
+        // update //
+        //--------//
+        /**
+         * Notification about selection objects (for specific sections if any, for
+         * color of a modified glyph, for display of selected glyph set).
+         *
+         * @param selection the notified selection
+         * @param hint the processing hint if any
+         */
+        @Override
+        public void update (Selection     selection,
+                            SelectionHint hint)
+        {
+            ///logger.info(getName() + " update. " + selection + " hint=" + hint);
+
+            // Default lag view behavior, including specifics
+            super.update(selection, hint);
+
+            switch (selection.getTag()) {
+            case GLYPH_SET :
+
+                List<Glyph> glyphs = (List<Glyph>) selection.getEntity(); // Compiler warning
+
+                if ((glyphs != null) && (glyphs.size() > 1)) {
+                    Glyph compound = builder.buildCompound(glyphs);
+                    glyphSelection.setEntity(compound, hint);
+                }
+
+                break;
+
+            default :
+            }
         }
 
         //-------------//

@@ -123,6 +123,9 @@ public class GlyphsBuilder
                                       false);
         }
 
+        // Register (a copy of) the parts in the compound itself 
+        compound.setParts(parts);
+
         // Compute glyph parameters
         SystemInfo system = sheet.getSystemAtY(compound.getContourBox().y);
         computeGlyphFeatures(system, compound);
@@ -153,17 +156,13 @@ public class GlyphsBuilder
      * being destroyed
      *
      * @param compound the brand new (compound) glyph
-     * @param parts the list of (sub) glyphs
      */
-    public void insertCompound (Glyph             compound,
-                                Collection<Glyph> parts)
+    public void insertCompound (Glyph compound)
     {
         SystemInfo system = sheet.getSystemAtY(compound.getContourBox().y);
 
-        compound.setParts(parts);
-
-        // Get rid of composing glyphs
-        for (Glyph part : parts) {
+        // Get rid of composing parts
+        for (Glyph part : compound.getParts()) {
             part.setPartOf(compound);
             part.setShape(Shape.NO_LEGAL_SHAPE);
             removeGlyph(part, system, /* cutSections => */
