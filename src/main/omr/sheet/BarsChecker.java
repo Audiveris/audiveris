@@ -810,7 +810,7 @@ public class BarsChecker
         {
             super(
                 "BotChunk",
-                "Check there is no big chunck stuck on bottom of stick" ,
+                "Check there is no big chunck stuck on bottom of stick",
                 constants.chunkRatioLow,
                 constants.chunkRatioHigh,
                 false,

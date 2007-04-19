@@ -288,9 +288,7 @@ public class VerticalsBuilder
                     sheet.getSelection(VERTICAL_GLYPH),
                     sheet.getSelection(VERTICAL_GLYPH_ID),
                     sheet.getSelection(GLYPH_SET)),
-                new MyCheckBoard(
-                    unit,
-                    sheet.getSelection(VERTICAL_GLYPH))));
+                new MyCheckBoard(unit, sheet.getSelection(VERTICAL_GLYPH))));
     }
 
     private int retrieveSystemVerticals (SystemInfo system)
@@ -408,10 +406,10 @@ public class VerticalsBuilder
         Scale.Fraction   maxStemThickness = new Scale.Fraction(
             0.4,
             "Maximum thickness of an interesting vertical stick");
-        Scale.Fraction minStaffDxHigh = new Scale.Fraction(
+        Scale.Fraction   minStaffDxHigh = new Scale.Fraction(
             0,
             "HighMinimum horizontal distance between a stem and a staff edge");
-        Scale.Fraction minStaffDxLow = new Scale.Fraction(
+        Scale.Fraction   minStaffDxLow = new Scale.Fraction(
             0,
             "LowMinimum horizontal distance between a stem and a staff edge");
     }
@@ -584,8 +582,8 @@ public class VerticalsBuilder
     private class MyCheckBoard
         extends CheckBoard<Stick>
     {
-        public MyCheckBoard (String            unit,
-                             Selection         inputSelection)
+        public MyCheckBoard (String    unit,
+                             Selection inputSelection)
         {
             super(unit, null, inputSelection);
         }

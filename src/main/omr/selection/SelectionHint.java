@@ -46,5 +46,10 @@ public enum SelectionHint {
      * Designation is at Glyph level, for which a characteristic (typically the
      * shape) has just been modified
      */
-    GLYPH_MODIFIED;
+    GLYPH_MODIFIED, 
+    /**
+     * Glyph information is for temporary display / evaluation only, with no
+     * impact on other structures such as glyph set.
+     */
+    GLYPH_TRANSIENT;
 }

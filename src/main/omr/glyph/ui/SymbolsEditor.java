@@ -223,7 +223,7 @@ public class SymbolsEditor
             if (compound) {
                 // Build & insert a compound
                 Glyph glyph = builder.buildCompound(glyphs);
-                builder.insertCompound(glyph);
+                builder.insertGlyph(glyph);
                 assignGlyphShape(glyph, shape);
             } else {
                 int              noiseNb = 0;
@@ -506,8 +506,8 @@ public class SymbolsEditor
         // update //
         //--------//
         /**
-         * Notification about selection objects (for specific sections if any, for
-         * color of a modified glyph, for display of selected glyph set).
+         * On reception of GLYPH_SET information, we build a transient compound
+         * glyph which is then dispatched
          *
          * @param selection the notified selection
          * @param hint the processing hint if any
@@ -528,7 +528,9 @@ public class SymbolsEditor
 
                 if ((glyphs != null) && (glyphs.size() > 1)) {
                     Glyph compound = builder.buildCompound(glyphs);
-                    glyphSelection.setEntity(compound, hint);
+                    glyphSelection.setEntity(
+                        compound,
+                        SelectionHint.GLYPH_TRANSIENT);
                 }
 
                 break;

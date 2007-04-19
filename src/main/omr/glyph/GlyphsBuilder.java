@@ -148,31 +148,6 @@ public class GlyphsBuilder
         retrieveSystemGlyphs(system);
     }
 
-    //----------------//
-    // insertCompound //
-    //----------------//
-    /**
-     * Insert a brand new compound in proper system, with all its sub-glyphs
-     * being destroyed
-     *
-     * @param compound the brand new (compound) glyph
-     */
-    public void insertCompound (Glyph compound)
-    {
-        SystemInfo system = sheet.getSystemAtY(compound.getContourBox().y);
-
-        // Get rid of composing parts
-        for (Glyph part : compound.getParts()) {
-            part.setPartOf(compound);
-            part.setShape(Shape.NO_LEGAL_SHAPE);
-            removeGlyph(part, system, /* cutSections => */
-                        false);
-        }
-
-        // Insert glyph in proper system at proper location
-        insertGlyph(compound, system);
-    }
-
     //-------------//
     // insertGlyph //
     //-------------//
@@ -183,9 +158,40 @@ public class GlyphsBuilder
      * @param glyph the brand new glyph
      * @return the original glyph as inserted in the glyph lag
      */
+    public Glyph insertGlyph (Glyph glyph)
+    {
+        return insertGlyph(glyph, sheet.getSystemAtY(glyph.getContourBox().y));
+    }
+
+    //-------------//
+    // insertGlyph //
+    //-------------//
+    /**
+     * Insert a brand new glyph in proper system and lag. It does not check if
+     * the glyph has an assigned shape.
+     *
+     * @param glyph the brand new glyph
+     * @param system the containing system, which may be null
+     * @return the original glyph as inserted in the glyph lag
+     */
     public Glyph insertGlyph (Glyph      glyph,
                               SystemInfo system)
     {
+        // Make sure we do have an enclosing system
+        if (system == null) {
+            system = sheet.getSystemAtY(glyph.getContourBox().y);
+        }
+
+        // Get rid of composing parts if any
+        if (glyph.getParts() != null) {
+            for (Glyph part : glyph.getParts()) {
+                part.setPartOf(glyph);
+                part.setShape(Shape.NO_LEGAL_SHAPE);
+                removeGlyph(part, system, /* cutSections => */
+                            false);
+            }
+        }
+
         // Record related scale ?
         if (glyph.getInterline() == 0) {
             glyph.setInterline(system.getScoreSystem().getScale().interline());

@@ -168,7 +168,6 @@ public class ScaleBuilder
             logger.warning(
                 "Picture resolution is too low: " + (mainFore + mainBack));
         }
-        
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -340,7 +339,8 @@ public class ScaleBuilder
             "Should we produce a chart on computed scale data ?");
 
         /** Minimum number of pixels per interline */
-        Constant.Integer minInterline = new Constant.Integer("Pixels",
+        Constant.Integer minInterline = new Constant.Integer(
+            "Pixels",
             15,
             "Minimum number of pixels per interline");
     }

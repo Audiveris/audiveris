@@ -298,37 +298,22 @@ class EvaluationBoard
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            // Assign current glyph(s) with selected shape
+            // Assign current glyph with selected shape
             if (glyphModel != null) {
-                //                Selection   glyphSetSelection = sheet.getSelection(
-                //                    SelectionTag.GLYPH_SET);
-                //                List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
-                //                glyphModel.assignSetShape(
-                //                    glyphs,
-                //                    Shape.valueOf(button.getText()),
-                //                    false); // Compound
-                //
-                //                // Update user interface ? (view / selection)
-                //                sheet.updateSteps();
-
-                // What is the current glyph
                 Selection glyphSelection = sheet.getSelection(
                     SelectionTag.VERTICAL_GLYPH);
                 Glyph     glyph = (Glyph) glyphSelection.getEntity();
+                Shape     shape = Shape.valueOf(button.getText());
 
-                // If this is a temporary glyph (with no Id), insert it
+                // If this is a transient glyph (with no Id), insert it
                 if (glyph.getId() == 0) {
-//                    Selection   glyphSetSelection = sheet.getSelection(
-//                        SelectionTag.GLYPH_SET);
-//                    List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
-//                    logger.info("Set=" + glyph.toString(glyphs));
                     sheet.getGlyphsBuilder()
-                         .insertCompound(glyph);
+                         .insertGlyph(glyph);
+                    logger.info(
+                        "Inserted compound #" + glyph.getId() + " as " + shape);
                 }
 
-                glyphModel.assignGlyphShape(
-                    glyph,
-                    Shape.valueOf(button.getText()));
+                glyphModel.assignGlyphShape(glyph, shape);
 
                 // Update user interface ? (view / selection)
                 sheet.updateSteps();

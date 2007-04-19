@@ -437,7 +437,8 @@ public class GlyphLag
                 }
             }
 
-            if (selection.getTag() == SelectionTag.VERTICAL_GLYPH) {
+            if ((selection.getTag() == SelectionTag.VERTICAL_GLYPH) &&
+                (hint != GLYPH_TRANSIENT)) {
                 // Update (vertical) glyph set
                 updateGlyphSet(glyph, hint);
             }

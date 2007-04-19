@@ -355,7 +355,7 @@ public class GlyphInspector
             Glyph compound = builder.buildCompound(neighbors);
 
             if (adapter.isValid(compound)) {
-                builder.insertCompound(compound);
+                builder.insertGlyph(compound);
 
                 if (logger.isFineEnabled()) {
                     logger.fine("Inserted compound " + compound);
