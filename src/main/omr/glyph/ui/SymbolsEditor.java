@@ -128,6 +128,7 @@ public class SymbolsEditor
         glyphMenu = new GlyphMenu(
             sheet,
             this,
+            evaluator,
             focus,
             sheet.getSelection(VERTICAL_GLYPH),
             sheet.getSelection(GLYPH_SET));
@@ -188,6 +189,13 @@ public class SymbolsEditor
                                   Shape shape)
     {
         if (glyph != null) {
+            // If this is a transient glyph (with no Id), insert it
+            if (glyph.getId() == 0) {
+                builder.insertGlyph(glyph);
+                logger.info(
+                    "Inserted compound #" + glyph.getId() + " as " + shape);
+            }
+
             if ((shape == Shape.NOISE) || evaluator.isBigEnough(glyph)) {
                 super.assignGlyphShape(glyph, shape);
 

@@ -305,14 +305,6 @@ class EvaluationBoard
                 Glyph     glyph = (Glyph) glyphSelection.getEntity();
                 Shape     shape = Shape.valueOf(button.getText());
 
-                // If this is a transient glyph (with no Id), insert it
-                if (glyph.getId() == 0) {
-                    sheet.getGlyphsBuilder()
-                         .insertGlyph(glyph);
-                    logger.info(
-                        "Inserted compound #" + glyph.getId() + " as " + shape);
-                }
-
                 glyphModel.assignGlyphShape(glyph, shape);
 
                 // Update user interface ? (view / selection)

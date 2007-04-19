@@ -9,14 +9,16 @@
 //
 package omr.glyph.ui;
 
+import omr.glyph.Evaluation;
+import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
+import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
 
 import java.awt.event.*;
 import java.util.List;
@@ -35,11 +37,13 @@ public class GlyphMenu
     //~ Instance fields --------------------------------------------------------
 
     private final Sheet             sheet;
+    private final CompoundAction    compoundAction = new CompoundAction();
     private final DeassignAction    deassignAction = new DeassignAction();
     private final StemSegmentAction stemSegmentAction = new StemSegmentAction();
     private final DumpAction        dumpAction = new DumpAction();
     private final JMenu             assignMenu;
     private final JMenu             compoundMenu;
+    private final JMenuItem         compoundItem;
     private final JMenuItem         deassignItem;
     private final JMenuItem         stemSegmentItem;
     private final JMenuItem         dumpItem;
@@ -55,6 +59,11 @@ public class GlyphMenu
     private final ShapeFocusBoard   shapeFocus;
     private final SimilarAction     similarAction = new SimilarAction();
     private final SymbolsEditor     symbolsEditor;
+    private final Evaluator         evaluator;
+
+    // To handle proposed compound shape
+    private Glyph proposedGlyph;
+    private Shape proposedShape;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -72,17 +81,19 @@ public class GlyphMenu
      */
     public GlyphMenu (final Sheet         sheet,
                       final SymbolsEditor symbolsEditor,
+                      Evaluator           evaluator,
                       ShapeFocusBoard     shapeFocus,
                       Selection           glyphSelection,
                       Selection           glyphSetSelection)
     {
         this.sheet = sheet;
         this.symbolsEditor = symbolsEditor;
+        this.evaluator = evaluator;
         this.shapeFocus = shapeFocus;
         this.glyphSelection = glyphSelection;
         this.glyphSetSelection = glyphSetSelection;
 
-        popup = new JPopupMenu();
+        popup = new JPopupMenu(); //------------------------------------------
 
         // Direct link to latest shape assigned
         latestAssign = new JMenuItem("no shape", null);
@@ -126,12 +137,16 @@ public class GlyphMenu
         assignMenu.setToolTipText("Manually force an assignment");
         popup.add(assignMenu);
 
-        popup.addSeparator();
+        popup.addSeparator(); //----------------------------------------------
 
         // Segment the glyph into stems & leaves
         stemSegmentItem = popup.add(stemSegmentAction);
 
-        // Build a compound
+        // Build a compound, with proposed shape
+        compoundItem = popup.add(compoundAction);
+        compoundItem.setToolTipText("Build compound as");
+
+        // Build a compound, with menu for shape selection
         compoundMenu = new JMenu("Build compound");
         Shape.addShapeItems(
             compoundMenu,
@@ -150,13 +165,13 @@ public class GlyphMenu
         compoundMenu.setToolTipText("Manually build a compound");
         popup.add(compoundMenu);
 
-        popup.addSeparator();
+        popup.addSeparator(); //----------------------------------------------
 
         // Dump current glyph
         dumpItem = popup.add(dumpAction);
         dumpItem.setToolTipText("Dump this glyph");
 
-        popup.addSeparator();
+        popup.addSeparator(); //----------------------------------------------
 
         // Display all glyphs of the same shape
         similarItem = popup.add(similarAction);
@@ -189,6 +204,8 @@ public class GlyphMenu
     public void updateForGlyph (Glyph glyph)
     {
         // No compound for a single glyph
+        compoundItem.setEnabled(false);
+        compoundItem.setText("No compound");
         compoundMenu.setEnabled(false);
 
         assignMenu.setText("Force assignment to");
@@ -231,15 +248,37 @@ public class GlyphMenu
     {
         // Assign
         assignMenu.setText(
-            "Assign each of these " + glyphs.size() + " glyphs as");
+            "Assign each glyph as ...");
         updateLatestAssign();
 
         // Compound
         if (glyphs.size() > 1) {
+            Glyph glyph = getCurrentGlyph();
+
+            // Proposed compound?
+            if (glyph.getId() == 0) {
+                Evaluation vote = evaluator.vote(
+                    glyph,
+                    GlyphInspector.getSymbolMaxDoubt());
+
+                if (vote != null) {
+                    proposedGlyph = glyph;
+                    proposedShape = vote.shape;
+                    compoundItem.setEnabled(true);
+                    compoundItem.setText("Build compound as " + proposedShape);
+                } else {
+                    proposedGlyph = null;
+                    proposedShape = null;
+                    compoundItem.setEnabled(false);
+                    compoundItem.setText("No compound");
+                }
+            }
+
             compoundMenu.setEnabled(true);
-            compoundMenu.setText(
-                "Build one " + glyphs.size() + "-glyph Compound as");
+            compoundMenu.setText("Build compound as ...");
         } else {
+            compoundItem.setEnabled(false);
+            compoundItem.setText("No compound");
             compoundMenu.setEnabled(false);
             compoundMenu.setText("No compound");
         }
@@ -275,6 +314,14 @@ public class GlyphMenu
         }
     }
 
+    //-----------------//
+    // getCurrentGlyph //
+    //-----------------//
+    private Glyph getCurrentGlyph ()
+    {
+        return (Glyph) glyphSelection.getEntity(); // Compiler warning
+    }
+
     //------------------//
     // getCurrentGlyphs //
     //------------------//
@@ -301,6 +348,29 @@ public class GlyphMenu
     //~ Inner Classes ----------------------------------------------------------
 
     //----------------//
+    // CompoundAction //
+    //----------------//
+    private class CompoundAction
+        extends AbstractAction
+    {
+        public CompoundAction ()
+        {
+            super("Build compound");
+        }
+
+        public void actionPerformed (ActionEvent e)
+        {
+            Glyph glyph = getCurrentGlyph();
+
+            if ((glyph != null) && (glyph == proposedGlyph)) {
+                symbolsEditor.assignGlyphShape(glyph, proposedShape);
+            }
+
+            sheet.updateSteps();
+        }
+    }
+
+    //----------------//
     // DeassignAction //
     //----------------//
     private class DeassignAction
@@ -313,7 +383,7 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            Glyph glyph = (Glyph) glyphSelection.getEntity();
+            Glyph glyph = getCurrentGlyph();
             symbolsEditor.deassignSetShape(getCurrentGlyphs());
 
             sheet.updateSteps();
