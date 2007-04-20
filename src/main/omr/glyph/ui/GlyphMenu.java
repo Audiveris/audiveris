@@ -48,10 +48,6 @@ public class GlyphMenu
     /** Set of actions to update menu according to selected glyphs */
     private final Set<DynAction> dynActions = new HashSet<DynAction>();
 
-    // Should not be here
-    private final JMenu      assignMenu;
-    private final JMenu      compoundMenu;
-
     /** Concrete popup menu */
     private final JPopupMenu popup;
 
@@ -108,7 +104,7 @@ public class GlyphMenu
         popup.add(new JMenuItem(new DeassignAction()));
 
         // Manually assign a shape
-        assignMenu = new JMenu(new AssignAction());
+        JMenu assignMenu = new JMenu(new AssignAction());
         Shape.addShapeItems(
             assignMenu,
             new ActionListener() {
@@ -134,7 +130,7 @@ public class GlyphMenu
         popup.add(new JMenuItem(new ProposedAction()));
 
         // Build a compound, with menu for shape selection
-        compoundMenu = new JMenu(new CompoundAction());
+        JMenu compoundMenu = new JMenu(new CompoundAction());
         Shape.addShapeItems(
             compoundMenu,
             new ActionListener() {
@@ -228,6 +224,10 @@ public class GlyphMenu
     //-----------//
     // DynAction //
     //-----------//
+    /**
+     * Base implementation, to register the dynamic actions that need to be
+     * updated according to the current glyph selection context.
+     */
     private abstract class DynAction
         extends AbstractAction
     {
@@ -491,6 +491,9 @@ public class GlyphMenu
     //---------------//
     // SimilarAction //
     //---------------//
+    /**
+     * Set the focus on all glyphs with the same shape
+     */
     private class SimilarAction
         extends DynAction
     {
@@ -526,6 +529,9 @@ public class GlyphMenu
     //-------------------//
     // StemSegmentAction //
     //-------------------//
+    /**
+     * Perform a segmentation on the selected glyphs, into stems and leaves
+     */
     private class StemSegmentAction
         extends DynAction
     {
