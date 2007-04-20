@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<icon name="DYNAMICS_CHAR_Z">
+    <bitmap>
+        <row>---0#####o</row>
+        <row>--.$**$#o-</row>
+        <row>--+--.$+--</row>
+        <row>----+$.---</row>
+        <row>---o*.#o--</row>
+        <row>--0*-.#$--</row>
+        <row>-*#0o-+#--</row>
+        <row>*#####$o--</row>
+        <row>---0#$o---</row>
+    </bitmap>
+</icon>
