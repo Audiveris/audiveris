@@ -202,9 +202,11 @@ class GlyphBrowser
         glyphBoard.setInputSelectionList(
             Collections.singletonList(localGlyphSelection));
         glyphBoard.boardShown();
-        glyphBoard.getDeassignButton()
-                  .setToolTipText("Remove that glyph from training material");
-        glyphBoard.getDeassignButton()
+        glyphBoard.getDeassignAction()
+                  .putValue(
+            Action.SHORT_DESCRIPTION,
+            "Remove that glyph from training material");
+        glyphBoard.getDeassignAction()
                   .setEnabled(false);
 
         // Passive evaluation board
@@ -600,6 +602,43 @@ class GlyphBrowser
         }
 
         //----------//
+        // getIndex //
+        //----------//
+        /**
+         * Report the current glyph index in the names collection
+         *
+         * @return the current index, which may be NO_INDEX
+         */
+        public final int getIndex ()
+        {
+            return nameIndex;
+        }
+
+        //-----------//
+        // loadGlyph //
+        //-----------//
+        public Glyph getGlyph (String gName)
+        {
+            Glyph glyph = repository.getGlyph(gName, null);
+
+            if ((glyph != null) && (glyph.getLag() != vLag)) {
+                glyph.setLag(vLag);
+
+                for (GlyphSection section : glyph.getMembers()) {
+                    section.getViews()
+                           .clear();
+                    vLag.addVertex(section); // Trick!
+                    section.setGraph(vLag);
+                    section.complete();
+                }
+
+                view.colorizeGlyph(glyph);
+            }
+
+            return glyph;
+        }
+
+        //----------//
         // setIndex //
         //----------//
         /**
@@ -651,43 +690,6 @@ class GlyphBrowser
             all.setEnabled(names.size() > 0);
             prev.setEnabled(index > 0);
             next.setEnabled((index >= 0) && (index < (names.size() - 1)));
-        }
-
-        //----------//
-        // getIndex //
-        //----------//
-        /**
-         * Report the current glyph index in the names collection
-         *
-         * @return the current index, which may be NO_INDEX
-         */
-        public final int getIndex ()
-        {
-            return nameIndex;
-        }
-
-        //-----------//
-        // loadGlyph //
-        //-----------//
-        public Glyph getGlyph (String gName)
-        {
-            Glyph glyph = repository.getGlyph(gName, null);
-
-            if ((glyph != null) && (glyph.getLag() != vLag)) {
-                glyph.setLag(vLag);
-
-                for (GlyphSection section : glyph.getMembers()) {
-                    section.getViews()
-                           .clear();
-                    vLag.addVertex(section); // Trick!
-                    section.setGraph(vLag);
-                    section.complete();
-                }
-
-                view.colorizeGlyph(glyph);
-            }
-
-            return glyph;
         }
 
         //--------------//

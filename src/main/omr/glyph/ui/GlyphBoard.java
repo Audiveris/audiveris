@@ -98,17 +98,14 @@ public class GlyphBoard
     /** An active label */
     protected final JLabel active = new JLabel("");
 
-    /** A dump action */
-    protected final JButton dump = new JButton("Dump");
+    /** Input: Dump action */
+    protected final Action dumpAction = new DumpAction();
 
     /** Counter of glyph selection */
     protected final JLabel count = new JLabel("");
 
     /** Input : Deassign action */
-    protected DeassignAction deassignAction = new DeassignAction();
-
-    /** Button to trigger deassignAction */
-    protected JButton deassignButton = new JButton(deassignAction);
+    protected Action deassignAction = new DeassignAction();
 
     /** Output : glyph shape icon */
     protected JLabel shapeIcon = new JLabel();
@@ -226,25 +223,9 @@ public class GlyphBoard
 
         this.glyphModel = glyphModel;
 
-        // Dump action
-        dump.setToolTipText("Dump this glyph");
-        dump.addActionListener(
-            new ActionListener() {
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        // Retrieve current glyph selection
-                        Selection input = inputSelectionList.get(0);
-                        Glyph     glyph = (Glyph) input.getEntity();
-
-                        if (glyph != null) {
-                            glyph.dump();
-                        }
-                    }
-                });
-
         // Until a glyph selection is made
-        dump.setEnabled(false);
-        deassignButton.setEnabled(false);
+        dumpAction.setEnabled(false);
+        deassignAction.setEnabled(false);
 
         // Force a constant height for the shapeIcon field, despite the
         // variation in size of the icon
@@ -271,16 +252,16 @@ public class GlyphBoard
     //~ Methods ----------------------------------------------------------------
 
     //-------------------//
-    // getDeassignButton //
+    // getDeassignAction //
     //-------------------//
     /**
-     * Give access to the Deassign Button, to modify its properties
+     * Give access to the Deassign Action, to modify its properties
      *
-     * @return the deassign button
+     * @return the deassign action
      */
-    public JButton getDeassignButton ()
+    public Action getDeassignAction ()
     {
-        return deassignButton;
+        return deassignAction;
     }
 
     //--------------//
@@ -349,8 +330,8 @@ public class GlyphBoard
             }
 
             // Dump button and deassign button
-            dump.setEnabled(glyph != null);
-            deassignButton.setEnabled((glyph != null) && glyph.isKnown());
+            dumpAction.setEnabled(glyph != null);
+            deassignAction.setEnabled((glyph != null) && glyph.isKnown());
 
             // Shape text and icon
             Shape shape = (glyph != null) ? glyph.getShape() : null;
@@ -416,17 +397,19 @@ public class GlyphBoard
         builder.addSeparator("Glyph", cst.xyw(1, r, 6));
         builder.add(active, cst.xy(7, r));
         builder.add(count, cst.xy(9, r));
-        builder.add(dump, cst.xy(11, r));
+        builder.add(new JButton(dumpAction), cst.xy(11, r));
 
         r += 2; // --------------------------------
         r += 2; // --------------------------------
 
         builder.add(shapeIcon, cst.xy(1, r));
-        builder.add(deassignButton, cst.xy(3, r));
-        builder.add(shapeField, cst.xyw(5, r, 7));
 
+        JButton deassignButton = new JButton(deassignAction);
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
         deassignButton.setHorizontalAlignment(SwingConstants.RIGHT);
+        builder.add(deassignButton, cst.xy(3, r));
+
+        builder.add(shapeField, cst.xyw(5, r, 7));
     }
 
     //------------------//
@@ -519,6 +502,31 @@ public class GlyphBoard
                         sheet.updateSteps();
                     }
                 }
+            }
+        }
+    }
+
+    //------------//
+    // DumpAction //
+    //------------//
+    private class DumpAction
+        extends AbstractAction
+    {
+        public DumpAction ()
+        {
+            super("Dump");
+            this.putValue(Action.SHORT_DESCRIPTION, "Dump this glyph");
+        }
+
+        @Implement(ChangeListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            // Retrieve current glyph selection
+            Selection input = inputSelectionList.get(0);
+            Glyph     glyph = (Glyph) input.getEntity();
+
+            if (glyph != null) {
+                glyph.dump();
             }
         }
     }
