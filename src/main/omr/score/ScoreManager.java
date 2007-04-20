@@ -10,8 +10,11 @@
 package omr.score;
 
 import omr.Main;
+import omr.Step;
 
 import omr.score.visitor.ScoreExporter;
+
+import omr.ui.util.FileFilter;
 
 import omr.util.FileUtil;
 import omr.util.Logger;
@@ -19,6 +22,7 @@ import omr.util.Logger;
 import java.io.*;
 import java.util.*;
 
+import javax.swing.JFileChooser;
 import javax.swing.event.*;
 
 /**
@@ -63,19 +67,6 @@ public class ScoreManager
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------------//
-    // setChangeListener //
-    //-------------------//
-    /**
-     * Register one change listener
-     *
-     * @param changeListener the entity to be notified of any change
-     */
-    public void setChangeListener (ChangeListener changeListener)
-    {
-        this.changeListener = changeListener;
-    }
-
     //-------------//
     // getInstance //
     //-------------//
@@ -91,19 +82,6 @@ public class ScoreManager
         }
 
         return INSTANCE;
-    }
-
-    //-----------//
-    // getScores //
-    //-----------//
-    /**
-     * Get the collection of scores currently handled by OMR
-     *
-     * @return The collection
-     */
-    public List<Score> getScores ()
-    {
-        return instances;
     }
 
     //---------------//
@@ -250,7 +228,46 @@ public class ScoreManager
     public void export (Score score,
                         File  xmlFile)
     {
-        new ScoreExporter(score, xmlFile);
+        // Where do we write the score xml file?
+        if (xmlFile == null) {
+            xmlFile = new File(
+                Main.getOutputFolder(),
+                score.getRadix() + ScoreFormat.XML.extension);
+
+            // Ask user confirmation, if Gui available
+            if (Main.getGui() != null) {
+                // Let the user select a score output file
+                JFileChooser fc = new JFileChooser(Main.getOutputFolder());
+                fc.addChoosableFileFilter(
+                    new FileFilter(
+                        "XML files",
+                        new String[] { ScoreFormat.XML.extension }));
+                fc.setSelectedFile(xmlFile);
+
+                // Let the user play with the dialog
+                int res = fc.showSaveDialog(Main.getGui().getFrame());
+
+                if (res == JFileChooser.APPROVE_OPTION) {
+                    xmlFile = fc.getSelectedFile();
+
+                    // Remember (even across runs) the selected directory
+                    Main.setOutputFolder(xmlFile.getParent());
+                }
+            }
+        }
+
+        if (xmlFile != null) {
+            // Make sure the folder exists
+            File folder = new File(xmlFile.getParent());
+
+            if (!folder.exists()) {
+                logger.info("Creating folder " + folder);
+                folder.mkdirs();
+            }
+
+            // Actually export the score material
+            new ScoreExporter(score, xmlFile);
+        }
     }
 
     //-----------//
@@ -268,6 +285,19 @@ public class ScoreManager
         for (Score score : instances) {
             score.export();
         }
+    }
+
+    //-----------//
+    // getScores //
+    //-----------//
+    /**
+     * Get the collection of scores currently handled by OMR
+     *
+     * @return The collection
+     */
+    public List<Score> getScores ()
+    {
+        return instances;
     }
 
     //---------------//
@@ -362,27 +392,29 @@ public class ScoreManager
     public void serialize (Score score)
         throws Exception
     {
-        // Make sure the destination directory exists
-        File dir = new File(Main.getOutputFolder());
+        logger.severe("Feature temporarily disabled");
 
-        if (!dir.exists()) {
-            logger.info("Creating directory " + dir);
-            dir.mkdirs();
-        }
-
-        File file = new File(
-            dir,
-            score.getRadix() + ScoreFormat.BINARY.extension);
-        logger.info("Serializing score to " + file + " ...");
-
-        long         s0 = java.lang.System.currentTimeMillis();
-        ObjectOutput s = new ObjectOutputStream(new FileOutputStream(file));
-
-        s.writeObject(score);
-        s.close();
-
-        long s1 = java.lang.System.currentTimeMillis();
-        logger.info("Score serialized in " + (s1 - s0) + " ms");
+        //        // Make sure the destination directory exists
+        //        File dir = new File(Main.getOutputFolder());
+        //
+        //        if (!dir.exists()) {
+        //            logger.info("Creating directory " + dir);
+        //            dir.mkdirs();
+        //        }
+        //
+        //        File file = new File(
+        //            dir,
+        //            score.getRadix() + ScoreFormat.BINARY.extension);
+        //        logger.info("Serializing score to " + file + " ...");
+        //
+        //        long         s0 = java.lang.System.currentTimeMillis();
+        //        ObjectOutput s = new ObjectOutputStream(new FileOutputStream(file));
+        //
+        //        s.writeObject(score);
+        //        s.close();
+        //
+        //        long s1 = java.lang.System.currentTimeMillis();
+        //        logger.info("Score serialized in " + (s1 - s0) + " ms");
     }
 
     //--------------//
@@ -404,6 +436,19 @@ public class ScoreManager
                 logger.warning("Could not serialize " + score);
             }
         }
+    }
+
+    //-------------------//
+    // setChangeListener //
+    //-------------------//
+    /**
+     * Register one change listener
+     *
+     * @param changeListener the entity to be notified of any change
+     */
+    public void setChangeListener (ChangeListener changeListener)
+    {
+        this.changeListener = changeListener;
     }
 
     //--------//

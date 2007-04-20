@@ -190,6 +190,23 @@ public class Main
         return new File(getHomeFolder(), "config");
     }
 
+    //--------//
+    // getGui //
+    //--------//
+    /**
+     * Points to the single instance of the User Interface, if any.
+     *
+     * @return MainGui instance, which may be null
+     */
+    public static MainGui getGui ()
+    {
+        if (INSTANCE == null) {
+            return null;
+        } else {
+            return INSTANCE.gui;
+        }
+    }
+
     //----------------//
     // getIconsFolder //
     //----------------//
@@ -203,23 +220,6 @@ public class Main
         return new File(getHomeFolder(), ICONS_NAME);
     }
 
-    //--------//
-    // getGui //
-    //--------//
-    /**
-     * Points to the single instance of the User Interface, if any.
-     * 
-     * @return MainGui instance, which may be null
-     */
-    public static MainGui getGui ()
-    {
-        if (INSTANCE == null) {
-            return null;
-        } else {
-            return INSTANCE.gui;
-        }
-    }
-
     //-----------------//
     // getOutputFolder //
     //-----------------//
@@ -230,19 +230,7 @@ public class Main
      */
     public static String getOutputFolder ()
     {
-        String saveDir = constants.savePath.getValue();
-
-        if (saveDir.equals("")) {
-            // Use default save directory
-            return getHomeFolder() + "/save";
-        } else {
-            // Make sure that it ends with proper separator
-            if (!(saveDir.endsWith("\\") || saveDir.endsWith("/"))) {
-                saveDir = saveDir + "/";
-            }
-
-            return saveDir;
-        }
+        return constants.savePath.getValue();
     }
 
     //--------------//
@@ -353,6 +341,19 @@ public class Main
         } catch (Main.StopRequired ex) {
             logger.info("Exiting.");
         }
+    }
+
+    //-----------------//
+    // setOutputFolder //
+    //-----------------//
+    /**
+     * Set the folder defined for output/saved files
+     *
+     * @param saveDir the directory for output
+     */
+    public static void setOutputFolder (String saveDir)
+    {
+        constants.savePath.setValue(saveDir);
     }
 
     //---------------//
@@ -703,7 +704,7 @@ public class Main
         /** Directory for saved files, defaulted to 'save' audiveris subdir */
         Constant.String savePath = new Constant.String(
             "",
-            "Directory for saved files, defaulted to 'save' audiveris subdir");
+            "Directory for saved files");
 
         /** Utility constant */
         Constant.String toolName = new Constant.String(

@@ -25,7 +25,6 @@ import omr.score.Measure;
 import omr.score.PartNode;
 import omr.score.Pedal;
 import omr.score.Score;
-import omr.score.ScoreFormat;
 import omr.score.ScorePart;
 import omr.score.Slot;
 import omr.score.Slur;
@@ -38,7 +37,6 @@ import omr.score.Wedge;
 import static omr.score.visitor.MusicXML.*;
 
 import omr.sheet.PixelPoint;
-import omr.sheet.PixelRectangle;
 
 import omr.util.Logger;
 import omr.util.TreeNode;
@@ -49,14 +47,9 @@ import proxymusic.util.Marshalling;
 
 import java.io.*;
 import java.lang.String;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 
 /**
  * Class <code>ScoreExporter</code> can visit the score hierarchy to export
@@ -98,28 +91,22 @@ public class ScoreExporter
     /**
      * Create a new ScoreExporter object, which triggers the export.
      *
-     * @param score the score to export
-     * @param xmlFile the xml file to write, or null
+     * @param score the score to export (cannot be null)
+     * @param xmlFile the xml file to write (cannot be null)
      */
     public ScoreExporter (Score score,
                           File  xmlFile)
     {
-        this.score = score;
+        if (score == null) {
+            throw new IllegalArgumentException("Trying to export a null score");
+        }
 
-        // Where do we write the score xml file?
         if (xmlFile == null) {
-            xmlFile = new File(
-                Main.getOutputFolder(),
-                score.getRadix() + ScoreFormat.XML.extension);
+            throw new IllegalArgumentException(
+                "Trying to export a score to a null file");
         }
 
-        // Make sure the folder exists
-        File folder = new File(xmlFile.getParent());
-
-        if (!folder.exists()) {
-            logger.info("Creating folder " + folder);
-            folder.mkdirs();
-        }
+        this.score = score;
 
         // Let visited nodes fill the scorePartWise proxy
         score.accept(this);
