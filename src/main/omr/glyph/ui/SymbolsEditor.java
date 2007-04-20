@@ -370,7 +370,7 @@ public class SymbolsEditor
     // refresh //
     //---------//
     /**
-     * Refresh the UI display (reset the model values of all spinners, update
+     * Refresh the UI display (reset the model values of all spinners, updateMenu
      * the colors of the glyphs)
      */
     public void refresh ()
@@ -486,11 +486,8 @@ public class SymbolsEditor
             }
 
             if ((glyphs != null) && (glyphs.size() > 0)) {
-                if (glyphs.size() == 1) {
-                    glyphMenu.updateForGlyph(glyphs.get(0));
-                } else if (glyphs.size() > 1) {
-                    glyphMenu.updateForGlyphSet(glyphs);
-                }
+                // Update the popup menu according to selected glyphs
+                glyphMenu.updateMenu();
 
                 // Show the popup menu
                 glyphMenu.getPopup()
@@ -511,7 +508,7 @@ public class SymbolsEditor
         }
 
         //--------//
-        // update //
+        // updateMenu //
         //--------//
         /**
          * On reception of GLYPH_SET information, we build a transient compound
@@ -524,7 +521,7 @@ public class SymbolsEditor
         public void update (Selection     selection,
                             SelectionHint hint)
         {
-            ///logger.info(getName() + " update. " + selection + " hint=" + hint);
+            ///logger.info(getName() + " updateMenu. " + selection + " hint=" + hint);
 
             // Default lag view behavior, including specifics
             super.update(selection, hint);
