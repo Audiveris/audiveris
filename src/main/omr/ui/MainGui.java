@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                                   J u i                                    //
+//                                M a i n G u i                               //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
@@ -50,7 +50,6 @@ import javax.swing.*;
 /**
  * Class <code>MainGui</code> is the Java User Interface, the main class for
  * displaying a score, the related sheet, the message log and the various tools.
- *
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
