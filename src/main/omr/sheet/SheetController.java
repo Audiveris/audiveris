@@ -21,7 +21,7 @@ import omr.score.Score;
 
 import omr.selection.Selection;
 
-import omr.ui.Jui;
+import omr.ui.MainGui;
 import omr.ui.SheetAssembly;
 import omr.ui.icon.IconManager;
 import omr.ui.util.FileFilter;
@@ -103,12 +103,12 @@ public class SheetController
     // SheetController //
     //-----------------//
     /**
-     * Create the SheetController, within the jui frame.
+     * Create the SheetController, within the gui frame.
      *
-     * @param jui     the enclosing jui entity
-     * @param toolBar the jui tool bar
+     * @param gui     the enclosing gui entity
+     * @param toolBar the gui tool bar
      */
-    public SheetController (Jui      jui,
+    public SheetController (MainGui      gui,
                             JToolBar toolBar)
     {
         component = new JTabbedPane();
@@ -424,7 +424,7 @@ public class SheetController
             if (file.exists()) {
                 // Register that as a user target
                 try {
-                    Main.getJui()
+                    Main.getGui()
                         .setTarget(file.getCanonicalPath());
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -518,7 +518,7 @@ public class SheetController
                 logger.fine("HistoryListener for " + fileName);
             }
 
-            Main.getJui()
+            Main.getGui()
                 .setTarget(fileName);
             Step.getLoadStep()
                 .perform(null, new File(fileName));

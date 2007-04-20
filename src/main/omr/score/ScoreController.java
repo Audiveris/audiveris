@@ -23,7 +23,7 @@ import omr.selection.SelectionTag;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
-import omr.ui.Jui;
+import omr.ui.MainGui;
 import omr.ui.icon.IconManager;
 import omr.ui.util.FileFilter;
 import omr.ui.util.SwingWorker;
@@ -163,8 +163,9 @@ public class ScoreController
     // getMenu //
     //---------//
     /**
-     * This method is meant for access by Jui (in the same package), to report
+     * This method is meant for access by MainGui (in the same package), to report
      * the menu dedicated to score handling.
+     *
      *
      * @return the score menu
      */
@@ -206,7 +207,7 @@ public class ScoreController
             }
 
             // Make sure the view is part of the related sheet assembly
-            Jui   jui = Main.getJui();
+            MainGui   gui = Main.getGui();
             Sheet sheet = score.getSheet();
             sheet.getAssembly()
                  .setScoreView(view);
@@ -586,7 +587,7 @@ public class ScoreController
                     format.extension));
 
             // Check user action
-            int rc = fc.showOpenDialog(Main.getJui().getFrame());
+            int rc = fc.showOpenDialog(Main.getGui().getFrame());
 
             if (rc == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();

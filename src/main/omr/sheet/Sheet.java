@@ -37,7 +37,7 @@ import static omr.selection.SelectionTag.*;
 import omr.stick.Stick;
 
 import omr.ui.BoardsPane;
-import omr.ui.Jui;
+import omr.ui.MainGui;
 import omr.ui.PixelBoard;
 import omr.ui.SheetAssembly;
 
@@ -219,7 +219,7 @@ public class Sheet
 
             // Update displayed image if any
             if (getPicture()
-                    .isRotated() && (Main.getJui() != null)) {
+                    .isRotated() && (Main.getGui() != null)) {
                 assembly.getComponent()
                         .repaint();
             }
@@ -272,14 +272,14 @@ public class Sheet
             result = Boolean.valueOf(true);
 
             // Force score view creation if UI is present
-            if (Main.getJui() != null) {
-                Main.getJui().scoreController.setScoreView(score);
+            if (Main.getGui() != null) {
+                Main.getGui().scoreController.setScoreView(score);
             }
         }
 
         //        public void displayUI ()
         //        {
-        //            Main.getJui().scoreController.setScoreView(score);
+        //            Main.getGui().scoreController.setScoreView(score);
         //        }
     };
 
@@ -1505,16 +1505,16 @@ public class Sheet
      */
     public void displayAssembly ()
     {
-        Jui jui = Main.getJui();
+        MainGui gui = Main.getGui();
 
-        if (jui != null) {
+        if (gui != null) {
             // Prepare a assembly on this sheet, this uses the initial zoom
             // ratio
-            int viewIndex = jui.sheetController.setSheetAssembly(this);
+            int viewIndex = gui.sheetController.setSheetAssembly(this);
 
             // if this is the current target, then show this sheet immediately
-            //////if (jui.isTarget(getPath())) {
-            jui.sheetController.showSheetView(viewIndex, true);
+            //////if (gui.isTarget(getPath())) {
+            gui.sheetController.showSheetView(viewIndex, true);
 
             /////}
         }
@@ -1681,7 +1681,7 @@ public class Sheet
                     .addObserver(result);
 
                 // Display sheet picture if not batch mode
-                if (Main.getJui() != null) {
+                if (Main.getGui() != null) {
                     PictureView pictureView = new PictureView(Sheet.this);
                     displayAssembly();
                     assembly.addViewTab(
@@ -1702,8 +1702,8 @@ public class Sheet
                 logger.warning("Unsupported image format in file " + imageFile);
                 logger.warning(ex.getMessage());
 
-                if (Main.getJui() != null) {
-                    Main.getJui()
+                if (Main.getGui() != null) {
+                    Main.getGui()
                         .displayWarning(
                         "<B>" + ex.getMessage() + "</B><BR>" +
                         "Please use grey scale with 256 values");

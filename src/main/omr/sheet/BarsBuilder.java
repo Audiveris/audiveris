@@ -260,7 +260,7 @@ public class BarsBuilder
         }
 
         // Display the resulting stickarea if so asked for
-        if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
+        if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
             displayFrame();
         }
     }

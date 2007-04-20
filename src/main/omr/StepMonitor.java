@@ -142,7 +142,7 @@ public class StepMonitor
                             step.doPerform(sheet, param);
 
                             // Update title of the frame
-                            Main.getJui()
+                            Main.getGui()
                                 .updateTitle();
 
                             if (sheet != null) {

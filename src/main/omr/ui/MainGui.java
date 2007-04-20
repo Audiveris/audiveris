@@ -48,13 +48,14 @@ import java.awt.event.*;
 import javax.swing.*;
 
 /**
- * Class <code>Jui</code> is the Java User Interface, the main class for
+ * Class <code>MainGui</code> is the Java User Interface, the main class for
  * displaying a score, the related sheet, the message log and the various tools.
+ *
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class Jui
+public class MainGui
     implements SelectionObserver
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -63,7 +64,7 @@ public class Jui
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Jui.class);
+    private static final Logger logger = Logger.getLogger(MainGui.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -111,13 +112,13 @@ public class Jui
     //~ Constructors -----------------------------------------------------------
 
     //-----//
-    // Jui //
+    // MainGui //
     //-----//
     /**
-     * Creates a new <code>Jui</code> instance, to handle any user display and
+     * Creates a new <code>MainGui</code> instance, to handle any user display and
      * interaction.
      */
-    public Jui ()
+    public MainGui ()
     {
         frame = new JFrame();
 
@@ -540,7 +541,7 @@ public class Jui
     //------//
     private void exit ()
     {
-        // Remember latest jui frame parameters
+        // Remember latest gui frame parameters
         final int state = frame.getExtendedState();
         constants.frameState.setValue(state);
 

@@ -307,8 +307,8 @@ public class SheetAssembly
         tabbedPane.addTab(title, sv.getComponent());
         tabbedPane.setSelectedComponent(sv.getComponent());
 
-        // Add the boardsPane to Jui
-        Main.getJui()
+        // Add the boardsPane to MainGui
+        Main.getGui()
             .addBoardsPane(boardsPane);
     }
 
@@ -355,9 +355,9 @@ public class SheetAssembly
      */
     public void close ()
     {
-        Jui jui = Main.getJui();
+        MainGui gui = Main.getGui();
 
-        jui.sheetController.close(this);
+        gui.sheetController.close(this);
 
         // Disconnect all keyboard bindings from PixelBoard's (as a workaround
         // for a Swing memory leak)
@@ -376,7 +376,7 @@ public class SheetAssembly
 
         // Disconnect all boards panes for this assembly
         for (Tab tab : tabs) {
-            jui.removeBoardsPane(tab.boardsPane);
+            gui.removeBoardsPane(tab.boardsPane);
         }
 
         tabs.clear(); // Useful ???
@@ -458,7 +458,7 @@ public class SheetAssembly
 
         boardsPane.shown();
 
-        Main.getJui()
+        Main.getGui()
             .showBoardsPane(boardsPane);
     }
 

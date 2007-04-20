@@ -11,7 +11,7 @@ package omr.util;
 
 import omr.Main;
 
-import omr.ui.Jui;
+import omr.ui.MainGui;
 
 import java.util.logging.*;
 
@@ -61,10 +61,10 @@ public class LogGuiHandler
      */
     public void publish (LogRecord record)
     {
-        Jui jui = Main.getJui();
+        MainGui gui = Main.getGui();
 
-        if (jui != null) {
-            jui.logPane.log(record);
+        if (gui != null) {
+            gui.logPane.log(record);
         }
     }
 }

@@ -142,7 +142,7 @@ public class LinesBuilder
         }
 
         // Display the resulting lag is so asked for
-        if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
+        if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
             displayFrame();
         }
     }

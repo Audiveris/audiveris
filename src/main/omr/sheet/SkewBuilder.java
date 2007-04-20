@@ -158,7 +158,7 @@ public class SkewBuilder
         logger.info("Skew angle is " + (float) angle + " radians");
 
         // Display the resulting lag
-        if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
+        if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
             displayFrame();
         }
 

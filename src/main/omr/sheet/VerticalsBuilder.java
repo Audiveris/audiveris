@@ -205,7 +205,7 @@ public class VerticalsBuilder
             nb += retrieveSystemVerticals(system);
         }
 
-        if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
+        if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
             displayFrame();
         }
 

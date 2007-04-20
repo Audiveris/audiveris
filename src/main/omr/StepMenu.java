@@ -180,7 +180,7 @@ public class StepMenu
         {
             StepItem item = (StepItem) e.getSource();
             Sheet    sheet = SheetManager.getSelectedSheet();
-            Main.getJui()
+            Main.getGui()
                 .setTarget(sheet.getPath());
             item.step.perform(sheet, null);
         }

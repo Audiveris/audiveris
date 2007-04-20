@@ -206,7 +206,7 @@ public class HorizontalsBuilder
         cleanup(info.getEndings());
 
         // Display the resulting rubber is so asked for
-        if (constants.displayFrame.getValue() && (Main.getJui() != null)) {
+        if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
             displayFrame();
         }
 

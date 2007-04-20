@@ -19,7 +19,7 @@ import omr.score.visitor.ScoreExporter;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
-import omr.ui.Jui;
+import omr.ui.MainGui;
 import omr.ui.util.UILookAndFeel;
 
 import omr.util.Clock;
@@ -112,7 +112,7 @@ public class Main
     private final String toolVersion;
 
     /** Master View */
-    private Jui jui;
+    private MainGui gui;
 
     /** List of score file names to process */
     private List<String> scoreNames = new ArrayList<String>();
@@ -204,19 +204,19 @@ public class Main
     }
 
     //--------//
-    // getJui //
+    // getGui //
     //--------//
     /**
      * Points to the single instance of the User Interface, if any.
-     *
-     * @return Jui instance, which may be null
+     * 
+     * @return MainGui instance, which may be null
      */
-    public static Jui getJui ()
+    public static MainGui getGui ()
     {
         if (INSTANCE == null) {
             return null;
         } else {
-            return INSTANCE.jui;
+            return INSTANCE.gui;
         }
     }
 
@@ -434,7 +434,7 @@ public class Main
                                       .load(new File(name));
 
             if (!batchMode) {
-                Main.getJui().scoreController.setScoreView(score);
+                Main.getGui().scoreController.setScoreView(score);
             }
         }
     }
@@ -626,7 +626,7 @@ public class Main
             JFrame.setDefaultLookAndFeelDecorated(true);
 
             // Launch the GUI
-            jui = new Jui();
+            gui = new MainGui();
 
             // Do we have sheet or score actions specified?
             if ((sheetNames.size() > 0) || (scoreNames.size() > 0)) {
