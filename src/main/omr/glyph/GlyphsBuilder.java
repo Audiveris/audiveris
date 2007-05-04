@@ -47,10 +47,7 @@ import java.util.*;
  *
  * <p>It provides the provisioning methods to actually insert or remove a glyph.<ul>
  *
- * <li>A given newly built glyph can be inserted via {@link #insertGlyph}. To
- * insert a compound, which is built by merging several glyphs, a special method
- * {@link #insertCompound} is provided to handle at the same time the removal of
- * the merged glyphs.
+ * <li>A given newly built glyph can be inserted via {@link #insertGlyph}
  *
  * <li>Similarly {@link #removeGlyph} allows the removal of an existing glyph.
  * <B>Nota:</B> Remember that the sections that compose a glyph are not removed,
@@ -106,7 +103,7 @@ public class GlyphsBuilder
     /**
      * Make a new glyph out of a collection of (sub) glyphs, by merging all
      * their member sections. This compound is temporary, since until it is
-     * properly inserted by use of {@link #insertCompound}, this building has no
+     * properly inserted by use of {@link #insertGlyph}, this building has no
      * impact on either the containing lag, the containing system, nor the
      * contained sections themselves.
      *
@@ -123,7 +120,7 @@ public class GlyphsBuilder
                                       false);
         }
 
-        // Register (a copy of) the parts in the compound itself 
+        // Register (a copy of) the parts in the compound itself
         compound.setParts(parts);
 
         // Compute glyph parameters
