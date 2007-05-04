@@ -9,19 +9,25 @@
 //
 package omr.score.visitor;
 
+import omr.score.Arpeggiate;
 import omr.score.Barline;
 import omr.score.Beam;
 import omr.score.Chord;
 import omr.score.Clef;
+import omr.score.Coda;
 import omr.score.Dynamics;
+import omr.score.Fermata;
 import omr.score.KeySignature;
 import omr.score.Measure;
+import omr.score.MeasureElement;
 import omr.score.MeasureNode;
 import omr.score.Note;
+import omr.score.Ornament;
 import omr.score.PartNode;
 import omr.score.Pedal;
 import omr.score.Score;
 import omr.score.ScoreNode;
+import omr.score.Segno;
 import omr.score.Slur;
 import omr.score.Staff;
 import omr.score.System;
@@ -30,7 +36,7 @@ import omr.score.TimeSignature;
 import omr.score.Wedge;
 
 /**
- * Class <code>AbstractScoreVisitor</code> provides a basic implementation of
+ * Class <code>AbstractScoreVisitor</code> provides a default implementation of
  * the ScoreVisitor interface
  *
  * @author Herv&eacute Bitteur
@@ -52,6 +58,14 @@ public class AbstractScoreVisitor
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------------//
+    // visit Arpeggiate //
+    //------------------//
+    public boolean visit (Arpeggiate arpeggiate)
+    {
+        return true;
+    }
 
     //---------------//
     // visit Barline //
@@ -85,10 +99,26 @@ public class AbstractScoreVisitor
         return true;
     }
 
+    //------------//
+    // visit Coda //
+    //------------//
+    public boolean visit (Coda coda)
+    {
+        return true;
+    }
+
     //----------------//
     // visit Dynamics //
     //----------------//
     public boolean visit (Dynamics dynamics)
+    {
+        return true;
+    }
+
+    //---------------//
+    // visit Fermata //
+    //---------------//
+    public boolean visit (Fermata fermata)
     {
         return true;
     }
@@ -109,6 +139,14 @@ public class AbstractScoreVisitor
         return true;
     }
 
+    //----------------------//
+    // visit MeasureElement //
+    //----------------------//
+    public boolean visit (MeasureElement measureElement)
+    {
+        return true;
+    }
+
     //-------------------//
     // visit MeasureNode //
     //-------------------//
@@ -121,6 +159,14 @@ public class AbstractScoreVisitor
     // visit Note //
     //------------//
     public boolean visit (Note note)
+    {
+        return true;
+    }
+
+    //----------------//
+    // visit Ornament //
+    //----------------//
+    public boolean visit (Ornament ornament)
     {
         return true;
     }
@@ -153,6 +199,14 @@ public class AbstractScoreVisitor
     // visit Score //
     //-------------//
     public boolean visit (Score score)
+    {
+        return true;
+    }
+
+    //-------------//
+    // visit Segno //
+    //-------------//
+    public boolean visit (Segno segno)
     {
         return true;
     }

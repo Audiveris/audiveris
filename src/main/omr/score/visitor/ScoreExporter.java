@@ -15,28 +15,32 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
+import omr.score.Arpeggiate;
 import omr.score.Barline;
 import omr.score.Beam;
 import omr.score.Chord;
 import omr.score.Clef;
+import omr.score.Coda;
 import omr.score.Dynamics;
+import omr.score.Fermata;
 import omr.score.KeySignature;
 import omr.score.Measure;
-import omr.score.PartNode;
+import omr.score.Notation;
+import omr.score.Ornament;
 import omr.score.Pedal;
 import omr.score.Score;
 import omr.score.ScorePart;
+import omr.score.Segno;
 import omr.score.Slot;
 import omr.score.Slur;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
 import omr.score.SystemPoint;
+import omr.score.SystemRectangle;
 import omr.score.TimeSignature;
 import omr.score.Wedge;
 import static omr.score.visitor.MusicXML.*;
-
-import omr.sheet.PixelPoint;
 
 import omr.util.Logger;
 import omr.util.TreeNode;
@@ -47,6 +51,8 @@ import proxymusic.util.Marshalling;
 
 import java.io.*;
 import java.lang.String;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 import javax.xml.bind.JAXBException;
@@ -154,6 +160,26 @@ public class ScoreExporter
         worker.start();
     }
 
+    //------------------//
+    // visit Arpeggiate //
+    //------------------//
+    @Override
+    public boolean visit (Arpeggiate arpeggiate)
+    {
+        proxymusic.Arpeggiate pmArpeggiate = new proxymusic.Arpeggiate();
+        getNotations()
+            .getTiedOrSlurOrTuplet()
+            .add(pmArpeggiate);
+
+        // relative-x
+        pmArpeggiate.setRelativeX(
+            toTenths(arpeggiate.getPoint().x - current.note.getCenterLeft().x));
+
+        // number ???
+        // TBD
+        return false;
+    }
+
     //---------------//
     // visit Barline //
     //---------------//
@@ -181,6 +207,8 @@ public class ScoreExporter
     @Override
     public boolean visit (Chord chord)
     {
+        logger.severe("Chord objects should not be visited by ScoreExporter");
+
         return false;
     }
 
@@ -272,6 +300,46 @@ public class ScoreExporter
         return true;
     }
 
+    //------------//
+    // visit Coda //
+    //------------//
+    @Override
+    public boolean visit (Coda coda)
+    {
+        Direction direction = new Direction();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(direction);
+
+        DirectionType directionType = new DirectionType();
+        direction.getDirectionType()
+                 .add(directionType);
+
+        proxymusic.Coda pmCoda = new proxymusic.Coda();
+        directionType.getCoda()
+                     .add(pmCoda);
+
+        // Staff ?
+        Staff staff = current.note.getStaff();
+        insertStaffId(direction, staff);
+
+        // default-x
+        pmCoda.setDefaultX(
+            toTenths(coda.getPoint().x - current.measure.getLeftX()));
+
+        // default-y
+        pmCoda.setDefaultY(yOf(coda.getPoint(), staff));
+
+        // Need also a Sound element
+        Sound sound = new Sound();
+        direction.setSound(sound);
+        sound.setCoda("" + current.measure.getId());
+        sound.setDivisions(
+            "" +
+            current.part.simpleDurationOf(omr.score.Note.QUARTER_DURATION));
+
+        return true;
+    }
+
     //----------------//
     // visit Dynamics //
     //----------------//
@@ -296,14 +364,7 @@ public class ScoreExporter
 
         // Staff ?
         Staff staff = current.note.getStaff();
-
-        if (current.note.getPart()
-                        .getStaves()
-                        .size() > 1) {
-            proxymusic.Staff pmStaff = new proxymusic.Staff();
-            direction.setStaff(pmStaff);
-            pmStaff.setContent("" + (staff.getId()));
-        }
+        insertStaffId(direction, staff);
 
         // Placement
         if (dynamics.getPoint().y < current.note.getCenter().y) {
@@ -313,18 +374,44 @@ public class ScoreExporter
         }
 
         // default-y
-        PixelPoint pix = current.system.toPixelPoint(dynamics.getPoint());
-        PixelPoint staffPix = new PixelPoint(
-            pix.x,
-            staff.getInfo().getFirstLine().getLine().yAt(pix.x));
-        pmDynamics.setDefaultY(
-            toTenths(dynamics.getScale().pixelsToUnits(staffPix.y - pix.y)));
+        pmDynamics.setDefaultY(yOf(dynamics.getPoint(), staff));
 
         // Relative-x (No offset for the time being) using note left side
         pmDynamics.setRelativeX(
             toTenths(dynamics.getPoint().x - current.note.getCenterLeft().x));
 
-        return true;
+        return false;
+    }
+
+    //---------------//
+    // visit Fermata //
+    //---------------//
+    @Override
+    public boolean visit (Fermata fermata)
+    {
+        proxymusic.Fermata pmFermata = new proxymusic.Fermata();
+        getNotations()
+            .getTiedOrSlurOrTuplet()
+            .add(pmFermata);
+
+        // default-y (of the fermata dot)
+        // For upright we use bottom of the box, for inverted the top of the box
+        SystemRectangle box = fermata.getBox();
+        SystemPoint     dot;
+
+        if (fermata.getShape() == Shape.FERMATA_BELOW) {
+            dot = new SystemPoint(box.x + (box.width / 2), box.y);
+        } else {
+            dot = new SystemPoint(box.x + (box.width / 2), box.y + box.height);
+        }
+
+        pmFermata.setDefaultY(yOf(dot, current.note.getStaff()));
+
+        // Type
+        pmFermata.setType(
+            (fermata.getShape() == Shape.FERMATA) ? UPRIGHT : INVERTED);
+
+        return false;
     }
 
     //--------------------//
@@ -335,8 +422,6 @@ public class ScoreExporter
     {
         ///logger.info("Visiting " + keySignature);
         if (isNewKeySignature(keySignature)) {
-            //            logger.info(
-            //                keySignature.getContextString() + " New key " + keySignature);
             Key key = new Key();
             getMeasureAttributes()
                 .setKey(key);
@@ -345,10 +430,7 @@ public class ScoreExporter
             key.setFifths(fifths);
             fifths.setContent("" + keySignature.getKey());
 
-            //        } else {
-            //            logger.info(
-            //                keySignature.getContextString() + " No new key " +
-            //                keySignature);
+            // For 2.0 and on, add default-y
         }
 
         return true;
@@ -366,7 +448,6 @@ public class ScoreExporter
 
         // Allocate Measure
         current.pmMeasure = new proxymusic.Measure();
-        current.attributes = null;
         current.pmPart.getMeasure()
                       .add(current.pmMeasure);
         current.pmMeasure.setNumber("" + measure.getId());
@@ -391,19 +472,16 @@ public class ScoreExporter
                     .setDivisions(divisions);
                 divisions.setContent(
                     "" +
-                    measure.getPart().getScorePart().simpleDurationOf(
+                    current.part.simpleDurationOf(
                         omr.score.Note.QUARTER_DURATION));
 
                 // Number of staves, if > 1
-                int stavesNb = measure.getPart()
-                                      .getStaves()
-                                      .size();
-
-                if (stavesNb > 1) {
+                if (current.part.isMultiStaff()) {
                     Staves staves = new Staves();
                     getMeasureAttributes()
                         .setStaves(staves);
-                    staves.setContent("" + stavesNb);
+                    staves.setContent(
+                        "" + measure.getPart().getStaves().size());
                 }
             } else {
                 // New system
@@ -494,8 +572,9 @@ public class ScoreExporter
         // Now voice per voice
         int timeCounter = 0;
 
-        for (current.voice = 1; current.voice <= measure.getVoicesNumber();
-             current.voice++) {
+        for (int voice = 1; voice <= measure.getVoicesNumber(); voice++) {
+            current.voice = voice;
+
             // Need a backup ?
             if (timeCounter != 0) {
                 insertBackup(timeCounter);
@@ -506,7 +585,7 @@ public class ScoreExporter
 
             for (Slot slot : measure.getSlots()) {
                 for (Chord chord : slot.getChords()) {
-                    if (chord.getVoice() == current.voice) {
+                    if (chord.getVoice() == voice) {
                         // Need a forward before this chord ?
                         if (timeCounter < slot.getOffset()) {
                             insertForward(
@@ -533,6 +612,9 @@ public class ScoreExporter
             }
         }
 
+        // Safer...
+        current.endMeasure();
+
         return true;
     }
 
@@ -543,35 +625,50 @@ public class ScoreExporter
     public boolean visit (omr.score.Note note)
     {
         ///logger.info("Visiting " + note);
-        Staff     staff = note.getStaff();
-        Chord     chord = note.getChord();
-        Notations notations = null;
+        current.note = note;
 
-        Note      pmNote = new Note();
-        current.pmMeasure.getNoteOrBackupOrForward()
-                         .add(pmNote);
+        Chord chord = note.getChord();
 
-        // Chord events for first note in chord
+        // Chord direction  events for first note in chord
         if (chord.getNotes()
                  .indexOf(note) == 0) {
-            current.note = note;
+            for (omr.score.Direction node : chord.getDirections()) {
+                node.accept(this);
+            }
+        }
 
-            for (PartNode node : chord.getEvents()) {
+        current.pmNote = new Note();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(current.pmNote);
+
+        Staff staff = note.getStaff();
+
+        // Chord notation events for first note in chord
+        if (chord.getNotes()
+                 .indexOf(note) == 0) {
+            for (Notation node : chord.getNotations()) {
                 node.accept(this);
             }
         } else {
             // Chord indication for every other note
-            pmNote.setChord(new proxymusic.Chord());
+            current.pmNote.setChord(new proxymusic.Chord());
+
+            // Arpeggiate also?
+            for (Notation node : chord.getNotations()) {
+                if (node instanceof Arpeggiate) {
+                    node.accept(this);
+                }
+            }
         }
 
         // Rest ?
         if (note.isRest()) {
             Rest rest = new Rest();
-            pmNote.setRest(rest);
+            current.pmNote.setRest(rest);
         } else {
             // Pitch
             Pitch pitch = new Pitch();
-            pmNote.setPitch(pitch);
+            current.pmNote.setPitch(pitch);
 
             Step step = new Step();
             pitch.setStep(step);
@@ -590,32 +687,33 @@ public class ScoreExporter
 
         // Default-x (use left side of the note wrt measure)
         int noteLeft = note.getCenterLeft().x;
-        pmNote.setDefaultX(toTenths(noteLeft - note.getMeasure().getLeftX()));
+        current.pmNote.setDefaultX(
+            toTenths(noteLeft - note.getMeasure().getLeftX()));
 
         // Duration
         Duration duration = new Duration();
-        pmNote.setDuration(duration);
+        current.pmNote.setDuration(duration);
         duration.setContent(
             "" + current.part.simpleDurationOf(chord.getDuration()));
 
         // Voice
         Voice voice = new Voice();
-        pmNote.setVoice(voice);
+        current.pmNote.setVoice(voice);
         voice.setContent("" + chord.getVoice());
 
         // Type
         Type type = new Type();
-        pmNote.setType(type);
+        current.pmNote.setType(type);
         type.setContent("" + note.getTypeName());
 
         // Stem ?
         if (chord.getStem() != null) {
             Glyph stem = chord.getStem();
             Stem  pmStem = new Stem();
-            pmNote.setStem(pmStem);
+            current.pmNote.setStem(pmStem);
 
             SystemPoint tail = chord.getTailLocation();
-            pmStem.setDefaultY(yOf(tail.y, staff));
+            pmStem.setDefaultY(yOf(tail, staff));
 
             if (tail.y < note.getCenter().y) {
                 pmStem.setContent(UP);
@@ -624,33 +722,27 @@ public class ScoreExporter
             }
         }
 
-        // Staff ? (only if more than one staff in part)
-        if (note.getPart()
-                .getStaves()
-                .size() > 1) {
-            proxymusic.Staff pmStaff = new proxymusic.Staff();
-            pmNote.setStaff(pmStaff);
-            pmStaff.setContent("" + staff.getId());
-        }
+        // Staff ?
+        insertStaffId(current.pmNote, staff);
 
         // Dots
         for (int i = 0; i < chord.getDotsNumber(); i++) {
-            pmNote.getDot()
-                  .add(new Dot());
+            current.pmNote.getDot()
+                          .add(new Dot());
         }
 
         // Accidental ?
         if (note.getAccidental() != null) {
             Accidental accidental = new Accidental();
-            pmNote.setAccidental(accidental);
+            current.pmNote.setAccidental(accidental);
             accidental.setContent(accidentalNameOf(note.getAccidental()));
         }
 
         // Beams ?
         for (Beam beam : chord.getBeams()) {
             proxymusic.Beam pmBeam = new proxymusic.Beam();
-            pmNote.getBeam()
-                  .add(pmBeam);
+            current.pmNote.getBeam()
+                          .add(pmBeam);
             pmBeam.setNumber("" + beam.getLevel());
 
             Glyph glyph = beam.getGlyphs()
@@ -676,120 +768,86 @@ public class ScoreExporter
             }
         }
 
-        // Tie / Slur
+        // Ties / Slurs
         for (Slur slur : note.getSlurs()) {
-            boolean isStart = slur.getLeftNote() == note;
-
-            // Notations element
-            if (notations == null) {
-                notations = new Notations();
-                pmNote.getNotations()
-                      .add(notations);
-            }
-
-            if (slur.isTie()) {
-                // Tie element
-                Tie tie = new Tie();
-                pmNote.getTie()
-                      .add(tie);
-                tie.setType(isStart ? START : STOP);
-
-                // Tied element
-                Tied tied = new Tied();
-                notations.getTiedOrSlurOrTuplet()
-                         .add(tied);
-
-                // Type
-                tied.setType(isStart ? START : STOP);
-
-                // Orientation
-                if (isStart) {
-                    tied.setOrientation(slur.isBelow() ? UNDER : OVER);
-                }
-
-                // Bezier
-                if (isStart) {
-                    tied.setDefaultX(
-                        toTenths(slur.getCurve().getX1() - noteLeft));
-                    tied.setDefaultY(yOf(slur.getCurve().getY1(), staff));
-                    tied.setBezierX(
-                        toTenths(slur.getCurve().getCtrlX1() - noteLeft));
-                    tied.setBezierY(yOf(slur.getCurve().getCtrlY1(), staff));
-                } else {
-                    tied.setDefaultX(
-                        toTenths(slur.getCurve().getX2() - noteLeft));
-                    tied.setDefaultY(yOf(slur.getCurve().getY2(), staff));
-                    tied.setBezierX(
-                        toTenths(slur.getCurve().getCtrlX2() - noteLeft));
-                    tied.setBezierY(yOf(slur.getCurve().getCtrlY2(), staff));
-                }
-            } else {
-                // Slur element
-                proxymusic.Slur pmSlur = new proxymusic.Slur();
-                notations.getTiedOrSlurOrTuplet()
-                         .add(pmSlur);
-
-                // Number attribute
-                Integer num = slurNumbers.get(slur);
-
-                if (num != null) {
-                    pmSlur.setNumber(num.toString());
-                    slurNumbers.remove(slur);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            note.getContextString() + " last use " + num +
-                            " -> " + slurNumbers.toString());
-                    }
-                } else {
-                    // Determine first available number
-                    for (num = 1; num <= 6; num++) {
-                        if (!slurNumbers.containsValue(num)) {
-                            if (slur.getRightExtension() != null) {
-                                slurNumbers.put(slur.getRightExtension(), num);
-                            } else {
-                                slurNumbers.put(slur, num);
-                            }
-
-                            pmSlur.setNumber(num.toString());
-
-                            if (logger.isFineEnabled()) {
-                                logger.fine(
-                                    note.getContextString() + " first use " +
-                                    num + " -> " + slurNumbers.toString());
-                            }
-
-                            break;
-                        }
-                    }
-                }
-
-                // Type
-                pmSlur.setType(isStart ? START : STOP);
-
-                // Placement
-                if (isStart) {
-                    pmSlur.setPlacement(slur.isBelow() ? BELOW : ABOVE);
-                }
-
-                // Bezier
-                if (isStart) {
-                    pmSlur.setDefaultX(
-                        toTenths(slur.getCurve().getX1() - noteLeft));
-                    pmSlur.setDefaultY(yOf(slur.getCurve().getY1(), staff));
-                    pmSlur.setBezierX(
-                        toTenths(slur.getCurve().getCtrlX1() - noteLeft));
-                    pmSlur.setBezierY(yOf(slur.getCurve().getCtrlY1(), staff));
-                } else {
-                    pmSlur.setDefaultX(
-                        toTenths(slur.getCurve().getX2() - noteLeft));
-                    pmSlur.setDefaultY(yOf(slur.getCurve().getY2(), staff));
-                    pmSlur.setBezierX(
-                        toTenths(slur.getCurve().getCtrlX2() - noteLeft));
-                    pmSlur.setBezierY(yOf(slur.getCurve().getCtrlY2(), staff));
-                }
-            }
+            slur.accept(this);
         }
+
+        // Safer...
+        current.endNote();
+
+        return true;
+    }
+
+    //----------------//
+    // visit Ornament //
+    //----------------//
+    @Override
+    public boolean visit (Ornament ornament)
+    {
+        Object element = getOrnamentObject(ornament.getShape());
+
+        // Include in ornaments
+        getOrnaments()
+            .getTrillMarkOrTurnOrDelayedTurn()
+            .add(element);
+
+        // Placement?
+        Class classe = element.getClass();
+
+        try {
+            Method method = classe.getMethod(
+                "setPlacement",
+                java.lang.String.class);
+            method.invoke(
+                element,
+                (ornament.getPoint().y < current.note.getCenter().y) ? ABOVE
+                                : BELOW);
+        } catch (Exception ex) {
+            ///ex.printStackTrace();
+            logger.severe("Could not setPlacement for element " + classe);
+        }
+
+        return false;
+    }
+
+    //-------------//
+    // visit Pedal //
+    //-------------//
+    @Override
+    public boolean visit (Pedal pedal)
+    {
+        Direction direction = new Direction();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(direction);
+
+        DirectionType directionType = new DirectionType();
+        direction.getDirectionType()
+                 .add(directionType);
+
+        proxymusic.Pedal pmPedal = new proxymusic.Pedal();
+        directionType.setPedal(pmPedal);
+
+        // No line (for the time being)
+        pmPedal.setLine(NO);
+
+        // Start / Stop type
+        pmPedal.setType(pedal.isStart() ? START : STOP);
+
+        // Staff ?
+        Staff staff = current.note.getStaff();
+        insertStaffId(direction, staff);
+
+        // default-x
+        pmPedal.setDefaultX(
+            toTenths(pedal.getPoint().x - current.measure.getLeftX()));
+
+        // default-y
+        pmPedal.setDefaultY(yOf(pedal.getPoint(), staff));
+
+        // Placement
+        direction.setPlacement(
+            (pedal.getPoint().y < current.note.getCenter().y) ? ABOVE : BELOW);
 
         return true;
     }
@@ -835,7 +893,7 @@ public class ScoreExporter
         EncodingDate encodingDate = new EncodingDate();
         encoding.getEncodingDateOrEncoderOrSoftware()
                 .add(encodingDate);
-        encodingDate.setContent(String.format("%tF", new Date()));
+        encodingDate.setContent(java.lang.String.format("%tF", new Date()));
 
         // Defaults
         Defaults defaults = new Defaults();
@@ -848,7 +906,7 @@ public class ScoreExporter
         Millimeters millimeters = new Millimeters();
         scaling.setMillimeters(millimeters);
         millimeters.setContent(
-            String.format(
+            java.lang.String.format(
                 Locale.US,
                 "%.3f",
                 (score.getSheet()
@@ -916,6 +974,116 @@ public class ScoreExporter
     public boolean visit (Slur slur)
     {
         ///logger.info("Visiting " + slur);
+
+        // Note contextual data
+        boolean isStart = slur.getLeftNote() == current.note;
+        int     noteLeft = current.note.getCenterLeft().x;
+        Staff   staff = current.note.getStaff();
+
+        if (slur.isTie()) {
+            // Tie element
+            Tie tie = new Tie();
+            current.pmNote.getTie()
+                          .add(tie);
+            tie.setType(isStart ? START : STOP);
+
+            // Tied element
+            Tied tied = new Tied();
+            getNotations()
+                .getTiedOrSlurOrTuplet()
+                .add(tied);
+
+            // Type
+            tied.setType(isStart ? START : STOP);
+
+            // Orientation
+            if (isStart) {
+                tied.setOrientation(slur.isBelow() ? UNDER : OVER);
+            }
+
+            // Bezier
+            if (isStart) {
+                tied.setDefaultX(toTenths(slur.getCurve().getX1() - noteLeft));
+                tied.setDefaultY(yOf(slur.getCurve().getY1(), staff));
+                tied.setBezierX(
+                    toTenths(slur.getCurve().getCtrlX1() - noteLeft));
+                tied.setBezierY(yOf(slur.getCurve().getCtrlY1(), staff));
+            } else {
+                tied.setDefaultX(toTenths(slur.getCurve().getX2() - noteLeft));
+                tied.setDefaultY(yOf(slur.getCurve().getY2(), staff));
+                tied.setBezierX(
+                    toTenths(slur.getCurve().getCtrlX2() - noteLeft));
+                tied.setBezierY(yOf(slur.getCurve().getCtrlY2(), staff));
+            }
+        } else {
+            // Slur element
+            proxymusic.Slur pmSlur = new proxymusic.Slur();
+            getNotations()
+                .getTiedOrSlurOrTuplet()
+                .add(pmSlur);
+
+            // Number attribute
+            Integer num = slurNumbers.get(slur);
+
+            if (num != null) {
+                pmSlur.setNumber(num.toString());
+                slurNumbers.remove(slur);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        current.note.getContextString() + " last use " + num +
+                        " -> " + slurNumbers.toString());
+                }
+            } else {
+                // Determine first available number
+                for (num = 1; num <= 6; num++) {
+                    if (!slurNumbers.containsValue(num)) {
+                        if (slur.getRightExtension() != null) {
+                            slurNumbers.put(slur.getRightExtension(), num);
+                        } else {
+                            slurNumbers.put(slur, num);
+                        }
+
+                        pmSlur.setNumber(num.toString());
+
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                current.note.getContextString() +
+                                " first use " + num + " -> " +
+                                slurNumbers.toString());
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            // Type
+            pmSlur.setType(isStart ? START : STOP);
+
+            // Placement
+            if (isStart) {
+                pmSlur.setPlacement(slur.isBelow() ? BELOW : ABOVE);
+            }
+
+            // Bezier
+            if (isStart) {
+                pmSlur.setDefaultX(
+                    toTenths(slur.getCurve().getX1() - noteLeft));
+                pmSlur.setDefaultY(yOf(slur.getCurve().getY1(), staff));
+                pmSlur.setBezierX(
+                    toTenths(slur.getCurve().getCtrlX1() - noteLeft));
+                pmSlur.setBezierY(yOf(slur.getCurve().getCtrlY1(), staff));
+            } else {
+                pmSlur.setDefaultX(
+                    toTenths(slur.getCurve().getX2() - noteLeft));
+                pmSlur.setDefaultY(yOf(slur.getCurve().getY2(), staff));
+                pmSlur.setBezierX(
+                    toTenths(slur.getCurve().getCtrlX2() - noteLeft));
+                pmSlur.setBezierY(yOf(slur.getCurve().getCtrlY2(), staff));
+            }
+        }
+
         return true;
     }
 
@@ -943,9 +1111,8 @@ public class ScoreExporter
         isFirst.measure = true;
 
         for (TreeNode node : systemPart.getMeasures()) {
-            Measure measure = (Measure) node;
             // Delegate to measure
-            measure.accept(this);
+            ((Measure) node).accept(this);
             isFirst.measure = false;
         }
 
@@ -996,10 +1163,10 @@ public class ScoreExporter
     }
 
     //-------------//
-    // visit Pedal //
+    // visit Segno //
     //-------------//
     @Override
-    public boolean visit (Pedal pedal)
+    public boolean visit (Segno segno)
     {
         Direction direction = new Direction();
         current.pmMeasure.getNoteOrBackupOrForward()
@@ -1009,49 +1176,28 @@ public class ScoreExporter
         direction.getDirectionType()
                  .add(directionType);
 
-        proxymusic.Pedal pmPedal = new proxymusic.Pedal();
-        directionType.setPedal(pmPedal);
-
-        // No line (for the time being)
-        pmPedal.setLine(NO);
+        proxymusic.Segno pmSegno = new proxymusic.Segno();
+        directionType.getSegno()
+                     .add(pmSegno);
 
         // Staff ?
         Staff staff = current.note.getStaff();
+        insertStaffId(direction, staff);
 
-        if (current.note.getPart()
-                        .getStaves()
-                        .size() > 1) {
-            proxymusic.Staff pmStaff = new proxymusic.Staff();
-            direction.setStaff(pmStaff);
-            pmStaff.setContent("" + staff.getId());
-        }
-
-        // Placement
-        if (pedal.getPoint().y < current.note.getCenter().y) {
-            direction.setPlacement(ABOVE);
-        } else {
-            direction.setPlacement(BELOW);
-        }
+        // default-x
+        pmSegno.setDefaultX(
+            toTenths(segno.getPoint().x - current.measure.getLeftX()));
 
         // default-y
-        PixelPoint pix = current.system.toPixelPoint(pedal.getPoint());
-        PixelPoint staffPix = new PixelPoint(
-            pix.x,
-            staff.getInfo().getFirstLine().getLine().yAt(pix.x));
-        pmPedal.setDefaultY(
-            toTenths(pedal.getScale().pixelsToUnits(staffPix.y - pix.y)));
+        pmSegno.setDefaultY(yOf(segno.getPoint(), staff));
 
-        // Start / Stop
-        if (pedal.isStart()) {
-            // type
-            pmPedal.setType(START);
-        } else {
-            pmPedal.setType(STOP);
-        }
-
-        // Relative-x (No offset for the time being) using note left side
-        pmPedal.setRelativeX(
-            toTenths(pedal.getPoint().x - current.note.getCenterLeft().x));
+        // Need also a Sound element
+        Sound sound = new Sound();
+        direction.setSound(sound);
+        sound.setSegno("" + current.measure.getId());
+        sound.setDivisions(
+            "" +
+            current.part.simpleDurationOf(omr.score.Note.QUARTER_DURATION));
 
         return true;
     }
@@ -1079,44 +1225,31 @@ public class ScoreExporter
         // Start or stop ?
         if (wedge.isStart()) {
             // Type
-            if (wedge.getShape() == Shape.CRESCENDO) {
-                pmWedge.setType("crescendo");
-            } else {
-                pmWedge.setType("diminuendo");
-            }
+            pmWedge.setType(
+                (wedge.getShape() == Shape.CRESCENDO) ? MusicXML.CRESCENDO
+                                : MusicXML.DIMINUENDO);
 
             // Staff ?
             Staff staff = current.note.getStaff();
-
-            if (current.note.getPart()
-                            .getStaves()
-                            .size() > 1) {
-                proxymusic.Staff pmStaff = new proxymusic.Staff();
-                direction.setStaff(pmStaff);
-                pmStaff.setContent("" + staff.getId());
-            }
+            insertStaffId(direction, staff);
 
             // Placement
-            if (wedge.getPoint().y < current.note.getCenter().y) {
-                direction.setPlacement(ABOVE);
-            } else {
-                direction.setPlacement(BELOW);
-            }
+            direction.setPlacement(
+                (wedge.getPoint().y < current.note.getCenter().y) ? ABOVE : BELOW);
 
             // default-y
-            PixelPoint pix = current.system.toPixelPoint(wedge.getPoint());
-            PixelPoint staffPix = new PixelPoint(
-                pix.x,
-                staff.getInfo().getFirstLine().getLine().yAt(pix.x));
-            pmWedge.setDefaultY(
-                toTenths(wedge.getScale().pixelsToUnits(staffPix.y - pix.y)));
+            pmWedge.setDefaultY(yOf(wedge.getPoint(), staff));
         } else { // It's a stop
             pmWedge.setType(STOP);
         }
 
-        // Relative-x (No offset for the time being) using note left side
-        pmWedge.setRelativeX(
-            toTenths(wedge.getPoint().x - current.note.getCenterLeft().x));
+        //        // Relative-x (No offset for the time being) using note left side
+        //        pmWedge.setRelativeX(
+        //            toTenths(wedge.getPoint().x - current.note.getCenterLeft().x));
+
+        // default-x
+        pmWedge.setDefaultX(
+            toTenths(wedge.getPoint().x - current.measure.getLeftX()));
 
         return true;
     }
@@ -1140,6 +1273,54 @@ public class ScoreExporter
         }
 
         return current.attributes;
+    }
+
+    //--------------//
+    // getNotations //
+    //--------------//
+    /**
+     * Report (after creating it if necessary) the notations element of the
+     * current note
+     *
+     * @return the note notations element
+     */
+    private Notations getNotations ()
+    {
+        // Notations allocated?
+        if (current.notations == null) {
+            current.notations = new Notations();
+            current.pmNote.getNotations()
+                          .add(current.notations);
+        }
+
+        return current.notations;
+    }
+
+    //--------------//
+    // getOrnaments //
+    //--------------//
+    /**
+     * Report (after creating it if necessary) the ornaments elements in the
+     * notations element of the current note
+     *
+     * @return the note notations ornaments element
+     */
+    private Ornaments getOrnaments ()
+    {
+        for (Object obj : getNotations()
+                              .getTiedOrSlurOrTuplet()) {
+            if (obj instanceof Ornaments) {
+                return (Ornaments) obj;
+            }
+        }
+
+        // Need to allocate ornaments
+        Ornaments ornaments = new Ornaments();
+        getNotations()
+            .getTiedOrSlurOrTuplet()
+            .add(ornaments);
+
+        return ornaments;
     }
 
     //--------------//
@@ -1175,12 +1356,36 @@ public class ScoreExporter
         voice.setContent("" + current.voice);
 
         // Staff ? (only if more than one staff in part)
-        if (chord.getPart()
-                 .getStaves()
-                 .size() > 1) {
+        insertStaffId(forward, chord.getStaff());
+    }
+
+    //---------------//
+    // insertStaffId //
+    //---------------//
+    /**
+     * If needed (if current part contains more than one staff), we insert the
+     * id of the staff related to the element at hand
+     *
+     * @param obj the element at hand
+     * @staff the related score staff
+     */
+    private void insertStaffId (Object obj,
+                                Staff  staff)
+    {
+        if (current.part.isMultiStaff()) {
+            Class            classe = obj.getClass();
             proxymusic.Staff pmStaff = new proxymusic.Staff();
-            forward.setStaff(pmStaff);
-            pmStaff.setContent("" + (chord.getStaff().getId()));
+            pmStaff.setContent("" + staff.getId());
+
+            try {
+                Method method = classe.getMethod(
+                    "setStaff",
+                    proxymusic.Staff.class);
+                method.invoke(obj, pmStaff);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                logger.severe("Could not setStaff for element " + classe);
+            }
         }
     }
 
@@ -1238,15 +1443,44 @@ public class ScoreExporter
     /** Keep references of all current entities */
     private static class Current
     {
-        proxymusic.Part       pmPart;
+        // Part dependent
         ScorePart             part;
+        proxymusic.Part       pmPart;
+
+        // System dependent
         System                system;
-        proxymusic.Measure    pmMeasure;
+
+        // Measure dependent
         Measure               measure;
+        proxymusic.Measure    pmMeasure;
+        Integer               voice;
+
+        // Note dependent
         omr.score.Note        note;
+        proxymusic.Note       pmNote;
+        proxymusic.Notations  notations;
         proxymusic.Print      pmPrint;
         proxymusic.Attributes attributes;
-        int                   voice;
+
+        // Cleanup at end of measure
+        void endMeasure ()
+        {
+            measure = null;
+            pmMeasure = null;
+            voice = null;
+
+            endNote();
+        }
+
+        // Cleanup at end of note
+        void endNote ()
+        {
+            note = null;
+            pmNote = null;
+            notations = null;
+            pmPrint = null;
+            attributes = null;
+        }
     }
 
     //---------//
@@ -1265,7 +1499,7 @@ public class ScoreExporter
         boolean measure;
 
         @Override
-        public String toString ()
+        public java.lang.String toString ()
         {
             StringBuilder sb = new StringBuilder();
 

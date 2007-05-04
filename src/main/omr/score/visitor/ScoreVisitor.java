@@ -9,19 +9,25 @@
 //
 package omr.score.visitor;
 
+import omr.score.Arpeggiate;
 import omr.score.Barline;
 import omr.score.Beam;
 import omr.score.Chord;
 import omr.score.Clef;
+import omr.score.Coda;
 import omr.score.Dynamics;
+import omr.score.Fermata;
 import omr.score.KeySignature;
 import omr.score.Measure;
+import omr.score.MeasureElement;
 import omr.score.MeasureNode;
 import omr.score.Note;
+import omr.score.Ornament;
 import omr.score.PartNode;
 import omr.score.Pedal;
 import omr.score.Score;
 import omr.score.ScoreNode;
+import omr.score.Segno;
 import omr.score.Slur;
 import omr.score.Staff;
 import omr.score.System;
@@ -40,6 +46,8 @@ public interface ScoreVisitor
 {
     //~ Methods ----------------------------------------------------------------
 
+    boolean visit (Arpeggiate node);
+
     boolean visit (Barline node);
 
     boolean visit (Beam node);
@@ -48,15 +56,23 @@ public interface ScoreVisitor
 
     boolean visit (Clef node);
 
+    boolean visit (Coda node);
+
     boolean visit (Dynamics node);
+
+    boolean visit (Fermata node);
 
     boolean visit (KeySignature node);
 
     boolean visit (Measure node);
 
+    boolean visit (MeasureElement node);
+
     boolean visit (MeasureNode node);
 
     boolean visit (Note node);
+
+    boolean visit (Ornament node);
 
     boolean visit (PartNode node);
 
@@ -65,6 +81,8 @@ public interface ScoreVisitor
     boolean visit (Score node);
 
     boolean visit (ScoreNode node);
+
+    boolean visit (Segno node);
 
     boolean visit (Slur node);
 

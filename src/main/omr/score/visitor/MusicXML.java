@@ -14,6 +14,7 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
 import omr.score.Staff;
+import omr.score.SystemPoint;
 
 import omr.util.Logger;
 
@@ -41,16 +42,20 @@ public class MusicXML
     static final String BELOW = "below";
     static final String COMMON = "common";
     static final String CONTINUE = "continue";
+    static final String CRESCENDO = "crescendo";
     static final String CUT = "cut";
+    static final String DIMINUENDO = "diminuendo";
     static final String DOWN = "down";
     static final String END = "end";
     static final String FORWARD_HOOK = "forward hook";
+    static final String INVERTED = "inverted";
     static final String NO = "no";
     static final String OVER = "over";
     static final String START = "start";
     static final String STOP = "stop";
     static final String UNDER = "under";
     static final String UP = "up";
+    static final String UPRIGHT = "upright";
     static final String YES = "yes";
 
     //~ Constructors -----------------------------------------------------------
@@ -216,6 +221,34 @@ public class MusicXML
         return null;
     }
 
+    //-------------------//
+    // getOrnamentObject //
+    //-------------------//
+    public static Object getOrnamentObject (Shape shape)
+    {
+        //	(((trill-mark | turn | delayed-turn | shake |
+        //	   wavy-line | mordent | inverted-mordent | 
+        //	   schleifer | tremolo | other-ornament), 
+        //	   accidental-mark*)*)>
+        switch (shape) {
+        case INVERTED_MORDENT :
+            return new proxymusic.InvertedMordent();
+
+        case MORDENT :
+            return new proxymusic.Mordent();
+
+        case TR :
+            return new proxymusic.TrillMark();
+
+        case TURN :
+            return new proxymusic.Turn();
+        }
+
+        logger.severe("Unsupported ornament shape:" + shape);
+
+        return null;
+    }
+
     //----------//
     // toTenths //
     //----------//
@@ -237,14 +270,32 @@ public class MusicXML
     /**
      * Report the musicXML Y value of a SystemPoint ordinate.
      *
-     * @param y the system-based ordinate (in units)
+     * @param units the system-based ordinate (in units)
      * @param staff the related staff
      * @return the upward-oriented ordinate wrt to staff top line (in tenths string)
      */
-    public static String yOf (double y,
+    public static String yOf (double units,
                               Staff  staff)
     {
         return toTenths(
-            staff.getTopLeft().y - staff.getSystem().getTopLeft().y - y);
+            staff.getTopLeft().y - staff.getSystem().getTopLeft().y - units);
+    }
+
+    //-----//
+    // yOf //
+    //-----//
+    /**
+     * Report the musicXML Y value of a SystemPoint. This method is safer than
+     * the other one which simply accepts a (detyped) double ordinate.
+     *
+     * @param point the system-based point
+     * @param staff the related staff
+     * @return the upward-oriented ordinate wrt to staff top line (in tenths string)
+     */
+    public static String yOf (SystemPoint point,
+                              Staff       staff)
+    {
+        return toTenths(
+            staff.getTopLeft().y - staff.getSystem().getTopLeft().y - point.y);
     }
 }

@@ -109,157 +109,6 @@ public class Slot
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // isAlignedWith //
-    //---------------//
-    /**
-     * Check whether a system point is roughly aligned with this slot instance.
-     *
-     * @param sysPt the system point to check
-     * @return true if aligned
-     */
-    public boolean isAlignedWith (SystemPoint sysPt)
-    {
-        return Math.abs(sysPt.x - getX()) <= measure.getScale()
-                                                    .toUnits(constants.maxDx);
-    }
-
-    //-----------//
-    // getChords //
-    //-----------//
-    /**
-     * Report the (ordered) collection of chords in this time slot
-     *
-     * @return the collection of chords
-     */
-    public List<Chord> getChords ()
-    {
-        return chords;
-    }
-
-    //-----------//
-    // setOffset //
-    //-----------//
-    /**
-     * Assign the time offset, since the beginning of the measure, for all
-     * chords in this time slot
-     *
-     * @param offset time offset using {@link omr.score.Note#QUARTER_DURATION}
-     * value
-     */
-    public void setOffset (int offset)
-    {
-        this.offset = offset;
-    }
-
-    //-----------//
-    // getOffset //
-    //-----------//
-    /**
-     * Report the time offset of this time slot since beginning of the measure
-     *
-     * @return the time offset of this time slot.
-     */
-    public int getOffset ()
-    {
-        return offset;
-    }
-
-    //---------------------//
-    // getShortestDuration //
-    //---------------------//
-    /**
-     * Since there may be several chords aligned (starting) in this slot, this
-     * method reports the shortest duration among all chords of this slot. This
-     * in turn defines the time offset of the following slot.
-     *
-     * @return the duration of the chord with shortest duration
-     */
-    public int getShortestDuration ()
-    {
-        int best = Integer.MAX_VALUE;
-
-        for (Chord chord : getChords()) {
-            if (best > chord.getDuration()) {
-                best = chord.getDuration();
-            }
-        }
-
-        return best;
-    }
-
-    //------------------//
-    // getSuitableChord //
-    //------------------//
-    public Chord getSuitableChord (SystemPoint point)
-    {
-        Chord chordAbove = null;
-        Chord chordBelow = null;
-
-        // We look for a chord just above or just below,
-        // with a normal (non-rest) note
-        for (Chord chord : getChords()) {
-            if (chord.getHeadLocation().y < point.y) {
-                chordAbove = chord;
-            } else {
-                chordBelow = chord;
-
-                break;
-            }
-        }
-
-        if (chordAbove != null) {
-            for (TreeNode node : chordAbove.getNotes()) {
-                Note note = (Note) node;
-
-                ///if (!Shape.Rests.contains(note.getShape())) {
-                return chordAbove;
-
-                ///}
-            }
-        }
-
-        if (chordBelow != null) {
-            for (TreeNode node : chordBelow.getNotes()) {
-                Note note = (Note) node;
-
-                ///if (!Shape.Rests.contains(note.getShape())) {
-                return chordBelow;
-
-                ///}
-            }
-        }
-
-        return null;
-    }
-
-    //------//
-    // getX //
-    //------//
-    /**
-     * Report the abscissa of this slot
-     *
-     * @return the slot abscissa, wrt the containing system (and not measure)
-     */
-    public int getX ()
-    {
-        if (x == null) {
-            Population population = new Population();
-
-            for (Glyph glyph : glyphs) {
-                population.includeValue(
-                    measure.getSystem()
-                           .toSystemPoint(glyph.getCenter()).x);
-            }
-
-            if (population.getCardinality() > 0) {
-                x = (int) Math.rint(population.getMeanValue());
-            }
-        }
-
-        return x;
-    }
-
     //----------//
     // addGlyph //
     //----------//
@@ -449,6 +298,202 @@ public class Slot
     public int compareTo (Slot other)
     {
         return Integer.signum(getX() - other.getX());
+    }
+
+    //---------------//
+    // getChordAbove //
+    //---------------//
+    public Chord getChordAbove (SystemPoint point)
+    {
+        Chord chordAbove = null;
+
+        // We look for the chord just above
+        for (Chord chord : getChords()) {
+            if (chord.getHeadLocation().y < point.y) {
+                chordAbove = chord;
+            } else {
+                break;
+            }
+        }
+
+        return chordAbove;
+    }
+
+    //---------------//
+    // getChordBelow //
+    //---------------//
+    public Chord getChordBelow (SystemPoint point)
+    {
+        // We look for the chord just below
+        for (Chord chord : getChords()) {
+            if (chord.getHeadLocation().y > point.y) {
+                return chord;
+            }
+        }
+
+        // Not found
+        return null;
+    }
+
+    //-----------//
+    // getChords //
+    //-----------//
+    /**
+     * Report the (ordered) collection of chords in this time slot
+     *
+     * @return the collection of chords
+     */
+    public List<Chord> getChords ()
+    {
+        return chords;
+    }
+
+    //-------------------//
+    // getEmbracedChords //
+    //-------------------//
+    public List<Chord> getEmbracedChords (SystemPoint top,
+                                          SystemPoint bottom)
+    {
+        List<Chord> chords = new ArrayList<Chord>();
+
+        for (Chord chord : getChords()) {
+            if (chord.isEmbracedBy(top, bottom)) {
+                chords.add(chord);
+            }
+        }
+
+        return chords;
+    }
+
+    //-----------//
+    // getOffset //
+    //-----------//
+    /**
+     * Report the time offset of this time slot since beginning of the measure
+     *
+     * @return the time offset of this time slot.
+     */
+    public int getOffset ()
+    {
+        return offset;
+    }
+
+    //---------------------//
+    // getShortestDuration //
+    //---------------------//
+    /**
+     * Since there may be several chords aligned (starting) in this slot, this
+     * method reports the shortest duration among all chords of this slot. This
+     * in turn defines the time offset of the following slot.
+     *
+     * @return the duration of the chord with shortest duration
+     */
+    public int getShortestDuration ()
+    {
+        int best = Integer.MAX_VALUE;
+
+        for (Chord chord : getChords()) {
+            if (best > chord.getDuration()) {
+                best = chord.getDuration();
+            }
+        }
+
+        return best;
+    }
+
+    //------------------//
+    // getSuitableChord //
+    //------------------//
+    public Chord getSuitableChord (SystemPoint point)
+    {
+        Chord chordAbove = null;
+        Chord chordBelow = null;
+
+        // We look for a chord just above or just below
+        for (Chord chord : getChords()) {
+            if (chord.getHeadLocation().y < point.y) {
+                chordAbove = chord;
+            } else {
+                chordBelow = chord;
+
+                break;
+            }
+        }
+
+        if (chordAbove != null) {
+            for (TreeNode node : chordAbove.getNotes()) {
+                Note note = (Note) node;
+
+                return chordAbove;
+            }
+        }
+
+        if (chordBelow != null) {
+            for (TreeNode node : chordBelow.getNotes()) {
+                Note note = (Note) node;
+
+                return chordBelow;
+            }
+        }
+
+        return null;
+    }
+
+    //------//
+    // getX //
+    //------//
+    /**
+     * Report the abscissa of this slot
+     *
+     * @return the slot abscissa, wrt the containing system (and not measure)
+     */
+    public int getX ()
+    {
+        if (x == null) {
+            Population population = new Population();
+
+            for (Glyph glyph : glyphs) {
+                population.includeValue(
+                    measure.getSystem()
+                           .toSystemPoint(glyph.getCenter()).x);
+            }
+
+            if (population.getCardinality() > 0) {
+                x = (int) Math.rint(population.getMeanValue());
+            }
+        }
+
+        return x;
+    }
+
+    //---------------//
+    // isAlignedWith //
+    //---------------//
+    /**
+     * Check whether a system point is roughly aligned with this slot instance.
+     *
+     * @param sysPt the system point to check
+     * @return true if aligned
+     */
+    public boolean isAlignedWith (SystemPoint sysPt)
+    {
+        return Math.abs(sysPt.x - getX()) <= measure.getScale()
+                                                    .toUnits(constants.maxDx);
+    }
+
+    //-----------//
+    // setOffset //
+    //-----------//
+    /**
+     * Assign the time offset, since the beginning of the measure, for all
+     * chords in this time slot
+     *
+     * @param offset time offset using {@link omr.score.Note#QUARTER_DURATION}
+     * value
+     */
+    public void setOffset (int offset)
+    {
+        this.offset = offset;
     }
 
     //----------//

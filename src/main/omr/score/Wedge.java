@@ -26,7 +26,7 @@ import omr.util.Logger;
  * @version $Id$
  */
 public class Wedge
-    extends Direction
+    extends AbstractDirection
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -44,21 +44,22 @@ public class Wedge
     // Wedge //
     //-------//
     /**
-     * Creates a new instance of Wedge edge (there must be one for the wedge start, and one for the wedge stop).
+     * Creates a new instance of Wedge edge (there must be one for the wedge 
+     * start, and one for the wedge stop).
      *
-     * @param start indicate a wedge start
      * @param measure measure that contains this wedge edge
+     * @param start indicate a wedge start
      * @param point middle point on wedge edge
+     * @param chord a related chord if any
      * @param glyph the underlying glyph
      */
-    public Wedge (boolean     start,
-                  Measure     measure,
+    public Wedge (Measure     measure,
+                  boolean     start,
                   SystemPoint point,
                   Chord       chord,
                   Glyph       glyph)
     {
-        super(start, measure, point, chord);
-        addGlyph(glyph);
+        super(measure, start, point, chord, glyph);
 
         // Spread
         if ((start && (getShape() == Shape.DECRESCENDO)) ||
@@ -73,6 +74,15 @@ public class Wedge
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //-----------//
     // getSpread //
     //-----------//
@@ -84,29 +94,6 @@ public class Wedge
     public int getSpread ()
     {
         return spread;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{Wedge ");
-        sb.append(super.toString());
-        sb.append("}");
-
-        return sb.toString();
     }
 
     //----------//
@@ -129,8 +116,8 @@ public class Wedge
 
         // Start
         new Wedge(
-            true,
             startingMeasure,
+            true,
             startingPoint,
             findChord(startingMeasure, startingPoint),
             glyph);
@@ -140,8 +127,8 @@ public class Wedge
             new PixelPoint(box.x + box.width, box.y + (box.height / 2)));
         Measure     endingMeasure = part.getMeasureAt(endingPoint);
         new Wedge(
-            false,
             endingMeasure,
+            false,
             endingPoint,
             findChord(endingMeasure, endingPoint),
             glyph);

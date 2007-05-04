@@ -31,7 +31,8 @@ import java.util.Map;
  * @version $Id$
  */
 public class Dynamics
-    extends Direction
+    extends MeasureElement
+    implements Direction, Notation
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -124,8 +125,8 @@ public class Dynamics
                      Chord       chord,
                      Glyph       glyph)
     {
-        super(true, measure, point, chord);
-        addGlyph(glyph);
+        super(measure, true, point, chord, glyph);
+        chord.addDirection(this); ////// TBD: Not always !!!!!!!!!!!!!!!!!!!
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -137,20 +138,6 @@ public class Dynamics
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{Dynamics ");
-        sb.append(super.toString());
-        sb.append("}");
-
-        return sb.toString();
     }
 
     //--------------//

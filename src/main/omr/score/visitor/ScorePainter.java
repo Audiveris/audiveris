@@ -16,20 +16,26 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
+import omr.score.Arpeggiate;
 import omr.score.Barline;
 import omr.score.Beam;
 import omr.score.Chord;
 import omr.score.Clef;
+import omr.score.Coda;
 import omr.score.Dynamics;
+import omr.score.Fermata;
 import omr.score.KeySignature;
 import omr.score.Mark;
 import omr.score.Measure;
+import omr.score.MeasureElement;
 import omr.score.Note;
+import omr.score.Ornament;
 import omr.score.Pedal;
 import omr.score.Score;
 import static omr.score.ScoreConstants.*;
 import omr.score.ScoreController;
 import omr.score.ScorePoint;
+import omr.score.Segno;
 import omr.score.Slot;
 import omr.score.Slur;
 import omr.score.Staff;
@@ -173,6 +179,37 @@ public class ScorePainter
         markItem.setSelected(constants.markPainting.getValue());
         menu.add(markItem)
             .setToolTipText("Show the different marks in every measure");
+    }
+
+    //------------------//
+    // visit Arpeggiate //
+    //------------------//
+    public boolean visit (Arpeggiate arpeggiate)
+    {
+        // Draw an arpeggiate symbol with proper height
+        // Top & bottom of symbol to draw
+        final SystemRectangle box = arpeggiate.getBox();
+        final int             top = box.y;
+        final int             bot = box.y + box.height;
+        final double          height = zoom.scaled(bot - top + 1);
+
+        // Vertical ratio to extend the icon */
+        final SymbolIcon icon = (SymbolIcon) Shape.ARPEGGIATO.getIcon();
+        final double     ratio = height / icon.getIconHeight();
+
+        final Graphics2D g2 = (Graphics2D) g;
+        g.setColor(Color.black);
+        transform.setTransform(
+            1,
+            0,
+            0,
+            ratio,
+            zoom.scaled(
+                arpeggiate.getDisplayOrigin().x + arpeggiate.getPoint().x),
+            zoom.scaled(arpeggiate.getDisplayOrigin().y + top));
+        g2.drawRenderedImage(icon.getImage(), transform);
+
+        return false;
     }
 
     //---------------//
@@ -341,19 +378,28 @@ public class ScorePainter
         return true;
     }
 
+    //------------//
+    // visit Coda //
+    //------------//
+    public boolean visit (Coda coda)
+    {
+        return visit((MeasureElement) coda);
+    }
+
     //----------------//
     // visit Dynamics //
     //----------------//
     public boolean visit (Dynamics dynamics)
     {
-        if (dynamics.getShape() != null) {
-            paintSymbol(
-                dynamics.getShape(),
-                dynamics.getPoint(),
-                dynamics.getDisplayOrigin());
-        }
+        return visit((MeasureElement) dynamics);
+    }
 
-        return true;
+    //---------------//
+    // visit Fermata //
+    //---------------//
+    public boolean visit (Fermata fermata)
+    {
+        return visit((MeasureElement) fermata);
     }
 
     //--------------------//
@@ -427,6 +473,22 @@ public class ScorePainter
         }
 
         g.setColor(oldColor);
+
+        return true;
+    }
+
+    //----------------------//
+    // visit MeasureElement //
+    //----------------------//
+    @Override
+    public boolean visit (MeasureElement measureElement)
+    {
+        if (measureElement.getShape() != null) {
+            paintSymbol(
+                measureElement.getShape(),
+                measureElement.getPoint(),
+                measureElement.getDisplayOrigin());
+        }
 
         return true;
     }
@@ -718,12 +780,23 @@ public class ScorePainter
     //-------------//
     public boolean visit (Pedal pedal)
     {
-        paintSymbol(
-            pedal.getShape(),
-            pedal.getPoint(),
-            pedal.getDisplayOrigin());
+        return visit((MeasureElement) pedal);
+    }
 
-        return true;
+    //-------------//
+    // visit Segno //
+    //-------------//
+    public boolean visit (Segno segno)
+    {
+        return visit((MeasureElement) segno);
+    }
+
+    //----------------//
+    // visit Ornament //
+    //----------------//
+    public boolean visit (Ornament ornament)
+    {
+        return visit((MeasureElement) ornament);
     }
 
     //-------------//

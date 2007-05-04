@@ -91,7 +91,7 @@ public class Chord
 
     /**
      * Duration (must the same for all notes of this chord, otherwise the chord
-     * must be split)
+     * must be split. This may be too restrictive, TBD)
      */
     private Integer duration;
 
@@ -101,8 +101,11 @@ public class Chord
     /** Collection of marks for user */
     private List<Mark> marks = new ArrayList<Mark>();
 
-    /** Direction events linked to this chord */
-    private List<PartNode> events = new ArrayList<PartNode>();
+    /** Notations related  to this chord */
+    private List<Notation> notations = new ArrayList<Notation>();
+
+    /** Direction (loosely) related to this chord */
+    private List<Direction> directions = new ArrayList<Direction>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -122,311 +125,6 @@ public class Chord
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------------//
-    // getBeamGroup //
-    //--------------//
-    public BeamGroup getBeamGroup ()
-    {
-        if (getBeams()
-                .size() > 0) {
-            return getBeams()
-                       .first()
-                       .getGroup();
-        } else {
-            return null;
-        }
-    }
-
-    //----------//
-    // getBeams //
-    //----------//
-    /**
-     * Report the ordered sequence of beams that are attached to this chord
-     *
-     * @return the ordered set of attached beams
-     */
-    public SortedSet<Beam> getBeams ()
-    {
-        return beams;
-    }
-
-    //---------------//
-    // getDotsNumber //
-    //---------------//
-    /**
-     * Report the number of augmentation dots that impact this chord
-     *
-     * @return the number of dots (should be the same for all notes within this
-     * chord)
-     */
-    public int getDotsNumber ()
-    {
-        return dotsNumber;
-    }
-
-    //-------------//
-    // getDuration //
-    //-------------//
-    public Integer getDuration ()
-    {
-        if (duration == null) {
-            if (getNotes()
-                    .size() > 0) {
-                // Note heads are assumed to be the same ...
-                Note note = (Note) getNotes()
-                                       .get(0);
-
-                if (note.getShape() == Shape.WHOLE_REST) {
-                    duration = getMeasure()
-                                   .getExpectedDuration();
-                } else {
-                    duration = note.getTypeDuration(note.getShape());
-
-                    // Apply fraction
-                    int fbn = getFlagsNumber() + getBeams()
-                                                     .size();
-
-                    for (int i = 0; i < fbn; i++) {
-                        duration /= 2;
-                    }
-
-                    // Apply augmentation
-                    if (dotsNumber == 1) {
-                        duration += (duration / 2);
-                    } else if (dotsNumber == 2) {
-                        duration += ((duration * 3) / 4);
-                    }
-                }
-            }
-        }
-
-        return duration;
-    }
-
-    //------------//
-    // setEndTime //
-    //------------//
-    public void setEndTime (Integer endTime)
-    {
-        this.endTime = endTime;
-    }
-
-    //------------//
-    // getEndTime //
-    //------------//
-    public Integer getEndTime ()
-    {
-        return endTime;
-    }
-
-    //----------------//
-    // getFlagsNumber //
-    //----------------//
-    /**
-     * Report the number of flags attached to the chord stem
-     *
-     * @return the number of flags
-     */
-    public int getFlagsNumber ()
-    {
-        return flagsNumber;
-    }
-
-    //-----------------//
-    // getHeadLocation //
-    //-----------------//
-    /**
-     * Report the system-based location of the chord head (the head which is
-     * farthest from the tail)
-     *
-     * @return the head location
-     */
-    public SystemPoint getHeadLocation ()
-    {
-        if (headLocation == null) {
-            computeLocations();
-        }
-
-        return headLocation;
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    public int getId ()
-    {
-        return id;
-    }
-
-    public List<Mark> getMarks ()
-    {
-        return marks;
-    }
-
-    //----------//
-    // getNotes //
-    //----------//
-    /**
-     * Report all the notes that compose this chord
-     *
-     * @return the chord notes
-     */
-    public List<TreeNode> getNotes ()
-    {
-        return children;
-    }
-
-    //-------------------------//
-    // getPreviousChordInVoice //
-    //-------------------------//
-    public Chord getPreviousChordInVoice ()
-    {
-        int   voice = getVoice();
-        Chord prev = (Chord) getPreviousSibling();
-
-        for (; prev != null; prev = (Chord) prev.getPreviousSibling()) {
-            if (prev.getVoice() == voice) {
-                return prev;
-            }
-        }
-
-        return null;
-    }
-
-    //----------//
-    // getStaff //
-    //----------//
-    /**
-     * Report the staff that contains this chord (we use the staff of this note)
-     *
-     * @return the chord staff
-     */
-    @Override
-    public Staff getStaff ()
-    {
-        if (super.getStaff() == null) {
-            if (getNotes()
-                    .size() > 0) {
-                Note note = (Note) getNotes()
-                                       .get(0);
-                setStaff(note.getStaff());
-            }
-        }
-
-        return super.getStaff();
-    }
-
-    //---------//
-    // setStem //
-    //---------//
-    /**
-     * Assign the proper stem to this chord
-     *
-     * @param stem the chord stem
-     */
-    public void setStem (Glyph stem)
-    {
-        this.stem = stem;
-    }
-
-    //---------//
-    // getStem //
-    //---------//
-    /**
-     * Report the stem of this chord (or null in the case of chord with virtual
-     * stem)
-     *
-     * @return the chord stem, or null
-     */
-    public Glyph getStem ()
-    {
-        return stem;
-    }
-
-    //---------------//
-    // getStemChords //
-    //---------------//
-    /**
-     * Find the chord(s) that are carried by a given stem
-     *
-     * @param measure the containing measure
-     * @param stem the given stem
-     * @return the collection of related chords, which may be empty if no chord
-     *         is yet attached to this stem
-     */
-    public static List<Chord> getStemChords (Measure measure,
-                                             Glyph   stem)
-    {
-        List<Chord> chords = new ArrayList<Chord>();
-
-        for (TreeNode node : measure.getChords()) {
-            Chord chord = (Chord) node;
-
-            if (chord.getStem() == stem) {
-                chords.add(chord);
-            }
-        }
-
-        return chords;
-    }
-
-    //-----------//
-    // getEvents //
-    //-----------//
-    public List<PartNode> getEvents ()
-    {
-        return events;
-    }
-
-    //-----------------//
-    // getTailLocation //
-    //-----------------//
-    /**
-     * Report the system-based location of the tail of the chord
-     *
-     * @return the tail location
-     */
-    public SystemPoint getTailLocation ()
-    {
-        if (tailLocation == null) {
-            computeLocations();
-        }
-
-        return tailLocation;
-    }
-
-    //----------//
-    // setVoice //
-    //----------//
-    public void setVoice (Integer voice)
-    {
-        this.voice = voice;
-    }
-
-    //----------//
-    // getVoice //
-    //----------//
-    public Integer getVoice ()
-    {
-        return voice;
-    }
-
-    //-----------------//
-    // isWholeDuration //
-    //-----------------//
-    public boolean isWholeDuration ()
-    {
-        if (getNotes()
-                .size() > 0) {
-            Note note = (Note) getNotes()
-                                   .get(0);
-
-            return note.getShape() == Shape.WHOLE_REST;
-        }
-
-        return false;
-    }
 
     //--------//
     // accept //
@@ -546,6 +244,319 @@ public class Chord
         Collections.sort(getParent().getChildren(), chordComparator);
 
         return clone;
+    }
+
+    //--------------//
+    // getBeamGroup //
+    //--------------//
+    public BeamGroup getBeamGroup ()
+    {
+        if (getBeams()
+                .size() > 0) {
+            return getBeams()
+                       .first()
+                       .getGroup();
+        } else {
+            return null;
+        }
+    }
+
+    //----------//
+    // getBeams //
+    //----------//
+    /**
+     * Report the ordered sequence of beams that are attached to this chord
+     *
+     * @return the ordered set of attached beams
+     */
+    public SortedSet<Beam> getBeams ()
+    {
+        return beams;
+    }
+
+    //---------------//
+    // getDotsNumber //
+    //---------------//
+    /**
+     * Report the number of augmentation dots that impact this chord
+     *
+     * @return the number of dots (should be the same for all notes within this
+     * chord)
+     */
+    public int getDotsNumber ()
+    {
+        return dotsNumber;
+    }
+
+    //-------------//
+    // getDuration //
+    //-------------//
+    public Integer getDuration ()
+    {
+        if (duration == null) {
+            if (getNotes()
+                    .size() > 0) {
+                // Note heads are assumed to be the same ...
+                Note note = (Note) getNotes()
+                                       .get(0);
+
+                if (note.getShape() == Shape.WHOLE_REST) {
+                    duration = getMeasure()
+                                   .getExpectedDuration();
+                } else {
+                    duration = note.getTypeDuration(note.getShape());
+
+                    // Apply fraction
+                    int fbn = getFlagsNumber() + getBeams()
+                                                     .size();
+
+                    for (int i = 0; i < fbn; i++) {
+                        duration /= 2;
+                    }
+
+                    // Apply augmentation
+                    if (dotsNumber == 1) {
+                        duration += (duration / 2);
+                    } else if (dotsNumber == 2) {
+                        duration += ((duration * 3) / 4);
+                    }
+                }
+            }
+        }
+
+        return duration;
+    }
+
+    //------------//
+    // getEndTime //
+    //------------//
+    public Integer getEndTime ()
+    {
+        return endTime;
+    }
+
+    //----------------//
+    // getFlagsNumber //
+    //----------------//
+    /**
+     * Report the number of flags attached to the chord stem
+     *
+     * @return the number of flags
+     */
+    public int getFlagsNumber ()
+    {
+        return flagsNumber;
+    }
+
+    //-----------------//
+    // getHeadLocation //
+    //-----------------//
+    /**
+     * Report the system-based location of the chord head (the head which is
+     * farthest from the tail)
+     *
+     * @return the head location
+     */
+    public SystemPoint getHeadLocation ()
+    {
+        if (headLocation == null) {
+            computeLocations();
+        }
+
+        return headLocation;
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    public int getId ()
+    {
+        return id;
+    }
+
+    public List<Mark> getMarks ()
+    {
+        return marks;
+    }
+
+    //----------//
+    // getNotes //
+    //----------//
+    /**
+     * Report all the notes that compose this chord
+     *
+     * @return the chord notes
+     */
+    public List<TreeNode> getNotes ()
+    {
+        return children;
+    }
+
+    //-------------------------//
+    // getPreviousChordInVoice //
+    //-------------------------//
+    public Chord getPreviousChordInVoice ()
+    {
+        int   voice = getVoice();
+        Chord prev = (Chord) getPreviousSibling();
+
+        for (; prev != null; prev = (Chord) prev.getPreviousSibling()) {
+            if (prev.getVoice() == voice) {
+                return prev;
+            }
+        }
+
+        return null;
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    /**
+     * Report the staff that contains this chord (we use the staff of this note)
+     *
+     * @return the chord staff
+     */
+    @Override
+    public Staff getStaff ()
+    {
+        if (super.getStaff() == null) {
+            if (getNotes()
+                    .size() > 0) {
+                Note note = (Note) getNotes()
+                                       .get(0);
+                setStaff(note.getStaff());
+            }
+        }
+
+        return super.getStaff();
+    }
+
+    //---------//
+    // getStem //
+    //---------//
+    /**
+     * Report the stem of this chord (or null in the case of chord with virtual
+     * stem)
+     *
+     * @return the chord stem, or null
+     */
+    public Glyph getStem ()
+    {
+        return stem;
+    }
+
+    //---------------//
+    // getStemChords //
+    //---------------//
+    /**
+     * Find the chord(s) that are carried by a given stem
+     *
+     * @param measure the containing measure
+     * @param stem the given stem
+     * @return the collection of related chords, which may be empty if no chord
+     *         is yet attached to this stem
+     */
+    public static List<Chord> getStemChords (Measure measure,
+                                             Glyph   stem)
+    {
+        List<Chord> chords = new ArrayList<Chord>();
+
+        for (TreeNode node : measure.getChords()) {
+            Chord chord = (Chord) node;
+
+            if (chord.getStem() == stem) {
+                chords.add(chord);
+            }
+        }
+
+        return chords;
+    }
+
+    //---------------//
+    // getDirections //
+    //---------------//
+    public Collection<?extends Direction> getDirections ()
+    {
+        return directions;
+    }
+
+    //--------------//
+    // getNotations //
+    //--------------//
+    public Collection<?extends Notation> getNotations ()
+    {
+        return notations;
+    }
+
+    //-----------------//
+    // getTailLocation //
+    //-----------------//
+    /**
+     * Report the system-based location of the tail of the chord
+     *
+     * @return the tail location
+     */
+    public SystemPoint getTailLocation ()
+    {
+        if (tailLocation == null) {
+            computeLocations();
+        }
+
+        return tailLocation;
+    }
+
+    //----------//
+    // getVoice //
+    //----------//
+    public Integer getVoice ()
+    {
+        return voice;
+    }
+
+    //-----------------//
+    // isWholeDuration //
+    //-----------------//
+    public boolean isWholeDuration ()
+    {
+        if (getNotes()
+                .size() > 0) {
+            Note note = (Note) getNotes()
+                                   .get(0);
+
+            return note.getShape() == Shape.WHOLE_REST;
+        }
+
+        return false;
+    }
+
+    //------------//
+    // setEndTime //
+    //------------//
+    public void setEndTime (Integer endTime)
+    {
+        this.endTime = endTime;
+    }
+
+    //---------//
+    // setStem //
+    //---------//
+    /**
+     * Assign the proper stem to this chord
+     *
+     * @param stem the chord stem
+     */
+    public void setStem (Glyph stem)
+    {
+        this.stem = stem;
+    }
+
+    //----------//
+    // setVoice //
+    //----------//
+    public void setVoice (Integer voice)
+    {
+        this.voice = voice;
     }
 
     //----------//
@@ -746,12 +757,38 @@ public class Chord
         }
     }
 
-    //----------//
-    // addEvent //
-    //----------//
-    void addEvent (PartNode node)
+    //--------------//
+    // addDirection //
+    //--------------//
+    void addDirection (Direction direction)
     {
-        events.add(node);
+        directions.add(direction);
+    }
+
+    //-------------//
+    // addNotation //
+    //-------------//
+    void addNotation (Notation notation)
+    {
+        notations.add(notation);
+    }
+
+    //--------------//
+    // isEmbracedBy //
+    //--------------//
+    boolean isEmbracedBy (SystemPoint top,
+                          SystemPoint bottom)
+    {
+        for (TreeNode node : getNotes()) {
+            Note        note = (Note) node;
+            SystemPoint center = note.getCenter();
+
+            if ((center.y >= top.y) && (center.y <= bottom.y)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //--------------//
