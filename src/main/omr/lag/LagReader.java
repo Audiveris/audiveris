@@ -38,34 +38,23 @@ public class LagReader
 
     //~ Instance fields --------------------------------------------------------
 
-    /**
-     * The lag to populate
-     */
-    protected final Lag lag;
+    /** The lag to populate*/
+    private final Lag lag;
 
-    /**
-     * Runs found in each horizontal row or vertical column
-     */
-    protected final List<List<Run>> runs;
+    /** Runs found in each horizontal row or vertical column */
+    private final List<List<Run>> runs;
 
-    /**
-     * The source to read runs of pixels from
-     */
-    protected final PixelSource source;
+    /** The source to read runs of pixels from*/
+    private final PixelSource source;
 
-    /**
-     * The maximum pixel grey level to be foreground
-     */
-    protected final int maxLevel;
+    /** The maximum pixel grey level to be foreground */
+    private final int maxLevel;
 
-    /**
-     * The minimum value for a run length to be considered
-     */
-    protected final int minLength;
+    /** The minimum value for a run length to be considered */
+    private final int minLength;
 
-    // To avoid too many allocations (beware : non-reentrant)
-    private final Point cp = new Point();
-    private final Point xy = new Point();
+    /** Remember if we have to swap x and y coordinates */
+    private final boolean swapNeeded;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -91,6 +80,8 @@ public class LagReader
         this.source = source;
         this.minLength = minLength;
         this.maxLevel = source.getMaxForeground();
+
+        swapNeeded = lag.isVertical();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -106,7 +97,7 @@ public class LagReader
      * @return true if foreground, false if background
      */
     @Implement(RunsBuilder.Reader.class)
-    public boolean isFore (int level)
+    public final boolean isFore (int level)
     {
         return level <= maxLevel;
     }
@@ -123,14 +114,16 @@ public class LagReader
      * @return pixel grey level
      */
     @Implement(RunsBuilder.Reader.class)
-    public int getLevel (int coord,
-                         int pos)
+    public final int getLevel (int coord,
+                               int pos)
     {
-        cp.x = coord;
-        cp.y = pos;
-        lag.switchRef(cp, xy);
+        if (swapNeeded) {
+            int temp = pos;
+            pos = coord;
+            coord = temp;
+        }
 
-        return source.getPixel(xy.x, xy.y);
+        return source.getPixel(coord, pos);
     }
 
     //---------//
@@ -144,9 +137,9 @@ public class LagReader
      * @param length run length
      */
     @Implement(RunsBuilder.Reader.class)
-    public void backRun (int coord,
-                         int pos,
-                         int length)
+    public final void backRun (int coord,
+                               int pos,
+                               int length)
     {
     }
 
@@ -162,10 +155,10 @@ public class LagReader
      * @param cumul cumulated pixel grey levels on all run points
      */
     @Implement(RunsBuilder.Reader.class)
-    public void foreRun (int coord,
-                         int pos,
-                         int length,
-                         int cumul)
+    public final void foreRun (int coord,
+                               int pos,
+                               int length,
+                               int cumul)
     {
         // We consider only runs that are longer than minLength
         if (length >= minLength) {
@@ -182,7 +175,7 @@ public class LagReader
      * Method called-back when all runs have been read
      */
     @Implement(RunsBuilder.Reader.class)
-    public void terminate ()
+    public final void terminate ()
     {
         if (logger.isFineEnabled()) {
             StringBuffer buf = new StringBuffer(2048);

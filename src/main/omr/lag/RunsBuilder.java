@@ -9,7 +9,13 @@
 //
 package omr.lag;
 
+import omr.util.Logger;
+import omr.util.SignallingRunnable;
+
 import java.awt.Rectangle;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Class <code>RunsBuilder</code> is in charge of building a collection of runs,
@@ -20,6 +26,15 @@ import java.awt.Rectangle;
  */
 public class RunsBuilder
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(RunsBuilder.class);
+
+    /** Number of processors available */
+    private static final int cpuNb = Runtime.getRuntime()
+                                            .availableProcessors();
+
     //~ Instance fields --------------------------------------------------------
 
     /** The adapter that takes care of pixel access */
@@ -27,6 +42,9 @@ public class RunsBuilder
 
     //~ Constructors -----------------------------------------------------------
 
+    //-------------//
+    // RunsBuilder //
+    //-------------//
     /**
      * Creates a new RunsBuilder object.
      *
@@ -59,63 +77,127 @@ public class RunsBuilder
         final int pMin = rect.y;
         final int pMax = (rect.y + rect.height) - 1;
 
-        boolean   isFore; // Current run is FOREGROUND or BACKGROUND
-        int       length; // Current length of the run in progress
-        int       cumul; // Current cumulated grey level for the run in progress
+        if (cpuNb > 1) {
+            createParallelRuns(pMin, pMax, cMin, cMax);
+        } else {
+            createSequentialRuns(pMin, pMax, cMin, cMax);
+        }
+
+        reader.terminate();
+    }
+
+    //--------------------//
+    // createParallelRuns //
+    //--------------------//
+    /**
+     * Parallel version
+     */
+    private void createParallelRuns (int       pMin,
+                                     int       pMax,
+                                     final int cMin,
+                                     final int cMax)
+    {
+        Executor       executor = Executors.newFixedThreadPool(cpuNb + 1);
+        CountDownLatch doneSignal = new CountDownLatch(pMax - pMin + 1);
 
         // Browse one dimension
         for (int p = pMin; p <= pMax; p++) {
-            isFore = false;
-            length = 0;
-            cumul = 0;
-
-            // Browse other dimension
-            for (int c = cMin; c <= cMax; c++) {
-                final int level = reader.getLevel(c, p);
-
-                if (reader.isFore(level)) {
-                    // We are on a foreground pixel
-                    if (isFore) {
-                        // Append to the foreground run in progress
-                        length++;
-                        cumul += level;
-                    } else {
-                        // End the previous background run if any
-                        if (length > 0) {
-                            reader.backRun(c, p, length);
+            final int         pp = p;
+            SignallingRunnable work = new SignallingRunnable(
+                doneSignal,
+                new Runnable() {
+                        public void run ()
+                        {
+                            processPosition(pp, cMin, cMax);
                         }
+                    });
+            executor.execute(work);
+        }
 
-                        // Initialize values for the starting foreground run
-                        isFore = true;
-                        length = 1;
-                        cumul = level;
-                    }
+        // Wait for end of work
+        try {
+            doneSignal.await();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    //----------------------//
+    // createSequentialRuns //
+    //----------------------//
+    /**
+     * Sequential version version
+     */
+    private void createSequentialRuns (int pMin,
+                                       int pMax,
+                                       int cMin,
+                                       int cMax)
+    {
+        // Browse one dimension at a time
+        for (int p = pMin; p <= pMax; p++) {
+            processPosition(p, cMin, cMax);
+        }
+    }
+
+    //-----------------//
+    // processPosition //
+    //-----------------//
+    private void processPosition (int p,
+                                  int cMin,
+                                  int cMax)
+    {
+        // Current run is FOREGROUND or BACKGROUND
+        boolean isFore = false;
+
+        // Current length of the run in progress
+        int length = 0;
+
+        // Current cumulated grey level for the run in progress
+        int cumul = 0;
+
+        // Browse other dimension
+        for (int c = cMin; c <= cMax; c++) {
+            final int level = reader.getLevel(c, p);
+
+            if (reader.isFore(level)) {
+                // We are on a foreground pixel
+                if (isFore) {
+                    // Append to the foreground run in progress
+                    length++;
+                    cumul += level;
                 } else {
-                    // We are on a background pixel
-                    if (isFore) {
-                        // End the previous foreground run
-                        reader.foreRun(c, p, length, cumul);
-
-                        // Initialize values for the starting background run
-                        isFore = false;
-                        length = 1;
-                    } else {
-                        // Append to the background run in progress
-                        length++;
+                    // End the previous background run if any
+                    if (length > 0) {
+                        reader.backRun(c, p, length);
                     }
-                }
-            }
 
-            // Process end of last run
-            if (isFore) {
-                reader.foreRun(cMax + 1, p, length, cumul);
+                    // Initialize values for the starting foreground run
+                    isFore = true;
+                    length = 1;
+                    cumul = level;
+                }
             } else {
-                reader.backRun(cMax + 1, p, length);
+                // We are on a background pixel
+                if (isFore) {
+                    // End the previous foreground run
+                    reader.foreRun(c, p, length, cumul);
+
+                    // Initialize values for the starting background run
+                    isFore = false;
+                    length = 1;
+                } else {
+                    // Append to the background run in progress
+                    length++;
+                }
             }
         }
 
-        // Last wishes
-        reader.terminate();
+        // Process end of last run in this position
+        if (isFore) {
+            reader.foreRun(cMax + 1, p, length, cumul);
+        } else {
+            reader.backRun(cMax + 1, p, length);
+        }
     }
 
     //~ Inner Interfaces -------------------------------------------------------
@@ -126,34 +208,6 @@ public class RunsBuilder
      */
     public static interface Reader
     {
-        //--------//
-        // isFore //
-        //--------//
-        /**
-         * This method is used to check if the grey level corresponds to a
-         * foreground pixel.
-         *
-         * @param level pixel level of grey
-         *
-         * @return true if pixel is foreground, false otherwise
-         */
-        boolean isFore (int level);
-
-        //----------//
-        // getLevel //
-        //----------//
-        /**
-         * This method is used to report the grey level of the pixel read at
-         * location (coord, pos).
-         *
-         * @param coord x for horizontal runs, y for vertical runs
-         * @param pos   y for horizontal runs, x for vertical runs
-         *
-         * @return the pixel grey value (from 0 for black up to 255 for white)
-         */
-        int getLevel (int coord,
-                      int pos);
-
         //---------//
         // backRun //
         //---------//
@@ -184,6 +238,34 @@ public class RunsBuilder
                       int pos,
                       int length,
                       int cumul);
+
+        //----------//
+        // getLevel //
+        //----------//
+        /**
+         * This method is used to report the grey level of the pixel read at
+         * location (coord, pos).
+         *
+         * @param coord x for horizontal runs, y for vertical runs
+         * @param pos   y for horizontal runs, x for vertical runs
+         *
+         * @return the pixel grey value (from 0 for black up to 255 for white)
+         */
+        int getLevel (int coord,
+                      int pos);
+
+        //--------//
+        // isFore //
+        //--------//
+        /**
+         * This method is used to check if the grey level corresponds to a
+         * foreground pixel.
+         *
+         * @param level pixel level of grey
+         *
+         * @return true if pixel is foreground, false otherwise
+         */
+        boolean isFore (int level);
 
         //-----------//
         // terminate //

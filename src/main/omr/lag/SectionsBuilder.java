@@ -109,21 +109,20 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
         // Populate the runs.
         RunsBuilder runsBuilder = new RunsBuilder(
             new LagReader(lag, runs, source, minRunLength));
+        long        start = System.currentTimeMillis();
         runsBuilder.createRuns(rect);
+
+        if (logger.isFineEnabled()) {
+            long stop = System.currentTimeMillis();
+            logger.fine(
+                "Lag " + lag.getName() + " built in " + (stop - start) + "ms");
+        }
 
         // Organize the runs into sections
         buildSections();
 
         // Store the runs into the lag
         lag.setRuns(runs);
-    }
-
-    //------------//
-    // isFinished //
-    //------------//
-    private boolean isFinished (S section)
-    {
-        return section.getId() < 0;
     }
 
     //---------------//
@@ -209,6 +208,14 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
     private void finish (S section)
     {
         section.setId(-section.getId());
+    }
+
+    //------------//
+    // isFinished //
+    //------------//
+    private boolean isFinished (S section)
+    {
+        return section.getId() < 0;
     }
 
     //-----------------//
