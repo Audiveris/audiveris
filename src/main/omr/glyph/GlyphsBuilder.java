@@ -351,8 +351,7 @@ public class GlyphsBuilder
     // checkStemIntersect //
     //--------------------//
     private boolean checkStemIntersect (Collection<Glyph> glyphs,
-                                        //int               maxItemWidth,
-    Glyph                                                 glyph,
+                                        Glyph             glyph,
                                         boolean           onLeft)
     {
         ///logger.info("checkStemIntersect glyph#" + glyph.getId() + " among" + Glyph.toString(glyphs));
