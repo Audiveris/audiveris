@@ -202,10 +202,8 @@ public class GlyphsBuilder
         Glyph oldGlyph = vLag.addGlyph(glyph);
 
         if (oldGlyph != glyph) {
-            // Perhaps some members to carry over ... TBD
-            oldGlyph.setLeftStem(glyph.getLeftStem());
-            oldGlyph.setRightStem(glyph.getRightStem());
-            oldGlyph.setStemNumber(glyph.getStemNumber());
+            // Perhaps some members to carry over
+            oldGlyph.pullFrom(glyph);
         }
 
         system.addGlyph(oldGlyph);
@@ -406,10 +404,15 @@ public class GlyphsBuilder
                 for (GlyphSection section : glyph.getMembers()) {
                     if (section.getContour()
                                .intersects(b.x, b.y, b.width, b.height)) {
-//                        logger.fine(
-//                            "Close distance between stem#" + s.getId() + " & " +
-//                            glyph);
+                        if (onLeft) {
+                            glyph.setLeftStem(s);
+                        } else {
+                            glyph.setRightStem(s);
+                        }
 
+                        //                        logger.fine(
+                        //                            "Close distance between stem#" + s.getId() + " & " +
+                        //                            glyph);
                         return true;
                     }
                 }

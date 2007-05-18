@@ -15,7 +15,6 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphNetwork;
-import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 
@@ -23,6 +22,12 @@ import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 
+import omr.score.Chord;
+import omr.score.Measure;
+import omr.score.Note;
+import omr.score.Staff;
+import omr.score.SystemPart;
+import omr.score.SystemPoint;
 import omr.score.visitor.SheetPainter;
 
 import omr.selection.Selection;
@@ -37,6 +42,7 @@ import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 
 import omr.util.Logger;
+import omr.util.TreeNode;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -363,6 +369,37 @@ public class SymbolsEditor
         // Second phase dedicated to stems, if any
         if (stems.size() > 0) {
             cancelStems(stems);
+        }
+    }
+
+    //----------------//
+    // getScoreEntity //
+    //----------------//
+    /**
+     * Retrieve the score entity/ies that correspond to this glyph
+     *
+     * @param glyph the glyph to use as the starting point
+     */
+    public void getScoreEntity (Glyph glyph)
+    {
+        SystemInfo       systemInfo = sheet.getSystemAtY(
+            glyph.getContourBox().y);
+        omr.score.System system = systemInfo.getScoreSystem();
+        SystemPoint      center = system.toSystemPoint(glyph.getCenter());
+        Staff            staff = system.getStaffAt(center);
+        SystemPart       part = staff.getPart();
+        Measure          measure = part.getMeasureAt(center);
+
+        for (TreeNode node : measure.getChords()) {
+            Chord chord = (Chord) node;
+
+            for (TreeNode n : chord.getNotes()) {
+                Note note = (Note) n;
+
+                if (note.getGlyph() == glyph) {
+                    logger.info(note + "->" + note.getChord());
+                }
+            }
         }
     }
 

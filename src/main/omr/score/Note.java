@@ -603,6 +603,14 @@ public class Note
     }
 
     //----------//
+    // getGlyph //
+    //----------//
+    public Glyph getGlyph ()
+    {
+        return glyph;
+    }
+
+    //----------//
     // toString //
     //----------//
     @Override

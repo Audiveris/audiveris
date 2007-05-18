@@ -1337,6 +1337,16 @@ public class Glyph
         this.doubt = doubt;
     }
 
+    //----------//
+    // pullFrom //
+    //----------//
+    void pullFrom (Glyph glyph)
+    {
+        setLeftStem(glyph.getLeftStem());
+        setRightStem(glyph.getRightStem());
+        setStemNumber(glyph.getStemNumber());
+    }
+
     //----------------//
     // cumulatePoints //
     //----------------//

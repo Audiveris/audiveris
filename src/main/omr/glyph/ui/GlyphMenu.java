@@ -152,6 +152,9 @@ public class GlyphMenu
         // Dump current glyph
         popup.add(new JMenuItem(new DumpAction()));
 
+        // Display score counterpart
+        popup.add(new JMenuItem(new ScoreAction()));
+
         popup.addSeparator(); //----------------------------------------------
 
         // Display all glyphs of the same shape
@@ -491,6 +494,43 @@ public class GlyphMenu
             setEnabled(false);
             putValue(NAME, "Build compound");
             putValue(SHORT_DESCRIPTION, "No proposed compound");
+        }
+    }
+
+    //-------------//
+    // ScoreAction //
+    //-------------//
+    /**
+     * Display the score entity that is related to the glyph
+     */
+    private class ScoreAction
+        extends DynAction
+    {
+        public void actionPerformed (ActionEvent e)
+        {
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+
+            for (Glyph glyph : glyphs) {
+                symbolsEditor.getScoreEntity(glyph);
+            }
+        }
+
+        public void update ()
+        {
+            if (glyphNb > 0) {
+                setEnabled(true);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("Show score entities");
+                putValue(NAME, sb.toString());
+                putValue(
+                    SHORT_DESCRIPTION,
+                    "Show score entities related to the glyph(s)");
+            } else {
+                setEnabled(false);
+                putValue(NAME, "Score entity");
+                putValue(SHORT_DESCRIPTION, "No glyph to process");
+            }
         }
     }
 
