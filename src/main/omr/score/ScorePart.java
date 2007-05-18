@@ -243,7 +243,7 @@ public class ScorePart
     // simpleDurationOf //
     //------------------//
     /**
-     * Export a duration to its simplest form, based on the greates duration
+     * Export a duration to its simplest form, based on the greatest duration
      * divisor of the part
      *
      * @param value the raw duration

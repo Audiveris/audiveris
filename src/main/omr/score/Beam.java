@@ -86,6 +86,166 @@ public class Beam
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //----------//
+    // addChord //
+    //----------//
+    /**
+     * Insert a chord linked by this beam
+     *
+     * @param chord the linked chord
+     */
+    public void addChord (Chord chord)
+    {
+        chords.add(chord);
+    }
+
+    //------------------//
+    // closeConnections //
+    //------------------//
+    /**
+     * Make sure all connections between this beam and the linked chords/stems
+     * are actually recorded
+     */
+    public void closeConnections ()
+    {
+        Chord   first = chords.first();
+        Chord   last = chords.last();
+        boolean started = false;
+
+        for (Chord chord : group.getChords()) {
+            if (chord == first) {
+                started = true;
+            }
+
+            if (started) {
+                chords.add(chord);
+                chord.addBeam(this);
+            }
+
+            if (chord == last) {
+                break;
+            }
+        }
+    }
+
+    //-----------//
+    // compareTo //
+    //-----------//
+    /**
+     * Implement the order between two beams (of the same BeamGroup). We use the
+     * order along the first common chord, starting from chord tail. Note that,
+     * apart from the trivial case where a beam is compared to itself, two beams
+     * of the same group cannot be equal.
+     *
+     * @param other the other beam to be compared with
+     * @return -1, 0, +1 according to the comparison result
+     */
+    public int compareTo (Beam other)
+    {
+        // Process trivial case
+        if (this == other) {
+            return 0;
+        }
+
+        // Find a common chord, and use reverse order from head location
+        for (Chord chord : chords) {
+            if (other.chords.contains(chord)) {
+                int x = getMeasure()
+                            .getSystem()
+                            .toSystemPoint(chord.getStem().getCenter()).x;
+                int y = getLine()
+                            .yAt(x);
+                int yOther = other.getLine()
+                                  .yAt(x);
+                int yHead = chord.getHeadLocation().y;
+
+                int result = Integer.signum(
+                    Math.abs(yHead - yOther) - Math.abs(yHead - y));
+
+                if (result == 0) {
+                    // This should not happen
+                    logger.warning(
+                        other.getContextString() + " equality between " +
+                        this.toLongString() + " and " + other.toLongString());
+                    logger.warning(
+                        "x=" + x + " y=" + y + " yOther=" + yOther + " yHead=" +
+                        yHead);
+                    Dumper.dump(this, "this");
+                    Dumper.dump(other, "other");
+                }
+
+                return result;
+            }
+        }
+
+        // This case corresponds to two beam hooks, use abscissa to order them
+        return Integer.signum(this.left.x - other.left.x);
+    }
+
+    //----------------//
+    // determineGroup //
+    //----------------//
+    /**
+     * Determine which BeamGroup this beam is part of. The BeamGroup is either
+     * reused (if one of its beams has a linked chord in common with this beam)
+     * or created from scratch otherwise
+     */
+    public void determineGroup ()
+    {
+        // Check if this beam should belong to an existing group
+        for (BeamGroup group : getMeasure()
+                                   .getBeamGroups()) {
+            for (Beam beam : group.getBeams()) {
+                for (Chord chord : beam.getChords()) {
+                    if (this.chords.contains(chord)) {
+                        // We have a chord in common with this beam, so we are
+                        // part of the same group
+                        setGroup(group);
+
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                getContextString() + " Reused " + group +
+                                " for " + this + " stick #" +
+                                glyphs.first().getId());
+                        }
+
+                        return;
+                    }
+                }
+            }
+        }
+
+        // No compatible group found, let's build a new one
+        setGroup(new BeamGroup(getMeasure()));
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                getContextString() + " Created new " + getGroup() + " for " +
+                this + " stick #" + glyphs.first().getId());
+        }
+    }
+
+    //------//
+    // dump //
+    //------//
+    /**
+     * Utility method for easy dumping of the beam entity
+     */
+    public void dump ()
+    {
+        getLine();
+        Dumper.dump(this);
+    }
+
     //-----------//
     // getChords //
     //-----------//
@@ -111,41 +271,6 @@ public class Beam
     public SortedSet<Glyph> getGlyphs ()
     {
         return glyphs;
-    }
-
-    //----------//
-    // setGroup //
-    //----------//
-    /**
-     * Assign this beam to a BeamGroup, by setting the link both ways between
-     * this beam and the containing group.
-     *
-     * @param group the (new) containing beam group
-     */
-    public void setGroup (BeamGroup group)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "Assigning " + this + " from " + this.group + " to " + group);
-        }
-
-        // Trivial noop case
-        if (this.group == group) {
-            return;
-        }
-
-        // Remove from current group if any
-        if (this.group != null) {
-            this.group.removeBeam(this);
-        }
-
-        // Assign to new group
-        if (group != null) {
-            group.addBeam(this);
-        }
-
-        // Remember assignment
-        this.group = group;
     }
 
     //----------//
@@ -242,141 +367,6 @@ public class Beam
         return right;
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //----------//
-    // addChord //
-    //----------//
-    /**
-     * Insert a chord linked by this beam
-     *
-     * @param chord the linked chord
-     */
-    public void addChord (Chord chord)
-    {
-        chords.add(chord);
-    }
-
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * Implement the order between two beams (of the same BeamGroup). We use the
-     * order along the first common chord, starting from chord tail. Note that,
-     * apart from the trivial case where a beam is compared to itself, two beams
-     * of the same group cannot be equal.
-     *
-     * @param other the other beam to be compared with
-     * @return -1, 0, +1 according to the comparison result
-     */
-    public int compareTo (Beam other)
-    {
-        // Process trivial case
-        if (this == other) {
-            return 0;
-        }
-
-        // Find a common chord, and use reverse order from head location
-        for (Chord chord : chords) {
-            if (other.chords.contains(chord)) {
-                int x = getMeasure()
-                            .getSystem()
-                            .toSystemPoint(chord.getStem().getCenter()).x;
-                int y = getLine()
-                            .yAt(x);
-                int yOther = other.getLine()
-                                  .yAt(x);
-                int yHead = chord.getHeadLocation().y;
-
-                int result = Integer.signum(
-                    Math.abs(yHead - yOther) - Math.abs(yHead - y));
-
-                if (result == 0) {
-                    // This should not happen
-                    logger.warning(
-                        other.getContextString() + " equality between " +
-                        this.toLongString() + " and " + other.toLongString());
-                    logger.warning(
-                        "x=" + x + " y=" + y + " yOther=" + yOther + " yHead=" +
-                        yHead);
-                    Dumper.dump(this, "this");
-                    Dumper.dump(other, "other");
-                }
-
-                return result;
-            }
-        }
-
-        // Should not happen, but let's keep the compiler happy
-        logger.warning(
-            getContextString() + " Comparing 2 beams with no common chord : " +
-            this.toLongString() + " & " + other.toLongString());
-
-        return 0;
-    }
-
-    //----------------//
-    // determineGroup //
-    //----------------//
-    /**
-     * Determine which BeamGroup this beam is part of. The BeamGroup is either
-     * reused (if one of its beams has a linked chord in common with this beam)
-     * or created from scratch otherwise
-     */
-    public void determineGroup ()
-    {
-        // Check if this beam should belong to an existing group
-        for (BeamGroup group : getMeasure()
-                                   .getBeamGroups()) {
-            for (Beam beam : group.getBeams()) {
-                for (Chord chord : beam.getChords()) {
-                    if (this.chords.contains(chord)) {
-                        // We have a chord in common with this beam, so we are
-                        // part of the same group
-                        setGroup(group);
-
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                getContextString() + " Reused " + group +
-                                " for " + this + " stick #" +
-                                glyphs.first().getId());
-                        }
-
-                        return;
-                    }
-                }
-            }
-        }
-
-        // No compatible group found, let's build a new one
-        setGroup(new BeamGroup(getMeasure()));
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                getContextString() + " Created new " + getGroup() + " for " +
-                this + " stick #" + glyphs.first().getId());
-        }
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Utility method for easy dumping of the beam entity
-     */
-    public void dump ()
-    {
-        getLine();
-        Dumper.dump(this);
-    }
-
     //------------//
     // linkChords //
     //------------//
@@ -387,6 +377,9 @@ public class Beam
     public void linkChords ()
     {
         for (Glyph glyph : getGlyphs()) {
+            //////////////////////////////////////////////////////////////////
+            // TBD for a beam (non hook) both stems must exist and be linked
+            //////////////////////////////////////////////////////////////////
             linkChordsOnStem("left", glyph.getLeftStem(), glyph);
             linkChordsOnStem("right", glyph.getRightStem(), glyph);
         }
@@ -428,6 +421,41 @@ public class Beam
         if (logger.isFineEnabled()) {
             logger.fine(beam.getContextString() + " " + beam);
         }
+    }
+
+    //----------//
+    // setGroup //
+    //----------//
+    /**
+     * Assign this beam to a BeamGroup, by setting the link both ways between
+     * this beam and the containing group.
+     *
+     * @param group the (new) containing beam group
+     */
+    public void setGroup (BeamGroup group)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "Assigning " + this + " from " + this.group + " to " + group);
+        }
+
+        // Trivial noop case
+        if (this.group == group) {
+            return;
+        }
+
+        // Remove from current group if any
+        if (this.group != null) {
+            this.group.removeBeam(this);
+        }
+
+        // Assign to new group
+        if (group != null) {
+            group.addBeam(this);
+        }
+
+        // Remember assignment
+        this.group = group;
     }
 
     //--------------//
@@ -472,7 +500,7 @@ public class Beam
         StringBuilder sb = new StringBuilder();
         sb.append("{Beam");
 
-        sb.append(" #")
+        sb.append("#")
           .append(id);
 
         if (getGroup() != null) {
@@ -484,6 +512,66 @@ public class Beam
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //----------//
+    // addGlyph //
+    //----------//
+    /**
+     * Insert a (BEAM/BEAM_HOOK) glyph as a component of this beam
+     *
+     * @param glyph the glyph to insert
+     */
+    private void addGlyph (Glyph glyph)
+    {
+        glyphs.add(glyph);
+        reset();
+    }
+
+    //--------------//
+    // getLeftPoint //
+    //--------------//
+    /**
+     * Report the left point of a (BEAM/BEAM_HOOK) glyph
+     *
+     * @param glyph the given glyph
+     * @return the glyph left point
+     */
+    private SystemPoint getLeftPoint (Glyph glyph)
+    {
+        Stick  stick = (Stick) glyph;
+        int    lx = stick.getFirstPos();
+        System system = getMeasure()
+                            .getSystem();
+
+        return new SystemPoint(
+            getScale().pixelsToUnits(lx) - system.getTopLeft().x,
+            (int) rint(
+                getScale().pixelsToUnitsDouble(
+                    stick.getLine().xAt((double) lx)) - system.getTopLeft().y));
+    }
+
+    //---------------//
+    // getRightPoint //
+    //---------------//
+    /**
+     * Report the right point of a (BEAM/BEAM_HOOK) glyph
+     *
+     * @param glyph the given glyph
+     * @return the glyph right point
+     */
+    private SystemPoint getRightPoint (Glyph glyph)
+    {
+        Stick  stick = (Stick) glyph;
+        int    rx = stick.getLastPos();
+        System system = getMeasure()
+                            .getSystem();
+
+        return new SystemPoint(
+            getScale().pixelsToUnits(rx) - system.getTopLeft().x,
+            (int) rint(
+                getScale().pixelsToUnitsDouble(
+                    stick.getLine().xAt((double) rx)) - system.getTopLeft().y));
     }
 
     //------------------//
@@ -536,66 +624,6 @@ public class Beam
         }
 
         return false;
-    }
-
-    //--------------//
-    // getLeftPoint //
-    //--------------//
-    /**
-     * Report the left point of a (BEAM/BEAM_HOOK) glyph
-     *
-     * @param glyph the given glyph
-     * @return the glyph left point
-     */
-    private SystemPoint getLeftPoint (Glyph glyph)
-    {
-        Stick  stick = (Stick) glyph;
-        int    lx = stick.getFirstPos();
-        System system = getMeasure()
-                            .getSystem();
-
-        return new SystemPoint(
-            getScale().pixelsToUnits(lx) - system.getTopLeft().x,
-            (int) rint(
-                getScale().pixelsToUnitsDouble(
-                    stick.getLine().xAt((double) lx)) - system.getTopLeft().y));
-    }
-
-    //---------------//
-    // getRightPoint //
-    //---------------//
-    /**
-     * Report the right point of a (BEAM/BEAM_HOOK) glyph
-     *
-     * @param glyph the given glyph
-     * @return the glyph right point
-     */
-    private SystemPoint getRightPoint (Glyph glyph)
-    {
-        Stick  stick = (Stick) glyph;
-        int    rx = stick.getLastPos();
-        System system = getMeasure()
-                            .getSystem();
-
-        return new SystemPoint(
-            getScale().pixelsToUnits(rx) - system.getTopLeft().x,
-            (int) rint(
-                getScale().pixelsToUnitsDouble(
-                    stick.getLine().xAt((double) rx)) - system.getTopLeft().y));
-    }
-
-    //----------//
-    // addGlyph //
-    //----------//
-    /**
-     * Insert a (BEAM/BEAM_HOOK) glyph as a component of this beam
-     *
-     * @param glyph the glyph to insert
-     */
-    private void addGlyph (Glyph glyph)
-    {
-        glyphs.add(glyph);
-        reset();
     }
 
     //------------------//

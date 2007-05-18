@@ -346,6 +346,11 @@ public enum Shape
         /*1D1AC*/ // COMBINING_HARMONIC,
         /*1D1AD*/ // COMBINING_SNAP_PIZZICATO,
 
+        // Tuplets
+        //
+        /*-----*/ TUPLET_THREE,         // 3
+        /*-----*/ TUPLET_SIX,           // 6
+
         // Pedals
         //
         /*1D1AE*/ PEDAL_MARK,           // Ped
@@ -971,6 +976,7 @@ public enum Shape
     public static final Range Articulations = new Range(EnumSet.range(ARPEGGIATO, ARPEGGIATO));
     public static final Range Dynamics      = new Range(EnumSet.range(DYNAMICS_CHAR_M, DECRESCENDO));
     public static final Range Ornaments     = new Range(EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
+    public static final Range Tuplets       = new Range(EnumSet.range(TUPLET_THREE, TUPLET_SIX));
     public static final Range Pedals        = new Range(EnumSet.range(PEDAL_MARK, PEDAL_UP_MARK));
     //
     public static final Range Barlines      = new Range(EnumSet.range(SINGLE_BARLINE, THIN_BAR_LINE));

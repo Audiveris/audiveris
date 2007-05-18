@@ -14,6 +14,8 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import omr.math.GCD;
+
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
@@ -564,6 +566,40 @@ public class Note
         int index = (int) Math.rint(Math.log(dur) / Math.log(2));
 
         return typeNames[index];
+    }
+
+    //----------------//
+    // quarterValueOf //
+    //----------------//
+    public static String quarterValueOf (int val)
+    {
+        final int     gcd = GCD.gcd(val, QUARTER_DURATION);
+        final int     num = val / gcd;
+        final int     den = QUARTER_DURATION / gcd;
+
+        StringBuilder sb = new StringBuilder();
+
+        if (num != 1) {
+            sb.append(num);
+        }
+
+        sb.append("Q");
+
+        if (den != 1) {
+            sb.append("/")
+              .append(den);
+        }
+
+        return sb.toString();
+    }
+
+    //--------//
+    // getBox //
+    //--------//
+    public SystemRectangle getBox ()
+    {
+        return getSystem()
+                   .toSystemRectangle(glyph.getContourBox());
     }
 
     //----------//

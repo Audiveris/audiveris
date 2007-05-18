@@ -406,7 +406,7 @@ public class ScoreBuilder
                 super.computeLocation(glyph.getRightStem());
             } else {
                 logger.warning(
-                    "Beam glyph " + glyph.getId() + " with no attached stem");
+                    "Beam glyph #" + glyph.getId() + " with no attached stem");
                 super.computeLocation(glyph); // Backup alternative...
             }
         }
@@ -433,7 +433,9 @@ public class ScoreBuilder
         public void browse (Measure measure)
         {
             // Allocate proper chords in every slot
+            int id = 0;
             for (Slot slot : measure.getSlots()) {
+                slot.setId(++id);
                 slot.allocateChordsAndNotes();
             }
         }

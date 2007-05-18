@@ -138,6 +138,177 @@ public class Measure
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //----------//
+    // addChild //
+    //----------//
+    /**
+     * Override normal behavior, so that a given child is stored in its proper
+     * type collection (clef to clef list, etc...)
+     *
+     * @param node the child to insert in the staff
+     */
+    @Override
+    public void addChild (TreeNode node)
+    {
+        // Special children lists
+        if (node instanceof Clef) {
+            clefs.addChild(node);
+        } else if (node instanceof TimeSignature) {
+            timesigs.addChild(node);
+        } else if (node instanceof KeySignature) {
+            keysigs.addChild(node);
+        } else if (node instanceof Beam) {
+            beams.addChild(node);
+        } else if (node instanceof Chord) {
+            chords.addChild(node);
+        } else {
+            super.addChild(node);
+        }
+
+        // Side effect for barline
+        if (node instanceof Barline) {
+            barline = (Barline) node; // Ending barline
+        }
+    }
+
+    //----------//
+    // addGroup //
+    //----------//
+    /**
+     * Add a beam goup to this measure
+     *
+     * @param group a beam group to add
+     */
+    public void addGroup (BeamGroup group)
+    {
+        beamGroups.add(group);
+    }
+
+    //---------------//
+    // checkDuration //
+    //---------------//
+    /**
+     * Check the duration as computed in this measure from its contained voices,
+     * compared to its theoretical duration.
+     */
+    public void checkDuration ()
+    {
+        // As a first attempt, make all forward stuff explicit & visible
+        for (int voice = 1; voice <= getVoicesNumber(); voice++) {
+            int   timeCounter = 0;
+            Chord lastChord = null;
+
+            for (Slot slot : getSlots()) {
+                for (Chord chord : slot.getChords()) {
+                    if (chord.getVoice() == voice) {
+                        // Need a forward before this chord ?
+                        if (timeCounter < slot.getStartTime()) {
+                            insertForward(
+                                slot.getStartTime() - timeCounter,
+                                Mark.Position.BEFORE,
+                                chord);
+                            timeCounter = slot.getStartTime();
+                        }
+
+                        lastChord = chord;
+                        timeCounter += chord.getDuration();
+                    }
+                }
+            }
+
+            // Need an ending forward ?
+            if (lastChord != null) {
+                finalChords.put(voice, lastChord);
+
+                int delta = timeCounter - getExpectedDuration();
+                finalDurations.put(voice, delta);
+
+                if (delta < 0) {
+                    // Insert a forward mark
+                    insertForward(-delta, Mark.Position.AFTER, lastChord);
+                } else if (delta > 0) {
+                    // Flag the measure as too long
+                    erroneous = true;
+                } else if (lastChord.isWholeDuration()) {
+                    // Remember we can't tell anything'
+                    finalDurations.put(voice, null);
+                }
+            }
+        }
+    }
+
+    //-------------//
+    // cleanupNode //
+    //-------------//
+    /**
+     * Get rid of all nodes of this measure, except the barlines
+     */
+    public void cleanupNode ()
+    {
+        // Remove all direct children except barlines
+        for (Iterator it = children.iterator(); it.hasNext();) {
+            ScoreNode node = (ScoreNode) it.next();
+
+            if (!(node instanceof Barline)) {
+                it.remove();
+            }
+        }
+
+        // Invalidate data
+        slots = null;
+        expectedDuration = null;
+        erroneous = false;
+
+        // (Re)Allocate specific children lists
+        clefs = new ClefList(this);
+        keysigs = new KeySigList(this);
+        timesigs = new TimeSigList(this);
+        chords = new ChordList(this);
+        beams = new BeamList(this);
+
+        //        dynamics = new DynamicList(this);
+        //        lyriclines = new LyricList(this);
+        //        texts = new TextList(this);
+
+        // Should this be a MeasureNode ??? TBD
+        slots = new TreeSet<Slot>();
+        beamGroups = new ArrayList<BeamGroup>();
+    }
+
+    //----------------//
+    // findEventChord //
+    //----------------//
+    /**
+     * Retrieve the most suitable chord to connect the event point to
+     *
+     * @param point the system-based location
+     * @return the most suitable chord, or null
+     */
+    public Chord findEventChord (SystemPoint point)
+    {
+        // Choose the x-closest slot
+        Slot  slot = getClosestSlot(point);
+
+        // Choose the y-closest chord with normal (non-rest) note (WRONG !!!)
+        // TO BE IMPROVED !!! TBD
+        Chord chord = slot.getChordAbove(point);
+
+        if (chord == null) {
+            chord = slot.getChordBelow(point);
+        }
+
+        return chord;
+    }
+
     //------------//
     // getBarline //
     //------------//
@@ -380,34 +551,6 @@ public class Measure
         return 0;
     }
 
-    //--------------//
-    // setErroneous //
-    //--------------//
-    /**
-     * Assign this measure as erroneous (perhaps we should be more specific, for
-     * the time being, this is used only to flag measures for which the comtuted
-     * duration of a voice is longer than the expected measure duration)
-     *
-     * @param erroneous true is erroneaous, false otherwise
-     */
-    public void setErroneous (boolean erroneous)
-    {
-        this.erroneous = erroneous;
-    }
-
-    //-------------//
-    // isErroneous //
-    //-------------//
-    /**
-     * Report whether this measure has been determined as erroneous
-     *
-     * @return true is erroneous, false otherwise
-     */
-    public boolean isErroneous ()
-    {
-        return erroneous;
-    }
-
     //---------------------//
     // getExpectedDuration //
     //---------------------//
@@ -453,19 +596,6 @@ public class Measure
     }
 
     //-------//
-    // setId //
-    //-------//
-    /**
-     * Assign the proper id to this measure
-     *
-     * @param id the proper measure id
-     */
-    public void setId (int id)
-    {
-        this.id = id;
-    }
-
-    //-------//
     // getId //
     //-------//
     /**
@@ -476,55 +606,6 @@ public class Measure
     public int getId ()
     {
         return id;
-    }
-
-    //-------------//
-    // setImplicit //
-    //-------------//
-    /**
-     * Flag this measure as implicit
-     */
-    public void setImplicit ()
-    {
-        implicit = true;
-
-        // Remove any final forward mark (to be improved ?)
-        for (int voice = 1; voice <= getVoicesNumber(); voice++) {
-            Integer duration = finalDurations.get(voice);
-
-            if ((duration != null) && (duration < 0)) {
-                Chord chord = finalChords.get(voice);
-
-                if (chord != null) {
-                    int nbMarks = chord.getMarks()
-                                       .size();
-                    chord.getMarks()
-                         .remove(chord.getMarks().get(nbMarks - 1));
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            getContextString() + " Final forward removed");
-                    }
-                } else {
-                    logger.warning(
-                        getContextString() + " No final chord in voice " +
-                        voice);
-                }
-            }
-        }
-    }
-
-    //------------//
-    // isImplicit //
-    //------------//
-    /**
-     * Report whether this measure is implicit
-     *
-     * @return true if measure is implicit
-     */
-    public boolean isImplicit ()
-    {
-        return implicit;
     }
 
     //--------------//
@@ -758,19 +839,6 @@ public class Measure
     }
 
     //-----------------//
-    // setVoicesNumber //
-    //-----------------//
-    /**
-     * Assign the number of voices in this measure
-     *
-     * @param voicesNumber total number of voices
-     */
-    public void setVoicesNumber (int voicesNumber)
-    {
-        this.voicesNumber = voicesNumber;
-    }
-
-    //-----------------//
     // getVoicesNumber //
     //-----------------//
     /**
@@ -797,168 +865,30 @@ public class Measure
                    .getCenter().x - getLeftX();
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //----------//
-    // addChild //
-    //----------//
-    /**
-     * Override normal behavior, so that a given child is stored in its proper
-     * type collection (clef to clef list, etc...)
-     *
-     * @param node the child to insert in the staff
-     */
-    @Override
-    public void addChild (TreeNode node)
-    {
-        // Special children lists
-        if (node instanceof Clef) {
-            clefs.addChild(node);
-        } else if (node instanceof TimeSignature) {
-            timesigs.addChild(node);
-        } else if (node instanceof KeySignature) {
-            keysigs.addChild(node);
-        } else if (node instanceof Beam) {
-            beams.addChild(node);
-        } else if (node instanceof Chord) {
-            chords.addChild(node);
-        } else {
-            super.addChild(node);
-        }
-
-        // Side effect for barline
-        if (node instanceof Barline) {
-            barline = (Barline) node; // Ending barline
-        }
-    }
-
-    //----------//
-    // addGroup //
-    //----------//
-    /**
-     * Add a beam goup to this measure
-     *
-     * @param group a beam group to add
-     */
-    public void addGroup (BeamGroup group)
-    {
-        beamGroups.add(group);
-    }
-
-    //---------------//
-    // checkDuration //
-    //---------------//
-    /**
-     * Check the duration as computed in this measure from its contained voices,
-     * compared to its theoretical duration.
-     */
-    public void checkDuration ()
-    {
-        // As a first attempt, make all forward stuff explicit & visible
-        for (int voice = 1; voice <= getVoicesNumber(); voice++) {
-            int   timeCounter = 0;
-            Chord lastChord = null;
-
-            for (Slot slot : getSlots()) {
-                for (Chord chord : slot.getChords()) {
-                    if (chord.getVoice() == voice) {
-                        // Need a forward before this chord ?
-                        if (timeCounter < slot.getOffset()) {
-                            insertForward(
-                                slot.getOffset() - timeCounter,
-                                Mark.Position.BEFORE,
-                                chord);
-                            timeCounter = slot.getOffset();
-                        }
-
-                        lastChord = chord;
-                        timeCounter += chord.getDuration();
-                    }
-                }
-            }
-
-            // Need an ending forward ?
-            if (lastChord != null) {
-                finalChords.put(voice, lastChord);
-
-                int delta = timeCounter - getExpectedDuration();
-                finalDurations.put(voice, delta);
-
-                if (delta < 0) {
-                    // Insert a forward mark
-                    insertForward(-delta, Mark.Position.AFTER, lastChord);
-                } else if (delta > 0) {
-                    // Flag the measure as too long
-                    erroneous = true;
-                } else if (lastChord.isWholeDuration()) {
-                    // Remember we can't tell anything'
-                    finalDurations.put(voice, null);
-                }
-            }
-        }
-    }
-
     //-------------//
-    // cleanupNode //
+    // isErroneous //
     //-------------//
     /**
-     * Get rid of all nodes of this measure, except the barlines
+     * Report whether this measure has been determined as erroneous
+     *
+     * @return true is erroneous, false otherwise
      */
-    public void cleanupNode ()
+    public boolean isErroneous ()
     {
-        // Remove all direct children except barlines
-        for (Iterator it = children.iterator(); it.hasNext();) {
-            ScoreNode node = (ScoreNode) it.next();
-
-            if (!(node instanceof Barline)) {
-                it.remove();
-            }
-        }
-
-        // Invalidate data
-        slots = null;
-        expectedDuration = null;
-        erroneous = false;
-
-        // (Re)Allocate specific children lists
-        clefs = new ClefList(this);
-        keysigs = new KeySigList(this);
-        timesigs = new TimeSigList(this);
-        chords = new ChordList(this);
-        beams = new BeamList(this);
-
-        //        dynamics = new DynamicList(this);
-        //        lyriclines = new LyricList(this);
-        //        texts = new TextList(this);
-
-        // Should this be a MeasureNode ??? TBD
-        slots = new TreeSet<Slot>();
-        beamGroups = new ArrayList<BeamGroup>();
+        return erroneous;
     }
 
-    //----------------//
-    // findEventChord //
-    //----------------//
+    //------------//
+    // isImplicit //
+    //------------//
     /**
-     * Retrieve the most suitable chord to connect the event point to
+     * Report whether this measure is implicit
      *
-     * @param point the system-based location
-     * @return the most suitable chord, or null
+     * @return true if measure is implicit
      */
-    public Chord findEventChord (SystemPoint point)
+    public boolean isImplicit ()
     {
-        // Choose the x-closest slot
-        Slot slot = getClosestSlot(point);
-
-        // Choose the y-closest chord with normal (non-rest) note
-        return slot.getSuitableChord(point);
+        return implicit;
     }
 
     //----------------//
@@ -972,6 +902,83 @@ public class Measure
     {
         leftX = null;
         barline.reset();
+    }
+
+    //--------------//
+    // setErroneous //
+    //--------------//
+    /**
+     * Assign this measure as erroneous (perhaps we should be more specific, for
+     * the time being, this is used only to flag measures for which the comtuted
+     * duration of a voice is longer than the expected measure duration)
+     *
+     * @param erroneous true is erroneaous, false otherwise
+     */
+    public void setErroneous (boolean erroneous)
+    {
+        this.erroneous = erroneous;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Assign the proper id to this measure
+     *
+     * @param id the proper measure id
+     */
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
+    //-------------//
+    // setImplicit //
+    //-------------//
+    /**
+     * Flag this measure as implicit
+     */
+    public void setImplicit ()
+    {
+        implicit = true;
+
+        // Remove any final forward mark (to be improved ?)
+        for (int voice = 1; voice <= getVoicesNumber(); voice++) {
+            Integer duration = finalDurations.get(voice);
+
+            if ((duration != null) && (duration < 0)) {
+                Chord chord = finalChords.get(voice);
+
+                if (chord != null) {
+                    int nbMarks = chord.getMarks()
+                                       .size();
+                    chord.getMarks()
+                         .remove(chord.getMarks().get(nbMarks - 1));
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            getContextString() + " Final forward removed");
+                    }
+                } else {
+                    logger.warning(
+                        getContextString() + " No final chord in voice " +
+                        voice);
+                }
+            }
+        }
+    }
+
+    //-----------------//
+    // setVoicesNumber //
+    //-----------------//
+    /**
+     * Assign the number of voices in this measure
+     *
+     * @param voicesNumber total number of voices
+     */
+    public void setVoicesNumber (int voicesNumber)
+    {
+        this.voicesNumber = voicesNumber;
     }
 
     //----------//
@@ -1005,7 +1012,8 @@ public class Measure
             point,
             position,
             Shape.FORWARD,
-            new Integer(duration));
+            Note.quarterValueOf(duration));
+        //new Integer(duration));
         chord.addMark(mark);
     }
 

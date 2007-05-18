@@ -44,6 +44,9 @@ public class BeamGroup
     /** Ordered collection of contained beams */
     private SortedSet<Beam> beams = new TreeSet<Beam>();
 
+    /** Same voice id for all chords of this beam group */
+    private Integer voice;
+
     //~ Constructors -----------------------------------------------------------
 
     //-----------//
@@ -63,6 +66,22 @@ public class BeamGroup
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------//
+    // addBeam //
+    //---------//
+    /**
+     * Include a beam as part of this group
+     *
+     * @param beam the beam to include
+     */
+    public void addBeam (Beam beam)
+    {
+        if (!beams.add(beam)) {
+            logger.warning(
+                beam.getContextString() + " " + beam + " already in " + this);
+        }
+    }
+
     //----------//
     // getBeams //
     //----------//
@@ -74,6 +93,28 @@ public class BeamGroup
     public SortedSet<Beam> getBeams ()
     {
         return beams;
+    }
+
+    //-----------//
+    // getChords //
+    //-----------//
+    /**
+     * Report the x-ordered collection of chords that are grouped by this
+     * beam group.
+     *
+     * @return the (perhaps empty) collection of 'beamed' chords.
+     */
+    public SortedSet<Chord> getChords ()
+    {
+        SortedSet<Chord> chords = new TreeSet<Chord>();
+
+        for (Beam beam : getBeams()) {
+            for (Chord chord : beam.getChords()) {
+                chords.add(chord);
+            }
+        }
+
+        return chords;
     }
 
     //-------//
@@ -118,22 +159,6 @@ public class BeamGroup
         return 0;
     }
 
-    //---------//
-    // addBeam //
-    //---------//
-    /**
-     * Include a beam as part of this group
-     *
-     * @param beam the beam to include
-     */
-    public void addBeam (Beam beam)
-    {
-        if (!beams.add(beam)) {
-            logger.warning(
-                beam.getContextString() + " " + beam + " already in " + this);
-        }
-    }
-
     //----------//
     // populate //
     //----------//
@@ -172,6 +197,12 @@ public class BeamGroup
                 logger.fine("   " + group);
             }
         }
+        
+        // Close the connections between chords/stems and beams
+        for (TreeNode node : measure.getBeams()) {
+            Beam beam = (Beam) node;
+            beam.closeConnections();
+        }
     }
 
     //------------//
@@ -187,6 +218,59 @@ public class BeamGroup
     {
         if (!beams.remove(beam)) {
             logger.warning(beam + " not found in " + this);
+        }
+    }
+
+    //----------//
+    // setVoice //
+    //----------//
+    /**
+     * Assign a voice id to this beam group (this method assumes that the first
+     * chord of the beam group already has its startTime set).
+     *
+     * @param voice the voice id
+     */
+    public void setVoice (Integer voice)
+    {
+        // Already done?
+        if (this.voice == null) {
+            this.voice = voice;
+
+            // Extend this information to the beamed chords
+            // Including the interleaved rests if any
+            Chord prevChord = null;
+
+            for (Chord chord : getChords()) {
+                if (prevChord != null) {
+                    // Here we must check for interleaved rest
+                    Note rest = Chord.lookupRest(prevChord, chord);
+
+                    if (rest != null) {
+                        rest.getChord()
+                            .setStartTime(prevChord.getEndTime());
+                        rest.getChord()
+                            .setVoice(voice);
+                        chord.setStartTime(rest.getChord().getEndTime());
+                    } else {
+                        chord.setStartTime(prevChord.getEndTime());
+                    }
+
+                    prevChord = chord;
+                } else {
+                    if (chord.getStartTime() == null) {
+                        logger.warning(
+                            "Setting a beam group with time not set");
+                    }
+                }
+
+                chord.setVoice(voice);
+            }
+        } else {
+            if (!this.voice.equals(voice)) {
+                logger.warning(
+                    "Reassigning voice from " + this.voice + " to " + voice +
+                    " in " + this);
+            }
         }
     }
 

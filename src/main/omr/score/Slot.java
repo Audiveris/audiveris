@@ -12,14 +12,15 @@ package omr.score;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
-import omr.glyph.Shape;
 
+import omr.math.InjectionSolver;
 import omr.math.Population;
 
 import omr.sheet.Scale;
 
 import omr.util.Logger;
-import omr.util.TreeNode;
+
+import proxymusic.Stem;
 
 import java.util.*;
 
@@ -27,7 +28,12 @@ import java.util.*;
  * Class <code>Slot</code> represents a roughly defined time slot within a
  * measure, to gather all chord entities (rests, notes, noteheads) that occur at
  * the same time because their abscissae are roughly the same.
- * <p><img src="doc-files/Slot.jpg" alt="diagram">
+ *
+ * <p>The slot embraces all the staves of this part measure. Perhaps we should
+ * consider merging slots between parts as well? TBD.
+ *
+ * <p>On the following picture, slots are indicated by vertical blue lines <br/>
+ * <img src="doc-files/Slot.png" alt="diagram">
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -77,6 +83,9 @@ public class Slot
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Id unique within the containing  measure */
+    private int id;
+
     /** Abscissa of the slot, in units since system start */
     private Integer x;
 
@@ -86,11 +95,11 @@ public class Slot
     /** Collection of glyphs in the slot */
     private List<Glyph> glyphs = new ArrayList<Glyph>();
 
-    /** (Sorted) collection of chords in this slot */
+    /** Collection of chords in this slot, order by staff, then by ordinate */
     private List<Chord> chords = new ArrayList<Chord>();
 
     /** Time offset since measure start */
-    private Integer offset;
+    private Integer startTime;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -160,114 +169,116 @@ public class Slot
     //-------------//
     /**
      * This static method browses a measure with its slots and chords, in order
-     * to compute the various voices.
+     * to compute the various voices and start times
      *
      * @param measure the measure to process
      */
     public static void buildVoices (Measure measure)
     {
         if (logger.isFineEnabled()) {
-            logger.info(measure.getContextString());
+            logger.info("buildVoices for " + measure.getContextString());
         }
-
-        // Map to go from a BeamGroup to its related voice
-        Map<BeamGroup, Integer> groupVoices = new HashMap<BeamGroup, Integer>();
 
         // activeChords gathers the chords that are "active" (not terminated) at
         // the time slot being considered. Initially, it is empty.
-        List<Chord>             activeChords = new ArrayList<Chord>();
-        Slot                    prevSlot = null;
-        int                     maxVoice = 0;
+        List<Chord> activeChords = new ArrayList<Chord>();
+        int         maxVoice = 0;
+        boolean     firstSlot = true;
 
         for (Slot slot : measure.getSlots()) {
-            // Sorted Map of voice -> chord, for the current slot
-            SortedMap<Integer, Chord> voiceMap = new TreeMap<Integer, Chord>();
+            logger.fine(
+                "Processing " + slot + " Active chords=" + activeChords);
 
-            // Slot offset
-            if (prevSlot != null) {
-                slot.setOffset(
-                    prevSlot.getOffset() + prevSlot.getShortestDuration());
-            } else {
-                slot.setOffset(0);
-            }
-
-            if (logger.isFineEnabled()) {
-                logger.fine("." + slot);
-            }
-
-            // Sort chords within the slot
+            // Sort chords vertically  within the slot
             Collections.sort(slot.getChords(), chordComparator);
+            logger.fine("Slot chords=" + slot.getChords());
 
-            // Purge collection of active chords for this slot
-            for (Chord chord : slot.getChords()) {
-                chord.setEndTime(slot.getOffset() + chord.getDuration());
-                activeChords.add(chord);
-            }
+            // Based on the active chords before this slot,
+            // Determine the next expiration time, which governs this slot
+            int slotTime = Integer.MAX_VALUE;
 
-            for (Iterator<Chord> it = activeChords.iterator(); it.hasNext();) {
-                Chord active = it.next();
-
-                if (active.getEndTime() <= slot.getOffset()) {
-                    it.remove();
+            for (Chord chord : activeChords) {
+                if (chord.getEndTime() < slotTime) {
+                    slotTime = chord.getEndTime();
                 }
             }
 
-            // Sort active chords
-            Collections.sort(activeChords, chordComparator);
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Active chords=" + activeChords);
+            if (slotTime == Integer.MAX_VALUE) {
+                slotTime = 0;
             }
 
-            // Reuse voices when we have to
+            logger.fine("slotTime=" + Note.quarterValueOf(slotTime));
+            slot.setStartTime(slotTime);
+
+            // Separate the chords that end right at this slot and whose voices 
+            // are available, from the ones that continue past the slot and 
+            // whose voice is kept.
+
+            // Set of used voices for the current slot            
+            SortedSet<Integer> slotVoices = new TreeSet<Integer>();
+
+            // Chords that are ending, with voice not available (beam group)
+            List<Chord>        pastChords = new ArrayList<Chord>();
+
+            // Chord that are ending, with voice available
+            List<Chord>        oldChords = new ArrayList<Chord>();
+
             for (Chord chord : activeChords) {
-                if (chord.getVoice() != null) {
-                    // Keep same voice since extended from previous slots
-                    voiceMap.put(chord.getVoice(), chord);
+                BeamGroup group = chord.getBeamGroup();
 
-                    continue;
-                } else {
-                    // Check for extension of a beam group
-                    BeamGroup group = chord.getBeamGroup();
-
-                    if (group != null) {
-                        Integer voice = groupVoices.get(group);
-
-                        if (voice != null) {
-                            chord.setVoice(voice);
-                            voiceMap.put(voice, chord);
-
-                            continue;
-                        }
+                // Chord that finishes at the slot at hand
+                // Make sure voice is really available
+                if (chord.getEndTime() <= slot.getStartTime()) {
+                    if ((group == null) || (chord == group.getChords()
+                                                          .last())) {
+                        oldChords.add(chord);
+                    } else {
+                        pastChords.add(chord);
                     }
+                } else {
+                    // Chord or voice continues past the slot at hand
+                    slotVoices.add(chord.getVoice());
                 }
             }
 
-            // Assign remaining chords
-            for (Chord chord : activeChords) {
+            // Optimize the mapping between old and starting chords
+            InjectionSolver solver = new InjectionSolver(
+                slot.getChords().size(),
+                oldChords.size() + slot.getChords().size(),
+                new MyDistance(slot.getChords(), oldChords));
+            int[]           links = solver.solve();
+
+            for (int i = 0; i < links.length; i++) {
+                int index = links[i];
+
+                // Map to an old chord?
+                if (index < oldChords.size()) {
+                    Chord old = oldChords.get(index);
+                    int   voice = old.getVoice();
+                    Chord starting = slot.getChords()
+                                         .get(i);
+                    starting.setVoice(voice);
+                    slotVoices.add(voice);
+                }
+            }
+
+            // Assign remaining non-mapped chords, using first voice available
+            for (Chord chord : slot.getChords()) {
                 if (chord.getVoice() == null) {
-                    // Take first available voice
                     int voice;
 
-                    if (voiceMap.isEmpty()) {
+                    if (slotVoices.isEmpty()) {
                         voice = 1;
                     } else {
-                        for (voice = 1; voice <= voiceMap.lastKey(); voice++) {
-                            if (voiceMap.get(voice) == null) {
-                                // Available
-                                break;
+                        for (voice = 1; voice <= slotVoices.last(); voice++) {
+                            if (!slotVoices.contains(voice)) {
+                                break; // Available
                             }
                         }
                     }
 
                     chord.setVoice(voice);
-                    voiceMap.put(voice, chord);
-
-                    BeamGroup group = chord.getBeamGroup();
-
-                    if (group != null) {
-                        groupVoices.put(group, voice);
-                    }
+                    slotVoices.add(voice);
                 }
             }
 
@@ -277,8 +288,16 @@ public class Slot
                 }
             }
 
-            maxVoice = Math.max(maxVoice, voiceMap.lastKey());
-            prevSlot = slot;
+            if (slotVoices.size() > 0) {
+                maxVoice = Math.max(maxVoice, slotVoices.last());
+            }
+
+            // Purge collection of active chords for this slot
+            // Add the chords that start with this slot
+            activeChords.removeAll(oldChords);
+            activeChords.removeAll(pastChords);
+            activeChords.addAll(slot.getChords());
+            Collections.sort(activeChords, chordComparator);
         }
 
         // Remember the maximum number of voices in that measure
@@ -303,6 +322,12 @@ public class Slot
     //---------------//
     // getChordAbove //
     //---------------//
+    /**
+     * Report the chord which is just above the given point in this slot
+     *
+     * @param point the given point
+     * @return the chord above, or null
+     */
     public Chord getChordAbove (SystemPoint point)
     {
         Chord chordAbove = null;
@@ -322,6 +347,12 @@ public class Slot
     //---------------//
     // getChordBelow //
     //---------------//
+    /**
+     * Report the chord which is just below the given point in this slot
+     *
+     * @param point the given point
+     * @return the chord below, or null
+     */
     public Chord getChordBelow (SystemPoint point)
     {
         // We look for the chord just below
@@ -351,6 +382,13 @@ public class Slot
     //-------------------//
     // getEmbracedChords //
     //-------------------//
+    /**
+     * Report the chords whose notes stand in the given vertical range
+     *
+     * @param top upper point of range
+     * @param bottom lower point of range
+     * @return the collection of chords, which may be empty
+     */
     public List<Chord> getEmbracedChords (SystemPoint top,
                                           SystemPoint bottom)
     {
@@ -365,17 +403,9 @@ public class Slot
         return chords;
     }
 
-    //-----------//
-    // getOffset //
-    //-----------//
-    /**
-     * Report the time offset of this time slot since beginning of the measure
-     *
-     * @return the time offset of this time slot.
-     */
-    public int getOffset ()
+    public int getId ()
     {
-        return offset;
+        return id;
     }
 
     //---------------------//
@@ -401,42 +431,17 @@ public class Slot
         return best;
     }
 
-    //------------------//
-    // getSuitableChord //
-    //------------------//
-    public Chord getSuitableChord (SystemPoint point)
+    //--------------//
+    // getStartTime //
+    //--------------//
+    /**
+     * Report the time offset of this time slot since beginning of the measure
+     *
+     * @return the time offset of this time slot.
+     */
+    public Integer getStartTime ()
     {
-        Chord chordAbove = null;
-        Chord chordBelow = null;
-
-        // We look for a chord just above or just below
-        for (Chord chord : getChords()) {
-            if (chord.getHeadLocation().y < point.y) {
-                chordAbove = chord;
-            } else {
-                chordBelow = chord;
-
-                break;
-            }
-        }
-
-        if (chordAbove != null) {
-            for (TreeNode node : chordAbove.getNotes()) {
-                Note note = (Note) node;
-
-                return chordAbove;
-            }
-        }
-
-        if (chordBelow != null) {
-            for (TreeNode node : chordBelow.getNotes()) {
-                Note note = (Note) node;
-
-                return chordBelow;
-            }
-        }
-
-        return null;
+        return startTime;
     }
 
     //------//
@@ -481,19 +486,38 @@ public class Slot
                                                     .toUnits(constants.maxDx);
     }
 
-    //-----------//
-    // setOffset //
-    //-----------//
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
+    //--------------//
+    // setStartTime //
+    //--------------//
     /**
-     * Assign the time offset, since the beginning of the measure, for all
+     * Assign the time startTime, since the beginning of the measure, for all
      * chords in this time slot
      *
-     * @param offset time offset using {@link omr.score.Note#QUARTER_DURATION}
+     * @param startTime time startTime using {@link omr.score.Note#QUARTER_DURATION}
      * value
      */
-    public void setOffset (int offset)
+    public void setStartTime (int startTime)
     {
-        this.offset = offset;
+        if (this.startTime == null) {
+            this.startTime = startTime;
+            logger.fine("setStartTime " + this);
+
+            // Assign to all chords of this slot
+            for (Chord chord : getChords()) {
+                chord.setStartTime(startTime);
+            }
+        } else {
+            if (!this.startTime.equals(startTime)) {
+                logger.warning(
+                    "Reassigning startTime from " + this.startTime + " to " +
+                    startTime + " in " + this);
+            }
+        }
     }
 
     //----------//
@@ -503,14 +527,15 @@ public class Slot
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Slot");
+        sb.append("{Slot#")
+          .append(id);
 
         sb.append(" x=")
           .append(getX());
 
-        if (offset != null) {
-            sb.append(" offset=")
-              .append(offset);
+        if (startTime != null) {
+            sb.append(" start=")
+              .append(Note.quarterValueOf(startTime));
         }
 
         sb.append(" glyphs=[");
@@ -579,9 +604,7 @@ public class Slot
         sb.append(" voice#")
           .append(chord.getVoice());
         sb.append(" dur=")
-          .append(
-            chord.getPart().getScorePart().simpleDurationOf(
-                chord.getDuration()));
+          .append(Note.quarterValueOf(chord.getDuration()));
 
         // Staff ?
         Note note = (Note) chord.getNotes()
@@ -642,5 +665,45 @@ public class Slot
         Scale.Fraction maxDx = new Scale.Fraction(
             1.25,
             "Maximum horizontal distance between a slot and a glyph candidate");
+    }
+
+    private static final class MyDistance
+        implements InjectionSolver.Distance
+    {
+        private static final int  NO_LINK = 5;
+        private static final int  STAFF_DIFF = 10;
+        private final List<Chord> news;
+        private final List<Chord> olds;
+
+        public MyDistance (List<Chord> news,
+                           List<Chord> olds)
+        {
+            this.news = news;
+            this.olds = olds;
+        }
+
+        public int getDistance (int in,
+                                int ip)
+        {
+            // No link to an old chord
+            if (ip >= olds.size()) {
+                return NO_LINK;
+            }
+
+            Chord newChord = news.get(in);
+            Chord oldChord = olds.get(ip);
+
+            if (newChord.getStaff() != oldChord.getStaff()) {
+                return STAFF_DIFF;
+            } else {
+                int dy = Math.abs(
+                    newChord.getHeadLocation().y -
+                    oldChord.getHeadLocation().y);
+                int dStem = Math.abs(
+                    newChord.getStemDir() - oldChord.getStemDir());
+
+                return dy + (2 * dStem);
+            }
+        }
     }
 }

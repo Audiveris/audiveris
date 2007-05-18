@@ -20,9 +20,11 @@ import omr.sheet.PixelPoint;
 import omr.sheet.PixelRectangle;
 import omr.sheet.Scale;
 
+import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
+import java.awt.Polygon;
 import java.util.*;
 
 /**
@@ -65,18 +67,6 @@ public class Chord
     /** A chord stem is virtual when there is no real stem (breve, rest...) */
     private Glyph stem;
 
-    /** Ratio to get real duration wrt notation */
-    private Double tupletRatio;
-
-    /** Index of this chord in tuplet */
-    private Integer tupletIndex;
-
-    /** Number of augmentation dots */
-    private int dotsNumber;
-
-    /** Number of flags (a beam is not a flag) */
-    private int flagsNumber;
-
     /** Location for chord head (head farthest from chord tail) */
     private SystemPoint headLocation;
 
@@ -86,17 +76,28 @@ public class Chord
     /** Ordered collection of beams this chord is connected to */
     private SortedSet<Beam> beams = new TreeSet<Beam>();
 
-    /** Voice this chord belongs to */
-    private Integer voice;
+    /** Number of augmentation dots */
+    private int dotsNumber;
+
+    /** Number of flags (a beam is not a flag) */
+    private int flagsNumber;
+
+    /** Ratio to get actual duration wrt graphical notation */
+    private DurationFactor tupletFactor;
 
     /**
-     * Duration (must the same for all notes of this chord, otherwise the chord
-     * must be split. This may be too restrictive, TBD)
+     * Duration (assumed to be the same for all notes of this chord, otherwise
+     * the chord must be split. This may be too restrictive, TBD).
+     * This includes the local information (flags, dots) but not the tuplet
+     * impact if any.
      */
     private Integer duration;
 
-    /** Computed ending time of this chord */
-    private Integer endTime;
+    /** Start time of this chord */
+    private Integer startTime;
+
+    /** Voice this chord belongs to */
+    private Integer voice;
 
     /** Collection of marks for user */
     private List<Mark> marks = new ArrayList<Mark>();
@@ -104,7 +105,7 @@ public class Chord
     /** Notations related  to this chord */
     private List<Notation> notations = new ArrayList<Notation>();
 
-    /** Direction (loosely) related to this chord */
+    /** Directions (loosely) related to this chord */
     private List<Direction> directions = new ArrayList<Direction>();
 
     //~ Constructors -----------------------------------------------------------
@@ -114,6 +115,7 @@ public class Chord
     //-------//
     /**
      * Creates a new instance of Chord
+     *
      * @param measure the containing measure
      */
     public Chord (Measure measure)
@@ -163,7 +165,7 @@ public class Chord
         super.addChild(node);
 
         // Side effect for note, since the geometric parameters of the chord
-        // are changed
+        // are modified
         if (node instanceof Note) {
             reset();
         }
@@ -179,6 +181,7 @@ public class Chord
      * @param other the other chord
      * @return -1, 0, +1 according to the comparison result
      */
+    @Implement(Comparable.class)
     public int compareTo (Chord other)
     {
         int dx = getHeadLocation().x - other.getHeadLocation().x;
@@ -229,12 +232,10 @@ public class Chord
             clone.addChild(new Note(note));
         }
 
-        if (tupletRatio != null) {
-            clone.tupletRatio = new Double(tupletRatio);
-        }
-
-        if (tupletIndex != null) {
-            clone.tupletIndex = new Integer(tupletIndex);
+        if (tupletFactor != null) {
+            clone.tupletFactor = new DurationFactor(
+                tupletFactor.getNumerator(),
+                tupletFactor.getDenominator());
         }
 
         clone.dotsNumber = dotsNumber;
@@ -246,9 +247,32 @@ public class Chord
         return clone;
     }
 
+    //-------------------//
+    // getActualDuration //
+    //-------------------//
+    /**
+     * Report the real duration computed for this chord, including the tuplet
+     * impact if any
+     *
+     * @return The real chord/note duration
+     */
+    public Integer getActualDuration ()
+    {
+        if (tupletFactor != null) {
+            return (getDuration() * tupletFactor.getNumerator()) * tupletFactor.getDenominator();
+        } else {
+            return getDuration();
+        }
+    }
+
     //--------------//
     // getBeamGroup //
     //--------------//
+    /**
+     * Report the group of beams this chord belongs to
+     *
+     * @return the related group of beams
+     */
     public BeamGroup getBeamGroup ()
     {
         if (getBeams()
@@ -291,6 +315,13 @@ public class Chord
     //-------------//
     // getDuration //
     //-------------//
+    /**
+     * Report the intrinsic time duration of this chord, taking flag/beams and
+     * dots into account, but not the tuplet impact if any
+     *
+     * @return the intrinsic chord duration
+     * @see #getActualDuration
+     */
     public Integer getDuration ()
     {
         if (duration == null) {
@@ -330,9 +361,14 @@ public class Chord
     //------------//
     // getEndTime //
     //------------//
-    public Integer getEndTime ()
+    /**
+     * Report the time when this chord ends
+     *
+     * @return chord ending time
+     */
+    public int getEndTime ()
     {
-        return endTime;
+        return startTime + getActualDuration();
     }
 
     //----------------//
@@ -369,11 +405,23 @@ public class Chord
     //-------//
     // getId //
     //-------//
+    /**
+     * Report the id of the chord within the measure (meant for debug)
+     * @return the unique id within the measure
+     */
     public int getId ()
     {
         return id;
     }
 
+    //----------//
+    // getNotes //
+    //----------//
+    /**
+     * Report the collection of UI marks related to this chord
+     *
+     * @return the collection of marks, perhaps empty
+     */
     public List<Mark> getMarks ()
     {
         return marks;
@@ -395,6 +443,11 @@ public class Chord
     //-------------------------//
     // getPreviousChordInVoice //
     //-------------------------//
+    /**
+     * Report the chord that occurs right before this one, within the same voice
+     *
+     * @return the previous chord within the same voice
+     */
     public Chord getPreviousChordInVoice ()
     {
         int   voice = getVoice();
@@ -413,7 +466,7 @@ public class Chord
     // getStaff //
     //----------//
     /**
-     * Report the staff that contains this chord (we use the staff of this note)
+     * Report the staff that contains this chord (we use the staff of the notes)
      *
      * @return the chord staff
      */
@@ -473,9 +526,54 @@ public class Chord
         return chords;
     }
 
+    //--------------//
+    // addDirection //
+    //--------------//
+    /**
+     * Add a direction element that should appear right before the chord
+     * first note
+     *
+     * @param direction the direction element to add
+     */
+    public void addDirection (Direction direction)
+    {
+        directions.add(direction);
+    }
+
+    //---------//
+    // addMark //
+    //---------//
+    /**
+     * Add a UI mark to this chord
+     *
+     * @param mark the mark to add
+     */
+    public void addMark (Mark mark)
+    {
+        marks.add(mark);
+    }
+
+    //-------------//
+    // addNotation //
+    //-------------//
+    /**
+     * Add a notation element related to this chord note(s)
+     *
+     * @param notation the notation element to add
+     */
+    public void addNotation (Notation notation)
+    {
+        notations.add(notation);
+    }
+
     //---------------//
     // getDirections //
     //---------------//
+    /**
+     * Report the direction entities loosely related to this chord
+     *
+     * @return the collection of (loosely) related directions, perhaps empty
+     */
     public Collection<?extends Direction> getDirections ()
     {
         return directions;
@@ -484,6 +582,11 @@ public class Chord
     //--------------//
     // getNotations //
     //--------------//
+    /**
+     * Report the (perhaps empty) collection of related notations
+     *
+     * @return the collection of notations
+     */
     public Collection<?extends Notation> getNotations ()
     {
         return notations;
@@ -509,6 +612,11 @@ public class Chord
     //----------//
     // getVoice //
     //----------//
+    /**
+     * Report the (single TBD) voice used by the notes of this chord
+     *
+     * @return the chord voice
+     */
     public Integer getVoice ()
     {
         return voice;
@@ -517,6 +625,11 @@ public class Chord
     //-----------------//
     // isWholeDuration //
     //-----------------//
+    /**
+     * Check whether the chord/note  is a whole rest
+     *
+     * @return true if whole
+     */
     public boolean isWholeDuration ()
     {
         if (getNotes()
@@ -530,127 +643,19 @@ public class Chord
         return false;
     }
 
-    //------------//
-    // setEndTime //
-    //------------//
-    public void setEndTime (Integer endTime)
-    {
-        this.endTime = endTime;
-    }
-
-    //---------//
-    // setStem //
-    //---------//
-    /**
-     * Assign the proper stem to this chord
-     *
-     * @param stem the chord stem
-     */
-    public void setStem (Glyph stem)
-    {
-        this.stem = stem;
-    }
-
-    //----------//
-    // setVoice //
-    //----------//
-    public void setVoice (Integer voice)
-    {
-        this.voice = voice;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{Chord");
-
-        sb.append(" #")
-          .append(id);
-
-        if (voice != null) {
-            sb.append(" voice#")
-              .append(voice);
-        }
-
-        if (duration != null) {
-            sb.append(" dur=")
-              .append(duration);
-        }
-
-        if (stem != null) {
-            sb.append(" stem=")
-              .append(stem.getId());
-        }
-
-        if (tupletRatio != null) {
-            sb.append(" tupletRatio=")
-              .append(tupletRatio);
-        }
-
-        if (tupletIndex != null) {
-            sb.append(" tupletIndex=")
-              .append(tupletIndex);
-        }
-
-        if (dotsNumber != 0) {
-            sb.append(" dots=")
-              .append(dotsNumber);
-        }
-
-        if (flagsNumber != 0) {
-            sb.append(" flags=")
-              .append(flagsNumber);
-        }
-
-        if (headLocation != null) {
-            sb.append(" head[x=")
-              .append(headLocation.x)
-              .append(",y=")
-              .append(headLocation.y)
-              .append("]");
-        }
-
-        if (tailLocation != null) {
-            sb.append(" tail[x=")
-              .append(tailLocation.x)
-              .append(",y=")
-              .append(tailLocation.y)
-              .append("]");
-        }
-
-        if (beams.size() > 0) {
-            sb.append(" beams[");
-
-            for (Beam beam : beams) {
-                sb.append(beam + " ");
-            }
-
-            sb.append("]");
-        }
-
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    //---------//
-    // addMark //
-    //---------//
-    void addMark (Mark mark)
-    {
-        marks.add(mark);
-    }
-
     //-------------//
     // populateDot //
     //-------------//
-    static void populateDot (Glyph       glyph,
-                             Measure     measure,
-                             SystemPoint dotCenter)
+    /**
+     * try to assign an augmentation dot to the relevant chord if any
+     *
+     * @param glyph the glyph of the given augmentation dot
+     * @param measure the containing measure
+     * @param dotCenter the system-based location of the dot
+     */
+    public static void populateDot (Glyph       glyph,
+                                    Measure     measure,
+                                    SystemPoint dotCenter)
     {
         if (logger.isFineEnabled()) {
             logger.fine("Chord Populating dot " + glyph);
@@ -724,8 +729,14 @@ public class Chord
     //--------------//
     // populateFlag //
     //--------------//
-    static void populateFlag (Glyph   glyph,
-                              Measure measure)
+    /**
+     * Try to assign a flag to a relevant chord
+     *
+     * @param glyph the underlying glyph of this flag
+     * @param measure the containing measure
+     */
+    public static void populateFlag (Glyph   glyph,
+                                     Measure measure)
     {
         if (logger.isFineEnabled()) {
             logger.fine("Chord Populating flag " + glyph);
@@ -757,27 +768,88 @@ public class Chord
         }
     }
 
-    //--------------//
-    // addDirection //
-    //--------------//
-    void addDirection (Direction direction)
+    //---------//
+    // getSlot //
+    //---------//
+    /**
+     * Report the slot is chord belongs to
+     *
+     * @return the containing slot (or null if not found)
+     */
+    public Slot getSlot ()
     {
-        directions.add(direction);
+        for (Slot slot : getMeasure()
+                             .getSlots()) {
+            if (slot.getChords()
+                    .contains(this)) {
+                return slot;
+            }
+        }
+
+        logger.warning("No containing slot found for " + this);
+
+        return null;
     }
 
-    //-------------//
-    // addNotation //
-    //-------------//
-    void addNotation (Notation notation)
+    //--------------//
+    // getStartTime //
+    //--------------//
+    /**
+     * Report the starting time for this chord
+     *
+     * @return startTime chord starting time (counted within the measure)
+     */
+    public Integer getStartTime ()
     {
-        notations.add(notation);
+        return startTime;
+    }
+
+    //---------------//
+    // getTiedChords //
+    //---------------//
+    /**
+     * Report the x-ordered collection of chords which are directly tied to
+     * this one. This chord is included in the collection when ties are
+     * found.
+     *
+     * @return the (perhaps empty) collection of tied chords
+     */
+    public SortedSet<Chord> getTiedChords ()
+    {
+        SortedSet<Chord> tied = new TreeSet<Chord>();
+
+        for (TreeNode node : children) {
+            Note note = (Note) node;
+
+            for (Slur slur : note.getSlurs()) {
+                if (slur.isTie()) {
+                    if (slur.getLeftNote() != null) {
+                        tied.add(slur.getLeftNote().getChord());
+                    }
+
+                    if (slur.getRightNote() != null) {
+                        tied.add(slur.getRightNote().getChord());
+                    }
+                }
+            }
+        }
+
+        return tied;
     }
 
     //--------------//
     // isEmbracedBy //
     //--------------//
-    boolean isEmbracedBy (SystemPoint top,
-                          SystemPoint bottom)
+    /**
+     * Check whether the notes of this chord stand within the given
+     * vertical range
+     *
+     * @param top top of vertical range
+     * @param bottom bottom of vertical range
+     * @return true if all notes are within the given range
+     */
+    public boolean isEmbracedBy (SystemPoint top,
+                                 SystemPoint bottom)
     {
         for (TreeNode node : getNotes()) {
             Note        note = (Note) node;
@@ -791,9 +863,257 @@ public class Chord
         return false;
     }
 
+    //------------//
+    // lookupRest //
+    //------------//
+    /**
+     * Look up for a potential rest interleaved between the given stemed chords
+     * @param left the chord on the left of the area
+     * @param right the chord on the right of the area
+     * @return the rest found, or null otherwise
+     */
+    public static Note lookupRest (Chord left,
+                                   Chord right)
+    {
+        // Define the area limited by the left and right chords with their stems
+        // and check for intersection with a rest note
+        Polygon polygon = new Polygon();
+        polygon.addPoint(left.headLocation.x, left.headLocation.y);
+        polygon.addPoint(left.tailLocation.x, left.tailLocation.y);
+        polygon.addPoint(right.tailLocation.x, right.tailLocation.y);
+        polygon.addPoint(right.headLocation.x, right.headLocation.y);
+
+        for (TreeNode node : left.getMeasure()
+                                 .getChords()) {
+            Chord chord = (Chord) node;
+
+            // Not interested in the bounding chords
+            if ((chord == left) || (chord == right)) {
+                continue;
+            }
+
+            for (TreeNode n : chord.getNotes()) {
+                Note note = (Note) n;
+
+                // Interested in rest notes only
+                if (note.isRest()) {
+                    SystemRectangle box = note.getBox();
+
+                    if (polygon.intersects(box.x, box.y, box.width, box.height)) {
+                        return note;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    //------------//
+    // getStemDir //
+    //------------//
+    /**
+     * Report the stem direction of this chord
+     *
+     * @return -1 if stem is down, 0 if no stem, +1 if stem is up
+     */
+    public int getStemDir ()
+    {
+        if (stem == null) {
+            return 0;
+        } else {
+            return Integer.signum(getHeadLocation().y - getTailLocation().y);
+        }
+    }
+
+    //--------------//
+    // setStartTime //
+    //--------------//
+    /**
+     * Remember the starting time for this chord
+     *
+     * @param startTime chord starting time (counted within the measure)
+     */
+    public void setStartTime (int startTime)
+    {
+        // Already done?
+        if (this.startTime == null) {
+            this.startTime = startTime;
+            logger.fine("setStartTime " + this);
+
+            // Set the same info in containing slot
+            getSlot()
+                .setStartTime(startTime);
+
+            // Extend this information through the other beamed chords if any
+            // Taking into account intermediate rests if any
+            BeamGroup group = getBeamGroup();
+
+            if (group != null) {
+                Chord prevChord = null;
+
+                for (Chord chord : group.getChords()) {
+                    if (prevChord != null) {
+                        // Here we must check for interleaved rest
+                        Note rest = lookupRest(prevChord, chord);
+
+                        if (rest != null) {
+                            rest.getChord()
+                                .setStartTime(prevChord.getEndTime());
+                            chord.setStartTime(rest.getChord().getEndTime());
+                        } else {
+                            chord.setStartTime(prevChord.getEndTime());
+                        }
+
+                        prevChord = chord;
+                    } else if (chord == this) {
+                        prevChord = chord;
+                    }
+                }
+            }
+        } else {
+            if (!this.startTime.equals(startTime)) {
+                logger.warning(
+                    "Reassigning startTime from " + this.startTime + " to " +
+                    startTime + " in " + this);
+            }
+        }
+    }
+
+    //---------//
+    // setStem //
+    //---------//
+    /**
+     * Assign the proper stem to this chord
+     *
+     * @param stem the chord stem
+     */
+    public void setStem (Glyph stem)
+    {
+        this.stem = stem;
+    }
+
+    //----------//
+    // setVoice //
+    //----------//
+    /**
+     * Assign a voice id to this chord
+     *
+     * @param voice the voice id
+     */
+    public void setVoice (Integer voice)
+    {
+        // Already done?
+        if (this.voice == null) {
+            this.voice = voice;
+
+            // Extend this info to other beamed chords if any
+            BeamGroup group = getBeamGroup();
+
+            if (group != null) {
+                group.setVoice(voice);
+            }
+
+            // Extend to the tied chords as well
+            for (Chord chord : getTiedChords()) {
+                chord.setVoice(voice);
+            }
+        } else {
+            if (!this.voice.equals(voice)) {
+                logger.warning(
+                    "Reassigning voice from " + this.voice + " to " + voice +
+                    " in " + this);
+            }
+        }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{Chord");
+
+        sb.append("#")
+          .append(id);
+
+        if (voice != null) {
+            sb.append(" voice#")
+              .append(voice);
+        }
+
+        if (startTime != null) {
+            sb.append(" start=")
+              .append(Note.quarterValueOf(startTime));
+        }
+
+        if (duration != null) {
+            sb.append(" dur=")
+              .append(Note.quarterValueOf(duration));
+        }
+
+        if (stem != null) {
+            sb.append(" stem#")
+              .append(stem.getId());
+        }
+
+        if (tupletFactor != null) {
+            sb.append(" tupletFactor=")
+              .append(tupletFactor);
+        }
+
+        if (dotsNumber != 0) {
+            sb.append(" dots=")
+              .append(dotsNumber);
+        }
+
+        if (flagsNumber != 0) {
+            sb.append(" flags=")
+              .append(flagsNumber);
+        }
+
+        if (headLocation != null) {
+            sb.append(" head[x=")
+              .append(headLocation.x)
+              .append(",y=")
+              .append(headLocation.y)
+              .append("]");
+        }
+
+        if (tailLocation != null) {
+            sb.append(" tail[x=")
+              .append(tailLocation.x)
+              .append(",y=")
+              .append(tailLocation.y)
+              .append("]");
+        }
+
+        if (beams.size() > 0) {
+            sb.append(" beams[");
+
+            for (Beam beam : beams) {
+                sb.append(beam + " ");
+            }
+
+            sb.append("]");
+        }
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+
     //--------------//
     // getFlagValue //
     //--------------//
+    /**
+     * Report the number of flags that corresponds to the flag glyph
+     *
+     * @param glyph the given flag glyph
+     * @return the number of flags
+     */
     private static int getFlagValue (Glyph glyph)
     {
         switch (glyph.getShape()) {
@@ -896,11 +1216,16 @@ public class Chord
     //-------//
     // reset //
     //-------//
+    /**
+     * Reset all internal data that depends on the chord composition in
+     * terms of notes
+     */
     private void reset ()
     {
         headLocation = null;
         tailLocation = null;
         duration = null;
+        startTime = null;
     }
 
     //~ Inner Classes ----------------------------------------------------------

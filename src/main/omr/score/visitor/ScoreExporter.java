@@ -587,11 +587,11 @@ public class ScoreExporter
                 for (Chord chord : slot.getChords()) {
                     if (chord.getVoice() == voice) {
                         // Need a forward before this chord ?
-                        if (timeCounter < slot.getOffset()) {
+                        if (timeCounter < slot.getStartTime()) {
                             insertForward(
-                                slot.getOffset() - timeCounter,
+                                slot.getStartTime() - timeCounter,
                                 chord);
-                            timeCounter = slot.getOffset();
+                            timeCounter = slot.getStartTime();
                         }
 
                         // Delegate to the chord children directly
