@@ -74,6 +74,9 @@ public class GlyphsBuilder
     /** The containing sheet */
     private final Sheet sheet;
 
+    /** The global sheet scale */
+    private final Scale scale;
+
     /** Lag of vertical runs */
     private final GlyphLag vLag;
 
@@ -90,6 +93,7 @@ public class GlyphsBuilder
     public GlyphsBuilder (Sheet sheet)
     {
         this.sheet = sheet;
+        scale = sheet.getScale();
 
         // Reuse vertical lag (from bars step).
         vLag = sheet.getVerticalLag();
@@ -191,15 +195,22 @@ public class GlyphsBuilder
 
         // Record related scale ?
         if (glyph.getInterline() == 0) {
-            glyph.setInterline(system.getScoreSystem().getScale().interline());
+            glyph.setInterline(scale.interline());
         }
 
         // Insert in lag, which assigns an id to the glyph
-        glyph = vLag.addGlyph(glyph);
+        Glyph oldGlyph = vLag.addGlyph(glyph);
 
-        system.addGlyph(glyph);
+        if (oldGlyph != glyph) {
+            // Perhaps some members to carry over ... TBD
+            oldGlyph.setLeftStem(glyph.getLeftStem());
+            oldGlyph.setRightStem(glyph.getRightStem());
+            oldGlyph.setStemNumber(glyph.getStemNumber());
+        }
 
-        return glyph;
+        system.addGlyph(oldGlyph);
+
+        return oldGlyph;
     }
 
     //-------------//
@@ -365,10 +376,10 @@ public class GlyphsBuilder
         }
 
         for (Glyph s : glyphs) {
-            // Check box intersection
+            // Check bounding box intersection
             if (s.isStem() && s.getContourBox()
                                .intersects(box)) {
-                // Check real adjacency
+                // Check adjacency
                 for (GlyphSection section : glyph.getMembers()) {
                     if (onLeft) {
                         for (GlyphSection source : section.getSources()) {
@@ -386,6 +397,20 @@ public class GlyphsBuilder
                                 return true;
                             }
                         }
+                    }
+                }
+
+                // Check close distance
+                Rectangle b = stemBoxOf(s);
+
+                for (GlyphSection section : glyph.getMembers()) {
+                    if (section.getContour()
+                               .intersects(b.x, b.y, b.width, b.height)) {
+//                        logger.fine(
+//                            "Close distance between stem#" + s.getId() + " & " +
+//                            glyph);
+
+                        return true;
                     }
                 }
             }
@@ -413,7 +438,7 @@ public class GlyphsBuilder
 
         // Interline value ?
         if (glyph.getInterline() == 0) {
-            glyph.setInterline(sheet.getScale().interline());
+            glyph.setInterline(scale.interline());
         }
 
         // Mass center (which makes sure moments are available)
@@ -482,8 +507,7 @@ public class GlyphsBuilder
     //-----------//
     private Rectangle ledgerBox (Rectangle rect)
     {
-        int dy = sheet.getScale()
-                      .toPixels(constants.ledgerHeighten);
+        int dy = scale.toPixels(constants.ledgerHeighten);
 
         return new Rectangle(
             rect.x,
@@ -497,10 +521,14 @@ public class GlyphsBuilder
     //-------------//
     private Rectangle leftStemBox (Rectangle rect)
     {
-        int dx = sheet.getScale()
-                      .toPixels(constants.stemWiden);
+        int dx = scale.toPixels(constants.stemWiden);
+        int dy = scale.toPixels(constants.stemHeighten);
 
-        return new Rectangle(rect.x - dx, rect.y, 2 * dx, rect.height);
+        return new Rectangle(
+            rect.x - dx,
+            rect.y - dy,
+            2 * dx,
+            rect.height + 2 + dy);
     }
 
     //--------------//
@@ -508,14 +536,30 @@ public class GlyphsBuilder
     //--------------//
     private Rectangle rightStemBox (Rectangle rect)
     {
-        int dx = sheet.getScale()
-                      .toPixels(constants.stemWiden);
+        int dx = scale.toPixels(constants.stemWiden);
+        int dy = scale.toPixels(constants.stemHeighten);
 
         return new Rectangle(
             (rect.x + rect.width) - dx,
-            rect.y,
+            rect.y - dy,
             2 * dx,
-            rect.height);
+            rect.height + (2 * dy));
+    }
+
+    //-----------//
+    // stemBoxOf //
+    //-----------//
+    private Rectangle stemBoxOf (Glyph s)
+    {
+        int       dx = scale.toPixels(constants.stemWiden);
+        int       dy = scale.toPixels(constants.stemHeighten);
+        Rectangle rect = s.getContourBox();
+
+        return new Rectangle(
+            rect.x - dx,
+            rect.y - dy,
+            rect.width + (2 * dx),
+            rect.height + (2 * dy));
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -535,5 +579,10 @@ public class GlyphsBuilder
         Scale.Fraction stemWiden = new Scale.Fraction(
             0.1,
             "Box widening to check intersection with stem");
+
+        /** Box heightening to check intersection with stem */
+        Scale.Fraction stemHeighten = new Scale.Fraction(
+            0.1,
+            "Box heightening to check intersection with stem");
     }
 }
