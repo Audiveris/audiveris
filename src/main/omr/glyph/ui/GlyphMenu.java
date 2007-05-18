@@ -262,11 +262,17 @@ public class GlyphMenu
         {
             if (glyphNb > 0) {
                 setEnabled(true);
-                putValue(NAME, "Assign each glyph as ...");
+
+                if (glyphNb == 1) {
+                    putValue(NAME, "Assign glyph as ...");
+                } else {
+                    putValue(NAME, "Assign each glyph as ...");
+                }
+
                 putValue(SHORT_DESCRIPTION, "Manually force an assignment");
             } else {
                 setEnabled(false);
-                putValue(NAME, "Assign each glyph as ...");
+                putValue(NAME, "Assign glyph as ...");
                 putValue(SHORT_DESCRIPTION, "No glyph to assign a shape to");
             }
         }
