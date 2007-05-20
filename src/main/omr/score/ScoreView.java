@@ -125,45 +125,6 @@ public class ScoreView
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the encapsulated UI component
-     *
-     * @return the UI component
-     */
-    public Component getComponent ()
-    {
-        return compound;
-    }
-
-    //----------//
-    // getScore //
-    //----------//
-    /**
-     * Report the score this view is dedicated to
-     *
-     * @return the related score
-     */
-    public Score getScore ()
-    {
-        return score;
-    }
-
-    //---------------//
-    // getScrollPane //
-    //---------------//
-    /**
-     * Report the underlying ScrollView
-     *
-     * @return the Scroll Pane
-     */
-    public ScrollView getScrollPane ()
-    {
-        return pane;
-    }
-
     //-------//
     // close //
     //-------//
@@ -212,6 +173,54 @@ public class ScoreView
                 (score.getMaxStaffNumber() * STAFF_AREA_HEIGHT);
         panel.setModelSize(
             new Dimension(SCORE_INIT_X + totalWidth + INTER_SYSTEM, 2 * h));
+    }
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the encapsulated UI component
+     *
+     * @return the UI component
+     */
+    public Component getComponent ()
+    {
+        return compound;
+    }
+
+    //----------//
+    // getScore //
+    //----------//
+    /**
+     * Report the score this view is dedicated to
+     *
+     * @return the related score
+     */
+    public Score getScore ()
+    {
+        return score;
+    }
+
+    //---------------//
+    // getScrollPane //
+    //---------------//
+    /**
+     * Report the underlying ScrollView
+     *
+     * @return the Scroll Pane
+     */
+    public ScrollView getScrollPane ()
+    {
+        return pane;
+    }
+
+    //---------//
+    // repaint //
+    //---------//
+    public void repaint ()
+    {
+        pane.getComponent()
+            .repaint();
     }
 
     //----------//

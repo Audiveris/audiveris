@@ -163,8 +163,6 @@ public class BarsBuilder
                  .getView() != null) {
             sheet.getScore()
                  .getView()
-                 .getScrollPane()
-                 .getView()
                  .repaint();
         }
     }

@@ -650,7 +650,7 @@ public class Beam
                 }
             } else {
                 logger.warning(
-                    getContextString() + " Beam glyph " + glyph.getId() +
+                    getContextString() + " Beam glyph #" + glyph.getId() +
                     " with no chord on " + side + " stem");
             }
         }

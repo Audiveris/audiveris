@@ -102,6 +102,9 @@ public class ScoreBuilder
 
             // Translations in proper order
 
+            // Whole score impact
+            //-------------------
+
             // Clef
             logger.fine("Starting ClefTranslator...");
             translate(new ClefTranslator());
@@ -113,6 +116,9 @@ public class ScoreBuilder
             // Key
             logger.fine("Starting KeyTranslator...");
             translate(new KeyTranslator());
+
+            // Measure impact 
+            //---------------
 
             // Slot, Chord, Note
             logger.fine("Starting ChordTranslator...");
@@ -130,13 +136,20 @@ public class ScoreBuilder
             logger.fine("Starting FlagTranslator...");
             translate(new FlagTranslator());
 
-            // Accidental (-> note)
-            logger.fine("Starting AccidentalTranslator...");
-            translate(new AccidentalTranslator());
-
             // Augmentation dots (-> chord)
             logger.fine("Starting DotTranslator...");
             translate(new DotTranslator());
+
+            // Finalize measure voices & durations
+            logger.fine("Starting MeasureTranslator...");
+            translate(new MeasureTranslator());
+
+            // Local impact 
+            //-------------
+
+            // Accidental (-> note)
+            logger.fine("Starting AccidentalTranslator...");
+            translate(new AccidentalTranslator());
 
             // Fermata
             logger.fine("Starting FermataTranslator...");
@@ -173,8 +186,6 @@ public class ScoreBuilder
             // Update score view if any
             if (score.getView() != null) {
                 score.getView()
-                     .getScrollPane()
-                     .getComponent()
                      .repaint();
             }
         } catch (RebuildException rex) {
@@ -229,7 +240,7 @@ public class ScoreBuilder
                 (glyph.getShape() != Shape.CLUTTER)) {
                 // Check for glyph relevance
                 if (translator.isRelevant(glyph)) {
-                    // Determine part/staff containment
+                    // Determine part/staff/measure containment
                     translator.computeLocation(glyph);
                     // Perform the translation on this glyph
                     translator.translate(glyph);
@@ -540,63 +551,6 @@ public class ScoreBuilder
     private class DotTranslator
         extends Translator
     {
-        @Override
-        public void browse (Measure measure)
-        {
-            // Determine the voices within this measure
-            Slot.buildVoices(measure);
-
-            // Check duration sanity in this measure
-            measure.checkDuration();
-        }
-
-        @Override
-        public void completeScore ()
-        {
-            // Check for an implicit measure at the beginning:
-            // On the very first system, all parts have their very first measure
-            // ending too short with the same value (or filled by whole rest)
-            System  system = score.getFirstSystem();
-            Integer finalDuration = null;
-
-            for (TreeNode node : system.getParts()) {
-                SystemPart part = (SystemPart) node;
-                Measure    measure = part.getFirstMeasure();
-
-                for (int voice = 0; voice < measure.getVoicesNumber();
-                     voice++) {
-                    Integer voiceFinal = measure.getFinalDuration(voice);
-
-                    if (voiceFinal != null) {
-                        if (finalDuration == null) {
-                            finalDuration = voiceFinal;
-                        } else if (!voiceFinal.equals(finalDuration)) {
-                            logger.fine("No introduction measure");
-
-                            return;
-                        }
-                    }
-                }
-            }
-
-            if ((finalDuration != null) && (finalDuration < 0)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Found an introduction measure for " + finalDuration);
-                }
-
-                // Flag these measures as implicit, and get rid of their final
-                // forward marks if any
-                for (TreeNode node : system.getParts()) {
-                    SystemPart part = (SystemPart) node;
-                    part.getFirstMeasure()
-                        .setImplicit();
-                }
-
-                score.accept(new ScoreFixer());
-            }
-        }
-
         public boolean isRelevant (Glyph glyph)
         {
             return glyph.getShape() == Shape.DOT;
@@ -736,6 +690,80 @@ public class ScoreBuilder
                 currentMeasure,
                 currentStaff,
                 currentCenter);
+        }
+    }
+
+    //-------------------//
+    // MeasureTranslator //
+    //-------------------//
+    private class MeasureTranslator
+        extends Translator
+    {
+        @Override
+        public void browse (Measure measure)
+        {
+            // Determine the voices within this measure
+            Slot.buildVoices(measure);
+
+            // Check duration sanity in this measure
+            measure.checkDuration();
+        }
+
+        @Override
+        public void completeScore ()
+        {
+            // Check for an implicit measure at the beginning:
+            // On the very first system, all parts have their very first measure
+            // ending too short with the same value (or filled by whole rest)
+            System  system = score.getFirstSystem();
+            Integer finalDuration = null;
+
+            for (TreeNode node : system.getParts()) {
+                SystemPart part = (SystemPart) node;
+                Measure    measure = part.getFirstMeasure();
+
+                for (int voice = 0; voice < measure.getVoicesNumber();
+                     voice++) {
+                    Integer voiceFinal = measure.getFinalDuration(voice);
+
+                    if (voiceFinal != null) {
+                        if (finalDuration == null) {
+                            finalDuration = voiceFinal;
+                        } else if (!voiceFinal.equals(finalDuration)) {
+                            logger.fine("No introduction measure");
+
+                            return;
+                        }
+                    }
+                }
+            }
+
+            if ((finalDuration != null) && (finalDuration < 0)) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Found an introduction measure for " + finalDuration);
+                }
+
+                // Flag these measures as implicit, and get rid of their final
+                // forward marks if any
+                for (TreeNode node : system.getParts()) {
+                    SystemPart part = (SystemPart) node;
+                    part.getFirstMeasure()
+                        .setImplicit();
+                }
+
+                score.accept(new ScoreFixer());
+            }
+        }
+
+        public boolean isRelevant (Glyph glyph)
+        {
+            return false;
+        }
+
+        public void translate (Glyph glyph)
+        {
+            // Not called
         }
     }
 
