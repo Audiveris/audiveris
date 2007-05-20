@@ -372,37 +372,6 @@ public class SymbolsEditor
         }
     }
 
-    //----------------//
-    // getScoreEntity //
-    //----------------//
-    /**
-     * Retrieve the score entity/ies that correspond to this glyph
-     *
-     * @param glyph the glyph to use as the starting point
-     */
-    public void getScoreEntity (Glyph glyph)
-    {
-        SystemInfo       systemInfo = sheet.getSystemAtY(
-            glyph.getContourBox().y);
-        omr.score.System system = systemInfo.getScoreSystem();
-        SystemPoint      center = system.toSystemPoint(glyph.getCenter());
-        Staff            staff = system.getStaffAt(center);
-        SystemPart       part = staff.getPart();
-        Measure          measure = part.getMeasureAt(center);
-
-        for (TreeNode node : measure.getChords()) {
-            Chord chord = (Chord) node;
-
-            for (TreeNode n : chord.getNotes()) {
-                Note note = (Note) n;
-
-                if (note.getGlyph() == glyph) {
-                    logger.info(note + "->" + note.getChord());
-                }
-            }
-        }
-    }
-
     //---------//
     // refresh //
     //---------//
@@ -413,6 +382,23 @@ public class SymbolsEditor
     public void refresh ()
     {
         view.colorizeAllGlyphs();
+    }
+
+    //------------------//
+    // showTranslations //
+    //------------------//
+    public void showTranslations (Collection<Glyph> glyphs)
+    {
+        for (Glyph glyph : glyphs) {
+            for (Object entity : glyph.getTranslations()) {
+                if (entity instanceof Note) {
+                    Note note = (Note) entity;
+                    logger.info(note + "->" + note.getChord());
+                } else {
+                    logger.info(entity.toString());
+                }
+            }
+        }
     }
 
     //-------------//

@@ -224,7 +224,9 @@ public class ScoreBuilder
         // Browse the system collection of glyphs
         for (Glyph glyph : currentSystem.getInfo()
                                         .getGlyphs()) {
-            if (glyph.isWellKnown() && (glyph.getShape() != Shape.CLUTTER)) {
+            if (!glyph.isTranslated() &&
+                glyph.isWellKnown() &&
+                (glyph.getShape() != Shape.CLUTTER)) {
                 // Check for glyph relevance
                 if (translator.isRelevant(glyph)) {
                     // Determine part/staff containment
@@ -434,6 +436,7 @@ public class ScoreBuilder
         {
             // Allocate proper chords in every slot
             int id = 0;
+
             for (Slot slot : measure.getSlots()) {
                 slot.setId(++id);
                 slot.allocateChordsAndNotes();

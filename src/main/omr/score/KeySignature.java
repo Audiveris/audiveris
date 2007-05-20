@@ -368,6 +368,7 @@ public class KeySignature
 
         // Extend the keysig with this glyph
         keysig.addGlyph(glyph);
+        glyph.setTranslation(keysig);
 
         if (logger.isFineEnabled()) {
             logger.fine("key=" + keysig.getKey());

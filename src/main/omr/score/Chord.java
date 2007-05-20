@@ -515,12 +515,14 @@ public class Chord
                                              Glyph   stem)
     {
         List<Chord> chords = new ArrayList<Chord>();
+        ///stem.clearTranslations();
 
         for (TreeNode node : measure.getChords()) {
             Chord chord = (Chord) node;
 
             if (chord.getStem() == stem) {
                 chords.add(chord);
+                ///stem.addTranslation(chord);
             }
         }
 
@@ -719,6 +721,7 @@ public class Chord
         if (bestChord != null) {
             // TBD: we should also handle case of double dots !
             bestChord.dotsNumber = 1;
+            glyph.setTranslation(bestChord);
 
             if (logger.isFineEnabled()) {
                 logger.fine(
@@ -745,6 +748,7 @@ public class Chord
 
         // Retrieve the related chord
         Glyph stem = null;
+        glyph.clearTranslations();
 
         if (glyph.getLeftStem() != null) {
             stem = glyph.getLeftStem();
@@ -761,6 +765,7 @@ public class Chord
             if (sideChords.size() > 0) {
                 for (Chord chord : sideChords) {
                     chord.flagsNumber += getFlagValue(glyph);
+                    glyph.addTranslation(chord);
                 }
             } else {
                 logger.warning(

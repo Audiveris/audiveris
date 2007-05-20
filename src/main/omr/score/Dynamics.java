@@ -183,6 +183,7 @@ public class Dynamics
 
                 if (d.isCompatibleWith(point)) {
                     d.addGlyph(glyph);
+                    glyph.setTranslation(d);
 
                     return;
                 }

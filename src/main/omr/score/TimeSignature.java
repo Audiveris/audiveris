@@ -87,6 +87,29 @@ public class TimeSignature
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //----------//
+    // addGlyph //
+    //----------//
+    /**
+     * Add a new glyph as part of this time signature
+     *
+     * @param glyph the new component glyph
+     */
+    public void addGlyph (Glyph glyph)
+    {
+        glyphs.add(glyph);
+        reset();
+    }
+
     //----------------//
     // getDenominator //
     //----------------//
@@ -148,29 +171,6 @@ public class TimeSignature
         }
 
         return shape;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //----------//
-    // addGlyph //
-    //----------//
-    /**
-     * Add a new glyph as part of this time signature
-     *
-     * @param glyph the new component glyph
-     */
-    public void addGlyph (Glyph glyph)
-    {
-        glyphs.add(glyph);
-        reset();
     }
 
     //-------//
@@ -277,56 +277,6 @@ public class TimeSignature
         } else {
             return populateMultiTime(glyph, measure, staff);
         }
-    }
-
-    //-----------------//
-    // getNumericValue //
-    //-----------------//
-    private Integer getNumericValue (Glyph glyph)
-    {
-        Shape shape = glyph.getShape();
-
-        if (shape != null) {
-            switch (shape) {
-            case TIME_ZERO :
-                return 0;
-
-            case TIME_ONE :
-                return 1;
-
-            case TIME_TWO :
-                return 2;
-
-            case TIME_THREE :
-                return 3;
-
-            case TIME_FOUR :
-                return 4;
-
-            case TIME_FIVE :
-                return 5;
-
-            case TIME_SIX :
-                return 6;
-
-            case TIME_SEVEN :
-                return 7;
-
-            case TIME_EIGHT :
-                return 8;
-
-            case TIME_NINE :
-                return 9;
-
-            case TIME_TWELVE :
-                return 12;
-
-            case TIME_SIXTEEN :
-                return 16;
-            }
-        }
-
-        return null;
     }
 
     //----------------//
@@ -445,6 +395,56 @@ public class TimeSignature
         }
     }
 
+    //-----------------//
+    // getNumericValue //
+    //-----------------//
+    private Integer getNumericValue (Glyph glyph)
+    {
+        Shape shape = glyph.getShape();
+
+        if (shape != null) {
+            switch (shape) {
+            case TIME_ZERO :
+                return 0;
+
+            case TIME_ONE :
+                return 1;
+
+            case TIME_TWO :
+                return 2;
+
+            case TIME_THREE :
+                return 3;
+
+            case TIME_FOUR :
+                return 4;
+
+            case TIME_FIVE :
+                return 5;
+
+            case TIME_SIX :
+                return 6;
+
+            case TIME_SEVEN :
+                return 7;
+
+            case TIME_EIGHT :
+                return 8;
+
+            case TIME_NINE :
+                return 9;
+
+            case TIME_TWELVE :
+                return 12;
+
+            case TIME_SIXTEEN :
+                return 16;
+            }
+        }
+
+        return null;
+    }
+
     //-------------------//
     // populateMultiTime //
     //-------------------//
@@ -457,6 +457,9 @@ public class TimeSignature
         if (ts == null) {
             ts = new TimeSignature(measure, staff);
             ts.addGlyph(glyph);
+            glyph.setTranslation(ts);
+
+            return true;
         } else {
             if (logger.isFineEnabled()) {
                 logger.fine(
@@ -466,8 +469,6 @@ public class TimeSignature
 
             return false;
         }
-
-        return true;
     }
 
     //--------------------//
@@ -487,9 +488,7 @@ public class TimeSignature
                                          .toUnitsDouble(
                 constants.maxTimeDistance);
 
-            if (unitDist <= unitMax) {
-                ts.addGlyph(glyph);
-            } else {
+            if (unitDist > unitMax) {
                 if (logger.isFineEnabled()) {
                     logger.fine(
                         "Time signature part" + " (glyph#" + glyph.getId() +
@@ -500,8 +499,10 @@ public class TimeSignature
             }
         } else {
             ts = new TimeSignature(measure, staff);
-            ts.addGlyph(glyph);
         }
+
+        ts.addGlyph(glyph);
+        glyph.setTranslation(ts);
 
         return true;
     }

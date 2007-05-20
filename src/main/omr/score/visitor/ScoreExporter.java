@@ -583,22 +583,24 @@ public class ScoreExporter
 
             Chord lastChord = null;
 
-            for (Slot slot : measure.getSlots()) {
-                for (Chord chord : slot.getChords()) {
-                    if (chord.getVoice() == voice) {
-                        // Need a forward before this chord ?
-                        if (timeCounter < slot.getStartTime()) {
-                            insertForward(
-                                slot.getStartTime() - timeCounter,
-                                chord);
-                            timeCounter = slot.getStartTime();
-                        }
+            for (TreeNode nc : measure.getChords()) {
+                Chord chord = (Chord) nc;
 
-                        // Delegate to the chord children directly
-                        chord.acceptChildren(this);
-                        lastChord = chord;
-                        timeCounter += chord.getDuration();
+                if (chord.getVoice() == voice) {
+                    // Need a forward before this chord ?
+                    int startTime = chord.getStartTime();
+
+                    if (timeCounter < startTime) {
+                        insertForward(startTime - timeCounter, chord);
+                        timeCounter = startTime;
                     }
+
+                    // Delegate to the chord children directly
+                    chord.acceptChildren(this);
+                    lastChord = chord;
+                    timeCounter += ((chord.getDuration() != null)
+                                    ? chord.getDuration()
+                                    : measure.getExpectedDuration());
                 }
             }
 
@@ -624,7 +626,7 @@ public class ScoreExporter
     @Override
     public boolean visit (omr.score.Note note)
     {
-        ///logger.info("Visiting " + note);
+        ///logger.info(note.getContextString() + " Visiting " + note);
         current.note = note;
 
         Chord chord = note.getChord();
@@ -693,8 +695,15 @@ public class ScoreExporter
         // Duration
         Duration duration = new Duration();
         current.pmNote.setDuration(duration);
-        duration.setContent(
-            "" + current.part.simpleDurationOf(chord.getDuration()));
+
+        Integer dur = chord.getDuration();
+
+        if (dur == null) { // Case of whole rests
+            dur = chord.getMeasure()
+                       .getExpectedDuration();
+        }
+
+        duration.setContent("" + current.part.simpleDurationOf(dur));
 
         // Voice
         Voice voice = new Voice();

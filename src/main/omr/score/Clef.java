@@ -127,6 +127,15 @@ public class Clef
         }
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //------------------//
     // getPitchPosition //
     //------------------//
@@ -151,15 +160,6 @@ public class Clef
     public Shape getShape ()
     {
         return shape;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
     }
 
     //----------//
@@ -195,14 +195,14 @@ public class Clef
         case G_CLEF :
         case G_CLEF_OTTAVA_ALTA :
         case G_CLEF_OTTAVA_BASSA :
-            new Clef(measure, staff, shape, center, 2);
+            glyph.setTranslation(new Clef(measure, staff, shape, center, 2));
 
             return true;
 
         case F_CLEF :
         case F_CLEF_OTTAVA_ALTA :
         case F_CLEF_OTTAVA_BASSA :
-            new Clef(measure, staff, shape, center, -2);
+            glyph.setTranslation(new Clef(measure, staff, shape, center, -2));
 
             return true;
 

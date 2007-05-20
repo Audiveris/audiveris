@@ -36,9 +36,9 @@ public class Coda
      * @param glyph the underlying glyph
      */
     public Coda (Measure     measure,
-                  SystemPoint point,
-                  Chord       chord,
-                  Glyph       glyph)
+                 SystemPoint point,
+                 Chord       chord,
+                 Glyph       glyph)
     {
         super(measure, point, chord, glyph);
     }
@@ -69,6 +69,7 @@ public class Coda
                           SystemPoint point)
     {
         Slot slot = measure.getClosestSlot(point);
-        new Coda(measure, point, slot.getChordBelow(point), glyph);
+        glyph.setTranslation(
+            new Coda(measure, point, slot.getChordBelow(point), glyph));
     }
 }

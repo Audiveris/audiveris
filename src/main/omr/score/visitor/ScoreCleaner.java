@@ -9,9 +9,12 @@
 //
 package omr.score.visitor;
 
+import omr.glyph.Glyph;
+
 import omr.score.Measure;
 import omr.score.Score;
 import omr.score.ScorePart;
+import omr.score.System;
 import omr.score.SystemPart;
 
 import omr.util.Logger;
@@ -72,7 +75,7 @@ public class ScoreCleaner
 
         score.acceptChildren(this);
 
-        return false;
+        return true;
     }
 
     //------------------//
@@ -83,6 +86,20 @@ public class ScoreCleaner
     {
         // Remove slurs and wedges
         systemPart.cleanupNode();
+
+        return true;
+    }
+
+    //--------------//
+    // visit System //
+    //--------------//
+    @Override
+    public boolean visit (System system)
+    {
+        for (Glyph glyph : system.getInfo()
+                                 .getGlyphs()) {
+            glyph.clearTranslations();
+        }
 
         return true;
     }

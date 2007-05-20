@@ -131,6 +131,7 @@ public class Note
                  Glyph glyph)
     {
         this(chord, glyph, 1, 0);
+        glyph.setTranslation(this);
     }
 
     //------//
@@ -193,6 +194,7 @@ public class Note
         shape = other.getShape();
         width = other.width;
         height = other.height;
+        glyph.addTranslation(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -204,9 +206,10 @@ public class Note
                                    Glyph glyph)
     {
         int size = packSizeOf(glyph.getShape());
+        glyph.clearTranslations();
 
         for (int i = 0; i < size; i++) {
-            new Note(chord, glyph, size, i);
+            glyph.addTranslation(new Note(chord, glyph, size, i));
         }
     }
 
@@ -392,9 +395,11 @@ public class Note
         }
 
         // Select the best note candidate, the one whose ordinate is closest
+        // TBD: Bug here? what if the note is duplicated ("shared" by 2 chords)?
         if (candidates.size() > 0) {
             int  bestDy = Integer.MAX_VALUE;
             Note bestNote = null;
+            glyph.clearTranslations();
 
             for (Note note : candidates) {
                 int dy = Math.abs(note.getCenter().y - accidCenter.y);
@@ -407,6 +412,7 @@ public class Note
 
             bestNote.accidental = glyph.getShape();
             bestNote.accidentalDx = bestNote.getCenter().x - accidCenter.x;
+            glyph.addTranslation(bestNote);
 
             if (logger.isFineEnabled()) {
                 logger.fine(

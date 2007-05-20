@@ -76,6 +76,7 @@ public class Pedal
                           Measure     measure,
                           SystemPoint point)
     {
-        new Pedal(measure, point, findChord(measure, point), glyph);
+        glyph.setTranslation(
+            new Pedal(measure, point, findChord(measure, point), glyph));
     }
 }

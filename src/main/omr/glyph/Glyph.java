@@ -155,6 +155,9 @@ public class Glyph
     /** Set of forbidden shapes, if any */
     protected Set<Shape> forbiddenShapes;
 
+    /** Set of translation(s) of this glyph on the score side */
+    protected Set<Object> translations = new HashSet<Object>();
+
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -211,6 +214,14 @@ public class Glyph
         invalidateCache();
     }
 
+    //----------------//
+    // addTranslation //
+    //----------------//
+    public void addTranslation (Object entity)
+    {
+        translations.add(entity);
+    }
+
     //------------//
     // allowShape //
     //------------//
@@ -219,6 +230,14 @@ public class Glyph
         if (forbiddenShapes != null) {
             forbiddenShapes.remove(shape);
         }
+    }
+
+    //-------------------//
+    // clearTranslations //
+    //-------------------//
+    public void clearTranslations ()
+    {
+        translations.clear();
     }
 
     //----------//
@@ -387,6 +406,72 @@ public class Glyph
         System.out.println("   centroid=" + getCentroid());
         System.out.println("   bounds=" + getBounds());
         System.out.println("   forbiddenShapes=" + forbiddenShapes);
+        System.out.println("   translations=" + translations);
+    }
+
+    //----------//
+    // getColor //
+    //----------//
+    /**
+     * Report the color to be used to colorize the provided glyph, according to
+     * the color policy which is based on the glyph shape
+     *
+     * @return the related shape color of the glyph, or the predefined {@link
+     * Shape#missedColor} if the glyph has no related shape
+     */
+    public Color getColor ()
+    {
+        if (getShape() == null) {
+            return Shape.missedColor;
+        } else {
+            return getShape()
+                       .getColor();
+        }
+    }
+
+    //---------------//
+    // getContourBox //
+    //---------------//
+    /**
+     * Return the display bounding box of the display contour. Useful to quickly
+     * check if the glyph needs to be repainted.
+     *
+     * @return the bounding contour rectangle box
+     */
+    public PixelRectangle getContourBox ()
+    {
+        if (contourBox == null) {
+            for (Section section : members) {
+                if (contourBox == null) {
+                    contourBox = new Rectangle(section.getContourBox());
+                } else {
+                    contourBox.add(section.getContourBox());
+                }
+            }
+        }
+
+        if (contourBox != null) {
+            return new PixelRectangle(
+                contourBox.x,
+                contourBox.y,
+                contourBox.width,
+                contourBox.height);
+        } else {
+            return null;
+        }
+    }
+
+    //----------//
+    // getDoubt //
+    //----------//
+    /**
+     * Report the doubt of the glyph shape
+     *
+     * @return the doubt related to glyph shape
+     */
+    public double getDoubt ()
+    {
+        return doubt;
     }
 
     //-----------------//
@@ -400,6 +485,34 @@ public class Glyph
     public GlyphSection getFirstSection ()
     {
         return members.first();
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the unique glyph id
+     *
+     * @return the glyph id
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
+    //--------------//
+    // getInterline //
+    //--------------//
+    /**
+     * Report the interline value for the glyph containing staff, which is used
+     * for some of the moments
+     *
+     * @return the interline value
+     */
+    @XmlAttribute
+    public int getInterline ()
+    {
+        return interline;
     }
 
     //--------//
@@ -642,6 +755,14 @@ public class Glyph
         }
     }
 
+    //-----------------//
+    // getTranslations //
+    //-----------------//
+    public Collection<Object> getTranslations ()
+    {
+        return translations;
+    }
+
     //-----------//
     // getWeight //
     //-----------//
@@ -709,220 +830,6 @@ public class Glyph
         return Shape.Barlines.contains(getShape());
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the ids of the glyph
-     * collection
-     *
-     * @param glyphs the collection of glyphs
-     * @return the string built
-     */
-    public static String toString (Collection<?extends Glyph> glyphs)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(" glyphs[");
-
-        for (Glyph glyph : glyphs) {
-            sb.append("#")
-              .append(glyph.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
-    //---------------//
-    // getAreaCenter //
-    //---------------//
-    /**
-     * Report the glyph area center. The point is lazily evaluated.
-     *
-     * @return the area center point
-     */
-    public PixelPoint getAreaCenter ()
-    {
-        if (center == null) {
-            PixelRectangle box = getContourBox();
-            center = new PixelPoint(
-                box.x + (box.width / 2),
-                box.y + (box.height / 2));
-        }
-
-        return center;
-    }
-
-    //-----------//
-    // getBounds //
-    //-----------//
-    /**
-     * Return the bounding rectangle of the glyph
-     *
-     * @return the bounds
-     */
-    public Rectangle getBounds ()
-    {
-        if (bounds == null) {
-            for (Section section : members) {
-                if (bounds == null) {
-                    bounds = new Rectangle(section.getBounds());
-                } else {
-                    bounds.add(section.getBounds());
-                }
-            }
-        }
-
-        return bounds;
-    }
-
-    //-----------//
-    // getCenter //
-    //-----------//
-    /**
-     * Report the glyph (reference) center, which is the equivalent of the icon
-     * reference point if one such point exist, or the glyph area center
-     * otherwise. The point is lazily evaluated.
-     *
-     * @return the reference center point
-     */
-    public PixelPoint getCenter ()
-    {
-        if (shape == null) {
-            return getAreaCenter();
-        }
-
-        SymbolIcon icon = (SymbolIcon) shape.getIcon();
-
-        if (icon != null) {
-            Point iconRefPoint = icon.getRefPoint();
-
-            if (iconRefPoint != null) {
-                double         refRatio = (double) iconRefPoint.y / icon.getIconHeight();
-                PixelRectangle box = getContourBox();
-
-                return new PixelPoint(
-                    getAreaCenter().x,
-                    (int) Math.rint(box.y + (box.height * refRatio)));
-            }
-        }
-
-        // Default
-        return getAreaCenter();
-    }
-
-    //-------------//
-    // getCentroid //
-    //-------------//
-    /**
-     * Report the glyph centroid (mass center). The point is lazily evaluated.
-     *
-     * @return the mass center point
-     */
-    public PixelPoint getCentroid ()
-    {
-        if (centroid == null) {
-            centroid = getMoments()
-                           .getCentroid();
-        }
-
-        return centroid;
-    }
-
-    //----------//
-    // getColor //
-    //----------//
-    /**
-     * Report the color to be used to colorize the provided glyph, according to
-     * the color policy which is based on the glyph shape
-     *
-     * @return the related shape color of the glyph, or the predefined {@link
-     * Shape#missedColor} if the glyph has no related shape
-     */
-    public Color getColor ()
-    {
-        if (getShape() == null) {
-            return Shape.missedColor;
-        } else {
-            return getShape()
-                       .getColor();
-        }
-    }
-
-    //---------------//
-    // getContourBox //
-    //---------------//
-    /**
-     * Return the display bounding box of the display contour. Useful to quickly
-     * check if the glyph needs to be repainted.
-     *
-     * @return the bounding contour rectangle box
-     */
-    public PixelRectangle getContourBox ()
-    {
-        if (contourBox == null) {
-            for (Section section : members) {
-                if (contourBox == null) {
-                    contourBox = new Rectangle(section.getContourBox());
-                } else {
-                    contourBox.add(section.getContourBox());
-                }
-            }
-        }
-
-        if (contourBox != null) {
-            return new PixelRectangle(
-                contourBox.x,
-                contourBox.y,
-                contourBox.width,
-                contourBox.height);
-        } else {
-            return null;
-        }
-    }
-
-    //----------//
-    // getDoubt //
-    //----------//
-    /**
-     * Report the doubt of the glyph shape
-     *
-     * @return the doubt related to glyph shape
-     */
-    public double getDoubt ()
-    {
-        return doubt;
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the unique glyph id
-     *
-     * @return the glyph id
-     */
-    public int getId ()
-    {
-        return id;
-    }
-
-    //--------------//
-    // getInterline //
-    //--------------//
-    /**
-     * Report the interline value for the glyph containing staff, which is used
-     * for some of the moments
-     *
-     * @return the interline value
-     */
-    @XmlAttribute
-    public int getInterline ()
-    {
-        return interline;
-    }
-
     //---------//
     // isKnown //
     //---------//
@@ -981,6 +888,14 @@ public class Glyph
     public boolean isSuccessful ()
     {
         return result instanceof SuccessResult;
+    }
+
+    //--------------//
+    // isTranslated //
+    //--------------//
+    public boolean isTranslated ()
+    {
+        return !translations.isEmpty();
     }
 
     //-------------//
@@ -1236,6 +1151,136 @@ public class Glyph
         this.stemNumber = stemNumber;
     }
 
+    //----------------//
+    // setTranslation //
+    //----------------//
+    public void setTranslation (Object entity)
+    {
+        translations.clear();
+        addTranslation(entity);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the ids of the glyph
+     * collection
+     *
+     * @param glyphs the collection of glyphs
+     * @return the string built
+     */
+    public static String toString (Collection<?extends Glyph> glyphs)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(" glyphs[");
+
+        for (Glyph glyph : glyphs) {
+            sb.append("#")
+              .append(glyph.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
+    //---------------//
+    // getAreaCenter //
+    //---------------//
+    /**
+     * Report the glyph area center. The point is lazily evaluated.
+     *
+     * @return the area center point
+     */
+    public PixelPoint getAreaCenter ()
+    {
+        if (center == null) {
+            PixelRectangle box = getContourBox();
+            center = new PixelPoint(
+                box.x + (box.width / 2),
+                box.y + (box.height / 2));
+        }
+
+        return center;
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    /**
+     * Return the bounding rectangle of the glyph
+     *
+     * @return the bounds
+     */
+    public Rectangle getBounds ()
+    {
+        if (bounds == null) {
+            for (Section section : members) {
+                if (bounds == null) {
+                    bounds = new Rectangle(section.getBounds());
+                } else {
+                    bounds.add(section.getBounds());
+                }
+            }
+        }
+
+        return bounds;
+    }
+
+    //-----------//
+    // getCenter //
+    //-----------//
+    /**
+     * Report the glyph (reference) center, which is the equivalent of the icon
+     * reference point if one such point exist, or the glyph area center
+     * otherwise. The point is lazily evaluated.
+     *
+     * @return the reference center point
+     */
+    public PixelPoint getCenter ()
+    {
+        if (shape == null) {
+            return getAreaCenter();
+        }
+
+        SymbolIcon icon = (SymbolIcon) shape.getIcon();
+
+        if (icon != null) {
+            Point iconRefPoint = icon.getRefPoint();
+
+            if (iconRefPoint != null) {
+                double         refRatio = (double) iconRefPoint.y / icon.getIconHeight();
+                PixelRectangle box = getContourBox();
+
+                return new PixelPoint(
+                    getAreaCenter().x,
+                    (int) Math.rint(box.y + (box.height * refRatio)));
+            }
+        }
+
+        // Default
+        return getAreaCenter();
+    }
+
+    //-------------//
+    // getCentroid //
+    //-------------//
+    /**
+     * Report the glyph centroid (mass center). The point is lazily evaluated.
+     *
+     * @return the mass center point
+     */
+    public PixelPoint getCentroid ()
+    {
+        if (centroid == null) {
+            centroid = getMoments()
+                           .getCentroid();
+        }
+
+        return centroid;
+    }
+
     //---------------//
     // setWithLedger //
     //---------------//
@@ -1308,6 +1353,12 @@ public class Glyph
               .append("]");
         }
 
+        if (isTranslated()) {
+            sb.append(" trans=[")
+              .append(translations)
+              .append("]");
+        }
+
         // Is that all?
         if (this.getClass()
                 .getName()
@@ -1332,6 +1383,9 @@ public class Glyph
         return "Glyph";
     }
 
+    //----------//
+    // setDoubt //
+    //----------//
     protected void setDoubt (double doubt)
     {
         this.doubt = doubt;
@@ -1395,5 +1449,6 @@ public class Glyph
         contourBox = null;
         weight = null;
         signature = null;
+        clearTranslations();
     }
 }

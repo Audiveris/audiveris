@@ -110,6 +110,7 @@ public class Arpeggiate
                 point,
                 chords.get(0),
                 glyph);
+            glyph.setTranslation(arpeggiate);
 
             // Add the rest of embraced chords
             for (int i = 1; i < chords.size(); i++) {

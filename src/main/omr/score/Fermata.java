@@ -84,7 +84,7 @@ public class Fermata
                       ? slot.getChordBelow(point) : slot.getChordAbove(point);
 
         if (chord != null) {
-            new Fermata(measure, point, chord, glyph);
+            glyph.setTranslation(new Fermata(measure, point, chord, glyph));
         }
     }
 }

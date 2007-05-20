@@ -44,7 +44,7 @@ public class Wedge
     // Wedge //
     //-------//
     /**
-     * Creates a new instance of Wedge edge (there must be one for the wedge 
+     * Creates a new instance of Wedge edge (there must be one for the wedge
      * start, and one for the wedge stop).
      *
      * @param measure measure that contains this wedge edge
@@ -115,22 +115,24 @@ public class Wedge
         PixelRectangle box = glyph.getContourBox();
 
         // Start
-        new Wedge(
-            startingMeasure,
-            true,
-            startingPoint,
-            findChord(startingMeasure, startingPoint),
-            glyph);
+        glyph.setTranslation(
+            new Wedge(
+                startingMeasure,
+                true,
+                startingPoint,
+                findChord(startingMeasure, startingPoint),
+                glyph));
 
         // Stop
         SystemPoint endingPoint = system.toSystemPoint(
             new PixelPoint(box.x + box.width, box.y + (box.height / 2)));
         Measure     endingMeasure = part.getMeasureAt(endingPoint);
-        new Wedge(
-            endingMeasure,
-            false,
-            endingPoint,
-            findChord(endingMeasure, endingPoint),
-            glyph);
+        glyph.addTranslation(
+            new Wedge(
+                endingMeasure,
+                false,
+                endingPoint,
+                findChord(endingMeasure, endingPoint),
+                glyph));
     }
 }

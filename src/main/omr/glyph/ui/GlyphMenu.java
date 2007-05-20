@@ -15,6 +15,8 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
 
+import omr.score.Note;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
@@ -153,7 +155,7 @@ public class GlyphMenu
         popup.add(new JMenuItem(new DumpAction()));
 
         // Display score counterpart
-        popup.add(new JMenuItem(new ScoreAction()));
+        popup.add(new JMenuItem(new TranslationAction()));
 
         popup.addSeparator(); //----------------------------------------------
 
@@ -497,43 +499,6 @@ public class GlyphMenu
         }
     }
 
-    //-------------//
-    // ScoreAction //
-    //-------------//
-    /**
-     * Display the score entity that is related to the glyph
-     */
-    private class ScoreAction
-        extends DynAction
-    {
-        public void actionPerformed (ActionEvent e)
-        {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
-
-            for (Glyph glyph : glyphs) {
-                symbolsEditor.getScoreEntity(glyph);
-            }
-        }
-
-        public void update ()
-        {
-            if (glyphNb > 0) {
-                setEnabled(true);
-
-                StringBuilder sb = new StringBuilder();
-                sb.append("Show score entities");
-                putValue(NAME, sb.toString());
-                putValue(
-                    SHORT_DESCRIPTION,
-                    "Show score entities related to the glyph(s)");
-            } else {
-                setEnabled(false);
-                putValue(NAME, "Score entity");
-                putValue(SHORT_DESCRIPTION, "No glyph to process");
-            }
-        }
-    }
-
     //---------------//
     // SimilarAction //
     //---------------//
@@ -598,6 +563,49 @@ public class GlyphMenu
                 putValue(NAME, "Segment for stems");
                 putValue(SHORT_DESCRIPTION, "No glyph to segment");
             }
+        }
+    }
+
+    //-------------------//
+    // TranslationAction //
+    //-------------------//
+    /**
+     * Display the score entity that translates this glyph
+     */
+    private class TranslationAction
+        extends DynAction
+    {
+        public void actionPerformed (ActionEvent e)
+        {
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+            symbolsEditor.showTranslations(glyphs);
+        }
+
+        public void update ()
+        {
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+
+            if (glyphNb > 0) {
+                for (Glyph glyph : glyphs) {
+                    if (glyph.isTranslated()) {
+                        setEnabled(true);
+
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("Show translations");
+                        putValue(NAME, sb.toString());
+                        putValue(
+                            SHORT_DESCRIPTION,
+                            "Show translations related to the glyph(s)");
+
+                        return;
+                    }
+                }
+            }
+
+            // No translation to show
+            setEnabled(false);
+            putValue(NAME, "Translations");
+            putValue(SHORT_DESCRIPTION, "No translation");
         }
     }
 }

@@ -423,6 +423,7 @@ public class Beam
         }
 
         beam.addGlyph(glyph);
+        glyph.addTranslation(beam);
 
         if (logger.isFineEnabled()) {
             logger.fine(beam.getContextString() + " " + beam);

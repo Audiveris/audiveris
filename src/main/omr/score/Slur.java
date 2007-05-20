@@ -323,6 +323,7 @@ public class Slur
                     below,
                     leftNote,
                     rightNote);
+                glyph.setTranslation(slur);
 
                 if (logger.isFineEnabled()) {
                     //                    logger.fine(
