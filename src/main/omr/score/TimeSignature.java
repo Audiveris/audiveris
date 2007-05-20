@@ -341,7 +341,8 @@ public class TimeSignature
 
                     default :
                         logger.warning(
-                            "Weird single time component : " + shape +
+                            this.getContextString() +
+                            " Weird single time component : " + shape +
                             " for glyph#" + glyphs.first().getId());
                         this.shape = NO_LEGAL_SHAPE;
                     }
