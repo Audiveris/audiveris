@@ -244,33 +244,6 @@ public abstract class Evaluator
                                 Monitor      monitor,
                                 StartingMode mode);
 
-    //-------------//
-    // getMaxDoubt //
-    //-------------//
-    /**
-     * Report the maximum doubt value for an evaluation to be accepted
-     *
-     * @return the maximum doubt value
-     */
-    public double getMaxDoubt ()
-    {
-        return constants.maxDoubt.getValue();
-    }
-
-    //------------------//
-    // getMaxDoubtRatio //
-    //------------------//
-    /**
-     * Report the maximum ratio (with respect to the best evaluation) for
-     * secondary evaluations to be also considered
-     *
-     * @return the maximum "degrading" ratio
-     */
-    public double getMaxDoubtRatio ()
-    {
-        return constants.maxDoubtRatio.getValue();
-    }
-
     //------//
     // vote //
     //------//
@@ -434,12 +407,6 @@ public abstract class Evaluator
     private static final class Constants
         extends ConstantSet
     {
-        Evaluation.Doubt   maxDoubt = new Evaluation.Doubt(
-            5.0,
-            "Threshold on displayable doubt");
-        Constant.Ratio     maxDoubtRatio = new Constant.Ratio(
-            3.0,
-            "Max ratio, WRT the best evaluation doubt");
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
             0.19,
             "Minimum normalized weight to be considered not a noise");

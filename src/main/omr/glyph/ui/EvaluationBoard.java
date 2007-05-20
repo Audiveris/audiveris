@@ -9,6 +9,8 @@
 //
 package omr.glyph.ui;
 
+import omr.constant.ConstantSet;
+
 import omr.glyph.Evaluation;
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
@@ -36,7 +38,6 @@ import com.jgoodies.forms.layout.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Collections;
-import java.util.List;
 
 import javax.swing.*;
 
@@ -65,12 +66,15 @@ class EvaluationBoard
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         EvaluationBoard.class);
 
     /** Max number of buttons in the shape selector */
-    private static final int EVAL_NB = 3;
+    private static final int EVAL_NB = 5;
 
     /** Color for well recognized glyphs */
     private static final Color EVAL_GOOD_COLOR = new Color(100, 150, 0);
@@ -227,7 +231,8 @@ class EvaluationBoard
             buttonWidth + "," + fieldInterval + "," + buttonWidth + "," +
             fieldInterval + "," + buttonWidth + "," + fieldInterval + "," +
             buttonWidth,
-            "pref," + fieldInterline + "," + "pref," + "pref," + "pref");
+            "pref," + fieldInterline + "," + "pref," + "pref," + "pref," +
+            "pref," + "pref");
 
         // Uncomment following line to have fixed sized rows, whether
         // they are filled or not
@@ -261,6 +266,17 @@ class EvaluationBoard
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
+            100000.0,
+            "Threshold on displayable doubt");
+    }
 
     //------------//
     // EvalButton //
@@ -405,25 +421,15 @@ class EvaluationBoard
                 return;
             }
 
-            double maxDist = evaluator.getMaxDoubt();
-            double maxRatio = evaluator.getMaxDoubtRatio();
-            double best = -1; // i.e. Not set
-
+            double maxDist = constants.maxDoubt.getValue();
             int    iBound = Math.min(EVAL_NB, evals.length);
             int    i;
 
             for (i = 0; i < iBound; i++) {
                 Evaluation eval = evals[i];
 
+                // Limitation on shape relevance
                 if (eval.doubt > maxDist) {
-                    break;
-                }
-
-                if (best < 0) {
-                    best = eval.doubt;
-                }
-
-                if (eval.doubt > (best * maxRatio)) {
                     break;
                 }
 
