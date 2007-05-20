@@ -197,7 +197,7 @@ public class BeamGroup
                 logger.fine("   " + group);
             }
         }
-        
+
         // Close the connections between chords/stems and beams
         for (TreeNode node : measure.getBeams()) {
             Beam beam = (Beam) node;
@@ -268,7 +268,8 @@ public class BeamGroup
         } else {
             if (!this.voice.equals(voice)) {
                 logger.warning(
-                    "Reassigning voice from " + this.voice + " to " + voice +
+                    getChords().first().getContextString() +
+                    " Reassigning voice from " + this.voice + " to " + voice +
                     " in " + this);
             }
         }

@@ -331,10 +331,7 @@ public class Chord
                 Note note = (Note) getNotes()
                                        .get(0);
 
-                if (note.getShape() == Shape.WHOLE_REST) {
-                    duration = getMeasure()
-                                   .getExpectedDuration();
-                } else {
+                if (note.getShape() != Shape.WHOLE_REST) {
                     duration = note.getTypeDuration(note.getShape());
 
                     // Apply fraction
@@ -366,9 +363,13 @@ public class Chord
      *
      * @return chord ending time
      */
-    public int getEndTime ()
+    public Integer getEndTime ()
     {
-        return startTime + getActualDuration();
+        if (getDuration() == null) {
+            return null;
+        } else {
+            return startTime + getActualDuration();
+        }
     }
 
     //----------------//
@@ -786,8 +787,7 @@ public class Chord
             }
         }
 
-        logger.warning("No containing slot found for " + this);
-
+        // Case of whole chords
         return null;
     }
 
@@ -941,9 +941,12 @@ public class Chord
             this.startTime = startTime;
             logger.fine("setStartTime " + this);
 
-            // Set the same info in containing slot
-            getSlot()
-                .setStartTime(startTime);
+            // Set the same info in containing slot if any
+            Slot slot = getSlot();
+
+            if (slot != null) {
+                slot.setStartTime(startTime);
+            }
 
             // Extend this information through the other beamed chords if any
             // Taking into account intermediate rests if any
@@ -974,8 +977,8 @@ public class Chord
         } else {
             if (!this.startTime.equals(startTime)) {
                 logger.warning(
-                    "Reassigning startTime from " + this.startTime + " to " +
-                    startTime + " in " + this);
+                    getContextString() + " Reassigning startTime from " +
+                    this.startTime + " to " + startTime + " in " + this);
             }
         }
     }
@@ -1021,8 +1024,8 @@ public class Chord
         } else {
             if (!this.voice.equals(voice)) {
                 logger.warning(
-                    "Reassigning voice from " + this.voice + " to " + voice +
-                    " in " + this);
+                    getContextString() + " Reassigning voice from " +
+                    this.voice + " to " + voice + " in " + this);
             }
         }
     }
@@ -1044,14 +1047,26 @@ public class Chord
               .append(voice);
         }
 
+        // Staff ?
+        Note note = (Note) getNotes()
+                               .get(0);
+
+        if (note != null) {
+            sb.append(" staff#")
+              .append(note.getStaff().getId());
+        }
+
         if (startTime != null) {
             sb.append(" start=")
               .append(Note.quarterValueOf(startTime));
         }
 
-        if (duration != null) {
-            sb.append(" dur=")
-              .append(Note.quarterValueOf(duration));
+        sb.append(" dur=");
+
+        if (getDuration() != null) {
+            sb.append(Note.quarterValueOf(duration));
+        } else {
+            sb.append("none");
         }
 
         if (stem != null) {
@@ -1091,7 +1106,7 @@ public class Chord
         }
 
         if (beams.size() > 0) {
-            sb.append(" beams[");
+            sb.append(" beams G#" + beams.first().getGroup().getId() + "[");
 
             for (Beam beam : beams) {
                 sb.append(beam + " ");

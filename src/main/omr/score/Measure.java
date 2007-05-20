@@ -9,6 +9,7 @@
 //
 package omr.score;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
 import omr.score.visitor.ScoreVisitor;
@@ -83,6 +84,9 @@ public class Measure
     /** Identified time slots within the measure */
     private SortedSet<Slot> slots;
 
+    /** Chords of just whole rest (thus handled outside slots) */
+    private List<Chord> wholeChords;
+
     /** Groups of beams in this measure */
     private List<BeamGroup> beamGroups;
 
@@ -92,8 +96,8 @@ public class Measure
     /** Theoretical measure duration */
     private Integer expectedDuration;
 
-    /** Flag to indicate a wrong duration */
-    private boolean erroneous;
+    /** Flag to indicate a excess duration */
+    private Integer excess;
 
     /**
      * Final duration per voice:
@@ -237,7 +241,7 @@ public class Measure
                     insertForward(-delta, Mark.Position.AFTER, lastChord);
                 } else if (delta > 0) {
                     // Flag the measure as too long
-                    erroneous = true;
+                    excess = delta;
                 } else if (lastChord.isWholeDuration()) {
                     // Remember we can't tell anything'
                     finalDurations.put(voice, null);
@@ -266,7 +270,7 @@ public class Measure
         // Invalidate data
         slots = null;
         expectedDuration = null;
-        erroneous = false;
+        excess = null;
 
         // (Re)Allocate specific children lists
         clefs = new ClefList(this);
@@ -282,6 +286,7 @@ public class Measure
         // Should this be a MeasureNode ??? TBD
         slots = new TreeSet<Slot>();
         beamGroups = new ArrayList<BeamGroup>();
+        wholeChords = new ArrayList<Chord>();
     }
 
     //----------------//
@@ -549,6 +554,19 @@ public class Measure
     public int getDuration ()
     {
         return 0;
+    }
+
+    //-----------//
+    // getExcess //
+    //-----------//
+    /**
+     * Report the excess duration of this measure, if any
+     *
+     * @return the duration in excess, or null
+     */
+    public Integer getExcess ()
+    {
+        return excess;
     }
 
     //---------------------//
@@ -851,6 +869,14 @@ public class Measure
         return voicesNumber;
     }
 
+    //----------------//
+    // getWholeChords //
+    //----------------//
+    public Collection<Chord> getWholeChords ()
+    {
+        return wholeChords;
+    }
+
     //----------//
     // getWidth //
     //----------//
@@ -863,19 +889,6 @@ public class Measure
     {
         return getBarline()
                    .getCenter().x - getLeftX();
-    }
-
-    //-------------//
-    // isErroneous //
-    //-------------//
-    /**
-     * Report whether this measure has been determined as erroneous
-     *
-     * @return true is erroneous, false otherwise
-     */
-    public boolean isErroneous ()
-    {
-        return erroneous;
     }
 
     //------------//
@@ -904,19 +917,19 @@ public class Measure
         barline.reset();
     }
 
-    //--------------//
-    // setErroneous //
-    //--------------//
+    //-----------//
+    // setExcess //
+    //-----------//
     /**
-     * Assign this measure as erroneous (perhaps we should be more specific, for
+     * Assign this measure as excess (perhaps we should be more specific, for
      * the time being, this is used only to flag measures for which the comtuted
      * duration of a voice is longer than the expected measure duration)
      *
-     * @param erroneous true is erroneaous, false otherwise
+     * @param excess the duration in excess, or null
      */
-    public void setErroneous (boolean erroneous)
+    public void setExcess (Integer excess)
     {
-        this.erroneous = erroneous;
+        this.excess = excess;
     }
 
     //-------//
@@ -988,6 +1001,18 @@ public class Measure
     public String toString ()
     {
         return "{Measure id=" + id + "}";
+    }
+
+    //---------------//
+    // addWholeChord //
+    //---------------//
+    void addWholeChord (Glyph glyph)
+    {
+        Chord chord = new Chord(this);
+
+        // No slot for this chord, but a whole rest
+        Note note = new Note(chord, glyph);
+        wholeChords.add(chord);
     }
 
     //---------------//

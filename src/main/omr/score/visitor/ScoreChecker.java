@@ -81,7 +81,7 @@ public class ScoreChecker
             }
         } else if (shape == Shape.NO_LEGAL_SHAPE) {
             logger.warning(
-                timeSignature.getContextString() + " Illegal " + this);
+                timeSignature.getContextString() + " Illegal " + timeSignature);
         } else if (Shape.SingleTimes.contains(shape)) {
             logger.warning(
                 timeSignature.getContextString() +

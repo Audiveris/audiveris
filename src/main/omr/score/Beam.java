@@ -117,22 +117,28 @@ public class Beam
      */
     public void closeConnections ()
     {
-        Chord   first = chords.first();
-        Chord   last = chords.last();
-        boolean started = false;
+        if (chords.isEmpty()) {
+            logger.warning(
+                getContextString() + " closeConnections with no chords for " +
+                this);
+        } else {
+            Chord   first = chords.first();
+            Chord   last = chords.last();
+            boolean started = false;
 
-        for (Chord chord : group.getChords()) {
-            if (chord == first) {
-                started = true;
-            }
+            for (Chord chord : group.getChords()) {
+                if (chord == first) {
+                    started = true;
+                }
 
-            if (started) {
-                chords.add(chord);
-                chord.addBeam(this);
-            }
+                if (started) {
+                    chords.add(chord);
+                    chord.addBeam(this);
+                }
 
-            if (chord == last) {
-                break;
+                if (chord == last) {
+                    break;
+                }
             }
         }
     }

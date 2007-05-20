@@ -321,7 +321,8 @@ public class ScorePainter
                         chord.getHeadLocation());
                 }
             } else {
-                logger.warning("No voice for chord " + chord);
+                logger.warning(
+                    chord.getContextString() + " No voice for chord " + chord);
             }
         }
 
@@ -460,14 +461,14 @@ public class ScorePainter
             }
         }
 
-        // Flag for erroneous measure ?
-        if (measure.isErroneous()) {
+        // Flag for measure excess duration?
+        if (measure.getExcess() != null) {
             final ScorePoint staffOrigin = measure.getPart()
                                                   .getFirstStaff()
                                                   .getDisplayOrigin();
             g.setColor(Color.red);
             g.drawString(
-                "Error",
+                "Excess " + Note.quarterValueOf(measure.getExcess()),
                 zoom.scaled(staffOrigin.x + measure.getLeftX()) + 10,
                 zoom.scaled(staffOrigin.y) - 15);
         }

@@ -57,9 +57,10 @@ public class InjectionSolver
         free = new boolean[rangeSize];
         bestConfig = new int[domainSize];
         config = new int[domainSize];
-        System.out.println(
-            "InjectionSolver domainSize=" + domainSize + " rangeSize=" +
-            rangeSize);
+
+        //        System.out.println(
+        //            "InjectionSolver domainSize=" + domainSize + " rangeSize=" +
+        //            rangeSize);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -87,23 +88,23 @@ public class InjectionSolver
     private final void inspect (int id,
                                 int cost)
     {
-        System.out.println("inspect id=" + id + " cost=" + cost);
-
+        //        System.out.println("inspect id=" + id + " cost=" + cost);
         for (int ir = 0; ir < rangeSize; ir++) {
             if (free[ir]) {
                 free[ir] = false;
                 config[id] = ir;
 
                 int newCost = cost + distance.getDistance(id, ir);
-                System.out.println("ir=" + ir + " newCost=" + newCost);
 
+                //                System.out.println("ir=" + ir + " newCost=" + newCost);
                 if (id < (domainSize - 1)) {
                     inspect(id + 1, newCost);
                 } else if (newCost < bestCost) {
                     // Record best config so far
                     System.arraycopy(config, 0, bestConfig, 0, domainSize);
                     bestCost = newCost;
-                    dump();
+
+                    //                    dump();
                 }
 
                 free[ir] = true;

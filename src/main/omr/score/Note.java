@@ -579,7 +579,9 @@ public class Note
 
         StringBuilder sb = new StringBuilder();
 
-        if (num != 1) {
+        if (num == 0) {
+            return "0";
+        } else if (num != 1) {
             sb.append(num);
         }
 
