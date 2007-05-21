@@ -52,36 +52,6 @@ public class ScoreFixer
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // visit Measure //
-    //---------------//
-    @Override
-    public boolean visit (Measure measure)
-    {
-        // Adjust measure abscissae
-        measure.resetAbscissae();
-
-        // Set measure id
-        Measure prevMeasure = (Measure) measure.getPreviousSibling();
-
-        if (prevMeasure != null) {
-            measure.setId(prevMeasure.getId() + 1);
-        } else {
-            // Look for a previous system
-            System system = measure.getSystem();
-            System prevSystem = (System) system.getPreviousSibling();
-
-            if (prevSystem != null) {
-                measure.setId(
-                    prevSystem.getFirstPart().getLastMeasure().getId() + 1);
-            } else {
-                measure.setId(measure.isImplicit() ? 0 : 1);
-            }
-        }
-
-        return true;
-    }
-
     //-------------//
     // visit Score //
     //-------------//
@@ -91,24 +61,6 @@ public class ScoreFixer
         score.acceptChildren(this);
 
         return false;
-    }
-
-    //-------------//
-    // visit Staff //
-    //-------------//
-    @Override
-    public boolean visit (Staff staff)
-    {
-        // Display origin for the staff
-        System system = staff.getSystem();
-        Point  sysorg = system.getDisplayOrigin();
-        staff.setDisplayOrigin(
-            new ScorePoint(
-                sysorg.x,
-                sysorg.y +
-                (staff.getTopLeft().y - staff.getSystem().getTopLeft().y)));
-
-        return true;
     }
 
     //--------------//
@@ -136,6 +88,54 @@ public class ScoreFixer
 
         if (logger.isFineEnabled()) {
             Dumper.dump(system, "Computed");
+        }
+
+        return true;
+    }
+
+    //-------------//
+    // visit Staff //
+    //-------------//
+    @Override
+    public boolean visit (Staff staff)
+    {
+        // Display origin for the staff
+        System system = staff.getSystem();
+        Point  sysorg = system.getDisplayOrigin();
+        staff.setDisplayOrigin(
+            new ScorePoint(
+                sysorg.x,
+                sysorg.y +
+                (staff.getTopLeft().y - staff.getSystem().getTopLeft().y)));
+
+        return true;
+    }
+
+    //---------------//
+    // visit Measure //
+    //---------------//
+    @Override
+    public boolean visit (Measure measure)
+    {
+        // Adjust measure abscissae
+        measure.resetAbscissae();
+
+        // Set measure id
+        Measure prevMeasure = (Measure) measure.getPreviousSibling();
+
+        if (prevMeasure != null) {
+            measure.setId(prevMeasure.getId() + 1);
+        } else {
+            // Look for a previous system
+            System system = measure.getSystem();
+            System prevSystem = (System) system.getPreviousSibling();
+
+            if (prevSystem != null) {
+                measure.setId(
+                    prevSystem.getFirstPart().getLastMeasure().getId() + 1);
+            } else {
+                measure.setId(measure.isImplicit() ? 0 : 1);
+            }
         }
 
         return true;

@@ -15,7 +15,7 @@ import omr.util.SignallingRunnable;
 import java.awt.Rectangle;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import omr.OmrExecutors;
 
 /**
  * Class <code>RunsBuilder</code> is in charge of building a collection of runs,
@@ -30,10 +30,6 @@ public class RunsBuilder
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(RunsBuilder.class);
-
-    /** Number of processors available */
-    private static final int cpuNb = Runtime.getRuntime()
-                                            .availableProcessors();
 
     //~ Instance fields --------------------------------------------------------
 
@@ -77,7 +73,8 @@ public class RunsBuilder
         final int pMin = rect.y;
         final int pMax = (rect.y + rect.height) - 1;
 
-        if (cpuNb > 1) {
+        if (Runtime.getRuntime()
+                   .availableProcessors() > 1) {
             createParallelRuns(pMin, pMax, cMin, cMax);
         } else {
             createSequentialRuns(pMin, pMax, cMin, cMax);
@@ -97,12 +94,12 @@ public class RunsBuilder
                                      final int cMin,
                                      final int cMax)
     {
-        Executor       executor = Executors.newFixedThreadPool(cpuNb + 1);
+        Executor       executor = OmrExecutors.getHighExecutor();
         CountDownLatch doneSignal = new CountDownLatch(pMax - pMin + 1);
 
         // Browse one dimension
         for (int p = pMin; p <= pMax; p++) {
-            final int         pp = p;
+            final int          pp = p;
             SignallingRunnable work = new SignallingRunnable(
                 doneSignal,
                 new Runnable() {

@@ -10,6 +10,7 @@
 package omr.score.visitor;
 
 import omr.Main;
+import omr.OmrExecutors;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
@@ -54,6 +55,7 @@ import java.lang.String;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.Executor;
 
 import javax.xml.bind.JAXBException;
 
@@ -143,21 +145,20 @@ public class ScoreExporter
      */
     public static void preloadJaxbContext ()
     {
-        Thread worker = new Thread() {
-            public void run ()
-            {
-                try {
-                    Marshalling.getContext();
-                } catch (JAXBException ex) {
-                    ex.printStackTrace();
-                    logger.warning("Error preloading JaxbContext");
-                }
-            }
-        };
+        Executor executor = OmrExecutors.getLowExecutor();
 
-        worker.setName("JaxbContextLoader");
-        worker.setPriority(Thread.MIN_PRIORITY);
-        worker.start();
+        executor.execute(
+            new Runnable() {
+                    public void run ()
+                    {
+                        try {
+                            Marshalling.getContext();
+                        } catch (JAXBException ex) {
+                            ex.printStackTrace();
+                            logger.warning("Error preloading JaxbContext");
+                        }
+                    }
+                });
     }
 
     //------------------//
@@ -875,6 +876,11 @@ public class ScoreExporter
     public boolean visit (Score score)
     {
         ///logger.info("Visiting " + score);
+
+        // Reset durations for each part
+        for (ScorePart scorePart : score.getPartList()) {
+            scorePart.resetDurations();
+        }
 
         // No version inserted
         // Let the marshalling class handle it

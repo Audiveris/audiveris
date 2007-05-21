@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.concurrent.Executor;
 
 import javax.swing.*;
 
@@ -626,16 +627,21 @@ public class Main
             // Make sure we have nice window decorations.
             JFrame.setDefaultLookAndFeelDecorated(true);
 
+            
             // Launch the GUI
             gui = new MainGui();
 
             // Do we have sheet or score actions specified?
             if ((sheetNames.size() > 0) || (scoreNames.size() > 0)) {
-                Worker worker = new Worker();
-                worker.setName(getClass().getName());
-                // Make sure the Gui gets priority
-                worker.setPriority(Thread.MIN_PRIORITY);
-                worker.start();
+                Executor executor = OmrExecutors.getLowExecutor();
+
+                executor.execute(
+                    new Runnable() {
+                            public void run ()
+                            {
+                                browse();
+                            }
+                        });
             }
 
             // Background task : JaxbContext
@@ -723,21 +729,5 @@ public class Main
     private static class StopRequired
         extends Exception
     {
-    }
-
-    //--------//
-    // Worker //
-    //--------//
-    private class Worker
-        extends Thread
-    {
-        //-----//
-        // run //
-        //-----//
-        @Override
-        public void run ()
-        {
-            browse();
-        }
     }
 }

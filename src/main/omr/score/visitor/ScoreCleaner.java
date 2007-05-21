@@ -21,7 +21,7 @@ import omr.util.Logger;
 
 /**
  * Class <code>ScoreCleaner</code> can visit the score hierarchy to get rid of
- * all measure items except barlines.
+ * all measure items except barlines, ready for a new score translation.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -48,34 +48,25 @@ public class ScoreCleaner
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // visit Measure //
-    //---------------//
+    //--------------//
+    // visit System //
+    //--------------//
     @Override
-    public boolean visit (Measure measure)
-    {
-        measure.cleanupNode();
-
-        return false;
-    }
-
-    //-------------//
-    // visit Score //
-    //-------------//
-    @Override
-    public boolean visit (Score score)
+    public boolean visit (System system)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("Cleaning up score ...");
+            logger.fine("Cleaning up " + system);
         }
 
-        for (ScorePart scorePart : score.getPartList()) {
-            scorePart.resetDurations();
+        // Remove recorded translations for all system glyphs
+        for (Glyph glyph : system.getInfo()
+                                 .getGlyphs()) {
+            glyph.clearTranslations();
         }
 
-        score.acceptChildren(this);
+        system.acceptChildren(this);
 
-        return true;
+        return false;
     }
 
     //------------------//
@@ -90,17 +81,14 @@ public class ScoreCleaner
         return true;
     }
 
-    //--------------//
-    // visit System //
-    //--------------//
+    //---------------//
+    // visit Measure //
+    //---------------//
     @Override
-    public boolean visit (System system)
+    public boolean visit (Measure measure)
     {
-        for (Glyph glyph : system.getInfo()
-                                 .getGlyphs()) {
-            glyph.clearTranslations();
-        }
+        measure.cleanupNode();
 
-        return true;
+        return false;
     }
 }

@@ -235,12 +235,12 @@ public class Slur
             if (SlurGlyph.fixSpuriousSlur(glyph, system.getInfo())) {
                 logger.info("Slur fixed  ...");
 
-                system.getScore()
-                      .getSheet()
-                      .getGlyphsBuilder()
-                      .extractNewSystemGlyphs(system.getInfo());
-
-                throw new ScoreBuilder.RebuildException("Slur");
+//                system.getScore()
+//                      .getSheet()
+//                      .getGlyphsBuilder()
+//                      .extractNewSystemGlyphs(system.getInfo());
+//
+//                throw new ScoreBuilder.RebuildException("Slur");
             }
         } else {
             // Build a curve using system-based coordinates
