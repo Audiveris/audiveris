@@ -137,7 +137,7 @@ public class GlyphModel
                                   Shape shape)
     {
         if (glyph != null) {
-            logger.info(" From " + glyph.getTranslations() + " to " + shape);
+            ///logger.info(" From " + glyph.getTranslations() + " to " + shape);
             // First, do a manual assignment of the shape to the glyph
             glyph.setShape(shape, Evaluation.MANUAL_NO_DOUBT);
 
