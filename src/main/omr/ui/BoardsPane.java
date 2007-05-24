@@ -177,7 +177,7 @@ public class BoardsPane
     {
         ///logger.info("-BoardPane " + name + " Hidden");
         for (Board board : boards) {
-            board.boardHidden();
+            board.disconnect();
         }
     }
 
@@ -191,7 +191,7 @@ public class BoardsPane
     {
         ///logger.info("+BoardPane " + name + " Shown");
         for (Board board : boards) {
-            board.boardShown();
+            board.connect();
         }
     }
 

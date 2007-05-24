@@ -22,6 +22,7 @@ import java.awt.*;
 import java.util.List;
 
 import javax.swing.*;
+import omr.selection.SelectionManager;
 
 /**
  * Class <code>Board</code> defines the common properties of any user board such
@@ -148,6 +149,57 @@ public abstract class Board
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------//
+    // emptyFields //
+    //-------------//
+    /**
+     * Empty all the text fields of a given JComponent
+     *
+     * @param component the component to "blank".
+     */
+    public static void emptyFields (JComponent component)
+    {
+        for (Component comp : component.getComponents()) {
+            if (comp instanceof JTextField) {
+                ((JTextField) comp).setText("");
+            }
+        }
+    }
+
+    //------------//
+    // disconnect //
+    //------------//
+    /**
+     * Invoked when the board has been made invisible, to disconnect from input
+     * selections.
+     */
+    public void disconnect ()
+    {
+        ///logger.info("-Board " + tag + " Hidden");
+        if (inputSelectionList != null) {
+            for (Selection input : inputSelectionList) {
+                input.deleteObserver(this);
+            }
+        }
+    }
+
+    //---------//
+    // connect //
+    //---------//
+    /**
+     * Invoked when the board has been made visible, to connect to input
+     * selections.
+     */
+    public void connect ()
+    {
+        ///logger.info("+Board " + tag + " Shown");
+        if (inputSelectionList != null) {
+            for (Selection input : inputSelectionList) {
+                input.addObserver(this);
+            }
+        }
+    }
+
     //--------------//
     // getComponent //
     //--------------//
@@ -159,6 +211,33 @@ public abstract class Board
     public JPanel getComponent ()
     {
         return component;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report a distinct name for this board instance
+     *
+     * @return an instance name
+     */
+    @Implement(SelectionObserver.class)
+    public String getName ()
+    {
+        return name;
+    }
+
+    //--------//
+    // getTag //
+    //--------//
+    /**
+     * Report the tag of the board
+     *
+     * @return the board tag
+     */
+    public Tag getTag ()
+    {
+        return tag;
     }
 
     //-----------------------//
@@ -180,20 +259,6 @@ public abstract class Board
         this.inputSelectionList = inputSelectionList;
     }
 
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report a distinct name for this board instance
-     *
-     * @return an instance name
-     */
-    @Implement(SelectionObserver.class)
-    public String getName ()
-    {
-        return name;
-    }
-
     //--------------------//
     // setOutputSelection //
     //--------------------//
@@ -205,68 +270,6 @@ public abstract class Board
     public void setOutputSelection (Selection outputSelection)
     {
         this.outputSelection = outputSelection;
-    }
-
-    //--------//
-    // getTag //
-    //--------//
-    /**
-     * Report the tag of the board
-     *
-     * @return the board tag
-     */
-    public Tag getTag ()
-    {
-        return tag;
-    }
-
-    //-------------//
-    // emptyFields //
-    //-------------//
-    /**
-     * Empty all the text fields of a given JComponent
-     *
-     * @param component the component to "blank".
-     */
-    public static void emptyFields (JComponent component)
-    {
-        for (Component comp : component.getComponents()) {
-            if (comp instanceof JTextField) {
-                ((JTextField) comp).setText("");
-            }
-        }
-    }
-
-    //-------------//
-    // boardHidden //
-    //-------------//
-    /**
-     * Invoked when the board has been made invisible.
-     */
-    public void boardHidden ()
-    {
-        ///logger.info("-Board " + tag + " Hidden");
-        if (inputSelectionList != null) {
-            for (Selection input : inputSelectionList) {
-                input.deleteObserver(this);
-            }
-        }
-    }
-
-    //------------//
-    // boardShown //
-    //------------//
-    /**
-     * Invoked when the board has been made visible.
-     */
-    public void boardShown ()
-    {
-        ///logger.info("+Board " + tag + " Shown");
-        if (inputSelectionList != null) {
-            for (Selection input : inputSelectionList) {
-                input.addObserver(this);
-            }
-        }
     }
 
     //--------//

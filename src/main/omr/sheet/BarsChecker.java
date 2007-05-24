@@ -867,6 +867,12 @@ public class BarsChecker
         Scale.Fraction maxStaffShiftDyLow = new Scale.Fraction(
             0.125,
             "LowMaximum vertical distance between a bar edge and the staff line");
+        Scale.Fraction maxStaffDHeightHigh = new Scale.Fraction(
+            0.4,
+            "HighMaximum difference between a bar length and min staff height");
+        Scale.Fraction maxStaffDHeightLow = new Scale.Fraction(
+            0.2,
+            "LowMaximum difference between a bar length and min staff height");
         Scale.Fraction minStaffDxHigh = new Scale.Fraction(
             0,
             "HighMinimum horizontal distance between a bar and a staff edge");
@@ -922,9 +928,9 @@ public class BarsChecker
         {
             super(
                 "HeightDiff",
-                "Check that stick is as long as staff height",
-                constants.maxStaffShiftDyLow,
-                constants.maxStaffShiftDyHigh,
+                "Check that stick is as long as minimum staff height",
+                constants.maxStaffDHeightLow,
+                constants.maxStaffDHeightHigh,
                 false,
                 TOO_SHORT_BAR);
         }

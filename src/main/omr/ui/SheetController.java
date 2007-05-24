@@ -7,8 +7,9 @@
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
-package omr.sheet;
+package omr.ui;
 
+import omr.sheet.*;
 import omr.Main;
 import omr.Step;
 
@@ -68,7 +69,7 @@ public class SheetController
     private static final Logger logger = Logger.getLogger(
         SheetController.class);
 
-    /** Flag a tab index that is not yet available */
+    /** Flag a tab sheetIndex that is not yet available */
     public static final int DIFFERED_INDEX = -2;
 
     //~ Instance fields --------------------------------------------------------
@@ -78,9 +79,6 @@ public class SheetController
 
     /** Collection of sheet-dependent actions */
     private final Collection<AbstractAction> sheetDependentActions = new ArrayList<AbstractAction>();
-
-    //    /** Action for dumping all sheet instances */
-    //    private final DumpAllAction dumpAllAction;
 
     /** Menu dedicated to sheet-related actions */
     private final JMenu menu = new JMenu("Sheet");
@@ -94,8 +92,8 @@ public class SheetController
     /** Should we synchronize the (score) pane on the other side ? */
     private boolean synchroWanted = true;
 
-    /** Index of previously selected tab */
-    private int previousIndex = -1;
+    /** Index of previously selected sheet tab */
+    private int previousSheetIndex = -1;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -137,9 +135,6 @@ public class SheetController
         new ZoomHeightAction();
         new RecordAction();
 
-        //        menu.addSeparator();
-        //        dumpAllAction = new DumpAllAction();
-
         // Tool actions
         menu.addSeparator();
 
@@ -151,15 +146,10 @@ public class SheetController
         new CloseAction();
 
         // Initially disabled actions
-        //        dumpAllAction.setEnabled(false);
         UIUtilities.enableActions(sheetDependentActions, false);
 
         // Listener on tab operations
         component.addChangeListener(this);
-
-        // Listener on sheet instances
-        SheetManager.getInstance()
-                    .setChangeListener(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -202,7 +192,7 @@ public class SheetController
      * @param sheet the sheet to be viewed. If no sheet is provided, then an
      *              empty assembly is desired.
      *
-     * @return the index in the tabbed pane of the prepared assembly
+     * @return the sheetIndex in the tabbed pane of the prepared assembly
      */
     public int setSheetAssembly (Sheet sheet)
     {
@@ -230,9 +220,9 @@ public class SheetController
             }
 
             // Make sure the assembly is part of the tabbed pane
-            int index = component.indexOfComponent(assembly.getComponent());
+            int sheetIndex = component.indexOfComponent(assembly.getComponent());
 
-            if (index == -1) {
+            if (sheetIndex == -1) {
                 if (logger.isFineEnabled()) {
                     logger.fine(
                         "Adding assembly for sheet " + sheet.getRadix());
@@ -245,10 +235,10 @@ public class SheetController
                     null,
                     assembly.getComponent(),
                     sheet.getPath());
-                index = component.indexOfComponent(assembly.getComponent());
+                sheetIndex = component.indexOfComponent(assembly.getComponent());
             }
 
-            return index;
+            return sheetIndex;
         } else {
             return -1; // Index of the empty tab
         }
@@ -265,16 +255,25 @@ public class SheetController
     public void close (SheetAssembly assembly)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("close " + assembly.toString());
+            logger.fine("closing " + assembly.toString());
         }
 
-        int index = component.indexOfComponent(assembly.getComponent());
+        // Forget about this sheet assembly
+        previousSheetIndex = -1;
 
-        if (index != -1) {
-            // Remove from tabs
-            component.remove(index);
+        // Disable sheet-based menu actions
+        UIUtilities.enableActions(sheetDependentActions, false);
+
+        int sheetIndex = component.indexOfComponent(assembly.getComponent());
+
+        if (sheetIndex != -1) {
             // Remove from assemblies
-            assemblies.remove(index);
+            assemblies.remove(sheetIndex);
+            // Remove from tabs
+            component.remove(sheetIndex);
+        }
+        if (logger.isFineEnabled()) {
+            logger.fine("closed " + assembly.toString() + " assemblies=" + assemblies);
         }
     }
 
@@ -284,15 +283,15 @@ public class SheetController
     /**
      * Make the (preset) SheetView actually visible.
      *
-     * @param index the index to the SheetView to be made current, with its
+     * @param sheetIndex the index to the SheetView to be made current, with its
      *                potential focus point, or -1 to show a blank panel.
      * @param synchro specify whether other side is to be shown also
      */
-    public void showSheetView (int     index,
+    public void showSheetView (int     sheetIndex,
                                boolean synchro)
     {
         setSynchroWanted(synchro);
-        component.setSelectedIndex(index);
+        component.setSelectedIndex(sheetIndex);
         setSynchroWanted(true);
     }
 
@@ -312,24 +311,19 @@ public class SheetController
     {
         final Object source = e.getSource();
 
-        if (source instanceof SheetManager) {
-            // Number of sheet instances has changed
-            //            dumpAllAction.setEnabled(
-            //                SheetManager.getInstance().getSheets().size() > 0);
-        } else if (source == component) {
+        if (source == component) {
             // User has selected a new tab
-            final int index = component.getSelectedIndex();
-
-            ///logger.info("previous=" + previousIndex + " index=" + index);
-            if (index != -1) {
-                if (previousIndex != -1) {
-                    tabDeselected(previousIndex);
+            final int sheetIndex = component.getSelectedIndex();
+            ///logger.info("Controller-stateChanged. previousSheetIndex=" + previousSheetIndex + " sheetIndex=" + sheetIndex);
+            if (sheetIndex != -1) {
+                if (previousSheetIndex != -1) {
+                    tabDeselected(previousSheetIndex);
                 }
 
-                tabSelected(index);
+                tabSelected(sheetIndex);
             }
 
-            previousIndex = index;
+            previousSheetIndex = sheetIndex;
         } else {
             logger.warning("Unexpected event from " + source);
         }
@@ -364,10 +358,10 @@ public class SheetController
      */
     private SheetAssembly getSelectedAssembly ()
     {
-        int index = component.getSelectedIndex();
+        int sheetIndex = component.getSelectedIndex();
 
-        if (index != -1) {
-            return assemblies.get(index);
+        if (sheetIndex != -1) {
+            return assemblies.get(sheetIndex);
         } else {
             return null;
         }
@@ -447,37 +441,31 @@ public class SheetController
     //---------------//
     private void tabDeselected (int previousIndex)
     {
-        logger.info("tabDeselected previousIndex=" + previousIndex);
-        assemblies.get(previousIndex)
-                  .assemblyDeselected(previousIndex);
+        ///logger.info("tabDeselected previousIndex=" + previousIndex);
+        SheetAssembly prevAssembly = assemblies.get(previousIndex);
+        prevAssembly.assemblyDeselected();
     }
 
     //-------------//
     // tabSelected //
     //-------------//
-    private void tabSelected (int index)
+    private void tabSelected (int sheetIndex)
     {
-        ///logger.info("tabSelected index=" + index);
 
         // Remember the new selected sheet
-        Sheet sheet = getCurrentSheet();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("stateChanged for " + sheet);
-        }
+        SheetAssembly assembly = assemblies.get(sheetIndex);
+        Sheet sheet = assembly.getSheet();
+        ///logger.info("tabSelected sheetIndex=" + sheetIndex + " sheet=" + sheet);
 
         Selection sheetSelection = SheetManager.getSelection();
         sheetSelection.setEntity(sheet, null);
 
         // Enable sheet-based menu actions ?
-        UIUtilities.enableActions(sheetDependentActions, sheet != null);
+        UIUtilities.enableActions(sheetDependentActions, true);
 
         // Tell the selected assembly that it now has the focus...
-        SheetAssembly assembly = getSelectedAssembly();
-
-        if (assembly != null) {
-            assembly.assemblySelected();
-        }
+        Main.getGui().addErrorsPane(assembly.getErrorsPane());
+        assembly.assemblySelected();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -603,36 +591,9 @@ public class SheetController
                 }
 
                 sheet.close();
-                UIUtilities.enableActions(sheetDependentActions, false);
             }
         }
     }
-
-    //    //---------------//
-    //    // DumpAllAction //
-    //    //---------------//
-    //    private class DumpAllAction
-    //        extends AbstractAction
-    //    {
-    //        public DumpAllAction ()
-    //        {
-    //            super(
-    //                "Dump all sheets",
-    //                IconManager.getInstance().loadImageIcon("general/Find"));
-    //
-    //            final String tiptext = "Dump all sheet instances";
-    //
-    //            menu.add(this)
-    //                .setToolTipText(tiptext);
-    //        }
-    //
-    //        @Implement(ActionListener.class)
-    //        public void actionPerformed (ActionEvent e)
-    //        {
-    //            SheetManager.getInstance()
-    //                        .dumpAllSheets();
-    //        }
-    //    }
 
     //----------------//
     // LinePlotAction //

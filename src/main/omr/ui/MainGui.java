@@ -29,9 +29,9 @@ import omr.selection.SelectionObserver;
 import omr.sheet.HorizontalsBuilder;
 import omr.sheet.LinesBuilder;
 import omr.sheet.Sheet;
-import omr.sheet.SheetController;
 import omr.sheet.SheetManager;
 
+import omr.ui.SheetController;
 import omr.ui.icon.IconManager;
 import omr.ui.treetable.JTreeTable;
 import omr.ui.util.MemoryMeter;
@@ -65,6 +65,9 @@ public class MainGui
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MainGui.class);
 
+    /** Fix internal split locations (workaround TBD) */
+    private static final int DELTA_DIVIDER = 10;
+
     //~ Instance fields --------------------------------------------------------
 
     /**
@@ -94,6 +97,9 @@ public class MainGui
     /** The splitted panes */
     private final JSplitPane splitPane;
 
+    /** Bottom pane split betwen the logPane and the errorsPane */
+    private final BottomPane bottomPane;
+
     /** The tool bar */
     private final JToolBar toolBar;
 
@@ -103,19 +109,17 @@ public class MainGui
     /** Used to remember the current user desired target */
     private Object target;
 
-    /**
-     * Boards pane, which displays several boards
-     */
-    private Panel boardsHolder;
+    /** Boards pane, which displays a specific set of boards per sheet */
+    private BoardsPane boardsPane;
 
     //~ Constructors -----------------------------------------------------------
 
-    //-----//
+    //---------//
     // MainGui //
-    //-----//
+    //---------//
     /**
-     * Creates a new <code>MainGui</code> instance, to handle any user display and
-     * interaction.
+     * Creates a new <code>MainGui</code> instance, to handle any user display
+     * and interaction.
      */
     public MainGui ()
     {
@@ -161,17 +165,10 @@ public class MainGui
         // Views
         ScorePainter.insertMenuItems(viewMenu);
         viewMenu.addSeparator();
-
-        JCheckBoxMenuItem lineItem = new JCheckBoxMenuItem(new LineAction());
-        lineItem.setSelected(LinesBuilder.getDisplayOriginalStaffLines());
-        viewMenu.add(lineItem)
-                .setToolTipText("Show the original staff lines");
-
-        JCheckBoxMenuItem ledgerItem = new JCheckBoxMenuItem(
-            new LedgerAction());
-        ledgerItem.setSelected(HorizontalsBuilder.getDisplayLedgerLines());
-        viewMenu.add(ledgerItem)
-                .setToolTipText("Show the original ledger lines");
+        viewMenu.add(new JCheckBoxMenuItem(new LineAction()))
+                .setSelected(LinesBuilder.getDisplayOriginalStaffLines());
+        viewMenu.add(new JCheckBoxMenuItem(new LedgerAction()))
+                .setSelected(HorizontalsBuilder.getDisplayLedgerLines());
         viewMenu.addSeparator();
         new ClearLogAction(viewMenu);
 
@@ -201,32 +198,32 @@ public class MainGui
         menuBar.add(helpMenu);
 
         /*
-           +==============================================================+
-           | toolKeyPanel                                                 |
-           | +================+============================+============+ |
-           | | toolBar        | progressBar                |   Memory   | |
-           | +================+============================+============+ |
-           +=================================================+============+
-           | bigSplitPane                                    |            |
-           | +=============================================+ |            |
-           | | sheetController                             | | boardsPane |
-           | |                                             | |            |
-           | |                                             | |            |
-           | |                                             | |            |
-           | |                                             | |            |
-           | |                                             | |            |
-           | |                                             | |            |
-           | |                                             | |            |
-           | |                                             | |            |
-           | |                                             | |            |
-           | |                                             | |            |
-           | |                                             | |            |
-           | +=============================================+ |            |
-           | | logPane                                     | |            |
-           | |                                             | |            |
-           | |                                             | |            |
-           | +=============================================+ |            |
-           +=================================================+============+
+           +============================================================+
+           |toolKeyPanel                                                |
+           |+================+=============================+===========+|
+           || toolBar        | progressBar                 |   Memory  ||
+           |+================+=============================+===========+|
+           +============================================================+
+           |bigSplitPane                                                |
+           |+===========================================+==============+|
+           || sheetController                           | boardsPane   ||
+           ||                                           |              ||
+           ||                                           |              ||
+           ||                                           |              ||
+           ||                                           |              ||
+           ||                                           |              ||
+           ||                                           |              ||
+           ||                                           |              ||
+           ||                                           |              ||
+           ||                                           |              ||
+           ||                                           |              ||
+           ||                                           |              ||
+           |+=====================+=====================+              ||
+           || logPane             | errorsHolder        |              ||
+           ||                     |                     |              ||
+           ||                     |                     |              ||
+           |+=====================+=====================+==============+|
+           +================================================+===========+
          */
 
         // Use a layout with toolbar on top and a double split pane below
@@ -234,10 +231,17 @@ public class MainGui
              .setLayout(new BorderLayout());
 
         logPane = new LogPane();
+
+        // Boards
+        boardsPane = new BoardsPane();
+
+        // Bottom = Log & Errors
+        bottomPane = new BottomPane(logPane.getComponent());
+
         splitPane = new JSplitPane(
             JSplitPane.VERTICAL_SPLIT,
             sheetController.getComponent(),
-            logPane.getComponent());
+            bottomPane);
         splitPane.setBorder(null);
         splitPane.setDividerSize(2);
         splitPane.setDividerLocation(constants.logDivider.getValue());
@@ -254,14 +258,10 @@ public class MainGui
                 IconManager.getInstance().loadImageIcon("general/Delete")).getComponent(),
             BorderLayout.EAST);
 
-        // Boards
-        boardsHolder = new Panel();
-        boardsHolder.setNoInsets();
-
         bigSplitPane = new JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT,
             splitPane,
-            boardsHolder);
+            boardsPane);
         bigSplitPane.setBorder(null);
         bigSplitPane.setDividerSize(2);
         bigSplitPane.setDividerLocation(constants.boardDivider.getValue());
@@ -282,6 +282,67 @@ public class MainGui
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------------//
+    // addBoardsPane //
+    //---------------//
+    /**
+     * Add a new boardspane to the boards holder
+     *
+     * @param boards the boards pane to be added
+     */
+    public void addBoardsPane (JComponent boards)
+    {
+        boardsPane.addBoards(boards);
+    }
+
+    //---------------//
+    // addErrorsPane //
+    //---------------//
+    /**
+     * Add/show a new errors pane
+     *
+     * @param errorsPane the errors pane to be added
+     */
+    public void addErrorsPane (JComponent errorsPane)
+    {
+        bottomPane.addErrors(errorsPane);
+    }
+
+    //----------------//
+    // displayMessage //
+    //----------------//
+    /**
+     * Allow to display a modal dialog with an html content
+     *
+     * @param htmlStr the HTML string
+     */
+    public void displayMessage (String htmlStr)
+    {
+        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
+        htmlPane.setEditable(false);
+        JOptionPane.showMessageDialog(frame, htmlPane);
+    }
+
+    //----------------//
+    // displayWarning //
+    //----------------//
+    /**
+     * Allow to display a modal dialog with an html content
+     *
+     * @param htmlStr the HTML string
+     */
+    public void displayWarning (String htmlStr)
+    {
+        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
+        htmlPane.setEditable(false);
+
+        JOptionPane.showMessageDialog(
+            frame,
+            htmlPane,
+            "Warning",
+            JOptionPane.WARNING_MESSAGE);
+    }
 
     //----------//
     // getFrame //
@@ -307,37 +368,7 @@ public class MainGui
     @Implement(SelectionObserver.class)
     public String getName ()
     {
-        return "JUI";
-    }
-
-    //-----------//
-    // setTarget //
-    //-----------//
-    /**
-     * Specify what the current interest of the user is, by means of the current
-     * score. Thus, when for example a sheet image is loaded sometime later,
-     * this information will be used to trigger or not the actual display of the
-     * sheet view.
-     *
-     * @param score the contextual score
-     */
-    public void setTarget (omr.score.Score score)
-    {
-        setObjectTarget(score);
-    }
-
-    //-----------//
-    // setTarget //
-    //-----------//
-    /**
-     * Specify what the current interest of the user is, by means of the desired
-     * sheet file name.
-     *
-     * @param name the (canonical) sheet file name
-     */
-    public void setTarget (String name)
-    {
-        setObjectTarget(name);
+        return "MainGui";
     }
 
     //----------//
@@ -376,95 +407,56 @@ public class MainGui
         return result;
     }
 
-    //---------------//
-    // addBoardsPane //
-    //---------------//
-    /**
-     * Add a new boardspane to the boards holder
-     *
-     * @param boards the boards pane to be added
-     */
-    public void addBoardsPane (BoardsPane boards)
-    {
-        boardsHolder.add(boards.getComponent());
-        boardsHolder.revalidate();
-        boardsHolder.repaint();
-    }
-
-    //----------------//
-    // displayMessage //
-    //----------------//
-    /**
-     * Allow to display a modal dialog with an html content
-     *
-     * @param htmlStr the HTML string
-     */
-    public void displayMessage (String htmlStr)
-    {
-        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
-        htmlPane.setEditable(false);
-        JOptionPane.showMessageDialog(frame, htmlPane);
-    }
-
-    //----------------//
-    // displayWarning //
-    //----------------//
-    /**
-     * Allow to display a modal dialog with an html content
-     *
-     * @param htmlStr the HTML string
-     */
-    public void displayWarning (String htmlStr)
-    {
-        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
-        htmlPane.setEditable(false);
-
-        JOptionPane.showMessageDialog(
-            frame,
-            htmlPane,
-            "Warning",
-            JOptionPane.WARNING_MESSAGE);
-    }
-
     //------------------//
     // removeBoardsPane //
     //------------------//
     /**
-     * Remove the selected boardspane
-     *
-     * @param boards the boards pane to be removed
+     * Remove the current boardsPane, if any
      */
-    public void removeBoardsPane (BoardsPane boards)
+    public void removeBoardsPane ()
     {
-        boardsHolder.remove(boards.getComponent());
-        logger.fine(
-            "removed " + boards + " holderCount=" +
-            boardsHolder.getComponentCount());
-
-        // Refresh the display
-        boardsHolder.repaint();
+        boardsPane.removeBoards();
     }
 
-    //----------------//
-    // showBoardsPane //
-    //----------------//
+    //------------------//
+    // removeErrorsPane //
+    //------------------//
     /**
-     * Display the selected boardspane
-     *
-     * @param boards the boards pane to be displayed
+     * Remove the current errors pane, if any
      */
-    public void showBoardsPane (BoardsPane boards)
+    public void removeErrorsPane ()
     {
-        logger.fine("showing " + boards);
+        bottomPane.removeErrors();
+    }
 
-        for (Component component : boardsHolder.getComponents()) {
-            if (component != boards.getComponent()) {
-                component.setVisible(false);
-            }
-        }
+    //-----------//
+    // setTarget //
+    //-----------//
+    /**
+     * Specify what the current interest of the user is, by means of the current
+     * score. Thus, when for example a sheet image is loaded sometime later,
+     * this information will be used to trigger or not the actual display of the
+     * sheet view.
+     *
+     * @param score the contextual score
+     */
+    public void setTarget (omr.score.Score score)
+    {
+        setObjectTarget(score);
+    }
 
-        boards.getComponent()
-              .setVisible(true);
+    //-----------//
+    // setTarget //
+    //-----------//
+    /**
+     * Specify what the current interest of the user is, by means of the desired
+     * sheet file name.
+     *
+     * @param name the (canonical) sheet file name
+     */
+    public void setTarget (String name)
+    {
+        setObjectTarget(name);
     }
 
     //--------//
@@ -523,18 +515,6 @@ public class MainGui
         frame.setTitle(sb.toString());
     }
 
-    //-----------------//
-    // setObjectTarget //
-    //-----------------//
-    private synchronized void setObjectTarget (Object target)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setObjectTarget " + target);
-        }
-
-        this.target = target;
-    }
-
     //------//
     // exit // Last wishes before application actually exit
     //------//
@@ -559,21 +539,34 @@ public class MainGui
 
             if (state == Frame.MAXIMIZED_BOTH) {
                 // Remember internal split locations
-                // Fix internal split locations (workaround TBD)
-                final int deltaDivider = 10;
                 constants.logDivider.setValue(
-                    splitPane.getDividerLocation() - deltaDivider);
+                    splitPane.getDividerLocation() - DELTA_DIVIDER);
+
                 constants.boardDivider.setValue(
-                    bigSplitPane.getDividerLocation() - deltaDivider);
+                    bigSplitPane.getDividerLocation() - DELTA_DIVIDER);
                 SheetAssembly.storeScoreSheetDivider();
             }
         }
+
+        bottomPane.exit(state);
 
         // Store latest constant values on disk
         ConstantManager.storeResource();
 
         // That's all folks !
         java.lang.System.exit(0);
+    }
+
+    //-----------------//
+    // setObjectTarget //
+    //-----------------//
+    private synchronized void setObjectTarget (Object target)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("setObjectTarget " + target);
+        }
+
+        this.target = target;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -616,14 +609,10 @@ public class MainGui
             super(
                 "Exit",
                 IconManager.getInstance().loadImageIcon("general/Stop"));
-
-            final String tiptext = "Exit the program";
-            menu.add(this)
-                .setToolTipText(tiptext);
-
-            final JButton button = toolBar.add(this);
-            button.setBorder(getToolBorder());
-            button.setToolTipText(tiptext);
+            putValue(SHORT_DESCRIPTION, "Exit the program");
+            menu.add(this);
+            toolBar.add(this)
+                   .setBorder(getToolBorder());
         }
 
         @Implement(ActionListener.class)
@@ -644,12 +633,9 @@ public class MainGui
             super(
                 "Fine",
                 IconManager.getInstance().loadImageIcon("general/Find"));
-
-            final String  tiptext = "Generic Fine Action";
-
-            final JButton button = toolBar.add(this);
-            button.setBorder(getToolBorder());
-            button.setToolTipText(tiptext);
+            putValue(SHORT_DESCRIPTION, "Generic Fine Action");
+            toolBar.add(this)
+                   .setBorder(getToolBorder());
         }
 
         @Implement(ActionListener.class)
@@ -671,11 +657,8 @@ public class MainGui
             super(
                 "Memory",
                 IconManager.getInstance().loadImageIcon("general/Find"));
-
-            final String tiptext = "Show occupied memory";
-
-            menu.add(this)
-                .setToolTipText(tiptext);
+            putValue(SHORT_DESCRIPTION, "Show occupied memory");
+            menu.add(this);
         }
 
         @Implement(ActionListener.class)
@@ -696,8 +679,8 @@ public class MainGui
             super(
                 "Options",
                 IconManager.getInstance().loadImageIcon("general/Properties"));
-            menu.add(this)
-                .setToolTipText("Constants tree for all units");
+            putValue(SHORT_DESCRIPTION, "Constants tree for all units");
+            menu.add(this);
         }
 
         @Implement(ActionListener.class)
@@ -749,8 +732,10 @@ public class MainGui
             super(
                 "Clear Log",
                 IconManager.getInstance().loadImageIcon("general/Cut"));
-            menu.add(this)
-                .setToolTipText("Clear the whole log display");
+            putValue(SHORT_DESCRIPTION, "Clear the whole log display");
+            menu.add(this);
+            toolBar.add(this)
+                   .setBorder(getToolBorder());
         }
 
         @Implement(ActionListener.class)
@@ -771,8 +756,8 @@ public class MainGui
             super(
                 "Training Material",
                 IconManager.getInstance().loadImageIcon("media/Movie"));
-            menu.add(this)
-                .setToolTipText("Verify training material");
+            putValue(SHORT_DESCRIPTION, "Verify training material");
+            menu.add(this);
         }
 
         @Implement(ActionListener.class)
@@ -794,10 +779,8 @@ public class MainGui
             super(
                 "About",
                 IconManager.getInstance().loadImageIcon("general/About"));
-
-            final String tiptext = "About " + Main.getToolName();
-            menu.add(this)
-                .setToolTipText(tiptext);
+            putValue(SHORT_DESCRIPTION, "About " + Main.getToolName());
+            menu.add(this);
         }
 
         @Implement(ActionListener.class)
@@ -835,6 +818,9 @@ public class MainGui
         PixelCount       boardDivider = new PixelCount(
             200,
             "Where the separation on left of board pane should be");
+        PixelCount       bottomDivider = new PixelCount(
+            200,
+            "Where the separation on top of bottom pane should be");
         PixelCount       frameHeight = new PixelCount(
             740,
             "Height of the main frame");
@@ -868,6 +854,86 @@ public class MainGui
             "DEBUG- Should we show the Fine button ?");
     }
 
+    //------------//
+    // BoardsPane //
+    //------------//
+    private static class BoardsPane
+        extends Panel
+    {
+        public BoardsPane ()
+        {
+            setNoInsets();
+        }
+
+        public void addBoards (JComponent boards)
+        {
+            removeBoards();
+            add(boards);
+            revalidate();
+            repaint();
+        }
+
+        public void removeBoards ()
+        {
+            for (Component component : getComponents()) {
+                remove(component);
+            }
+
+            repaint();
+        }
+    }
+
+    //------------//
+    // BottomPane //
+    //------------//
+    /**
+     * A split pane which handles the bottom pane which contains the log pane
+     * and potentially an errors pane on the right. We try to remember the last
+     * divider location
+     */
+    private static class BottomPane
+        extends JSplitPane
+    {
+        PixelCount divider = constants.bottomDivider;
+
+        public BottomPane (JComponent left)
+        {
+            super(JSplitPane.HORIZONTAL_SPLIT, left, null);
+            setBorder(null);
+            setDividerSize(2);
+            setDividerLocation(divider.getValue());
+        }
+
+        public void addErrors (JComponent errorsPane)
+        {
+            removeErrors();
+            setRightComponent(errorsPane);
+            revalidate();
+            setDividerLocation(divider.getValue());
+            repaint();
+        }
+
+        public void exit (int state)
+        {
+            if (getRightComponent() != null) {
+                if (state == Frame.NORMAL) {
+                    divider.setValue(getDividerLocation());
+                } else if (state == Frame.MAXIMIZED_BOTH) {
+                    divider.setValue(getDividerLocation() - DELTA_DIVIDER);
+                }
+            }
+        }
+
+        public void removeErrors ()
+        {
+            if (getRightComponent() != null) {
+                divider.setValue(getDividerLocation());
+            }
+
+            setRightComponent(null);
+        }
+    }
+
     //-------------//
     // ShapeAction //
     //-------------//
@@ -879,8 +945,8 @@ public class MainGui
             super(
                 "Shape Colors",
                 IconManager.getInstance().loadImageIcon("general/Properties"));
-            menu.add(this)
-                .setToolTipText("Manage colors of all shapes");
+            putValue(SHORT_DESCRIPTION, "Manage colors of all shapes");
+            menu.add(this);
         }
 
         @Implement(ActionListener.class)
@@ -914,12 +980,9 @@ public class MainGui
             super(
                 "Test",
                 IconManager.getInstance().loadImageIcon("general/TipOfTheDay"));
-
-            final String  tiptext = "Generic Test Action";
-
-            final JButton button = toolBar.add(this);
-            button.setBorder(getToolBorder());
-            button.setToolTipText(tiptext);
+            putValue(SHORT_DESCRIPTION, "Generic Test Action");
+            toolBar.add(this)
+                   .setBorder(getToolBorder());
         }
 
         @Implement(ActionListener.class)
@@ -940,10 +1003,8 @@ public class MainGui
             super(
                 "Trainer",
                 IconManager.getInstance().loadImageIcon("media/Play"));
-
-            final String tiptext = "Launch trainer interface";
-            menu.add(this)
-                .setToolTipText(tiptext);
+            putValue(SHORT_DESCRIPTION, "Launch trainer interface");
+            menu.add(this);
         }
 
         @Implement(ActionListener.class)
@@ -962,6 +1023,7 @@ public class MainGui
         public LedgerAction ()
         {
             super("Show original ledger lines");
+            putValue(SHORT_DESCRIPTION, "Show the original ledger lines");
         }
 
         @Implement(ActionListener.class)
@@ -981,6 +1043,7 @@ public class MainGui
         public LineAction ()
         {
             super("Show original staff lines");
+            putValue(SHORT_DESCRIPTION, "Show the original staff lines");
         }
 
         @Implement(ActionListener.class)

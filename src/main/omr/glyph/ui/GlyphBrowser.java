@@ -201,7 +201,7 @@ class GlyphBrowser
 
         glyphBoard.setInputSelectionList(
             Collections.singletonList(localGlyphSelection));
-        glyphBoard.boardShown();
+        glyphBoard.connect();
         glyphBoard.getDeassignAction()
                   .putValue(
             Action.SHORT_DESCRIPTION,

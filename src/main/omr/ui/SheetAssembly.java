@@ -11,7 +11,6 @@ package omr.ui;
 
 import omr.Main;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.score.ScoreView;
@@ -71,8 +70,11 @@ public class SheetAssembly
 
     //~ Instance fields --------------------------------------------------------
 
-    /** My parallel list of Tab */
-    private final ArrayList<Tab> tabs = new ArrayList<Tab>();
+    /** Related errors editor */
+    private final ErrorsEditor errorsEditor;
+
+    /** My parallel list of view Tabs */
+    private final ArrayList<ViewTab> viewTabs = new ArrayList<ViewTab>();
 
     /** Split pane for score and sheet views */
     private final JSplitPane splitPane = new JSplitPane(
@@ -109,7 +111,7 @@ public class SheetAssembly
     private Selection locationSelection;
 
     /** Index of previously selected tab */
-    private int previousIndex = -1;
+    private int previousViewIndex = -1;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -126,6 +128,9 @@ public class SheetAssembly
         if (logger.isFineEnabled()) {
             logger.fine("creating SheetAssembly on " + sheet);
         }
+
+        // Detached errors editor
+        errorsEditor = new ErrorsEditor(sheet);
 
         component = new Panel();
 
@@ -162,6 +167,133 @@ public class SheetAssembly
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // addViewTab //
+    //------------//
+    /**
+     * Add a new tab, that contains a new view on the sheet
+     * @param title label to be used for the tab
+     * @param sv the view on the sheet
+     * @param boardsPane the board pane associated to the tab
+     */
+    public void addViewTab (String     title,
+                            ScrollView sv,
+                            BoardsPane boardsPane)
+    {
+        boardsPane.setName(sheet.getRadix() + ":" + title);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "addViewTab title=" + title + " boardsPane=" + boardsPane);
+        }
+
+        // Make the new view reuse the common zoom and rubber instances
+        sv.getView()
+          .setZoom(zoom);
+        sv.getView()
+          .setRubber(rubber);
+
+        // Set the model size
+        if (sheet.getWidth() != -1) {
+            sv.getView()
+              .setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
+        } else {
+            sv.getView()
+              .setModelSize(sheet.getPicture().getDimension());
+        }
+
+        // Force scroll bar computations
+        zoom.fireStateChanged();
+        viewTabs.add(new omr.ui.SheetAssembly.ViewTab(title, boardsPane, sv));
+
+        // Actually insert a Swing tab
+        tabbedPane.addTab(title, sv.getComponent());
+        tabbedPane.setSelectedComponent(sv.getComponent());
+    }
+
+    //--------------------//
+    // assemblyDeselected //
+    //--------------------//
+    /**
+     * Method called when this sheet assembly is no longer selected.
+     */
+    public void assemblyDeselected ()
+    {
+        int viewIndex = tabbedPane.getSelectedIndex();
+
+        // Disconnect the current board
+        if (logger.isFineEnabled()) {
+            logger.fine("assemblyDeselected viewIndex=" + viewIndex);
+        }
+
+        if (viewIndex != -1) {
+            viewTabs.get(viewIndex).boardsPane.hidden();
+        }
+    }
+
+    //------------------//
+    // assemblySelected //
+    //------------------//
+    /**
+     * Method called when this sheet assembly is selected (since we can have
+     * several sheets displayed, each one with its own sheet assembly). This is
+     * called from {@link omr.sheet.SheetController} when the tab of another
+     * sheet is selected.
+     */
+    public void assemblySelected ()
+    {
+        ///logger.info("assemblySelected");
+
+        // Display current context
+        displayContext();
+    }
+
+    //-------//
+    // close //
+    //-------//
+    /**
+     * Close the assembly, by removing it from the containing sheet tabbed pane.
+     */
+    public void close ()
+    {
+        MainGui gui = Main.getGui();
+        gui.removeBoardsPane(); // Disconnect boards pane
+        gui.removeErrorsPane(); // Disconnect errors pane
+        gui.sheetController.close(this);
+
+        // Disconnect all keyboard bindings from PixelBoard's (as a workaround
+        // for a Swing memory leak)
+        for (ViewTab tab : viewTabs) {
+            BoardsPane pane = tab.boardsPane;
+
+            for (Component topComp : pane.getComponent()
+                                         .getComponents()) {
+                for (Component comp : ((Container) topComp).getComponents()) {
+                    if (comp instanceof JComponent) {
+                        ((JComponent) comp).resetKeyboardActions();
+                    }
+                }
+            }
+        }
+
+        viewTabs.clear(); // Useful ???
+    }
+
+    //----------------//
+    // closeScoreView //
+    //----------------//
+    /**
+     * Close the score view part
+     */
+    public void closeScoreView ()
+    {
+        if (scoreView != null) {
+            logger.fine("Closing scoreView for " + scoreView.getScore());
+            splitPane.setTopComponent(null);
+            scoreView = null;
+        }
+    }
+
     //--------------//
     // getComponent //
     //--------------//
@@ -173,6 +305,43 @@ public class SheetAssembly
     public JComponent getComponent ()
     {
         return component;
+    }
+
+    public JComponent getErrorsPane ()
+    {
+        return errorsEditor.getComponent();
+    }
+
+    //-----------------//
+    // getSelectedView //
+    //-----------------//
+    /**
+     * Report the tabbed view currently selected
+     *
+     * @return the current tabbed view
+     */
+    public ScrollView getSelectedView ()
+    {
+        int viewIndex = tabbedPane.getSelectedIndex();
+
+        if (viewIndex != -1) {
+            return viewTabs.get(viewIndex).scrollView;
+        } else {
+            return null;
+        }
+    }
+
+    //----------//
+    // getSheet //
+    //----------//
+    /**
+     * Report the sheet this assembly is related to
+     *
+     * @return the related sheet
+     */
+    public Sheet getSheet ()
+    {
+        return sheet;
     }
 
     //--------------//
@@ -217,38 +386,6 @@ public class SheetAssembly
                 });
     }
 
-    //-----------------//
-    // getSelectedView //
-    //-----------------//
-    /**
-     * Report the tabbed view currently selected
-     *
-     * @return the current tabbed view
-     */
-    public ScrollView getSelectedView ()
-    {
-        int index = tabbedPane.getSelectedIndex();
-
-        if (index != -1) {
-            return tabs.get(index).scrollView;
-        } else {
-            return null;
-        }
-    }
-
-    //----------//
-    // getSheet //
-    //----------//
-    /**
-     * Report the sheet this assembly is related to
-     *
-     * @return the related sheet
-     */
-    public Sheet getSheet ()
-    {
-        return sheet;
-    }
-
     //--------------//
     // setZoomRatio //
     //--------------//
@@ -260,141 +397,6 @@ public class SheetAssembly
     public void setZoomRatio (double ratio)
     {
         zoom.setRatio(ratio);
-    }
-
-    //------------//
-    // addViewTab //
-    //------------//
-    /**
-     * Add a new tab, that contains a new view on the sheet
-     * @param title label to be used for the tab
-     * @param sv the view on the sheet
-     * @param boardsPane the board pane associated to the tab
-     */
-    public void addViewTab (String     title,
-                            ScrollView sv,
-                            BoardsPane boardsPane)
-    {
-        boardsPane.setName(sheet.getRadix() + ":" + title);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "addViewTab title=" + title + " boardsPane=" + boardsPane);
-        }
-
-        // Make the new view reuse the common zoom and rubber instances
-        sv.getView()
-          .setZoom(zoom);
-        sv.getView()
-          .setRubber(rubber);
-
-        // Set the model size
-        if (sheet.getWidth() != -1) {
-            sv.getView()
-              .setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
-        } else {
-            sv.getView()
-              .setModelSize(sheet.getPicture().getDimension());
-        }
-
-        // Force scroll bar computations
-        zoom.fireStateChanged();
-
-        // Own tab structure
-        tabs.add(new Tab(title, boardsPane, sv));
-
-        // Actually insert a Swing tab
-        tabbedPane.addTab(title, sv.getComponent());
-        tabbedPane.setSelectedComponent(sv.getComponent());
-
-        // Add the boardsPane to MainGui
-        Main.getGui()
-            .addBoardsPane(boardsPane);
-    }
-
-    //--------------------//
-    // assemblyDeselected //
-    //--------------------//
-    /**
-     * Method called when this sheet assembly is no longer selected.
-     */
-    public void assemblyDeselected (int index)
-    {
-        // Disconnect the corresponding tab
-        if (logger.isFineEnabled()) {
-            logger.fine("assemblyDeselected index=" + index);
-        }
-
-        if (index != -1) {
-            tabs.get(index).boardsPane.hidden();
-        }
-    }
-
-    //------------------//
-    // assemblySelected //
-    //------------------//
-    /**
-     * Method called when this sheet assembly is selected (since we can have
-     * several sheets displayed, each one with its own sheet assembly). This is
-     * called from {@link omr.sheet.SheetController} when the tab of another
-     * sheet is selected.
-     */
-    public void assemblySelected ()
-    {
-        ///logger.info("assemblySelected");
-
-        // Display current context
-        displayContext();
-    }
-
-    //-------//
-    // close //
-    //-------//
-    /**
-     * Close the assembly, by removing it from the containing sheet tabbed pane.
-     */
-    public void close ()
-    {
-        MainGui gui = Main.getGui();
-
-        gui.sheetController.close(this);
-
-        // Disconnect all keyboard bindings from PixelBoard's (as a workaround
-        // for a Swing memory leak)
-        for (Tab tab : tabs) {
-            BoardsPane pane = tab.boardsPane;
-
-            for (Component topComp : pane.getComponent()
-                                         .getComponents()) {
-                for (Component comp : ((Container) topComp).getComponents()) {
-                    if (comp instanceof JComponent) {
-                        ((JComponent) comp).resetKeyboardActions();
-                    }
-                }
-            }
-        }
-
-        // Disconnect all boards panes for this assembly
-        for (Tab tab : tabs) {
-            gui.removeBoardsPane(tab.boardsPane);
-        }
-
-        tabs.clear(); // Useful ???
-    }
-
-    //----------------//
-    // closeScoreView //
-    //----------------//
-    /**
-     * Close the score view part
-     */
-    public void closeScoreView ()
-    {
-        if (scoreView != null) {
-            logger.fine("Closing scoreView for " + scoreView.getScore());
-            splitPane.setTopComponent(null);
-            scoreView = null;
-        }
     }
 
     //--------------//
@@ -409,17 +411,17 @@ public class SheetAssembly
     @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
-        if (previousIndex != -1) {
-            tabDeselected(previousIndex);
+        if (previousViewIndex != -1) {
+            tabDeselected(previousViewIndex);
         }
 
-        final int index = tabbedPane.getSelectedIndex();
+        final int viewIndex = tabbedPane.getSelectedIndex();
 
-        if (index != -1) {
-            tabSelected(index);
+        if (viewIndex != -1) {
+            tabSelected(viewIndex);
         }
 
-        previousIndex = index;
+        previousViewIndex = viewIndex;
     }
 
     //------------------------//
@@ -443,14 +445,14 @@ public class SheetAssembly
         ///logger.info("displayContext");
 
         // Make sure the tab is ready
-        int index = tabbedPane.getSelectedIndex();
+        int viewIndex = tabbedPane.getSelectedIndex();
 
-        if (index == -1) {
+        if (viewIndex == -1) {
             return;
         }
 
         // Display the proper boards pane
-        BoardsPane boardsPane = tabs.get(index).boardsPane;
+        BoardsPane boardsPane = viewTabs.get(viewIndex).boardsPane;
 
         if (logger.isFineEnabled()) {
             logger.fine("displaying " + boardsPane);
@@ -459,7 +461,7 @@ public class SheetAssembly
         boardsPane.shown();
 
         Main.getGui()
-            .showBoardsPane(boardsPane);
+            .addBoardsPane(boardsPane.getComponent());
     }
 
     //---------------//
@@ -468,7 +470,7 @@ public class SheetAssembly
     private void tabDeselected (int previousIndex)
     {
         ///logger.info("tabDeselected for " + tabs.get(previousIndex).title);
-        final Tab tab = tabs.get(previousIndex);
+        final ViewTab tab = viewTabs.get(previousIndex);
 
         // Disconnection of related view
         locationSelection.deleteObserver(tab.scrollView.getView());
@@ -480,10 +482,10 @@ public class SheetAssembly
     //-------------//
     // tabSelected //
     //-------------//
-    private void tabSelected (int index)
+    private void tabSelected (int viewIndex)
     {
-        ///logger.info("tabSelected for " + tabs.get(index).title);
-        final Tab         tab = tabs.get(index);
+        ///logger.info("tabSelected for " + tabs.get(viewIndex).title);
+        final ViewTab     tab = viewTabs.get(viewIndex);
 
         ScrollView        scrollView = getSelectedView();
         RubberZoomedPanel view = scrollView.getView();
@@ -493,8 +495,8 @@ public class SheetAssembly
         rubber.setMouseMonitor(view);
 
         // Keep previous scroll bar positions
-        if (previousIndex != -1) {
-            JScrollPane prev = tabs.get(previousIndex).scrollView.getComponent();
+        if (previousViewIndex != -1) {
+            JScrollPane prev = viewTabs.get(previousViewIndex).scrollView.getComponent();
             scrollView.getComponent()
                       .getVerticalScrollBar()
                       .setValue(prev.getVerticalScrollBar().getValue());
@@ -527,22 +529,22 @@ public class SheetAssembly
             "Where the separation between score and sheet views should be");
     }
 
-    //-----//
-    // Tab //
-    //-----//
+    //---------//
+    // ViewTab //
+    //---------//
     /**
-     * A simple structure to gather the various aspects of a tab.  All instances
-     * are kept in an ordered list parallel to JTabbedPane index.
+     * A simple structure to gather the various aspects of a view tab.
+     * All instances are kept in an ordered list parallel to JTabbedPane index.
      */
-    private static class Tab
+    private static class ViewTab
     {
         BoardsPane boardsPane; // Related boards pane
         ScrollView scrollView; // Component in the JTabbedPane
         String     title; // Title used for the tab
 
-        public Tab (String     title,
-                    BoardsPane boardsPane,
-                    ScrollView scrollView)
+        public ViewTab (String     title,
+                        BoardsPane boardsPane,
+                        ScrollView scrollView)
         {
             this.title = title;
             this.boardsPane = boardsPane;

@@ -32,7 +32,7 @@ import java.util.Properties;
  *
  * <ol> <li> First, <b>SOURCE</b> values are always provided within
  * <em><b>source declaration</b></em> of the constants in the Java source file
- * itself. For example, in the "omr/ui/Jui.java" file, we can find:
+ * itself. For example, in the "omr/ui/MainGui.java" file, we can find:
  *
  * <pre>
  * Constant.Integer frameWidth = new Constant.Integer
@@ -45,8 +45,8 @@ import java.util.Properties;
  * <em><b>"config/run.default.properties"</b></em> can assign overriding values
  * to some constants. For example, the <code>frameWidth</code> constant above
  * could be altered by the following line in this default file: <pre>
- * omr.ui.Jui.frameWidth=640 </pre> This file is mandatory, although it can be
- * empty, and must be located at the root of application binary (either the
+ * omr.ui.MainGui.frameWidth=640 </pre> This file is mandatory, although it can 
+ * be empty, and must be located at the root of application binary (either the
  * class hierarchy or the jar file). If this file is not found at start-up the
  * application is stopped.  Typically, these DEFAULT values define values for a
  * distribution of the application, for example Linux and Windows binaries might
