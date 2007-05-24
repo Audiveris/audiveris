@@ -207,7 +207,7 @@ public class Clef
             return true;
 
         default :
-            logger.warning("No implementation yet for " + shape);
+            measure.addError(glyph, "No implementation yet for " + shape);
 
             return false;
         }

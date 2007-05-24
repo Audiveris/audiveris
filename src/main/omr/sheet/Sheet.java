@@ -23,6 +23,8 @@ import omr.glyph.ui.SymbolsEditor;
 import omr.score.Score;
 import omr.score.ScoreBuilder;
 import omr.score.ScoreManager;
+import omr.score.ScoreNode;
+import omr.score.SystemNode;
 import omr.score.visitor.ScoreChecker;
 import omr.score.visitor.ScoreColorizer;
 import omr.score.visitor.ScoreVisitor;
@@ -37,6 +39,7 @@ import static omr.selection.SelectionTag.*;
 import omr.stick.Stick;
 
 import omr.ui.BoardsPane;
+import omr.ui.ErrorsEditor;
 import omr.ui.MainGui;
 import omr.ui.PixelBoard;
 import omr.ui.SheetAssembly;
@@ -169,6 +172,9 @@ public class Sheet
 
     /** To avoid concurrent modifications */
     private transient volatile boolean busy = false;
+
+    /** Related errors editor */
+    private transient ErrorsEditor errorsEditor;
 
     // InstanceStep Definitions (in proper order) ------------------------------
 
@@ -555,809 +561,6 @@ public class Sheet
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // setAssembly //
-    //-------------//
-    /**
-     * Remember the link to the related sheet display assembly
-     *
-     * @param assembly the related sheet assembly
-     */
-    public void setAssembly (SheetAssembly assembly)
-    {
-        this.assembly = assembly;
-    }
-
-    //-------------//
-    // getAssembly //
-    //-------------//
-    /**
-     * Report the related SheetAssembly for GUI
-     *
-     * @return the assembly, or null otherwise
-     */
-    public SheetAssembly getAssembly ()
-    {
-        if (assembly == null) {
-            setAssembly(new SheetAssembly(this));
-        }
-
-        return assembly;
-    }
-
-    //----------------//
-    // getBarsBuilder //
-    //----------------//
-    /**
-     * Give access to the builder in charge of bars computation
-     *
-     * @return the builder instance
-     */
-    public BarsBuilder getBarsBuilder ()
-    {
-        return barsBuilder;
-    }
-
-    //---------//
-    // setBusy //
-    //---------//
-    /**
-     * Flag the sheet processing state
-     *
-     * @param busy true if busy
-     */
-    public synchronized void setBusy (boolean busy)
-    {
-        this.busy = busy;
-    }
-
-    //--------//
-    // isBusy //
-    //--------//
-    /**
-     * Check whether the sheet is being processed
-     *
-     * @return true if busy
-     */
-    public synchronized boolean isBusy ()
-    {
-        return busy;
-    }
-
-    //------------------//
-    // getClosestSystem //
-    //------------------//
-    /**
-     * Report the closest system (apart from the provided one) in the direction
-     * of provided ordinate
-     *
-     * @param system the current system
-     * @param y the ordinate (of a point, a glyph, ...)
-     * @return the next (or previous) system if any
-     */
-    public SystemInfo getClosestSystem (SystemInfo system,
-                                        int        y)
-    {
-        int index = systems.indexOf(system);
-        int middle = (system.getAreaTop() + system.getAreaBottom()) / 2;
-
-        if (y > middle) {
-            if (index < (systems.size() - 1)) {
-                return systems.get(index + 1);
-            }
-        } else {
-            if (index > 0) {
-                return systems.get(index - 1);
-            }
-        }
-
-        return null;
-    }
-
-    //-------------------//
-    // getGlyphInspector //
-    //-------------------//
-    /**
-     * Give access to the glyph inspector (in charge of all glyph recognition
-     * actions) for this sheet
-     *
-     * @return the inspector instance
-     */
-    public GlyphInspector getGlyphInspector ()
-    {
-        if (glyphInspector == null) {
-            glyphInspector = new GlyphInspector(this, getGlyphsBuilder());
-        }
-
-        return glyphInspector;
-    }
-
-    //------------------//
-    // getGlyphsBuilder //
-    //------------------//
-    /**
-     * Give access to the glyphs builder for this sheet
-     *
-     * @return the builder instance
-     */
-    public GlyphsBuilder getGlyphsBuilder ()
-    {
-        if (glyphBuilder == null) {
-            glyphBuilder = new GlyphsBuilder(this);
-        }
-
-        return glyphBuilder;
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    /**
-     * Report the picture height in pixels
-     *
-     * @return the picture height
-     */
-    public int getHeight ()
-    {
-        return height;
-    }
-
-    //------------------//
-    // setHorizontalLag //
-    //------------------//
-    /**
-     * Assign the current horizontal lag for the sheet
-     *
-     * @param hLag the horizontal lag at hand
-     */
-    public void setHorizontalLag (GlyphLag hLag)
-    {
-        this.hLag = hLag;
-
-        // Input
-        getSelectionManager()
-            .addObserver(
-            hLag,
-            SHEET_RECTANGLE,
-            HORIZONTAL_SECTION,
-            HORIZONTAL_SECTION_ID,
-            HORIZONTAL_GLYPH,
-            HORIZONTAL_GLYPH_ID);
-
-        // Output
-        hLag.setLocationSelection(getSelection(SHEET_RECTANGLE));
-        hLag.setRunSelection(getSelection(HORIZONTAL_RUN));
-        hLag.setSectionSelection(getSelection(HORIZONTAL_SECTION));
-        hLag.setGlyphSelection(getSelection(HORIZONTAL_GLYPH));
-    }
-
-    //------------------//
-    // getHorizontalLag //
-    //------------------//
-    /**
-     * Report the current horizontal lag for this sheet
-     *
-     * @return the current horizontal lag
-     */
-    public GlyphLag getHorizontalLag ()
-    {
-        if (hLag == null) {
-            try {
-                // Brought by LinesBuilder, so...
-                LINES.doit();
-            } catch (ProcessingException ex) {
-                logger.severe("Cannot retrieve HorizontalLag from LINES");
-            }
-        }
-
-        return hLag;
-    }
-
-    //-----------------------//
-    // getHorizontalsBuilder //
-    //-----------------------//
-    /**
-     * Give access to the builder in charge of ledger lines
-     *
-     * @return the builder instance
-     */
-    public HorizontalsBuilder getHorizontalsBuilder ()
-    {
-        return horizontalsBuilder;
-    }
-
-    //--------------//
-    // getImageFile //
-    //--------------//
-    /**
-     * Report the file used to load the image from.
-     *
-     * @return the File entity
-     */
-    public File getImageFile ()
-    {
-        return imageFile;
-    }
-
-    //-----------------//
-    // getInstanceStep //
-    //-----------------//
-    /**
-     * Report the sheet element [InstanceStep] linked to the given step
-     *
-     * @param step the driving step
-     *
-     * @return the InstanceStep that contains the result of the step on the
-     *         sheet
-     */
-    public InstanceStep getInstanceStep (Step step)
-    {
-        try {
-            return (InstanceStep) step.getField()
-                                      .get(this);
-        } catch (IllegalAccessException ex) {
-            ex.printStackTrace();
-
-            return null;
-        }
-    }
-
-    //-----------------//
-    // getLinesBuilder //
-    //-----------------//
-    /**
-     * Give access to the builder in charge of staff lines
-     *
-     * @return the builder instance
-     */
-    public LinesBuilder getLinesBuilder ()
-    {
-        return linesBuilder;
-    }
-
-    //-------------//
-    // isOnSymbols //
-    //-------------//
-    /**
-     * Check whether current step is SYMBOLS or SYMBOL_COMPOUND
-     *
-     * @return true if on SYMBOLS
-     */
-    public boolean isOnSymbols ()
-    {
-        InstanceStep iStep = getInstanceStep(currentStep());
-
-        return (iStep == SYMBOLS) || (iStep == SYMBOLS_COMPOUNDS);
-    }
-
-    //---------//
-    // getPath //
-    //---------//
-    /**
-     * Report the (canonical) expression of the image file name, to uniquely and
-     * unambiguously identify this sheet.
-     *
-     * @return the normalized image file path
-     */
-    public String getPath ()
-    {
-        return imageFile.getPath();
-    }
-
-    //------------//
-    // getPicture //
-    //------------//
-    /**
-     * Report the picture of this sheet, that is the image to be processed.
-     *
-     * @return the related picture
-     */
-    public Picture getPicture ()
-    {
-        try {
-            return LOAD.getResult();
-        } catch (ProcessingException ex) {
-            logger.severe("Picture not available");
-
-            return null;
-        }
-    }
-
-    //----------//
-    // getRadix //
-    //----------//
-    /**
-     * Report a short name for this sheet (no path, no extension). Useful for
-     * tab labels for example.
-     *
-     * @return just the name of the image file
-     */
-    public String getRadix ()
-    {
-        return FileUtil.getNameSansExtension(imageFile);
-    }
-
-    //----------//
-    // setScale //
-    //----------//
-    /**
-     * Link scale information to this sheet
-     *
-     * @param scale the computed (or read from score file) scale
-     */
-    public void setScale (Scale scale)
-    {
-        SCALE.result = scale;
-    }
-
-    //----------//
-    // getScale //
-    //----------//
-    /**
-     * Report the computed scale of this sheet. This drives several processing
-     * thresholds.
-     *
-     * @return the sheet scale
-     */
-    public Scale getScale ()
-    {
-        try {
-            return SCALE.getResult();
-        } catch (ProcessingException ex) {
-            logger.severe("Scale not available");
-
-            return null;
-        }
-    }
-
-    //----------//
-    // getScore //
-    //----------//
-    /**
-     * Return the eventual Score that gathers in a score the information
-     * retrieved from this sheet.
-     *
-     * @return the related score, or null if not available
-     */
-    public Score getScore ()
-    {
-        return score;
-    }
-
-    //--------------//
-    // getSelection //
-    //--------------//
-    /**
-     * Report, within this sheet, the Selection related to the provided Tag
-     *
-     * @param tag specific selection (such as PIXEL, GLYPH, etc)
-     * @return the selection object, that can be observed
-     */
-    public Selection getSelection (SelectionTag tag)
-    {
-        return getSelectionManager()
-                   .getSelection(tag);
-    }
-
-    //---------------------//
-    // getSelectionManager //
-    //---------------------//
-    /**
-     * Report, the selection manager assigned to this sheet.
-     * @return the selection manager
-     */
-    public SelectionManager getSelectionManager ()
-    {
-        if (selectionManager == null) {
-            selectionManager = new SelectionManager(this);
-        }
-
-        return selectionManager;
-    }
-
-    //---------//
-    // setSkew //
-    //---------//
-    /**
-     * Link skew information to this sheet
-     *
-     * @param skew the skew information
-     */
-    public void setSkew (Skew skew)
-    {
-        SKEW.result = skew;
-    }
-
-    //---------//
-    // getSkew //
-    //---------//
-    /**
-     * Report the skew information for this sheet.  If not yet available,
-     * processing is launched to compute the average skew in the sheet image.
-     *
-     * @return the skew information
-     */
-    public Skew getSkew ()
-    {
-        try {
-            return SKEW.getResult();
-        } catch (ProcessingException ex) {
-            logger.severe("Skew not available");
-
-            return null;
-        }
-    }
-
-    //----------------//
-    // getSkewBuilder //
-    //----------------//
-    /**
-     * Give access to the builder in charge of skew computation
-     *
-     * @return the builder instance
-     */
-    public SkewBuilder getSkewBuilder ()
-    {
-        return skewBuilder;
-    }
-
-    //----------//
-    // getSteps //
-    //----------//
-    /**
-     * Report the ordered list of steps defined in the Sheet class
-     *
-     * @return the comprehensive list of Steps
-     */
-    public static List<Step> getSteps ()
-    {
-        if (steps == null) {
-            try {
-                steps = new ArrayList<Step>();
-
-                // Kludge to retrieve the related descriptions
-                Sheet   sheet = new Sheet();
-
-                Class   sheetClass = Sheet.class;
-                Field[] fields = sheetClass.getDeclaredFields();
-
-                for (int i = 0; i < fields.length; i++) {
-                    Field field = fields[i];
-
-                    if (InstanceStep.class.isAssignableFrom(field.getType())) {
-                        InstanceStep is = (InstanceStep) field.get(sheet);
-                        steps.add(new Step(field, is.getDescription()));
-                    }
-                }
-            } catch (IllegalAccessException ex) {
-                ex.printStackTrace(); // Should not happen
-            }
-        }
-
-        return steps;
-    }
-
-    //-----------------//
-    // getActiveGlyphs //
-    //-----------------//
-    /**
-     * Export the active glyphs of the vertical lag.
-     *
-     * @return the collection of glyphs for which at least a section is assigned
-     */
-    public Collection<Glyph> getActiveGlyphs ()
-    {
-        return vLag.getActiveGlyphs();
-    }
-
-    //----------------//
-    // getHorizontals //
-    //----------------//
-    /**
-     * Retrieve horizontals system by system
-     *
-     * @return the horizontals found
-     */
-    public Horizontals getHorizontals ()
-    {
-        try {
-            return HORIZONTALS.getResult();
-        } catch (ProcessingException ex) {
-            logger.severe("Horizontals not processed");
-
-            return null;
-        }
-    }
-
-    //----------//
-    // setScore //
-    //----------//
-    /**
-     * Link the score panel with the related score entity
-     *
-     * @param score the related score
-     */
-    public void setScore (Score score)
-    {
-        // If there was already a linked score, clean up everything
-        if (this.score != null) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Deconnecting " + this.score);
-            }
-
-            this.score.close();
-        }
-
-        this.score = score;
-    }
-
-    //------------------//
-    // getStaffIndexAtY //
-    //------------------//
-    /**
-     * Given the ordinate of a point, retrieve the index of the nearest staff
-     *
-     * @param y the point ordinate
-     *
-     * @return the index of the nearest staff
-     */
-    public int getStaffIndexAtY (int y)
-    {
-        int res = Collections.binarySearch(
-            getStaves(),
-            new Integer(y),
-            new Comparator<Object>() {
-                    public int compare (Object o1,
-                                        Object o2)
-                    {
-                        int y;
-
-                        if (o1 instanceof Integer) {
-                            y = ((Integer) o1).intValue();
-
-                            StaffInfo staff = (StaffInfo) o2;
-
-                            if (y < staff.getAreaTop()) {
-                                return -1;
-                            }
-
-                            if (y > staff.getAreaBottom()) {
-                                return +1;
-                            }
-
-                            return 0;
-                        } else {
-                            return -compare(o2, o1);
-                        }
-                    }
-                });
-
-        if (res >= 0) { // Found
-
-            return res;
-        } else {
-            // Should not happen!
-            logger.severe("getStaffIndexAtY. No nearest staff for y = " + y);
-
-            return -res - 1; // Not found
-        }
-    }
-
-    //-----------//
-    // getStaves //
-    //-----------//
-    /**
-     * Report the list of staves found in the sheet
-     *
-     * @return the collection of staves found
-     */
-    public List<StaffInfo> getStaves ()
-    {
-        try {
-            return LINES.getResult();
-        } catch (ProcessingException ex) {
-            logger.severe("Staves not available");
-
-            return null;
-        }
-    }
-
-    //------------------//
-    // getSymbolsEditor //
-    //------------------//
-    /**
-     * Give access to the module dealing with symbol recognition
-     *
-     * @return the instance of glyph pane
-     */
-    public SymbolsEditor getSymbolsEditor ()
-    {
-        if (symbolsEditor == null) {
-            symbolsEditor = new SymbolsEditor(this);
-        }
-
-        return symbolsEditor;
-    }
-
-    //--------------//
-    // getSystemAtY //
-    //--------------//
-    /**
-     * Find out the proper system info, for a given ordinate, according to the
-     * split in system areas
-     *
-     * @param y the point ordinate
-     *
-     * @return the containing system,
-     */
-    public SystemInfo getSystemAtY (int y)
-    {
-        for (SystemInfo info : getSystems()) {
-            if (y <= info.getAreaBottom()) {
-                return info;
-            }
-        }
-
-        // Should not happen
-        logger.severe("getSystemAtY y=" + y + " not in  any system");
-
-        return null;
-    }
-
-    //------------//
-    // setSystems //
-    //------------//
-    /**
-     * Assign the retrieved systems (infos)
-     *
-     * @param systems the elaborated list of SystemInfo's
-     */
-    public void setSystems (List<SystemInfo> systems)
-    {
-        this.systems = systems;
-    }
-
-    //------------//
-    // getSystems //
-    //------------//
-    /**
-     * Report the retrieved systems (infos)
-     *
-     * @return the list of SystemInfo's
-     */
-    public List<SystemInfo> getSystems ()
-    {
-        if (systems == null) {
-            try {
-                BARS.doit();
-            } catch (ProcessingException ex) {
-                logger.severe("Bars systems not available");
-
-                return null;
-            }
-        }
-
-        return systems;
-    }
-
-    //--------------//
-    // getSystemsAt //
-    //--------------//
-    /**
-     * Report the collection of systems that intersect a given rectangle
-     *
-     * @param rect the rectangle of interest
-     * @return the collection of systems, maybe empty but not null
-     */
-    public List<SystemInfo> getSystemsAt (Rectangle rect)
-    {
-        List<SystemInfo> list = new ArrayList<SystemInfo>();
-
-        if (rect != null) {
-            for (SystemInfo info : getSystems()) {
-                if ((rect.y <= info.getAreaBottom()) &&
-                    ((rect.y + rect.height) >= info.getAreaTop())) {
-                    list.add(info);
-                }
-            }
-        }
-
-        return list;
-    }
-
-    //----------------//
-    // setVerticalLag //
-    //----------------//
-    /**
-     * Assign the current vertical lag for the sheet
-     *
-     * @param vLag the current vertical lag
-     */
-    public void setVerticalLag (GlyphLag vLag)
-    {
-        this.vLag = vLag;
-
-        // Input
-        getSelectionManager()
-            .addObserver(
-            vLag,
-            SHEET_RECTANGLE,
-            VERTICAL_SECTION,
-            VERTICAL_SECTION_ID,
-            VERTICAL_GLYPH,
-            VERTICAL_GLYPH_ID);
-
-        // Output
-        vLag.setLocationSelection(getSelection(SHEET_RECTANGLE));
-        vLag.setRunSelection(getSelection(VERTICAL_RUN));
-        vLag.setSectionSelection(getSelection(VERTICAL_SECTION));
-        vLag.setGlyphSelection(getSelection(VERTICAL_GLYPH));
-        vLag.setGlyphSetSelection(getSelection(GLYPH_SET));
-    }
-
-    //----------------//
-    // getVerticalLag //
-    //----------------//
-    /**
-     * Report the current vertical lag of the sheet
-     *
-     * @return the current vertical lag
-     */
-    public GlyphLag getVerticalLag ()
-    {
-        if (vLag == null) {
-            try {
-                BARS.doit();
-            } catch (ProcessingException ex) {
-                logger.severe("Cannot retrieve vLag from BARS");
-            }
-        }
-
-        return vLag;
-    }
-
-    //--------------//
-    // getVerticals //
-    //--------------//
-    /**
-     * Retrieve verticals system by system
-     */
-    public Boolean getVerticals ()
-    {
-        try {
-            return VERTICALS.getResult();
-        } catch (ProcessingException ex) {
-            logger.severe("Verticals not available");
-
-            return null;
-        }
-    }
-
-    //---------------------//
-    // getVerticalsBuilder //
-    //---------------------//
-    public VerticalsBuilder getVerticalsBuilder ()
-    {
-        if (verticalsBuilder == null) {
-            verticalsBuilder = new VerticalsBuilder(this);
-        }
-
-        return verticalsBuilder;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the picture width in pixels
-     *
-     * @return the picture width
-     */
-    public int getWidth ()
-    {
-        return width;
-    }
-
     // Temporary kludge
     public boolean BarsAreDone ()
     {
@@ -1376,6 +579,9 @@ public class Sheet
         return LINES.isDone();
     }
 
+    //--------//
+    // accept //
+    //--------//
     public boolean accept (ScoreVisitor visitor)
     {
         if (visitor instanceof SheetPainter) {
@@ -1383,6 +589,17 @@ public class Sheet
         }
 
         return true;
+    }
+
+    //----------//
+    // addError //
+    //----------//
+    public void addError (SystemNode container,
+                          Glyph      glyph,
+                          String     text)
+    {
+        getErrorsEditor()
+            .addError(container, glyph, text);
     }
 
     //-------------------//
@@ -1547,6 +764,675 @@ public class Sheet
         return null; // As a last resort, should never be reached
     }
 
+    //-----------------//
+    // getActiveGlyphs //
+    //-----------------//
+    /**
+     * Export the active glyphs of the vertical lag.
+     *
+     * @return the collection of glyphs for which at least a section is assigned
+     */
+    public Collection<Glyph> getActiveGlyphs ()
+    {
+        return vLag.getActiveGlyphs();
+    }
+
+    //-------------//
+    // getAssembly //
+    //-------------//
+    /**
+     * Report the related SheetAssembly for GUI
+     *
+     * @return the assembly, or null otherwise
+     */
+    public SheetAssembly getAssembly ()
+    {
+        if (assembly == null) {
+            setAssembly(new SheetAssembly(this));
+        }
+
+        return assembly;
+    }
+
+    //----------------//
+    // getBarsBuilder //
+    //----------------//
+    /**
+     * Give access to the builder in charge of bars computation
+     *
+     * @return the builder instance
+     */
+    public BarsBuilder getBarsBuilder ()
+    {
+        return barsBuilder;
+    }
+
+    //------------------//
+    // getClosestSystem //
+    //------------------//
+    /**
+     * Report the closest system (apart from the provided one) in the direction
+     * of provided ordinate
+     *
+     * @param system the current system
+     * @param y the ordinate (of a point, a glyph, ...)
+     * @return the next (or previous) system if any
+     */
+    public SystemInfo getClosestSystem (SystemInfo system,
+                                        int        y)
+    {
+        int index = systems.indexOf(system);
+        int middle = (system.getAreaTop() + system.getAreaBottom()) / 2;
+
+        if (y > middle) {
+            if (index < (systems.size() - 1)) {
+                return systems.get(index + 1);
+            }
+        } else {
+            if (index > 0) {
+                return systems.get(index - 1);
+            }
+        }
+
+        return null;
+    }
+
+    //-----------------//
+    // getErrorsEditor //
+    //-----------------//
+    public ErrorsEditor getErrorsEditor ()
+    {
+        if (errorsEditor == null) {
+            errorsEditor = new ErrorsEditor(this);
+        }
+
+        return errorsEditor;
+    }
+
+    //-------------------//
+    // getGlyphInspector //
+    //-------------------//
+    /**
+     * Give access to the glyph inspector (in charge of all glyph recognition
+     * actions) for this sheet
+     *
+     * @return the inspector instance
+     */
+    public GlyphInspector getGlyphInspector ()
+    {
+        if (glyphInspector == null) {
+            glyphInspector = new GlyphInspector(this, getGlyphsBuilder());
+        }
+
+        return glyphInspector;
+    }
+
+    //------------------//
+    // getGlyphsBuilder //
+    //------------------//
+    /**
+     * Give access to the glyphs builder for this sheet
+     *
+     * @return the builder instance
+     */
+    public GlyphsBuilder getGlyphsBuilder ()
+    {
+        if (glyphBuilder == null) {
+            glyphBuilder = new GlyphsBuilder(this);
+        }
+
+        return glyphBuilder;
+    }
+
+    //-----------//
+    // getHeight //
+    //-----------//
+    /**
+     * Report the picture height in pixels
+     *
+     * @return the picture height
+     */
+    public int getHeight ()
+    {
+        return height;
+    }
+
+    //------------------//
+    // getHorizontalLag //
+    //------------------//
+    /**
+     * Report the current horizontal lag for this sheet
+     *
+     * @return the current horizontal lag
+     */
+    public GlyphLag getHorizontalLag ()
+    {
+        if (hLag == null) {
+            try {
+                // Brought by LinesBuilder, so...
+                LINES.doit();
+            } catch (ProcessingException ex) {
+                logger.severe("Cannot retrieve HorizontalLag from LINES");
+            }
+        }
+
+        return hLag;
+    }
+
+    //----------------//
+    // getHorizontals //
+    //----------------//
+    /**
+     * Retrieve horizontals system by system
+     *
+     * @return the horizontals found
+     */
+    public Horizontals getHorizontals ()
+    {
+        try {
+            return HORIZONTALS.getResult();
+        } catch (ProcessingException ex) {
+            logger.severe("Horizontals not processed");
+
+            return null;
+        }
+    }
+
+    //-----------------------//
+    // getHorizontalsBuilder //
+    //-----------------------//
+    /**
+     * Give access to the builder in charge of ledger lines
+     *
+     * @return the builder instance
+     */
+    public HorizontalsBuilder getHorizontalsBuilder ()
+    {
+        return horizontalsBuilder;
+    }
+
+    //--------------//
+    // getImageFile //
+    //--------------//
+    /**
+     * Report the file used to load the image from.
+     *
+     * @return the File entity
+     */
+    public File getImageFile ()
+    {
+        return imageFile;
+    }
+
+    //-----------------//
+    // getInstanceStep //
+    //-----------------//
+    /**
+     * Report the sheet element [InstanceStep] linked to the given step
+     *
+     * @param step the driving step
+     *
+     * @return the InstanceStep that contains the result of the step on the
+     *         sheet
+     */
+    public InstanceStep getInstanceStep (Step step)
+    {
+        try {
+            return (InstanceStep) step.getField()
+                                      .get(this);
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
+
+            return null;
+        }
+    }
+
+    //-----------------//
+    // getLinesBuilder //
+    //-----------------//
+    /**
+     * Give access to the builder in charge of staff lines
+     *
+     * @return the builder instance
+     */
+    public LinesBuilder getLinesBuilder ()
+    {
+        return linesBuilder;
+    }
+
+    //---------//
+    // getPath //
+    //---------//
+    /**
+     * Report the (canonical) expression of the image file name, to uniquely and
+     * unambiguously identify this sheet.
+     *
+     * @return the normalized image file path
+     */
+    public String getPath ()
+    {
+        return imageFile.getPath();
+    }
+
+    //------------//
+    // getPicture //
+    //------------//
+    /**
+     * Report the picture of this sheet, that is the image to be processed.
+     *
+     * @return the related picture
+     */
+    public Picture getPicture ()
+    {
+        try {
+            return LOAD.getResult();
+        } catch (ProcessingException ex) {
+            logger.severe("Picture not available");
+
+            return null;
+        }
+    }
+
+    //----------//
+    // getRadix //
+    //----------//
+    /**
+     * Report a short name for this sheet (no path, no extension). Useful for
+     * tab labels for example.
+     *
+     * @return just the name of the image file
+     */
+    public String getRadix ()
+    {
+        return FileUtil.getNameSansExtension(imageFile);
+    }
+
+    //----------//
+    // getScale //
+    //----------//
+    /**
+     * Report the computed scale of this sheet. This drives several processing
+     * thresholds.
+     *
+     * @return the sheet scale
+     */
+    public Scale getScale ()
+    {
+        try {
+            return SCALE.getResult();
+        } catch (ProcessingException ex) {
+            logger.severe("Scale not available");
+
+            return null;
+        }
+    }
+
+    //----------//
+    // getScore //
+    //----------//
+    /**
+     * Return the eventual Score that gathers in a score the information
+     * retrieved from this sheet.
+     *
+     * @return the related score, or null if not available
+     */
+    public Score getScore ()
+    {
+        return score;
+    }
+
+    //--------------//
+    // getSelection //
+    //--------------//
+    /**
+     * Report, within this sheet, the Selection related to the provided Tag
+     *
+     * @param tag specific selection (such as PIXEL, GLYPH, etc)
+     * @return the selection object, that can be observed
+     */
+    public Selection getSelection (SelectionTag tag)
+    {
+        return getSelectionManager()
+                   .getSelection(tag);
+    }
+
+    //---------------------//
+    // getSelectionManager //
+    //---------------------//
+    /**
+     * Report, the selection manager assigned to this sheet.
+     * @return the selection manager
+     */
+    public SelectionManager getSelectionManager ()
+    {
+        if (selectionManager == null) {
+            selectionManager = new SelectionManager(this);
+        }
+
+        return selectionManager;
+    }
+
+    //---------//
+    // getSkew //
+    //---------//
+    /**
+     * Report the skew information for this sheet.  If not yet available,
+     * processing is launched to compute the average skew in the sheet image.
+     *
+     * @return the skew information
+     */
+    public Skew getSkew ()
+    {
+        try {
+            return SKEW.getResult();
+        } catch (ProcessingException ex) {
+            logger.severe("Skew not available");
+
+            return null;
+        }
+    }
+
+    //----------------//
+    // getSkewBuilder //
+    //----------------//
+    /**
+     * Give access to the builder in charge of skew computation
+     *
+     * @return the builder instance
+     */
+    public SkewBuilder getSkewBuilder ()
+    {
+        return skewBuilder;
+    }
+
+    //----------//
+    // getSteps //
+    //----------//
+    /**
+     * Report the ordered list of steps defined in the Sheet class
+     *
+     * @return the comprehensive list of Steps
+     */
+    public static List<Step> getSteps ()
+    {
+        if (steps == null) {
+            try {
+                steps = new ArrayList<Step>();
+
+                // Kludge to retrieve the related descriptions
+                Sheet   sheet = new Sheet();
+
+                Class   sheetClass = Sheet.class;
+                Field[] fields = sheetClass.getDeclaredFields();
+
+                for (int i = 0; i < fields.length; i++) {
+                    Field field = fields[i];
+
+                    if (InstanceStep.class.isAssignableFrom(field.getType())) {
+                        InstanceStep is = (InstanceStep) field.get(sheet);
+                        steps.add(new Step(field, is.getDescription()));
+                    }
+                }
+            } catch (IllegalAccessException ex) {
+                ex.printStackTrace(); // Should not happen
+            }
+        }
+
+        return steps;
+    }
+
+    //------------------//
+    // getStaffIndexAtY //
+    //------------------//
+    /**
+     * Given the ordinate of a point, retrieve the index of the nearest staff
+     *
+     * @param y the point ordinate
+     *
+     * @return the index of the nearest staff
+     */
+    public int getStaffIndexAtY (int y)
+    {
+        int res = Collections.binarySearch(
+            getStaves(),
+            new Integer(y),
+            new Comparator<Object>() {
+                    public int compare (Object o1,
+                                        Object o2)
+                    {
+                        int y;
+
+                        if (o1 instanceof Integer) {
+                            y = ((Integer) o1).intValue();
+
+                            StaffInfo staff = (StaffInfo) o2;
+
+                            if (y < staff.getAreaTop()) {
+                                return -1;
+                            }
+
+                            if (y > staff.getAreaBottom()) {
+                                return +1;
+                            }
+
+                            return 0;
+                        } else {
+                            return -compare(o2, o1);
+                        }
+                    }
+                });
+
+        if (res >= 0) { // Found
+
+            return res;
+        } else {
+            // Should not happen!
+            logger.severe("getStaffIndexAtY. No nearest staff for y = " + y);
+
+            return -res - 1; // Not found
+        }
+    }
+
+    //-----------//
+    // getStaves //
+    //-----------//
+    /**
+     * Report the list of staves found in the sheet
+     *
+     * @return the collection of staves found
+     */
+    public List<StaffInfo> getStaves ()
+    {
+        try {
+            return LINES.getResult();
+        } catch (ProcessingException ex) {
+            logger.severe("Staves not available");
+
+            return null;
+        }
+    }
+
+    //------------------//
+    // getSymbolsEditor //
+    //------------------//
+    /**
+     * Give access to the module dealing with symbol recognition
+     *
+     * @return the instance of glyph pane
+     */
+    public SymbolsEditor getSymbolsEditor ()
+    {
+        if (symbolsEditor == null) {
+            symbolsEditor = new SymbolsEditor(this);
+        }
+
+        return symbolsEditor;
+    }
+
+    //--------------//
+    // getSystemAtY //
+    //--------------//
+    /**
+     * Find out the proper system info, for a given ordinate, according to the
+     * split in system areas
+     *
+     * @param y the point ordinate
+     *
+     * @return the containing system,
+     */
+    public SystemInfo getSystemAtY (int y)
+    {
+        for (SystemInfo info : getSystems()) {
+            if (y <= info.getAreaBottom()) {
+                return info;
+            }
+        }
+
+        // Should not happen
+        logger.severe("getSystemAtY y=" + y + " not in  any system");
+
+        return null;
+    }
+
+    //------------//
+    // getSystems //
+    //------------//
+    /**
+     * Report the retrieved systems (infos)
+     *
+     * @return the list of SystemInfo's
+     */
+    public List<SystemInfo> getSystems ()
+    {
+        if (systems == null) {
+            try {
+                BARS.doit();
+            } catch (ProcessingException ex) {
+                logger.severe("Bars systems not available");
+
+                return null;
+            }
+        }
+
+        return systems;
+    }
+
+    //--------------//
+    // getSystemsAt //
+    //--------------//
+    /**
+     * Report the collection of systems that intersect a given rectangle
+     *
+     * @param rect the rectangle of interest
+     * @return the collection of systems, maybe empty but not null
+     */
+    public List<SystemInfo> getSystemsAt (Rectangle rect)
+    {
+        List<SystemInfo> list = new ArrayList<SystemInfo>();
+
+        if (rect != null) {
+            for (SystemInfo info : getSystems()) {
+                if ((rect.y <= info.getAreaBottom()) &&
+                    ((rect.y + rect.height) >= info.getAreaTop())) {
+                    list.add(info);
+                }
+            }
+        }
+
+        return list;
+    }
+
+    //----------------//
+    // getVerticalLag //
+    //----------------//
+    /**
+     * Report the current vertical lag of the sheet
+     *
+     * @return the current vertical lag
+     */
+    public GlyphLag getVerticalLag ()
+    {
+        if (vLag == null) {
+            try {
+                BARS.doit();
+            } catch (ProcessingException ex) {
+                logger.severe("Cannot retrieve vLag from BARS");
+            }
+        }
+
+        return vLag;
+    }
+
+    //--------------//
+    // getVerticals //
+    //--------------//
+    /**
+     * Retrieve verticals system by system
+     */
+    public Boolean getVerticals ()
+    {
+        try {
+            return VERTICALS.getResult();
+        } catch (ProcessingException ex) {
+            logger.severe("Verticals not available");
+
+            return null;
+        }
+    }
+
+    //---------------------//
+    // getVerticalsBuilder //
+    //---------------------//
+    public VerticalsBuilder getVerticalsBuilder ()
+    {
+        if (verticalsBuilder == null) {
+            verticalsBuilder = new VerticalsBuilder(this);
+        }
+
+        return verticalsBuilder;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the picture width in pixels
+     *
+     * @return the picture width
+     */
+    public int getWidth ()
+    {
+        return width;
+    }
+
+    //--------//
+    // isBusy //
+    //--------//
+    /**
+     * Check whether the sheet is being processed
+     *
+     * @return true if busy
+     */
+    public synchronized boolean isBusy ()
+    {
+        return busy;
+    }
+
+    //-------------//
+    // isOnSymbols //
+    //-------------//
+    /**
+     * Check whether current step is SYMBOLS or SYMBOL_COMPOUND
+     *
+     * @return true if on SYMBOLS
+     */
+    public boolean isOnSymbols ()
+    {
+        InstanceStep iStep = getInstanceStep(currentStep());
+
+        return (iStep == SYMBOLS) || (iStep == SYMBOLS_COMPOUNDS);
+    }
+
     //-------------//
     // lookupGlyph //
     //-------------//
@@ -1581,6 +1467,152 @@ public class Sheet
         }
 
         return null;
+    }
+
+    //-------------//
+    // setAssembly //
+    //-------------//
+    /**
+     * Remember the link to the related sheet display assembly
+     *
+     * @param assembly the related sheet assembly
+     */
+    public void setAssembly (SheetAssembly assembly)
+    {
+        this.assembly = assembly;
+    }
+
+    //---------//
+    // setBusy //
+    //---------//
+    /**
+     * Flag the sheet processing state
+     *
+     * @param busy true if busy
+     */
+    public synchronized void setBusy (boolean busy)
+    {
+        this.busy = busy;
+    }
+
+    //------------------//
+    // setHorizontalLag //
+    //------------------//
+    /**
+     * Assign the current horizontal lag for the sheet
+     *
+     * @param hLag the horizontal lag at hand
+     */
+    public void setHorizontalLag (GlyphLag hLag)
+    {
+        this.hLag = hLag;
+
+        // Input
+        getSelectionManager()
+            .addObserver(
+            hLag,
+            SHEET_RECTANGLE,
+            HORIZONTAL_SECTION,
+            HORIZONTAL_SECTION_ID,
+            HORIZONTAL_GLYPH,
+            HORIZONTAL_GLYPH_ID);
+
+        // Output
+        hLag.setLocationSelection(getSelection(SHEET_RECTANGLE));
+        hLag.setRunSelection(getSelection(HORIZONTAL_RUN));
+        hLag.setSectionSelection(getSelection(HORIZONTAL_SECTION));
+        hLag.setGlyphSelection(getSelection(HORIZONTAL_GLYPH));
+    }
+
+    //----------//
+    // setScale //
+    //----------//
+    /**
+     * Link scale information to this sheet
+     *
+     * @param scale the computed (or read from score file) scale
+     */
+    public void setScale (Scale scale)
+    {
+        SCALE.result = scale;
+    }
+
+    //----------//
+    // setScore //
+    //----------//
+    /**
+     * Link the score panel with the related score entity
+     *
+     * @param score the related score
+     */
+    public void setScore (Score score)
+    {
+        // If there was already a linked score, clean up everything
+        if (this.score != null) {
+            if (logger.isFineEnabled()) {
+                logger.fine("Deconnecting " + this.score);
+            }
+
+            this.score.close();
+        }
+
+        this.score = score;
+    }
+
+    //---------//
+    // setSkew //
+    //---------//
+    /**
+     * Link skew information to this sheet
+     *
+     * @param skew the skew information
+     */
+    public void setSkew (Skew skew)
+    {
+        SKEW.result = skew;
+    }
+
+    //------------//
+    // setSystems //
+    //------------//
+    /**
+     * Assign the retrieved systems (infos)
+     *
+     * @param systems the elaborated list of SystemInfo's
+     */
+    public void setSystems (List<SystemInfo> systems)
+    {
+        this.systems = systems;
+    }
+
+    //----------------//
+    // setVerticalLag //
+    //----------------//
+    /**
+     * Assign the current vertical lag for the sheet
+     *
+     * @param vLag the current vertical lag
+     */
+    public void setVerticalLag (GlyphLag vLag)
+    {
+        this.vLag = vLag;
+
+        // Input
+        getSelectionManager()
+            .addObserver(
+            vLag,
+            SHEET_RECTANGLE,
+            VERTICAL_SECTION,
+            VERTICAL_SECTION_ID,
+            VERTICAL_GLYPH,
+            VERTICAL_GLYPH_ID);
+
+        // Output
+        vLag.setLocationSelection(getSelection(SHEET_RECTANGLE));
+        vLag.setRunSelection(getSelection(VERTICAL_RUN));
+        vLag.setSectionSelection(getSelection(VERTICAL_SECTION));
+        vLag.setGlyphSelection(getSelection(VERTICAL_GLYPH));
+        vLag.setGlyphSetSelection(getSelection(GLYPH_SET));
     }
 
     //----------//

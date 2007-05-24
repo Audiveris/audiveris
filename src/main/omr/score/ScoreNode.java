@@ -9,6 +9,8 @@
 //
 package omr.score;
 
+import omr.glyph.Glyph;
+
 import omr.score.visitor.ScoreVisitor;
 import omr.score.visitor.Visitable;
 
@@ -112,6 +114,35 @@ public class ScoreNode
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // accept //
+    //--------//
+    @Implement(Visitable.class)
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //----------------//
+    // acceptChildren //
+    //----------------//
+    /**
+     * Pattern to traverse the children of this node
+     *
+     * @param visitor concrete visitor object to define the actual processing
+     */
+    public void acceptChildren (ScoreVisitor visitor)
+    {
+        ///logger.info(children.size() + " children for " + this);
+        for (TreeNode node : children) {
+            ScoreNode child = (ScoreNode) node;
+
+            if (child.accept(visitor)) {
+                child.acceptChildren(visitor);
+            }
+        }
+    }
+
     //------------------//
     // getContextString //
     //------------------//
@@ -151,34 +182,5 @@ public class ScoreNode
     public Score getScore ()
     {
         return score;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Implement(Visitable.class)
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //----------------//
-    // acceptChildren //
-    //----------------//
-    /**
-     * Pattern to traverse the children of this node
-     *
-     * @param visitor concrete visitor object to define the actual processing
-     */
-    public void acceptChildren (ScoreVisitor visitor)
-    {
-        ///logger.info(children.size() + " children for " + this);
-        for (TreeNode node : children) {
-            ScoreNode child = (ScoreNode) node;
-
-            if (child.accept(visitor)) {
-                child.acceptChildren(visitor);
-            }
-        }
     }
 }

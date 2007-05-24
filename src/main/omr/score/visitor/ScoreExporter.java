@@ -40,6 +40,7 @@ import omr.score.SystemPart;
 import omr.score.SystemPoint;
 import omr.score.SystemRectangle;
 import omr.score.TimeSignature;
+import omr.score.TimeSignature.InvalidTimeSignature;
 import omr.score.Wedge;
 import static omr.score.visitor.MusicXML.*;
 
@@ -571,48 +572,51 @@ public class ScoreExporter
                .acceptChildren(this);
 
         // Now voice per voice
-        int timeCounter = 0;
+        try {
+            int timeCounter = 0;
 
-        for (int voice = 1; voice <= measure.getVoicesNumber(); voice++) {
-            current.voice = voice;
+            for (int voice = 1; voice <= measure.getVoicesNumber(); voice++) {
+                current.voice = voice;
 
-            // Need a backup ?
-            if (timeCounter != 0) {
-                insertBackup(timeCounter);
-                timeCounter = 0;
-            }
+                // Need a backup ?
+                if (timeCounter != 0) {
+                    insertBackup(timeCounter);
+                    timeCounter = 0;
+                }
 
-            Chord lastChord = null;
+                Chord lastChord = null;
 
-            for (TreeNode nc : measure.getChords()) {
-                Chord chord = (Chord) nc;
+                for (TreeNode nc : measure.getChords()) {
+                    Chord chord = (Chord) nc;
 
-                if (chord.getVoice() == voice) {
-                    // Need a forward before this chord ?
-                    int startTime = chord.getStartTime();
+                    if (chord.getVoice() == voice) {
+                        // Need a forward before this chord ?
+                        int startTime = chord.getStartTime();
 
-                    if (timeCounter < startTime) {
-                        insertForward(startTime - timeCounter, chord);
-                        timeCounter = startTime;
+                        if (timeCounter < startTime) {
+                            insertForward(startTime - timeCounter, chord);
+                            timeCounter = startTime;
+                        }
+
+                        // Delegate to the chord children directly
+                        chord.acceptChildren(this);
+                        lastChord = chord;
+                        timeCounter += ((chord.getDuration() != null)
+                                        ? chord.getDuration()
+                                        : measure.getExpectedDuration());
                     }
+                }
 
-                    // Delegate to the chord children directly
-                    chord.acceptChildren(this);
-                    lastChord = chord;
-                    timeCounter += ((chord.getDuration() != null)
-                                    ? chord.getDuration()
-                                    : measure.getExpectedDuration());
+                // Need an ending forward ?
+                if ((lastChord != null) &&
+                    !measure.isImplicit() &&
+                    (timeCounter < measure.getExpectedDuration())) {
+                    insertForward(
+                        measure.getExpectedDuration() - timeCounter,
+                        lastChord);
                 }
             }
-
-            // Need an ending forward ?
-            if ((lastChord != null) &&
-                !measure.isImplicit() &&
-                (timeCounter < measure.getExpectedDuration())) {
-                insertForward(
-                    measure.getExpectedDuration() - timeCounter,
-                    lastChord);
-            }
+        } catch (InvalidTimeSignature ex) {
         }
 
         // Safer...
@@ -694,17 +698,20 @@ public class ScoreExporter
             toTenths(noteLeft - note.getMeasure().getLeftX()));
 
         // Duration
-        Duration duration = new Duration();
-        current.pmNote.setDuration(duration);
+        try {
+            Duration duration = new Duration();
+            current.pmNote.setDuration(duration);
 
-        Integer dur = chord.getDuration();
+            Integer dur = chord.getDuration();
 
-        if (dur == null) { // Case of whole rests
-            dur = chord.getMeasure()
-                       .getExpectedDuration();
+            if (dur == null) { // Case of whole rests
+                dur = chord.getMeasure()
+                           .getExpectedDuration();
+            }
+
+            duration.setContent("" + current.part.simpleDurationOf(dur));
+        } catch (InvalidTimeSignature ex) {
         }
-
-        duration.setContent("" + current.part.simpleDurationOf(dur));
 
         // Voice
         Voice voice = new Voice();
@@ -1143,35 +1150,39 @@ public class ScoreExporter
     public boolean visit (TimeSignature timeSignature)
     {
         ///logger.info("Visiting " + timeSignature);
-        Time time = new Time();
-        getMeasureAttributes()
-            .setTime(time);
+        try {
+            Time  time = new Time();
 
-        // Beats
-        Beats beats = new Beats();
-        time.getBeatsAndBeatType()
-            .add(beats);
-        beats.setContent("" + timeSignature.getNumerator());
+            // Beats
+            Beats beats = new Beats();
+            time.getBeatsAndBeatType()
+                .add(beats);
+            beats.setContent("" + timeSignature.getNumerator());
 
-        // BeatType
-        BeatType beatType = new BeatType();
-        time.getBeatsAndBeatType()
-            .add(beatType);
-        beatType.setContent("" + timeSignature.getDenominator());
+            // BeatType
+            BeatType beatType = new BeatType();
+            time.getBeatsAndBeatType()
+                .add(beatType);
+            beatType.setContent("" + timeSignature.getDenominator());
 
-        // Symbol ?
-        if (timeSignature.getShape() != null) {
-            switch (timeSignature.getShape()) {
-            case COMMON_TIME :
-                time.setSymbol(COMMON);
+            // Symbol ?
+            if (timeSignature.getShape() != null) {
+                switch (timeSignature.getShape()) {
+                case COMMON_TIME :
+                    time.setSymbol(COMMON);
 
-                break;
+                    break;
 
-            case CUT_TIME :
-                time.setSymbol(CUT);
+                case CUT_TIME :
+                    time.setSymbol(CUT);
 
-                break;
+                    break;
+                }
             }
+
+            getMeasureAttributes()
+                .setTime(time);
+        } catch (InvalidTimeSignature ex) {
         }
 
         return true;

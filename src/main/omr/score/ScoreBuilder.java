@@ -82,6 +82,7 @@ public class ScoreBuilder
     public void buildInfo ()
     {
         final long startTime = java.lang.System.currentTimeMillis();
+        sheet.getErrorsEditor().clear();
 
         if (Runtime.getRuntime()
                    .availableProcessors() > 1) {
@@ -279,7 +280,7 @@ public class ScoreBuilder
             logger.fine("Starting KeyTranslator...");
             translate(new KeyTranslator());
 
-            // Measure impact 
+            // Measure impact
             //---------------
 
             // Slot, Chord, Note
@@ -306,7 +307,7 @@ public class ScoreBuilder
             logger.fine("Starting MeasureTranslator...");
             translate(new MeasureTranslator());
 
-            // Local impact 
+            // Local impact
             //-------------
 
             // Accidental (-> note)
@@ -510,9 +511,8 @@ public class ScoreBuilder
                 } else if (glyph.getRightStem() != null) {
                     super.computeLocation(glyph.getRightStem());
                 } else {
-                    logger.warning(
-                        "Beam glyph #" + glyph.getId() +
-                        " with no attached stem");
+                    currentMeasure.addError(glyph,
+                        "Beam glyph with no attached stem");
                     super.computeLocation(glyph); // Backup alternative...
                 }
             }
@@ -729,7 +729,7 @@ public class ScoreBuilder
                         // Just to be sure
                         if ((chord.getBeams()
                                   .size() * chord.getFlagsNumber()) != 0) {
-                            logger.warning(
+                            chord.addError(
                                 "*** Inconsistent Flag/Beam config ***");
                         }
                     }
@@ -745,7 +745,7 @@ public class ScoreBuilder
                 } else if (glyph.getRightStem() != null) {
                     super.computeLocation(glyph.getRightStem());
                 } else {
-                    logger.warning(
+                    currentSystem.addError(glyph,
                         "Flag glyph " + glyph.getId() +
                         " with no attached stem");
                     super.computeLocation(glyph); // Backup alternative...

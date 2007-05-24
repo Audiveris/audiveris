@@ -230,7 +230,7 @@ public class Slur
         Circle circle = SlurGlyph.computeCircle(glyph);
 
         if (!circle.isValid(SlurGlyph.getMaxCircleDistance())) {
-            logger.warning("Still spurious slur #" + glyph.getId());
+            system.addError(glyph, "Still spurious slur #" + glyph.getId());
 
             if (SlurGlyph.fixSpuriousSlur(glyph, system.getInfo())) {
                 logger.info("Slur fixed  ...");
@@ -335,7 +335,7 @@ public class Slur
                     logger.finest(slur.toString());
                 }
             } else {
-                logger.warning(
+                system.addError(glyph,
                     "Slur " + glyph.getId() + " with no embraced notes");
             }
         }
@@ -496,7 +496,7 @@ public class Slur
             Collections.sort(prevOrphans, slurComparator);
 
             // Connect the orphans as much as possible
-            SlurLoop: 
+            SlurLoop:
             for (int i = 0; i < orphans.size(); i++) {
                 Slur slur = orphans.get(i);
 
@@ -512,8 +512,7 @@ public class Slur
                 }
 
                 // No connection for this orphan
-                logger.warning(
-                    part.getContextString() + " Could not connect slur #" +
+                part.addError(slur.glyph, " Could not connect slur #" +
                     slur.glyph.getId());
             }
 
@@ -522,8 +521,7 @@ public class Slur
                 Slur prevSlur = prevOrphans.get(j);
 
                 if (prevSlur.rightExtension == null) {
-                    logger.warning(
-                        prevPart.getContextString() +
+                    prevPart.addError(prevSlur.glyph,
                         " Could not connect slur #" + prevSlur.glyph.getId());
                 }
             }

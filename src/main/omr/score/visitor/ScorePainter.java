@@ -44,6 +44,7 @@ import omr.score.SystemPart;
 import omr.score.SystemPoint;
 import omr.score.SystemRectangle;
 import omr.score.TimeSignature;
+import omr.score.TimeSignature.InvalidTimeSignature;
 import omr.score.UnitDimension;
 import omr.score.Wedge;
 
@@ -229,7 +230,7 @@ public class ScorePainter
                 paintSymbol(shape, barline.getCenter(), staff, 0);
             }
         } else {
-            logger.warning("No shape for barline " + this);
+            barline.addError("No shape for barline " + this);
         }
 
         return true;
@@ -306,8 +307,7 @@ public class ScorePainter
                 try {
                     g.setColor(voiceColors[chord.getVoice() - 1]);
                 } catch (Exception ex) {
-                    logger.warning(
-                        chord.getContextString() + " " + ex + " voice=" +
+                    chord.addError(ex + " voice=" +
                         chord.getVoice());
                 }
 
@@ -321,8 +321,7 @@ public class ScorePainter
                         chord.getHeadLocation());
                 }
             } else {
-                logger.warning(
-                    chord.getContextString() + " No voice for chord " + chord);
+                chord.addError("No voice for chord " + chord);
             }
         }
 
@@ -732,45 +731,48 @@ public class ScorePainter
     @Override
     public boolean visit (TimeSignature timeSignature)
     {
-        final Shape      shape = timeSignature.getShape();
-        final SystemPart part = timeSignature.getPart();
+        try {
+            final Shape      shape = timeSignature.getShape();
+            final SystemPart part = timeSignature.getPart();
 
-        if (shape != null) {
-            switch (shape) {
-            // If this is an illegal shape, do not draw anything.
-            // TBD: we could draw a special sign for this
-            case NO_LEGAL_SHAPE :
-                break;
+            if (shape != null) {
+                switch (shape) {
+                // If this is an illegal shape, do not draw anything.
+                // TBD: we could draw a special sign for this
+                case NO_LEGAL_SHAPE :
+                    break;
 
-            // Is it a complete (one-symbol) time signature ?
-            case TIME_FOUR_FOUR :
-            case TIME_TWO_TWO :
-            case TIME_TWO_FOUR :
-            case TIME_THREE_FOUR :
-            case TIME_SIX_EIGHT :
-            case COMMON_TIME :
-            case CUT_TIME :
-                paintSymbol(
-                    shape,
-                    timeSignature.getCenter(),
-                    part.getDisplayOrigin());
+                // Is it a complete (one-symbol) time signature ?
+                case TIME_FOUR_FOUR :
+                case TIME_TWO_TWO :
+                case TIME_TWO_FOUR :
+                case TIME_THREE_FOUR :
+                case TIME_SIX_EIGHT :
+                case COMMON_TIME :
+                case CUT_TIME :
+                    paintSymbol(
+                        shape,
+                        timeSignature.getCenter(),
+                        part.getDisplayOrigin());
 
-                break;
-            }
-        } else {
-            // Assume a (legal) multi-symbol signature
-            for (Glyph glyph : timeSignature.getGlyphs()) {
-                final Shape s = glyph.getShape();
+                    break;
+                }
+            } else {
+                // Assume a (legal) multi-symbol signature
+                for (Glyph glyph : timeSignature.getGlyphs()) {
+                    final Shape s = glyph.getShape();
 
-                if (s != null) {
-                    final SystemPoint center = timeSignature.computeGlyphCenter(
-                        glyph);
-                    final Staff       staff = part.getStaffAt(center);
-                    final int         pitch = (int) Math.rint(
-                        staff.pitchPositionOf(center));
-                    paintSymbol(s, center, staff, pitch);
+                    if (s != null) {
+                        final SystemPoint center = timeSignature.computeGlyphCenter(
+                            glyph);
+                        final Staff       staff = part.getStaffAt(center);
+                        final int         pitch = (int) Math.rint(
+                            staff.pitchPositionOf(center));
+                        paintSymbol(s, center, staff, pitch);
+                    }
                 }
             }
+        } catch (InvalidTimeSignature ex) {
         }
 
         return true;

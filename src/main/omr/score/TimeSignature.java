@@ -119,9 +119,12 @@ public class TimeSignature
      * @return the bottom part
      */
     public Integer getDenominator ()
+        throws InvalidTimeSignature
     {
         if (denominator == null) {
-            if (shape != NO_LEGAL_SHAPE) {
+            if (shape == NO_LEGAL_SHAPE) {
+                throw new InvalidTimeSignature();
+            } else {
                 computeRational();
             }
         }
@@ -146,9 +149,12 @@ public class TimeSignature
      * @return the top part
      */
     public Integer getNumerator ()
+        throws InvalidTimeSignature
     {
         if (numerator == null) {
-            if (shape != NO_LEGAL_SHAPE) {
+            if (shape == NO_LEGAL_SHAPE) {
+                throw new InvalidTimeSignature();
+            } else {
                 computeRational();
             }
         }
@@ -165,6 +171,7 @@ public class TimeSignature
      * @return the (lazily determined) shape
      */
     public Shape getShape ()
+        throws InvalidTimeSignature
     {
         if (shape == null) {
             computeRational();
@@ -201,11 +208,14 @@ public class TimeSignature
         StringBuilder sb = new StringBuilder();
         sb.append("{TimeSignature");
 
-        if (getNumerator() != null) {
-            sb.append(" ")
-              .append(getNumerator())
-              .append("/")
-              .append(getDenominator());
+        try {
+            if (getNumerator() != null) {
+                sb.append(" ")
+                  .append(getNumerator())
+                  .append("/")
+                  .append(getDenominator());
+            }
+        } catch (InvalidTimeSignature its) {
         }
 
         sb.append(" shape=")
@@ -295,6 +305,7 @@ public class TimeSignature
     // computeRational //
     //-----------------//
     private void computeRational ()
+        throws InvalidTimeSignature
     {
         if (glyphs.size() > 0) {
             if (glyphs.size() == 1) {
@@ -340,11 +351,9 @@ public class TimeSignature
                         return;
 
                     default :
-                        logger.warning(
-                            this.getContextString() +
-                            " Weird single time component : " + shape +
-                            " for glyph#" + glyphs.first().getId());
-                        this.shape = NO_LEGAL_SHAPE;
+                        addError(glyphs.first(), "Weird single time component");
+                        shape = NO_LEGAL_SHAPE;
+                        throw new InvalidTimeSignature();
                     }
                 }
             } else {
@@ -377,14 +386,14 @@ public class TimeSignature
 
                             denominator = (10 * denominator) + value;
                         } else {
-                            logger.warning(
+                            addError(glyph,
                                 "Multi-symbol time signature" +
                                 " with a component of pitch position 0");
                         }
                     } else {
-                        logger.warning(
-                            "Time signature component" +
-                            " with no numeric value");
+                        addError(
+                            glyph,
+                            "Time signature component with no numeric value");
                     }
                 }
             }
@@ -509,6 +518,18 @@ public class TimeSignature
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //----------------------//
+    // InvalidTimeSignature //
+    //----------------------//
+    public static class InvalidTimeSignature
+        extends Exception
+    {
+        public InvalidTimeSignature ()
+        {
+            super("Time signature is invalid");
+        }
+    }
 
     //-----------//
     // Constants //

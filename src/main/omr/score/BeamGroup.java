@@ -77,8 +77,7 @@ public class BeamGroup
     public void addBeam (Beam beam)
     {
         if (!beams.add(beam)) {
-            logger.warning(
-                beam.getContextString() + " " + beam + " already in " + this);
+            beam.addError(beam + " already in " + this);
         }
     }
 
@@ -152,9 +151,7 @@ public class BeamGroup
         }
 
         // This should not happen
-        logger.warning(
-            beam.getContextString() +
-            " Unable to find beam in its group. size=" + beams.size());
+        beam.addError("Unable to find beam in its group. size=" + beams.size());
 
         return 0;
     }
@@ -217,7 +214,7 @@ public class BeamGroup
     public void removeBeam (Beam beam)
     {
         if (!beams.remove(beam)) {
-            logger.warning(beam + " not found in " + this);
+            beam.addError("beam not found in " + this);
         }
     }
 
@@ -258,7 +255,7 @@ public class BeamGroup
                     prevChord = chord;
                 } else {
                     if (chord.getStartTime() == null) {
-                        logger.warning(
+                        chord.addError(
                             "Setting a beam group with time not set");
                     }
                 }
@@ -267,8 +264,9 @@ public class BeamGroup
             }
         } else {
             if (!this.voice.equals(voice)) {
-                logger.warning(
-                    getChords().first().getContextString() +
+                getChords()
+                    .first()
+                    .addError(
                     " Reassigning voice from " + this.voice + " to " + voice +
                     " in " + this);
             }

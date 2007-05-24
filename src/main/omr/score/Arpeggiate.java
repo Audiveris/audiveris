@@ -118,8 +118,7 @@ public class Arpeggiate
                 chord.addNotation(arpeggiate);
             }
         } else {
-            logger.warning(
-                "Arpeggiate glyph #" + glyph.getId() + " w/o embraced notes");
+            measure.addError(glyph, "Arpeggiate without embraced notes");
         }
     }
 

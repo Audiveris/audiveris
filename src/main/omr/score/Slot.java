@@ -180,7 +180,7 @@ public class Slot
                 measure.getChords());
         }
 
-        // The 'activeChords' collection gathers the chords that are "active" 
+        // The 'activeChords' collection gathers the chords that are "active"
         // not terminated) at the time slot being considered. Initially, empty.
         List<Chord> activeChords = new ArrayList<Chord>();
         int         maxVoice = 0;
@@ -219,11 +219,11 @@ public class Slot
 
             slot.setStartTime(slotTime);
 
-            // Separate the chords that end right at this slot and whose voices 
-            // are available, from the ones that continue past the slot and 
+            // Separate the chords that end right at this slot and whose voices
+            // are available, from the ones that continue past the slot and
             // whose voice is kept.
 
-            // Set of voices for the current slot            
+            // Set of voices for the current slot
             SortedSet<Integer> slotVoices = new TreeSet<Integer>();
 
             // Chords that are ending, with voice not available (beam group)
@@ -543,8 +543,7 @@ public class Slot
             }
         } else {
             if (!this.startTime.equals(startTime)) {
-                logger.warning(
-                    getChords().get(0).getContextString() +
+                getChords().get(0).addError(
                     " Reassigning startTime from " + this.startTime + " to " +
                     startTime + " in " + this);
             }
@@ -602,7 +601,7 @@ public class Slot
         //            logger.fine("Populating slot with " + glyph);
         //        }
 
-        // Special case for whole rests: they don't belong to any time slot, 
+        // Special case for whole rests: they don't belong to any time slot,
         // and they duration is the measure duration
         if (glyph.getShape() == Shape.WHOLE_REST) {
             measure.addWholeChord(glyph);

@@ -144,7 +144,9 @@ public class ScoreSheetBridge
                 if (rect != null) {
                     PagePoint pagPt = sheet.getScale()
                                            .toPagePoint(
-                        new PixelPoint(rect.x, rect.y));
+                        new PixelPoint(
+                            rect.x + (rect.width / 2),
+                            rect.y + (rect.height / 2)));
 
                     if (pagPt != null) {
                         // Which system ?

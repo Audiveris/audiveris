@@ -12,6 +12,7 @@ package omr.score;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import omr.score.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Logger;
@@ -208,44 +209,48 @@ public class Measure
     {
         // As a first attempt, make all forward stuff explicit & visible
         for (int voice = 1; voice <= getVoicesNumber(); voice++) {
-            int   timeCounter = 0;
-            Chord lastChord = null;
+            try {
+                int   timeCounter = 0;
+                Chord lastChord = null;
 
-            for (Slot slot : getSlots()) {
-                for (Chord chord : slot.getChords()) {
-                    if (chord.getVoice() == voice) {
-                        // Need a forward before this chord ?
-                        if (timeCounter < slot.getStartTime()) {
-                            insertForward(
-                                slot.getStartTime() - timeCounter,
-                                Mark.Position.BEFORE,
-                                chord);
-                            timeCounter = slot.getStartTime();
+                for (Slot slot : getSlots()) {
+                    for (Chord chord : slot.getChords()) {
+                        if (chord.getVoice() == voice) {
+                            // Need a forward before this chord ?
+                            if (timeCounter < slot.getStartTime()) {
+                                insertForward(
+                                    slot.getStartTime() - timeCounter,
+                                    Mark.Position.BEFORE,
+                                    chord);
+                                timeCounter = slot.getStartTime();
+                            }
+
+                            lastChord = chord;
+                            timeCounter += chord.getDuration();
                         }
-
-                        lastChord = chord;
-                        timeCounter += chord.getDuration();
                     }
                 }
-            }
 
-            // Need an ending forward ?
-            if (lastChord != null) {
-                finalChords.put(voice, lastChord);
+                // Need an ending forward ?
+                if (lastChord != null) {
+                    finalChords.put(voice, lastChord);
 
-                int delta = timeCounter - getExpectedDuration();
-                finalDurations.put(voice, delta);
+                    int delta = timeCounter - getExpectedDuration();
+                    finalDurations.put(voice, delta);
 
-                if (delta < 0) {
-                    // Insert a forward mark
-                    insertForward(-delta, Mark.Position.AFTER, lastChord);
-                } else if (delta > 0) {
-                    // Flag the measure as too long
-                    excess = delta;
-                } else if (lastChord.isWholeDuration()) {
-                    // Remember we can't tell anything'
-                    finalDurations.put(voice, null);
+                    if (delta < 0) {
+                        // Insert a forward mark
+                        insertForward(-delta, Mark.Position.AFTER, lastChord);
+                    } else if (delta > 0) {
+                        // Flag the measure as too long
+                        excess = delta;
+                    } else if (lastChord.isWholeDuration()) {
+                        // Remember we can't tell anything'
+                        finalDurations.put(voice, null);
+                    }
                 }
+            } catch (Exception ex) {
+                // User informed
             }
         }
     }
@@ -577,26 +582,32 @@ public class Measure
      * signature
      *
      * @return the expected measure duration
+     * @throws InvalidTimeSignature
      */
     public int getExpectedDuration ()
+        throws InvalidTimeSignature
     {
-        if (expectedDuration == null) {
-            int           numerator;
-            int           denominator;
-            TimeSignature ts = getCurrentTimeSignature();
+        try {
+            if (expectedDuration == null) {
+                int           numerator;
+                int           denominator;
+                TimeSignature ts = getCurrentTimeSignature();
 
-            if (ts != null) {
-                numerator = ts.getNumerator();
-                denominator = ts.getDenominator();
-            } else {
-                numerator = 4;
-                denominator = 4;
+                if (ts != null) {
+                    numerator = ts.getNumerator();
+                    denominator = ts.getDenominator();
+                } else {
+                    numerator = 4;
+                    denominator = 4;
+                }
+
+                expectedDuration = (4 * Note.QUARTER_DURATION * numerator) / denominator;
             }
 
-            expectedDuration = (4 * Note.QUARTER_DURATION * numerator) / denominator;
+            return expectedDuration;
+        } catch (NullPointerException npe) {
+            throw new InvalidTimeSignature();
         }
-
-        return expectedDuration;
     }
 
     //------------------//
@@ -973,9 +984,7 @@ public class Measure
                             getContextString() + " Final forward removed");
                     }
                 } else {
-                    logger.warning(
-                        getContextString() + " No final chord in voice " +
-                        voice);
+                    addError(" No final chord in voice " + voice);
                 }
             }
         }

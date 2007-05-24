@@ -118,9 +118,7 @@ public class Beam
     public void closeConnections ()
     {
         if (chords.isEmpty()) {
-            logger.warning(
-                getContextString() + " closeConnections with no chords for " +
-                this);
+            addError("No chords connected to " + this);
         } else {
             Chord   first = chords.first();
             Chord   last = chords.last();
@@ -521,6 +519,20 @@ public class Beam
         return sb.toString();
     }
 
+    //---------------//
+    // computeCenter //
+    //---------------//
+    /**
+     * Compute the center of Chord
+     */
+    @Override
+    protected void computeCenter ()
+    {
+        getLine();
+        setCenter(
+            new SystemPoint((left.x + right.x) / 2, (left.y + right.y) / 2));
+    }
+
     //----------//
     // addGlyph //
     //----------//
@@ -649,9 +661,9 @@ public class Beam
                     chord.addBeam(this);
                 }
             } else {
-                logger.warning(
-                    getContextString() + " Beam glyph #" + glyph.getId() +
-                    " with no chord on " + side + " stem");
+                addError(
+                    glyph,
+                    " Beam glyph with no chord on " + side + " stem");
             }
         }
     }

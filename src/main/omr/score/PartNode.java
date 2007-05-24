@@ -35,7 +35,7 @@ import java.util.List;
  * @version $Id$
  */
 public abstract class PartNode
-    extends ScoreNode
+    extends SystemNode
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -44,9 +44,6 @@ public abstract class PartNode
 
     /** Related staff, if relevant */
     private Staff staff;
-
-    /** Location of the center of this entity WRT system top-left corner */
-    private SystemPoint center;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -83,64 +80,6 @@ public abstract class PartNode
         return visitor.visit(this);
     }
 
-    //--------------------//
-    // computeGlyphCenter //
-    //--------------------//
-    /**
-     * Compute the bounding center of a glyph
-     *
-     * @param glyph the glyph
-     *
-     * @return the glyph center
-     */
-    public SystemPoint computeGlyphCenter (Glyph glyph)
-    {
-        return computeRectangleCenter(glyph.getContourBox());
-    }
-
-    //---------------------//
-    // computeGlyphsCenter //
-    //---------------------//
-    /**
-     * Compute the bounding center of a collection of glyphs
-     *
-     * @param glyphs the collection of glyph components
-     *
-     * @return the area center
-     */
-    public SystemPoint computeGlyphsCenter (Collection<?extends Glyph> glyphs)
-    {
-        // We compute the bounding center of all glyphs
-        Rectangle rect = null;
-
-        for (Glyph glyph : glyphs) {
-            if (rect == null) {
-                rect = new Rectangle(glyph.getContourBox());
-            } else {
-                rect = rect.union(glyph.getContourBox());
-            }
-        }
-
-        return computeRectangleCenter(rect);
-    }
-
-    //-----------//
-    // getCenter //
-    //-----------//
-    /**
-     * Report the center of this entity, wrt to the part top-left corner.
-     *
-     * @return the center, in units, wrt system top-left
-     */
-    public SystemPoint getCenter ()
-    {
-        if (center == null) {
-            computeCenter();
-        }
-
-        return center;
-    }
-
     //------------------//
     // getContextString //
     //------------------//
@@ -149,27 +88,12 @@ public abstract class PartNode
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(getSystem().getContextString());
+        sb.append(super.getContextString());
 
         sb.append("P")
           .append(part.getId());
 
         return sb.toString();
-    }
-
-    //------------------//
-    // getDisplayOrigin //
-    //------------------//
-    /**
-     * Report the origin for the containing system, in the horizontal score
-     * display, since coordinates use SystemPoint.
-     *
-     * @return the (system) display origin
-     */
-    public ScorePoint getDisplayOrigin ()
-    {
-        return getSystem()
-                   .getDisplayOrigin();
     }
 
     //---------//
@@ -196,20 +120,6 @@ public abstract class PartNode
     public Staff getStaff ()
     {
         return staff;
-    }
-
-    //-----------//
-    // getSystem //
-    //-----------//
-    /**
-     * Report the containing system
-     *
-     * @return the containing system
-     */
-    public System getSystem ()
-    {
-        return getPart()
-                   .getSystem();
     }
 
     //------------------//
@@ -250,19 +160,6 @@ public abstract class PartNode
         return sequence;
     }
 
-    //-----------//
-    // setCenter //
-    //-----------//
-    /**
-     * Remember the center of this part node
-     *
-     * @param center the system-based center of the part node
-     */
-    public void setCenter (SystemPoint center)
-    {
-        this.center = center;
-    }
-
     //----------//
     // setStaff //
     //----------//
@@ -274,32 +171,6 @@ public abstract class PartNode
     public void setStaff (Staff staff)
     {
         this.staff = staff;
-    }
-
-    //---------------//
-    // computeCenter //
-    //---------------//
-    /**
-     * Compute the center of this entity, wrt to the part top-left corner.
-     * Unless overridden, this method raises an exception.
-     */
-    protected void computeCenter ()
-    {
-        throw new RuntimeException(
-            "computeCenter() not implemented in " + getClass().getName());
-    }
-
-    //------------------------//
-    // computeRectangleCenter //
-    //------------------------//
-    private SystemPoint computeRectangleCenter (Rectangle rect)
-    {
-        PixelPoint pixPt = new PixelPoint(
-            rect.x + (rect.width / 2),
-            rect.y + (rect.height / 2));
-
-        return getSystem()
-                   .toSystemPoint(pixPt);
     }
 
     //~ Inner Interfaces -------------------------------------------------------

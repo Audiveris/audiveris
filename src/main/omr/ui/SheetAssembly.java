@@ -70,9 +70,6 @@ public class SheetAssembly
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Related errors editor */
-    private final ErrorsEditor errorsEditor;
-
     /** My parallel list of view Tabs */
     private final ArrayList<ViewTab> viewTabs = new ArrayList<ViewTab>();
 
@@ -128,10 +125,6 @@ public class SheetAssembly
         if (logger.isFineEnabled()) {
             logger.fine("creating SheetAssembly on " + sheet);
         }
-
-        // Detached errors editor
-        errorsEditor = new ErrorsEditor(sheet);
-
         component = new Panel();
 
         // Cross links between sheet and its assembly
@@ -307,9 +300,16 @@ public class SheetAssembly
         return component;
     }
 
+    //---------------//
+    // getErrorsPane //
+    //---------------//
+    /**
+     * Report the UI pane dedicated to the current errors
+     * @return the errors pane
+     */
     public JComponent getErrorsPane ()
     {
-        return errorsEditor.getComponent();
+        return sheet.getErrorsEditor().getComponent();
     }
 
     //-----------------//

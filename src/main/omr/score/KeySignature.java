@@ -9,7 +9,6 @@
 //
 package omr.score;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
@@ -22,8 +21,6 @@ import omr.sheet.PixelPoint;
 import omr.sheet.PixelRectangle;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
-
-import omr.ui.icon.SymbolIcon;
 
 import omr.util.Logger;
 import omr.util.TreeNode;
@@ -53,7 +50,7 @@ public class KeySignature
                                                        -4, // F - Fa
     -1, // C - Do
     -5, // G - Sol
-    -2, // D - Ré
+    -2, // D - Rï¿½
     +1, // A - La
     -3, // E - Mi
     0 // B - Si
@@ -69,7 +66,7 @@ public class KeySignature
                                                       0, // B - Si
     -3, // E - Mi
     +1, // A - La
-    -2, // D - Ré
+    -2, // D - Rï¿½
     +2, // G - Sol
     -1, // C - Do
     +3 // F - Fa
@@ -652,6 +649,18 @@ public class KeySignature
                staffOf(system, systemStaffIndex)
                    .getId();
     }
+//
+//    //------------//
+//    // getContext //
+//    //------------//
+//    private static ScoreNode getContext (System system,
+//                                            int    measureIndex,
+//                                            int    systemStaffIndex)
+//    {
+//        return system.getContextString() + "M" + (measureIndex + 1) + "T" +
+//               staffOf(system, systemStaffIndex)
+//                   .getId();
+//    }
 
     //---------//
     // staffOf //
@@ -1008,10 +1017,10 @@ public class KeySignature
             } else if (shape == FLAT) {
                 key = -glyphs.size();
             } else {
-                logger.warning("Weird key signature " + this);
+                addError("Weird key signature " + this);
             }
         } else {
-            logger.warning("Empty key signature " + this);
+            addError("Empty key signature " + this);
         }
     }
 

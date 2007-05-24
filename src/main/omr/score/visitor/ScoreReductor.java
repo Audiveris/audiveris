@@ -12,6 +12,7 @@ package omr.score.visitor;
 import omr.score.Chord;
 import omr.score.Score;
 import omr.score.ScorePart;
+import omr.score.TimeSignature.InvalidTimeSignature;
 
 /**
  * Class <code>ScoreReductor</code> can visit the score hierarchy to simplify
@@ -45,15 +46,18 @@ public class ScoreReductor
     {
         Integer duration = chord.getDuration();
 
-        // Special case for whole chords
-        if (duration == null) {
-            duration = chord.getMeasure()
-                            .getExpectedDuration();
-        }
+        try {
+            // Special case for whole chords
+            if (duration == null) {
+                duration = chord.getMeasure()
+                                .getExpectedDuration();
+            }
 
-        chord.getPart()
-             .getScorePart()
-             .addDuration(duration);
+            chord.getPart()
+                 .getScorePart()
+                 .addDuration(duration);
+        } catch (InvalidTimeSignature ex) {
+        }
 
         return false;
     }

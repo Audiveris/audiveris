@@ -13,6 +13,7 @@ import omr.glyph.Shape;
 
 import omr.score.Score;
 import omr.score.TimeSignature;
+import omr.score.TimeSignature.InvalidTimeSignature;
 
 import omr.util.Logger;
 
@@ -70,22 +71,22 @@ public class ScoreChecker
             logger.fine("Checking " + timeSignature);
         }
 
-        Shape shape = timeSignature.getShape();
+        try {
+            Shape shape = timeSignature.getShape();
 
-        if (shape == null) {
-            if ((timeSignature.getNumerator() == null) ||
-                (timeSignature.getDenominator() == null)) {
-                logger.warning(
-                    timeSignature.getContextString() +
-                    " Time signature with no rational value");
+            if (shape == null) {
+                if ((timeSignature.getNumerator() == null) ||
+                    (timeSignature.getDenominator() == null)) {
+                    timeSignature.addError(
+                        "Time signature with no rational value");
+                }
+            } else if (shape == Shape.NO_LEGAL_SHAPE) {
+                timeSignature.addError("Illegal " + timeSignature);
+            } else if (Shape.SingleTimes.contains(shape)) {
+                timeSignature.addError(
+                    " Orphan time signature shape : " + shape);
             }
-        } else if (shape == Shape.NO_LEGAL_SHAPE) {
-            logger.warning(
-                timeSignature.getContextString() + " Illegal " + timeSignature);
-        } else if (Shape.SingleTimes.contains(shape)) {
-            logger.warning(
-                timeSignature.getContextString() +
-                " Orphan time signature shape : " + shape);
+        } catch (InvalidTimeSignature its) {
         }
 
         return true;

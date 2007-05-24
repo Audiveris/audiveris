@@ -171,6 +171,32 @@ public class Chord
         }
     }
 
+    //---------//
+    // addMark //
+    //---------//
+    /**
+     * Add a UI mark to this chord
+     *
+     * @param mark the mark to add
+     */
+    public void addMark (Mark mark)
+    {
+        marks.add(mark);
+    }
+
+    //-------------//
+    // addNotation //
+    //-------------//
+    /**
+     * Add a notation element related to this chord note(s)
+     *
+     * @param notation the notation element to add
+     */
+    public void addNotation (Notation notation)
+    {
+        notations.add(notation);
+    }
+
     //-----------//
     // compareTo //
     //-----------//
@@ -296,6 +322,19 @@ public class Chord
     public SortedSet<Beam> getBeams ()
     {
         return beams;
+    }
+
+    //---------------//
+    // getDirections //
+    //---------------//
+    /**
+     * Report the direction entities loosely related to this chord
+     *
+     * @return the collection of (loosely) related directions, perhaps empty
+     */
+    public Collection<?extends Direction> getDirections ()
+    {
+        return directions;
     }
 
     //---------------//
@@ -428,6 +467,19 @@ public class Chord
         return marks;
     }
 
+    //--------------//
+    // getNotations //
+    //--------------//
+    /**
+     * Report the (perhaps empty) collection of related notations
+     *
+     * @return the collection of notations
+     */
+    public Collection<?extends Notation> getNotations ()
+    {
+        return notations;
+    }
+
     //----------//
     // getNotes //
     //----------//
@@ -515,13 +567,14 @@ public class Chord
                                              Glyph   stem)
     {
         List<Chord> chords = new ArrayList<Chord>();
-        ///stem.clearTranslations();
 
+        ///stem.clearTranslations();
         for (TreeNode node : measure.getChords()) {
             Chord chord = (Chord) node;
 
             if (chord.getStem() == stem) {
                 chords.add(chord);
+
                 ///stem.addTranslation(chord);
             }
         }
@@ -541,58 +594,6 @@ public class Chord
     public void addDirection (Direction direction)
     {
         directions.add(direction);
-    }
-
-    //---------//
-    // addMark //
-    //---------//
-    /**
-     * Add a UI mark to this chord
-     *
-     * @param mark the mark to add
-     */
-    public void addMark (Mark mark)
-    {
-        marks.add(mark);
-    }
-
-    //-------------//
-    // addNotation //
-    //-------------//
-    /**
-     * Add a notation element related to this chord note(s)
-     *
-     * @param notation the notation element to add
-     */
-    public void addNotation (Notation notation)
-    {
-        notations.add(notation);
-    }
-
-    //---------------//
-    // getDirections //
-    //---------------//
-    /**
-     * Report the direction entities loosely related to this chord
-     *
-     * @return the collection of (loosely) related directions, perhaps empty
-     */
-    public Collection<?extends Direction> getDirections ()
-    {
-        return directions;
-    }
-
-    //--------------//
-    // getNotations //
-    //--------------//
-    /**
-     * Report the (perhaps empty) collection of related notations
-     *
-     * @return the collection of notations
-     */
-    public Collection<?extends Notation> getNotations ()
-    {
-        return notations;
     }
 
     //-----------------//
@@ -757,8 +758,7 @@ public class Chord
         }
 
         if (stem == null) {
-            logger.warning(
-                measure.getContextString() + " Flag glyph with no stem");
+            measure.addError(glyph, " Flag glyph with no stem");
         } else {
             List<Chord> sideChords = Chord.getStemChords(measure, stem);
 
@@ -768,8 +768,7 @@ public class Chord
                     glyph.addTranslation(chord);
                 }
             } else {
-                logger.warning(
-                    measure.getContextString() + " No chord for stem " + stem);
+                measure.addError(stem, " No chord for stem " + stem.getId());
             }
         }
     }
@@ -981,9 +980,9 @@ public class Chord
             }
         } else {
             if (!this.startTime.equals(startTime)) {
-                logger.warning(
-                    getContextString() + " Reassigning startTime from " +
-                    this.startTime + " to " + startTime + " in " + this);
+                addError(
+                    "Reassigning startTime from " + this.startTime + " to " +
+                    startTime + " in " + this);
             }
         }
     }
@@ -1028,9 +1027,9 @@ public class Chord
             }
         } else {
             if (!this.voice.equals(voice)) {
-                logger.warning(
-                    getContextString() + " Reassigning voice from " +
-                    this.voice + " to " + voice + " in " + this);
+                addError(
+                    " Reassigning voice from " + this.voice + " to " + voice +
+                    " in " + this);
             }
         }
     }
@@ -1123,6 +1122,18 @@ public class Chord
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //---------------//
+    // computeCenter //
+    //---------------//
+    /**
+     * Compute the center of Chord
+     */
+    @Override
+    protected void computeCenter ()
+    {
+        setCenter(getHeadLocation());
     }
 
     //--------------//
@@ -1260,7 +1271,7 @@ public class Chord
          * Maximum dx between note and augmentation dot
          */
         Scale.Fraction maxDotDx = new Scale.Fraction(
-            1d,
+            1.5d,
             "Maximum dx between note and augmentation dot");
 
         /**

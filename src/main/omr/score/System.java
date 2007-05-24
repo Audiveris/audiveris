@@ -14,7 +14,6 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
 import omr.sheet.PixelRectangle;
-import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
@@ -31,7 +30,7 @@ import java.util.List;
  * @version $Id$
  */
 public class System
-    extends ScoreNode
+    extends SystemNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -441,6 +440,23 @@ public class System
         return new ScorePoint(
             (displayOrigin.x + pagPt.x) - topLeft.x,
             (displayOrigin.y + pagPt.y) - topLeft.y);
+    }
+
+    //--------------//
+    // toScorePoint //
+    //--------------//
+    /**
+     * Compute the score display point that correspond to a given sheet point,
+     * since systems are displayed horizontally in the score display, while they
+     * are located one under the other in a sheet.
+     *
+     * @param sysPt the point in the system
+     * @return the score point
+     * @see #toPagePoint
+     */
+    public ScorePoint toScorePoint (SystemPoint sysPt)
+    {
+        return toScorePoint(toPagePoint(sysPt));
     }
 
     //----------//

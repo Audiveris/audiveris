@@ -55,7 +55,7 @@ public abstract class AbstractNotation
             chord.addNotation(this);
         } else {
             // We have a notation item without any related chord/note
-            logger.warning("Notation " + this + " w/o related note");
+            addError(glyph, "Notation " + this + " without related note");
         }
     }
 }

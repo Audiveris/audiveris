@@ -113,7 +113,7 @@ public class Barline
         }
 
         // No usable stick
-        logger.warning("No usable stick to compute bar line abscissa");
+        addError("No usable stick to compute barline abscissa");
 
         return 0;
     }
@@ -326,7 +326,7 @@ public class Barline
             return "O";
 
         default :
-            logger.warning("Unknown bar component : " + shape);
+            addError("Unknown bar component : " + shape);
 
             return null;
         }
