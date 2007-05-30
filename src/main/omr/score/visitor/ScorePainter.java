@@ -45,6 +45,7 @@ import omr.score.SystemPoint;
 import omr.score.SystemRectangle;
 import omr.score.TimeSignature;
 import omr.score.TimeSignature.InvalidTimeSignature;
+import omr.score.Tuplet;
 import omr.score.UnitDimension;
 import omr.score.Wedge;
 
@@ -307,8 +308,7 @@ public class ScorePainter
                 try {
                     g.setColor(voiceColors[chord.getVoice() - 1]);
                 } catch (Exception ex) {
-                    chord.addError(ex + " voice=" +
-                        chord.getVoice());
+                    chord.addError(ex + " voice=" + chord.getVoice());
                 }
 
                 // Link to previous chord with same voice
@@ -800,6 +800,14 @@ public class ScorePainter
     public boolean visit (Ornament ornament)
     {
         return visit((MeasureElement) ornament);
+    }
+
+    //--------------//
+    // visit Tuplet //
+    //--------------//
+    public boolean visit (Tuplet tuplet)
+    {
+        return visit((MeasureElement) tuplet);
     }
 
     //-------------//

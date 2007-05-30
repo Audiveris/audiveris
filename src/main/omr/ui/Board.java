@@ -29,9 +29,9 @@ import omr.selection.SelectionManager;
  * as PixelBoard, SectionBoard, and the like.
  *
  * <p>By default, any board can have multiple inputSelection and an
- * outputSelection objects. When {@link #boardShown} is called, the board
+ * outputSelection objects. When {@link #connect} is called, the board
  * instance is added as an observer to its various inputSelection
- * objects. Similarly, {@link #boardHidden} deletes the observer from the same
+ * objects. Similarly, {@link #disconnect} deletes the observer from the same
  * inputSelection objects.
  *
  * <p>This is still an abstract class, since the update() method must be

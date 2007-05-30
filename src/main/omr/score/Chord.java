@@ -273,21 +273,21 @@ public class Chord
         return clone;
     }
 
-    //-------------------//
-    // getActualDuration //
-    //-------------------//
+    //-------------//
+    // getDuration //
+    //-------------//
     /**
      * Report the real duration computed for this chord, including the tuplet
      * impact if any
      *
      * @return The real chord/note duration
      */
-    public Integer getActualDuration ()
+    public Integer getDuration ()
     {
         if (tupletFactor != null) {
-            return (getDuration() * tupletFactor.getNumerator()) * tupletFactor.getDenominator();
+            return (getRawDuration() * tupletFactor.getNumerator()) / tupletFactor.getDenominator();
         } else {
-            return getDuration();
+            return getRawDuration();
         }
     }
 
@@ -351,9 +351,9 @@ public class Chord
         return dotsNumber;
     }
 
-    //-------------//
-    // getDuration //
-    //-------------//
+    //----------------//
+    // getRawDuration //
+    //---------------//
     /**
      * Report the intrinsic time duration of this chord, taking flag/beams and
      * dots into account, but not the tuplet impact if any
@@ -361,7 +361,7 @@ public class Chord
      * @return the intrinsic chord duration
      * @see #getActualDuration
      */
-    public Integer getDuration ()
+    public Integer getRawDuration ()
     {
         if (duration == null) {
             if (getNotes()
@@ -407,7 +407,7 @@ public class Chord
         if (getDuration() == null) {
             return null;
         } else {
-            return startTime + getActualDuration();
+            return startTime + getDuration();
         }
     }
 
@@ -1000,6 +1000,32 @@ public class Chord
         this.stem = stem;
     }
 
+    //-----------------//
+    // getTupletFactor //
+    //-----------------//
+    /**
+     * Report the chord tuplet factor, if any
+     *
+     * @return the factor to apply, or nulkl
+     */
+    public DurationFactor getTupletFactor ()
+    {
+        return tupletFactor;
+    }
+
+    //-----------------//
+    // setTupletFactor //
+    //-----------------//
+    /**
+     * Assign a tuplet factor to this chord
+     *
+     * @param tupletFactor the factor to apply
+     */
+    public void setTupletFactor (DurationFactor tupletFactor)
+    {
+        this.tupletFactor = tupletFactor;
+    }
+
     //----------//
     // setVoice //
     //----------//
@@ -1067,7 +1093,7 @@ public class Chord
 
         sb.append(" dur=");
 
-        if (getDuration() != null) {
+        if (getRawDuration() != null) {
             sb.append(Note.quarterValueOf(duration));
         } else {
             sb.append("none");

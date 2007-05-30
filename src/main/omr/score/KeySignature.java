@@ -485,9 +485,9 @@ public class KeySignature
                 }
 
                 if (keyList.size() < maxKeyNb) {
-                    logger.warning(
-                        getContextString(system, im, iStaff) +
-                        " Missing key signature");
+                    // Determine the containing measure
+                    getMeasureOf(system, iStaff, im)
+                        .addError("Missing key signature");
 
                     // Need to add a key here
                     staffOffset = 0;
@@ -649,18 +649,31 @@ public class KeySignature
                staffOf(system, systemStaffIndex)
                    .getId();
     }
-//
-//    //------------//
-//    // getContext //
-//    //------------//
-//    private static ScoreNode getContext (System system,
-//                                            int    measureIndex,
-//                                            int    systemStaffIndex)
-//    {
-//        return system.getContextString() + "M" + (measureIndex + 1) + "T" +
-//               staffOf(system, systemStaffIndex)
-//                   .getId();
-//    }
+
+    //--------------//
+    // getMeasureOf //
+    //--------------//
+    private static Measure getMeasureOf (System system,
+                                         int    staffIndex,
+                                         int    measureIndex)
+    {
+        int staffOffset = 0;
+
+        for (TreeNode node : system.getParts()) {
+            SystemPart part = (SystemPart) node;
+            staffOffset += part.getStaves()
+                               .size();
+
+            if (staffIndex < staffOffset) {
+                return (Measure) part.getMeasures()
+                                     .get(measureIndex);
+            }
+        }
+
+        logger.severe("Illegal systemStaffIndex: " + staffIndex);
+
+        return null;
+    }
 
     //---------//
     // staffOf //

@@ -33,6 +33,7 @@ import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
 import omr.score.TimeSignature;
+import omr.score.Tuplet;
 import omr.score.Wedge;
 
 /**
@@ -93,6 +94,8 @@ public interface ScoreVisitor
     boolean visit (SystemPart node);
 
     boolean visit (TimeSignature node);
+
+    boolean visit (Tuplet node);
 
     boolean visit (Wedge node);
 }

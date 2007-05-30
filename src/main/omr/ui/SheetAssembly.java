@@ -230,7 +230,7 @@ public class SheetAssembly
     /**
      * Method called when this sheet assembly is selected (since we can have
      * several sheets displayed, each one with its own sheet assembly). This is
-     * called from {@link omr.sheet.SheetController} when the tab of another
+     * called from {@link omr.ui.SheetController} when the tab of another
      * sheet is selected.
      */
     public void assemblySelected ()

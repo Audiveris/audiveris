@@ -11,6 +11,7 @@ package omr.ui;
 
 import omr.glyph.Glyph;
 
+import omr.score.ScorePoint;
 import omr.score.System;
 import omr.score.SystemNode;
 
@@ -24,12 +25,11 @@ import omr.util.Logger;
 
 import java.awt.Rectangle;
 import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import omr.score.ScorePoint;
 
 /**
  * Class <code>ErrorsEditor</code> handles the set of error messages
@@ -53,25 +53,25 @@ public class ErrorsEditor
     private final Sheet sheet;
 
     /** The list of displayed errors */
-    private JList list;
+    private final JList list;
 
     /** The scrolling area */
-    private JScrollPane scrollPane;
+    private final JScrollPane scrollPane;
 
     /** Selection listener */
-    ListSelectionListener listener = new MyListener();
+    private final ListSelectionListener listener = new MyListener();
 
     /** Set of error records */
-    private final SortedSet<Record> recordSet = new TreeSet<Record>();
+    private final SortedSet<Record> recordSet = new ConcurrentSkipListSet<Record>();
 
     /** Facade model for the JList */
     private final DefaultListModel model = new DefaultListModel();
 
     /** Selection bus for glyph */
-    Selection glyphSelection;
+    private final Selection glyphSelection;
 
     /** Selection bus for score node */
-    Selection scoreSelection;
+    private final Selection scoreSelection;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -117,9 +117,14 @@ public class ErrorsEditor
                           String     text)
     {
         recordSet.add(new Record(node, glyph, text));
+
+        // Update the model
         model.removeAllElements();
 
+        int index = 0;
+
         for (Record record : recordSet) {
+            record.index = ++index;
             model.addElement(record);
         }
     }
@@ -157,6 +162,7 @@ public class ErrorsEditor
         SystemNode node;
         Glyph      glyph;
         String     text;
+        int        index;
 
         public Record (SystemNode node,
                        Glyph      glyph,
@@ -170,11 +176,11 @@ public class ErrorsEditor
         public int compareTo (Record other)
         {
             // Very basic indeed !!!
-            return this.toString()
-                       .compareTo(other.toString());
+            return this.toShortString()
+                       .compareTo(other.toShortString());
         }
 
-        public String toString ()
+        public String toShortString ()
         {
             StringBuilder sb = new StringBuilder();
             sb.append(node.getContextString());
@@ -189,6 +195,11 @@ public class ErrorsEditor
 
             return sb.toString();
         }
+
+        public String toString ()
+        {
+            return index + ": " + toShortString();
+        }
     }
 
     //------------//
@@ -200,11 +211,13 @@ public class ErrorsEditor
         public void valueChanged (ListSelectionEvent e)
         {
             if ((e.getSource() == list) && !e.getValueIsAdjusting()) {
-                logger.info("value=" + list.getSelectedValue());
-
                 Record record = (Record) list.getSelectedValue();
 
                 if (record != null) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine("value=" + record);
+                    }
+
                     // Use glyph location if any
                     if (record.glyph != null) {
                         glyphSelection.setEntity(
@@ -219,6 +232,9 @@ public class ErrorsEditor
                             new Rectangle(scrPt),
                             SelectionHint.LOCATION_INIT);
                     }
+
+                    // We don't keep the focus
+                    /////sheet.getSymbolsEditor().getFocus();
                 }
             }
         }

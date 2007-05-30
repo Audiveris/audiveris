@@ -383,6 +383,11 @@ public class SymbolsEditor
     {
         view.colorizeAllGlyphs();
     }
+    
+    public void getFocus()
+    {
+        view.requestFocusInWindow();
+    }
 
     //------------------//
     // showTranslations //

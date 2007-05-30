@@ -243,6 +243,9 @@ public class Measure
                         insertForward(-delta, Mark.Position.AFTER, lastChord);
                     } else if (delta > 0) {
                         // Flag the measure as too long
+                        addError(
+                            "Voice #" + voice + " too long for " +
+                            Note.quarterValueOf(delta));
                         excess = delta;
                     } else if (lastChord.isWholeDuration()) {
                         // Remember we can't tell anything'
@@ -928,21 +931,6 @@ public class Measure
         barline.reset();
     }
 
-    //-----------//
-    // setExcess //
-    //-----------//
-    /**
-     * Assign this measure as excess (perhaps we should be more specific, for
-     * the time being, this is used only to flag measures for which the comtuted
-     * duration of a voice is longer than the expected measure duration)
-     *
-     * @param excess the duration in excess, or null
-     */
-    public void setExcess (Integer excess)
-    {
-        this.excess = excess;
-    }
-
     //-------//
     // setId //
     //-------//
@@ -1010,6 +998,19 @@ public class Measure
     public String toString ()
     {
         return "{Measure id=" + id + "}";
+    }
+
+    //---------------//
+    // computeCenter //
+    //---------------//
+    /**
+     * The 'center' here is the middle of the measure
+     */
+    @Override
+    protected void computeCenter ()
+    {
+        SystemPoint bl = barline.getCenter();
+        setCenter(new SystemPoint((bl.x + getLeftX()) / 2, bl.y));
     }
 
     //---------------//

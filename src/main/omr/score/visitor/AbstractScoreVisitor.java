@@ -33,6 +33,7 @@ import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
 import omr.score.TimeSignature;
+import omr.score.Tuplet;
 import omr.score.Wedge;
 
 /**
@@ -247,6 +248,14 @@ public class AbstractScoreVisitor
     // visit TimeSignature //
     //---------------------//
     public boolean visit (TimeSignature timeSignature)
+    {
+        return true;
+    }
+
+    //--------------//
+    // visit Tuplet //
+    //--------------//
+    public boolean visit (Tuplet tuplet)
     {
         return true;
     }

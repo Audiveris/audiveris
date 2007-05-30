@@ -72,7 +72,7 @@ public class ScoreBuilder
     //~ Methods ----------------------------------------------------------------
 
     //-----------//
-    // buildInfo //
+    // translateSystem //
     //-----------//
     /**
      * Build the score information, system after system, glyph after glyph.
@@ -81,8 +81,9 @@ public class ScoreBuilder
      */
     public void buildInfo ()
     {
-        final long startTime = java.lang.System.currentTimeMillis();
-        sheet.getErrorsEditor().clear();
+        //        final long startTime = java.lang.System.currentTimeMillis();
+        sheet.getErrorsEditor()
+             .clear();
 
         if (Runtime.getRuntime()
                    .availableProcessors() > 1) {
@@ -96,8 +97,8 @@ public class ScoreBuilder
         checkImplicitMeasures();
         score.accept(new ScoreFixer());
 
-        final long stopTime = java.lang.System.currentTimeMillis();
-        logger.info("Score translated in " + (stopTime - startTime) + " ms");
+        //        final long stopTime = java.lang.System.currentTimeMillis();
+        //        logger.info("Score translated in " + (stopTime - startTime) + " ms");
 
         // Update score view if any
         if (score.getView() != null) {
@@ -109,6 +110,9 @@ public class ScoreBuilder
     //-------------------//
     // buildParallelInfo //
     //-------------------//
+    /**
+     * Systems are built in parallel
+     */
     private void buildParallelInfo ()
     {
         Executor       executor = OmrExecutors.getHighExecutor();
@@ -124,7 +128,7 @@ public class ScoreBuilder
                 new Runnable() {
                         public void run ()
                         {
-                            new SystemBuilder(system).buildInfo();
+                            new SystemBuilder(system).translateSystem();
                         }
                     });
             executor.execute(work);
@@ -141,22 +145,29 @@ public class ScoreBuilder
     //---------------------//
     // buildSequentialInfo //
     //---------------------//
+    /**
+     * Systems are built in sequence
+     */
     private void buildSequentialInfo ()
     {
         // First, cleanup the score, keeping only the systems, staves,
         // measures, barlines
         for (SystemInfo systemInfo : sheet.getSystems()) {
             System system = systemInfo.getScoreSystem();
-            new SystemBuilder(system).buildInfo();
+            new SystemBuilder(system).translateSystem();
         }
     }
 
     //-----------------------//
     // checkImplicitMeasures //
     //-----------------------//
+    /**
+     * Check for an implicit measure at the beginning of the score.  This
+     * version looks only at the very first measure of the score, which is
+     * too restrictive. TBD.
+     */
     private void checkImplicitMeasures ()
     {
-        // Check for an implicit measure at the beginning:
         // On the very first system, all parts have their very first measure
         // ending too short with the same value (or filled by whole rest)
         System  system = score.getFirstSystem();
@@ -200,9 +211,11 @@ public class ScoreBuilder
     //----------------------//
     // checkSlurConnections //
     //----------------------//
+    /**
+     * Make attempts to connect slurs between systems
+     */
     private void checkSlurConnections ()
     {
-        // Retrieve inter-system slur connections
         for (SystemInfo systemInfo : sheet.getSystems()) {
             System system = systemInfo.getScoreSystem();
             Slur.retrieveSlurConnections(system);
@@ -233,10 +246,15 @@ public class ScoreBuilder
     //---------------//
     // SystemBuilder //
     //---------------//
+    /**
+     * Class <code>SystemBuilder</code> does all translation tasks for one
+     * system only. Additional work that needs availability of several
+     * systems is performed at higher level by the translateSystem() method.
+     */
     private class SystemBuilder
     {
         /** The current system */
-        private System currentSystem;
+        private System system;
 
         /** The current systempart */
         private SystemPart currentPart;
@@ -250,18 +268,21 @@ public class ScoreBuilder
         /** The current measure */
         private Measure currentMeasure;
 
+        //---------------//
+        // SystemBuilder //
+        //---------------//
         SystemBuilder (System system)
         {
-            currentSystem = system;
+            this.system = system;
         }
 
-        //-----------//
-        // buildInfo //
-        //-----------//
-        public void buildInfo ()
+        //-----------------//
+        // translateSystem //
+        //-----------------//
+        public void translateSystem ()
         {
             // First, cleanup the system, staves, measures, barlines, ...
-            currentSystem.accept(new ScoreCleaner());
+            system.accept(new ScoreCleaner());
 
             // Translations in proper order
 
@@ -302,6 +323,10 @@ public class ScoreBuilder
             // Augmentation dots (-> chord)
             logger.fine("Starting DotTranslator...");
             translate(new DotTranslator());
+
+            // Tuplets
+            logger.fine("Starting TupletTranslator...");
+            translate(new TupletTranslator());
 
             // Finalize measure voices & durations
             logger.fine("Starting MeasureTranslator...");
@@ -350,11 +375,17 @@ public class ScoreBuilder
         //-----------//
         // translate //
         //-----------//
+        /**
+         * Drive the translation at system level of certain glyphs as
+         * handled by the provided translator
+         *
+         * @param translator the specific translator for this task
+         */
         private void translate (Translator translator)
         {
             // Browse the system collection of glyphs
-            for (Glyph glyph : currentSystem.getInfo()
-                                            .getGlyphs()) {
+            for (Glyph glyph : system.getInfo()
+                                     .getGlyphs()) {
                 if (!glyph.isTranslated() &&
                     glyph.isWellKnown() &&
                     (glyph.getShape() != Shape.CLUTTER)) {
@@ -404,7 +435,7 @@ public class ScoreBuilder
             }
 
             /**
-             * Hook for final processing at end of each system
+             * Hook for final processing at end of the system
              */
             public void completeSystem ()
             {
@@ -418,8 +449,8 @@ public class ScoreBuilder
              */
             public void computeLocation (Glyph glyph)
             {
-                currentCenter = currentSystem.toSystemPoint(glyph.getCenter());
-                currentStaff = currentSystem.getStaffAt(currentCenter);
+                currentCenter = system.toSystemPoint(glyph.getCenter());
+                currentStaff = system.getStaffAt(currentCenter);
                 currentPart = currentStaff.getPart();
                 currentMeasure = currentPart.getMeasureAt(currentCenter);
             }
@@ -435,7 +466,7 @@ public class ScoreBuilder
              */
             public void browseSystemMeasures ()
             {
-                for (TreeNode node : currentSystem.getParts()) {
+                for (TreeNode node : system.getParts()) {
                     SystemPart part = (SystemPart) node;
 
                     for (TreeNode mn : part.getMeasures()) {
@@ -511,7 +542,8 @@ public class ScoreBuilder
                 } else if (glyph.getRightStem() != null) {
                     super.computeLocation(glyph.getRightStem());
                 } else {
-                    currentMeasure.addError(glyph,
+                    currentMeasure.addError(
+                        glyph,
                         "Beam glyph with no attached stem");
                     super.computeLocation(glyph); // Backup alternative...
                 }
@@ -575,9 +607,9 @@ public class ScoreBuilder
             private void dumpSystemSlots ()
             {
                 // Dump all measure slots
-                logger.fine(currentSystem.toString());
+                logger.fine(system.toString());
 
-                for (TreeNode node : currentSystem.getParts()) {
+                for (TreeNode node : system.getParts()) {
                     SystemPart part = (SystemPart) node;
 
                     logger.fine(part.toString());
@@ -745,7 +777,8 @@ public class ScoreBuilder
                 } else if (glyph.getRightStem() != null) {
                     super.computeLocation(glyph.getRightStem());
                 } else {
-                    currentSystem.addError(glyph,
+                    system.addError(
+                        glyph,
                         "Flag glyph " + glyph.getId() +
                         " with no attached stem");
                     super.computeLocation(glyph); // Backup alternative...
@@ -775,7 +808,7 @@ public class ScoreBuilder
             @Override
             public void completeSystem ()
             {
-                KeySignature.verifySystemKeys(currentSystem);
+                KeySignature.verifySystemKeys(system);
             }
 
             public boolean isRelevant (Glyph glyph)
@@ -901,7 +934,7 @@ public class ScoreBuilder
 
             public void translate (Glyph glyph)
             {
-                Slur.populate(glyph, currentSystem);
+                Slur.populate(glyph, system);
             }
         }
 
@@ -926,6 +959,23 @@ public class ScoreBuilder
             }
         }
 
+        //-------------------//
+        // TupletTranslator //
+        //-------------------//
+        private class TupletTranslator
+            extends Translator
+        {
+            public boolean isRelevant (Glyph glyph)
+            {
+                return Shape.Tuplets.contains(glyph.getShape());
+            }
+
+            public void translate (Glyph glyph)
+            {
+                Tuplet.populate(glyph, currentMeasure, currentCenter);
+            }
+        }
+
         //-----------------//
         // WedgeTranslator //
         //-----------------//
@@ -937,9 +987,9 @@ public class ScoreBuilder
             {
                 // Take the left edge for glyph center
                 PixelRectangle box = glyph.getContourBox();
-                currentCenter = currentSystem.toSystemPoint(
+                currentCenter = system.toSystemPoint(
                     new PixelPoint(box.x, box.y + (box.height / 2)));
-                currentStaff = currentSystem.getStaffAt(currentCenter); // Bof!
+                currentStaff = system.getStaffAt(currentCenter); // Bof!
                 currentPart = currentStaff.getPart();
                 currentMeasure = currentPart.getMeasureAt(currentCenter);
             }

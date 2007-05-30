@@ -523,7 +523,7 @@ public class Beam
     // computeCenter //
     //---------------//
     /**
-     * Compute the center of Chord
+     * Compute the center of this beam
      */
     @Override
     protected void computeCenter ()

@@ -32,7 +32,6 @@ import omr.score.Pedal;
 import omr.score.Score;
 import omr.score.ScorePart;
 import omr.score.Segno;
-import omr.score.Slot;
 import omr.score.Slur;
 import omr.score.Staff;
 import omr.score.System;
@@ -41,6 +40,7 @@ import omr.score.SystemPoint;
 import omr.score.SystemRectangle;
 import omr.score.TimeSignature;
 import omr.score.TimeSignature.InvalidTimeSignature;
+import omr.score.Tuplet;
 import omr.score.Wedge;
 import static omr.score.visitor.MusicXML.*;
 
@@ -89,8 +89,11 @@ public class ScoreExporter
     /** Current flags */
     private IsFirst isFirst = new IsFirst();
 
-    /** Slur numbers */
+    /** Map of Slur numbers, reset for every part */
     private Map<Slur, Integer> slurNumbers = new HashMap<Slur, Integer>();
+
+    /** Map of Tuplet numbers, reset for every measure */
+    private Map<Tuplet, Integer> tupletNumbers = new HashMap<Tuplet, Integer>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -621,6 +624,7 @@ public class ScoreExporter
 
         // Safer...
         current.endMeasure();
+        tupletNumbers.clear();
 
         return true;
     }
@@ -696,6 +700,21 @@ public class ScoreExporter
         int noteLeft = note.getCenterLeft().x;
         current.pmNote.setDefaultX(
             toTenths(noteLeft - note.getMeasure().getLeftX()));
+
+        // Tuplet factor ?
+        if (chord.getTupletFactor() != null) {
+            TimeModification timeModification = new TimeModification();
+            current.pmNote.setTimeModification(timeModification);
+
+            ActualNotes actualNotes = new ActualNotes();
+            timeModification.setActualNotes(actualNotes);
+            actualNotes.setContent(
+                "" + chord.getTupletFactor().getDenominator());
+
+            NormalNotes normalNotes = new NormalNotes();
+            timeModification.setNormalNotes(normalNotes);
+            normalNotes.setContent("" + chord.getTupletFactor().getNumerator());
+        }
 
         // Duration
         try {
@@ -878,6 +897,7 @@ public class ScoreExporter
      * say pages (TBI), then systems, etc...
      *
      * @param score visit the score to export
+     * @return false, since no further processing is required after this node
      */
     @Override
     public boolean visit (Score score)
@@ -987,6 +1007,46 @@ public class ScoreExporter
         }
 
         return false; // That's all
+    }
+
+    //-------------//
+    // visit Segno //
+    //-------------//
+    @Override
+    public boolean visit (Segno segno)
+    {
+        Direction direction = new Direction();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(direction);
+
+        DirectionType directionType = new DirectionType();
+        direction.getDirectionType()
+                 .add(directionType);
+
+        proxymusic.Segno pmSegno = new proxymusic.Segno();
+        directionType.getSegno()
+                     .add(pmSegno);
+
+        // Staff ?
+        Staff staff = current.note.getStaff();
+        insertStaffId(direction, staff);
+
+        // default-x
+        pmSegno.setDefaultX(
+            toTenths(segno.getPoint().x - current.measure.getLeftX()));
+
+        // default-y
+        pmSegno.setDefaultY(yOf(segno.getPoint(), staff));
+
+        // Need also a Sound element
+        Sound sound = new Sound();
+        direction.setSound(sound);
+        sound.setSegno("" + current.measure.getId());
+        sound.setDivisions(
+            "" +
+            current.part.simpleDurationOf(omr.score.Note.QUARTER_DURATION));
+
+        return true;
     }
 
     //------------//
@@ -1188,44 +1248,50 @@ public class ScoreExporter
         return true;
     }
 
-    //-------------//
-    // visit Segno //
-    //-------------//
-    @Override
-    public boolean visit (Segno segno)
+    //--------------//
+    // visit Tuplet //
+    //--------------//
+    public boolean visit (Tuplet tuplet)
     {
-        Direction direction = new Direction();
-        current.pmMeasure.getNoteOrBackupOrForward()
-                         .add(direction);
+        //          <tuplet bracket="no" number="1" placement="above" type="start"/>
+        proxymusic.Tuplet pmTuplet = new proxymusic.Tuplet();
+        getNotations()
+            .getTiedOrSlurOrTuplet()
+            .add(pmTuplet);
 
-        DirectionType directionType = new DirectionType();
-        direction.getDirectionType()
-                 .add(directionType);
+        // bracket
+        // TBD
 
-        proxymusic.Segno pmSegno = new proxymusic.Segno();
-        directionType.getSegno()
-                     .add(pmSegno);
+        // placement
+        if (tuplet.getChord() == current.note.getChord()) {
+            pmTuplet.setPlacement(
+                (tuplet.getCenter().y <= current.note.getCenter().y) ? ABOVE
+                                : BELOW);
+        }
 
-        // Staff ?
-        Staff staff = current.note.getStaff();
-        insertStaffId(direction, staff);
+        // type
+        pmTuplet.setType(
+            (tuplet.getChord() == current.note.getChord()) ? START : STOP);
 
-        // default-x
-        pmSegno.setDefaultX(
-            toTenths(segno.getPoint().x - current.measure.getLeftX()));
+        // Number attribute
+        Integer num = tupletNumbers.get(tuplet);
 
-        // default-y
-        pmSegno.setDefaultY(yOf(segno.getPoint(), staff));
+        if (num != null) {
+            pmTuplet.setNumber(num.toString());
+            tupletNumbers.remove(tuplet); // Release the number
+        } else {
+            // Determine first available number
+            for (num = 1; num <= 6; num++) {
+                if (!tupletNumbers.containsValue(num)) {
+                    tupletNumbers.put(tuplet, num);
+                    pmTuplet.setNumber(num.toString());
 
-        // Need also a Sound element
-        Sound sound = new Sound();
-        direction.setSound(sound);
-        sound.setSegno("" + current.measure.getId());
-        sound.setDivisions(
-            "" +
-            current.part.simpleDurationOf(omr.score.Note.QUARTER_DURATION));
+                    break;
+                }
+            }
+        }
 
-        return true;
+        return false;
     }
 
     //-------------//

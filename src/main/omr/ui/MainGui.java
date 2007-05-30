@@ -548,7 +548,7 @@ public class MainGui
             }
         }
 
-        bottomPane.exit(state);
+        bottomPane.storeDivider();
 
         // Store latest constant values on disk
         ConstantManager.storeResource();
@@ -891,7 +891,7 @@ public class MainGui
      * and potentially an errors pane on the right. We try to remember the last
      * divider location
      */
-    private static class BottomPane
+    private class BottomPane
         extends JSplitPane
     {
         PixelCount divider = constants.bottomDivider;
@@ -901,36 +901,48 @@ public class MainGui
             super(JSplitPane.HORIZONTAL_SPLIT, left, null);
             setBorder(null);
             setDividerSize(2);
-            setDividerLocation(divider.getValue());
         }
 
         public void addErrors (JComponent errorsPane)
         {
             removeErrors();
             setRightComponent(errorsPane);
+            setDivider();
             revalidate();
-            setDividerLocation(divider.getValue());
             repaint();
         }
 
-        public void exit (int state)
+        public void removeErrors ()
+        {
+            storeDivider();
+            setRightComponent(null);
+        }
+
+        public void storeDivider ()
         {
             if (getRightComponent() != null) {
+                final int state = frame.getExtendedState();
+
                 if (state == Frame.NORMAL) {
                     divider.setValue(getDividerLocation());
                 } else if (state == Frame.MAXIMIZED_BOTH) {
                     divider.setValue(getDividerLocation() - DELTA_DIVIDER);
                 }
+                logger.info ("Divider <- " + divider.getValue());
             }
         }
 
-        public void removeErrors ()
+        private void setDivider ()
         {
-            if (getRightComponent() != null) {
-                divider.setValue(getDividerLocation());
-            }
+            final int state = frame.getExtendedState();
 
-            setRightComponent(null);
+            if (state == Frame.NORMAL) {
+                setDividerLocation(divider.getValue());
+            } else if (state == Frame.MAXIMIZED_BOTH) {
+                setDividerLocation(divider.getValue() + DELTA_DIVIDER);
+            }
+                logger.info ("Location:" + getDividerLocation());
+            
         }
     }
 
