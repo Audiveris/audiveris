@@ -450,6 +450,7 @@ public class ScoreExporter
         ///logger.info("Visiting " + measure);
         logger.fine(measure + " : " + isFirst);
         current.measure = measure;
+        tupletNumbers.clear();
 
         // Allocate Measure
         current.pmMeasure = new proxymusic.Measure();
@@ -1253,27 +1254,26 @@ public class ScoreExporter
     //--------------//
     public boolean visit (Tuplet tuplet)
     {
-        //          <tuplet bracket="no" number="1" placement="above" type="start"/>
         proxymusic.Tuplet pmTuplet = new proxymusic.Tuplet();
         getNotations()
             .getTiedOrSlurOrTuplet()
             .add(pmTuplet);
 
-        // bracket
+        // Bracket
         // TBD
 
-        // placement
-        if (tuplet.getChord() == current.note.getChord()) {
+        // Placement
+        if (tuplet.getChord() == current.note.getChord()) { // i.e. start
             pmTuplet.setPlacement(
                 (tuplet.getCenter().y <= current.note.getCenter().y) ? ABOVE
                                 : BELOW);
         }
 
-        // type
+        // Type
         pmTuplet.setType(
             (tuplet.getChord() == current.note.getChord()) ? START : STOP);
 
-        // Number attribute
+        // Number
         Integer num = tupletNumbers.get(tuplet);
 
         if (num != null) {
