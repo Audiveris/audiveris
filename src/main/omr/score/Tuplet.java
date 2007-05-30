@@ -35,7 +35,7 @@ public class Tuplet
 
     //~ Instance fields --------------------------------------------------------
 
-    /** related num/den modification factor */
+    /** Related num/den modification factor */
     private final DurationFactor factor;
 
     /** Chord on last side */
