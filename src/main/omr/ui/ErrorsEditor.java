@@ -23,6 +23,7 @@ import omr.sheet.Sheet;
 
 import omr.util.Logger;
 
+import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -112,21 +113,28 @@ public class ErrorsEditor
     //----------//
     // addError //
     //----------//
-    public void addError (SystemNode node,
-                          Glyph      glyph,
-                          String     text)
+    public void addError (final SystemNode node,
+                          final Glyph      glyph,
+                          final String     text)
     {
-        recordSet.add(new Record(node, glyph, text));
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    // This part is run on swing thread
+                    public void run ()
+                    {
+                        recordSet.add(new Record(node, glyph, text));
 
-        // Update the model
-        model.removeAllElements();
+                        // Update the model
+                        model.removeAllElements();
 
-        int index = 0;
+                        int index = 0;
 
-        for (Record record : recordSet) {
-            record.index = ++index;
-            model.addElement(record);
-        }
+                        for (Record record : recordSet) {
+                            record.index = ++index;
+                            model.addElement(record);
+                        }
+                    }
+                });
     }
 
     //-------//
@@ -134,8 +142,14 @@ public class ErrorsEditor
     //-------//
     public void clear ()
     {
-        recordSet.clear();
-        model.removeAllElements();
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    public void run ()
+                    {
+                        recordSet.clear();
+                        model.removeAllElements();
+                    }
+                });
     }
 
     //--------------//
