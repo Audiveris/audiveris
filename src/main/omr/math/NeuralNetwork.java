@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.*;
  * preferred since is it much more stable than the binary with respect to slight
  * class modifications.
  *
- * <p>The classe also allows in-memory {@link #backup} and {@link #restore}
+ * <p>The class also allows in-memory {@link #backup} and {@link #restore}
  * operation, mainly used to save the most performant weight values during the
  * network training.
  *
@@ -803,7 +803,7 @@ public class NeuralNetwork
      *
      * @return the related function value
      */
-    private double sigmoid (double val)
+    private final double sigmoid (double val)
     {
         return 1.0d / (1.0d + Math.exp(-val));
     }
