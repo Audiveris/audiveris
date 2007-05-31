@@ -61,10 +61,10 @@ public abstract class Constant
     private java.lang.String unit;
 
     /** Current Value */
-    private java.lang.String currentString;
+    private volatile java.lang.String currentString;
 
     /** Current Value (optimized) */
-    private Object cachedValue;
+    private volatile Object cachedValue;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -194,7 +194,7 @@ public abstract class Constant
      *
      * @return The modification status
      */
-    public boolean isModified ()
+    public synchronized boolean isModified ()
     {
         if (currentString == null) {
             return false;
@@ -237,7 +237,7 @@ public abstract class Constant
     public boolean toBoolean ()
     {
         if (cachedValue == null) {
-            cachedValue = java.lang.Boolean.valueOf(currentString());
+            cachedValue = java.lang.Boolean.valueOf(getCurrentString());
         }
 
         return ((java.lang.Boolean) cachedValue).booleanValue();
@@ -267,7 +267,7 @@ public abstract class Constant
      *
      * @param val The new value (as a string)
      */
-    protected void setString (java.lang.String val)
+    protected synchronized void setString (java.lang.String val)
     {
         checkInitialized();
 
@@ -294,7 +294,7 @@ public abstract class Constant
     protected byte toByte ()
     {
         if (cachedValue == null) {
-            cachedValue = new Byte(currentString());
+            cachedValue = new Byte(getCurrentString());
         }
 
         return ((Byte) cachedValue).byteValue();
@@ -311,7 +311,8 @@ public abstract class Constant
     protected char toChar ()
     {
         if (cachedValue == null) {
-            cachedValue = new Character(currentString().charAt(0));
+            cachedValue = new Character(
+                getCurrentString().charAt(0));
         }
 
         return ((Character) cachedValue).charValue();
@@ -328,7 +329,7 @@ public abstract class Constant
     protected java.awt.Color toColor ()
     {
         if (cachedValue == null) {
-            java.lang.String str = currentString();
+            java.lang.String str = getCurrentString();
 
             if (str != null) {
                 cachedValue = java.awt.Color.decode(str);
@@ -349,7 +350,14 @@ public abstract class Constant
     protected double toDouble ()
     {
         if (cachedValue == null) {
-            cachedValue = new java.lang.Double(currentString());
+            java.lang.String cs = getCurrentString();
+            if (cs != null) {
+                cachedValue = new java.lang.Double(cs);
+            } else {
+                logger.warning(
+                    "toDouble. no currentString for " + this,
+                    new Throwable("toDouble stack"));
+            }
         }
 
         return ((java.lang.Double) cachedValue).doubleValue();
@@ -366,7 +374,7 @@ public abstract class Constant
     protected float toFloat ()
     {
         if (cachedValue == null) {
-            cachedValue = new Float(currentString());
+            cachedValue = new Float(getCurrentString());
         }
 
         return ((Float) cachedValue).floatValue();
@@ -383,7 +391,8 @@ public abstract class Constant
     protected int toInt ()
     {
         if (cachedValue == null) {
-            cachedValue = new java.lang.Integer(currentString());
+            cachedValue = new java.lang.Integer(
+                getCurrentString());
         }
 
         return ((java.lang.Integer) cachedValue).intValue();
@@ -400,7 +409,7 @@ public abstract class Constant
     protected long toLong ()
     {
         if (cachedValue == null) {
-            cachedValue = new Long(currentString());
+            cachedValue = new Long(getCurrentString());
         }
 
         return ((Long) cachedValue).longValue();
@@ -417,21 +426,21 @@ public abstract class Constant
     protected short toShort ()
     {
         if (cachedValue == null) {
-            cachedValue = new Short(currentString());
+            cachedValue = new Short(getCurrentString());
         }
 
         return ((Short) cachedValue).shortValue();
     }
 
-    //---------------//
-    // currentString //
-    //---------------//
+    //------------------//
+    // getCurrentString //
+    //-----------------//
     /**
      * Gets the current value, as a String type. This is package private.
      *
      * @return the String view of the value
      */
-    java.lang.String currentString ()
+    synchronized java.lang.String getCurrentString ()
     {
         if (currentString == null) {
             checkInitialized();
@@ -447,8 +456,9 @@ public abstract class Constant
                     }
 
                     currentString = defaultString; // Use default
-                } else {
-                    logger.fine("No value found for Property " + qualifiedName);
+//                } else {
+//                    logger.warning(
+//                        "No value found for Property " + qualifiedName);
                 }
             } else if (logger.isFineEnabled()) {
                 logger.fine(
@@ -863,7 +873,7 @@ public abstract class Constant
          */
         public java.lang.String getValue ()
         {
-            return currentString();
+            return getCurrentString();
         }
 
         /**

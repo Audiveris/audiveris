@@ -112,89 +112,6 @@ public class GlyphLag
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------//
-    // getActiveGlyphs //
-    //-----------------//
-    /**
-     * Export the unmodifiable collection of active glyphs of the lag.
-     *
-     * @return the collection of glyphs for which at least a section is assigned
-     */
-    public Collection<Glyph> getActiveGlyphs ()
-    {
-        if (activeGlyphs == null) {
-            activeGlyphs = new TreeSet<Glyph>(glyphMap.values());
-        }
-
-        return Collections.unmodifiableCollection(activeGlyphs);
-    }
-
-    //--------------//
-    // getAllGlyphs //
-    //--------------//
-    /**
-     * Export the whole unmodifiable collection of glyphs of the lag.
-     *
-     * @return the collection of glyphs, both active and inactive
-     */
-    public Collection<Glyph> getAllGlyphs ()
-    {
-        return Collections.unmodifiableCollection(allGlyphs.values());
-    }
-
-    //----------//
-    // getGlyph //
-    //----------//
-    /**
-     * Retrieve a glyph via its Id among the lag collection of glyphs
-     *
-     * @param id the glyph id to search for
-     * @return the glyph found, or null otherwise
-     */
-    public Glyph getGlyph (Integer id)
-    {
-        return allGlyphs.get(id);
-    }
-
-    //-------------------//
-    // setGlyphSelection //
-    //-------------------//
-    /**
-     * Inject dependency about the output selection for a found glyph
-     *
-     * @param glyphSelection the output glyph selection
-     */
-    public void setGlyphSelection (Selection glyphSelection)
-    {
-        this.glyphSelection = glyphSelection;
-    }
-
-    //----------------------//
-    // setGlyphSetSelection //
-    //----------------------//
-    /**
-     * Inject dependency about the output selection for found glyph set
-     *
-     * @param glyphSetSelection the output glyph set selection
-     */
-    public void setGlyphSetSelection (Selection glyphSetSelection)
-    {
-        this.glyphSetSelection = glyphSetSelection;
-    }
-
-    //----------------//
-    // getLastGlyphId //
-    //----------------//
-    /**
-     * Report the latest glyph id so far in this lag
-     *
-     * @return the latest glyph id in the glyph lag
-     */
-    public int getLastGlyphId ()
-    {
-        return globalGlyphId;
-    }
-
     //----------//
     // addGlyph //
     //----------//
@@ -222,8 +139,9 @@ public class GlyphLag
             glyph = original;
         } else {
             // Create a brand new glyph
-            allGlyphs.put(++globalGlyphId, glyph);
-            glyph.setId(globalGlyphId);
+            final int id = generateId();
+            allGlyphs.put(id, glyph);
+            glyph.setId(id);
             glyph.setLag(this);
             originals.put(glyph.getSignature(), glyph);
 
@@ -273,6 +191,50 @@ public class GlyphLag
         }
     }
 
+    //-----------------//
+    // getActiveGlyphs //
+    //-----------------//
+    /**
+     * Export the unmodifiable collection of active glyphs of the lag.
+     *
+     * @return the collection of glyphs for which at least a section is assigned
+     */
+    public Collection<Glyph> getActiveGlyphs ()
+    {
+        if (activeGlyphs == null) {
+            activeGlyphs = new TreeSet<Glyph>(glyphMap.values());
+        }
+
+        return Collections.unmodifiableCollection(activeGlyphs);
+    }
+
+    //--------------//
+    // getAllGlyphs //
+    //--------------//
+    /**
+     * Export the whole unmodifiable collection of glyphs of the lag.
+     *
+     * @return the collection of glyphs, both active and inactive
+     */
+    public Collection<Glyph> getAllGlyphs ()
+    {
+        return Collections.unmodifiableCollection(allGlyphs.values());
+    }
+
+    //----------//
+    // getGlyph //
+    //----------//
+    /**
+     * Retrieve a glyph via its Id among the lag collection of glyphs
+     *
+     * @param id the glyph id to search for
+     * @return the glyph found, or null otherwise
+     */
+    public Glyph getGlyph (Integer id)
+    {
+        return allGlyphs.get(id);
+    }
+
     //--------------//
     // lookupGlyphs //
     //--------------//
@@ -308,6 +270,32 @@ public class GlyphLag
         }
 
         return list;
+    }
+
+    //-------------------//
+    // setGlyphSelection //
+    //-------------------//
+    /**
+     * Inject dependency about the output selection for a found glyph
+     *
+     * @param glyphSelection the output glyph selection
+     */
+    public void setGlyphSelection (Selection glyphSelection)
+    {
+        this.glyphSelection = glyphSelection;
+    }
+
+    //----------------------//
+    // setGlyphSetSelection //
+    //----------------------//
+    /**
+     * Inject dependency about the output selection for found glyph set
+     *
+     * @param glyphSetSelection the output glyph set selection
+     */
+    public void setGlyphSetSelection (Selection glyphSetSelection)
+    {
+        this.glyphSetSelection = glyphSetSelection;
     }
 
     //----------//
@@ -503,6 +491,14 @@ public class GlyphLag
 
         // Invalidate the collection of active glyphs
         activeGlyphs = null;
+    }
+
+    //------------//
+    // generateId //
+    //------------//
+    private synchronized int generateId ()
+    {
+        return ++globalGlyphId;
     }
 
     //----------------//

@@ -9,8 +9,6 @@
 //
 package omr.score;
 
-import omr.glyph.Glyph;
-
 import omr.score.visitor.ScoreVisitor;
 import omr.score.visitor.Visitable;
 
@@ -134,7 +132,7 @@ public class ScoreNode
     public void acceptChildren (ScoreVisitor visitor)
     {
         ///logger.info(children.size() + " children for " + this);
-        for (TreeNode node : children) {
+        for (TreeNode node : getChildrenCopy()) {
             ScoreNode child = (ScoreNode) node;
 
             if (child.accept(visitor)) {

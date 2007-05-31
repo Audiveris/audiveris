@@ -925,10 +925,11 @@ public class MainGui
 
                 if (state == Frame.NORMAL) {
                     divider.setValue(getDividerLocation());
+                    ///logger.info("Divider <- " + divider.getValue());
                 } else if (state == Frame.MAXIMIZED_BOTH) {
                     divider.setValue(getDividerLocation() - DELTA_DIVIDER);
+                    ///logger.info("Divider <- " + divider.getValue());
                 }
-                logger.info ("Divider <- " + divider.getValue());
             }
         }
 
@@ -936,13 +937,13 @@ public class MainGui
         {
             final int state = frame.getExtendedState();
 
-            if (state == Frame.NORMAL) {
-                setDividerLocation(divider.getValue());
-            } else if (state == Frame.MAXIMIZED_BOTH) {
+            if (state == Frame.MAXIMIZED_BOTH) {
                 setDividerLocation(divider.getValue() + DELTA_DIVIDER);
+                ///logger.info("Location:" + getDividerLocation());
+            } else {
+                setDividerLocation(divider.getValue());
+                ///logger.info("Location:" + getDividerLocation());
             }
-                logger.info ("Location:" + getDividerLocation());
-            
         }
     }
 

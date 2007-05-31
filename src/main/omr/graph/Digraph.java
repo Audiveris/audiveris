@@ -44,12 +44,12 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     //~ Instance fields --------------------------------------------------------
 
     /**
-     * All Vertices of the graph
+     * All Vertices of the graph, handled by a map: Id -> Vertex
      */
     private final SortedMap<Integer, V> vertices = new TreeMap<Integer, V>();
 
     /**
-     * All Views on this graph
+     * All Views on this graph, handled by a sequential collection
      */
     private transient List<DigraphView> views = new ArrayList<DigraphView>();
 
@@ -83,120 +83,6 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------//
-    // getLastVertexId //
-    //-----------------//
-    /**
-     * Give access to the last id assigned to a vertex in this graph. This may
-     * be greater than the number of vertices currently in the graph, because of
-     * potential deletion of vertices (Vertex Id is never reused).
-     *
-     * @return id of the last vertex created
-     * @see #getVertexCount
-     */
-    public int getLastVertexId ()
-    {
-        return globalVertexId;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name assigned to this graph instance
-     *
-     * @return the readable name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //---------------//
-    // getVertexById //
-    //---------------//
-    /**
-     * Retrieve a vertex knowing its id
-     *
-     * @param id the vertex id
-     * @return the vertex found, or null
-     */
-    public V getVertexById (int id)
-    {
-        return vertices.get(id);
-    }
-
-    //----------------//
-    // setVertexClass //
-    //----------------//
-    /**
-     * Assigned the vertexClass (needed to create new vertices in the graph).
-     * This is meant to complement the default constructor.
-     *
-     * @param vertexClass the class to be used when instantiating vertices
-     */
-    public void setVertexClass (Class<?extends V> vertexClass)
-    {
-        if (vertexClass == null) {
-            throw new IllegalArgumentException("null vertex class");
-        } else {
-            this.vertexClass = vertexClass;
-        }
-    }
-
-    //----------------//
-    // getVertexCount //
-    //----------------//
-    /**
-     * Give the number of vertices currently in the graph.
-     *
-     * @return the number of vertices
-     * @see #getLastVertexId
-     */
-    public int getVertexCount ()
-    {
-        return vertices.size();
-    }
-
-    //-------------//
-    // getVertices //
-    //-------------//
-    /**
-     * Export the unmodifiable collection of vertices of the graph.
-     *
-     * @return the unmodifiable collection of vertices
-     */
-    public Collection<V> getVertices ()
-    {
-        return Collections.unmodifiableCollection(vertices.values());
-    }
-
-    //----------//
-    // getViews //
-    //----------//
-    /**
-     * Give access to the (unmodifiable) collection of related views if any
-     *
-     * @return the unmodifiable collection of views
-     */
-    public Collection<DigraphView> getViews ()
-    {
-        return Collections.unmodifiableCollection(views);
-    }
-
-    //-------------//
-    // viewIndexOf //
-    //-------------//
-    /**
-     * Return the index of the given view
-     *
-     * @return the view index, or -1 if not found
-     */
-    public int viewIndexOf (DigraphView view)
-    {
-        return views.indexOf(view);
-    }
-
     //-----------//
     // addVertex //
     //-----------//
@@ -206,7 +92,7 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
      *
      * @param vertex the newly created vertex
      */
-    public void addVertex (V vertex) // HB PUBLIC just for Verifier
+    public synchronized void addVertex (V vertex) // HB PUBLIC just for Verifier
 
     {
         if (vertex == null) {
@@ -281,6 +167,120 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
         }
     }
 
+    //-----------------//
+    // getLastVertexId //
+    //-----------------//
+    /**
+     * Give access to the last id assigned to a vertex in this graph. This may
+     * be greater than the number of vertices currently in the graph, because of
+     * potential deletion of vertices (Vertex Id is never reused).
+     *
+     * @return id of the last vertex created
+     * @see #getVertexCount
+     */
+    public int getLastVertexId ()
+    {
+        return globalVertexId;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name assigned to this graph instance
+     *
+     * @return the readable name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //---------------//
+    // getVertexById //
+    //---------------//
+    /**
+     * Retrieve a vertex knowing its id
+     *
+     * @param id the vertex id
+     * @return the vertex found, or null
+     */
+    public V getVertexById (int id)
+    {
+        return vertices.get(id);
+    }
+
+    //----------------//
+    // getVertexCount //
+    //----------------//
+    /**
+     * Give the number of vertices currently in the graph.
+     *
+     * @return the number of vertices
+     * @see #getLastVertexId
+     */
+    public int getVertexCount ()
+    {
+        return vertices.size();
+    }
+
+    //-------------//
+    // getVertices //
+    //-------------//
+    /**
+     * Export the unmodifiable collection of vertices of the graph.
+     *
+     * @return the unmodifiable collection of vertices
+     */
+    public Collection<V> getVertices ()
+    {
+        return Collections.unmodifiableCollection(vertices.values());
+    }
+
+    //-----------------//
+    // getVerticesCopy //
+    //-----------------//
+    /**
+     * Export a copy of the collection of vertices of the graph.
+     *
+     * @return a copy collection of vertices
+     */
+    public synchronized Collection<V> getVerticesCopy ()
+    {
+        return new ArrayList(vertices.values());
+    }
+
+    //----------//
+    // getViews //
+    //----------//
+    /**
+     * Give access to the (unmodifiable) collection of related views if any
+     *
+     * @return the unmodifiable collection of views
+     */
+    public Collection<DigraphView> getViews ()
+    {
+        return Collections.unmodifiableCollection(views);
+    }
+
+    //----------------//
+    // setVertexClass //
+    //----------------//
+    /**
+     * Assigned the vertexClass (needed to create new vertices in the graph).
+     * This is meant to complement the default constructor.
+     *
+     * @param vertexClass the class to be used when instantiating vertices
+     */
+    public void setVertexClass (Class<?extends V> vertexClass)
+    {
+        if (vertexClass == null) {
+            throw new IllegalArgumentException("null vertex class");
+        } else {
+            this.vertexClass = vertexClass;
+        }
+    }
+
     //----------//
     // toString //
     //----------//
@@ -312,6 +312,19 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
         return sb.toString();
     }
 
+    //-------------//
+    // viewIndexOf //
+    //-------------//
+    /**
+     * Return the index of the given view
+     *
+     * @return the view index, or -1 if not found
+     */
+    public int viewIndexOf (DigraphView view)
+    {
+        return views.indexOf(view);
+    }
+
     //-----------//
     // getPrefix //
     //-----------//
@@ -334,7 +347,7 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
      *
      * @param vertex the vertex to be removed
      */
-    void removeVertex (V vertex)
+    synchronized void removeVertex (V vertex)
     {
         if (logger.isFineEnabled()) {
             logger.fine("remove " + vertex);

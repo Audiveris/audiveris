@@ -1226,7 +1226,7 @@ public class Chord
             if (stem != null) {
                 SystemPoint middle = system.toSystemPoint(stem.getCenter());
                 Note        bestNote = null;
-                int         bestDy = 0;
+                int         bestDy = Integer.MIN_VALUE;
 
                 for (TreeNode node : getNotes()) {
                     Note note = (Note) node;

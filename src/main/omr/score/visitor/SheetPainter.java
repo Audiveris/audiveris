@@ -184,7 +184,7 @@ public class SheetPainter
                     g.setColor(Color.black);
 
                     // Stems 
-                    for (Glyph glyph : system.getGlyphs()) {
+                    for (Glyph glyph : system.getGlyphsCopy()) {
                         if (glyph.isStem()) {
                             Stick stick = (Stick) glyph;
                             stick.renderLine(g, z);

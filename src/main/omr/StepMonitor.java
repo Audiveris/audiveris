@@ -16,6 +16,7 @@ import omr.ui.util.UIUtilities;
 
 import omr.util.Logger;
 
+import java.awt.Graphics;
 import java.util.concurrent.*;
 
 import javax.swing.*;
@@ -40,7 +41,7 @@ public class StepMonitor
     private final ExecutorService executor;
 
     /** Progress bar for actions performed on sheet */
-    private final JProgressBar bar = new JProgressBar();
+    private final JProgressBar bar = new MyJProgressBar();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -165,5 +166,26 @@ public class StepMonitor
                         }
                     }
                 });
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //----------------//
+    // MyJProgressBar //
+    //----------------//
+    private static class MyJProgressBar
+        extends JProgressBar
+    {
+        @Override
+        public void paintComponent (Graphics g)
+        {
+            try {
+                super.paintComponent(g);
+            } catch (Exception ex) {
+                // Nearly ignored
+                logger.warning("StepMonitor. Ignored: " + ex);
+                repaint(); // To trigger another painting                
+            }
+        }
     }
 }

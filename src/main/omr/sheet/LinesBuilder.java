@@ -101,6 +101,7 @@ public class LinesBuilder
      * This performs the retrieval of the various staves.
      *
      * @param sheet the sheet on which the analysis is performed.
+     * @throws omr.ProcessingException when processing must be interrupted
      */
     public LinesBuilder (Sheet sheet)
         throws omr.ProcessingException

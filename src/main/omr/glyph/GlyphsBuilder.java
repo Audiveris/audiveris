@@ -262,12 +262,19 @@ public class GlyphsBuilder
      */
     public void removeSystemInactives (SystemInfo system)
     {
+        // To avoid concurrent modifs exception
+        Collection<Glyph> toRemove = new ArrayList<Glyph>();
+
         for (Glyph glyph : system.getGlyphs()) {
             if (!glyph.isActive()) {
-                // Remove from system (& lag)
-                removeGlyph(glyph, system, /* cutSections => */
-                            false);
+                toRemove.add(glyph);
             }
+        }
+
+        for (Glyph glyph : toRemove) {
+            // Remove from system (& lag)
+            removeGlyph(glyph, system, /* cutSections => */
+                        false);
         }
     }
 

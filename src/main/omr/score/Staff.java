@@ -97,7 +97,7 @@ public class Staff
         this.height = height;
 
         // Assign id
-        id = this.getParent()
+        id = getParent()
                  .getChildren()
                  .indexOf(this) + 1;
     }
@@ -115,17 +115,13 @@ public class Staff
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------------//
-    // setDisplayOrigin //
-    //------------------//
-    /**
-     * Assign proper staff display origin
-     *
-     * @param displayOrigin staff display origin
-     */
-    public void setDisplayOrigin (ScorePoint displayOrigin)
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
     {
-        this.displayOrigin = displayOrigin;
+        return visitor.visit(this);
     }
 
     //------------------//
@@ -211,19 +207,6 @@ public class Staff
     }
 
     //----------//
-    // setWidth //
-    //----------//
-    /**
-     * Set the staff width
-     *
-     * @param width width in units f the staff
-     */
-    public void setWidth (int width)
-    {
-        this.width = width;
-    }
-
-    //----------//
     // getWidth //
     //----------//
     /**
@@ -234,15 +217,6 @@ public class Staff
     public int getWidth ()
     {
         return width;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
     }
 
     //-------------//
@@ -260,6 +234,32 @@ public class Staff
     public static int pitchToUnit (double pitchPosition)
     {
         return (int) Math.rint(((pitchPosition + 4) * INTER_LINE) / 2.0);
+    }
+
+    //------------------//
+    // setDisplayOrigin //
+    //------------------//
+    /**
+     * Assign proper staff display origin
+     *
+     * @param displayOrigin staff display origin
+     */
+    public void setDisplayOrigin (ScorePoint displayOrigin)
+    {
+        this.displayOrigin = displayOrigin;
+    }
+
+    //----------//
+    // setWidth //
+    //----------//
+    /**
+     * Set the staff width
+     *
+     * @param width width in units f the staff
+     */
+    public void setWidth (int width)
+    {
+        this.width = width;
     }
 
     //----------//

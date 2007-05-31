@@ -344,7 +344,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         final int viewIndex = lag.viewIndexOf(this);
 
         // Render all sections, using the colors they have been assigned
-        renderCollection(g, lag.getVertices(), viewIndex);
+        renderCollection(g, lag.getVerticesCopy(), viewIndex);
 
         // Render also all specific sections ?
         if ((showingSpecifics != null) && showingSpecifics.getValue()) {

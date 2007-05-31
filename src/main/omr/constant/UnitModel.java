@@ -281,7 +281,7 @@ public class UnitModel
         Column column = Column.values()[col];
 
         switch (column) {
-        case LOGGER :
+                case LOGGER :
 
             if (node instanceof UnitNode) {
                 UnitNode unit = (UnitNode) node;
@@ -308,7 +308,7 @@ public class UnitModel
 
                     return Boolean.valueOf(cb.getValue());
                 } else {
-                    return constant.currentString();
+                    return constant.getCurrentString();
                 }
             } else {
                 return "";

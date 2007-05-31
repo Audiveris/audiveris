@@ -25,7 +25,6 @@ import java.util.List;
  *
  * </ul>
  *
- *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -74,27 +73,6 @@ public class TreeNode
     //~ Methods ----------------------------------------------------------------
 
     //-------------//
-    // setChildren //
-    //-------------//
-    /**
-     * Set a (new) list of children
-     *
-     * @param children the list of nodes to register as children of the node at
-     *                 hand
-     */
-    public void setChildren (List<?extends TreeNode> children)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setChildren of " + this);
-        }
-
-        if (this.children != children) {
-            this.children.clear();
-            this.children.addAll(children);
-        }
-    }
-
-    //-------------//
     // getChildren //
     //-------------//
     /**
@@ -109,6 +87,23 @@ public class TreeNode
         }
 
         return children;
+    }
+
+    //-------------//
+    // getChildren //
+    //-------------//
+    /**
+     * Report the list of (direct) children
+     *
+     * @return the children
+     */
+    public synchronized List<TreeNode> getChildrenCopy ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("getChildrenCopy of " + this);
+        }
+
+        return new ArrayList(children);
     }
 
     //-------------------//
@@ -212,7 +207,7 @@ public class TreeNode
      *
      * @param node the child to include
      */
-    public void addChild (TreeNode node)
+    public synchronized void addChild (TreeNode node)
     {
         if (logger.isFineEnabled()) {
             logger.fine("addChild node=" + node + " for " + this);

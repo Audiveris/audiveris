@@ -142,7 +142,7 @@ public class UnitManager
      * Dumps on the standard output the current value of all Constants of all
      * ConstantSets.
      */
-    public void dumpAllUnits ()
+    public synchronized void dumpAllUnits ()
     {
         System.out.println("\nUnitManager. All Units:");
         System.out.println("=======================");
@@ -168,34 +168,6 @@ public class UnitManager
                 }
             }
         }
-    }
-
-    //---------//
-    // getNode //
-    //---------//
-    /**
-     * Retrieves a node object, knowing its path name
-     *
-     * @param path fully qyalified node name
-     *
-     * @return the node object, or null if not found
-     */
-    Node getNode (String path)
-    {
-        return mapOfNodes.get(path);
-    }
-
-    //---------//
-    // getRoot //
-    //---------//
-    /**
-     * Return the PackageNode at the root of the node hierarchy
-     *
-     * @return the root PackageNode
-     */
-    PackageNode getRoot ()
-    {
-        return root;
     }
 
     //--------//
@@ -228,31 +200,29 @@ public class UnitManager
      *
      * @param unit the Unit to include
      */
-    void addUnit (UnitNode unit)
+    synchronized void addUnit (UnitNode unit)
     {
         //log ("addUnit unit=" + unit.getName());
         // Update the hierarchy. Include it in the map, as well as all needed
         // intermediate package nodes if any is needed.
-        synchronized (mapOfNodes) {
-            String name = unit.getName();
-            Node   node = getNode(name);
+        String name = unit.getName();
+        Node   node = getNode(name);
 
-            if (node == null) {
-                // Nothing existed before, add this node and its needed
-                // parents
-                //log ("addUnit new unit: " + name);
-                mapOfNodes.put(name, unit);
-                updateParents(unit);
+        if (node == null) {
+            // Nothing existed before, add this node and its needed
+            // parents
+            //log ("addUnit new unit: " + name);
+            mapOfNodes.put(name, unit);
+            updateParents(unit);
 
-                if (storeIt) {
-                    // Make this unit name permanent
-                    storeUnits();
-                }
-            } else if (node instanceof PackageNode) {
-                logger.severe("Unit with same name as package " + name);
-            } else if (node instanceof UnitNode) {
-                logger.severe("duplicate Unit " + name);
+            if (storeIt) {
+                // Make this unit name permanent
+                storeUnits();
             }
+        } else if (node instanceof PackageNode) {
+            logger.severe("Unit with same name as package " + name);
+        } else if (node instanceof UnitNode) {
+            logger.severe("duplicate Unit " + name);
         }
     }
 
@@ -278,6 +248,34 @@ public class UnitManager
         }
     }
 
+    //---------//
+    // getNode //
+    //---------//
+    /**
+     * Retrieves a node object, knowing its path name
+     *
+     * @param path fully qyalified node name
+     *
+     * @return the node object, or null if not found
+     */
+    synchronized Node getNode (String path)
+    {
+        return mapOfNodes.get(path);
+    }
+
+    //---------//
+    // getRoot //
+    //---------//
+    /**
+     * Return the PackageNode at the root of the node hierarchy
+     *
+     * @return the root PackageNode
+     */
+    PackageNode getRoot ()
+    {
+        return root;
+    }
+
     //---------------//
     // updateParents //
     //---------------//
@@ -288,7 +286,7 @@ public class UnitManager
      *
      * @param unit the Unit whose chain of parents is to be updated
      */
-    void updateParents (UnitNode unit)
+    synchronized void updateParents (UnitNode unit)
     {
         String name = unit.getName();
         int    length = name.length();
@@ -422,7 +420,7 @@ public class UnitManager
      * Build a string by concatenating all node names and store it to disk for
      * subsequent runs.
      */
-    private void storeUnits ()
+    private synchronized void storeUnits ()
     {
         //log("storing units");
 

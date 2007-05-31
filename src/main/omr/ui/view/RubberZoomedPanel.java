@@ -14,6 +14,7 @@ import omr.ui.*;
 import omr.util.Logger;
 
 import java.awt.*;
+import java.util.ConcurrentModificationException;
 
 /**
  * Class <code>RubberZoomedPanel</code> is a combination of two linked entities:
@@ -132,12 +133,20 @@ public class RubberZoomedPanel
         // Background first
         super.paintComponent(g);
 
-        // Then, drawing specific to the view (to be provided in subclass)
-        render(g);
+        try {
+            // Then, drawing specific to the view (to be provided in subclass)
+            render(g);
 
-        // Finally the rubber, now that everything else has been drawn
-        if (rubber != null) {
-            rubber.render(g);
+            // Finally the rubber, now that everything else has been drawn
+            if (rubber != null) {
+                rubber.render(g);
+            }
+        } catch (ConcurrentModificationException ex) {
+            logger.warning(
+                "RubberZoomedPanel paintComponent ignored: " + ex + " name=" +
+                getName(),
+                ex);
+            repaint(); // To trigger another painting later ...
         }
     }
 

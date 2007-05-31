@@ -210,9 +210,9 @@ public class SymbolsEditor
                         logger.fine("assign " + shape + " -> updateScore");
                     }
                 }
-            } else {
-                logger.warning(
-                    "Attempt to assign " + shape + " to a tiny glyph");
+//            } else {
+//                logger.warning(
+//                    "Attempt to assign " + shape + " to a tiny glyph");
             }
         }
     }

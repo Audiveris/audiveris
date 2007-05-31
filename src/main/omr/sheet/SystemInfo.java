@@ -14,10 +14,9 @@ import omr.glyph.GlyphSection;
 
 import omr.score.System;
 
-import omr.stick.Stick;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
+import omr.util.Logger;
 
 /**
  * Class <code>SystemInfo</code> gathers information from the original picture
@@ -30,6 +29,9 @@ import java.util.concurrent.ConcurrentSkipListSet;
  */
 public class SystemInfo
 {
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(SystemInfo.class);
     //~ Instance fields --------------------------------------------------------
 
     /** Related sheet */
@@ -58,7 +60,9 @@ public class SystemInfo
     private final List<GlyphSection> vSections = new ArrayList<GlyphSection>();
 
     /** Active glyphs in this system, allowing concurrent access */
-    private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>();
+    ///private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>();
+    private final SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
+    ///private final SortedSet<Glyph> glyphs = Collections.synchronizedSortedSet(new TreeSet<Glyph>());
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -230,6 +234,20 @@ public class SystemInfo
         return Collections.unmodifiableCollection(glyphs);
     }
 
+    //---------------//
+    // getGlyphsCopy //
+    //--------------//
+    /**
+     * Report a COPY of the collection of glyphs within the system area
+     *
+     * @return a copy of the  collection of glyphs
+     */
+    public synchronized Collection<Glyph> getGlyphsCopy ()
+    {
+        
+        return new ArrayList(glyphs);
+    }
+
     //-------//
     // getId //
     //-------//
@@ -288,19 +306,6 @@ public class SystemInfo
         }
 
         return maxLedgerWidth;
-    }
-
-    //---------------------//
-    // getModifiableGlyphs //
-    //---------------------//
-    /**
-     * Report the modifiable collection of glyphs within the system area
-     *
-     * @return the modifiable collection of glyphs
-     */
-    public Collection<Glyph> getModifiableGlyphs ()
-    {
-        return glyphs;
     }
 
     //-------------------------------//
@@ -480,8 +485,9 @@ public class SystemInfo
     //----------//
     // addGlyph //
     //----------//
-    public void addGlyph (Glyph glyph)
+    public synchronized void addGlyph (Glyph glyph)
     {
+        ///logger.info("addGlyph");
         glyphs.add(glyph);
     }
 
@@ -644,8 +650,9 @@ public class SystemInfo
     //-------------//
     // removeGlyph //
     //-------------//
-    public boolean removeGlyph (Glyph glyph)
+    public synchronized boolean removeGlyph (Glyph glyph)
     {
+        ///logger.info("removeGlyph");
         return glyphs.remove(glyph);
     }
 

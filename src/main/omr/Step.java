@@ -171,7 +171,7 @@ public class Step
             // User has already been informed, so just stop
         } catch (Exception ex) {
             logger.warning(
-                "Exception '" + ex.getMessage() + "' in performing step " +
+                "Exception '" + ex + "' in performing step " +
                 current,
                 ex);
         }

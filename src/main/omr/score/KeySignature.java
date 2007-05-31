@@ -258,6 +258,9 @@ public class KeySignature
                                     Staff       staff,
                                     SystemPoint center)
     {
+        //        java.lang.System.out.println(
+        //            Thread.currentThread().getName() + " Populate start glyph#" +
+        //            glyph.getId() + " ...");
         if (logger.isFineEnabled()) {
             logger.fine("Populating keysig for " + glyph);
         }
@@ -293,6 +296,9 @@ public class KeySignature
                     logger.fine("Cannot accept " + shape + " as neighbor");
                 }
 
+                //                java.lang.System.out.println(
+                //                    Thread.currentThread().getName() +
+                //                    " Populate STOP1 glyph#" + glyph.getId());
                 return false;
             }
         }
@@ -328,6 +334,9 @@ public class KeySignature
                         glyph.getId());
                 }
 
+                //                java.lang.System.out.println(
+                //                    Thread.currentThread().getName() +
+                //                    " Populate STOP2 glyph#" + glyph.getId());
                 return false;
             } else {
                 // Everything is OK
@@ -357,6 +366,9 @@ public class KeySignature
                 staff,
                 0,
                 getClefKind(clefShape))) {
+                //                java.lang.System.out.println(
+                //                    Thread.currentThread().getName() +
+                //                    " Populate STOP3 glyph#" + glyph.getId());
                 return false;
             }
 
@@ -371,6 +383,9 @@ public class KeySignature
             logger.fine("key=" + keysig.getKey());
         }
 
+        //        java.lang.System.out.println(
+        //            Thread.currentThread().getName() + " Populate end   glyph#" +
+        //            glyph.getId());
         return true;
     }
 
@@ -1065,5 +1080,11 @@ public class KeySignature
         Scale.Fraction keyYMargin = new Scale.Fraction(
             0.25d,
             "Margin when checking vertical position of single-glyph key");
+//
+//        public Constants ()
+//        {
+//            java.lang.System.out.println(
+//                Thread.currentThread().getName() + " Creation...");
+//        }
     }
 }
