@@ -14,9 +14,9 @@ import omr.glyph.GlyphSection;
 
 import omr.score.System;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentSkipListSet;
 import omr.util.Logger;
+
+import java.util.*;
 
 /**
  * Class <code>SystemInfo</code> gathers information from the original picture
@@ -29,9 +29,11 @@ import omr.util.Logger;
  */
 public class SystemInfo
 {
+    //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SystemInfo.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /** Related sheet */
@@ -59,10 +61,8 @@ public class SystemInfo
     /** Vertical sections, assigned once for all to this system */
     private final List<GlyphSection> vSections = new ArrayList<GlyphSection>();
 
-    /** Active glyphs in this system, allowing concurrent access */
-    ///private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>();
+    /** Active glyphs in this system */
     private final SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
-    ///private final SortedSet<Glyph> glyphs = Collections.synchronizedSortedSet(new TreeSet<Glyph>());
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -114,8 +114,6 @@ public class SystemInfo
      *
      * @param id       the unique identity
      * @param sheet    the containing sheet
-     *
-     * @throws omr.ProcessingException
      */
     public SystemInfo (int   id,
                        Sheet sheet)
@@ -125,362 +123,6 @@ public class SystemInfo
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //---------------//
-    // setAreaBottom //
-    //---------------//
-    /**
-     * Set the ordinate of bottom of system area
-     *
-     * @param areaBottom ordinate of bottom of system area in pixels
-     */
-    public void setAreaBottom (int areaBottom)
-    {
-        this.areaBottom = areaBottom;
-    }
-
-    //---------------//
-    // getAreaBottom //
-    //---------------//
-    /**
-     * Report the ordinate of the bottom of the picture area whose all items are
-     * assumed to belong to this system (the system related area)
-     *
-     * @return the related area bottom ordinate (in pixels)
-     */
-    public int getAreaBottom ()
-    {
-        return areaBottom;
-    }
-
-    //------------//
-    // setAreaTop //
-    //------------//
-    /**
-     * Set the ordinate of top of systemp area
-     *
-     * @param areaTop ordinate of top of system area in pixels
-     */
-    public void setAreaTop (int areaTop)
-    {
-        this.areaTop = areaTop;
-    }
-
-    //------------//
-    // getAreaTop //
-    //------------//
-    /**
-     * Report the ordinate of the top of the related picture area
-     *
-     * @return the related area top ordinate (in pixels)
-     */
-    public int getAreaTop ()
-    {
-        return areaTop;
-    }
-
-    //-----------//
-    // getBottom //
-    //-----------//
-    /**
-     * Report the ordinate of the bottom of the system, which is the ordinate of
-     * the last line of the last staff of this system
-     *
-     * @return the system bottom, in pixels
-     */
-    public int getBottom ()
-    {
-        return bottom;
-    }
-
-    //-----------//
-    // getDeltaY //
-    //-----------//
-    /**
-     * Report the deltaY of the system, that is the difference in ordinate
-     * between first and last staves of the system. This deltaY is of course 0
-     * for a one-staff system.
-     *
-     * @return the deltaY value, expressed in pixels
-     */
-    public int getDeltaY ()
-    {
-        return deltaY;
-    }
-
-    //------------//
-    // getEndings //
-    //------------//
-    /**
-     * Report the collection of endings found
-     *
-     * @return the endings collection
-     */
-    public List<Ending> getEndings ()
-    {
-        return endings;
-    }
-
-    //-----------//
-    // getGlyphs //
-    //-----------//
-    /**
-     * Report the unmodifiable collection of glyphs within the system area
-     *
-     * @return the unmodifiable collection of glyphs
-     */
-    public Collection<Glyph> getGlyphs ()
-    {
-        return Collections.unmodifiableCollection(glyphs);
-    }
-
-    //---------------//
-    // getGlyphsCopy //
-    //--------------//
-    /**
-     * Report a COPY of the collection of glyphs within the system area
-     *
-     * @return a copy of the  collection of glyphs
-     */
-    public synchronized Collection<Glyph> getGlyphsCopy ()
-    {
-        
-        return new ArrayList(glyphs);
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the id (debugging info) of the system info
-     *
-     * @return the id
-     */
-    public int getId ()
-    {
-        return id;
-    }
-
-    //------------//
-    // getLedgers //
-    //------------//
-    /**
-     * Report the collection of ledgers found
-     *
-     * @return the ledger collection
-     */
-    public List<Ledger> getLedgers ()
-    {
-        return ledgers;
-    }
-
-    //---------//
-    // getLeft //
-    //---------//
-    /**
-     * Report the left abscissa
-     *
-     * @return the left abscissa value, expressed in pixels
-     */
-    public int getLeft ()
-    {
-        return left;
-    }
-
-    //-------------------//
-    // getMaxLedgerWidth //
-    //-------------------//
-    /**
-     * Report the maximum width of ledgers within the system
-     *
-     * @return the maximum width in pixels
-     */
-    public int getMaxLedgerWidth ()
-    {
-        if (maxLedgerWidth == -1) {
-            for (Ledger ledger : ledgers) {
-                maxLedgerWidth = Math.max(
-                    maxLedgerWidth,
-                    ledger.getContourBox().width);
-            }
-        }
-
-        return maxLedgerWidth;
-    }
-
-    //-------------------------------//
-    // getModifiableVerticalSections //
-    //-------------------------------//
-    /**
-     * Report the (modifiable)collection of vertical sections in the system
-     * related area
-     *
-     * @return the area vertical sections
-     */
-    public Collection<GlyphSection> getModifiableVerticalSections ()
-    {
-        return vSections;
-    }
-
-    //----------//
-    // getParts //
-    //----------//
-    public List<PartInfo> getParts ()
-    {
-        return parts;
-    }
-
-    //----------//
-    // getRight //
-    //----------//
-    /**
-     * Report the abscissa of the end of the system
-     *
-     * @return the right abscissa, expressed in pixels
-     */
-    public int getRight ()
-    {
-        return left + width;
-    }
-
-    //----------------//
-    // setScoreSystem //
-    //----------------//
-    /**
-     * Set the link : physical sheet.SystemInfo -> logical score.System
-     *
-     * @param scoreSystem the logical score System counterpart
-     */
-    public void setScoreSystem (System scoreSystem)
-    {
-        this.scoreSystem = scoreSystem;
-    }
-
-    //----------------//
-    // getScoreSystem //
-    //----------------//
-    /**
-     * Report the related logical score system
-     *
-     * @return the logical score System counterpart
-     */
-    public System getScoreSystem ()
-    {
-        return scoreSystem;
-    }
-
-    //-------------//
-    // getStaffAtY //
-    //-------------//
-    /**
-     * Given an ordinate value, retrieve the closest staff within the system
-     *
-     * @param y the ordinate value
-     * @return the "containing" staff
-     */
-    public StaffInfo getStaffAtY (int y)
-    {
-        for (StaffInfo staff : staves) {
-            if (y <= staff.getAreaBottom()) {
-                return staff;
-            }
-        }
-
-        // Return the last staff
-        return staves.get(staves.size() - 1);
-    }
-
-    //-------------//
-    // setStartIdx //
-    //-------------//
-    /**
-     * Set the index of the starting staff of this system
-     *
-     * @param startIdx the staff index, counted from 0
-     */
-    public void setStartIdx (int startIdx)
-    {
-        this.startIdx = startIdx;
-    }
-
-    //-------------//
-    // getStartIdx //
-    //-------------//
-    /**
-     * Report the index of the starting staff of this system
-     *
-     * @return the staff index, counted from 0
-     */
-    public int getStartIdx ()
-    {
-        return startIdx;
-    }
-
-    //-----------//
-    // getStaves //
-    //-----------//
-    /**
-     * Report the list of staves that compose this system
-     *
-     * @return the staves
-     */
-    public List<StaffInfo> getStaves ()
-    {
-        return staves;
-    }
-
-    //------------//
-    // getStopIdx //
-    //------------//
-    /**
-     * Report the index of the terminating staff of this system
-     *
-     * @return the stopping staff index, counted from 0
-     */
-    public int getStopIdx ()
-    {
-        return stopIdx;
-    }
-
-    //--------//
-    // getTop //
-    //--------//
-    /**
-     * Report the ordinate of the top of this system
-     *
-     * @return the top ordinate, expressed in pixels
-     */
-    public int getTop ()
-    {
-        return top;
-    }
-
-    //---------------------//
-    // getVerticalSections //
-    //---------------------//
-    /**
-     * Report the (unmodifiable) collection of vertical sections in the system
-     * related area
-     *
-     * @return the area vertical sections
-     */
-    public Collection<GlyphSection> getVerticalSections ()
-    {
-        return Collections.unmodifiableCollection(vSections);
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the width of the system
-     *
-     * @return the width value, expressed in pixels
-     */
-    public int getWidth ()
-    {
-        return width;
-    }
 
     //----------//
     // addGlyph //
@@ -604,6 +246,309 @@ public class SystemInfo
         }
     }
 
+    //---------------//
+    // getAreaBottom //
+    //---------------//
+    /**
+     * Report the ordinate of the bottom of the picture area whose all items are
+     * assumed to belong to this system (the system related area)
+     *
+     * @return the related area bottom ordinate (in pixels)
+     */
+    public int getAreaBottom ()
+    {
+        return areaBottom;
+    }
+
+    //------------//
+    // getAreaTop //
+    //------------//
+    /**
+     * Report the ordinate of the top of the related picture area
+     *
+     * @return the related area top ordinate (in pixels)
+     */
+    public int getAreaTop ()
+    {
+        return areaTop;
+    }
+
+    //-----------//
+    // getBottom //
+    //-----------//
+    /**
+     * Report the ordinate of the bottom of the system, which is the ordinate of
+     * the last line of the last staff of this system
+     *
+     * @return the system bottom, in pixels
+     */
+    public int getBottom ()
+    {
+        return bottom;
+    }
+
+    //-----------//
+    // getDeltaY //
+    //-----------//
+    /**
+     * Report the deltaY of the system, that is the difference in ordinate
+     * between first and last staves of the system. This deltaY is of course 0
+     * for a one-staff system.
+     *
+     * @return the deltaY value, expressed in pixels
+     */
+    public int getDeltaY ()
+    {
+        return deltaY;
+    }
+
+    //------------//
+    // getEndings //
+    //------------//
+    /**
+     * Report the collection of endings found
+     *
+     * @return the endings collection
+     */
+    public List<Ending> getEndings ()
+    {
+        return endings;
+    }
+
+    //-----------//
+    // getGlyphs //
+    //-----------//
+    /**
+     * Report the unmodifiable collection of glyphs within the system area
+     *
+     * @return the unmodifiable collection of glyphs
+     */
+    public Collection<Glyph> getGlyphs ()
+    {
+        return Collections.unmodifiableCollection(glyphs);
+    }
+
+    //---------------//
+    // getGlyphsCopy //
+    //--------------//
+    /**
+     * Report a COPY of the collection of glyphs within the system area
+     *
+     * @return a copy of the  collection of glyphs
+     */
+    public synchronized Collection<Glyph> getGlyphsCopy ()
+    {
+        return new ArrayList(glyphs);
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the id (debugging info) of the system info
+     *
+     * @return the id
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
+    //------------//
+    // getLedgers //
+    //------------//
+    /**
+     * Report the collection of ledgers found
+     *
+     * @return the ledger collection
+     */
+    public List<Ledger> getLedgers ()
+    {
+        return ledgers;
+    }
+
+    //---------//
+    // getLeft //
+    //---------//
+    /**
+     * Report the left abscissa
+     *
+     * @return the left abscissa value, expressed in pixels
+     */
+    public int getLeft ()
+    {
+        return left;
+    }
+
+    //-------------------//
+    // getMaxLedgerWidth //
+    //-------------------//
+    /**
+     * Report the maximum width of ledgers within the system
+     *
+     * @return the maximum width in pixels
+     */
+    public int getMaxLedgerWidth ()
+    {
+        if (maxLedgerWidth == -1) {
+            for (Ledger ledger : ledgers) {
+                maxLedgerWidth = Math.max(
+                    maxLedgerWidth,
+                    ledger.getContourBox().width);
+            }
+        }
+
+        return maxLedgerWidth;
+    }
+
+    //-------------------------------//
+    // getModifiableVerticalSections //
+    //-------------------------------//
+    /**
+     * Report the (modifiable)collection of vertical sections in the system
+     * related area
+     *
+     * @return the area vertical sections
+     */
+    public Collection<GlyphSection> getModifiableVerticalSections ()
+    {
+        return vSections;
+    }
+
+    //----------//
+    // getParts //
+    //----------//
+    public List<PartInfo> getParts ()
+    {
+        return parts;
+    }
+
+    //----------//
+    // getRight //
+    //----------//
+    /**
+     * Report the abscissa of the end of the system
+     *
+     * @return the right abscissa, expressed in pixels
+     */
+    public int getRight ()
+    {
+        return left + width;
+    }
+
+    //----------------//
+    // getScoreSystem //
+    //----------------//
+    /**
+     * Report the related logical score system
+     *
+     * @return the logical score System counterpart
+     */
+    public System getScoreSystem ()
+    {
+        return scoreSystem;
+    }
+
+    //-------------//
+    // getStaffAtY //
+    //-------------//
+    /**
+     * Given an ordinate value, retrieve the closest staff within the system
+     *
+     * @param y the ordinate value
+     * @return the "containing" staff
+     */
+    public StaffInfo getStaffAtY (int y)
+    {
+        for (StaffInfo staff : staves) {
+            if (y <= staff.getAreaBottom()) {
+                return staff;
+            }
+        }
+
+        // Return the last staff
+        return staves.get(staves.size() - 1);
+    }
+
+    //-------------//
+    // getStartIdx //
+    //-------------//
+    /**
+     * Report the index of the starting staff of this system
+     *
+     * @return the staff index, counted from 0
+     */
+    public int getStartIdx ()
+    {
+        return startIdx;
+    }
+
+    //-----------//
+    // getStaves //
+    //-----------//
+    /**
+     * Report the list of staves that compose this system
+     *
+     * @return the staves
+     */
+    public List<StaffInfo> getStaves ()
+    {
+        return staves;
+    }
+
+    //------------//
+    // getStopIdx //
+    //------------//
+    /**
+     * Report the index of the terminating staff of this system
+     *
+     * @return the stopping staff index, counted from 0
+     */
+    public int getStopIdx ()
+    {
+        return stopIdx;
+    }
+
+    //--------//
+    // getTop //
+    //--------//
+    /**
+     * Report the ordinate of the top of this system
+     *
+     * @return the top ordinate, expressed in pixels
+     */
+    public int getTop ()
+    {
+        return top;
+    }
+
+    //---------------------//
+    // getVerticalSections //
+    //---------------------//
+    /**
+     * Report the (unmodifiable) collection of vertical sections in the system
+     * related area
+     *
+     * @return the area vertical sections
+     */
+    public Collection<GlyphSection> getVerticalSections ()
+    {
+        return Collections.unmodifiableCollection(vSections);
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the width of the system
+     *
+     * @return the width value, expressed in pixels
+     */
+    public int getWidth ()
+    {
+        return width;
+    }
+
     //-------------------------//
     // lookupIntersectedGlyphs //
     //-------------------------//
@@ -654,6 +599,58 @@ public class SystemInfo
     {
         ///logger.info("removeGlyph");
         return glyphs.remove(glyph);
+    }
+
+    //---------------//
+    // setAreaBottom //
+    //---------------//
+    /**
+     * Set the ordinate of bottom of system area
+     *
+     * @param areaBottom ordinate of bottom of system area in pixels
+     */
+    public void setAreaBottom (int areaBottom)
+    {
+        this.areaBottom = areaBottom;
+    }
+
+    //------------//
+    // setAreaTop //
+    //------------//
+    /**
+     * Set the ordinate of top of systemp area
+     *
+     * @param areaTop ordinate of top of system area in pixels
+     */
+    public void setAreaTop (int areaTop)
+    {
+        this.areaTop = areaTop;
+    }
+
+    //----------------//
+    // setScoreSystem //
+    //----------------//
+    /**
+     * Set the link : physical sheet.SystemInfo -> logical score.System
+     *
+     * @param scoreSystem the logical score System counterpart
+     */
+    public void setScoreSystem (System scoreSystem)
+    {
+        this.scoreSystem = scoreSystem;
+    }
+
+    //-------------//
+    // setStartIdx //
+    //-------------//
+    /**
+     * Set the index of the starting staff of this system
+     *
+     * @param startIdx the staff index, counted from 0
+     */
+    public void setStartIdx (int startIdx)
+    {
+        this.startIdx = startIdx;
     }
 
     //----------//
