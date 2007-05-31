@@ -177,6 +177,6 @@ public class Tuplet
     @Override
     protected void computeCenter ()
     {
-        setCenter(computeGlyphCenter (getGlyph()));
+        setCenter(computeGlyphCenter(getGlyph()));
     }
 }
