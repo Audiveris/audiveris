@@ -29,7 +29,9 @@ import java.util.*;
 
 /**
  * Class <code>Chord</code> represents an ensemble of entities (rests, notes)
- * that occur on the same time in a staff.
+ * attached to the same stem if any, and that occur on the same time in a staff.
+ * <p><b>NB</>We assume that all notes of a chord have the same duration, 
+ * otherwise the chord should be split (this split is not yet implemented)
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -359,7 +361,7 @@ public class Chord
      * dots into account, but not the tuplet impact if any
      *
      * @return the intrinsic chord duration
-     * @see #getActualDuration
+     * @see #getDuration
      */
     public Integer getRawDuration ()
     {
