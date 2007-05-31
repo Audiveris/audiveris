@@ -755,6 +755,20 @@ public class Glyph
         }
     }
 
+    //------------------//
+    // setTrainingShape //
+    //------------------//
+    /**
+     * Assign the training shape of the registered glyph shape (NB: this is
+     * meant for JAXB)
+     *
+     * @param shape the glyph shape
+     */
+    public void setTrainingShape (Shape shape)
+    {
+        setShape(shape);
+    }
+
     //-----------------//
     // getTranslations //
     //-----------------//
@@ -808,7 +822,8 @@ public class Glyph
                 }
 
                 if (foundAliens && foundMembers) {
-                    logger.warning("Mixed aliens & members in " + this);
+                    logger.warning(
+                        "Mixed aliens & members in glyph #" + getId());
                 }
             }
         }
@@ -1108,7 +1123,7 @@ public class Glyph
      *
      * @param shape the assigned shape, which may be null
      */
-    @XmlAttribute(name = "shape")
+    ///@XmlAttribute(name = "shape")
     public void setShape (Shape shape)
     {
         setShape(shape, Evaluation.NO_DOUBT);
