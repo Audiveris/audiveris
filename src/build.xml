@@ -47,6 +47,7 @@
         <pathelement path="${jgoodies.forms.jar}"/>
         <pathelement path="${jgoodies.looks.jar}"/>
         <pathelement path="${proxymusic.jar}"/>
+        <pathelement path="${jama.jar}"/>
 	<fileset dir="${jaxb.dir}/lib" includes="*.jar"/>
     </path>
     
@@ -731,7 +732,7 @@ java -cp ${run.string} ${Name} %1 %2 %3 %4 %5 %6 %7 %8 %9
         
         <mkdir dir="${backup.dir}/${ant.project.name}"/>
 
-        <!-- save relevant directories -->
+        <!-- Save relevant directories -->
         <zip
             update="yes"
             destfile="${backup.dir}/${ant.project.name}/${DSTAMP}-${machine.name}-src.zip" >
@@ -743,6 +744,15 @@ java -cp ${run.string} ${Name} %1 %2 %3 %4 %5 %6 %7 %8 %9
             <fileset dir="${user.home}/.audiveris"
                      includes="run.properties"/>
         </zip>
+
+	<!-- Backup on remote file server -->
+	<copy
+	    verbose="${verbose}"
+	    todir="${rembackup.dir}/${ant.project.name}">
+	    <fileset dir="${backup.dir}/${ant.project.name}">
+		<include name="**/${DSTAMP}-${machine.name}-*.zip"/>
+	    </fileset>
+	</copy>
     </target>
 
     <!-- ========= -->
@@ -901,4 +911,24 @@ java -cp ${run.string} ${Name} %1 %2 %3 %4 %5 %6 %7 %8 %9
 	</copy>
     </target>
 
+    <target name="fix-ledger">
+
+        <!-- Make sure we use width-ledger rather than ledger -->
+        <echo message="Fixing ledger tags 1 ..." />
+        <replaceregexp replace="/with-ledger"
+                       match="/ledger" >
+            <fileset dir="${train.dir}" 
+                     includes="**/*.xml" 
+                     />
+        </replaceregexp>
+<!--         <echo message="Fixing ledger tags 2 ..." /> -->
+<!--         <replaceregexp replace="with" -->
+<!--                        match="with-with" > -->
+<!--             <fileset dir="${train.dir}"  -->
+<!--                      includes="**/*.xml"  -->
+<!--                      /> -->
+<!--         </replaceregexp> -->
+
+    </target>
+    
 </project>
