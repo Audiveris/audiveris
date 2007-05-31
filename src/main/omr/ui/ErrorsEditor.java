@@ -23,14 +23,11 @@ import omr.sheet.Sheet;
 
 import omr.util.Logger;
 
-import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.util.SortedSet;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.*;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.*;
 
 /**
  * Class <code>ErrorsEditor</code> handles the set of error messages
@@ -63,7 +60,7 @@ public class ErrorsEditor
     private final ListSelectionListener listener = new MyListener();
 
     /** Set of error records */
-    private final SortedSet<Record> recordSet = new ConcurrentSkipListSet<Record>();
+    private final SortedSet<Record> recordSet = new TreeSet<Record>();
 
     /** Facade model for the JList */
     private final DefaultListModel model = new DefaultListModel();
@@ -104,6 +101,11 @@ public class ErrorsEditor
     //----------//
     // addError //
     //----------//
+    /**
+     * Record an error within a SystemNode entity
+     * @param node the node in the score hierarchy
+     * @param text the message text
+     */
     public void addError (SystemNode node,
                           String     text)
     {
@@ -113,6 +115,13 @@ public class ErrorsEditor
     //----------//
     // addError //
     //----------//
+    /**
+     * Record an error within a SystemNode entity, and related to a specific
+     * glyph
+     * @param node the containing node in score hierarchy
+     * @param glyph the related glyph
+     * @param text the message text
+     */
     public void addError (final SystemNode node,
                           final Glyph      glyph,
                           final String     text)
@@ -122,16 +131,13 @@ public class ErrorsEditor
                     // This part is run on swing thread
                     public void run ()
                     {
-                        recordSet.add(new Record(node, glyph, text));
+                        if (recordSet.add(new Record(node, glyph, text))) {
+                            // Update the model
+                            model.removeAllElements();
 
-                        // Update the model
-                        model.removeAllElements();
-
-                        int index = 0;
-
-                        for (Record record : recordSet) {
-                            record.index = ++index;
-                            model.addElement(record);
+                            for (Record record : recordSet) {
+                                model.addElement(record);
+                            }
                         }
                     }
                 });
@@ -140,10 +146,14 @@ public class ErrorsEditor
     //-------//
     // clear //
     //-------//
+    /**
+     * Remove all errors from the editor
+     */
     public void clear ()
     {
         SwingUtilities.invokeLater(
             new Runnable() {
+                    // This part is run on swing thread
                     public void run ()
                     {
                         recordSet.clear();
@@ -170,13 +180,15 @@ public class ErrorsEditor
     //--------//
     // Record //
     //--------//
+    /**
+     * A structure to hold the various pieces of an error message
+     */
     private static class Record
         implements Comparable<Record>
     {
         SystemNode node;
         Glyph      glyph;
         String     text;
-        int        index;
 
         public Record (SystemNode node,
                        Glyph      glyph,
@@ -190,11 +202,11 @@ public class ErrorsEditor
         public int compareTo (Record other)
         {
             // Very basic indeed !!!
-            return this.toShortString()
-                       .compareTo(other.toShortString());
+            return toString()
+                       .compareTo(other.toString());
         }
 
-        public String toShortString ()
+        public String toString ()
         {
             StringBuilder sb = new StringBuilder();
             sb.append(node.getContextString());
@@ -209,16 +221,14 @@ public class ErrorsEditor
 
             return sb.toString();
         }
-
-        public String toString ()
-        {
-            return index + ": " + toShortString();
-        }
     }
 
     //------------//
     // MyListener //
     //------------//
+    /**
+     * A specific listener to handle user selection in the list of errors
+     */
     private class MyListener
         implements ListSelectionListener
     {
@@ -232,13 +242,13 @@ public class ErrorsEditor
                         logger.fine("value=" + record);
                     }
 
-                    // Use glyph location if any
                     if (record.glyph != null) {
+                        // Use glyph location if available
                         glyphSelection.setEntity(
                             record.glyph,
                             SelectionHint.GLYPH_INIT);
-                    } else { // Use system node location
-
+                    } else {
+                        // Otherwise use system node location
                         System     system = record.node.getSystem();
                         ScorePoint scrPt = system.toScorePoint(
                             record.node.getCenter());
@@ -246,9 +256,6 @@ public class ErrorsEditor
                             new Rectangle(scrPt),
                             SelectionHint.LOCATION_INIT);
                     }
-
-                    // We don't keep the focus
-                    /////sheet.getSymbolsEditor().getFocus();
                 }
             }
         }
