@@ -167,20 +167,17 @@ public class ScorePainter
         final JCheckBoxMenuItem voiceItem = new JCheckBoxMenuItem(
             new VoiceAction());
         voiceItem.setSelected(constants.voicePainting.getValue());
-        menu.add(voiceItem)
-            .setToolTipText("Show the different voices in every measure");
+        menu.add(voiceItem);
 
         final JCheckBoxMenuItem slotItem = new JCheckBoxMenuItem(
             new SlotAction());
         slotItem.setSelected(constants.slotPainting.getValue());
-        menu.add(slotItem)
-            .setToolTipText("Show the different slots in every measure");
+        menu.add(slotItem);
 
         final JCheckBoxMenuItem markItem = new JCheckBoxMenuItem(
             new MarkAction());
         markItem.setSelected(constants.markPainting.getValue());
-        menu.add(markItem)
-            .setToolTipText("Show the different marks in every measure");
+        menu.add(markItem);
     }
 
     //------------------//
@@ -1188,6 +1185,9 @@ public class ScorePainter
         public MarkAction ()
         {
             super("Show score Marks");
+            putValue(
+                SHORT_DESCRIPTION,
+                "Show the different marks in every measure");
         }
 
         @Implement(ActionListener.class)
@@ -1208,6 +1208,9 @@ public class ScorePainter
         public SlotAction ()
         {
             super("Show score Slots");
+            putValue(
+                SHORT_DESCRIPTION,
+                "Show the different slots in every measure");
         }
 
         @Implement(ActionListener.class)
@@ -1228,6 +1231,9 @@ public class ScorePainter
         public VoiceAction ()
         {
             super("Show score Voices");
+            putValue(
+                SHORT_DESCRIPTION,
+                "Show the different voices in every measure");
         }
 
         @Implement(ActionListener.class)

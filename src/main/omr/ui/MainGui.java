@@ -46,6 +46,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.*;
+import omr.glyph.ui.GlyphLagView;
 
 /**
  * Class <code>MainGui</code> is the Java User Interface, the main class for
@@ -164,6 +165,8 @@ public class MainGui
 
         // Views
         ScorePainter.insertMenuItems(viewMenu);
+        viewMenu.addSeparator();
+        GlyphLagView.insertMenuItems(viewMenu);
         viewMenu.addSeparator();
         viewMenu.add(new JCheckBoxMenuItem(new LineAction()))
                 .setSelected(LinesBuilder.getDisplayOriginalStaffLines());

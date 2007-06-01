@@ -10,6 +10,7 @@
 package omr.glyph.ui;
 
 import omr.constant.Constant;
+import omr.constant.ConstantSet;
 
 import omr.glyph.*;
 import omr.glyph.Shape;
@@ -17,19 +18,29 @@ import omr.glyph.Shape;
 import omr.lag.LagView;
 
 import omr.math.Circle;
+import omr.math.Line;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
+import omr.sheet.PixelPoint;
+import omr.sheet.PixelRectangle;
+
+import omr.stick.Stick;
+
 import omr.ui.view.Zoom;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.geom.CubicCurve2D;
 import static java.lang.Math.*;
 import java.util.*;
 import java.util.List;
+
+import javax.swing.*;
 
 /**
  * Class <code>GlyphLagView</code> is a specific {@link omr.lag.LagView}
@@ -55,6 +66,9 @@ public class GlyphLagView
     extends LagView<GlyphLag, GlyphSection>
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GlyphLagView.class);
@@ -106,58 +120,6 @@ public class GlyphLagView
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------------//
-    // getGlyphById //
-    //--------------//
-    /**
-     * Give access to a glyph, knowing its id.
-     *
-     * @param id the glyph id
-     *
-     * @return the corresponding glyph, or null if none
-     */
-    public Glyph getGlyphById (int id)
-    {
-        // Look up in specific glyphs first
-        for (Glyph glyph : specificGlyphs) {
-            if (glyph.getId() == id) {
-                return glyph;
-            }
-        }
-
-        if (model != null) {
-            return model.getGlyphById(id);
-        } else {
-            return null;
-        }
-    }
-
-    //-------------------//
-    // setGlyphSelection //
-    //-------------------//
-    /**
-     * Inject dependency on where we should write glyph information.
-     *
-     * @param glyphSelection the Glyph selection
-     */
-    public void setGlyphSelection (Selection glyphSelection)
-    {
-        this.glyphSelection = glyphSelection;
-    }
-
-    //----------------------//
-    // setGlyphSetSelection //
-    //----------------------//
-    /**
-     * Inject dependency on where we should write glyph set information.
-     *
-     * @param glyphSetSelection the Glyph Set selection
-     */
-    public void setGlyphSetSelection (Selection glyphSetSelection)
-    {
-        this.glyphSetSelection = glyphSetSelection;
-    }
 
     //-------------------//
     // colorizeAllGlyphs //
@@ -219,6 +181,48 @@ public class GlyphLagView
     }
 
     //--------------//
+    // getGlyphById //
+    //--------------//
+    /**
+     * Give access to a glyph, knowing its id.
+     *
+     * @param id the glyph id
+     *
+     * @return the corresponding glyph, or null if none
+     */
+    public Glyph getGlyphById (int id)
+    {
+        // Look up in specific glyphs first
+        for (Glyph glyph : specificGlyphs) {
+            if (glyph.getId() == id) {
+                return glyph;
+            }
+        }
+
+        if (model != null) {
+            return model.getGlyphById(id);
+        } else {
+            return null;
+        }
+    }
+
+    //-----------------//
+    // insertMenuItems //
+    //-----------------//
+    public static void insertMenuItems (JMenu menu)
+    {
+        final JCheckBoxMenuItem lineItem = new JCheckBoxMenuItem(
+            new LineAction());
+        lineItem.setSelected(constants.linePainting.getValue());
+        menu.add(lineItem);
+
+        final JCheckBoxMenuItem circleItem = new JCheckBoxMenuItem(
+            new CircleAction());
+        circleItem.setSelected(constants.circlePainting.getValue());
+        menu.add(circleItem);
+    }
+
+    //--------------//
     // lookupGlyphs //
     //--------------//
     /**
@@ -242,6 +246,32 @@ public class GlyphLagView
         }
 
         return found;
+    }
+
+    //-------------------//
+    // setGlyphSelection //
+    //-------------------//
+    /**
+     * Inject dependency on where we should write glyph information.
+     *
+     * @param glyphSelection the Glyph selection
+     */
+    public void setGlyphSelection (Selection glyphSelection)
+    {
+        this.glyphSelection = glyphSelection;
+    }
+
+    //----------------------//
+    // setGlyphSetSelection //
+    //----------------------//
+    /**
+     * Inject dependency on where we should write glyph set information.
+     *
+     * @param glyphSetSelection the Glyph Set selection
+     */
+    public void setGlyphSetSelection (Selection glyphSetSelection)
+    {
+        this.glyphSetSelection = glyphSetSelection;
     }
 
     //--------//
@@ -375,22 +405,34 @@ public class GlyphLagView
 
                     // Draw circle arc here ?
                     if (glyph.getShape() == Shape.SLUR) {
-                        Circle circle = SlurGlyph.computeCircle(glyph);
+                        if (constants.circlePainting.getValue()) {
+                            Circle circle = SlurGlyph.computeCircle(glyph);
 
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                String.format(
-                                    "dist=%g " + circle.toString(),
-                                    circle.getDistance()));
+                            if (logger.isFineEnabled()) {
+                                logger.fine(
+                                    String.format(
+                                        "dist=%g " + circle.toString(),
+                                        circle.getDistance()));
+                            }
+
+                            drawCircle(circle, g, z);
                         }
-
-                        drawCircle(circle, g, z);
+                    } else if (constants.circlePainting.getValue()) {
+                        if (glyph instanceof Stick) {
+                            drawStickLine((Stick) glyph, g, z);
+                        }
                     }
                 }
             }
         }
     }
 
+    //------------//
+    // drawCircle //
+    //------------//
+    /**
+     * Draw the approximating circle of a slur
+     */
     private void drawCircle (Circle   circle,
                              Graphics g,
                              Zoom     z)
@@ -418,6 +460,103 @@ public class GlyphLagView
                 z.scaled(circle.getCenter().y) - radius,
                 2 * radius,
                 2 * radius);
+        }
+    }
+
+    //---------------//
+    // drawStickLine //
+    //---------------//
+    /**
+     * Draw the mean line of a stick
+     */
+    private void drawStickLine (Stick    stick,
+                                Graphics g,
+                                Zoom     z)
+    {
+        PixelRectangle box = stick.getContourBox();
+        Line           line = stick.getLine();
+        double         slope = line.getSlope();
+        PixelPoint     a = new PixelPoint();
+        PixelPoint     b = new PixelPoint();
+
+        // Beware, these are vertical glyphs
+        if (Math.abs(slope) > (Math.PI / 4)) {
+            // Rather horizontal
+            a.x = box.x;
+            a.y = line.xAt(a.x);
+            b.x = box.x + box.width;
+            b.y = line.xAt(b.x);
+        } else {
+            // Rather vertical
+            a.y = box.y;
+            a.x = line.yAt(a.y);
+            b.y = box.y + box.height;
+            b.x = line.yAt(b.y);
+        }
+
+        g.drawLine(z.scaled(a.x), z.scaled(a.y), z.scaled(b.x), z.scaled(b.y));
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //--------------//
+    // CircleAction //
+    //--------------//
+    private static class CircleAction
+        extends AbstractAction
+    {
+        public CircleAction ()
+        {
+            super("Show slur Circles");
+            putValue(
+                SHORT_DESCRIPTION,
+                "Show the circle of every selected slur");
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            constants.circlePainting.setValue(item.isSelected());
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        /** Should the lines be painted */
+        final Constant.Boolean linePainting = new Constant.Boolean(
+            false,
+            "Should the stick lines be painted");
+
+        /** Should the circles be painted */
+        final Constant.Boolean circlePainting = new Constant.Boolean(
+            true,
+            "Should the slur circles be painted");
+    }
+
+    //------------//
+    // LineAction //
+    //------------//
+    private static class LineAction
+        extends AbstractAction
+    {
+        public LineAction ()
+        {
+            super("Show stick Lines");
+            putValue(
+                SHORT_DESCRIPTION,
+                "Show the line of every selected stick");
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            constants.linePainting.setValue(item.isSelected());
         }
     }
 }
