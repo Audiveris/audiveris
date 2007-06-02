@@ -19,6 +19,7 @@ import omr.lag.LagView;
 
 import omr.math.Circle;
 import omr.math.Line;
+import omr.math.Line.UndefinedLineException;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -417,7 +418,7 @@ public class GlyphLagView
 
                             drawCircle(circle, g, z);
                         }
-                    } else if (constants.circlePainting.getValue()) {
+                    } else if (constants.linePainting.getValue()) {
                         if (glyph instanceof Stick) {
                             drawStickLine((Stick) glyph, g, z);
                         }
@@ -473,28 +474,36 @@ public class GlyphLagView
                                 Graphics g,
                                 Zoom     z)
     {
-        PixelRectangle box = stick.getContourBox();
-        Line           line = stick.getLine();
-        double         slope = line.getSlope();
-        PixelPoint     a = new PixelPoint();
-        PixelPoint     b = new PixelPoint();
+        try {
+            Line           line = stick.getLine();
+            PixelRectangle box = stick.getContourBox();
+            int            ext = constants.lineExtension.getValue();
+            PixelPoint     a = new PixelPoint();
+            PixelPoint     b = new PixelPoint();
 
-        // Beware, these are vertical glyphs
-        if (Math.abs(slope) > (Math.PI / 4)) {
-            // Rather horizontal
-            a.x = box.x;
-            a.y = line.xAt(a.x);
-            b.x = box.x + box.width;
-            b.y = line.xAt(b.x);
-        } else {
-            // Rather vertical
-            a.y = box.y;
-            a.x = line.yAt(a.y);
-            b.y = box.y + box.height;
-            b.x = line.yAt(b.y);
+            // Beware, these are vertical glyphs
+            if (Math.abs(line.getInvertedSlope()) <= (Math.PI / 4)) {
+                // Rather horizontal
+                a.x = box.x - ext;
+                a.y = line.xAt(a.x);
+                b.x = box.x + box.width + ext;
+                b.y = line.xAt(b.x);
+            } else {
+                // Rather vertical
+                a.y = box.y - ext;
+                a.x = line.yAt(a.y);
+                b.y = box.y + box.height + ext;
+                b.x = line.yAt(b.y);
+            }
+
+            g.drawLine(
+                z.scaled(a.x),
+                z.scaled(a.y),
+                z.scaled(b.x),
+                z.scaled(b.y));
+        } catch (UndefinedLineException ignored) {
+            // Not enough points
         }
-
-        g.drawLine(z.scaled(a.x), z.scaled(a.y), z.scaled(b.x), z.scaled(b.y));
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -536,6 +545,12 @@ public class GlyphLagView
         final Constant.Boolean circlePainting = new Constant.Boolean(
             true,
             "Should the slur circles be painted");
+
+        /** Extension of line beyond the stick */
+        final Constant.Integer lineExtension = new Constant.Integer(
+            "Pixels",
+            10,
+            "Extension of line beyond the stick");
     }
 
     //------------//
