@@ -702,6 +702,7 @@ public abstract class Constant
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
+         * @param quantityUnit unit used by this value
          * @param defaultValue the (double) default value
          * @param description  the semantic of the constant
          */
@@ -759,6 +760,7 @@ public abstract class Constant
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
+         * @param quantityUnit unit used by this value
          * @param defaultValue the (int) default value
          * @param description  the semantic of the constant
          */
