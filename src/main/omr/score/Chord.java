@@ -30,7 +30,7 @@ import java.util.*;
 /**
  * Class <code>Chord</code> represents an ensemble of entities (rests, notes)
  * attached to the same stem if any, and that occur on the same time in a staff.
- * <p><b>NB</>We assume that all notes of a chord have the same duration, 
+ * <p><b>NB</>We assume that all notes of a chord have the same duration,
  * otherwise the chord should be split (this split is not yet implemented)
  *
  * @author Herv&eacute Bitteur
@@ -275,24 +275,6 @@ public class Chord
         return clone;
     }
 
-    //-------------//
-    // getDuration //
-    //-------------//
-    /**
-     * Report the real duration computed for this chord, including the tuplet
-     * impact if any
-     *
-     * @return The real chord/note duration
-     */
-    public Integer getDuration ()
-    {
-        if (tupletFactor != null) {
-            return (getRawDuration() * tupletFactor.getNumerator()) / tupletFactor.getDenominator();
-        } else {
-            return getRawDuration();
-        }
-    }
-
     //--------------//
     // getBeamGroup //
     //--------------//
@@ -353,47 +335,22 @@ public class Chord
         return dotsNumber;
     }
 
-    //----------------//
-    // getRawDuration //
-    //---------------//
+    //-------------//
+    // getDuration //
+    //-------------//
     /**
-     * Report the intrinsic time duration of this chord, taking flag/beams and
-     * dots into account, but not the tuplet impact if any
+     * Report the real duration computed for this chord, including the tuplet
+     * impact if any
      *
-     * @return the intrinsic chord duration
-     * @see #getDuration
+     * @return The real chord/note duration
      */
-    public Integer getRawDuration ()
+    public Integer getDuration ()
     {
-        if (duration == null) {
-            if (getNotes()
-                    .size() > 0) {
-                // Note heads are assumed to be the same ...
-                Note note = (Note) getNotes()
-                                       .get(0);
-
-                if (note.getShape() != Shape.WHOLE_REST) {
-                    duration = note.getTypeDuration(note.getShape());
-
-                    // Apply fraction
-                    int fbn = getFlagsNumber() + getBeams()
-                                                     .size();
-
-                    for (int i = 0; i < fbn; i++) {
-                        duration /= 2;
-                    }
-
-                    // Apply augmentation
-                    if (dotsNumber == 1) {
-                        duration += (duration / 2);
-                    } else if (dotsNumber == 2) {
-                        duration += ((duration * 3) / 4);
-                    }
-                }
-            }
+        if (tupletFactor != null) {
+            return (getRawDuration() * tupletFactor.getNumerator()) / tupletFactor.getDenominator();
+        } else {
+            return getRawDuration();
         }
-
-        return duration;
     }
 
     //------------//
@@ -515,6 +472,49 @@ public class Chord
         }
 
         return null;
+    }
+
+    //----------------//
+    // getRawDuration //
+    //---------------//
+    /**
+     * Report the intrinsic time duration of this chord, taking flag/beams and
+     * dots into account, but not the tuplet impact if any
+     *
+     * @return the intrinsic chord duration
+     * @see #getDuration
+     */
+    public Integer getRawDuration ()
+    {
+        if (duration == null) {
+            if (getNotes()
+                    .size() > 0) {
+                // Note heads are assumed to be the same ...
+                Note note = (Note) getNotes()
+                                       .get(0);
+
+                if (note.getShape() != Shape.WHOLE_REST) {
+                    duration = note.getTypeDuration(note.getShape());
+
+                    // Apply fraction
+                    int fbn = getFlagsNumber() + getBeams()
+                                                     .size();
+
+                    for (int i = 0; i < fbn; i++) {
+                        duration /= 2;
+                    }
+
+                    // Apply augmentation
+                    if (dotsNumber == 1) {
+                        duration += (duration / 2);
+                    } else if (dotsNumber == 2) {
+                        duration += ((duration * 3) / 4);
+                    }
+                }
+            }
+        }
+
+        return duration;
     }
 
     //----------//
@@ -932,6 +932,19 @@ public class Chord
         }
     }
 
+    //-----------------//
+    // getTupletFactor //
+    //-----------------//
+    /**
+     * Report the chord tuplet factor, if any
+     *
+     * @return the factor to apply, or nulkl
+     */
+    public DurationFactor getTupletFactor ()
+    {
+        return tupletFactor;
+    }
+
     //--------------//
     // setStartTime //
     //--------------//
@@ -1000,19 +1013,6 @@ public class Chord
     public void setStem (Glyph stem)
     {
         this.stem = stem;
-    }
-
-    //-----------------//
-    // getTupletFactor //
-    //-----------------//
-    /**
-     * Report the chord tuplet factor, if any
-     *
-     * @return the factor to apply, or nulkl
-     */
-    public DurationFactor getTupletFactor ()
-    {
-        return tupletFactor;
     }
 
     //-----------------//
@@ -1138,13 +1138,17 @@ public class Chord
         }
 
         if (beams.size() > 0) {
-            sb.append(" beams G#" + beams.first().getGroup().getId() + "[");
+            try {
+                sb.append(" beams G#" + beams.first().getGroup().getId() + "[");
 
-            for (Beam beam : beams) {
-                sb.append(beam + " ");
+                for (Beam beam : beams) {
+                    sb.append(beam + " ");
+                }
+
+                sb.append("]");
+            } catch (Exception ex) {
+                logger.warning("Exception in chord toString()");
             }
-
-            sb.append("]");
         }
 
         sb.append("}");

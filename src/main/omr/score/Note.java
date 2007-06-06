@@ -19,6 +19,7 @@ import omr.math.GCD;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
+import omr.sheet.PixelRectangle;
 import omr.sheet.Scale;
 
 import omr.util.Logger;
@@ -29,7 +30,7 @@ import java.util.*;
 /**
  * Class <code>Note</code> represents the characteristics of a note. Besides a
  * regular note (standard note, or rest), it can also be a cue note or a grace
- * note.
+ * note (these last two variants are not handled yet, TBD).
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -46,29 +47,21 @@ public class Note
     private static final Logger logger = Logger.getLogger(Note.class);
 
     /**
-     * A quarter duration value that should fit all cases for internal
+     * A quarter duration value chosen to fit all cases for internal
      * computations. This will be simplified when the score is exported to XML,
      * using the greatest common divisor found in the score.
      */
     public static final int QUARTER_DURATION = 96;
 
-    /** Names of the various note types (used in MusicXML) */
-    public static final String[] typeNames = new String[] {
-                                                 "256th", "128th", "64th",
-                                                 "32nd", "16th", "eighth",
-                                                 "quarter", "half", "whole",
-                                                 "breve", "long"
-                                             };
-
     //~ Enumerations -----------------------------------------------------------
 
-    /** Names of the various note steps (used in MusicXML) */
+    /** Names of the various note steps */
     public static enum Step {
         /** La */ A,
 
         /** Si */ B,
         /** Do */ C, 
-        /** Ré */ D, 
+        /** Rï¿½ */ D, 
         /** Mi */ E, 
         /** Fa */ F, 
         /** Sol */ G;
@@ -83,19 +76,16 @@ public class Note
     private final double pitchPosition;
 
     /**
-     * Size of the note pack (stuck glyphs) this note is part of.
-     * Size = 1 for an isolated note
+     * Cardinality of the note pack (stuck glyphs) this note is part of.
+     * Card = 1 for an isolated note
      */
-    private final int packSize;
+    private final int packCard;
 
     /* Index within the note pack. Index = 0 for an isolated note */
     private final int packIndex;
 
-    /** Note width in units */
-    private final int width;
-
-    /** Note height in units */
-    private final int height;
+    /** Contour box for the note instance */
+    private final SystemRectangle box;
 
     /** The note shape */
     private final Shape shape;
@@ -126,75 +116,85 @@ public class Note
     //------//
     // Note //
     //------//
-    /** Creates a new instance of Note */
+    /** Create a new instance of an isolated Note
+     *
+     * @param chord the containing chord
+     * @param glyph the underlying glyph
+     */
     public Note (Chord chord,
                  Glyph glyph)
     {
-        this(chord, glyph, 1, 0);
+        this(chord, glyph, getItemCenter(glyph, 0), 1, 0);
         glyph.setTranslation(this);
     }
 
     //------//
     // Note //
     //------//
-    /** Creates a new instance of Note */
-    public Note (Chord chord,
-                 Glyph glyph,
-                 int   packSize,
-                 int   packIndex)
-    {
-        super(chord);
-
-        this.glyph = glyph;
-        this.packSize = packSize;
-        this.packIndex = packIndex;
-
-        // Rest?
-        isRest = Shape.Rests.contains(glyph.getShape());
-
-        // Location center
-        System     system = getSystem();
-        PixelPoint pixelcenter = glyph.getCenter();
-        height = (int) Math.rint(
-            getScale().pixelsToUnitsDouble(
-                glyph.getContourBox().height / (double) packSize));
-        width = getScale()
-                    .pixelsToUnits(glyph.getContourBox().width);
-
-        SystemPoint glyphCenter = system.toSystemPoint(glyph.getCenter());
-        int         dy = (int) Math.rint(
-            (height * ((2 * packIndex) - packSize + 1)) / 2.0);
-        setCenter(new SystemPoint(glyphCenter.x, glyphCenter.y + dy));
-
-        // Staff
-        setStaff(system.getStaffAt(getCenter()));
-
-        // Pitch Position
-        pitchPosition = getStaff()
-                            .pitchPositionOf(getCenter());
-
-        // Shape of this note
-        shape = baseShapeOf(glyph.getShape());
-    }
-
-    //------//
-    // Note //
-    //------//
-    /** Clone a Note */
+    /** Create a note as a clone of another Note
+     *
+     * @param other the note to clone
+     */
     public Note (Note other)
     {
         super(other.getChord());
         glyph = other.glyph;
-        packSize = other.packSize;
+        packCard = other.packCard;
         packIndex = other.packIndex;
         isRest = other.isRest;
         setCenter(other.getCenter());
         setStaff(other.getStaff());
         pitchPosition = other.pitchPosition;
         shape = other.getShape();
-        width = other.width;
-        height = other.height;
+        box = other.box;
         glyph.addTranslation(this);
+
+        // We specifically don't carry over:
+        // slurs
+    }
+
+    //------//
+    // Note //
+    //------//
+    /** Create a new instance of Note, as a chunk of a larger note pack.
+     *
+     * @param chord the containing chord
+     * @param glyph the underlying glyph
+     * @param center the center of the note instance
+     * @param packCard the number of notes in the pack
+     * @param packIndex the zero-based index of this note in the pack
+     */
+    private Note (Chord      chord,
+                  Glyph      glyph,
+                  PixelPoint center,
+                  int        packCard,
+                  int        packIndex)
+    {
+        super(chord);
+
+        this.glyph = glyph;
+        this.packCard = packCard;
+        this.packIndex = packIndex;
+
+        // Rest?
+        isRest = Shape.Rests.contains(glyph.getShape());
+
+        // Location center
+        setCenter(getSystem().toSystemPoint(center));
+
+        // Staff
+        setStaff(getSystem().getStaffAt(getCenter()));
+
+        // Pitch Position
+        pitchPosition = getStaff()
+                            .pitchPositionOf(getCenter());
+
+        // Note box
+        box = getSystem()
+                  .toSystemRectangle(getItemBox(glyph, packIndex));
+
+        // Shape of this note
+        shape = baseShapeOf(glyph.getShape());
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -202,44 +202,244 @@ public class Note
     //------------//
     // createPack //
     //------------//
+    /**
+     * Create a bunch of Note instances for one note pack
+     * @param chord the containing chord
+     * @param glyph the underlying glyph of the note pack
+     */
     public static void createPack (Chord chord,
                                    Glyph glyph)
     {
-        int size = packSizeOf(glyph.getShape());
-        glyph.clearTranslations();
+        ///glyph.clearTranslations();
+        int       card = packCardOf(glyph.getShape());
+        Glyph     stem = chord.getStem();
+        final int dy = chord.getScale()
+                            .toUnits(constants.maxStemDy);
+        int       top = 0;
+        int       bottom = 0;
 
-        for (int i = 0; i < size; i++) {
-            glyph.addTranslation(new Note(chord, glyph, size, i));
+        if (stem != null) {
+            PixelRectangle box = stem.getContourBox();
+            top = box.y - dy;
+            bottom = box.y + box.height + dy;
         }
+
+        for (int i = 0; i < card; i++) {
+            PixelPoint center = getItemCenter(glyph, i);
+
+            if (stem != null) {
+                if ((center.y < top) || (center.y > bottom)) {
+                    continue;
+                }
+            }
+
+            glyph.addTranslation(new Note(chord, glyph, center, card, i));
+        }
+    }
+
+    //---------------//
+    // getAccidental //
+    //---------------//
+    /**
+     * Report the accidental, if any, related to this note
+     *
+     * @return the accidental, or null
+     */
+    public Shape getAccidental ()
+    {
+        return accidental;
+    }
+
+    //-----------------//
+    // getAccidentalDx //
+    //-----------------//
+    /**
+     * Report the delta in abscissa between the note and its accidental
+     *
+     * @return the difference in abscissa (in units) between the accidental
+     * center and the note center
+     */
+    public int getAccidentalDx ()
+    {
+        return accidentalDx;
+    }
+
+    //----------//
+    // getAlter //
+    //----------//
+    /**
+     * Report the actual alteration of this note, taking into account the
+     * accidental of this note if any, the accidental of previous note with same
+     * step within the same measure, and finally the current key signature.
+     *
+     * @return the actual alteration
+     */
+    public int getAlter ()
+    {
+        if (alter == null) {
+            if (accidental != null) {
+                // TODO: handle double flat & double sharp !!!
+                switch (accidental) {
+                case SHARP :
+                    return alter = 1;
+
+                case FLAT :
+                    return alter = -1;
+
+                default :
+                }
+            }
+
+            // Look for a previous accidental with the same note step in the measure
+            Slot[]  slots = getMeasure()
+                                .getSlots()
+                                .toArray(new Slot[0]);
+
+            boolean started = false;
+
+            for (int is = slots.length - 1; is >= 0; is--) {
+                Slot slot = slots[is];
+
+                if (slot.isAlignedWith(getCenter())) {
+                    started = true;
+                }
+
+                if (started) {
+                    // Inspect all notes of all chords
+                    for (Chord chord : slot.getChords()) {
+                        for (TreeNode node : chord.getNotes()) {
+                            Note note = (Note) node;
+
+                            if (note == this) {
+                                continue;
+                            }
+
+                            if ((note.getStep() == getStep()) &&
+                                (note.getAccidental() != null)) {
+                                switch (note.getAccidental()) {
+                                case SHARP :
+                                    return alter = 1;
+
+                                case FLAT :
+                                    return alter = -1;
+
+                                default :
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Finally, use the current key signature
+            KeySignature ks = getMeasure()
+                                  .getKeyBefore(getCenter());
+
+            if (ks != null) {
+                return alter = ks.getAlterFor(getStep());
+            }
+
+            // By default ...
+            alter = 0;
+        }
+
+        return alter;
     }
 
     //---------------//
     // getCenterLeft //
     //---------------//
+    /**
+     * Report the system point at the center left of the note
+     *
+     * @return left point at mid height
+     */
     public SystemPoint getCenterLeft ()
     {
-        return new SystemPoint(getCenter().x - (width / 2), getCenter().y);
+        return new SystemPoint(getCenter().x - (box.width / 2), getCenter().y);
     }
 
     //----------------//
     // getCenterRight //
     //----------------//
+    /**
+     * Report the system point at the center right of the note
+     *
+     * @return right point at mid height
+     */
     public SystemPoint getCenterRight ()
     {
-        return new SystemPoint(getCenter().x + (width / 2), getCenter().y);
+        return new SystemPoint(getCenter().x + (box.width / 2), getCenter().y);
     }
 
     //----------//
     // getChord //
     //----------//
+    /**
+     * Report the chord this note is part of
+     *
+     * @return the containing chord (cannot be null)
+     */
     public Chord getChord ()
     {
         return (Chord) getParent();
     }
 
+    //-----------------//
+    // getNoteDuration //
+    //-----------------//
+    /**
+     * Report the duration of this note, based purely on its shape and the
+     * number of beams or flags. This does not take into account the potential
+     * augmentation dots, nor tuplets
+     *
+     * @return the intrinsic note duration
+     */
+    public int getNoteDuration ()
+    {
+        int dur = getTypeDuration(shape);
+
+        // Apply fraction if any (not for rests) due to beams or flags
+        int fbn = getChord()
+                      .getFlagsNumber() + getChord()
+                                              .getBeams()
+                                              .size();
+
+        for (int i = 0; i < fbn; i++) {
+            dur /= 2;
+        }
+
+        return dur;
+    }
+
+    //-----------//
+    // getOctave //
+    //-----------//
+    /**
+     * Report the octave for this note
+     *
+     * @return the related octave
+     */
+    public int getOctave ()
+    {
+        if (octave == null) {
+            Clef  clef = getMeasure()
+                             .getClefBefore(getCenter());
+            Shape shape = (clef != null) ? clef.getShape() : Shape.G_CLEF;
+            octave = Clef.octaveOf((int) Math.rint(getPitchPosition()), shape);
+        }
+
+        return octave;
+    }
+
     //------------------//
     // getPitchPosition //
     //------------------//
+    /**
+     * Report the pith position of the note within the containing staff
+     *
+     * @return staff-based pitch position
+     */
     public double getPitchPosition ()
     {
         return pitchPosition;
@@ -248,6 +448,11 @@ public class Note
     //----------//
     // getShape //
     //----------//
+    /**
+     * Report the shape of the note
+     *
+     * @return the note shape
+     */
     public Shape getShape ()
     {
         return shape;
@@ -256,6 +461,11 @@ public class Note
     //----------//
     // getSlurs //
     //----------//
+    /**
+     * Report the collection of slurs that start or stop at this note
+     *
+     * @return a perhaps empty collection of slurs
+     */
     public List<Slur> getSlurs ()
     {
         return slurs;
@@ -264,6 +474,13 @@ public class Note
     //-----------------//
     // getTypeDuration //
     //-----------------//
+    /**
+     * Report the duration indicated by the shape of the note head (regardless
+     * of any beam, flag, dot or tuplet)
+     *
+     * @param shape the shape of the note head
+     * @return the corresponding duration
+     */
     public static int getTypeDuration (Shape shape)
     {
         switch (baseShapeOf(shape)) {
@@ -333,14 +550,44 @@ public class Note
     //---------//
     // addSlur //
     //---------//
+    /**
+     * Add a slur in the collection of slurs connected to this note
+     *
+     * @param slur the slur to connect
+     */
     public void addSlur (Slur slur)
     {
         slurs.add(slur);
     }
 
+    //---------//
+    // getStep //
+    //---------//
+    /**
+     * Report the note step (within the octave)
+     *
+     * @return the note step
+     */
+    public Note.Step getStep ()
+    {
+        if (step == null) {
+            Clef  clef = getMeasure()
+                             .getClefBefore(getCenter());
+            Shape shape = (clef != null) ? clef.getShape() : Shape.G_CLEF;
+            step = Clef.noteStepOf((int) Math.rint(getPitchPosition()), shape);
+        }
+
+        return step;
+    }
+
     //--------//
     // isRest //
     //--------//
+    /**
+     * Check whether this note is a rest (or a 'real' note)
+     *
+     * @return true if a rest, false otherwise
+     */
     public boolean isRest ()
     {
         return isRest;
@@ -349,6 +596,14 @@ public class Note
     //--------------------//
     // populateAccidental //
     //--------------------//
+    /**
+     * Process the potential impact of an accidental glyph within the containing
+     * measure
+     *
+     * @param glyph the underlying glyph of the accidental
+     * @param measure the containing measure
+     * @param accidCenter the center of the glyph
+     */
     public static void populateAccidental (Glyph       glyph,
                                            Measure     measure,
                                            SystemPoint accidCenter)
@@ -431,152 +686,15 @@ public class Note
         return visitor.visit(this);
     }
 
-    //---------------//
-    // getAccidental //
-    //---------------//
-    public Shape getAccidental ()
-    {
-        return accidental;
-    }
-
-    //-----------------//
-    // getAccidentalDx //
-    //-----------------//
-    public int getAccidentalDx ()
-    {
-        return accidentalDx;
-    }
-
-    //----------//
-    // getAlter //
-    //----------//
-    public int getAlter ()
-    {
-        if (alter == null) {
-            if (accidental != null) {
-                // TODO: handle double flat & double sharp !!!
-                switch (accidental) {
-                case SHARP :
-                    return alter = 1;
-
-                case FLAT :
-                    return alter = -1;
-
-                default :
-                }
-            }
-
-            // Look for a previous accidental with the same note step in the measure
-            Slot[]  slots = getMeasure()
-                                .getSlots()
-                                .toArray(new Slot[0]);
-
-            boolean started = false;
-
-            for (int is = slots.length - 1; is >= 0; is--) {
-                Slot slot = slots[is];
-
-                if (slot.isAlignedWith(getCenter())) {
-                    started = true;
-                }
-
-                if (started) {
-                    // Inspect all notes of all chords
-                    for (Chord chord : slot.getChords()) {
-                        for (TreeNode node : chord.getNotes()) {
-                            Note note = (Note) node;
-
-                            if (note == this) {
-                                continue;
-                            }
-
-                            if ((note.getStep() == getStep()) &&
-                                (note.getAccidental() != null)) {
-                                switch (note.getAccidental()) {
-                                case SHARP :
-                                    return alter = 1;
-
-                                case FLAT :
-                                    return alter = -1;
-
-                                default :
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Finally, use the current key signature
-            KeySignature ks = getMeasure()
-                                  .getKeyBefore(getCenter());
-
-            if (ks != null) {
-                return alter = ks.getAlterFor(getStep());
-            }
-
-            // By default ...
-            alter = 0;
-        }
-
-        return alter;
-    }
-
-    //-----------//
-    // getOctave //
-    //-----------//
-    public int getOctave ()
-    {
-        if (octave == null) {
-            Clef  clef = getMeasure()
-                             .getClefBefore(getCenter());
-            Shape shape = (clef != null) ? clef.getShape() : Shape.G_CLEF;
-            octave = Clef.octaveOf((int) Math.rint(getPitchPosition()), shape);
-        }
-
-        return octave;
-    }
-
-    //---------//
-    // getStep //
-    //---------//
-    public Note.Step getStep ()
-    {
-        if (step == null) {
-            Clef  clef = getMeasure()
-                             .getClefBefore(getCenter());
-            Shape shape = (clef != null) ? clef.getShape() : Shape.G_CLEF;
-            step = Clef.noteStepOf((int) Math.rint(getPitchPosition()), shape);
-        }
-
-        return step;
-    }
-
-    //-------------//
-    // getTypeName //
-    //-------------//
-    public String getTypeName ()
-    {
-        int dur = (getTypeDuration(shape) * 48) / QUARTER_DURATION;
-
-        // Apply fraction if any (not for rests)
-        int fbn = getChord()
-                      .getFlagsNumber() + getChord()
-                                              .getBeams()
-                                              .size();
-
-        for (int i = 0; i < fbn; i++) {
-            dur /= 2;
-        }
-
-        int index = (int) Math.rint(Math.log(dur) / Math.log(2));
-
-        return typeNames[index];
-    }
-
     //----------------//
     // quarterValueOf //
     //----------------//
+    /**
+     * Report a easy-to-read string, where a duration is expressed in quarters
+     *
+     * @param val a duration value
+     * @return a string such as "3Q/4" or "Q"
+     */
     public static String quarterValueOf (int val)
     {
         final int     gcd = GCD.gcd(val, QUARTER_DURATION);
@@ -604,18 +722,14 @@ public class Note
     //--------//
     // getBox //
     //--------//
+    /**
+     * Report the bounding box of the note
+     *
+     * @return the system-based bounding box
+     */
     public SystemRectangle getBox ()
     {
-        return getSystem()
-                   .toSystemRectangle(glyph.getContourBox());
-    }
-
-    //----------//
-    // getGlyph //
-    //----------//
-    public Glyph getGlyph ()
-    {
-        return glyph;
+        return box;
     }
 
     //----------//
@@ -629,11 +743,11 @@ public class Note
         sb.append(" ")
           .append(shape);
 
-        if (packSize != 1) {
+        if (packCard != 1) {
             sb.append(" [")
               .append(packIndex)
               .append("/")
-              .append(packSize)
+              .append(packCard)
               .append("]");
         }
 
@@ -714,9 +828,47 @@ public class Note
     }
 
     //------------//
-    // packSizeOf //
+    // getItemBox //
     //------------//
-    private static int packSizeOf (Shape shape)
+    /**
+     * Compute the bounding box of item with rank 'index' in the provided note
+     * pack glyph
+     */
+    private static PixelRectangle getItemBox (Glyph glyph,
+                                              int   index)
+    {
+        final int      card = packCardOf(glyph.getShape());
+        PixelRectangle box = glyph.getContourBox();
+
+        return new PixelRectangle(
+            box.x,
+            box.y + ((box.height * index) / card),
+            box.width,
+            box.height / card);
+    }
+
+    //---------------//
+    // getItemCenter //
+    //---------------//
+    /**
+     * Compute the area center of item with rank 'index' in the provided note
+     * pack glyph
+     */
+    private static PixelPoint getItemCenter (Glyph glyph,
+                                             int   index)
+    {
+        final int      card = packCardOf(glyph.getShape());
+        PixelRectangle box = glyph.getContourBox();
+
+        return new PixelPoint(
+            box.x + (box.width / 2),
+            box.y + ((box.height * ((2 * index) + 1)) / (2 * card)));
+    }
+
+    //------------//
+    // packCardOf //
+    //------------//
+    private static int packCardOf (Shape shape)
     {
         switch (shape) {
         case VOID_NOTEHEAD_3 :
@@ -762,5 +914,12 @@ public class Note
         Scale.Fraction maxAccidDy = new Scale.Fraction(
             1d,
             "Maximum absolute dy between note and accidental");
+
+        /**
+         * Maximum absolute dy between note and stem end
+         */
+        Scale.Fraction maxStemDy = new Scale.Fraction(
+            0.5d,
+            "Maximum absolute dy between note and stem end");
     }
 }

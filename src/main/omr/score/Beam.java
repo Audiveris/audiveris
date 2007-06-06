@@ -29,8 +29,8 @@ import static java.lang.Math.*;
 import java.util.*;
 
 /**
- * Class <code>Beam</code> represents a beam hook or a beam, that may be
- * composed of several beam glyphs, aligned one after the other, along the same
+ * Class <code>Beam</code> represents a beam hook or a beam line, that may be
+ * composed of several beam items, aligned one after the other, along the same
  * line.
  *
  * @author Herv&eacute Bitteur
@@ -56,8 +56,8 @@ public class Beam
     /** The containing beam group */
     private BeamGroup group;
 
-    /** Glyphs that compose this beam, ordered by abscissa */
-    private SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
+    /** Items that compose this beam, ordered by abscissa */
+    private SortedSet<BeamItem> items = new TreeSet<BeamItem>();
 
     /** Sequence of Chords that are linked by this beam, ordered by abscissa */
     private SortedSet<Chord> chords = new TreeSet<Chord>();
@@ -76,7 +76,10 @@ public class Beam
     //------//
     // Beam //
     //------//
-    /** Creates a new instance of Beam */
+    /** Creates a new instance of Beam
+     *
+     * @param measure the enclosing measure
+     */
     public Beam (Measure measure)
     {
         super(measure);
@@ -177,9 +180,9 @@ public class Beam
 
                 if (result == 0) {
                     // This should not happen
-                    logger.warning(
-                        other.getContextString() + " equality between " +
-                        this.toLongString() + " and " + other.toLongString());
+//                    logger.warning(
+//                        other.getContextString() + " equality between " +
+//                        this.toLongString() + " and " + other.toLongString());
                     logger.warning(
                         "x=" + x + " y=" + y + " yOther=" + yOther + " yHead=" +
                         yHead);
@@ -218,8 +221,7 @@ public class Beam
                         if (logger.isFineEnabled()) {
                             logger.fine(
                                 getContextString() + " Reused " + group +
-                                " for " + this + " stick #" +
-                                glyphs.first().getId());
+                                " for " + this);
                         }
 
                         return;
@@ -234,7 +236,7 @@ public class Beam
         if (logger.isFineEnabled()) {
             logger.fine(
                 getContextString() + " Created new " + getGroup() + " for " +
-                this + " stick #" + glyphs.first().getId());
+                this);
         }
     }
 
@@ -263,20 +265,6 @@ public class Beam
         return chords;
     }
 
-    //-----------//
-    // getGlyphs //
-    //-----------//
-    /**
-     * Report the ordered sequence of glyphs (one or several glyphs of BEAM
-     * shape, or one glyph of BEAM_HOOK shape) that compose this beam
-     *
-     * @return the ordered set ofbeam glyphs
-     */
-    public SortedSet<Glyph> getGlyphs ()
-    {
-        return glyphs;
-    }
-
     //----------//
     // getGroup //
     //----------//
@@ -303,6 +291,20 @@ public class Beam
         return id;
     }
 
+    //----------//
+    // getItems //
+    //----------//
+    /**
+     * Report the ordered sequence of items (one or several BeamItem instances
+     * of BEAM shape, or one glyph of BEAM_HOOK shape) that compose this beam
+     *
+     * @return the ordered set of beam items
+     */
+    public SortedSet<BeamItem> getItems ()
+    {
+        return items;
+    }
+
     //---------//
     // getLeft //
     //---------//
@@ -313,9 +315,8 @@ public class Beam
      */
     public SystemPoint getLeft ()
     {
-        getLine();
-
-        return left;
+        return items.first()
+                    .getLeft();
     }
 
     //----------//
@@ -343,13 +344,13 @@ public class Beam
      */
     public Line getLine ()
     {
-        if ((line == null) && (glyphs.size() > 0)) {
+        if ((line == null) && (items.size() > 0)) {
             line = new BasicLine();
 
-            // Take left side of first glyph, and right side of last glyph
-            left = getLeftPoint(glyphs.first());
+            // Take left side of first item, and right side of last item
+            left = getLeft();
             line.includePoint(left.x, left.y);
-            right = getRightPoint(glyphs.last());
+            right = getRight();
             line.includePoint(right.x, right.y);
         }
 
@@ -366,9 +367,17 @@ public class Beam
      */
     public SystemPoint getRight ()
     {
-        getLine();
+        return items.last()
+                    .getRight();
+    }
 
-        return right;
+    //--------//
+    // isHook //
+    //--------//
+    public boolean isHook ()
+    {
+        return items.first()
+                    .isHook();
     }
 
     //------------//
@@ -380,12 +389,12 @@ public class Beam
      */
     public void linkChords ()
     {
-        for (Glyph glyph : getGlyphs()) {
+        for (BeamItem item : items) {
             //////////////////////////////////////////////////////////////////
             // TBD for a beam (non hook) both stems must exist and be linked
             //////////////////////////////////////////////////////////////////
-            linkChordsOnStem("left", glyph.getLeftStem(), glyph);
-            linkChordsOnStem("right", glyph.getRightStem(), glyph);
+            linkChordsOnStem("left", item.getLeftStem());
+            linkChordsOnStem("right", item.getRightStem());
         }
     }
 
@@ -395,11 +404,11 @@ public class Beam
     /**
      * Populate a (or create a brand new) beam with this glyph
      *
-     * @param glyph a beam glyph
+     * @param item a beam item
      * @param measure the containing measure
      */
-    public static void populate (Glyph   glyph,
-                                 Measure measure)
+    public static void populate (BeamItem item,
+                                 Measure  measure)
     {
         ///logger.info("Populating " + glyph);
         Beam beam = null;
@@ -408,7 +417,7 @@ public class Beam
         for (TreeNode node : measure.getBeams()) {
             Beam b = (Beam) node;
 
-            if (b.isCompatibleWith(glyph)) {
+            if (b.isCompatibleWith(item)) {
                 beam = b;
 
                 break;
@@ -420,9 +429,9 @@ public class Beam
             beam = new Beam(measure);
         }
 
-        beam.addGlyph(glyph);
-        glyph.addTranslation(beam);
+        beam.addItem(item);
 
+        ////glyph.addTranslation(item);
         if (logger.isFineEnabled()) {
             logger.fine(beam.getContextString() + " " + beam);
         }
@@ -490,7 +499,7 @@ public class Beam
         sb.append(" right=")
           .append(getRight());
 
-        sb.append(Glyph.toString(glyphs));
+        sb.append(BeamItem.toString(items));
         sb.append("}");
 
         return sb.toString();
@@ -513,7 +522,7 @@ public class Beam
               .append(getLevel());
         }
 
-        sb.append(Glyph.toString(glyphs));
+        sb.append(BeamItem.toString(items));
         sb.append("}");
 
         return sb.toString();
@@ -533,84 +542,38 @@ public class Beam
             new SystemPoint((left.x + right.x) / 2, (left.y + right.y) / 2));
     }
 
-    //----------//
-    // addGlyph //
-    //----------//
+    //---------//
+    // addItem //
+    //---------//
     /**
-     * Insert a (BEAM/BEAM_HOOK) glyph as a component of this beam
+     * Insert a (BEAM/BEAM_HOOK) item as a component of this beam
      *
-     * @param glyph the glyph to insert
+     * @param item the beam item to insert
      */
-    private void addGlyph (Glyph glyph)
+    private void addItem (BeamItem item)
     {
-        glyphs.add(glyph);
+        items.add(item);
         reset();
-    }
-
-    //--------------//
-    // getLeftPoint //
-    //--------------//
-    /**
-     * Report the left point of a (BEAM/BEAM_HOOK) glyph
-     *
-     * @param glyph the given glyph
-     * @return the glyph left point
-     */
-    private SystemPoint getLeftPoint (Glyph glyph)
-    {
-        Stick  stick = (Stick) glyph;
-        int    lx = stick.getFirstPos();
-        System system = getMeasure()
-                            .getSystem();
-
-        return new SystemPoint(
-            getScale().pixelsToUnits(lx) - system.getTopLeft().x,
-            (int) rint(
-                getScale().pixelsToUnitsDouble(
-                    stick.getLine().xAt((double) lx)) - system.getTopLeft().y));
-    }
-
-    //---------------//
-    // getRightPoint //
-    //---------------//
-    /**
-     * Report the right point of a (BEAM/BEAM_HOOK) glyph
-     *
-     * @param glyph the given glyph
-     * @return the glyph right point
-     */
-    private SystemPoint getRightPoint (Glyph glyph)
-    {
-        Stick  stick = (Stick) glyph;
-        int    rx = stick.getLastPos();
-        System system = getMeasure()
-                            .getSystem();
-
-        return new SystemPoint(
-            getScale().pixelsToUnits(rx) - system.getTopLeft().x,
-            (int) rint(
-                getScale().pixelsToUnitsDouble(
-                    stick.getLine().xAt((double) rx)) - system.getTopLeft().y));
     }
 
     //------------------//
     // isCompatibleWith //
     //------------------//
     /**
-     * Check compatibility of a given BEAM/BEAM_HOOK glyph with this beam. We
+     * Check compatibility of a given BEAM/BEAM_HOOK item with this beam. We
      * use alignment and distance criterias.
      *
-     * @param glyph the glyph to check for compatibility
+     * @param item the beam item to check for compatibility
      * @return true if compatible
      */
-    private boolean isCompatibleWith (Glyph glyph)
+    private boolean isCompatibleWith (BeamItem item)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("Check glyph " + glyph.getId() + " with " + this);
+            logger.fine("Check beam item " + item + " with " + this);
         }
 
         // Check alignment
-        SystemPoint gsp = computeGlyphCenter(glyph);
+        SystemPoint gsp = item.getCenter();
         double      dist = getLine()
                                .distanceOf(gsp.x, gsp.y);
         double      maxDistance = getScale()
@@ -631,13 +594,13 @@ public class Beam
         if (logger.isFineEnabled()) {
             logger.fine(
                 "maxGap=" + maxGap + " leftGap=" +
-                getRightPoint(glyph).distance(getLeft()) + " rightGap=" +
-                getLeftPoint(glyph).distance(getRight()));
+                item.getRight().distance(getLeft()) + " rightGap=" +
+                item.getLeft().distance(getRight()));
         }
 
-        if ((getRightPoint(glyph)
+        if ((item.getRight()
                  .distance(getLeft()) <= maxGap) ||
-            (getLeftPoint(glyph)
+            (item.getLeft()
                  .distance(getRight()) <= maxGap)) {
             return true;
         }
@@ -649,8 +612,7 @@ public class Beam
     // linkChordsOnStem //
     //------------------//
     private void linkChordsOnStem (String side,
-                                   Glyph  stem,
-                                   Glyph  glyph)
+                                   Glyph  stem)
     {
         if (stem != null) {
             List<Chord> sideChords = Chord.getStemChords(getMeasure(), stem);
@@ -661,9 +623,7 @@ public class Beam
                     chord.addBeam(this);
                 }
             } else {
-                addError(
-                    glyph,
-                    " Beam glyph with no chord on " + side + " stem");
+                addError(" Beam with no chord on " + side + " stem");
             }
         }
     }

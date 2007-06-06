@@ -13,6 +13,7 @@ package omr.score.visitor;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
+import omr.score.Note;
 import omr.score.Staff;
 import omr.score.SystemPoint;
 
@@ -35,28 +36,36 @@ public class MusicXML
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MusicXML.class);
 
-    // To avoid typos
-    static final String ABOVE = "above";
-    static final String BACKWARD_HOOK = "backward hook";
-    static final String BEGIN = "begin";
-    static final String BELOW = "below";
-    static final String COMMON = "common";
-    static final String CONTINUE = "continue";
-    static final String CRESCENDO = "crescendo";
-    static final String CUT = "cut";
-    static final String DIMINUENDO = "diminuendo";
-    static final String DOWN = "down";
-    static final String END = "end";
-    static final String FORWARD_HOOK = "forward hook";
-    static final String INVERTED = "inverted";
-    static final String NO = "no";
-    static final String OVER = "over";
-    static final String START = "start";
-    static final String STOP = "stop";
-    static final String UNDER = "under";
-    static final String UP = "up";
-    static final String UPRIGHT = "upright";
-    static final String YES = "yes";
+    // A few constants to avoid typos
+    static final String           ABOVE = "above";
+    static final String           BACKWARD_HOOK = "backward hook";
+    static final String           BEGIN = "begin";
+    static final String           BELOW = "below";
+    static final String           COMMON = "common";
+    static final String           CONTINUE = "continue";
+    static final String           CRESCENDO = "crescendo";
+    static final String           CUT = "cut";
+    static final String           DIMINUENDO = "diminuendo";
+    static final String           DOWN = "down";
+    static final String           END = "end";
+    static final String           FORWARD_HOOK = "forward hook";
+    static final String           INVERTED = "inverted";
+    static final String           NO = "no";
+    static final String           OVER = "over";
+    static final String           START = "start";
+    static final String           STOP = "stop";
+    static final String           UNDER = "under";
+    static final String           UP = "up";
+    static final String           UPRIGHT = "upright";
+    static final String           YES = "yes";
+
+    /** Names of the various note types used in MusicXML */
+    private static final String[] noteTypeNames = new String[] {
+                                                      "256th", "128th", "64th",
+                                                      "32nd", "16th", "eighth",
+                                                      "quarter", "half", "whole",
+                                                      "breve", "long"
+                                                  };
 
     //~ Constructors -----------------------------------------------------------
 
@@ -219,6 +228,24 @@ public class MusicXML
         logger.severe("Unsupported dynamics shape:" + shape);
 
         return null;
+    }
+
+    //-------------//
+    // getTypeName //
+    //-------------//
+    /**
+     * Report the name for the note type
+     *
+     * @param note the note whose type name is needed
+     * @return proper note type name
+     */
+    public static String getNoteTypeName (Note note)
+    {
+        // Since quarter is at index 6 in noteTypeNames, use 2**6 = 64
+        int dur = (64 * note.getNoteDuration()) / Note.QUARTER_DURATION;
+        int index = (int) Math.rint(Math.log(dur) / Math.log(2));
+
+        return noteTypeNames[index];
     }
 
     //-------------------//

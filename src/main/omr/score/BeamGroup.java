@@ -200,6 +200,11 @@ public class BeamGroup
             Beam beam = (Beam) node;
             beam.closeConnections();
         }
+        
+        // Harmonize the slopes of all beams within each beam group
+//        for (BeamGroup group : measure.getBeamGroups()) {
+//            group.align();
+//        }
     }
 
     //------------//
@@ -336,6 +341,31 @@ public class BeamGroup
         return null; // everything is OK
     }
 
+    //-------//
+    // align //
+    //-------//
+    /**
+     * Force all beams (and beam items) to use the same slop within that beam group
+     */
+    private void align() 
+    {
+        // Retrieve the longest beam and use its slope
+        double bestLength = 0;
+        Beam bestBeam = null;
+        for (Beam beam : beams) {
+            double length = beam.getLeft().distance(beam.getRight());
+            if (length > bestLength) {
+                bestLength = length;
+                bestBeam = beam;
+            }
+        }
+        double slope = bestBeam.getLine().getSlope();
+        for (Beam beam : beams) {
+            SystemPoint left = beam.getLeft();
+            SystemPoint right = beam.getRight();
+            right.y = left.y + (int) Math.rint(slope*(right.x - left.x));
+        }
+    }
     //-----------------//
     // checkBeamGroups //
     //-----------------//

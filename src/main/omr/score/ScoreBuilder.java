@@ -551,13 +551,14 @@ public class ScoreBuilder
 
             public boolean isRelevant (Glyph glyph)
             {
-                return (glyph.getShape() == Shape.BEAM) ||
-                       (glyph.getShape() == Shape.BEAM_HOOK);
+                Shape shape = glyph.getShape();
+
+                return Shape.Beams.contains(shape) && (shape != Shape.SLUR);
             }
 
             public void translate (Glyph glyph)
             {
-                Beam.populate(glyph, currentMeasure);
+                BeamItem.populate(glyph, currentMeasure);
             }
         }
 

@@ -741,7 +741,7 @@ public class ScoreExporter
         // Type
         Type type = new Type();
         current.pmNote.setType(type);
-        type.setContent("" + note.getTypeName());
+        type.setContent("" + getNoteTypeName(note));
 
         // Stem ?
         if (chord.getStem() != null) {
@@ -782,12 +782,9 @@ public class ScoreExporter
                           .add(pmBeam);
             pmBeam.setNumber("" + beam.getLevel());
 
-            Glyph glyph = beam.getGlyphs()
-                              .first();
-
-            if (glyph.getShape() == BEAM_HOOK) {
-                if (glyph.getCenter().x > chord.getStem()
-                                               .getCenter().x) {
+            if (beam.isHook()) {
+                if (beam.getCenter().x > current.system.toSystemPoint(
+                    chord.getStem().getCenter()).x) {
                     pmBeam.setContent(FORWARD_HOOK);
                 } else {
                     pmBeam.setContent(BACKWARD_HOOK);

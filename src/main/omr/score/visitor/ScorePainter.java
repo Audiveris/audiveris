@@ -975,6 +975,7 @@ public class ScorePainter
         }
 
         // Vertical alignment
+
         if (vAlign == VerticalAlignment.CENTER) {
             topLeft.y -= (icon.getIconHeight() / 2);
         } else if (vAlign == VerticalAlignment.BOTTOM) {

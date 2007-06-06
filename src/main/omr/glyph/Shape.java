@@ -239,6 +239,8 @@ public enum Shape
         // Beams and slurs
         //
         /*-----*/ BEAM("Beam between two stems"),
+        /*-----*/ BEAM_2("Pack of 2 beams"),
+        /*-----*/ BEAM_3("Pack of 3 beams"),
         /*-----*/ BEAM_HOOK("Hook of a beam attached on one stem"),
         /*-----*/ SLUR("Slur tying notes"),
         /*1D173*/ // BEGIN_BEAM,
@@ -1009,6 +1011,8 @@ public enum Shape
 
     static {
         StemSymbols.add(Shape.BEAM);
+        StemSymbols.add(Shape.BEAM_2);
+        StemSymbols.add(Shape.BEAM_3);
         StemSymbols.add(Shape.BEAM_HOOK);
 
         StemSymbols.addAll(NoteHeads.getShapes());
