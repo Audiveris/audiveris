@@ -53,6 +53,9 @@ public class SlurGlyph
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------------------//
+    // getMaxCircleDistance //
+    //----------------------//
     public static double getMaxCircleDistance ()
     {
         return constants.maxCircleDistance.getValue();

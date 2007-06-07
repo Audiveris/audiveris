@@ -16,6 +16,7 @@ import Jama.Matrix;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
 import static java.lang.Math.*;
+import java.util.ArrayList;
 
 /**
  * Class <code>Circle</code> handles a circle (or a portion of circle) which
@@ -221,50 +222,87 @@ public class Circle
      * Compute the usual characteristics of a circle out of its algebraic
      * coefficients (which are assumed to have been computed)
      */
-    private void computeCharacteristics ()
+    private void computeCharacteristics (double[] x,
+                                         double[] y)
     {
         // Compute circle center
         center = new Point2D.Double(-(D / A) / 2, -(E / A) / 2);
-        ///System.out.println("center=" + getCenter());
+        //        System.out.println("center=" + getCenter());
 
         // Compute radius
         radius = Math.sqrt(
             ((getCenter().x * getCenter().x) + (getCenter().y * getCenter().y)) -
             (F / A));
 
-        // Determine the circle arc, if interesting (TO BE IMPROVED)
-        //        System.out.println(
-        //            "xMin=" + xMin + " xMax=" + xMax + " yMin=" + yMin + " yMax=" +
-        //            yMax);
-        if (yMax <= getCenter().y) {
-            // Horizontal above
-            startAngle = -Math.acos((xMin - getCenter().x) / getRadius());
-            stopAngle = -Math.acos((xMax - getCenter().x) / getRadius());
+        // Get all angles, split into buckets
+        final int   BUCKET_NB = 8;
+        final int[] buckets = new int[BUCKET_NB];
 
-            //             System.out.println(
-            //                 "Above: startDeg=" + Math.toDegrees(startAngle) + " stopDeg=" +
-            //                 Math.toDegrees(stopAngle));
-        } else if (yMin >= getCenter().y) {
-            // Horizontal below
-            if ((xMax - getCenter().x) < getRadius()) {
-                startAngle = Math.acos((xMax - getCenter().x) / getRadius());
-            } else {
-                startAngle = 0.0;
+        for (int i = 0; i < BUCKET_NB; i++) {
+            buckets[i] = 0;
+        }
+
+        final double      bucketSize = (2 * PI) / BUCKET_NB;
+        ArrayList<Double> angles = new ArrayList<Double>();
+
+        for (int i = 0; i < x.length; i++) {
+            // Get an angle between 0 and 2*PI
+            double angle = PI + atan2(y[i] - center.y, x[i] - center.x);
+            angles.add(angle);
+
+            int idx = (int) (angle / bucketSize);
+            buckets[idx] += 1;
+        }
+
+        // Find an empty bucket
+        int emptyIdx;
+
+        for (emptyIdx = 0; emptyIdx < BUCKET_NB; emptyIdx++) {
+            if (buckets[emptyIdx] == 0) {
+                break;
+            }
+        }
+
+        if (emptyIdx >= BUCKET_NB) {
+            if (logger.isFineEnabled()) {
+                logger.fine("No empty sector in circle, this is not a slur");
+            }
+        } else {
+            final double bottom = emptyIdx * bucketSize;
+            final double top = (emptyIdx + 1) * bucketSize;
+            double       start = 2 * PI;
+            double       stop = 0;
+
+            for (double angle : angles) {
+                angle -= bottom;
+
+                if (angle < 0) {
+                    angle += (2 * PI);
+                }
+
+                if (angle < start) {
+                    start = angle;
+                }
+
+                if (angle > stop) {
+                    stop = angle;
+                }
             }
 
-            if ((xMin - getCenter().x) > -getRadius()) {
-                stopAngle = Math.acos((xMin - getCenter().x) / getRadius());
-            } else {
-                stopAngle = Math.PI;
+            stop += (bottom - PI);
+            start += (bottom - PI);
+
+            if (stop < start) {
+                stop += (2 * PI);
             }
+
+            startAngle = start;
+            stopAngle = stop;
 
             //            System.out.println(
-            //                "Below: startDeg=" + Math.toDegrees(startAngle) + " stopDeg=" +
-            //                Math.toDegrees(stopAngle));
-        } else if (xMax <= getCenter().x) {
-            // Vertical left
-        } else if (xMin >= getCenter().x) {
-            // Vertical right
+            //                "emptyIdx=" + emptyIdx + " startDeg=" +
+            //                (float) toDegrees(start) + " stopDeg=" +
+            //                (float) toDegrees(stop));
         }
     }
 
@@ -483,7 +521,7 @@ public class Circle
         F = Solution.get(2, 0);
 
         // Characteristics
-        computeCharacteristics();
+        computeCharacteristics(x, y);
 
         // Compute distance (brute force...)
         distance = 0;
