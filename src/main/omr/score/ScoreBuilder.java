@@ -386,9 +386,13 @@ public class ScoreBuilder
             // Browse the system collection of glyphs
             for (Glyph glyph : system.getInfo()
                                      .getGlyphs()) {
-                if (!glyph.isTranslated() &&
-                    glyph.isWellKnown() &&
-                    (glyph.getShape() != Shape.CLUTTER)) {
+                Shape shape = glyph.getShape();
+
+                if (glyph.isWellKnown() &&
+                    (shape != Shape.CLUTTER) &&
+                    (!glyph.isTranslated() ||
+                    // HeadAndFlags are translated twice (for head, for flag)
+                    Shape.HeadAndFlags.contains(shape))) {
                     // Check for glyph relevance
                     if (translator.isRelevant(glyph)) {
                         // Determine part/staff/measure containment

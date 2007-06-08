@@ -489,7 +489,7 @@ public class Chord
         if (duration == null) {
             if (getNotes()
                     .size() > 0) {
-                // Note heads are assumed to be the same ...
+                // All note heads are assumed to be the same within one chord
                 Note note = (Note) getNotes()
                                        .get(0);
 
@@ -751,7 +751,6 @@ public class Chord
 
         // Retrieve the related chord
         Glyph stem = null;
-        glyph.clearTranslations();
 
         if (glyph.getLeftStem() != null) {
             stem = glyph.getLeftStem();
@@ -760,7 +759,7 @@ public class Chord
         }
 
         if (stem == null) {
-            measure.addError(glyph, " Flag glyph with no stem");
+            measure.addError(glyph, "Flag glyph with no stem");
         } else {
             List<Chord> sideChords = Chord.getStemChords(measure, stem);
 
@@ -770,7 +769,7 @@ public class Chord
                     glyph.addTranslation(chord);
                 }
             } else {
-                measure.addError(stem, " No chord for stem " + stem.getId());
+                measure.addError(stem, "No chord for stem " + stem.getId());
             }
         }
     }

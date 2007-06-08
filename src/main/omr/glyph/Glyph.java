@@ -30,7 +30,6 @@ import omr.util.Predicate;
 
 import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 import javax.xml.bind.annotation.*;
 

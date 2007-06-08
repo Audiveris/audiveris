@@ -248,12 +248,12 @@ public class Measure
                             Note.quarterValueOf(delta));
                         excess = delta;
                     } else if (lastChord.isWholeDuration()) {
-                        // Remember we can't tell anything'
+                        // Remember we can't tell anything
                         finalDurations.put(voice, null);
                     }
                 }
             } catch (Exception ex) {
-                // User informed
+                // User has been informed
             }
         }
     }

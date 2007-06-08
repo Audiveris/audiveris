@@ -210,7 +210,6 @@ public class Note
     public static void createPack (Chord chord,
                                    Glyph glyph)
     {
-        ///glyph.clearTranslations();
         int       card = packCardOf(glyph.getShape());
         Glyph     stem = chord.getStem();
         final int dy = chord.getScale()
@@ -526,25 +525,12 @@ public class Note
         case WHOLE_NOTE :
             return 4 * QUARTER_DURATION;
 
-        // Head-Note combos
-        //
-        case HEAD_AND_FLAG_1 :
-        case HEAD_AND_FLAG_1_UP :
-        case HEAD_AND_FLAG_2 :
-        case HEAD_AND_FLAG_2_UP :
-        case HEAD_AND_FLAG_3 :
-        case HEAD_AND_FLAG_3_UP :
-        case HEAD_AND_FLAG_4 :
-        case HEAD_AND_FLAG_4_UP :
-        case HEAD_AND_FLAG_5 :
-        case HEAD_AND_FLAG_5_UP :
-            return QUARTER_DURATION;
+        default :
+            // Error
+            logger.severe("Illegal note type " + shape);
+
+            return 0;
         }
-
-        // Error
-        logger.severe("Illegal note type " + shape);
-
-        return 0;
     }
 
     //---------//
@@ -822,6 +808,18 @@ public class Note
         case WHOLE_NOTE_3 :
             return Shape.WHOLE_NOTE;
 
+        case HEAD_AND_FLAG_1 :
+        case HEAD_AND_FLAG_1_UP :
+        case HEAD_AND_FLAG_2 :
+        case HEAD_AND_FLAG_2_UP :
+        case HEAD_AND_FLAG_3 :
+        case HEAD_AND_FLAG_3_UP :
+        case HEAD_AND_FLAG_4 :
+        case HEAD_AND_FLAG_4_UP :
+        case HEAD_AND_FLAG_5 :
+        case HEAD_AND_FLAG_5_UP :
+            return Shape.NOTEHEAD_BLACK;
+
         default :
             return shape;
         }
@@ -859,10 +857,26 @@ public class Note
     {
         final int      card = packCardOf(glyph.getShape());
         PixelRectangle box = glyph.getContourBox();
+        Shape          shape = glyph.getShape();
 
-        return new PixelPoint(
-            box.x + (box.width / 2),
-            box.y + ((box.height * ((2 * index) + 1)) / (2 * card)));
+        if (Shape.HeadAndFlags.contains(shape)) {
+            if (shape.ordinal() >= Shape.HEAD_AND_FLAG_1_UP.ordinal()) {
+                // Heads are at top
+                return new PixelPoint(
+                    box.x + (box.width / 2),
+                    box.y + ((((2 * index) + 1) * glyph.getInterline()) / 2));
+            } else {
+                // Heads are at bottom
+                return new PixelPoint(
+                    box.x + (box.width / 2),
+                    (box.y + box.height) -
+                    ((((2 * (card - index - 1)) + 1) * glyph.getInterline()) / 2));
+            }
+        } else {
+            return new PixelPoint(
+                box.x + (box.width / 2),
+                box.y + ((box.height * ((2 * index) + 1)) / (2 * card)));
+        }
     }
 
     //------------//
