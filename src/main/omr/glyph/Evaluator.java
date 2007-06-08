@@ -46,9 +46,7 @@ public abstract class Evaluator
     /** Extension used by evaluator backup files */
     private static final String BACKUP_EXTENSION = ".def";
 
-    /**
-     * Number of useful moments : {@value}
-     */
+    /** Number of useful moments : {@value} */
     public static final int inMoments = 10;
 
     /**
@@ -57,14 +55,10 @@ public abstract class Evaluator
      */
     public static final int inSize = inMoments + 2;
 
-    /**
-     * Number of shapes to differentiate
-     */
+    /** Number of shapes to differentiate */
     public static final int outSize = Shape.LastPhysicalShape.ordinal() + 1;
 
-    /**
-     * A special evaluation array, used to report NOISE
-     */
+    /** A special evaluation array, used to report NOISE */
     static final Evaluation[] noiseEvaluations = {
                                                      new Evaluation(
         Shape.NOISE,
@@ -312,6 +306,11 @@ public abstract class Evaluator
             } else {
                 return null;
             }
+        } else if (Shape.Clefs.contains(shape)) {
+            // Check reasonable height
+            if (glyph.getNormalizedHeight() > constants.maxClefHeight.getValue()) {
+                return null;
+            }
         } else if (Shape.HeadAndFlags.contains(shape)) {
             // Check that we do have a stem on left side
             if (glyph.getLeftStem() == null) {
@@ -413,5 +412,8 @@ public abstract class Evaluator
         Scale.AreaFraction maxHeadBlackWeight = new Scale.AreaFraction(
             1.2,
             "Maximum normalized weight for a NOTEHEAD_BLACK");
+        Scale.Fraction     maxClefHeight = new Scale.Fraction(
+            9d,
+            "Maximum normalized height for a clef");
     }
 }

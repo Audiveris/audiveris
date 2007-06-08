@@ -572,12 +572,30 @@ public class Glyph
     }
 
     //---------------------//
+    // getNormalizedHeight //
+    //---------------------//
+    public double getNormalizedHeight ()
+    {
+        return getMoments()
+                   .getHeight();
+    }
+
+    //---------------------//
     // getNormalizedWeight //
     //---------------------//
     public double getNormalizedWeight ()
     {
         return getMoments()
                    .getWeight();
+    }
+
+    //--------------------//
+    // getNormalizedWidth //
+    //--------------------//
+    public double getNormalizedWidth ()
+    {
+        return getMoments()
+                   .getWidth();
     }
 
     //----------//
