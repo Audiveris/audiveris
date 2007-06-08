@@ -124,7 +124,7 @@ public class Note
     public Note (Chord chord,
                  Glyph glyph)
     {
-        this(chord, glyph, getItemCenter(glyph, 0), 1, 0);
+        this(chord, glyph, getHeadCenter(glyph, 0), 1, 0);
         glyph.setTranslation(this);
     }
 
@@ -224,7 +224,7 @@ public class Note
         }
 
         for (int i = 0; i < card; i++) {
-            PixelPoint center = getItemCenter(glyph, i);
+            PixelPoint center = getHeadCenter(glyph, i);
 
             if (stem != null) {
                 if ((center.y < top) || (center.y > bottom)) {
@@ -825,6 +825,47 @@ public class Note
         }
     }
 
+    //---------------//
+    // getHeadCenter //
+    //---------------//
+    /**
+     * Compute the area center of item with rank 'index' in the provided note
+     * pack glyph
+     */
+    private static PixelPoint getHeadCenter (Glyph glyph,
+                                             int   index)
+    {
+        final int      card = packCardOf(glyph.getShape());
+        final int      maxDy = (int) Math.rint(
+            constants.maxCenterDy.getValue() * glyph.getInterline());
+        PixelRectangle box = glyph.getContourBox();
+        int            centerY = box.y + (box.height / 2);
+        PixelPoint     centroid = glyph.getCentroid();
+
+        // Make sure centroid and box center are close to each other, 
+        // otherwise force ordinate using the interline value.
+        // This trick applies for heads, not for rests
+        if (!Shape.Rests.contains(glyph.getShape())) {
+            if (centerY > (centroid.y + maxDy)) {
+                // Force heads at top
+                return new PixelPoint(
+                    box.x + (box.width / 2),
+                    box.y + ((((2 * index) + 1) * glyph.getInterline()) / 2));
+            } else if (centerY < (centroid.y - maxDy)) {
+                // Force heads at bottom
+                return new PixelPoint(
+                    box.x + (box.width / 2),
+                    (box.y + box.height) -
+                    ((((2 * (card - index - 1)) + 1) * glyph.getInterline()) / 2));
+            }
+        }
+
+        // Use normal area location for all other cases
+        return new PixelPoint(
+            box.x + (box.width / 2),
+            box.y + ((box.height * ((2 * index) + 1)) / (2 * card)));
+    }
+
     //------------//
     // getItemBox //
     //------------//
@@ -843,40 +884,6 @@ public class Note
             box.y + ((box.height * index) / card),
             box.width,
             box.height / card);
-    }
-
-    //---------------//
-    // getItemCenter //
-    //---------------//
-    /**
-     * Compute the area center of item with rank 'index' in the provided note
-     * pack glyph
-     */
-    private static PixelPoint getItemCenter (Glyph glyph,
-                                             int   index)
-    {
-        final int      card = packCardOf(glyph.getShape());
-        PixelRectangle box = glyph.getContourBox();
-        Shape          shape = glyph.getShape();
-
-        if (Shape.HeadAndFlags.contains(shape)) {
-            if (shape.ordinal() >= Shape.HEAD_AND_FLAG_1_UP.ordinal()) {
-                // Heads are at top
-                return new PixelPoint(
-                    box.x + (box.width / 2),
-                    box.y + ((((2 * index) + 1) * glyph.getInterline()) / 2));
-            } else {
-                // Heads are at bottom
-                return new PixelPoint(
-                    box.x + (box.width / 2),
-                    (box.y + box.height) -
-                    ((((2 * (card - index - 1)) + 1) * glyph.getInterline()) / 2));
-            }
-        } else {
-            return new PixelPoint(
-                box.x + (box.width / 2),
-                box.y + ((box.height * ((2 * index) + 1)) / (2 * card)));
-        }
     }
 
     //------------//
@@ -935,5 +942,12 @@ public class Note
         Scale.Fraction maxStemDy = new Scale.Fraction(
             0.5d,
             "Maximum absolute dy between note and stem end");
+
+        /**
+         * Maximum absolute dy between note center and centroid
+         */
+        Scale.Fraction maxCenterDy = new Scale.Fraction(
+            0.5d,
+            "Maximum absolute dy between note center and centroid");
     }
 }

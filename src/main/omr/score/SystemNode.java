@@ -18,9 +18,7 @@ import omr.sheet.PixelPoint;
 import omr.util.TreeNode;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Class <code>SystemNode</code> is an abstract class that is subclassed
