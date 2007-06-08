@@ -191,22 +191,24 @@ public class ScorePainter
         final int             top = box.y;
         final int             bot = box.y + box.height;
         final double          height = zoom.scaled(bot - top + 1);
+        final SymbolIcon      icon = (SymbolIcon) Shape.ARPEGGIATO.getIcon();
 
-        // Vertical ratio to extend the icon */
-        final SymbolIcon icon = (SymbolIcon) Shape.ARPEGGIATO.getIcon();
-        final double     ratio = height / icon.getIconHeight();
+        if (icon != null) {
+            // Vertical ratio to extend the icon */
+            final double     ratio = height / icon.getIconHeight();
 
-        final Graphics2D g2 = (Graphics2D) g;
-        g.setColor(Color.black);
-        transform.setTransform(
-            1,
-            0,
-            0,
-            ratio,
-            zoom.scaled(
-                arpeggiate.getDisplayOrigin().x + arpeggiate.getPoint().x),
-            zoom.scaled(arpeggiate.getDisplayOrigin().y + top));
-        g2.drawRenderedImage(icon.getImage(), transform);
+            final Graphics2D g2 = (Graphics2D) g;
+            g.setColor(Color.black);
+            transform.setTransform(
+                1,
+                0,
+                0,
+                ratio,
+                zoom.scaled(
+                    arpeggiate.getDisplayOrigin().x + arpeggiate.getPoint().x),
+                zoom.scaled(arpeggiate.getDisplayOrigin().y + top));
+            g2.drawRenderedImage(icon.getImage(), transform);
+        }
 
         return false;
     }
@@ -696,21 +698,24 @@ public class ScorePainter
 
             // Vertical ratio to extend the icon */
             final SymbolIcon braceIcon = (SymbolIcon) Shape.BRACE.getIcon();
-            final double     ratio = height / braceIcon.getIconHeight();
 
-            // Offset on left of system
-            final int        dx = 10;
-            final Graphics2D g2 = (Graphics2D) g;
-            g.setColor(Color.black);
-            transform.setTransform(
-                1,
-                0,
-                0,
-                ratio,
-                zoom.scaled(part.getSystem()
-                                .getDisplayOrigin().x) - dx,
-                zoom.scaled(top));
-            g2.drawRenderedImage(braceIcon.getImage(), transform);
+            if (braceIcon != null) {
+                final double     ratio = height / braceIcon.getIconHeight();
+
+                // Offset on left of system
+                final int        dx = 10;
+                final Graphics2D g2 = (Graphics2D) g;
+                g.setColor(Color.black);
+                transform.setTransform(
+                    1,
+                    0,
+                    0,
+                    ratio,
+                    zoom.scaled(part.getSystem()
+                                    .getDisplayOrigin().x) - dx,
+                    zoom.scaled(top));
+                g2.drawRenderedImage(braceIcon.getImage(), transform);
+            }
         }
 
         // Draw the starting barline, if any
@@ -907,14 +912,17 @@ public class ScorePainter
                               VerticalAlignment   vAlign)
     {
         final SymbolIcon icon = (SymbolIcon) shape.getIcon();
-        final Point      topLeft = toScaledPoint(
-            point,
-            displayOrigin,
-            hAlign,
-            icon.getActualWidth(),
-            vAlign,
-            icon.getIconHeight());
-        g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
+
+        if (icon != null) {
+            final Point topLeft = toScaledPoint(
+                point,
+                displayOrigin,
+                hAlign,
+                icon.getActualWidth(),
+                vAlign,
+                icon.getIconHeight());
+            g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
+        }
     }
 
     //-------------//
@@ -964,24 +972,27 @@ public class ScorePainter
                               VerticalAlignment vAlign)
     {
         final SymbolIcon icon = (SymbolIcon) shape.getIcon();
-        final Point      topLeft = new Point(
-            zoom.scaled(displayOrigin.x + chord.getTailLocation().x),
-            zoom.scaled(displayOrigin.y + center.y));
 
-        // Horizontal alignment
-        if (center.x < chord.getTailLocation().x) {
-            // Symbol is on left side of stem (-1 is for stem width)
-            topLeft.x -= (icon.getActualWidth() - 1);
+        if (icon != null) {
+            final Point topLeft = new Point(
+                zoom.scaled(displayOrigin.x + chord.getTailLocation().x),
+                zoom.scaled(displayOrigin.y + center.y));
+
+            // Horizontal alignment
+            if (center.x < chord.getTailLocation().x) {
+                // Symbol is on left side of stem (-1 is for stem width)
+                topLeft.x -= (icon.getActualWidth() - 1);
+            }
+
+            // Vertical alignment
+            if (vAlign == VerticalAlignment.CENTER) {
+                topLeft.y -= (icon.getIconHeight() / 2);
+            } else if (vAlign == VerticalAlignment.BOTTOM) {
+                topLeft.y -= icon.getIconHeight();
+            }
+
+            g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
         }
-
-        // Vertical alignment
-        if (vAlign == VerticalAlignment.CENTER) {
-            topLeft.y -= (icon.getIconHeight() / 2);
-        } else if (vAlign == VerticalAlignment.BOTTOM) {
-            topLeft.y -= icon.getIconHeight();
-        }
-
-        g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
     }
 
     //-------------//
@@ -1003,23 +1014,26 @@ public class ScorePainter
                               Chord       chord)
     {
         final SymbolIcon icon = (SymbolIcon) shape.getIcon();
-        final ScorePoint displayOrigin = staff.getDisplayOrigin();
-        final int        dy = staff.pitchToUnit(pitchPosition);
 
-        // Position of symbol wrt stem
-        final int stemX = chord.getTailLocation().x;
-        int       iconX = zoom.scaled(displayOrigin.x + stemX);
+        if (icon != null) {
+            final ScorePoint displayOrigin = staff.getDisplayOrigin();
+            final int        dy = staff.pitchToUnit(pitchPosition);
 
-        if (center.x < stemX) {
-            // Symbol is on left side of stem (-1 is for stem width)
-            iconX -= (icon.getActualWidth() - 1);
+            // Position of symbol wrt stem
+            final int stemX = chord.getTailLocation().x;
+            int       iconX = zoom.scaled(displayOrigin.x + stemX);
+
+            if (center.x < stemX) {
+                // Symbol is on left side of stem (-1 is for stem width)
+                iconX -= (icon.getActualWidth() - 1);
+            }
+
+            g.drawImage(
+                icon.getImage(),
+                iconX,
+                zoom.scaled(displayOrigin.y + dy) - icon.getCenter().y,
+                null);
         }
-
-        g.drawImage(
-            icon.getImage(),
-            iconX,
-            zoom.scaled(displayOrigin.y + dy) - icon.getCenter().y,
-            null);
     }
 
     //-------------//
@@ -1069,22 +1083,26 @@ public class ScorePainter
                               HorizontalAlignment hAlign)
     {
         final SymbolIcon icon = (SymbolIcon) shape.getIcon();
-        final Point      topLeft = new Point(
-            zoom.scaled(staff.getDisplayOrigin().x + center.x),
-            zoom.scaled(
-                staff.getDisplayOrigin().y + staff.pitchToUnit(pitchPosition)));
 
-        // Horizontal alignment
-        if (hAlign == HorizontalAlignment.CENTER) {
-            topLeft.x -= (icon.getActualWidth() / 2);
-        } else if (hAlign == HorizontalAlignment.RIGHT) {
-            topLeft.x -= icon.getActualWidth();
+        if (icon != null) {
+            final Point topLeft = new Point(
+                zoom.scaled(staff.getDisplayOrigin().x + center.x),
+                zoom.scaled(
+                    staff.getDisplayOrigin().y +
+                    staff.pitchToUnit(pitchPosition)));
+
+            // Horizontal alignment
+            if (hAlign == HorizontalAlignment.CENTER) {
+                topLeft.x -= (icon.getActualWidth() / 2);
+            } else if (hAlign == HorizontalAlignment.RIGHT) {
+                topLeft.x -= icon.getActualWidth();
+            }
+
+            // Specific vertical alignment
+            topLeft.y -= icon.getCenter().y;
+
+            g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
         }
-
-        // Specific vertical alignment
-        topLeft.y -= icon.getCenter().y;
-
-        g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
     }
 
     //----------------//

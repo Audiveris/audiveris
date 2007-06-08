@@ -204,6 +204,20 @@ public class IconManager
 
             InputStream is = Main.class.getResourceAsStream(resName);
 
+            // Brenton patch
+            if (is == null) {
+                try {
+                    String iconFolder = Main.getIconsFolder()
+                                            .getPath();
+                    File   iconFile = new File(
+                        iconFolder,
+                        name + FILE_EXTENSION);
+                    is = new FileInputStream(iconFile);
+                } catch (FileNotFoundException e) {
+                    logger.warning("Cannot find icon file " + e.getMessage());
+                }
+            }
+
             if (is != null) {
                 // Then we de-serialize the icon description
                 icon = loadFromXmlStream(is);
@@ -403,6 +417,27 @@ public class IconManager
         return rows;
     }
 
+    //------------//
+    // ARGBtoChar //
+    //------------//
+    /**
+     * Encode a pixel value using a table of 8 different chars for
+     * different gray levels
+     *
+     * @param argb the pixel value, in the ARGB format
+     * @return the proper char
+     */
+    private char ARGBtoChar (int argb)
+    {
+        int a = (argb & 0xff000000) >>> 24; // Alpha
+        int r = (argb & 0x00ff0000) >>> 16; // Red
+        int g = (argb & 0x0000ff00) >>> 8; // Green
+        int b = (argb & 0x000000ff) >>> 0; // Blue
+        int index = (int) Math.rint((a * (r + g + b)) / (108.0 * 255)); // 3 * 36
+
+        return charTable[index];
+    }
+
     //----------//
     // getAlpha //
     //----------//
@@ -452,27 +487,6 @@ public class IconManager
         }
 
         return jaxbContext;
-    }
-
-    //------------//
-    // ARGBtoChar //
-    //------------//
-    /**
-     * Encode a pixel value using a table of 8 different chars for
-     * different gray levels
-     *
-     * @param argb the pixel value, in the ARGB format
-     * @return the proper char
-     */
-    private char ARGBtoChar (int argb)
-    {
-        int a = (argb & 0xff000000) >>> 24; // Alpha
-        int r = (argb & 0x00ff0000) >>> 16; // Red
-        int g = (argb & 0x0000ff00) >>> 8; // Green
-        int b = (argb & 0x000000ff) >>> 0; // Blue
-        int index = (int) Math.rint((a * (r + g + b)) / (108.0 * 255)); // 3 * 36
-
-        return charTable[index];
     }
 
     //-------------//
