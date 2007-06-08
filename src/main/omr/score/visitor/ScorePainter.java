@@ -95,7 +95,7 @@ public class ScorePainter
     /** Sequence of colors for voices */
     private static Color[] voiceColors = new Color[] {
                                              Color.CYAN, Color.ORANGE,
-                                             Color.GREEN, Color.GRAY, Color.PINK,
+                                             Color.PINK, Color.GRAY, Color.GREEN,
                                              Color.MAGENTA, Color.BLUE,
                                              Color.YELLOW
                                          };
@@ -228,7 +228,7 @@ public class ScorePainter
                 paintSymbol(shape, barline.getCenter(), staff, 0);
             }
         } else {
-            barline.addError("No shape for barline " + this);
+            barline.addError("No shape for barline " + barline);
         }
 
         return true;
@@ -975,7 +975,6 @@ public class ScorePainter
         }
 
         // Vertical alignment
-
         if (vAlign == VerticalAlignment.CENTER) {
             topLeft.y -= (icon.getIconHeight() / 2);
         } else if (vAlign == VerticalAlignment.BOTTOM) {
