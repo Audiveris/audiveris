@@ -374,6 +374,42 @@ public class Measure
         return chords.getChildren();
     }
 
+    //----------------//
+    // getChordsAbove //
+    //----------------//
+    public Collection<Chord> getChordsAbove (SystemPoint point)
+    {
+        Collection<Chord> found = new ArrayList<Chord>();
+
+        for (TreeNode node : getChords()) {
+            Chord chord = (Chord) node;
+
+            if (chord.getHeadLocation().y < point.y) {
+                found.add(chord);
+            }
+        }
+
+        return found;
+    }
+
+    //----------------//
+    // getChordsBelow //
+    //----------------//
+    public Collection<Chord> getChordsBelow (SystemPoint point)
+    {
+        Collection<Chord> found = new ArrayList<Chord>();
+
+        for (TreeNode node : getChords()) {
+            Chord chord = (Chord) node;
+
+            if (chord.getHeadLocation().y > point.y) {
+                found.add(chord);
+            }
+        }
+
+        return found;
+    }
+
     //---------------//
     // getClefBefore //
     //---------------//
@@ -468,6 +504,27 @@ public class Measure
     public List<TreeNode> getClefs ()
     {
         return clefs.getChildren();
+    }
+
+    //-----------------//
+    // getClosestChord //
+    //-----------------//
+    public Chord getClosestChord (Collection<Chord> chords,
+                                  SystemPoint       point)
+    {
+        Chord bestChord = null;
+        int   bestDx = Integer.MAX_VALUE;
+
+        for (Chord chord : chords) {
+            int dx = Math.abs(chord.getHeadLocation().x - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestChord = chord;
+            }
+        }
+
+        return bestChord;
     }
 
     //----------------//

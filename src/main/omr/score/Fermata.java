@@ -78,10 +78,23 @@ public class Fermata
     {
         // A Fermata relates to the note on the same time slot
         // With placement depending on fermata upright / inverted
-        // TBD: Fermata is said to apply to barline as well, not yet implemented
-        Slot  slot = measure.getClosestSlot(point);
-        Chord chord = (glyph.getShape() == Shape.FERMATA)
-                      ? slot.getChordBelow(point) : slot.getChordAbove(point);
+        // Beware of whole rests for which there is no related slot
+        //
+        // TBD: Fermata is said to apply to barline as well, but this feature is
+        // not yet implemented
+        Chord chord;
+
+        if (glyph.getShape() == Shape.FERMATA) {
+            // Look for a chord below
+            chord = measure.getClosestChord(
+                measure.getChordsBelow(point),
+                point);
+        } else {
+            // Look for a chord above
+            chord = measure.getClosestChord(
+                measure.getChordsAbove(point),
+                point);
+        }
 
         if (chord != null) {
             glyph.setTranslation(new Fermata(measure, point, chord, glyph));
