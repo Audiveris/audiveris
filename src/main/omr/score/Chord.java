@@ -681,23 +681,21 @@ public class Chord
             Chord chord = (Chord) node;
 
             for (TreeNode n : chord.getNotes()) {
-                Note        note = (Note) n;
+                Note note = (Note) n;
 
-                SystemPoint noteRef = note.getCenterRight();
-                SystemPoint toDot = new SystemPoint(
-                    dotCenter.x - noteRef.x,
-                    dotCenter.y - noteRef.y);
+                if (note.getShape() != Shape.WHOLE_REST) {
+                    SystemPoint noteRef = note.getCenterRight();
+                    SystemPoint toDot = new SystemPoint(
+                        dotCenter.x - noteRef.x,
+                        dotCenter.y - noteRef.y);
 
-                if (logger.isFineEnabled()) {
-                    logger.info(measure.getContextString() + " " + toDot);
-                }
+                    if (logger.isFineEnabled()) {
+                        logger.info(measure.getContextString() + " " + toDot);
+                    }
 
-                if (toDot.x <= 0) {
-                    break ChordLoop; // All other notes will be on right, so...
-                }
-
-                if ((toDot.x <= maxDx) && (Math.abs(toDot.y) <= maxDy)) {
-                    candidates.add(chord);
+                    if ((toDot.x <= maxDx) && (Math.abs(toDot.y) <= maxDy)) {
+                        candidates.add(chord);
+                    }
                 }
             }
         }
