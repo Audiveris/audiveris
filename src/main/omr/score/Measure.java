@@ -1029,7 +1029,7 @@ public class Measure
                             getContextString() + " Final forward removed");
                     }
                 } else {
-                    addError(" No final chord in voice " + voice);
+                    addError("No final chord in voice " + voice);
                 }
             }
         }
@@ -1168,6 +1168,7 @@ public class Measure
     //        TextList (Measure measure)
     //        {
     //            super(measure);
+
     //        }
     //    }
 

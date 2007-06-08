@@ -84,7 +84,7 @@ public class ScoreChecker
                 timeSignature.addError("Illegal " + timeSignature);
             } else if (Shape.SingleTimes.contains(shape)) {
                 timeSignature.addError(
-                    " Orphan time signature shape : " + shape);
+                    "Orphan time signature shape : " + shape);
             }
         } catch (InvalidTimeSignature its) {
         }

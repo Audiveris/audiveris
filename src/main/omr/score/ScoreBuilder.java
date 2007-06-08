@@ -763,7 +763,7 @@ public class ScoreBuilder
                         if ((chord.getBeams()
                                   .size() * chord.getFlagsNumber()) != 0) {
                             chord.addError(
-                                "*** Inconsistent Flag/Beam config ***");
+                                "Inconsistent Flag/Beam configuration");
                         }
                     }
                 }

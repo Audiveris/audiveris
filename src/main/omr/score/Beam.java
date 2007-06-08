@@ -623,7 +623,7 @@ public class Beam
                     chord.addBeam(this);
                 }
             } else {
-                addError(" Beam with no chord on " + side + " stem");
+                addError("Beam with no chord on " + side + " stem");
             }
         }
     }

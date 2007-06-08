@@ -1056,7 +1056,7 @@ public class Chord
         } else {
             if (!this.voice.equals(voice)) {
                 addError(
-                    " Reassigning voice from " + this.voice + " to " + voice +
+                    "Reassigning voice from " + this.voice + " to " + voice +
                     " in " + this);
             }
         }

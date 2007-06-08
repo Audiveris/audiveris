@@ -544,7 +544,7 @@ public class Slot
         } else {
             if (!this.startTime.equals(startTime)) {
                 getChords().get(0).addError(
-                    " Reassigning startTime from " + this.startTime + " to " +
+                    "Reassigning startTime from " + this.startTime + " to " +
                     startTime + " in " + this);
             }
         }

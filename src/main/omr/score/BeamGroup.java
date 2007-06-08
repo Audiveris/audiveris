@@ -219,7 +219,7 @@ public class BeamGroup
     public void removeBeam (Beam beam)
     {
         if (!beams.remove(beam)) {
-            beam.addError("beam not found in " + this);
+            beam.addError(beam  + " not found in " + this);
         }
     }
 
@@ -272,7 +272,7 @@ public class BeamGroup
                 getChords()
                     .first()
                     .addError(
-                    " Reassigning voice from " + this.voice + " to " + voice +
+                    "Reassigning voice from " + this.voice + " to " + voice +
                     " in " + this);
             }
         }
