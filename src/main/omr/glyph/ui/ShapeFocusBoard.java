@@ -76,7 +76,11 @@ class ShapeFocusBoard
         /** Display only known symbols */
         KNOWN, 
         /** Display only unknown symbols */
-        UNKNOWN;
+        UNKNOWN,
+        /** Display only translated symbols */
+        TRANSLATED,
+        /** Display only untranslated symbols */
+        UNTRANSLATED;
     }
 
     //~ Instance fields --------------------------------------------------------

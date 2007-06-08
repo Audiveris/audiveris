@@ -190,7 +190,8 @@ public class Dynamics
         }
 
         // Create a brand new instance
-        new Dynamics(measure, point, findChord(measure, point), glyph);
+        glyph.setTranslation(
+            new Dynamics(measure, point, findChord(measure, point), glyph));
     }
 
     //------------------//

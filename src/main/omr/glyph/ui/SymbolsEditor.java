@@ -210,9 +210,10 @@ public class SymbolsEditor
                         logger.fine("assign " + shape + " -> updateScore");
                     }
                 }
-//            } else {
-//                logger.warning(
-//                    "Attempt to assign " + shape + " to a tiny glyph");
+
+                //            } else {
+                //                logger.warning(
+                //                    "Attempt to assign " + shape + " to a tiny glyph");
             }
         }
     }
@@ -372,6 +373,11 @@ public class SymbolsEditor
         }
     }
 
+    public void getFocus ()
+    {
+        view.requestFocusInWindow();
+    }
+
     //---------//
     // refresh //
     //---------//
@@ -382,11 +388,6 @@ public class SymbolsEditor
     public void refresh ()
     {
         view.colorizeAllGlyphs();
-    }
-    
-    public void getFocus()
-    {
-        view.requestFocusInWindow();
     }
 
     //------------------//
@@ -488,10 +489,30 @@ public class SymbolsEditor
 
             case UNKNOWN :
 
-                if (glyph.isKnown()) {
-                    super.colorizeGlyph(glyph, hiddenColor);
-                } else {
+                if (!glyph.isKnown()) {
                     super.colorizeGlyph(glyph);
+                } else {
+                    super.colorizeGlyph(glyph, hiddenColor);
+                }
+
+                break;
+
+            case TRANSLATED :
+
+                if (glyph.isKnown() && glyph.isTranslated()) {
+                    super.colorizeGlyph(glyph);
+                } else {
+                    super.colorizeGlyph(glyph, hiddenColor);
+                }
+
+                break;
+
+            case UNTRANSLATED :
+
+                if (glyph.isKnown() && !glyph.isTranslated()) {
+                    super.colorizeGlyph(glyph);
+                } else {
+                    super.colorizeGlyph(glyph, hiddenColor);
                 }
 
                 break;
