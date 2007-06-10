@@ -460,9 +460,8 @@ public class IconManager
     {
         File folder = Main.getIconsFolder();
 
-        if (!folder.exists()) {
+        if (folder.mkdirs()) {
             logger.info("Creating directory " + folder);
-            folder.mkdirs();
         }
 
         File file = new File(folder, name + FILE_EXTENSION);

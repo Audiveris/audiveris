@@ -179,10 +179,9 @@ public class GlyphRepository
             // Prepare target directory
             File sheetDir = new File(getSheetsFolder(), sheet.getRadix());
 
-            if (!sheetDir.exists()) {
-                // Make sure related directory chain exists
+            // Make sure related directory chain exists
+            if (sheetDir.mkdirs()) {
                 logger.info("Creating directory " + sheetDir);
-                sheetDir.mkdirs();
             } else {
                 deleteXmlFiles(sheetDir);
             }
@@ -192,10 +191,9 @@ public class GlyphRepository
                 getSheetsFolder(),
                 sheet.getRadix() + STRUCTURES_NAME);
 
-            if (!structuresDir.exists()) {
-                // Make sure related structure subdirectory exists
+            // Make sure related structure subdirectory exists
+            if (structuresDir.mkdirs()) {
                 logger.info("Creating subdirectory " + structuresDir);
-                structuresDir.mkdirs();
             } else if (emptyStructures) {
                 deleteXmlFiles(structuresDir);
             }
@@ -266,17 +264,27 @@ public class GlyphRepository
         coreBase = null;
     }
 
-    //-------------//
-    // setCoreBase //
-    //-------------//
+    //------------//
+    // fileNameOf //
+    //------------//
     /**
-     * Define the provided collection as the core training material
+     * Report the file name w/o extension of a gName.
      *
-     * @param base the provided collection
+     * @param gName glyph name, using format "folder/name.number.xml" or "folder/name.xml"
+     * @return the 'name' or 'name.number' part of the format
      */
-    synchronized void setCoreBase (List<String> base)
+    static String fileNameOf (String gName)
     {
-        coreBase = base;
+        int    slash = gName.indexOf("/");
+        String nameWithExt = gName.substring(slash + 1);
+
+        int    lastDot = nameWithExt.lastIndexOf(".");
+
+        if (lastDot != -1) {
+            return nameWithExt.substring(0, lastDot);
+        } else {
+            return nameWithExt;
+        }
     }
 
     //-------------//
@@ -373,22 +381,6 @@ public class GlyphRepository
         }
     }
 
-    //---------------//
-    // isIconsFolder //
-    //---------------//
-    boolean isIconsFolder (String folder)
-    {
-        return folder.equals(Main.ICONS_NAME);
-    }
-
-    //----------//
-    // isLoaded //
-    //----------//
-    boolean isLoaded (String gName)
-    {
-        return glyphsMap.get(gName) != null;
-    }
-
     //---------------------//
     // getSheetDirectories //
     //---------------------//
@@ -442,27 +434,33 @@ public class GlyphRepository
         return wholeBase;
     }
 
-    //------------//
-    // fileNameOf //
-    //------------//
-    /**
-     * Report the file name w/o extension of a gName.
-     *
-     * @param gName glyph name, using format "folder/name.number.xml" or "folder/name.xml"
-     * @return the 'name' or 'name.number' part of the format
-     */
-    static String fileNameOf (String gName)
+    //---------------//
+    // isIconsFolder //
+    //---------------//
+    boolean isIconsFolder (String folder)
     {
-        int    slash = gName.indexOf("/");
-        String nameWithExt = gName.substring(slash + 1);
+        return folder.equals(Main.ICONS_NAME);
+    }
 
-        int    lastDot = nameWithExt.lastIndexOf(".");
+    //----------//
+    // isLoaded //
+    //----------//
+    boolean isLoaded (String gName)
+    {
+        return glyphsMap.get(gName) != null;
+    }
 
-        if (lastDot != -1) {
-            return nameWithExt.substring(0, lastDot);
-        } else {
-            return nameWithExt;
-        }
+    //-------------//
+    // setCoreBase //
+    //-------------//
+    /**
+     * Define the provided collection as the core training material
+     *
+     * @param base the provided collection
+     */
+    synchronized void setCoreBase (List<String> base)
+    {
+        coreBase = base;
     }
 
     //-------------//
@@ -605,31 +603,6 @@ public class GlyphRepository
         }
     }
 
-    //--------//
-    // isIcon //
-    //--------//
-    private boolean isIcon (File file)
-    {
-        String folder = file.getParentFile()
-                            .getName();
-
-        return isIconsFolder(folder);
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private JAXBContext getJaxbContext ()
-        throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(Glyph.class, Stick.class);
-        }
-
-        return jaxbContext;
-    }
-
     //------------//
     // buildGlyph //
     //------------//
@@ -689,6 +662,20 @@ public class GlyphRepository
         }
     }
 
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private JAXBContext getJaxbContext ()
+        throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(Glyph.class, Stick.class);
+        }
+
+        return jaxbContext;
+    }
+
     //-------------//
     // glyphNameOf //
     //-------------//
@@ -703,6 +690,17 @@ public class GlyphRepository
     {
         return file.getParentFile()
                    .getName() + "/" + file.getName();
+    }
+
+    //--------//
+    // isIcon //
+    //--------//
+    private boolean isIcon (File file)
+    {
+        String folder = file.getParentFile()
+                            .getName();
+
+        return isIconsFolder(folder);
     }
 
     //-------------//
@@ -881,6 +879,13 @@ public class GlyphRepository
     static interface Monitor
     {
         /**
+         * Called whenever a new glyph has been loaded
+         *
+         * @param gName the normalized glyph name
+         */
+        void loadedGlyph (String gName);
+
+        /**
          * Called to pass the number of selected glyphs, which will be later
          * loaded
          *
@@ -895,12 +900,5 @@ public class GlyphRepository
          * @param total the size of the training material
          */
         void setTotalGlyphs (int total);
-
-        /**
-         * Called whenever a new glyph has been loaded
-         *
-         * @param gName the normalized glyph name
-         */
-        void loadedGlyph (String gName);
     }
 }

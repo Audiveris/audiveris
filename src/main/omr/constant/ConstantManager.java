@@ -135,8 +135,10 @@ public class ConstantManager
             }
 
             // First make sure the directory exists (Brenton patch)
-            new File(USER_FILE_NAME).getParentFile()
-                                    .mkdirs();
+            if (new File(USER_FILE_NAME).getParentFile()
+                                        .mkdirs()) {
+                logger.info("Creating " + USER_FILE_NAME);
+            }
 
             // Then write down the user properties
             FileOutputStream out = new FileOutputStream(USER_FILE_NAME);

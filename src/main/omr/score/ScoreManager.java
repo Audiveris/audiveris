@@ -260,9 +260,8 @@ public class ScoreManager
             // Make sure the folder exists
             File folder = new File(xmlFile.getParent());
 
-            if (!folder.exists()) {
+            if (folder.mkdirs()) {
                 logger.info("Creating folder " + folder);
-                folder.mkdirs();
             }
 
             // Actually export the score material
