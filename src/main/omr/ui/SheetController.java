@@ -9,7 +9,6 @@
 //
 package omr.ui;
 
-import omr.sheet.*;
 import omr.Main;
 import omr.Step;
 
@@ -21,6 +20,8 @@ import omr.glyph.ui.GlyphRepository;
 import omr.score.Score;
 
 import omr.selection.Selection;
+
+import omr.sheet.*;
 
 import omr.ui.MainGui;
 import omr.ui.SheetAssembly;
@@ -106,7 +107,7 @@ public class SheetController
      * @param gui     the enclosing gui entity
      * @param toolBar the gui tool bar
      */
-    public SheetController (MainGui      gui,
+    public SheetController (MainGui  gui,
                             JToolBar toolBar)
     {
         component = new JTabbedPane();
@@ -220,7 +221,8 @@ public class SheetController
             }
 
             // Make sure the assembly is part of the tabbed pane
-            int sheetIndex = component.indexOfComponent(assembly.getComponent());
+            int sheetIndex = component.indexOfComponent(
+                assembly.getComponent());
 
             if (sheetIndex == -1) {
                 if (logger.isFineEnabled()) {
@@ -235,7 +237,8 @@ public class SheetController
                     null,
                     assembly.getComponent(),
                     sheet.getPath());
-                sheetIndex = component.indexOfComponent(assembly.getComponent());
+                sheetIndex = component.indexOfComponent(
+                    assembly.getComponent());
             }
 
             return sheetIndex;
@@ -272,8 +275,10 @@ public class SheetController
             // Remove from tabs
             component.remove(sheetIndex);
         }
+
         if (logger.isFineEnabled()) {
-            logger.fine("closed " + assembly.toString() + " assemblies=" + assemblies);
+            logger.fine(
+                "closed " + assembly.toString() + " assemblies=" + assemblies);
         }
     }
 
@@ -314,6 +319,7 @@ public class SheetController
         if (source == component) {
             // User has selected a new tab
             final int sheetIndex = component.getSelectedIndex();
+
             ///logger.info("Controller-stateChanged. previousSheetIndex=" + previousSheetIndex + " sheetIndex=" + sheetIndex);
             if (sheetIndex != -1) {
                 if (previousSheetIndex != -1) {
@@ -451,12 +457,11 @@ public class SheetController
     //-------------//
     private void tabSelected (int sheetIndex)
     {
-
         // Remember the new selected sheet
         SheetAssembly assembly = assemblies.get(sheetIndex);
-        Sheet sheet = assembly.getSheet();
-        ///logger.info("tabSelected sheetIndex=" + sheetIndex + " sheet=" + sheet);
+        Sheet         sheet = assembly.getSheet();
 
+        ///logger.info("tabSelected sheetIndex=" + sheetIndex + " sheet=" + sheet);
         Selection sheetSelection = SheetManager.getSelection();
         sheetSelection.setEntity(sheet, null);
 
@@ -464,7 +469,8 @@ public class SheetController
         UIUtilities.enableActions(sheetDependentActions, true);
 
         // Tell the selected assembly that it now has the focus...
-        Main.getGui().addErrorsPane(assembly.getErrorsPane());
+        Main.getGui()
+            .addErrorsPane(assembly.getErrorsPane());
         assembly.assemblySelected();
     }
 

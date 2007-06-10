@@ -15,6 +15,7 @@ import omr.StepMenu;
 
 import omr.constant.*;
 
+import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphTrainer;
 import omr.glyph.ui.GlyphVerifier;
 import omr.glyph.ui.ShapeColorChooser;
@@ -46,7 +47,6 @@ import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.*;
-import omr.glyph.ui.GlyphLagView;
 
 /**
  * Class <code>MainGui</code> is the Java User Interface, the main class for
@@ -928,9 +928,11 @@ public class MainGui
 
                 if (state == Frame.NORMAL) {
                     divider.setValue(getDividerLocation());
+
                     ///logger.info("Divider <- " + divider.getValue());
                 } else if (state == Frame.MAXIMIZED_BOTH) {
                     divider.setValue(getDividerLocation() - DELTA_DIVIDER);
+
                     ///logger.info("Divider <- " + divider.getValue());
                 }
             }
@@ -942,9 +944,11 @@ public class MainGui
 
             if (state == Frame.MAXIMIZED_BOTH) {
                 setDividerLocation(divider.getValue() + DELTA_DIVIDER);
+
                 ///logger.info("Location:" + getDividerLocation());
             } else {
                 setDividerLocation(divider.getValue());
+
                 ///logger.info("Location:" + getDividerLocation());
             }
         }

@@ -24,8 +24,8 @@ import java.util.*;
  * Class <code>MeasureElement</code> is the basis for measure elements
  * (directions, notations, etc.)
  * <p>For some elements (such as wedge, dashes, pedal, slur, tuplet), we may
- * have two "events": the starting event and the stopping event. 
- * Both will trigger the creation of a MeasureElement instance, the difference 
+ * have two "events": the starting event and the stopping event.
+ * Both will trigger the creation of a MeasureElement instance, the difference
  * being made by the "start" boolean.
  *
  * @author Herv&eacute Bitteur
@@ -177,39 +177,40 @@ public abstract class MeasureElement
         sb.append("{")
           .append((period != -1) ? name.substring(period + 1) : name);
 
-        // Shape
-        sb.append(" ")
-          .append(getShape());
+        try {
+            // Shape
+            sb.append(" ")
+              .append(getShape());
 
-        // Start ?
-        if (!isStart()) {
-            sb.append("/stop");
+            // Start ?
+            if (!isStart()) {
+                sb.append("/stop");
+            }
+
+            // Chord
+            sb.append(" ")
+              .append(chord.getContextString());
+            // Point
+            sb.append(" point[x=")
+              .append(getPoint().x)
+              .append(",y=")
+              .append(getPoint().y)
+              .append("]");
+            // Box
+            sb.append(" box[x=")
+              .append(getBox().x)
+              .append(",y=")
+              .append(getBox().y)
+              .append(",w=")
+              .append(getBox().width)
+              .append(",h=")
+              .append(getBox().height)
+              .append("]");
+            // Glyphs
+            sb.append(Glyph.toString(glyphs));
+        } catch (NullPointerException e) {
+            sb.append(" INVALID");
         }
-
-        // Chord
-        sb.append(" ")
-          .append(chord.getContextString());
-
-        // Point
-        sb.append(" point[x=")
-          .append(getPoint().x)
-          .append(",y=")
-          .append(getPoint().y)
-          .append("]");
-
-        // Box
-        sb.append(" box[x=")
-          .append(getBox().x)
-          .append(",y=")
-          .append(getBox().y)
-          .append(",w=")
-          .append(getBox().width)
-          .append(",h=")
-          .append(getBox().height)
-          .append("]");
-
-        // Glyphs
-        sb.append(Glyph.toString(glyphs));
 
         sb.append("}");
 

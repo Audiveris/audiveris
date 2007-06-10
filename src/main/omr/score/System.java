@@ -467,17 +467,24 @@ public class System
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{System#")
-          .append(id)
-          .append(" topLeft=[")
-          .append(topLeft.x)
-          .append(",")
-          .append(topLeft.y)
-          .append("]")
-          .append(" dimension=")
-          .append(dimension.width)
-          .append("x")
-          .append(dimension.height)
-          .append("}");
+          .append(id);
+
+        if (topLeft != null) {
+            sb.append(" topLeft=[")
+              .append(topLeft.x)
+              .append(",")
+              .append(topLeft.y)
+              .append("]");
+        }
+
+        if (dimension != null) {
+            sb.append(" dimension=")
+              .append(dimension.width)
+              .append("x")
+              .append(dimension.height);
+        }
+
+        sb.append("}");
 
         return sb.toString();
     }

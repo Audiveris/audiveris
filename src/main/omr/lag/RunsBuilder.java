@@ -9,13 +9,14 @@
 //
 package omr.lag;
 
+import omr.OmrExecutors;
+
 import omr.util.Logger;
 import omr.util.SignallingRunnable;
 
 import java.awt.Rectangle;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
-import omr.OmrExecutors;
 
 /**
  * Class <code>RunsBuilder</code> is in charge of building a collection of runs,

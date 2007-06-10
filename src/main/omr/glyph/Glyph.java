@@ -1140,6 +1140,7 @@ public class Glyph
      *
      * @param shape the assigned shape, which may be null
      */
+
     ///@XmlAttribute(name = "shape")
     public void setShape (Shape shape)
     {
@@ -1204,6 +1205,10 @@ public class Glyph
      */
     public static String toString (Collection<?extends Glyph> glyphs)
     {
+        if (glyphs == null) {
+            return "";
+        }
+
         StringBuilder sb = new StringBuilder();
         sb.append(" glyphs[");
 

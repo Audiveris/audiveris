@@ -827,7 +827,7 @@ public class Stick
               .append("%");
         }
 
-        if (line != null) {
+        if ((line != null) && (line.getNumberOfPoints() > 1)) {
             sb.append(" ")
               .append(line);
         }

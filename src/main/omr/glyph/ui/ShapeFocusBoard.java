@@ -76,9 +76,9 @@ class ShapeFocusBoard
         /** Display only known symbols */
         KNOWN, 
         /** Display only unknown symbols */
-        UNKNOWN,
+        UNKNOWN, 
         /** Display only translated symbols */
-        TRANSLATED,
+        TRANSLATED, 
         /** Display only untranslated symbols */
         UNTRANSLATED;
     }

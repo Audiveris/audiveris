@@ -200,11 +200,11 @@ public class BeamGroup
             Beam beam = (Beam) node;
             beam.closeConnections();
         }
-        
+
         // Harmonize the slopes of all beams within each beam group
-//        for (BeamGroup group : measure.getBeamGroups()) {
-//            group.align();
-//        }
+        //        for (BeamGroup group : measure.getBeamGroups()) {
+        //            group.align();
+        //        }
     }
 
     //------------//
@@ -219,7 +219,7 @@ public class BeamGroup
     public void removeBeam (Beam beam)
     {
         if (!beams.remove(beam)) {
-            beam.addError(beam  + " not found in " + this);
+            beam.addError(beam + " not found in " + this);
         }
     }
 
@@ -290,8 +290,10 @@ public class BeamGroup
           .append(id)
           .append(" beams[");
 
-        for (Beam beam : beams) {
-            sb.append(beam + " ");
+        if (beams != null) {
+            for (Beam beam : beams) {
+                sb.append(beam + " ");
+            }
         }
 
         sb.append("]")
@@ -347,25 +349,32 @@ public class BeamGroup
     /**
      * Force all beams (and beam items) to use the same slop within that beam group
      */
-    private void align() 
+    private void align ()
     {
         // Retrieve the longest beam and use its slope
         double bestLength = 0;
-        Beam bestBeam = null;
+        Beam   bestBeam = null;
+
         for (Beam beam : beams) {
-            double length = beam.getLeft().distance(beam.getRight());
+            double length = beam.getLeft()
+                                .distance(beam.getRight());
+
             if (length > bestLength) {
                 bestLength = length;
                 bestBeam = beam;
             }
         }
-        double slope = bestBeam.getLine().getSlope();
+
+        double slope = bestBeam.getLine()
+                               .getSlope();
+
         for (Beam beam : beams) {
             SystemPoint left = beam.getLeft();
             SystemPoint right = beam.getRight();
-            right.y = left.y + (int) Math.rint(slope*(right.x - left.x));
+            right.y = left.y + (int) Math.rint(slope * (right.x - left.x));
         }
     }
+
     //-----------------//
     // checkBeamGroups //
     //-----------------//

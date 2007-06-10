@@ -235,12 +235,12 @@ public class Slur
             if (SlurGlyph.fixSpuriousSlur(glyph, system.getInfo())) {
                 logger.info("Slur fixed  ...");
 
-//                system.getScore()
-//                      .getSheet()
-//                      .getGlyphsBuilder()
-//                      .extractNewSystemGlyphs(system.getInfo());
-//
-//                throw new ScoreBuilder.RebuildException("Slur");
+                //                system.getScore()
+                //                      .getSheet()
+                //                      .getGlyphsBuilder()
+                //                      .extractNewSystemGlyphs(system.getInfo());
+                //
+                //                throw new ScoreBuilder.RebuildException("Slur");
             }
         } else {
             // Build a curve using system-based coordinates
@@ -335,7 +335,8 @@ public class Slur
                     logger.finest(slur.toString());
                 }
             } else {
-                system.addError(glyph,
+                system.addError(
+                    glyph,
                     "Slur " + glyph.getId() + " with no embraced notes");
             }
         }
@@ -372,52 +373,53 @@ public class Slur
             sb.append("{Slur");
         }
 
-        sb.append("#")
-          .append(glyph.getId());
+        try {
+            sb.append("#")
+              .append(glyph.getId());
+            sb.append(" P1[")
+              .append((int) Math.rint(curve.getX1()))
+              .append(",")
+              .append((int) Math.rint(curve.getY1()))
+              .append("]");
+            sb.append(" C1[")
+              .append((int) Math.rint(curve.getCtrlX1()))
+              .append(",")
+              .append((int) Math.rint(curve.getCtrlY1()))
+              .append("]");
+            sb.append(" C2[")
+              .append((int) Math.rint(curve.getCtrlX2()))
+              .append(",")
+              .append((int) Math.rint(curve.getCtrlY2()))
+              .append("]");
+            sb.append(" P2[")
+              .append((int) Math.rint(curve.getX2()))
+              .append(",")
+              .append((int) Math.rint(curve.getY2()))
+              .append("]");
 
-        sb.append(" P1[")
-          .append((int) Math.rint(curve.getX1()))
-          .append(",")
-          .append((int) Math.rint(curve.getY1()))
-          .append("]");
+            if (leftNote != null) {
+                sb.append(" L=")
+                  .append(leftNote.getStep())
+                  .append(leftNote.getOctave());
+            } else if ((leftExtension != null) &&
+                       (leftExtension.leftNote != null)) {
+                sb.append(" LE=")
+                  .append(leftExtension.leftNote.getStep())
+                  .append(leftExtension.leftNote.getOctave());
+            }
 
-        sb.append(" C1[")
-          .append((int) Math.rint(curve.getCtrlX1()))
-          .append(",")
-          .append((int) Math.rint(curve.getCtrlY1()))
-          .append("]");
-
-        sb.append(" C2[")
-          .append((int) Math.rint(curve.getCtrlX2()))
-          .append(",")
-          .append((int) Math.rint(curve.getCtrlY2()))
-          .append("]");
-
-        sb.append(" P2[")
-          .append((int) Math.rint(curve.getX2()))
-          .append(",")
-          .append((int) Math.rint(curve.getY2()))
-          .append("]");
-
-        if (leftNote != null) {
-            sb.append(" L=")
-              .append(leftNote.getStep())
-              .append(leftNote.getOctave());
-        } else if ((leftExtension != null) && (leftExtension.leftNote != null)) {
-            sb.append(" LE=")
-              .append(leftExtension.leftNote.getStep())
-              .append(leftExtension.leftNote.getOctave());
-        }
-
-        if (rightNote != null) {
-            sb.append(" R=")
-              .append(rightNote.getStep())
-              .append(rightNote.getOctave());
-        } else if ((rightExtension != null) &&
-                   (rightExtension.rightNote != null)) {
-            sb.append(" RE=")
-              .append(rightExtension.rightNote.getStep())
-              .append(rightExtension.rightNote.getOctave());
+            if (rightNote != null) {
+                sb.append(" R=")
+                  .append(rightNote.getStep())
+                  .append(rightNote.getOctave());
+            } else if ((rightExtension != null) &&
+                       (rightExtension.rightNote != null)) {
+                sb.append(" RE=")
+                  .append(rightExtension.rightNote.getStep())
+                  .append(rightExtension.rightNote.getOctave());
+            }
+        } catch (NullPointerException e) {
+            sb.append(" INVALID");
         }
 
         sb.append("}");
@@ -496,7 +498,7 @@ public class Slur
             Collections.sort(prevOrphans, slurComparator);
 
             // Connect the orphans as much as possible
-            SlurLoop:
+            SlurLoop: 
             for (int i = 0; i < orphans.size(); i++) {
                 Slur slur = orphans.get(i);
 
@@ -512,8 +514,9 @@ public class Slur
                 }
 
                 // No connection for this orphan
-                part.addError(slur.glyph, " Could not connect slur #" +
-                    slur.glyph.getId());
+                part.addError(
+                    slur.glyph,
+                    " Could not connect slur #" + slur.glyph.getId());
             }
 
             // Check previous orphans
@@ -521,7 +524,8 @@ public class Slur
                 Slur prevSlur = prevOrphans.get(j);
 
                 if (prevSlur.rightExtension == null) {
-                    prevPart.addError(prevSlur.glyph,
+                    prevPart.addError(
+                        prevSlur.glyph,
                         " Could not connect slur #" + prevSlur.glyph.getId());
                 }
             }

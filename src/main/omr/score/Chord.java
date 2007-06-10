@@ -1068,84 +1068,92 @@ public class Chord
         StringBuilder sb = new StringBuilder();
         sb.append("{Chord");
 
-        sb.append("#")
-          .append(id);
+        try {
+            sb.append("#")
+              .append(id);
 
-        if (voice != null) {
-            sb.append(" voice#")
-              .append(voice);
-        }
-
-        // Staff ?
-        Note note = (Note) getNotes()
-                               .get(0);
-
-        if (note != null) {
-            sb.append(" staff#")
-              .append(note.getStaff().getId());
-        }
-
-        if (startTime != null) {
-            sb.append(" start=")
-              .append(Note.quarterValueOf(startTime));
-        }
-
-        sb.append(" dur=");
-
-        if (getRawDuration() != null) {
-            sb.append(Note.quarterValueOf(duration));
-        } else {
-            sb.append("none");
-        }
-
-        if (stem != null) {
-            sb.append(" stem#")
-              .append(stem.getId());
-        }
-
-        if (tupletFactor != null) {
-            sb.append(" tupletFactor=")
-              .append(tupletFactor);
-        }
-
-        if (dotsNumber != 0) {
-            sb.append(" dots=")
-              .append(dotsNumber);
-        }
-
-        if (flagsNumber != 0) {
-            sb.append(" flags=")
-              .append(flagsNumber);
-        }
-
-        if (headLocation != null) {
-            sb.append(" head[x=")
-              .append(headLocation.x)
-              .append(",y=")
-              .append(headLocation.y)
-              .append("]");
-        }
-
-        if (tailLocation != null) {
-            sb.append(" tail[x=")
-              .append(tailLocation.x)
-              .append(",y=")
-              .append(tailLocation.y)
-              .append("]");
-        }
-
-        if (beams.size() > 0) {
-            try {
-                sb.append(" beams G#" + beams.first().getGroup().getId() + "[");
-
-                for (Beam beam : beams) {
-                    sb.append(beam + " ");
-                }
-
-                sb.append("]");
-            } catch (Exception ex) {
-                logger.warning("Exception in chord toString()");
+            if (voice != null) {
+                sb.append(" voice#")
+                  .append(voice);
             }
+
+            // Staff ?
+            if (!getNotes()
+                     .isEmpty()) {
+                Note note = (Note) getNotes()
+                                       .get(0);
+
+                if (note != null) {
+                    sb.append(" staff#")
+                      .append(note.getStaff().getId());
+                }
+            }
+
+            if (startTime != null) {
+                sb.append(" start=")
+                  .append(Note.quarterValueOf(startTime));
+            }
+
+            sb.append(" dur=");
+
+            if (getRawDuration() != null) {
+                sb.append(Note.quarterValueOf(duration));
+            } else {
+                sb.append("none");
+            }
+
+            if (stem != null) {
+                sb.append(" stem#")
+                  .append(stem.getId());
+            }
+
+            if (tupletFactor != null) {
+                sb.append(" tupletFactor=")
+                  .append(tupletFactor);
+            }
+
+            if (dotsNumber != 0) {
+                sb.append(" dots=")
+                  .append(dotsNumber);
+            }
+
+            if (flagsNumber != 0) {
+                sb.append(" flags=")
+                  .append(flagsNumber);
+            }
+
+            if (headLocation != null) {
+                sb.append(" head[x=")
+                  .append(headLocation.x)
+                  .append(",y=")
+                  .append(headLocation.y)
+                  .append("]");
+            }
+
+            if (tailLocation != null) {
+                sb.append(" tail[x=")
+                  .append(tailLocation.x)
+                  .append(",y=")
+                  .append(tailLocation.y)
+                  .append("]");
+            }
+
+            if (beams.size() > 0) {
+                try {
+                    sb.append(
+                        " beams G#" + beams.first().getGroup().getId() + "[");
+
+                    for (Beam beam : beams) {
+                        sb.append(beam + " ");
+                    }
+
+                    sb.append("]");
+                } catch (Exception ex) {
+                    logger.warning("Exception in chord toString()");
+                }
+            }
+        } catch (NullPointerException e) {
+            sb.append(" INVALID");
         }
 
         sb.append("}");

@@ -392,7 +392,7 @@ public class ScoreBuilder
                     (shape != Shape.CLUTTER) &&
                     (!glyph.isTranslated() ||
                     // HeadAndFlags are translated twice (for head, for flag)
-                    Shape.HeadAndFlags.contains(shape))) {
+                Shape.HeadAndFlags.contains(shape))) {
                     // Check for glyph relevance
                     if (translator.isRelevant(glyph)) {
                         // Determine part/staff/measure containment

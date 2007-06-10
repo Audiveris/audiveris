@@ -45,7 +45,7 @@ import java.util.Properties;
  * <em><b>"config/run.default.properties"</b></em> can assign overriding values
  * to some constants. For example, the <code>frameWidth</code> constant above
  * could be altered by the following line in this default file: <pre>
- * omr.ui.MainGui.frameWidth=640 </pre> This file is mandatory, although it can 
+ * omr.ui.MainGui.frameWidth=640 </pre> This file is mandatory, although it can
  * be empty, and must be located at the root of application binary (either the
  * class hierarchy or the jar file). If this file is not found at start-up the
  * application is stopped.  Typically, these DEFAULT values define values for a

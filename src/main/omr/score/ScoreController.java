@@ -207,8 +207,8 @@ public class ScoreController
             }
 
             // Make sure the view is part of the related sheet assembly
-            MainGui   gui = Main.getGui();
-            Sheet sheet = score.getSheet();
+            MainGui gui = Main.getGui();
+            Sheet   sheet = score.getSheet();
             sheet.getAssembly()
                  .setScoreView(view);
         }

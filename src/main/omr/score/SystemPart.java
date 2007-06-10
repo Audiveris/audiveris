@@ -300,7 +300,7 @@ public class SystemPart
      */
     public List<TreeNode> getStaves ()
     {
-        return staves.getChildren();
+        return (staves == null) ? null : staves.getChildren();
     }
 
     //-----------//
@@ -386,9 +386,13 @@ public class SystemPart
           .append(getId())
           .append(" [");
 
-        for (TreeNode node : getStaves()) {
-            Staff staff = (Staff) node;
-            sb.append(staff.getId() + " ");
+        if (getStaves() != null) {
+            for (TreeNode node : getStaves()) {
+                if (node != null) {
+                    Staff staff = (Staff) node;
+                    sb.append(staff.getId() + " ");
+                }
+            }
         }
 
         sb.append("]}");

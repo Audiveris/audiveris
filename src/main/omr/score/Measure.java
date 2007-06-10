@@ -937,7 +937,7 @@ public class Measure
      */
     public int getVoicesNumber ()
     {
-        return voicesNumber;
+        return (voicesNumber == null) ? 0 : voicesNumber;
     }
 
     //----------------//

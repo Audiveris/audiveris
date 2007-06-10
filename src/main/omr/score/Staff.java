@@ -268,8 +268,12 @@ public class Staff
     @Override
     public String toString ()
     {
-        return "{Staff" + " topLeft=" + topLeft + " width=" + width + " size=" +
-               height + " origin=" + displayOrigin + "}";
+        try {
+            return "{Staff" + " topLeft=" + topLeft + " width=" + width +
+                   " size=" + height + " origin=" + displayOrigin + "}";
+        } catch (NullPointerException e) {
+            return "{Staff INVALID}";
+        }
     }
 
     //-------------//

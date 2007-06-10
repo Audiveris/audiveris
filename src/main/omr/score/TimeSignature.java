@@ -215,23 +215,27 @@ public class TimeSignature
                   .append("/")
                   .append(getDenominator());
             }
-        } catch (InvalidTimeSignature its) {
+
+            sb.append(" shape=")
+              .append(getShape());
+
+            sb.append(" center=")
+              .append(getCenter());
+
+            if (getGlyphs() != null) {
+                sb.append(" glyphs[");
+
+                for (Glyph glyph : getGlyphs()) {
+                    sb.append("#")
+                      .append(glyph.getId());
+                }
+
+                sb.append("]");
+            }
+        } catch (InvalidTimeSignature e) {
+            sb.append(" INVALID");
         }
 
-        sb.append(" shape=")
-          .append(shape);
-
-        sb.append(" center=")
-          .append(getCenter());
-
-        sb.append(" glyphs[");
-
-        for (Glyph glyph : glyphs) {
-            sb.append("#")
-              .append(glyph.getId());
-        }
-
-        sb.append("]");
         sb.append("}");
 
         return sb.toString();
@@ -307,6 +311,10 @@ public class TimeSignature
     private void computeRational ()
         throws InvalidTimeSignature
     {
+        if (glyphs == null) {
+            throw new InvalidTimeSignature();
+        }
+
         if (glyphs.size() > 0) {
             if (glyphs.size() == 1) {
                 // Just one symbol
@@ -386,7 +394,8 @@ public class TimeSignature
 
                             denominator = (10 * denominator) + value;
                         } else {
-                            addError(glyph,
+                            addError(
+                                glyph,
                                 "Multi-symbol time signature" +
                                 " with a component of pitch position 0");
                         }

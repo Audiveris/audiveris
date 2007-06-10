@@ -39,7 +39,7 @@ public class SignallingRunnable
      * @param task the actual task to perform
      */
     public SignallingRunnable (CountDownLatch doneSignal,
-                              Runnable       task)
+                               Runnable       task)
     {
         this.doneSignal = doneSignal;
         this.task = task;

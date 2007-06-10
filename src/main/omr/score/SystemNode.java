@@ -89,9 +89,12 @@ public abstract class SystemNode
     public void addError (Glyph  glyph,
                           String text)
     {
-        getScore()
-            .getSheet()
-            .addError(this, glyph, text);
+        if ((getScore() != null) && (getScore()
+                                         .getSheet() != null)) {
+            getScore()
+                .getSheet()
+                .addError(this, glyph, text);
+        }
     }
 
     //--------------------//
@@ -123,6 +126,10 @@ public abstract class SystemNode
     {
         // We compute the bounding center of all glyphs
         Rectangle rect = null;
+
+        if (glyphs == null) {
+            return null;
+        }
 
         for (Glyph glyph : glyphs) {
             if (rect == null) {
@@ -223,11 +230,16 @@ public abstract class SystemNode
     //------------------------//
     private SystemPoint computeRectangleCenter (Rectangle rect)
     {
+        if (rect == null) {
+            return null;
+        }
+
         PixelPoint pixPt = new PixelPoint(
             rect.x + (rect.width / 2),
             rect.y + (rect.height / 2));
 
-        return getSystem()
-                   .toSystemPoint(pixPt);
+        System     s = getSystem();
+
+        return (s == null) ? null : s.toSystemPoint(pixPt);
     }
 }

@@ -627,7 +627,6 @@ public class Main
             // Make sure we have nice window decorations.
             JFrame.setDefaultLookAndFeelDecorated(true);
 
-            
             // Launch the GUI
             gui = new MainGui();
 

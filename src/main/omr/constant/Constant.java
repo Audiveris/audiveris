@@ -311,8 +311,7 @@ public abstract class Constant
     protected char toChar ()
     {
         if (cachedValue == null) {
-            cachedValue = new Character(
-                getCurrentString().charAt(0));
+            cachedValue = new Character(getCurrentString().charAt(0));
         }
 
         return ((Character) cachedValue).charValue();
@@ -351,6 +350,7 @@ public abstract class Constant
     {
         if (cachedValue == null) {
             java.lang.String cs = getCurrentString();
+
             if (cs != null) {
                 cachedValue = new java.lang.Double(cs);
             } else {
@@ -391,8 +391,7 @@ public abstract class Constant
     protected int toInt ()
     {
         if (cachedValue == null) {
-            cachedValue = new java.lang.Integer(
-                getCurrentString());
+            cachedValue = new java.lang.Integer(getCurrentString());
         }
 
         return ((java.lang.Integer) cachedValue).intValue();
@@ -456,9 +455,9 @@ public abstract class Constant
                     }
 
                     currentString = defaultString; // Use default
-//                } else {
-//                    logger.warning(
-//                        "No value found for Property " + qualifiedName);
+                                                   //                } else {
+                                                   //                    logger.warning(
+                                                   //                        "No value found for Property " + qualifiedName);
                 }
             } else if (logger.isFineEnabled()) {
                 logger.fine(

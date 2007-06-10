@@ -331,37 +331,41 @@ public class BeamItem
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{BeamItem");
-        sb.append(" glyph#")
-          .append(glyph.getId());
 
-        if (packCard != 1) {
-            sb.append(" [")
-              .append(packIndex)
-              .append("/")
-              .append(packCard)
+        try {
+            sb.append(" glyph#")
+              .append(glyph.getId());
+
+            if (packCard != 1) {
+                sb.append(" [")
+                  .append(packIndex)
+                  .append("/")
+                  .append(packCard)
+                  .append("]");
+            }
+
+            sb.append(" left=[")
+              .append(left.x)
+              .append(",")
+              .append(left.y)
               .append("]");
+            sb.append(" center=[")
+              .append(getCenter().x)
+              .append(",")
+              .append(getCenter().y)
+              .append("]");
+            sb.append(" right=[")
+              .append(right.x)
+              .append(",")
+              .append(right.y)
+              .append("]");
+            sb.append(" slope=")
+              .append((float) getLine().getSlope());
+        } catch (NullPointerException e) {
+            sb.append(" INVALID");
         }
 
-        sb.append(" left=[")
-          .append(left.x)
-          .append(",")
-          .append(left.y)
-          .append("]");
-
-        sb.append(" center=[")
-          .append(getCenter().x)
-          .append(",")
-          .append(getCenter().y)
-          .append("]");
-
-        sb.append(" right=[")
-          .append(right.x)
-          .append(",")
-          .append(right.y)
-          .append("]");
-
-        sb.append(" slope=")
-          .append((float) getLine().getSlope());
+        sb.append("}");
 
         return sb.toString();
     }

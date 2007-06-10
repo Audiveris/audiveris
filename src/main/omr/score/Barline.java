@@ -99,7 +99,7 @@ public class Barline
         PagePoint topLeft = getSystem()
                                 .getTopLeft();
 
-        for (Stick stick : sticks) {
+        for (Stick stick : getSticks()) {
             if ((stick.getShape() == Shape.THICK_BAR_LINE) ||
                 (stick.getShape() == Shape.THIN_BAR_LINE)) {
                 // Beware : Vertical sticks using Horizontal line equation
@@ -132,7 +132,7 @@ public class Barline
         PagePoint topLeft = getSystem()
                                 .getTopLeft();
 
-        for (Stick stick : sticks) {
+        for (Stick stick : getSticks()) {
             if ((stick.getShape() == Shape.THICK_BAR_LINE) ||
                 (stick.getShape() == Shape.THIN_BAR_LINE)) {
                 // Beware : Vertical sticks using Horizontal line equation
@@ -175,11 +175,11 @@ public class Barline
     /**
      * Report the collection of physical sticks that compose this bar line
      *
-     * @return the collection of sticks
+     * @return the collection of sticks, or an empty set if sticks is null
      */
     public Collection<Stick> getSticks ()
     {
-        return sticks;
+        return (sticks == null) ? Collections.<Stick>emptySet() : sticks;
     }
 
     //--------//
@@ -234,7 +234,7 @@ public class Barline
      */
     public void mergeWith (Barline other)
     {
-        for (Stick stick : other.sticks) {
+        for (Stick stick : other.getSticks()) {
             addStick(stick);
         }
     }
@@ -251,7 +251,7 @@ public class Barline
     public void render (Graphics g,
                         Zoom     z)
     {
-        for (Stick stick : sticks) {
+        for (Stick stick : getSticks()) {
             stick.renderLine(g, z);
         }
     }
@@ -281,21 +281,27 @@ public class Barline
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Barline")
-          .append(" ")
-          .append(getShape())
-          .append(" center=")
-          .append(getCenter())
-          .append(" sig=")
-          .append(getSignature())
-          .append(" sticks[");
+        sb.append("{Barline");
 
-        for (Stick stick : sticks) {
-            sb.append("#")
-              .append(stick.getId());
+        try {
+            sb.append(" ")
+              .append(getShape())
+              .append(" center=")
+              .append(getCenter())
+              .append(" sig=")
+              .append(getSignature())
+              .append(" sticks[");
+
+            for (Stick stick : getSticks()) {
+                sb.append("#")
+                  .append(stick.getId());
+            }
+
+            sb.append("]");
+        } catch (NullPointerException e) {
+            sb.append(" INVALID");
         }
 
-        sb.append("]");
         sb.append("}");
 
         return sb.toString();
@@ -307,7 +313,7 @@ public class Barline
     @Override
     protected void computeCenter ()
     {
-        setCenter(computeGlyphsCenter(sticks));
+        setCenter(computeGlyphsCenter(getSticks()));
     }
 
     //-----------//
@@ -341,7 +347,7 @@ public class Barline
             StringBuilder sb = new StringBuilder();
             String        last = null;
 
-            for (Stick stick : sticks) {
+            for (Stick stick : getSticks()) {
                 String letter = getLetter(stick.getShape());
 
                 if (letter == null) {

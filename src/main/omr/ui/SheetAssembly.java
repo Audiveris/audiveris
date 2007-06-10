@@ -125,6 +125,7 @@ public class SheetAssembly
         if (logger.isFineEnabled()) {
             logger.fine("creating SheetAssembly on " + sheet);
         }
+
         component = new Panel();
 
         // Cross links between sheet and its assembly
@@ -309,7 +310,8 @@ public class SheetAssembly
      */
     public JComponent getErrorsPane ()
     {
-        return sheet.getErrorsEditor().getComponent();
+        return sheet.getErrorsEditor()
+                    .getComponent();
     }
 
     //-----------------//

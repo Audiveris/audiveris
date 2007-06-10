@@ -80,12 +80,12 @@ public abstract class ConstantSet
         for (Constant constant : getMap()
                                      .values()) {
             System.out.printf(
-                
                 "%-25s %12s %-14s = %-20s\t%s\n",
                 constant.getName(),
                 constant.getShortTypeName(),
                 (constant.getQuantityUnit() != null)
-                                ? ("(" + constant.getQuantityUnit() + ")") : "",constant.getCurrentString(),
+                                ? ("(" + constant.getQuantityUnit() + ")") : "",
+                constant.getCurrentString(),
                 constant.getDescription());
         }
     }

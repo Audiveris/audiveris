@@ -11,6 +11,7 @@ package omr.ui;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
+import omr.selection.SelectionManager;
 import omr.selection.SelectionObserver;
 
 import omr.ui.util.Panel;
@@ -22,7 +23,6 @@ import java.awt.*;
 import java.util.List;
 
 import javax.swing.*;
-import omr.selection.SelectionManager;
 
 /**
  * Class <code>Board</code> defines the common properties of any user board such

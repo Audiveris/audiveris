@@ -214,7 +214,7 @@ public class IconManager
                         name + FILE_EXTENSION);
                     is = new FileInputStream(iconFile);
                 } catch (FileNotFoundException e) {
-                    logger.warning("Cannot find icon file " + e.getMessage());
+                    logger.fine("Cannot find icon file " + e.getMessage());
                 }
             }
 

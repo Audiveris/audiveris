@@ -180,9 +180,9 @@ public class Beam
 
                 if (result == 0) {
                     // This should not happen
-//                    logger.warning(
-//                        other.getContextString() + " equality between " +
-//                        this.toLongString() + " and " + other.toLongString());
+                    //                    logger.warning(
+                    //                        other.getContextString() + " equality between " +
+                    //                        this.toLongString() + " and " + other.toLongString());
                     logger.warning(
                         "x=" + x + " y=" + y + " yOther=" + yOther + " yHead=" +
                         yHead);
@@ -514,15 +514,20 @@ public class Beam
         StringBuilder sb = new StringBuilder();
         sb.append("{Beam");
 
-        sb.append("#")
-          .append(id);
+        try {
+            sb.append("#")
+              .append(id);
 
-        if (getGroup() != null) {
-            sb.append(" lv=")
-              .append(getLevel());
+            if (getGroup() != null) {
+                sb.append(" lv=")
+                  .append(getLevel());
+            }
+
+            sb.append(BeamItem.toString(items));
+        } catch (NullPointerException e) {
+            sb.append(" INVALID");
         }
 
-        sb.append(BeamItem.toString(items));
         sb.append("}");
 
         return sb.toString();

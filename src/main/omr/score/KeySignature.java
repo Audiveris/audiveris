@@ -50,7 +50,7 @@ public class KeySignature
                                                        -4, // F - Fa
     -1, // C - Do
     -5, // G - Sol
-    -2, // D - R�
+    -2, // D - R
     +1, // A - La
     -3, // E - Mi
     0 // B - Si
@@ -66,7 +66,7 @@ public class KeySignature
                                                       0, // B - Si
     -3, // E - Mi
     +1, // A - La
-    -2, // D - R�
+    -2, // D - R
     +2, // G - Sol
     -1, // C - Do
     +3 // F - Fa
@@ -403,23 +403,25 @@ public class KeySignature
         StringBuilder sb = new StringBuilder();
         sb.append("{KeySignature");
 
-        sb.append(" key=")
-          .append(key);
+        try {
+            sb.append(" key=")
+              .append(key);
+            sb.append(" center=")
+              .append(getCenter());
+            sb.append(" pitch=")
+              .append(getPitchPosition());
+            sb.append(" glyphs[");
 
-        sb.append(" center=")
-          .append(getCenter());
+            for (Glyph glyph : glyphs) {
+                sb.append("#")
+                  .append(glyph.getId());
+            }
 
-        sb.append(" pitch=")
-          .append(getPitchPosition());
-
-        sb.append(" glyphs[");
-
-        for (Glyph glyph : glyphs) {
-            sb.append("#")
-              .append(glyph.getId());
+            sb.append("]");
+        } catch (NullPointerException e) {
+            sb.append(" INVALID");
         }
 
-        sb.append("]");
         sb.append("}");
 
         return sb.toString();
@@ -943,6 +945,10 @@ public class KeySignature
         double sum = 0;
         getKey();
 
+        if (key == null) {
+            return 0;
+        }
+
         if (key > 0) {
             for (int k = 0; k < key; k++) {
                 sum += sharpPositions[k];
@@ -1023,7 +1029,7 @@ public class KeySignature
      */
     private void retrieveKey ()
     {
-        if (glyphs.size() > 0) {
+        if ((glyphs != null) && (glyphs.size() > 0)) {
             // Check we have only sharps or only flats
             Shape shape = null;
 
@@ -1048,7 +1054,7 @@ public class KeySignature
                 addError("Weird key signature " + this);
             }
         } else {
-            addError("Empty key signature " + this);
+            addError("Empty key signature");
         }
     }
 
@@ -1080,11 +1086,12 @@ public class KeySignature
         Scale.Fraction keyYMargin = new Scale.Fraction(
             0.25d,
             "Margin when checking vertical position of single-glyph key");
-//
-//        public Constants ()
-//        {
-//            java.lang.System.out.println(
-//                Thread.currentThread().getName() + " Creation...");
-//        }
+
+        //
+        //        public Constants ()
+        //        {
+        //            java.lang.System.out.println(
+        //                Thread.currentThread().getName() + " Creation...");
+        //        }
     }
 }
