@@ -134,9 +134,15 @@ public class ConstantManager
                 logger.fine("Store constants into " + USER_FILE_NAME);
             }
 
+            // First make sure the directory exists (Brenton patch)
+            new File(USER_FILE_NAME).getParentFile()
+                                    .mkdirs();
+
+            // Then write down the user properties
             FileOutputStream out = new FileOutputStream(USER_FILE_NAME);
-            String           text = " User Audiveris run properties file. Do not edit";
-            userProperties.store(out, text);
+            userProperties.store(
+                out,
+                " User Audiveris run properties file. Do not edit");
             out.close();
         } catch (FileNotFoundException ex) {
             logger.warning(
@@ -146,23 +152,6 @@ public class ConstantManager
             logger.warning(
                 "Error while storing the User property file " + USER_FILE_NAME);
         }
-    }
-
-    //-------------//
-    // setProperty //
-    //-------------//
-    /**
-     * Meant to be called by <code>Constant</code> class, to update the property
-     * value that relates to the given constant.
-     *
-     * @param qualifiedName name of the constant
-     * @param val           the new value
-     */
-    static void setProperty (String qualifiedName,
-                             String val)
-    {
-        getUserProperties()
-            .setProperty(qualifiedName, val);
     }
 
     //-------------//
@@ -189,6 +178,23 @@ public class ConstantManager
     {
         getUserProperties()
             .remove(qualifiedName);
+    }
+
+    //-------------//
+    // setProperty //
+    //-------------//
+    /**
+     * Meant to be called by <code>Constant</code> class, to update the property
+     * value that relates to the given constant.
+     *
+     * @param qualifiedName name of the constant
+     * @param val           the new value
+     */
+    static void setProperty (String qualifiedName,
+                             String val)
+    {
+        getUserProperties()
+            .setProperty(qualifiedName, val);
     }
 
     //-------------------//
