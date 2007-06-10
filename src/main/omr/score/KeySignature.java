@@ -50,7 +50,7 @@ public class KeySignature
                                                        -4, // F - Fa
     -1, // C - Do
     -5, // G - Sol
-    -2, // D - R
+    -2, // D - Re
     +1, // A - La
     -3, // E - Mi
     0 // B - Si
@@ -66,7 +66,7 @@ public class KeySignature
                                                       0, // B - Si
     -3, // E - Mi
     +1, // A - La
-    -2, // D - R
+    -2, // D - Re
     +2, // G - Sol
     -1, // C - Do
     +3 // F - Fa

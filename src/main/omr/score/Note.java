@@ -61,7 +61,7 @@ public class Note
 
         /** Si */ B,
         /** Do */ C, 
-        /** R� */ D, 
+        /** Re */ D, 
         /** Mi */ E, 
         /** Fa */ F, 
         /** Sol */ G;
