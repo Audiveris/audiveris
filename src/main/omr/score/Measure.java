@@ -309,17 +309,21 @@ public class Measure
     public Chord findEventChord (SystemPoint point)
     {
         // Choose the x-closest slot
-        Slot  slot = getClosestSlot(point);
+        Slot slot = getClosestSlot(point);
 
-        // Choose the y-closest chord with normal (non-rest) note (WRONG !!!)
-        // TO BE IMPROVED !!! TBD
-        Chord chord = slot.getChordAbove(point);
+        if (slot != null) {
+            // Choose the y-closest chord with normal (non-rest) note (WRONG !!!)
+            // TO BE IMPROVED !!! TBD
+            Chord chord = slot.getChordAbove(point);
 
-        if (chord == null) {
-            chord = slot.getChordBelow(point);
+            if (chord == null) {
+                chord = slot.getChordBelow(point);
+            }
+
+            return chord;
+        } else {
+            return null;
         }
-
-        return chord;
     }
 
     //------------//

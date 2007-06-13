@@ -17,7 +17,7 @@ import java.util.Arrays;
  * range, or codomain).
  *
  * <p>It finds a mapping that minimizes the global mapping distance, given
- * the indivudual distance for each domain/range elements pair. This
+ * the individual distance for each domain/range elements pair. This
  * implementation uses brute force, and thus should be used with small
  * sizes only.
  *
@@ -71,7 +71,7 @@ public class InjectionSolver
     /**
      * Report (one of) the mapping(s) for which the global distance is minimum
      *
-     * @return an arry parallel to the domain collection, which for each
+     * @return an array parallel to the domain collection, which for each
      * (domain) element gives the mapped range element
      */
     public int[] solve ()

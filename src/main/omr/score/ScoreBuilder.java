@@ -85,12 +85,12 @@ public class ScoreBuilder
         sheet.getErrorsEditor()
              .clear();
 
-        if (Runtime.getRuntime()
-                   .availableProcessors() > 1) {
-            buildParallelInfo();
-        } else {
+//        if (Runtime.getRuntime()
+//                   .availableProcessors() > 1) {
+//            buildParallelInfo();
+//        } else {
             buildSequentialInfo();
-        }
+//        }
 
         // Score processing once all systems are completed
         checkSlurConnections();

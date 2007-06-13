@@ -126,7 +126,10 @@ public class Dynamics
                      Glyph       glyph)
     {
         super(measure, true, point, chord, glyph);
-        chord.addDirection(this); ////// TBD: Not always !!!!!!!!!!!!!!!!!!!
+
+        if (chord != null) {
+            chord.addDirection(this); ////// TBD: Not always !!!!!!!!!!!!!!!!!!!
+        }
     }
 
     //~ Methods ----------------------------------------------------------------

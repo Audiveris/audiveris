@@ -223,12 +223,50 @@ public class BeamGroup
         }
     }
 
+    //---------------//
+    // setStartTimes //
+    //---------------//
+    /**
+     * Assign start times to chords of this beam group, assuming the first chord
+     * of the group already has its startTime set
+     */
+    public void setStartTimes ()
+    {
+        // Process all the beamed chords
+        // Including the interleaved rests if any
+        Chord prevChord = null;
+        ///logger.info("setStartTimes for " + this.getChords());
+
+        for (Chord chord : getChords()) {
+            ///logger.info("chord=" + chord);
+
+            if (prevChord != null) {
+                // Here we must check for interleaved rest
+                Note rest = Chord.lookupRest(prevChord, chord);
+
+                if (rest != null) {
+                    rest.getChord()
+                        .setStartTime(prevChord.getEndTime());
+                    chord.setStartTime(rest.getChord().getEndTime());
+                } else {
+                    chord.setStartTime(prevChord.getEndTime());
+                }
+            } else {
+                if (chord.getStartTime() == null) {
+                    chord.addError(
+                        "Setting a beam group with time of first chord not set");
+                }
+            }
+
+            prevChord = chord;
+        }
+    }
+
     //----------//
     // setVoice //
     //----------//
     /**
-     * Assign a voice id to this beam group (this method assumes that the first
-     * chord of the beam group already has its startTime set).
+     * Assign a voice id to this beam group
      *
      * @param voice the voice id
      */
@@ -249,23 +287,12 @@ public class BeamGroup
 
                     if (rest != null) {
                         rest.getChord()
-                            .setStartTime(prevChord.getEndTime());
-                        rest.getChord()
                             .setVoice(voice);
-                        chord.setStartTime(rest.getChord().getEndTime());
-                    } else {
-                        chord.setStartTime(prevChord.getEndTime());
-                    }
-
-                    prevChord = chord;
-                } else {
-                    if (chord.getStartTime() == null) {
-                        chord.addError(
-                            "Setting a beam group with time not set");
                     }
                 }
 
                 chord.setVoice(voice);
+                prevChord = chord;
             }
         } else {
             if (!this.voice.equals(voice)) {
@@ -300,6 +327,38 @@ public class BeamGroup
           .append("}");
 
         return sb.toString();
+    }
+
+    //-------//
+    // align //
+    //-------//
+    /**
+     * Force all beams (and beam items) to use the same slop within that beam group
+     */
+    private void align ()
+    {
+        // Retrieve the longest beam and use its slope
+        double bestLength = 0;
+        Beam   bestBeam = null;
+
+        for (Beam beam : beams) {
+            double length = beam.getLeft()
+                                .distance(beam.getRight());
+
+            if (length > bestLength) {
+                bestLength = length;
+                bestBeam = beam;
+            }
+        }
+
+        double slope = bestBeam.getLine()
+                               .getSlope();
+
+        for (Beam beam : beams) {
+            SystemPoint left = beam.getLeft();
+            SystemPoint right = beam.getRight();
+            right.y = left.y + (int) Math.rint(slope * (right.x - left.x));
+        }
     }
 
     //-------//
@@ -341,38 +400,6 @@ public class BeamGroup
         }
 
         return null; // everything is OK
-    }
-
-    //-------//
-    // align //
-    //-------//
-    /**
-     * Force all beams (and beam items) to use the same slop within that beam group
-     */
-    private void align ()
-    {
-        // Retrieve the longest beam and use its slope
-        double bestLength = 0;
-        Beam   bestBeam = null;
-
-        for (Beam beam : beams) {
-            double length = beam.getLeft()
-                                .distance(beam.getRight());
-
-            if (length > bestLength) {
-                bestLength = length;
-                bestBeam = beam;
-            }
-        }
-
-        double slope = bestBeam.getLine()
-                               .getSlope();
-
-        for (Beam beam : beams) {
-            SystemPoint left = beam.getLeft();
-            SystemPoint right = beam.getRight();
-            right.y = left.y + (int) Math.rint(slope * (right.x - left.x));
-        }
     }
 
     //-----------------//

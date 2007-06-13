@@ -465,10 +465,14 @@ public class Chord
         int   voice = getVoice();
         Chord prev = (Chord) getPreviousSibling();
 
-        for (; prev != null; prev = (Chord) prev.getPreviousSibling()) {
-            if (prev.getVoice() == voice) {
-                return prev;
+        try {
+            for (; prev != null; prev = (Chord) prev.getPreviousSibling()) {
+                if (prev.getVoice() == voice) {
+                    return prev;
+                }
             }
+        } catch (NullPointerException ex) {
+            // Try to continue
         }
 
         return null;
@@ -969,26 +973,7 @@ public class Chord
             BeamGroup group = getBeamGroup();
 
             if (group != null) {
-                Chord prevChord = null;
-
-                for (Chord chord : group.getChords()) {
-                    if (prevChord != null) {
-                        // Here we must check for interleaved rest
-                        Note rest = lookupRest(prevChord, chord);
-
-                        if (rest != null) {
-                            rest.getChord()
-                                .setStartTime(prevChord.getEndTime());
-                            chord.setStartTime(rest.getChord().getEndTime());
-                        } else {
-                            chord.setStartTime(prevChord.getEndTime());
-                        }
-
-                        prevChord = chord;
-                    } else if (chord == this) {
-                        prevChord = chord;
-                    }
-                }
+                group.setStartTimes();
             }
         } else {
             if (!this.startTime.equals(startTime)) {
@@ -1037,6 +1022,10 @@ public class Chord
     {
         // Already done?
         if (this.voice == null) {
+            if (logger.isFineEnabled()) {
+                logger.fine("setVoice " + voice + " to " + this);
+            }
+
             this.voice = voice;
 
             // Extend this info to other beamed chords if any
@@ -1046,7 +1035,7 @@ public class Chord
                 group.setVoice(voice);
             }
 
-            // Extend to the tied chords as well
+            // Extend to the tied chords as well, perhaps in other measures
             for (Chord chord : getTiedChords()) {
                 chord.setVoice(voice);
             }
