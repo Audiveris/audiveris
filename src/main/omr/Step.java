@@ -35,7 +35,7 @@ public class Step
     private static final Logger logger = Logger.getLogger(Step.class);
 
     /** Related UI when used in interactive mode */
-    private static StepMonitor monitor;
+    private static volatile StepMonitor monitor;
 
     /** The most popular step, so it's easier to get it directly */
     private static Step LOAD;
@@ -64,6 +64,19 @@ public class Step
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------------//
+    // createMonitor //
+    //---------------//
+    /**
+     * Allows to couple the steps with a UI.
+     */
+    public static StepMonitor createMonitor ()
+    {
+        monitor = new StepMonitor();
+
+        return monitor;
+    }
 
     //----------------//
     // getDescription //
@@ -131,19 +144,6 @@ public class Step
         return null;
     }
 
-    //---------------//
-    // createMonitor //
-    //---------------//
-    /**
-     * Allows to couple the steps with a UI.
-     */
-    public static StepMonitor createMonitor ()
-    {
-        monitor = new StepMonitor();
-
-        return monitor;
-    }
-
     //-----------//
     // doPerform //
     //-----------//
@@ -174,6 +174,14 @@ public class Step
                 "Exception '" + ex + "' in performing step " + current,
                 ex);
         }
+    }
+
+    //------------//
+    // getMonitor //
+    //------------//
+    public static StepMonitor getMonitor ()
+    {
+        return monitor;
     }
 
     //-----------//

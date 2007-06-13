@@ -9,11 +9,14 @@
 //
 package omr;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.sheet.Sheet;
 
-import omr.ui.*;
 import omr.ui.util.UIUtilities;
 
+import omr.util.LogStepMonitorHandler;
 import omr.util.Logger;
 
 import java.awt.Graphics;
@@ -25,7 +28,7 @@ import javax.swing.*;
  * Class <code>StepMonitor</code> is the user interface entity that allows to
  * monitor step progression, and require manually a step series to be performed.
  *
- * @author Herv&eacute; Bitteur
+ * @author Herv&eacute; Bitteur and Brenton Partridge
  * @version $Id$
  */
 public class StepMonitor
@@ -34,6 +37,14 @@ public class StepMonitor
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(StepMonitor.class);
+
+    static {
+        logger.getParent()
+              .addHandler(new LogStepMonitorHandler());
+    }
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     //~ Instance fields --------------------------------------------------------
 
@@ -58,7 +69,7 @@ public class StepMonitor
         bar.setBorder(UIUtilities.getToolBorder());
         bar.setToolTipText("On going Step activity");
         bar.setStringPainted(true);
-        bar.setIndeterminate(false);
+        animate(false);
         bar.setString("");
 
         // Launch the worker
@@ -66,6 +77,72 @@ public class StepMonitor
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------//
+    // animate //
+    //---------//
+    /**
+     *
+     * @param animating If false, deactivates all animation of the progress
+     *                  bar.  If true, activates an indeterminate or
+     *                  pseudo-indeterminate animation.
+     */
+    public void animate (final boolean animating)
+    {
+        animate(0);
+
+        if (animating) {
+            animate();
+        }
+    }
+
+    //---------//
+    // animate //
+    //---------//
+    /**
+     * Sets the progress bar to show a percentage.
+     * @param amount percentage, in decimal form, from 0.0 to 1.0
+     */
+    public void animate (final double amount)
+    {
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    public void run ()
+                    {
+                        bar.setIndeterminate(false);
+
+                        int divisions = constants.divisions.getValue();
+                        bar.setMinimum(0);
+                        bar.setMaximum(divisions);
+                        bar.setValue((int) Math.round(divisions * amount));
+                    }
+                });
+    }
+
+    //---------//
+    // animate //
+    //---------//
+    /**
+     * Sets the progress bar to show a percentage a certain amount above
+     * the previous percentage value (or above 0 if the bar had been
+     * indeterminate).
+     */
+    public void animate ()
+    {
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    public void run ()
+                    {
+                        int old = bar.getValue();
+                        int diff = bar.getMaximum() - old;
+                        int increment = (int) Math.round(
+                            diff * constants.ratio.getValue());
+
+                        bar.setIndeterminate(false);
+                        bar.setValue(old + increment);
+                    }
+                });
+    }
 
     //--------------//
     // getComponent //
@@ -133,7 +210,7 @@ public class StepMonitor
                         try {
                             // "Activate" the progress bar
                             if (bar != null) {
-                                bar.setIndeterminate(true);
+                                animate(true);
                             }
 
                             if (sheet != null) {
@@ -154,8 +231,8 @@ public class StepMonitor
                         } finally {
                             // Reset the progress bar
                             if (bar != null) {
-                                bar.setString("");
-                                bar.setIndeterminate(false);
+                                notifyMsg("");
+                                animate(false);
                             }
 
                             if (logger.isFineEnabled()) {
@@ -169,6 +246,22 @@ public class StepMonitor
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        Constant.Integer divisions = new Constant.Integer(
+            "divisions",
+            1000,
+            "Number of divisions (amount of precision) of step monitor, minimum 10");
+        Constant.Double  ratio = new Constant.Double(
+            "",
+            1.0 / 10.0,
+            "Amount by which to increase step monitor percentage per animation, between 0 and 1");
+    }
 
     //----------------//
     // MyJProgressBar //
@@ -184,7 +277,7 @@ public class StepMonitor
             } catch (Exception ex) {
                 // Nearly ignored
                 logger.warning("StepMonitor. Ignored: " + ex);
-                repaint(); // To trigger another painting                
+                repaint(); // To trigger another painting
             }
         }
     }
