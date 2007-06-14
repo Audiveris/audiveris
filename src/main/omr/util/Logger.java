@@ -13,6 +13,8 @@ import omr.constant.UnitManager;
 
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
 
 /**
  * Class <code>Logger</code> is a specific subclass of standard java Logger,
@@ -34,6 +36,9 @@ import java.util.logging.LogManager;
 public class Logger
     extends java.util.logging.Logger
 {
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
     //~ Constructors -----------------------------------------------------------
 
     //--------//
@@ -173,7 +178,9 @@ public class Logger
         super.severe(msg);
         new Throwable().printStackTrace();
 
-        ///System.exit(-1);
+        if (constants.exitOnSevere.getValue()) {
+            System.exit(-1);
+        }
     }
 
     //--------//
@@ -191,7 +198,9 @@ public class Logger
         super.severe(msg);
         thrown.printStackTrace();
 
-        ///System.exit(-1);
+        if (constants.exitOnSevere.getValue()) {
+            System.exit(-1);
+        }
     }
 
     //---------//
@@ -201,12 +210,33 @@ public class Logger
      * Log a warning with a related exception, then continue
      *
      * @param msg the (warning) message
-     * @param thrown the related exception
+     * @param thrown the related exception, whose stack trace will be printed
+     *               only if the constant flag 'printStackTraces' is set.
      */
     public void warning (String    msg,
                          Throwable thrown)
     {
         super.warning(msg);
-        thrown.printStackTrace();
+        
+        if (constants.printStackOnWarning.getValue()) {
+            thrown.printStackTrace();
+        }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        Constant.Boolean printStackOnWarning = new Constant.Boolean(
+            false,
+            "Should we print out the stack of any warning logged with exception?");
+        
+        Constant.Boolean exitOnSevere = new Constant.Boolean(
+            false,
+            "Should we exit the application when a severe error is logged?");
     }
 }
