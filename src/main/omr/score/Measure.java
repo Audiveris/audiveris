@@ -1025,12 +1025,18 @@ public class Measure
                 if (chord != null) {
                     int nbMarks = chord.getMarks()
                                        .size();
-                    chord.getMarks()
-                         .remove(chord.getMarks().get(nbMarks - 1));
 
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            getContextString() + " Final forward removed");
+                    if (nbMarks > 0) {
+                        chord.getMarks()
+                             .remove(chord.getMarks().get(nbMarks - 1));
+
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                getContextString() + " Final forward removed");
+                        }
+                    } else {
+                        chord.addError(
+                            "No final mark to remove in an implicit measure");
                     }
                 } else {
                     addError("No final chord in voice " + voice);
