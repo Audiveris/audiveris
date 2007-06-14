@@ -210,13 +210,13 @@ public class ErrorsEditor
         {
             StringBuilder sb = new StringBuilder();
             sb.append(node.getContextString());
-            sb.append("[");
+            sb.append(" [");
 
             if (glyph != null) {
                 sb.append("Glyph #" + glyph.getId());
             }
 
-            sb.append("]")
+            sb.append("] ")
               .append(text);
 
             return sb.toString();
