@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<icon name="TUPLET_THREE">
+    <bitmap>
+        <row>---00$*.</row>
+        <row>--o#-.#0</row>
+        <row>--+0-.#*</row>
+        <row>-----*#.</row>
+        <row>--+*#*.-</row>
+        <row>----*$--</row>
+        <row>o0--0#+-</row>
+        <row>##.-$#.-</row>
+        <row>*0.*#o--</row>
+        <row>-+oo.---</row>
+    </bitmap>
+</icon>

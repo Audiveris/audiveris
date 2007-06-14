@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<icon name="TUPLET_SIX">
+    <bitmap>
+        <row>--.*$**.</row>
+        <row>-.#$.-#*</row>
+        <row>-$#.-.#0</row>
+        <row>+#*---.-</row>
+        <row>*#$$#$--</row>
+        <row>##+-.#0-</row>
+        <row>#*---$*-</row>
+        <row>$0---#0-</row>
+        <row>o*--0#.-</row>
+        <row>-0***.--</row>
+    </bitmap>
+</icon>
