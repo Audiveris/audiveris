@@ -472,7 +472,7 @@ public class Chord
                 }
             }
         } catch (NullPointerException ex) {
-            // Try to continue
+            logger.warning("NullPointerException in getPreviousChordInVoice");
         }
 
         return null;
@@ -697,7 +697,9 @@ public class Chord
                         logger.info(measure.getContextString() + " " + toDot);
                     }
 
-                    if ((toDot.x <= maxDx) && (Math.abs(toDot.y) <= maxDy)) {
+                    if ((toDot.x > 0) &&
+                        (toDot.x <= maxDx) &&
+                        (Math.abs(toDot.y) <= maxDy)) {
                         candidates.add(chord);
                     }
                 }
@@ -958,22 +960,18 @@ public class Chord
     {
         // Already done?
         if (this.startTime == null) {
+            if (logger.isFineEnabled()) {
+                logger.info(
+                    "setStartTime " + startTime + " for chord #" + getId());
+            }
+
             this.startTime = startTime;
-            logger.fine("setStartTime " + this);
 
             // Set the same info in containing slot if any
             Slot slot = getSlot();
 
             if (slot != null) {
                 slot.setStartTime(startTime);
-            }
-
-            // Extend this information through the other beamed chords if any
-            // Taking into account intermediate rests if any
-            BeamGroup group = getBeamGroup();
-
-            if (group != null) {
-                group.setStartTimes();
             }
         } else {
             if (!this.startTime.equals(startTime)) {

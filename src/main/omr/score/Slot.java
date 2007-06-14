@@ -521,15 +521,25 @@ public class Slot
     public void setStartTime (int startTime)
     {
         if (this.startTime == null) {
-            this.startTime = startTime;
-
             if (logger.isFineEnabled()) {
-                logger.fine("setStartTime " + this);
+                logger.fine(
+                    "setStartTime " + startTime + " for Slot #" + getId());
             }
 
-            // Assign to all chords of this slot
+            this.startTime = startTime;
+
+            // Assign to all chords of this slot first
             for (Chord chord : getChords()) {
                 chord.setStartTime(startTime);
+            }
+
+            // Then, extend this information through the beamed chords if any
+            for (Chord chord : getChords()) {
+                BeamGroup group = chord.getBeamGroup();
+
+                if (group != null) {
+                    group.computeStartTimes();
+                }
             }
         } else {
             if (!this.startTime.equals(startTime)) {

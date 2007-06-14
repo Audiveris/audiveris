@@ -81,6 +81,48 @@ public class BeamGroup
         }
     }
 
+    //-------------------//
+    // computeStartTimes //
+    //-------------------//
+    /**
+     * Compute start times for all chords of this beam group, assuming the first
+     * chord of the group already has its startTime set
+     */
+    public void computeStartTimes ()
+    {
+        Chord prevChord = null;
+
+        for (Chord chord : getChords()) {
+            if (prevChord != null) {
+                try {
+                    // Here we must check for interleaved rest
+                    Note rest = Chord.lookupRest(prevChord, chord);
+
+                    if (rest != null) {
+                        rest.getChord()
+                            .setStartTime(prevChord.getEndTime());
+                        chord.setStartTime(rest.getChord().getEndTime());
+                    } else {
+                        chord.setStartTime(prevChord.getEndTime());
+                    }
+                } catch (Exception ex) {
+                    chord.addError(
+                        "Cannot compute chord time based on previous chord");
+                    logger.warning(
+                        "Cannot compute chord time based on previous chord",
+                        ex);
+                }
+            } else {
+                if (chord.getStartTime() == null) {
+                    chord.addError(
+                        "Computing beam group times with first chord not set");
+                }
+            }
+
+            prevChord = chord;
+        }
+    }
+
     //----------//
     // getBeams //
     //----------//
@@ -220,45 +262,6 @@ public class BeamGroup
     {
         if (!beams.remove(beam)) {
             beam.addError(beam + " not found in " + this);
-        }
-    }
-
-    //---------------//
-    // setStartTimes //
-    //---------------//
-    /**
-     * Assign start times to chords of this beam group, assuming the first chord
-     * of the group already has its startTime set
-     */
-    public void setStartTimes ()
-    {
-        // Process all the beamed chords
-        // Including the interleaved rests if any
-        Chord prevChord = null;
-        ///logger.info("setStartTimes for " + this.getChords());
-
-        for (Chord chord : getChords()) {
-            ///logger.info("chord=" + chord);
-
-            if (prevChord != null) {
-                // Here we must check for interleaved rest
-                Note rest = Chord.lookupRest(prevChord, chord);
-
-                if (rest != null) {
-                    rest.getChord()
-                        .setStartTime(prevChord.getEndTime());
-                    chord.setStartTime(rest.getChord().getEndTime());
-                } else {
-                    chord.setStartTime(prevChord.getEndTime());
-                }
-            } else {
-                if (chord.getStartTime() == null) {
-                    chord.addError(
-                        "Setting a beam group with time of first chord not set");
-                }
-            }
-
-            prevChord = chord;
         }
     }
 
