@@ -311,6 +311,11 @@ public abstract class Evaluator
             if (glyph.getNormalizedHeight() > constants.maxClefHeight.getValue()) {
                 return null;
             }
+
+            // Check distance from closest staff
+            if (Math.abs(glyph.getPitchPosition()) >= 15) {
+                return null;
+            }
         } else if (Shape.HeadAndFlags.contains(shape)) {
             // Check that we do have a stem on left side
             if (glyph.getLeftStem() == null) {
@@ -324,6 +329,11 @@ public abstract class Evaluator
         } else if (Shape.Times.contains(shape)) {
             // A time signature is on staff !
             if (Math.abs(glyph.getPitchPosition()) >= 3) {
+                return null;
+            }
+        } else if (Shape.Dynamics.contains(shape)) {
+            // Check distance from closest staff
+            if (Math.abs(glyph.getPitchPosition()) >= 15) {
                 return null;
             }
         } else if (Shape.Notes.contains(shape) ||
