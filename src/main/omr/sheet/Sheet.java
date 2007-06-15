@@ -23,7 +23,6 @@ import omr.glyph.ui.SymbolsEditor;
 import omr.score.Score;
 import omr.score.ScoreBuilder;
 import omr.score.ScoreManager;
-import omr.score.ScoreNode;
 import omr.score.SystemNode;
 import omr.score.visitor.ScoreChecker;
 import omr.score.visitor.ScoreColorizer;
@@ -35,8 +34,6 @@ import omr.selection.Selection;
 import omr.selection.SelectionManager;
 import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
-
-import omr.stick.Stick;
 
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
@@ -1361,23 +1358,6 @@ public class Sheet
         }
 
         return vLag;
-    }
-
-    //--------------//
-    // getVerticals //
-    //--------------//
-    /**
-     * Retrieve verticals system by system
-     */
-    public Boolean getVerticals ()
-    {
-        try {
-            return VERTICALS.getResult();
-        } catch (ProcessingException ex) {
-            logger.severe("Verticals not available");
-
-            return null;
-        }
     }
 
     //---------------------//

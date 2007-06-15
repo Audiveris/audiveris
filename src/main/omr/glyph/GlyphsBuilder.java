@@ -343,12 +343,17 @@ public class GlyphsBuilder
                 considerConnection(glyph, section, visitedSections);
 
                 // Compute all its characteristics
-                computeGlyphFeatures(glyph, system);
+                ///computeGlyphFeatures(glyph, system);
 
                 // And insert this newly built glyph at proper location
                 glyph = insertGlyph(glyph, system);
                 nb++;
             }
+        }
+
+        // Force update for features of ALL system glyphs
+        for (Glyph glyph : system.getGlyphs()) {
+            computeGlyphFeatures(glyph, system);
         }
 
         return nb;
