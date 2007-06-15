@@ -940,7 +940,7 @@ public class Note
          * Maximum absolute dy between note and stem end
          */
         Scale.Fraction maxStemDy = new Scale.Fraction(
-            0.5d,
+            1d,
             "Maximum absolute dy between note and stem end");
 
         /**

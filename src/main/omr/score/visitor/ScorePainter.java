@@ -268,6 +268,10 @@ public class ScorePainter
             final Stroke      oldStroke = g.getStroke();
             final SystemPoint tail = chord.getTailLocation();
             final SystemPoint head = chord.getHeadLocation();
+            if (tail == null || head == null) {
+                chord.addError("No head - tail defined for chord");
+                return true;
+            }
             g.setStroke(stemStroke);
             paintLine(chord.getDisplayOrigin(), tail, head);
             g.setStroke(oldStroke);

@@ -20,8 +20,6 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
-import omr.stick.Stick;
-
 import omr.util.Dumper;
 import omr.util.Logger;
 import omr.util.TreeNode;

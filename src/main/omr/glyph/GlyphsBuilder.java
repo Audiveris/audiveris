@@ -128,10 +128,24 @@ public class GlyphsBuilder
         compound.setParts(parts);
 
         // Compute glyph parameters
-        SystemInfo system = sheet.getSystemAtY(compound.getContourBox().y);
-        computeGlyphFeatures(system, compound);
+        computeGlyphFeatures(compound);
 
         return compound;
+    }
+
+    //----------------------//
+    // computeGlyphFeatures //
+    //----------------------//
+    /**
+     * Compute all the features that will be used to recognize the glyph at hand
+     * (it's a mix of moments plus a few other characteristics)
+     *
+     * @param glyph the glyph at hand
+     */
+    public void computeGlyphFeatures (Glyph glyph)
+    {
+        SystemInfo system = sheet.getSystemAtY(glyph.getContourBox().y);
+        computeGlyphFeatures(glyph, system);
     }
 
     //------------------------//
@@ -329,7 +343,7 @@ public class GlyphsBuilder
                 considerConnection(glyph, section, visitedSections);
 
                 // Compute all its characteristics
-                computeGlyphFeatures(system, glyph);
+                computeGlyphFeatures(glyph, system);
 
                 // And insert this newly built glyph at proper location
                 glyph = insertGlyph(glyph, system);
@@ -417,9 +431,6 @@ public class GlyphsBuilder
                             glyph.setRightStem(s);
                         }
 
-                        //                        logger.fine(
-                        //                            "Close distance between stem#" + s.getId() + " & " +
-                        //                            glyph);
                         return true;
                     }
                 }
@@ -436,11 +447,11 @@ public class GlyphsBuilder
      * Compute all the features that will be used to recognize the glyph at hand
      * (it's a mix of moments plus a few other characteristics)
      *
-     * @param system the system area which contains the glyph
      * @param glyph the glyph at hand
+     * @param system the system area which contains the glyph
      */
-    private void computeGlyphFeatures (SystemInfo system,
-                                       Glyph      glyph)
+    private void computeGlyphFeatures (Glyph      glyph,
+                                       SystemInfo system)
     {
         // Ordinate (approximate value)
         Rectangle box = glyph.getContourBox();

@@ -22,12 +22,7 @@ import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 
-import omr.score.Chord;
-import omr.score.Measure;
 import omr.score.Note;
-import omr.score.Staff;
-import omr.score.SystemPart;
-import omr.score.SystemPoint;
 import omr.score.visitor.SheetPainter;
 
 import omr.selection.Selection;
@@ -42,7 +37,6 @@ import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 
 import omr.util.Logger;
-import omr.util.TreeNode;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -195,7 +189,7 @@ public class SymbolsEditor
                                   Shape shape)
     {
         if (glyph != null) {
-            // If this is a transient glyph (with no Id), insert it
+            // If this is a transient glyph (with no Id yet), insert it
             if (glyph.getId() == 0) {
                 builder.insertGlyph(glyph);
                 logger.info(
@@ -203,6 +197,10 @@ public class SymbolsEditor
             }
 
             if ((shape == Shape.NOISE) || evaluator.isBigEnough(glyph)) {
+                // Force a recomputation of glyph parameters (since environment may
+                // have changed since the time they had been computed)
+                builder.computeGlyphFeatures(glyph);
+
                 super.assignGlyphShape(glyph, shape);
 
                 if (shape != null) {
@@ -210,10 +208,6 @@ public class SymbolsEditor
                         logger.fine("assign " + shape + " -> updateScore");
                     }
                 }
-
-                //            } else {
-                //                logger.warning(
-                //                    "Attempt to assign " + shape + " to a tiny glyph");
             }
         }
     }

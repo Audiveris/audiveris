@@ -26,9 +26,8 @@ import omr.util.Logger;
 import omr.util.SignallingRunnable;
 import omr.util.TreeNode;
 
-import java.util.Collections;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Class <code>ScoreBuilder</code> is in charge of translating each relevant
@@ -85,12 +84,12 @@ public class ScoreBuilder
         sheet.getErrorsEditor()
              .clear();
 
-//        if (Runtime.getRuntime()
-//                   .availableProcessors() > 1) {
-//            buildParallelInfo();
-//        } else {
-            buildSequentialInfo();
-//        }
+        //        if (Runtime.getRuntime()
+        //                   .availableProcessors() > 1) {
+        //            buildParallelInfo();
+        //        } else {
+        buildSequentialInfo();
+        //        }
 
         // Score processing once all systems are completed
         checkSlurConnections();
