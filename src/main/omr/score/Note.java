@@ -210,12 +210,18 @@ public class Note
     public static void createPack (Chord chord,
                                    Glyph glyph)
     {
-        int       card = packCardOf(glyph.getShape());
-        Glyph     stem = chord.getStem();
-        final int dy = chord.getScale()
-                            .toUnits(constants.maxStemDy);
-        int       top = 0;
-        int       bottom = 0;
+        final int   card = packCardOf(glyph.getShape());
+
+        // Test on ordinates between stem (if any) and note
+        // Be strict when glyph has 2 stems and more relaxed with just one stem
+        /// A TERMINER TBD
+        final Glyph stem = chord.getStem();
+        final int   dy = chord.getScale()
+                              .toUnits(
+            (glyph.getStemNumber() >= 2) ? constants.maxMultiStemDy
+                        : constants.maxSingleStemDy);
+        int         top = 0;
+        int         bottom = 0;
 
         if (stem != null) {
             PixelRectangle box = stem.getContourBox();
@@ -938,11 +944,18 @@ public class Note
             "Maximum absolute dy between note and accidental");
 
         /**
-         * Maximum absolute dy between note and stem end
+         * Maximum absolute dy between note and single stem end
          */
-        Scale.Fraction maxStemDy = new Scale.Fraction(
+        Scale.Fraction maxSingleStemDy = new Scale.Fraction(
             1d,
-            "Maximum absolute dy between note and stem end");
+            "Maximum absolute dy between note and single stem end");
+
+        /**
+         * Maximum absolute dy between note and multi stem end
+         */
+        Scale.Fraction maxMultiStemDy = new Scale.Fraction(
+            0.25d,
+            "Maximum absolute dy between note and multi stem end");
 
         /**
          * Maximum absolute dy between note center and centroid
