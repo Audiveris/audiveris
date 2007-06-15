@@ -14,7 +14,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
-import omr.sheet.PixelPoint;
 import omr.sheet.PixelRectangle;
 import omr.sheet.Scale;
 
@@ -61,7 +60,13 @@ public abstract class MeasureElement
 
     //~ Constructors -----------------------------------------------------------
 
-    /** Creates a new instance */
+    /** Creates a new instance
+     * @param measure the containing measure
+     * @param start is this a starting element (of a two-piece entity)
+     * @param point the location within the system
+     * @param chord the related chord, if any
+     * @param glyph the underlying glyph
+     */
     public MeasureElement (Measure     measure,
                            boolean     start,
                            SystemPoint point,

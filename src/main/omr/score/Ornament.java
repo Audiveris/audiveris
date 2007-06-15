@@ -10,7 +10,6 @@
 package omr.score;
 
 import omr.glyph.Glyph;
-import omr.glyph.Shape;
 
 import omr.score.visitor.ScoreVisitor;
 

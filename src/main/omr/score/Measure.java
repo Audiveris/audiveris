@@ -422,6 +422,7 @@ public class Measure
      * (looking in beginning of the measure, then in previous measures, then in
      * previous systems)
      *
+     * @param point the point before which to look
      * @return the latest clef defined, or null
      */
     public Clef getClefBefore (SystemPoint point)
@@ -709,6 +710,7 @@ public class Measure
      * signature actually starts this measure in the same staff, or whether a
      * key signature was found in a previous measure, for the same staff.
      *
+     * @param point the point before which to look
      * @return the current time signature, or null if not found
      */
     public KeySignature getKeyBefore (SystemPoint point)

@@ -10,7 +10,6 @@
 package omr.score;
 
 import omr.constant.Constant;
-import omr.constant.ConstantSet;
 
 /**
  * Class <code>ScoreFormat</code> defines an enumeration of all possible formats

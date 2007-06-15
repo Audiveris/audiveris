@@ -14,8 +14,6 @@ import omr.glyph.Shape;
 
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.PixelRectangle;
-
 /**
  * Class <code>Pedal</code> represents a pedal (start) or pedal up (stop) event
  *

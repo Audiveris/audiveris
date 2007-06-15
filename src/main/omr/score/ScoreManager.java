@@ -10,7 +10,6 @@
 package omr.score;
 
 import omr.Main;
-import omr.Step;
 
 import omr.score.visitor.ScoreExporter;
 

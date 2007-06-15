@@ -13,8 +13,6 @@ import omr.glyph.Glyph;
 import static omr.score.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.PixelPoint;
-
 import omr.util.TreeNode;
 
 import java.awt.*;

@@ -11,11 +11,7 @@ package omr.score;
 
 import omr.glyph.Shape;
 
-import omr.lag.Lag;
-
 import omr.score.visitor.ScoreVisitor;
-
-import omr.sheet.Scale;
 
 import omr.stick.Stick;
 
