@@ -389,7 +389,6 @@ public class GlyphsBuilder
                                         Glyph             glyph,
                                         boolean           onLeft)
     {
-        ///logger.info("checkStemIntersect glyph#" + glyph.getId() + " among" + Glyph.toString(glyphs));
         // Box for searching for a stem
         Rectangle box;
 
@@ -554,7 +553,7 @@ public class GlyphsBuilder
             rect.x - dx,
             rect.y - dy,
             2 * dx,
-            rect.height + 2 + dy);
+            rect.height + 2 * dy);
     }
 
     //--------------//
@@ -603,12 +602,12 @@ public class GlyphsBuilder
 
         /** Box widening to check intersection with stem */
         Scale.Fraction stemWiden = new Scale.Fraction(
-            0.1,
+            0.2,
             "Box widening to check intersection with stem");
 
         /** Box heightening to check intersection with stem */
         Scale.Fraction stemHeighten = new Scale.Fraction(
-            0.1,
+            0.2,
             "Box heightening to check intersection with stem");
     }
 }

@@ -224,14 +224,15 @@ public class Note
         }
 
         for (int i = 0; i < card; i++) {
-            PixelPoint center = getHeadCenter(glyph, i);
-
             if (stem != null) {
-                if ((center.y < top) || (center.y > bottom)) {
+                PixelRectangle box = getItemBox(glyph, i);
+
+                if (((box.y + box.height) < top) || (box.y > bottom)) {
                     continue;
                 }
             }
 
+            PixelPoint center = getHeadCenter(glyph, i);
             glyph.addTranslation(new Note(chord, glyph, center, card, i));
         }
     }
