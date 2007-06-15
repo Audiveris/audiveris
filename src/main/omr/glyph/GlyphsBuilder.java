@@ -553,7 +553,7 @@ public class GlyphsBuilder
             rect.x - dx,
             rect.y - dy,
             2 * dx,
-            rect.height + 2 * dy);
+            rect.height + (2 * dy));
     }
 
     //--------------//
