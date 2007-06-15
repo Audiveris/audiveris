@@ -472,7 +472,10 @@ public class GlyphsBuilder
         Staff       staff = system.getScoreSystem()
                                   .getStaffAt(centroid);
 
-        // Number of connected stems
+        // Connected stems
+        glyph.setLeftStem(null);
+        glyph.setRightStem(null);
+
         int stemNb = 0;
 
         if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
