@@ -89,6 +89,9 @@ public class ScorePainter
     /** Stroke to draw beams */
     private static final Stroke beamStroke = new BasicStroke(4f);
 
+    /** Stroke to draw voices */
+    private static final Stroke voiceStroke = new BasicStroke(1.5f);
+
     /** Stroke to draw stems */
     private static final Stroke stemStroke = new BasicStroke(1f);
 
@@ -268,10 +271,13 @@ public class ScorePainter
             final Stroke      oldStroke = g.getStroke();
             final SystemPoint tail = chord.getTailLocation();
             final SystemPoint head = chord.getHeadLocation();
-            if (tail == null || head == null) {
+
+            if ((tail == null) || (head == null)) {
                 chord.addError("No head - tail defined for chord");
+
                 return true;
             }
+
             g.setStroke(stemStroke);
             paintLine(chord.getDisplayOrigin(), tail, head);
             g.setStroke(oldStroke);
@@ -308,20 +314,24 @@ public class ScorePainter
         // Voice indication ?
         if (constants.voicePainting.getValue()) {
             if (chord.getVoice() != null) {
-                try {
-                    g.setColor(voiceColors[chord.getVoice() - 1]);
-                } catch (Exception ex) {
-                    chord.addError(ex + " voice=" + chord.getVoice());
-                }
-
                 // Link to previous chord with same voice
                 final Chord prev = chord.getPreviousChordInVoice();
 
                 if (prev != null) {
-                    paintLine(
-                        chord.getDisplayOrigin(),
-                        prev.getHeadLocation(),
-                        chord.getHeadLocation());
+                    final Stroke oldStroke = g.getStroke();
+
+                    try {
+                        g.setColor(voiceColors[chord.getVoice() - 1]);
+                        g.setStroke(voiceStroke);
+                        paintLine(
+                            chord.getDisplayOrigin(),
+                            prev.getHeadLocation(),
+                            chord.getHeadLocation());
+                    } catch (Exception ex) {
+                        chord.addError(ex + " voice=" + chord.getVoice());
+                    }
+
+                    g.setStroke(oldStroke);
                 }
             } else {
                 chord.addError("No voice for chord " + chord);
