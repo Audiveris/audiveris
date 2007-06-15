@@ -230,7 +230,7 @@ public class Slur
         Circle circle = SlurGlyph.computeCircle(glyph);
 
         if (!circle.isValid(SlurGlyph.getMaxCircleDistance())) {
-            system.addError(glyph, "Still spurious slur #" + glyph.getId());
+            system.addError(glyph, "Still spurious slur glyph");
 
             if (SlurGlyph.fixSpuriousSlur(glyph, system.getInfo())) {
                 logger.info("Slur fixed  ...");

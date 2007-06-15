@@ -9,12 +9,12 @@
 //
 package omr.util;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
 import omr.constant.UnitManager;
 
 import java.util.logging.Level;
 import java.util.logging.LogManager;
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
 
 /**
  * Class <code>Logger</code> is a specific subclass of standard java Logger,
@@ -36,9 +36,11 @@ import omr.constant.ConstantSet;
 public class Logger
     extends java.util.logging.Logger
 {
+    //~ Static fields/initializers ---------------------------------------------
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
+
     //~ Constructors -----------------------------------------------------------
 
     //--------//
@@ -133,20 +135,6 @@ public class Logger
         return isLoggable(Level.FINE);
     }
 
-    //----------//
-    // setLevel //
-    //----------//
-    /**
-     * Set the logger level, using a level name
-     *
-     * @param levelStr the name of the level (case is irrelevant), such as Fine
-     *                 or INFO
-     */
-    public void setLevel (String levelStr)
-    {
-        setLevel(Level.parse(levelStr.toUpperCase()));
-    }
-
     //-----------//
     // logAssert //
     //-----------//
@@ -163,6 +151,20 @@ public class Logger
         if (!exp) {
             severe(msg);
         }
+    }
+
+    //----------//
+    // setLevel //
+    //----------//
+    /**
+     * Set the logger level, using a level name
+     *
+     * @param levelStr the name of the level (case is irrelevant), such as Fine
+     *                 or INFO
+     */
+    public void setLevel (String levelStr)
+    {
+        setLevel(Level.parse(levelStr.toUpperCase()));
     }
 
     //--------//
@@ -216,10 +218,11 @@ public class Logger
     public void warning (String    msg,
                          Throwable thrown)
     {
-        super.warning(msg);
-        
         if (constants.printStackOnWarning.getValue()) {
+            super.warning(msg);
             thrown.printStackTrace();
+        } else {
+            super.warning(msg + " [" + thrown + "]");
         }
     }
 
@@ -234,7 +237,6 @@ public class Logger
         Constant.Boolean printStackOnWarning = new Constant.Boolean(
             false,
             "Should we print out the stack of any warning logged with exception?");
-        
         Constant.Boolean exitOnSevere = new Constant.Boolean(
             false,
             "Should we exit the application when a severe error is logged?");

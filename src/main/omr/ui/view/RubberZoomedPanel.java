@@ -142,10 +142,7 @@ public class RubberZoomedPanel
                 rubber.render(g);
             }
         } catch (ConcurrentModificationException ex) {
-            logger.warning(
-                "RubberZoomedPanel paintComponent ignored: " + ex + " name=" +
-                getName(),
-                ex);
+            logger.warning("RubberZoomedPanel paintComponent failed", ex);
             repaint(); // To trigger another painting later ...
         }
     }

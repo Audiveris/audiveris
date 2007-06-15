@@ -11,8 +11,6 @@ package omr.glyph;
 
 import omr.constant.ConstantSet;
 
-import omr.lag.Section;
-
 import omr.score.Staff;
 import omr.score.SystemPoint;
 
@@ -20,7 +18,6 @@ import omr.sheet.Dash;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.SystemSplit;
 
 import omr.stick.Stick;
 

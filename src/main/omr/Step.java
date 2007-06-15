@@ -170,9 +170,7 @@ public class Step
         } catch (ProcessingException ex) {
             // User has already been informed, so just stop
         } catch (Exception ex) {
-            logger.warning(
-                "Exception '" + ex + "' in performing step " + current,
-                ex);
+            logger.warning("Exception in performing step " + current, ex);
         }
     }
 
