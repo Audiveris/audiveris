@@ -117,6 +117,7 @@ public class TimeSignature
      * Report the bottom part of the time signature
      *
      * @return the bottom part
+     * @throws omr.score.TimeSignature.InvalidTimeSignature
      */
     public Integer getDenominator ()
         throws InvalidTimeSignature
@@ -147,6 +148,7 @@ public class TimeSignature
      * Report the top part of the time signature
      *
      * @return the top part
+     * @throws omr.score.TimeSignature.InvalidTimeSignature
      */
     public Integer getNumerator ()
         throws InvalidTimeSignature
@@ -169,6 +171,7 @@ public class TimeSignature
      * Report the shape of this time signature
      *
      * @return the (lazily determined) shape
+     * @throws omr.score.TimeSignature.InvalidTimeSignature
      */
     public Shape getShape ()
         throws InvalidTimeSignature

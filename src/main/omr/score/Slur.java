@@ -9,7 +9,6 @@
 //
 package omr.score;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;

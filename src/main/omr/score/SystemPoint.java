@@ -10,7 +10,6 @@
 package omr.score;
 
 import java.awt.*;
-import java.awt.geom.Point2D;
 
 /**
  * Class <code>SystemPoint</code> is a simple Point that is meant to represent a

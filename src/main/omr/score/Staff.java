@@ -9,24 +9,15 @@
 //
 package omr.score;
 
-import omr.glyph.Shape;
-
-import omr.lag.Lag;
 import static omr.score.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
 import omr.sheet.StaffInfo;
 
-import omr.ui.icon.SymbolIcon;
-import omr.ui.view.Zoom;
-
-import omr.util.Dumper;
 import omr.util.Logger;
-import omr.util.TreeNode;
 
 import java.awt.*;
-import java.util.List;
 
 /**
  * Class <code>Staff</code> handles a staff in a system part. It is useful for

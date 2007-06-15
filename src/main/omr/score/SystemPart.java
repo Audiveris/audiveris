@@ -9,13 +9,7 @@
 //
 package omr.score;
 
-import omr.glyph.Glyph;
-import omr.glyph.Shape;
-
 import omr.score.visitor.ScoreVisitor;
-
-import omr.ui.icon.SymbolIcon;
-import omr.ui.view.Zoom;
 
 import omr.util.Logger;
 import omr.util.TreeNode;
@@ -82,6 +76,64 @@ public class SystemPart
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //----------//
+    // addChild //
+    //----------//
+    /**
+     * Overrides normal behavior, to deal with the separation of specific children
+     *
+     * @param node the node to insert
+     */
+    @Override
+    public void addChild (TreeNode node)
+    {
+        // Specific children lists
+        if (node instanceof Staff) {
+            staves.addChild(node);
+        } else if (node instanceof Measure) {
+            measures.addChild(node);
+        } else if (node instanceof Slur) {
+            slurs.addChild(node);
+        } else {
+            super.addChild(node);
+        }
+    }
+
+    //---------------//
+    // barlineExists //
+    //---------------//
+    public boolean barlineExists (int x,
+                                  int maxShiftDx)
+    {
+        for (TreeNode node : getMeasures()) {
+            Measure measure = (Measure) node;
+
+            if (Math.abs(measure.getBarline().getCenter().x - x) <= maxShiftDx) {
+                return true;
+            }
+        }
+
+        return false; // Not found
+    }
+
+    //-------------//
+    // cleanupNode //
+    //-------------//
+    public void cleanupNode ()
+    {
+        getSlurs()
+            .clear();
+    }
 
     //-----------------//
     // getFirstMeasure //
@@ -192,14 +244,6 @@ public class SystemPart
     }
 
     //--------------//
-    // setScorePart //
-    //--------------//
-    public void setScorePart (ScorePart scorePart)
-    {
-        this.scorePart = scorePart;
-    }
-
-    //--------------//
     // getScorePart //
     //--------------//
     public ScorePart getScorePart ()
@@ -265,19 +309,6 @@ public class SystemPart
     }
 
     //--------------------//
-    // setStartingBarline //
-    //--------------------//
-    /**
-     * Set the barline that starts the part
-     *
-     * @param startingBarline the starting barline
-     */
-    public void setStartingBarline (Barline startingBarline)
-    {
-        this.startingBarline = startingBarline;
-    }
-
-    //--------------------//
     // getStartingBarline //
     //--------------------//
     /**
@@ -317,62 +348,25 @@ public class SystemPart
         return (System) getParent();
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
+    //--------------//
+    // setScorePart //
+    //--------------//
+    public void setScorePart (ScorePart scorePart)
     {
-        return visitor.visit(this);
+        this.scorePart = scorePart;
     }
 
-    //----------//
-    // addChild //
-    //----------//
+    //--------------------//
+    // setStartingBarline //
+    //--------------------//
     /**
-     * Overrides normal behavior, to deal with the separation of specific children
+     * Set the barline that starts the part
      *
-     * @param node the node to insert
+     * @param startingBarline the starting barline
      */
-    @Override
-    public void addChild (TreeNode node)
+    public void setStartingBarline (Barline startingBarline)
     {
-        // Specific children lists
-        if (node instanceof Staff) {
-            staves.addChild(node);
-        } else if (node instanceof Measure) {
-            measures.addChild(node);
-        } else if (node instanceof Slur) {
-            slurs.addChild(node);
-        } else {
-            super.addChild(node);
-        }
-    }
-
-    //---------------//
-    // barlineExists //
-    //---------------//
-    public boolean barlineExists (int x,
-                                  int maxShiftDx)
-    {
-        for (TreeNode node : getMeasures()) {
-            Measure measure = (Measure) node;
-
-            if (Math.abs(measure.getBarline().getCenter().x - x) <= maxShiftDx) {
-                return true;
-            }
-        }
-
-        return false; // Not found
-    }
-
-    //-------------//
-    // cleanupNode //
-    //-------------//
-    public void cleanupNode ()
-    {
-        getSlurs()
-            .clear();
+        this.startingBarline = startingBarline;
     }
 
     //----------//

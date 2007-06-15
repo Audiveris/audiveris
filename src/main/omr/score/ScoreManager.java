@@ -88,6 +88,7 @@ public class ScoreManager
     //---------------//
     /**
      * Register score in score instances if not yet done
+     * @param score the score instance to check
      */
     public void checkInserted (Score score)
     {
@@ -101,6 +102,7 @@ public class ScoreManager
     //-------//
     /**
      * Close a score instance
+     * @param score the score to close
      */
     public void close (Score score)
     {
@@ -386,9 +388,9 @@ public class ScoreManager
     /**
      * Serialize the score to its binary file, and remember the actual file
      * used
+     * @param score the score to serialize
      */
     public void serialize (Score score)
-        throws Exception
     {
         logger.severe("Feature temporarily disabled");
 
