@@ -183,83 +183,86 @@ public class BarsBuilder
         scale = sheet.getScale();
         sheet.getHorizontals();
 
-        // Populate the vertical lag of runs
-        lag.setVertexClass(StickSection.class);
+        try {
+            // Populate the vertical lag of runs
+            lag.setVertexClass(StickSection.class);
 
-        SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
-        lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
-            lag,
-            new JunctionDeltaPolicy(scale.toPixels(constants.maxDeltaLength)));
-        lagBuilder.createSections(sheet.getPicture(), 0); // 0 = minRunLength
-        sheet.setVerticalLag(lag);
+            SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
+            lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
+                lag,
+                new JunctionDeltaPolicy(
+                    scale.toPixels(constants.maxDeltaLength)));
+            lagBuilder.createSections(sheet.getPicture(), 0); // 0 = minRunLength
+            sheet.setVerticalLag(lag);
 
-        // Retrieve (vertical) sticks
-        barsArea = new VerticalArea(
-            sheet,
-            lag,
-            scale.toPixels(constants.maxBarThickness));
-        clutter = new ArrayList<Stick>(barsArea.getSticks());
+            // Retrieve (vertical) sticks
+            barsArea = new VerticalArea(
+                sheet,
+                lag,
+                scale.toPixels(constants.maxBarThickness));
+            clutter = new ArrayList<Stick>(barsArea.getSticks());
 
-        // Allocate score
-        createScore();
+            // Allocate score
+            createScore();
 
-        // Delegate to BarsChecker companion
-        checker = new BarsChecker(sheet);
-        checker.retrieveMeasures(clutter, bars);
+            // Delegate to BarsChecker companion
+            checker = new BarsChecker(sheet);
+            checker.retrieveMeasures(clutter, bars);
 
-        // Check Measures using only score parameters
-        checkMeasures();
+            // Check Measures using only score parameters
+            checkMeasures();
 
-        // Define score parts
-        defineScoreParts();
+            // Define score parts
+            defineScoreParts();
 
-        // Remove clutter glyphs from lag (they will be handled as specific
-        // glyphs in the user view).
-        for (Stick stick : clutter) {
-            stick.destroy( /* cutSections => */
-            false);
-            stick.setInterline(sheet.getScale().interline()); // Safer
-        }
+            // Remove clutter glyphs from lag (they will be handled as specific
+            // glyphs in the user view).
+            for (Stick stick : clutter) {
+                stick.destroy( /* cutSections => */
+                false);
+                stick.setInterline(sheet.getScale().interline()); // Safer
+            }
 
-        // Erase bar pixels from picture (not used for the time being)
-        //////eraseBars();
+            // Erase bar pixels from picture (not used for the time being)
+            //////eraseBars();
 
-        // Update score internal data
-        score.accept(new ScoreFixer());
+            // Update score internal data
+            score.accept(new ScoreFixer());
 
-        if (logger.isFineEnabled()) {
-            score.dump();
-        }
+            if (logger.isFineEnabled()) {
+                score.dump();
+            }
 
-        // Report number of measures retrieved
-        int nb = score.getLastSystem()
-                      .getLastPart()
-                      .getLastMeasure()
-                      .getId();
+            // Report number of measures retrieved
+            int nb = score.getLastSystem()
+                          .getLastPart()
+                          .getLastMeasure()
+                          .getId();
 
-        if (nb > 0) {
-            logger.info(nb + " measure" + ((nb > 1) ? "s" : "") + " found");
-        } else {
-            logger.warning("No measure found");
-        }
+            if (nb > 0) {
+                logger.info(nb + " measure" + ((nb > 1) ? "s" : "") + " found");
+            } else {
+                logger.warning("No measure found");
+            }
 
-        // Split everything, including horizontals, per system
-        SystemSplit.computeSystemLimits(sheet);
-        SystemSplit.splitHorizontals(sheet);
-        SystemSplit.splitVerticalSections(sheet);
+            // Split everything, including horizontals, per system
+            SystemSplit.computeSystemLimits(sheet);
+            SystemSplit.splitHorizontals(sheet);
+            SystemSplit.splitVerticalSections(sheet);
 
-        // Assign the bar stick to the proper system glyphs collection
-        GlyphsBuilder glyphsBuilder = sheet.getGlyphsBuilder();
+            // Assign the bar stick to the proper system glyphs collection
+            GlyphsBuilder glyphsBuilder = sheet.getGlyphsBuilder();
 
-        for (Stick stick : bars) {
-            glyphsBuilder.insertGlyph(
-                stick,
-                sheet.getSystemAtY(stick.getContourBox().y));
-        }
-
-        // Display the resulting stickarea if so asked for
-        if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
-            displayFrame();
+            for (Stick stick : bars) {
+                glyphsBuilder.insertGlyph(
+                    stick,
+                    sheet.getSystemAtY(stick.getContourBox().y));
+            }
+        } finally {
+            // Display the resulting stickarea if so asked for
+            if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
+                displayFrame();
+            }
         }
     }
 
@@ -529,37 +532,43 @@ public class BarsBuilder
      */
     private void checkEndingBar (omr.score.System system)
     {
-        SystemPart part = system.getFirstPart();
-        Measure    measure = part.getLastMeasure();
-        Barline    barline = measure.getBarline();
-        int        lastX = barline.getRightX();
-        int        minWidth = scale.toPixels(constants.minMeasureWidth);
+        try {
+            SystemPart part = system.getFirstPart();
+            Measure    measure = part.getLastMeasure();
+            Barline    barline = measure.getBarline();
+            int        lastX = barline.getRightX();
+            int        minWidth = scale.toPixels(constants.minMeasureWidth);
 
-        if ((part.getFirstStaff()
-                 .getWidth() - lastX) < minWidth) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Adjusting EndingBar " + system);
-            }
+            if ((part.getFirstStaff()
+                     .getWidth() - lastX) < minWidth) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Adjusting EndingBar " + system);
+                }
 
-            // Adjust end of system & staff(s) to this one
-            UnitDimension dim = system.getDimension();
+                // Adjust end of system & staff(s) to this one
+                UnitDimension dim = system.getDimension();
 
-            if (dim == null) {
-                system.setDimension(new UnitDimension(lastX, 0));
-            } else {
-                dim.width = lastX;
-            }
+                if (dim == null) {
+                    system.setDimension(new UnitDimension(lastX, 0));
+                } else {
+                    dim.width = lastX;
+                }
 
-            for (Iterator pit = system.getParts()
-                                      .iterator(); pit.hasNext();) {
-                SystemPart prt = (SystemPart) pit.next();
+                for (Iterator pit = system.getParts()
+                                          .iterator(); pit.hasNext();) {
+                    SystemPart prt = (SystemPart) pit.next();
 
-                for (Iterator sit = prt.getStaves()
-                                       .iterator(); sit.hasNext();) {
-                    Staff stv = (Staff) sit.next();
-                    stv.setWidth(system.getDimension().width);
+                    for (Iterator sit = prt.getStaves()
+                                           .iterator(); sit.hasNext();) {
+                        Staff stv = (Staff) sit.next();
+                        stv.setWidth(system.getDimension().width);
+                    }
                 }
             }
+        } catch (Exception ex) {
+            logger.warning(
+                system.getContextString() + " Error in checking ending bar",
+                ex);
         }
     }
 
