@@ -9,6 +9,9 @@
 //
 package omr;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -25,6 +28,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class OmrExecutors
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Number of processors available */
     private static final int cpuNb = Runtime.getRuntime()
@@ -45,6 +51,9 @@ public class OmrExecutors
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------------//
+    // getHighExecutor //
+    //-----------------//
     /**
      * Return the (single) pool of high priority threads
      *
@@ -61,6 +70,9 @@ public class OmrExecutors
         return highExecutor;
     }
 
+    //----------------//
+    // getLowExecutor //
+    //----------------//
     /**
      * Return the (single) pool of low priority threads
      *
@@ -77,8 +89,37 @@ public class OmrExecutors
         return lowExecutor;
     }
 
+    //-----------------//
+    // getNumberOfCpus //
+    //-----------------//
+    /**
+     * Report the number of processors available
+     *
+     * @return the number of CPUs
+     */
+    public static int getNumberOfCpus ()
+    {
+        return cpuNb;
+    }
+
+    //----------------//
+    // useParallelism //
+    //----------------//
+    /**
+     * Report whether we should try to use parallelism as much as possible
+     *
+     * @return true for parallel
+     */
+    public static boolean useParallelism ()
+    {
+        return constants.useParallelism.getValue();
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
+    //---------//
+    // Factory //
+    //---------//
     private abstract static class Factory
         implements ThreadFactory
     {
@@ -106,6 +147,20 @@ public class OmrExecutors
         protected abstract String getThreadName ();
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        Constant.Boolean useParallelism = new Constant.Boolean(
+            true,
+            "Should we use parallelism when we have several processors?");
+    }
+
+    //-------------//
+    // HighFactory //
+    //-------------//
     private static class HighFactory
         extends Factory
     {
@@ -128,6 +183,9 @@ public class OmrExecutors
         }
     }
 
+    //------------//
+    // LowFactory //
+    //------------//
     private static class LowFactory
         extends Factory
     {

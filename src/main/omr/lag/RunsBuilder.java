@@ -74,8 +74,9 @@ public class RunsBuilder
         final int pMin = rect.y;
         final int pMax = (rect.y + rect.height) - 1;
 
-        if (Runtime.getRuntime()
-                   .availableProcessors() > 1) {
+        // Should we process columns in parallel or sequentially?
+        if (OmrExecutors.useParallelism() &&
+            (OmrExecutors.getNumberOfCpus() > 1)) {
             createParallelRuns(pMin, pMax, cMin, cMax);
         } else {
             createSequentialRuns(pMin, pMax, cMin, cMax);
@@ -124,7 +125,7 @@ public class RunsBuilder
     // createSequentialRuns //
     //----------------------//
     /**
-     * Sequential version version
+     * Sequential version
      */
     private void createSequentialRuns (int pMin,
                                        int pMax,

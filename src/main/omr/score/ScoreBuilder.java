@@ -70,9 +70,9 @@ public class ScoreBuilder
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
+    //-----------------//
     // translateSystem //
-    //-----------//
+    //-----------------//
     /**
      * Build the score information, system after system, glyph after glyph.
      * Nota: Only local tests can be performed here, global ones are performed
@@ -84,12 +84,13 @@ public class ScoreBuilder
         sheet.getErrorsEditor()
              .clear();
 
-        //        if (Runtime.getRuntime()
-        //                   .availableProcessors() > 1) {
-        //            buildParallelInfo();
-        //        } else {
-        buildSequentialInfo();
-        //        }
+        // Should we process systems in parallel or sequentially?
+        if (OmrExecutors.useParallelism() &&
+            (OmrExecutors.getNumberOfCpus() > 1)) {
+            buildParallelInfo();
+        } else {
+            buildSequentialInfo();
+        }
 
         // Score processing once all systems are completed
         checkSlurConnections();
