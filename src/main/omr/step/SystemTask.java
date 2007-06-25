@@ -93,7 +93,6 @@ public abstract class SystemTask
         // TBD
         for (SystemInfo system : sheet.getSystems()) {
             // TBD
-            done(system);
             doSystem(system);
         }
 

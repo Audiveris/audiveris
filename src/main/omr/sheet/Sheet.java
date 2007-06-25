@@ -1010,7 +1010,7 @@ public class Sheet
     {
         if (vLag == null) {
             try {
-                sheetSteps.doit(BARS);
+                sheetSteps.getResult(BARS);
             } catch (StepException ex) {
                 logger.severe("Cannot retrieve vLag from BARS");
             }
