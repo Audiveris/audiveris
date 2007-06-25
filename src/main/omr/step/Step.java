@@ -9,9 +9,9 @@
 //
 package omr.step;
 
-import omr.ProcessingException;
-
 import omr.sheet.Sheet;
+
+import omr.step.StepException;
 
 import omr.util.Logger;
 import omr.util.Memory;
@@ -108,11 +108,11 @@ public enum Step {
      * @param param a potential parameter for the step. This is actually used
      *              only when loading a new sheet.
      *
-     * @throws ProcessingException Raised when processing has failed
+     * @throws StepException Raised when processing has failed
      */
     public void doPerform (Sheet  sheet,
                            Object param)
-        throws ProcessingException
+        throws StepException
     {
         Step current = null;
 
@@ -120,7 +120,7 @@ public enum Step {
             // Force execution of specified step
             current = this;
             doStep(sheet, param);
-        } catch (ProcessingException ex) {
+        } catch (StepException ex) {
             // User has already been informed, so just stop
         } catch (Exception ex) {
             logger.warning("Exception in performing step " + current, ex);
@@ -175,7 +175,7 @@ public enum Step {
             } else {
                 doPerform(sheet, param);
             }
-        } catch (ProcessingException ex) {
+        } catch (StepException ex) {
             // User has already been informed of error details, so do nothing
         }
     }
@@ -190,11 +190,11 @@ public enum Step {
      * @param param the potential step parameter
      *
      * @return the (created or modified) sheet
-     * @throws ProcessingException
+     * @throws StepException
      */
     private Sheet doStep (Sheet  sheet,
                           Object param)
-        throws ProcessingException
+        throws StepException
     {
         long startTime = 0;
 

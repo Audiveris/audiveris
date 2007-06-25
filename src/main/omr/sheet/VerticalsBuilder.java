@@ -10,7 +10,6 @@
 package omr.sheet;
 
 import omr.Main;
-import omr.ProcessingException;
 
 import omr.check.Check;
 import omr.check.CheckBoard;
@@ -43,6 +42,8 @@ import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
+
+import omr.step.StepException;
 
 import omr.stick.Stick;
 
@@ -115,7 +116,7 @@ public class VerticalsBuilder
      *
      * @param sheet the related sheet
      *
-     * @throws ProcessingException when processing had to stop
+     * @throws StepException when processing had to stop
      */
     public VerticalsBuilder (Sheet sheet)
     {
@@ -189,7 +190,7 @@ public class VerticalsBuilder
     // retrieveAllVerticals //
     //----------------------//
     public void retrieveAllVerticals ()
-        throws ProcessingException
+        throws StepException
     {
         // Process each system area on turn
         int nb = 0;
@@ -213,7 +214,7 @@ public class VerticalsBuilder
     // retrieveSystemVerticals //
     //-------------------------//
     public int retrieveSystemVerticals (SystemInfo system)
-        throws ProcessingException
+        throws StepException
     {
         // Get rid of former symbols
         sheet.getGlyphsBuilder()
@@ -265,7 +266,7 @@ public class VerticalsBuilder
             } else {
                 logger.info("No stem found");
             }
-        } catch (omr.ProcessingException ex) {
+        } catch (omr.step.StepException ex) {
             logger.warning("stemSegment. Error in retrieving verticals");
         }
     }
@@ -320,7 +321,7 @@ public class VerticalsBuilder
      */
     private int retrieveVerticals (Collection<Stick> sticks,
                                    SystemInfo        system)
-        throws ProcessingException
+        throws StepException
     {
         /** Suite of checks for a stem glyph */
         StemCheckSuite suite = new StemCheckSuite(system);
@@ -494,7 +495,7 @@ public class VerticalsBuilder
         private final SystemInfo system;
 
         protected LeftCheck (SystemInfo system)
-            throws ProcessingException
+            throws StepException
         {
             super(
                 "LeftLimit",
@@ -552,7 +553,7 @@ public class VerticalsBuilder
         extends Check<Stick>
     {
         protected MinLengthCheck ()
-            throws ProcessingException
+            throws StepException
         {
             super(
                 "MinLength",
@@ -598,7 +599,7 @@ public class VerticalsBuilder
                     // Get a fresh suite
                     setSuite(new StemCheckSuite(system));
                     tellObject(stick);
-                } catch (ProcessingException ex) {
+                } catch (StepException ex) {
                     logger.warning("Glyph cannot be processed");
                 }
             }
@@ -694,7 +695,7 @@ public class VerticalsBuilder
         private final SystemInfo system;
 
         protected RightCheck (SystemInfo system)
-            throws ProcessingException
+            throws StepException
         {
             super(
                 "RightLimit",
@@ -725,7 +726,7 @@ public class VerticalsBuilder
         private final SystemInfo system;
 
         public StemCheckSuite (SystemInfo system)
-            throws ProcessingException
+            throws StepException
         {
             super("Stem", constants.minCheckResult.getValue());
             add(1, new MinLengthCheck());

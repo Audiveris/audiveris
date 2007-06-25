@@ -10,7 +10,6 @@
 package omr.step;
 
 import omr.Main;
-import omr.ProcessingException;
 
 import omr.score.visitor.ScoreChecker;
 
@@ -24,6 +23,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SkewBuilder;
 import omr.sheet.SystemInfo;
 import static omr.step.Step.*;
+import omr.step.StepException;
 
 import omr.util.Logger;
 
@@ -138,11 +138,11 @@ public class SheetSteps
      * given step
      * @param step the provided step
      * @param system the provided system
-     * @exception ProcessingException if processing goes wrong
+     * @exception StepException if processing goes wrong
      */
     public void doSystem (Step       step,
                           SystemInfo system)
-        throws ProcessingException
+        throws StepException
     {
         SheetTask task = getTask(step);
 
@@ -158,10 +158,10 @@ public class SheetSteps
     /**
      * Convenient method to launch the processing of a given step
      * @param step the provided step
-     * @exception ProcessingException if processing goes wrong
+     * @exception StepException if processing goes wrong
      */
     public void doit (Step step)
-        throws ProcessingException
+        throws StepException
     {
         getTask(step)
             .doit();
@@ -174,10 +174,10 @@ public class SheetSteps
      * Convenient method to make sure the result of a given step is
      * available
      * @param step the provided step
-     * @exception ProcessingException if processing goes wrong
+     * @exception StepException if processing goes wrong
      */
     public void getResult (Step step)
-        throws ProcessingException
+        throws StepException
     {
         getTask(step)
             .getResult();
@@ -191,11 +191,11 @@ public class SheetSteps
      * system is available
      * @param step the provided step
      * @param system the provided system
-     * @exception ProcessingException if processing goes wrong
+     * @exception StepException if processing goes wrong
      */
     public void getSystemResult (Step       step,
                                  SystemInfo system)
-        throws ProcessingException
+        throws StepException
     {
         SheetTask task = getTask(step);
 
@@ -249,7 +249,7 @@ public class SheetSteps
         }
 
         public void doit ()
-            throws ProcessingException
+            throws StepException
         {
             BarsBuilder barsBuilder = new BarsBuilder(sheet);
             barsBuilder.buildInfo();
@@ -287,7 +287,7 @@ public class SheetSteps
 
         @Override
         public void doSystem (SystemInfo system)
-            throws ProcessingException
+            throws StepException
         {
             getSystemResult(LEAVES, system);
             sheet.getGlyphInspector()
@@ -318,7 +318,7 @@ public class SheetSteps
         }
 
         public void doit ()
-            throws ProcessingException
+            throws StepException
         {
             sheet.setHorizontalsBuilder(new HorizontalsBuilder(sheet));
             sheet.setHorizontals(sheet.getHorizontalsBuilder().buildInfo());
@@ -349,7 +349,7 @@ public class SheetSteps
         }
 
         public void doSystem (SystemInfo system)
-            throws ProcessingException
+            throws StepException
         {
             // Trigger previous processing for this system, if needed
             getSystemResult(VERTICALS, system);
@@ -378,7 +378,7 @@ public class SheetSteps
         }
 
         public void doit ()
-            throws ProcessingException
+            throws StepException
         {
             sheet.setLinesBuilder(new LinesBuilder(sheet));
             sheet.setStaves(sheet.getLinesBuilder().getStaves());
@@ -408,7 +408,7 @@ public class SheetSteps
         }
 
         public void doit ()
-            throws ProcessingException
+            throws StepException
         {
             File imageFile = sheet.getImageFile();
 
@@ -418,10 +418,10 @@ public class SheetSteps
                 sheet.setPicture(picture);
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find file " + imageFile);
-                throw new ProcessingException();
+                throw new StepException();
             } catch (IOException ex) {
                 logger.warning("Input error on file " + imageFile);
-                throw new ProcessingException();
+                throw new StepException();
             } catch (ImageFormatException ex) {
                 logger.warning("Unsupported image format in file " + imageFile);
                 logger.warning(ex.getMessage());
@@ -433,11 +433,11 @@ public class SheetSteps
                         "Please use grey scale with 256 values");
                 }
 
-                throw new ProcessingException();
+                throw new StepException();
             } catch (Exception ex) {
                 ex.printStackTrace();
                 logger.warning(ex.getMessage());
-                throw new ProcessingException();
+                throw new StepException();
             }
         }
     }
@@ -462,7 +462,7 @@ public class SheetSteps
         }
 
         public void doit ()
-            throws ProcessingException
+            throws StepException
         {
             Scale scale = new Scale(sheet);
             sheet.setScale(scale);
@@ -497,7 +497,7 @@ public class SheetSteps
         }
 
         public void doFinal ()
-            throws ProcessingException
+            throws StepException
         {
             logger.fine("SCORE final");
             // Final cross-system translation tasks
@@ -507,7 +507,7 @@ public class SheetSteps
 
         @Override
         public void doSystem (SystemInfo system)
-            throws ProcessingException
+            throws StepException
         {
             omr.score.System scoreSystem = system.getScoreSystem();
             getSystemResult(CLEANUP, system);
@@ -540,7 +540,7 @@ public class SheetSteps
         }
 
         public void doit ()
-            throws ProcessingException
+            throws StepException
         {
             sheet.setSkewBuilder(new SkewBuilder(sheet));
             sheet.setSkew(sheet.getSkewBuilder().buildInfo());
@@ -607,7 +607,7 @@ public class SheetSteps
         }
 
         //        public void doit ()
-        //            throws ProcessingException
+        //            throws StepException
         //        {
         //            super.doit();
         //
@@ -616,7 +616,7 @@ public class SheetSteps
         //            }
         //        }
         public void doSystem (SystemInfo system)
-            throws ProcessingException
+            throws StepException
         {
             logger.fine("VERTICALS system #" + system.getScoreSystem().getId());
             getSystemResult(SYMBOLS, system);

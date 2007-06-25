@@ -10,7 +10,6 @@
 package omr.sheet;
 
 import omr.Main;
-import omr.ProcessingException;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
@@ -36,6 +35,7 @@ import static omr.selection.SelectionTag.*;
 import omr.step.SheetSteps;
 import omr.step.Step;
 import static omr.step.Step.*;
+import omr.step.StepException;
 
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
@@ -167,12 +167,12 @@ public class Sheet
      * @param imageFile a <code>File</code> value to specify the image file.
      * @param force should we keep the sheet structure even if the image cannot
      *                be loaded for whatever reason
-     * @throws ProcessingException raised if, while 'force' is false, image file
+     * @throws StepException raised if, while 'force' is false, image file
      *                  cannot be loaded
      */
     public Sheet (File    imageFile,
                   boolean force)
-        throws ProcessingException
+        throws StepException
     {
         this();
 
@@ -190,7 +190,7 @@ public class Sheet
         // Load this image picture
         try {
             sheetSteps.doit(LOAD);
-        } catch (ProcessingException ex) {
+        } catch (StepException ex) {
             if (!force) {
                 throw ex;
             }
@@ -220,10 +220,10 @@ public class Sheet
      * Create a sheet as a score companion
      *
      * @param score the existing score
-     * @throws omr.ProcessingException
+     * @throws omr.StepException
      */
     public Sheet (Score score)
-        throws ProcessingException
+        throws StepException
     {
         this(new File(score.getImagePath()), /* force => */
              true);
@@ -306,7 +306,7 @@ public class Sheet
         if (!sheetSteps.isDone(Step.SCALE)) {
             try {
                 setScale(score.getScale());
-            } catch (ProcessingException ex) {
+            } catch (StepException ex) {
                 logger.warning("Step aborted", ex);
             }
         }
@@ -571,7 +571,7 @@ public class Sheet
             try {
                 // Brought by LinesBuilder, so...
                 sheetSteps.getResult(LINES);
-            } catch (ProcessingException ex) {
+            } catch (StepException ex) {
                 logger.severe("Cannot retrieve HorizontalLag from LINES");
             }
         }
@@ -593,7 +593,7 @@ public class Sheet
             sheetSteps.getResult(HORIZONTALS);
 
             return horizontals;
-        } catch (ProcessingException ex) {
+        } catch (StepException ex) {
             logger.severe("Horizontals not processed");
 
             return null;
@@ -667,7 +667,7 @@ public class Sheet
             sheetSteps.getResult(LOAD);
 
             return picture;
-        } catch (ProcessingException ex) {
+        } catch (StepException ex) {
             logger.severe("Picture not available");
 
             return null;
@@ -703,7 +703,7 @@ public class Sheet
             sheetSteps.getResult(SCALE);
 
             return scale;
-        } catch (ProcessingException ex) {
+        } catch (StepException ex) {
             logger.severe("Scale not available");
 
             return null;
@@ -787,7 +787,7 @@ public class Sheet
             sheetSteps.getResult(Step.SKEW);
 
             return skew;
-        } catch (ProcessingException ex) {
+        } catch (StepException ex) {
             logger.severe("Skew not available");
 
             return null;
@@ -873,7 +873,7 @@ public class Sheet
             sheetSteps.getResult(LINES);
 
             return staves;
-        } catch (ProcessingException ex) {
+        } catch (StepException ex) {
             logger.severe("Staves not available");
 
             return null;
@@ -943,7 +943,7 @@ public class Sheet
         if (systems == null) {
             try {
                 sheetSteps.getResult(BARS);
-            } catch (ProcessingException ex) {
+            } catch (StepException ex) {
                 logger.severe("Bars systems not available");
 
                 return null;
@@ -1011,7 +1011,7 @@ public class Sheet
         if (vLag == null) {
             try {
                 sheetSteps.doit(BARS);
-            } catch (ProcessingException ex) {
+            } catch (StepException ex) {
                 logger.severe("Cannot retrieve vLag from BARS");
             }
         }
@@ -1241,7 +1241,7 @@ public class Sheet
      * @param scale the computed (or read from score file) scale
      */
     public void setScale (Scale scale)
-        throws ProcessingException
+        throws StepException
     {
         this.scale = scale;
 
@@ -1249,7 +1249,7 @@ public class Sheet
         if (scale.mainFore() == 0) {
             logger.warning(
                 "Invalid scale mainFore value : " + scale.mainFore());
-            throw new ProcessingException();
+            throw new StepException();
         }
     }
 
@@ -1406,7 +1406,7 @@ public class Sheet
                     sheetSteps.doSystem(SCORE, system);
                 }
             }
-        } catch (ProcessingException ex) {
+        } catch (StepException ex) {
             ex.printStackTrace();
         }
 

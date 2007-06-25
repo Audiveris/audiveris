@@ -10,7 +10,6 @@
 package omr.sheet;
 
 import omr.Main;
-import omr.ProcessingException;
 
 import omr.check.CheckBoard;
 import omr.check.CheckSuite;
@@ -51,6 +50,8 @@ import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
+
+import omr.step.StepException;
 
 import omr.stick.Stick;
 import omr.stick.StickSection;
@@ -173,11 +174,11 @@ public class BarsBuilder
     /**
      * Retrieve and store the bars information on the provided sheet
      *
-     * @throws ProcessingException raised when step processing must stop, due to
+     * @throws StepException raised when step processing must stop, due to
      *                             encountered error
      */
     public void buildInfo ()
-        throws ProcessingException
+        throws StepException
     {
         // Stuff to be made available
         scale = sheet.getScale();

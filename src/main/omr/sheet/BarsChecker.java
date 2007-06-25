@@ -9,8 +9,6 @@
 //
 package omr.sheet;
 
-import omr.ProcessingException;
-
 import omr.check.Check;
 import omr.check.CheckSuite;
 import omr.check.Checkable;
@@ -31,6 +29,8 @@ import omr.score.Score;
 import omr.score.Staff;
 import omr.score.System;
 import omr.score.SystemPart;
+
+import omr.step.StepException;
 
 import omr.stick.Stick;
 
@@ -270,11 +270,11 @@ public class BarsChecker
      * @param clutter the initial collection of vertical sticks, where
      *                recognized bar sticks are removed
      * @param bars the resulting collection of bar sticks
-     * @exception omr.ProcessingException raised if processing has been stoppped
+     * @exception omr.StepException raised if processing has been stoppped
      */
     public void retrieveMeasures (List<Stick> clutter,
                                   List<Stick> bars)
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         // Cache parameters
         this.clutter = clutter;
@@ -440,11 +440,11 @@ public class BarsChecker
      *                   containing part. For a part with just one staff, both
      *                   indices are equal. For a part of more than 1 staff, the
      *                   indices differ.
-     * @throws omr.ProcessingException raised if processing failed
+     * @throws omr.StepException raised if processing failed
      */
     private void buildSystemsAndParts (int[] systemStarts,
                                        int[] partStarts)
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         int            id = 0; // Id for created SystemInfo's
         int            sStart = -1; // Current system start
@@ -533,11 +533,11 @@ public class BarsChecker
      * <p> The output is thus a filled 'bars' list of bar lines, and the list of
      * SystemInfos which describe the parameters of each system.
      *
-     * @throws ProcessingException Raised when a sanity check on systems found
+     * @throws StepException Raised when a sanity check on systems found
      *                             has failed
      */
     private void retrieveBarLines ()
-        throws ProcessingException
+        throws StepException
     {
         if (logger.isFineEnabled()) {
             logger.fine(clutter.size() + " sticks to check");
@@ -628,7 +628,7 @@ public class BarsChecker
 
             if (systemStarts[i] == -1) {
                 logger.warning("No system found for staff " + i);
-                throw new ProcessingException();
+                throw new StepException();
             }
         }
 

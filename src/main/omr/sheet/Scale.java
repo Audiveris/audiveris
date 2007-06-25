@@ -108,10 +108,10 @@ public class Scale
      *
      * @param sheet the sheet to process
      *
-     * @throws omr.ProcessingException
+     * @throws omr.StepException
      */
     public Scale (Sheet sheet)
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         builder = new ScaleBuilder(sheet);
         mainFore = builder.getMainFore();

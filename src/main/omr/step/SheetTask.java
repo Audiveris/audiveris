@@ -9,9 +9,9 @@
 //
 package omr.step;
 
-import omr.ProcessingException;
-
 import omr.sheet.Sheet;
+
+import omr.step.StepException;
 
 import omr.util.Logger;
 
@@ -70,10 +70,10 @@ public abstract class SheetTask
     //------//
     /**
      * Actually perform the step
-     * @throws ProcessingException raised if processing failed
+     * @throws StepException raised if processing failed
      */
     public abstract void doit ()
-        throws ProcessingException;
+        throws StepException;
 
     //------//
     // done //
@@ -92,10 +92,10 @@ public abstract class SheetTask
     //-----------//
     /**
      * Make sure this step has been run (at least started)
-     * @throws ProcessingException raised if processing failed
+     * @throws StepException raised if processing failed
      */
     public void getResult ()
-        throws ProcessingException
+        throws StepException
     {
         ///logger.fine ("getResult " + step);
         if (!isDone()) {

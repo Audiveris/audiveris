@@ -101,10 +101,10 @@ public class LinesBuilder
      * This performs the retrieval of the various staves.
      *
      * @param sheet the sheet on which the analysis is performed.
-     * @throws omr.ProcessingException when processing must be interrupted
+     * @throws omr.StepException when processing must be interrupted
      */
     public LinesBuilder (Sheet sheet)
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         super(sheet, new GlyphLag("hLag", new HorizontalOrientation()));
 
@@ -403,7 +403,7 @@ public class LinesBuilder
      * @param peaks the raw list of peaks found
      */
     private void retrieveStaves (List<Peak> peaks)
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         // One single iterator, since from peak area to peak area, we keep
         // moving forward in the ordered list of vertices

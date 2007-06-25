@@ -10,7 +10,6 @@
 package omr.sheet;
 
 import omr.Main;
-import omr.ProcessingException;
 
 import omr.check.Check;
 import omr.check.CheckBoard;
@@ -37,6 +36,8 @@ import omr.score.visitor.SheetPainter;
 import omr.selection.Selection;
 import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
+
+import omr.step.StepException;
 
 import omr.stick.Stick;
 import omr.stick.StickUtil;
@@ -183,10 +184,10 @@ public class HorizontalsBuilder
      * things like ledgers, endings and legato signs.
      *
      * @return the built Horizontals info
-     * @throws ProcessingException raised is process gets stopped
+     * @throws StepException raised is process gets stopped
      */
     public Horizontals buildInfo ()
-        throws ProcessingException
+        throws StepException
     {
         // Purge small sections
         Scale scale = sheet.getScale();

@@ -81,7 +81,7 @@ public class StaffBuilder
      */
     public StaffInfo buildInfo (List<Peak> peaks,
                                 double     interval)
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         // Id for the newly created staff
         ++id;

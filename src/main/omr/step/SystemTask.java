@@ -9,10 +9,10 @@
 //
 package omr.step;
 
-import omr.ProcessingException;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import omr.step.StepException;
 
 import omr.util.Logger;
 
@@ -58,20 +58,20 @@ public abstract class SystemTask
     /**
      * Actually perform the step on the given system
      * @param system the system on which the step must be performed
-     * @throws ProcessingException raised if processing failed
+     * @throws StepException raised if processing failed
      */
     public abstract void doSystem (SystemInfo system)
-        throws ProcessingException;
+        throws StepException;
 
     //---------//
     // doFinal //
     //---------//
     /**
      * Final processing for this step, once all systems have been processed
-     * @throws ProcessingException raised if processing failed
+     * @throws StepException raised if processing failed
      */
     public void doFinal ()
-        throws ProcessingException
+        throws StepException
     {
         // Empty by default
     }
@@ -82,10 +82,10 @@ public abstract class SystemTask
     /**
      * Actually perform the step.
      * This method is run when this step is explicitly selected
-     * @throws ProcessingException raised if processing failed
+     * @throws StepException raised if processing failed
      */
     public void doit ()
-        throws ProcessingException
+        throws StepException
     {
         logger.fine(step + " SystemTask doit ...");
 
@@ -124,10 +124,10 @@ public abstract class SystemTask
     /**
      * Make sure this step has been run for the given system
      * @param system the system for which processing may be required
-     * @throws ProcessingException raised if processing failed
+     * @throws StepException raised if processing failed
      */
     public void getResult (SystemInfo system)
-        throws ProcessingException
+        throws StepException
     {
         if (!isDone(system)) {
             doSystem(system);

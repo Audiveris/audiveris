@@ -143,10 +143,10 @@ public class LineBuilder
      * Buils the stick info found in the provided staff line area
      *
      * @return the info to be kept regarding the single staff line
-     * @exception omr.ProcessingException raised when processing must stop
+     * @exception omr.StepException raised when processing must stop
      */
     public LineInfo buildInfo ()
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         id = ++globalId;
 
@@ -169,7 +169,7 @@ public class LineBuilder
         // Sanity check
         if (sticks.size() == 0) {
             logger.warning("No sticks found in line area #" + id);
-            throw new omr.ProcessingException();
+            throw new omr.step.StepException();
         }
 
         // Update left & right extrema

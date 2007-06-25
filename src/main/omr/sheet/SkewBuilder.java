@@ -118,10 +118,10 @@ public class SkewBuilder
      * Compute the skew of the sheet picture
      *
      * @return the skew info
-     * @exception omr.ProcessingException to stop processing if needed
+     * @exception omr.StepException to stop processing if needed
      */
     public Skew buildInfo ()
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         // Needed out for previous steps
         Picture picture = sheet.getPicture();

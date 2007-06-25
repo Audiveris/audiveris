@@ -10,12 +10,13 @@
 package omr.step;
 
 import omr.Main;
-import omr.ProcessingException;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.sheet.Sheet;
+
+import omr.step.StepException;
 
 import omr.ui.util.UIUtilities;
 
@@ -229,7 +230,7 @@ public class StepMonitor
                             if (sheet != null) {
                                 sheet.setBusy(false);
                             }
-                        } catch (ProcessingException ex) {
+                        } catch (StepException ex) {
                             logger.warning("Processing aborted");
                         } finally {
                             // Reset the progress bar

@@ -57,13 +57,13 @@ public class HorizontalArea
      * @param sheet the sheet to process
      * @param hLag  the horizontal lag from which sticks are built
      *
-     * @throws omr.ProcessingException raised when step processing must
+     * @throws omr.StepException raised when step processing must
      *                                 stop, due to encountered error
      */
     public HorizontalArea (Sheet    sheet,
                            GlyphLag hLag,
                            int      maxThickness)
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         super(
             hLag,

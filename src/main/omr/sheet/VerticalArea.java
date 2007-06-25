@@ -61,13 +61,13 @@ public class VerticalArea
      * @param sheet the sheet to process
      * @param vLag  the vertical lag from which bar sticks are built
      * @param maxThickness max value for vertical stick thickness
-     * @exception omr.ProcessingException raised when step processing must stop,
+     * @exception omr.StepException raised when step processing must stop,
      *                                 due to encountered error
      */
     public VerticalArea (Sheet    sheet,
                          GlyphLag vLag,
                          int      maxThickness)
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         this(sheet, vLag, new UnknownSectionPredicate(), maxThickness);
     }
@@ -83,14 +83,14 @@ public class VerticalArea
      * @param vLag  the vertical lag from which bar sticks are built
      * @param predicate a specific predicate for sections to consider
      * @param maxThickness max value for vertical stick thickness
-     * @exception omr.ProcessingException raised when step processing must stop,
+     * @exception omr.StepException raised when step processing must stop,
      *                                 due to encountered error
      */
     public VerticalArea (Sheet                   sheet,
                          GlyphLag                vLag,
                          Predicate<GlyphSection> predicate,
                          int                     maxThickness)
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         this(vLag.getVertices(), sheet, vLag, predicate, maxThickness);
     }
@@ -106,7 +106,7 @@ public class VerticalArea
      * @param vLag  the vertical lag from which bar sticks are built
      * @param predicate a specific predicate for sections to consider
      * @param maxThickness max value for vertical stick thickness
-     * @exception omr.ProcessingException raised when step processing must stop,
+     * @exception omr.StepException raised when step processing must stop,
      *                                 due to encountered error
      */
     public VerticalArea (Collection<GlyphSection> sections,
@@ -114,7 +114,7 @@ public class VerticalArea
                          GlyphLag                 vLag,
                          Predicate<GlyphSection>  predicate,
                          int                      maxThickness)
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         super(
             vLag,

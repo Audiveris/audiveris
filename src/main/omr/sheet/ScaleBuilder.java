@@ -108,10 +108,10 @@ public class ScaleBuilder
      * runs of pixels
      *
      * @return the main back length
-     * @throws omr.ProcessingException
+     * @throws omr.StepException
      */
     int getMainBack ()
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         if (mainBack == -1) {
             retrieveScale();
@@ -128,10 +128,10 @@ public class ScaleBuilder
      * runs of pixels
      *
      * @return the main fore length
-     * @throws omr.ProcessingException
+     * @throws omr.StepException
      */
     int getMainFore ()
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         if (mainFore == -1) {
             retrieveScale();
@@ -146,10 +146,10 @@ public class ScaleBuilder
     /**
      * Create a scale entity, by processing the provided sheet picture.
      *
-     * @throws omr.ProcessingException
+     * @throws omr.StepException
      */
     private void retrieveScale ()
-        throws omr.ProcessingException
+        throws omr.step.StepException
     {
         Picture picture = sheet.getPicture();
         adapter = new Adapter(sheet, picture.getHeight() - 1);
