@@ -9,8 +9,6 @@
 //
 package omr.glyph;
 
-import omr.ProcessingException;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
