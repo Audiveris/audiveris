@@ -28,6 +28,7 @@ import java.util.*;
  * @version $Id$
  */
 public class SystemInfo
+    implements Comparable<SystemInfo>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -180,6 +181,14 @@ public class SystemInfo
         LineInfo lastLine = staff.getLastLine();
         bottom = lastLine.getLine()
                          .yAt(lastLine.getLeft());
+    }
+
+    //-----------//
+    // compareTo //
+    //-----------//
+    public int compareTo (SystemInfo o)
+    {
+        return Integer.signum(id - o.id);
     }
 
     //------------//

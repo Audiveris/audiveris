@@ -11,7 +11,6 @@ package omr.sheet;
 
 import omr.Main;
 import omr.ProcessingException;
-import omr.Step;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
@@ -24,7 +23,6 @@ import omr.score.Score;
 import omr.score.ScoreBuilder;
 import omr.score.ScoreManager;
 import omr.score.SystemNode;
-import omr.score.visitor.ScoreChecker;
 import omr.score.visitor.ScoreColorizer;
 import omr.score.visitor.ScoreVisitor;
 import omr.score.visitor.SheetPainter;
@@ -34,6 +32,10 @@ import omr.selection.Selection;
 import omr.selection.SelectionManager;
 import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
+
+import omr.step.SheetSteps;
+import omr.step.Step;
+import static omr.step.Step.*;
 
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
@@ -49,52 +51,11 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Class <code>Sheet</code> encapsulates the original music image, as well as
  * pointers to all processings related to this image.
- *
- * <p/>Here is the ordered list of the various steps that sheet processing can
- * go through :
- *
- * <p/> <ol>
- *
- * <li> {@link #LOAD} loads the image for the sheet, from a provided image
- * file. </li>
- *
- * <li> {@link #SCALE} determines the general scale of the sheet, based on the
- * mean distance between staff lines. </li>
- *
- * <li> {@link #SKEW} determines the average skew of the picture, and deskews it
- * if needed. </li>
- *
- * <li> {@link #LINES} retrieves the staff lines, erases their pixels and
- * creates crossing objects when needed. Pixels modifications are made in the
- * original (unblurred) image. </li>
- *
- * <li> {@link #HORIZONTALS} retrieves the horizontal dashes. </li>
- *
- * <li> {@link #BARS} retrieves the vertical bar lines, and so the systems and
- * measures. </li>
- *
- * <li> {@link #SYMBOLS} recognizes isolated symbols glyphs. </li>
- *
- * <li> {@link #SYMBOLS_COMPOUNDS} aggregates unknown symbols into compound
- * glyphs. </li>
- *
- * <li> {@link #VERTICALS} retrieves the vertical items such as stems. </li>
- *
- * <li> {@link #LEAVES} processes leaves, which are glyphs attached to
- * stems. </li>
- *
- * <li> {@link #LEAVES_COMPOUNDS} aggregates unknown leaves into compound
- * glyphs. </li>
- *
- * <li> {@link #CLEANUP} is a final cleanup step. </li>
- *
- * <li> {@link #SCORE} is the score recognition step. </li>
- *
- * </ol>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -116,6 +77,21 @@ public class Sheet
 
     /** Link with sheet original image file. Set by constructor. */
     private File imageFile;
+
+    /** The related picture */
+    private Picture picture;
+
+    /** Global scale for this sheet */
+    private Scale scale;
+
+    /** Initial skew value */
+    private Skew skew;
+
+    /** Retrieved staves */
+    private List<StaffInfo> staves;
+
+    /** Horizontal entities */
+    private Horizontals horizontals;
 
     /** Vertical lag (built by BARS/BarsBuilder) */
     private GlyphLag vLag;
@@ -167,305 +143,17 @@ public class Sheet
     /** Related verticals builder */
     private transient VerticalsBuilder verticalsBuilder;
 
+    /** Score builder */
+    private transient ScoreBuilder scoreBuilder;
+
     /** To avoid concurrent modifications */
     private transient volatile boolean busy = false;
 
     /** Related errors editor */
     private transient ErrorsEditor errorsEditor;
 
-    // InstanceStep Definitions (in proper order) ------------------------------
-
-    /** Step to initially load a sheet picture */
-    public transient LoadStep LOAD;
-
-    /**
-     * Step to determine the main scale of the sheet. The scale is the mean
-     * distance, in pixels, between two consecutive staff lines. This is based
-     * on the population of vertical runs, since most frequent foreground runs
-     * come from staff lines, and most frequent background runs come from inter
-     * staff lines.
-     */
-    public final InstanceStep<Scale> SCALE = new InstanceStep<Scale>(
-        "Compute the main Scale of the sheet") {
-        public void doit ()
-            throws ProcessingException
-        {
-            result = new Scale(Sheet.this);
-
-            // Check we've got something usable
-            int fore = getScale()
-                           .mainFore();
-
-            if (fore == 0) {
-                logger.warning("Invalid scale mainFore value : " + fore);
-                throw new ProcessingException();
-            }
-        }
-    };
-
-    /**
-     * Step to determine the general slope of the sheet, still based on
-     * pseudo-horizontal (staff) lines. If the absolute value of the computed
-     * slope is above a maximum threshold, then the image as a whole is
-     * "deskewed", since this significantly eases the subsequent processing.
-     * The resulting (deskewed) image is stored on disk, and reloaded in place
-     * of the original (skewed) image. From this step on, we'll play only with
-     * the deskewed image.
-     */
-    public final InstanceStep<Skew> SKEW = new InstanceStep<Skew>(
-        "Compute the global Skew, and rotate if needed") {
-        public void doit ()
-            throws ProcessingException
-        {
-            skewBuilder = new SkewBuilder(Sheet.this);
-            result = skewBuilder.buildInfo();
-
-            // Update displayed image if any
-            if (getPicture()
-                    .isRotated() && (Main.getGui() != null)) {
-                assembly.getComponent()
-                        .repaint();
-            }
-
-            // Remember final sheet dimensions in pixels
-            width = getPicture()
-                        .getWidth();
-            height = getPicture()
-                         .getHeight();
-        }
-    };
-
-    /**
-     * Step to retrieve all staff lines, and remove them from the picture
-     */
-    public final InstanceStep<List<StaffInfo>> LINES = new InstanceStep<List<StaffInfo>>(
-        "Detect & remove all Staff Lines") {
-        public void doit ()
-            throws ProcessingException
-        {
-            linesBuilder = new LinesBuilder(Sheet.this);
-            result = linesBuilder.getStaves();
-        }
-    };
-
-    /**
-     * Step to retrieve all horizontal dashes
-     */
-    public final InstanceStep<Horizontals> HORIZONTALS = new InstanceStep<Horizontals>(
-        "Retrieve horizontal Dashes") {
-        public void doit ()
-            throws ProcessingException
-        {
-            horizontalsBuilder = new HorizontalsBuilder(Sheet.this);
-            result = horizontalsBuilder.buildInfo();
-        }
-    };
-
-    /**
-     * Step to retrieve all bar lines. This allocates and links the sheet
-     * related score.
-     */
-    public final InstanceStep<Boolean> BARS = new InstanceStep<Boolean>(
-        "Detect vertical Bar lines") {
-        public void doit ()
-            throws ProcessingException
-        {
-            barsBuilder = new BarsBuilder(Sheet.this);
-            barsBuilder.buildInfo();
-            result = Boolean.valueOf(true);
-
-            // Force score view creation if UI is present
-            if (Main.getGui() != null) {
-                Main.getGui().scoreController.setScoreView(score);
-            }
-        }
-
-        //        public void displayUI ()
-        //        {
-        //            Main.getGui().scoreController.setScoreView(score);
-        //        }
-    };
-
-    /**
-     * Step to process all glyphs, built with connected sections from the
-     * current collection of non-recognized sections.
-     */
-    public final InstanceStep<Boolean> SYMBOLS = new InstanceStep<Boolean>(
-        "Recognize Symbols") {
-        public void doit ()
-            throws ProcessingException
-        {
-            // We need the glyphs that result from extraction
-            getGlyphsBuilder()
-                .retrieveGlyphs();
-
-            result = Boolean.valueOf(true);
-
-            // Perform the initial recognition of all glyphs built
-            getGlyphInspector()
-                .evaluateGlyphs(getGlyphInspector().getSymbolMaxDoubt());
-
-            // Determine score parts based on braces found
-            //            getGlyphInspector()
-            //                .processBraces();
-        }
-
-        public void displayUI ()
-        {
-            getSymbolsEditor()
-                .refresh();
-        }
-    };
-
-    /**
-     * Step to aggregate unknown symbols to larger glyphs, named compounds, if
-     * this leads to recognized compound symbols.
-     */
-    public final InstanceStep<Boolean> SYMBOLS_COMPOUNDS = new InstanceStep<Boolean>(
-        "Aggregate symbol Compounds") {
-        public void doit ()
-            throws ProcessingException
-        {
-            SYMBOLS.getResult();
-
-            GlyphInspector inspector = getGlyphInspector();
-            inspector.retrieveCompounds(inspector.getSymbolMaxDoubt());
-            result = Boolean.valueOf(true);
-        }
-
-        public void displayUI ()
-        {
-            getSymbolsEditor()
-                .refresh();
-        }
-    };
-
-    /**
-     * Step to extract vertical stick as Stems (or vertical Endings), and
-     * recognize newly segmented leaves, since sections belonging to stems are
-     * properly assigned.
-     */
-    public final InstanceStep<Boolean> VERTICALS = new InstanceStep<Boolean>(
-        "Extract verticals") {
-        public void doit ()
-            throws ProcessingException
-        {
-            SYMBOLS_COMPOUNDS.getResult();
-
-            getGlyphInspector()
-                .retrieveVerticals();
-            result = Boolean.valueOf(true);
-        }
-
-        public void displayUI ()
-        {
-            getSymbolsEditor()
-                .refresh();
-        }
-    };
-
-    /**
-     * Step to extract newly segmented leaves, since sections belonging to stems
-     * are properly assigned.
-     */
-    public final InstanceStep<Boolean> LEAVES = new InstanceStep<Boolean>(
-        "Extract Leaves attached to stems") {
-        public void doit ()
-            throws ProcessingException
-        {
-            VERTICALS.getResult();
-
-            getGlyphsBuilder()
-                .retrieveGlyphs();
-            result = Boolean.valueOf(true);
-            getGlyphInspector()
-                .evaluateGlyphs(GlyphInspector.getLeafMaxDoubt());
-        }
-
-        public void displayUI ()
-        {
-            getSymbolsEditor()
-                .refresh();
-        }
-    };
-
-    /**
-     * Step to aggregate unknown leaves to larger compound glyphs, if this leads
-     * to recognized compound leaves.
-     */
-    public final InstanceStep<Boolean> LEAVES_COMPOUNDS = new InstanceStep<Boolean>(
-        "Aggregate symbol Compounds") {
-        public void doit ()
-            throws ProcessingException
-        {
-            LEAVES.getResult();
-
-            getGlyphInspector()
-                .retrieveCompounds(GlyphInspector.getLeafMaxDoubt());
-            result = Boolean.valueOf(true);
-            getGlyphInspector()
-                .evaluateGlyphs(GlyphInspector.getLeafMaxDoubt());
-        }
-
-        public void displayUI ()
-        {
-            getSymbolsEditor()
-                .refresh();
-        }
-    };
-
-    /**
-     * Step to clean up undue constructions, such as wrong stems..
-     */
-    public final InstanceStep<Boolean> CLEANUP = new InstanceStep<Boolean>(
-        "Cleanup stems and slurs") {
-        public void doit ()
-            throws ProcessingException
-        {
-            LEAVES_COMPOUNDS.getResult();
-
-            getGlyphInspector()
-                .verifyStems();
-            getGlyphInspector()
-                .verifySlurs();
-            result = Boolean.valueOf(true);
-            getGlyphInspector()
-                .evaluateGlyphs(GlyphInspector.getCleanupMaxDoubt());
-        }
-
-        public void displayUI ()
-        {
-            getSymbolsEditor()
-                .refresh();
-        }
-    };
-
-    /**
-     * Step to translate recognized glyphs into score items
-     */
-    public final InstanceStep<Boolean> SCORE = new InstanceStep<Boolean>(
-        "Translate glyphs to score items") {
-        public void doit ()
-            throws ProcessingException
-        {
-            CLEANUP.getResult();
-
-            // Perform the glyphs translation
-            ScoreBuilder builder = new ScoreBuilder(score, Sheet.this);
-            result = Boolean.valueOf(true);
-            builder.buildInfo();
-
-            // Perform global checks recursively
-            score.accept(new ScoreChecker());
-        }
-
-        public void displayUI ()
-        {
-            getSymbolsEditor()
-                .refresh();
-        }
-    };
-
+    /** Steps for this instance */
+    private final SheetSteps sheetSteps;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -501,7 +189,7 @@ public class Sheet
 
         // Load this image picture
         try {
-            LOAD.doit();
+            sheetSteps.doit(LOAD);
         } catch (ProcessingException ex) {
             if (!force) {
                 throw ex;
@@ -553,6 +241,7 @@ public class Sheet
      */
     private Sheet ()
     {
+        sheetSteps = new SheetSteps(this);
         checkTransientSteps();
     }
 
@@ -561,19 +250,19 @@ public class Sheet
     // Temporary kludge
     public boolean BarsAreDone ()
     {
-        return BARS.isDone();
+        return sheetSteps.isDone(BARS);
     }
 
     // Temporary kludge
     public boolean HorizontalsAreDone ()
     {
-        return HORIZONTALS.isDone();
+        return sheetSteps.isDone(HORIZONTALS);
     }
 
     // Temporary kludge
     public boolean LinesAreDone ()
     {
-        return LINES.isDone();
+        return sheetSteps.isDone(LINES);
     }
 
     //--------//
@@ -614,11 +303,15 @@ public class Sheet
     public void checkScaleAndSkew (Score score)
     {
         // Make sure that scale and skew info is available for the sheet
-        if (!SCALE.isDone()) {
-            setScale(score.getScale());
+        if (!sheetSteps.isDone(Step.SCALE)) {
+            try {
+                setScale(score.getScale());
+            } catch (ProcessingException ex) {
+                logger.warning("Step aborted", ex);
+            }
         }
 
-        if (!SKEW.isDone()) {
+        if (!sheetSteps.isDone(Step.SKEW)) {
             setSkew(new Skew(score.getSkewAngleDouble()));
         }
     }
@@ -632,9 +325,9 @@ public class Sheet
      */
     public void checkTransientSteps ()
     {
-        if (LOAD == null) {
-            LOAD = new LoadStep();
-        }
+        //        if (LOAD == null) {
+        //            LOAD = new LoadStep();
+        //        }
     }
 
     //-------//
@@ -648,9 +341,8 @@ public class Sheet
         SheetManager.getInstance()
                     .close(this);
 
-        if (LOAD.isDone()) {
-            getPicture()
-                .close();
+        if (picture != null) {
+            picture.close();
         }
 
         if (score != null) {
@@ -696,19 +388,17 @@ public class Sheet
      */
     public Step currentStep ()
     {
-        // Reverse loop on step list
-        for (ListIterator<Step> it = getSteps()
-                                         .listIterator(getSteps().size() - 1);
-             it.hasPrevious();) {
-            Step         step = it.previous();
-            InstanceStep iStep = getInstanceStep(step);
+        Step prev = null;
 
-            if ((iStep != null) && iStep.isDone()) {
-                return step;
+        for (Step step : Step.values()) {
+            if (!sheetSteps.isDone(step)) {
+                break;
             }
+
+            prev = step;
         }
 
-        return null;
+        return prev;
     }
 
     //-----------------//
@@ -732,33 +422,6 @@ public class Sheet
 
             /////}
         }
-    }
-
-    //----------//
-    // fromStep //
-    //----------//
-    /**
-     * Determine the needed starting step to get to the target step
-     *
-     * @param step the target step
-     *
-     * @return the first step not done before the target step, or the target
-     *         step if there is no un-done step before it
-     */
-    public Step fromStep (Step step)
-    {
-        for (Step s : getSteps()) {
-            if (s == step) {
-                return step;
-            }
-
-            if (!getInstanceStep(s)
-                     .isDone()) {
-                return s;
-            }
-        }
-
-        return null; // As a last resort, should never be reached
     }
 
     //-----------------//
@@ -907,7 +570,7 @@ public class Sheet
         if (hLag == null) {
             try {
                 // Brought by LinesBuilder, so...
-                LINES.doit();
+                sheetSteps.getResult(LINES);
             } catch (ProcessingException ex) {
                 logger.severe("Cannot retrieve HorizontalLag from LINES");
             }
@@ -927,7 +590,9 @@ public class Sheet
     public Horizontals getHorizontals ()
     {
         try {
-            return HORIZONTALS.getResult();
+            sheetSteps.getResult(HORIZONTALS);
+
+            return horizontals;
         } catch (ProcessingException ex) {
             logger.severe("Horizontals not processed");
 
@@ -959,29 +624,6 @@ public class Sheet
     public File getImageFile ()
     {
         return imageFile;
-    }
-
-    //-----------------//
-    // getInstanceStep //
-    //-----------------//
-    /**
-     * Report the sheet element [InstanceStep] linked to the given step
-     *
-     * @param step the driving step
-     *
-     * @return the InstanceStep that contains the result of the step on the
-     *         sheet
-     */
-    public InstanceStep getInstanceStep (Step step)
-    {
-        try {
-            return (InstanceStep) step.getField()
-                                      .get(this);
-        } catch (IllegalAccessException ex) {
-            ex.printStackTrace();
-
-            return null;
-        }
     }
 
     //-----------------//
@@ -1022,7 +664,9 @@ public class Sheet
     public Picture getPicture ()
     {
         try {
-            return LOAD.getResult();
+            sheetSteps.getResult(LOAD);
+
+            return picture;
         } catch (ProcessingException ex) {
             logger.severe("Picture not available");
 
@@ -1056,7 +700,9 @@ public class Sheet
     public Scale getScale ()
     {
         try {
-            return SCALE.getResult();
+            sheetSteps.getResult(SCALE);
+
+            return scale;
         } catch (ProcessingException ex) {
             logger.severe("Scale not available");
 
@@ -1076,6 +722,18 @@ public class Sheet
     public Score getScore ()
     {
         return score;
+    }
+
+    //-----------------//
+    // getScoreBuilder //
+    //-----------------//
+    public synchronized ScoreBuilder getScoreBuilder ()
+    {
+        if (scoreBuilder == null) {
+            scoreBuilder = new ScoreBuilder(score, this);
+        }
+
+        return scoreBuilder;
     }
 
     //--------------//
@@ -1109,6 +767,11 @@ public class Sheet
         return selectionManager;
     }
 
+    public SheetSteps getSheetSteps ()
+    {
+        return sheetSteps;
+    }
+
     //---------//
     // getSkew //
     //---------//
@@ -1121,7 +784,9 @@ public class Sheet
     public Skew getSkew ()
     {
         try {
-            return SKEW.getResult();
+            sheetSteps.getResult(Step.SKEW);
+
+            return skew;
         } catch (ProcessingException ex) {
             logger.severe("Skew not available");
 
@@ -1140,42 +805,6 @@ public class Sheet
     public SkewBuilder getSkewBuilder ()
     {
         return skewBuilder;
-    }
-
-    //----------//
-    // getSteps //
-    //----------//
-    /**
-     * Report the ordered list of steps defined in the Sheet class
-     *
-     * @return the comprehensive list of Steps
-     */
-    public static List<Step> getSteps ()
-    {
-        if (steps == null) {
-            try {
-                steps = new ArrayList<Step>();
-
-                // Kludge to retrieve the related descriptions
-                Sheet   sheet = new Sheet();
-
-                Class   sheetClass = Sheet.class;
-                Field[] fields = sheetClass.getDeclaredFields();
-
-                for (int i = 0; i < fields.length; i++) {
-                    Field field = fields[i];
-
-                    if (InstanceStep.class.isAssignableFrom(field.getType())) {
-                        InstanceStep is = (InstanceStep) field.get(sheet);
-                        steps.add(new Step(field, is.getDescription()));
-                    }
-                }
-            } catch (IllegalAccessException ex) {
-                ex.printStackTrace(); // Should not happen
-            }
-        }
-
-        return steps;
     }
 
     //------------------//
@@ -1241,7 +870,9 @@ public class Sheet
     public List<StaffInfo> getStaves ()
     {
         try {
-            return LINES.getResult();
+            sheetSteps.getResult(LINES);
+
+            return staves;
         } catch (ProcessingException ex) {
             logger.severe("Staves not available");
 
@@ -1291,6 +922,14 @@ public class Sheet
         return null;
     }
 
+    //-------------//
+    // getSystemOf //
+    //-------------//
+    public SystemInfo getSystemOf (Glyph glyph)
+    {
+        return getSystemAtY(glyph.getContourBox().y);
+    }
+
     //------------//
     // getSystems //
     //------------//
@@ -1303,7 +942,7 @@ public class Sheet
     {
         if (systems == null) {
             try {
-                BARS.doit();
+                sheetSteps.getResult(BARS);
             } catch (ProcessingException ex) {
                 logger.severe("Bars systems not available");
 
@@ -1339,6 +978,26 @@ public class Sheet
         return list;
     }
 
+    //--------------//
+    // getSystemsOf //
+    //--------------//
+    /**
+     * Report the collection of systems that contain the provided glyphs
+     *
+     * @param glyphs the glyphs for which we look for containing systems
+     * @return the collection of systems
+     */
+    public Collection<SystemInfo> getSystemsOf (Collection<Glyph> glyphs)
+    {
+        Collection<SystemInfo> systems = new HashSet<SystemInfo>();
+
+        for (Glyph glyph : glyphs) {
+            systems.add(getSystemOf(glyph));
+        }
+
+        return systems;
+    }
+
     //----------------//
     // getVerticalLag //
     //----------------//
@@ -1351,7 +1010,7 @@ public class Sheet
     {
         if (vLag == null) {
             try {
-                BARS.doit();
+                sheetSteps.doit(BARS);
             } catch (ProcessingException ex) {
                 logger.severe("Cannot retrieve vLag from BARS");
             }
@@ -1363,7 +1022,7 @@ public class Sheet
     //---------------------//
     // getVerticalsBuilder //
     //---------------------//
-    public VerticalsBuilder getVerticalsBuilder ()
+    public synchronized VerticalsBuilder getVerticalsBuilder ()
     {
         if (verticalsBuilder == null) {
             verticalsBuilder = new VerticalsBuilder(this);
@@ -1402,15 +1061,13 @@ public class Sheet
     // isOnSymbols //
     //-------------//
     /**
-     * Check whether current step is SYMBOLS or SYMBOL_COMPOUND
+     * Check whether current step is SYMBOLS
      *
      * @return true if on SYMBOLS
      */
     public boolean isOnSymbols ()
     {
-        InstanceStep iStep = getInstanceStep(currentStep());
-
-        return (iStep == SYMBOLS) || (iStep == SYMBOLS_COMPOUNDS);
+        return currentStep() == SYMBOLS;
     }
 
     //-------------//
@@ -1504,6 +1161,77 @@ public class Sheet
         hLag.setGlyphSelection(getSelection(HORIZONTAL_GLYPH));
     }
 
+    //----------------//
+    // setHorizontals //
+    //----------------//
+    /**
+     * Set horizontals system by system
+     *
+     * @param horizontals the horizontals found
+     */
+    public void setHorizontals (Horizontals horizontals)
+    {
+        this.horizontals = horizontals;
+    }
+
+    //-----------------------//
+    // setHorizontalsBuilder //
+    //-----------------------//
+    /**
+     * Set the builder in charge of ledger lines
+     *
+     * @param horizontalsBuilder the builder instance
+     */
+    public void setHorizontalsBuilder (HorizontalsBuilder horizontalsBuilder)
+    {
+        this.horizontalsBuilder = horizontalsBuilder;
+    }
+
+    //-----------------//
+    // setLinesBuilder //
+    //-----------------//
+    /**
+     * Set the builder in charge of staff lines
+     *
+     * @param linesBuilder the builder instance
+     */
+    public void setLinesBuilder (LinesBuilder linesBuilder)
+    {
+        this.linesBuilder = linesBuilder;
+    }
+
+    //------------//
+    // setPicture //
+    //------------//
+    /**
+     * Set the picture of this sheet, that is the image to be processed.
+     *
+     * @param picture the related picture
+     */
+    public void setPicture (Picture picture)
+    {
+        this.picture = picture;
+
+        // Attach proper Selection objects
+        // (reading from pixel location & writing to grey level)
+        picture.setLevelSelection(getSelection(SelectionTag.PIXEL_LEVEL));
+        getSelection(SelectionTag.SHEET_RECTANGLE)
+            .addObserver(picture);
+
+        // Display sheet picture if not batch mode
+        if (Main.getGui() != null) {
+            PictureView pictureView = new PictureView(Sheet.this);
+            displayAssembly();
+            assembly.addViewTab(
+                "Picture",
+                pictureView,
+                new BoardsPane(
+                    Sheet.this,
+                    pictureView.getView(),
+                    new PixelBoard("Picture")));
+        }
+    }
+
     //----------//
     // setScale //
     //----------//
@@ -1513,8 +1241,16 @@ public class Sheet
      * @param scale the computed (or read from score file) scale
      */
     public void setScale (Scale scale)
+        throws ProcessingException
     {
-        SCALE.result = scale;
+        this.scale = scale;
+
+        // Check we've got something usable
+        if (scale.mainFore() == 0) {
+            logger.warning(
+                "Invalid scale mainFore value : " + scale.mainFore());
+            throw new ProcessingException();
+        }
     }
 
     //----------//
@@ -1549,7 +1285,41 @@ public class Sheet
      */
     public void setSkew (Skew skew)
     {
-        SKEW.result = skew;
+        this.skew = skew;
+
+        // Update displayed image if any
+        if (getPicture()
+                .isRotated() && (Main.getGui() != null)) {
+            assembly.getComponent()
+                    .repaint();
+        }
+
+        // Remember final sheet dimensions in pixels
+        width = getPicture()
+                    .getWidth();
+        height = getPicture()
+                     .getHeight();
+    }
+
+    //----------------//
+    // setSkewBuilder //
+    //----------------//
+    public void setSkewBuilder (SkewBuilder skewBuilder)
+    {
+        this.skewBuilder = skewBuilder;
+    }
+
+    //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * Set the list of staves found in the sheet
+     *
+     * @param staves the collection of staves found
+     */
+    public void setStaves (List<StaffInfo> staves)
+    {
+        this.staves = staves;
     }
 
     //------------//
@@ -1609,36 +1379,49 @@ public class Sheet
         return "{Sheet " + getPath() + "}";
     }
 
-    //-------------//
-    // updateSteps //
-    //-------------//
-    public void updateSteps ()
+    //-----------------//
+    // updateLastSteps //
+    //-----------------//
+    public void updateLastSteps (Collection<Glyph> glyphs)
     {
+        // Determine impacted systems, from the collection of impacted glyphs
+        Collection<SystemInfo> systems = getSystemsOf(glyphs);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(systems.size() + " Impacted system(s)");
+        }
+
         try {
-            if (LEAVES.isDone()) {
-                LEAVES.doit();
-            }
+            /////            for (SystemInfo system : systems) { // DOES NOT WORK CORRECTLY
+            for (SystemInfo system : getSystems()) {
+                if (sheetSteps.isDone(LEAVES)) {
+                    sheetSteps.doSystem(LEAVES, system);
+                }
 
-            if (LEAVES_COMPOUNDS.isDone()) {
-                LEAVES_COMPOUNDS.doit();
-            }
+                if (sheetSteps.isDone(CLEANUP)) {
+                    sheetSteps.doSystem(CLEANUP, system);
+                }
 
-            if (CLEANUP.isDone()) {
-                CLEANUP.doit();
-            }
-
-            if (SCORE.isDone()) {
-                SCORE.doit();
+                if (sheetSteps.isDone(SCORE)) {
+                    sheetSteps.doSystem(SCORE, system);
+                }
             }
         } catch (ProcessingException ex) {
             ex.printStackTrace();
         }
 
+        // Final cross-system translation tasks
+        getScoreBuilder()
+            .buildFinal();
+
         // Always refresh sheet views
         getSymbolsEditor()
             .refresh();
-        getVerticalsBuilder()
-            .refresh();
+
+        if (sheetSteps.isDone(VERTICALS)) {
+            getVerticalsBuilder()
+                .refresh();
+        }
     }
 
     //-------------------//
@@ -1658,75 +1441,5 @@ public class Sheet
 
         // Not found
         return null;
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    /**
-     * Step to (re)load sheet picture. A brand new sheet is created with the
-     * provided image file as parameter.
-     *
-     * <p>The result of this step (a Picture) is <b>transient</b>, thus not
-     * saved nor restored, since a picture is too costly. If picture is indeed
-     * needed, then it is explicitly reloaded from the image file through the
-     * <b>getPicture</b> method.
-     */
-    class LoadStep
-        extends InstanceStep<Picture>
-    {
-        LoadStep ()
-        {
-            super("[Re]load the sheet picture");
-        }
-
-        public void doit ()
-            throws ProcessingException
-        {
-            try {
-                result = new Picture(imageFile);
-
-                // Attach proper Selection objects
-                // (reading from pixel location & writing to grey level)
-                result.setLevelSelection(
-                    getSelection(SelectionTag.PIXEL_LEVEL));
-                getSelection(SelectionTag.SHEET_RECTANGLE)
-                    .addObserver(result);
-
-                // Display sheet picture if not batch mode
-                if (Main.getGui() != null) {
-                    PictureView pictureView = new PictureView(Sheet.this);
-                    displayAssembly();
-                    assembly.addViewTab(
-                        "Picture",
-                        pictureView,
-                        new BoardsPane(
-                            Sheet.this,
-                            pictureView.getView(),
-                            new PixelBoard("Picture")));
-                }
-            } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find file " + imageFile);
-                throw new ProcessingException();
-            } catch (IOException ex) {
-                logger.warning("Input error on file " + imageFile);
-                throw new ProcessingException();
-            } catch (ImageFormatException ex) {
-                logger.warning("Unsupported image format in file " + imageFile);
-                logger.warning(ex.getMessage());
-
-                if (Main.getGui() != null) {
-                    Main.getGui()
-                        .displayWarning(
-                        "<B>" + ex.getMessage() + "</B><BR>" +
-                        "Please use grey scale with 256 values");
-                }
-
-                throw new ProcessingException();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                logger.warning(ex.getMessage());
-                throw new ProcessingException();
-            }
-        }
     }
 }

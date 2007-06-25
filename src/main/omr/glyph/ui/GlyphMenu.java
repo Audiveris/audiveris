@@ -23,6 +23,8 @@ import omr.selection.SelectionHint;
 import omr.sheet.Sheet;
 
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -112,13 +114,14 @@ public class GlyphMenu
             new ActionListener() {
                     public void actionPerformed (ActionEvent e)
                     {
-                        JMenuItem source = (JMenuItem) e.getSource();
-                        Shape     shape = Shape.valueOf(source.getText());
+                        JMenuItem   source = (JMenuItem) e.getSource();
+                        Shape       shape = Shape.valueOf(source.getText());
+                        List<Glyph> glyphs = getCurrentGlyphs();
                         symbolsEditor.assignSetShape(
-                            getCurrentGlyphs(),
-                            shape,
-                            /* compound => */ false);
-                        sheet.updateSteps();
+                            glyphs,
+                            shape, /* compound => */
+                            false);
+                        sheet.updateLastSteps(glyphs);
                     }
                 });
         popup.add(assignMenu);
@@ -138,13 +141,14 @@ public class GlyphMenu
             new ActionListener() {
                     public void actionPerformed (ActionEvent e)
                     {
-                        JMenuItem source = (JMenuItem) e.getSource();
-                        Shape     shape = Shape.valueOf(source.getText());
+                        JMenuItem   source = (JMenuItem) e.getSource();
+                        Shape       shape = Shape.valueOf(source.getText());
+                        List<Glyph> glyphs = getCurrentGlyphs();
                         symbolsEditor.assignSetShape(
-                            getCurrentGlyphs(),
-                            shape,
-                            /* compound => */ true);
-                        sheet.updateSteps();
+                            glyphs,
+                            shape, /* compound => */
+                            true);
+                        sheet.updateLastSteps(glyphs);
                     }
                 });
         popup.add(compoundMenu);
@@ -221,7 +225,8 @@ public class GlyphMenu
     //------------------//
     private List<Glyph> getCurrentGlyphs ()
     {
-        return (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+        return new ArrayList<Glyph>(
+            (List<Glyph>) glyphSetSelection.getEntity()); // Compiler warning
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -324,11 +329,12 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             // Remember which is the current selected glyph
-            Glyph glyph = getCurrentGlyph();
+            Glyph       glyph = getCurrentGlyph();
 
             // Actually deassign the whole set
-            symbolsEditor.deassignSetShape(getCurrentGlyphs());
-            sheet.updateSteps();
+            List<Glyph> glyphs = getCurrentGlyphs();
+            symbolsEditor.deassignSetShape(glyphs);
+            sheet.updateLastSteps(glyphs);
 
             // Update focus on current glyph, if reused in a compound
             Glyph newGlyph = glyph.getFirstSection()
@@ -424,13 +430,12 @@ public class GlyphMenu
     {
         public void actionPerformed (ActionEvent e)
         {
-            JMenuItem source = (JMenuItem) e.getSource();
-            Shape     shape = Shape.valueOf(source.getText());
-            symbolsEditor.assignSetShape(
-                getCurrentGlyphs(),
-                shape, /* compound => */
-                false);
-            sheet.updateSteps();
+            JMenuItem   source = (JMenuItem) e.getSource();
+            Shape       shape = Shape.valueOf(source.getText());
+            List<Glyph> glyphs = getCurrentGlyphs();
+            symbolsEditor.assignSetShape(glyphs, shape, /* compound => */
+                                         false);
+            sheet.updateLastSteps(glyphs);
         }
 
         public void update ()
@@ -466,7 +471,7 @@ public class GlyphMenu
                 symbolsEditor.assignGlyphShape(glyph, proposedShape);
             }
 
-            sheet.updateSteps();
+            sheet.updateLastSteps(Collections.singleton(glyph));
         }
 
         public void update ()

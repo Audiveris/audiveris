@@ -146,7 +146,7 @@ class ShapeFocusBoard
         // Filter
         filterButton.addActionListener(filterListener);
         filterButton.setToolTipText(
-            "Select display of all/known/unknown" + " glyphs");
+            "Select displayed glyphs according to their current state");
 
         // Popup menu for shape selection
         JMenuItem noFocus = new JMenuItem("No Focus");

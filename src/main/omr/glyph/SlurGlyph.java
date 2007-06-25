@@ -9,7 +9,6 @@
 //
 package omr.glyph;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.lag.Section;
@@ -52,14 +51,6 @@ public class SlurGlyph
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //----------------------//
-    // getMaxCircleDistance //
-    //----------------------//
-    public static double getMaxCircleDistance ()
-    {
-        return constants.maxCircleDistance.getValue();
-    }
 
     //---------------//
     // computeCircle //
@@ -128,6 +119,14 @@ public class SlurGlyph
         } else {
             return fixLargeSlur(glyph, system);
         }
+    }
+
+    //----------------------//
+    // getMaxCircleDistance //
+    //----------------------//
+    public static double getMaxCircleDistance ()
+    {
+        return constants.maxCircleDistance.getValue();
     }
 
     //--------------//
@@ -440,11 +439,6 @@ public class SlurGlyph
             return scale.toPixels(constants.slurBoxDy);
         }
 
-        public void setSeed (Glyph seed)
-        {
-            this.seed = seed;
-        }
-
         @Implement(GlyphInspector.CompoundAdapter.class)
         public boolean isSuitable (Glyph glyph)
         {
@@ -470,6 +464,11 @@ public class SlurGlyph
             Circle circle = computeCircle(compound);
 
             return circle.isValid(SlurGlyph.getMaxCircleDistance());
+        }
+
+        public void setSeed (Glyph seed)
+        {
+            this.seed = seed;
         }
     }
 }

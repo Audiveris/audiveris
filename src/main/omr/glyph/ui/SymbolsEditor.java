@@ -382,6 +382,7 @@ public class SymbolsEditor
     public void refresh ()
     {
         view.colorizeAllGlyphs();
+        view.repaint();
     }
 
     //------------------//
@@ -417,7 +418,7 @@ public class SymbolsEditor
                  .stemSegment(Collections.singletonList(glyph), system);
         }
 
-        sheet.updateSteps();
+        sheet.updateLastSteps(glyphs);
     }
 
     //~ Inner Classes ----------------------------------------------------------

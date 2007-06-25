@@ -10,7 +10,6 @@
 package omr.ui;
 
 import omr.Main;
-import omr.Step;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -22,6 +21,8 @@ import omr.score.Score;
 import omr.selection.Selection;
 
 import omr.sheet.*;
+
+import omr.step.Step;
 
 import omr.ui.MainGui;
 import omr.ui.SheetAssembly;
@@ -431,8 +432,7 @@ public class SheetController
                 }
 
                 // Actually load the sheet picture
-                Step.getLoadStep()
-                    .perform(null, file);
+                Step.LOAD.perform(null, file);
 
                 // Remember (even across runs) the parent directory
                 constants.initImgDir.setValue(file.getParent());
@@ -514,8 +514,7 @@ public class SheetController
 
             Main.getGui()
                 .setTarget(fileName);
-            Step.getLoadStep()
-                .perform(null, new File(fileName));
+            Step.LOAD.perform(null, new File(fileName));
 
             if (logger.isFineEnabled()) {
                 logger.fine("End of HistoryListener");

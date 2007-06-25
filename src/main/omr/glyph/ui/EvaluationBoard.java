@@ -324,7 +324,7 @@ class EvaluationBoard
                 glyphModel.assignGlyphShape(glyph, shape);
 
                 // Update user interface ? (view / selection)
-                sheet.updateSteps();
+                sheet.updateLastSteps(Collections.singleton(glyph));
             }
         }
 

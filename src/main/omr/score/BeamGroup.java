@@ -108,9 +108,10 @@ public class BeamGroup
                 } catch (Exception ex) {
                     chord.addError(
                         "Cannot compute chord time based on previous chord");
-                    logger.warning(
-                        "Cannot compute chord time based on previous chord",
-                        ex);
+
+                    //                    logger.warning(
+                    //                        "Cannot compute chord time based on previous chord",
+                    //                        ex);
                 }
             } else {
                 if (chord.getStartTime() == null) {

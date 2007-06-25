@@ -7,7 +7,10 @@
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
-package omr;
+package omr.step;
+
+import omr.Main;
+import omr.ProcessingException;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;

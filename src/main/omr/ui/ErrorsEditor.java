@@ -162,6 +162,35 @@ public class ErrorsEditor
                 });
     }
 
+    //-------------//
+    // clearSystem //
+    //-------------//
+    public void clearSystem (final System system)
+    {
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    // This part is run on swing thread
+                    public void run ()
+                    {
+                        for (Iterator<Record> it = recordSet.iterator();
+                             it.hasNext();) {
+                            Record record = it.next();
+
+                            if (record.node.getSystem() == system) {
+                                it.remove();
+                            }
+                        }
+
+                        // Update the model
+                        model.removeAllElements();
+
+                        for (Record record : recordSet) {
+                            model.addElement(record);
+                        }
+                    }
+                });
+    }
+
     //--------------//
     // getComponent //
     //--------------//

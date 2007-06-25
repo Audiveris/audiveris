@@ -70,9 +70,24 @@ public class ScoreBuilder
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------//
-    // translateSystem //
-    //-----------------//
+    //------------//
+    // buildFinal //
+    //------------//
+    public void buildFinal ()
+    {
+        checkSlurConnections();
+        score.accept(new ScoreFixer());
+
+        // Update score view if any
+        if (score.getView() != null) {
+            score.getView()
+                 .repaint();
+        }
+    }
+
+    //-----------//
+    // buildInfo //
+    //-----------//
     /**
      * Build the score information, system after system, glyph after glyph.
      * Nota: Only local tests can be performed here, global ones are performed
@@ -93,18 +108,22 @@ public class ScoreBuilder
         }
 
         // Score processing once all systems are completed
-        checkSlurConnections();
-        checkImplicitMeasures();
-        score.accept(new ScoreFixer());
+        buildFinal();
 
         //        final long stopTime = java.lang.System.currentTimeMillis();
         //        logger.info("Score translated in " + (stopTime - startTime) + " ms");
+    }
 
-        // Update score view if any
-        if (score.getView() != null) {
-            score.getView()
-                 .repaint();
-        }
+    //-------------//
+    // buildSystem //
+    //-------------//
+    public void buildSystem (System system)
+    {
+        // Clear errors for this system only
+        sheet.getErrorsEditor()
+             .clearSystem(system);
+        new SystemBuilder(system).translateSystem();
+        checkImplicitMeasures(system);
     }
 
     //-------------------//
@@ -128,7 +147,7 @@ public class ScoreBuilder
                 new Runnable() {
                         public void run ()
                         {
-                            new SystemBuilder(system).translateSystem();
+                            buildSystem(system);
                         }
                     });
             executor.execute(work);
@@ -153,8 +172,7 @@ public class ScoreBuilder
         // First, cleanup the score, keeping only the systems, staves,
         // measures, barlines
         for (SystemInfo systemInfo : sheet.getSystems()) {
-            System system = systemInfo.getScoreSystem();
-            new SystemBuilder(system).translateSystem();
+            buildSystem(systemInfo.getScoreSystem());
         }
     }
 
@@ -166,11 +184,11 @@ public class ScoreBuilder
      * version looks only at the very first measure of the score, which is
      * too restrictive. TBD.
      */
-    private void checkImplicitMeasures ()
+    private void checkImplicitMeasures (System system)
     {
         // On the very first system, all parts have their very first measure
         // ending too short with the same value (or filled by whole rest)
-        System  system = score.getFirstSystem();
+        ///////////////////////////////////////////System  system = score.getFirstSystem();
         Integer finalDuration = null;
 
         for (TreeNode node : system.getParts()) {

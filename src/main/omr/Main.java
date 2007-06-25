@@ -19,6 +19,8 @@ import omr.score.visitor.ScoreExporter;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
+import omr.step.Step;
+
 import omr.ui.MainGui;
 import omr.ui.util.UILookAndFeel;
 
@@ -525,7 +527,7 @@ public class Main
                     // Read a step name
                     targetStep = null;
 
-                    for (Step step : Sheet.getSteps()) {
+                    for (Step step : Step.values()) {
                         if (token.equalsIgnoreCase(step.toString())) {
                             targetStep = step;
 
@@ -679,7 +681,7 @@ public class Main
         buf.append("\n      Known step names are in order")
            .append(" (non case-sensitive) :");
 
-        for (Step step : Sheet.getSteps()) {
+        for (Step step : Step.values()) {
             buf.append(
                 String.format(
                     "%n%-17s : %s",

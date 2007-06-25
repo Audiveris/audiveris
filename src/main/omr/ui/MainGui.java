@@ -10,8 +10,6 @@
 package omr.ui;
 
 import omr.Main;
-import omr.Step;
-import omr.StepMenu;
 
 import omr.constant.*;
 
@@ -31,6 +29,9 @@ import omr.sheet.HorizontalsBuilder;
 import omr.sheet.LinesBuilder;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
+
+import omr.step.Step;
+import omr.step.StepMenu;
 
 import omr.ui.SheetController;
 import omr.ui.icon.IconManager;

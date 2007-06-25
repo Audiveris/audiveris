@@ -173,7 +173,9 @@ public class VerticalsBuilder
      */
     public void refresh ()
     {
-        if (view != null) {
+        if ((view == null) && constants.displayFrame.getValue()) {
+            displayFrame();
+        } else if (view != null) {
             for (Glyph glyph : sheet.getVerticalLag()
                                     .getActiveGlyphs()) {
                 view.colorizeGlyph(glyph, null);
@@ -205,6 +207,28 @@ public class VerticalsBuilder
         } else {
             logger.info("No stem found");
         }
+    }
+
+    //-------------------------//
+    // retrieveSystemVerticals //
+    //-------------------------//
+    public int retrieveSystemVerticals (SystemInfo system)
+        throws ProcessingException
+    {
+        // Get rid of former symbols
+        sheet.getGlyphsBuilder()
+             .removeSystemInactives(system);
+
+        // We cannot reuse the sticks, since thick sticks are allowed for bars
+        // but not for stems.
+        VerticalArea verticalsArea = new VerticalArea(
+            system.getVerticalSections(),
+            sheet,
+            lag,
+            new MySectionPredicate(),
+            scale.toPixels(constants.maxStemThickness));
+
+        return retrieveVerticals(verticalsArea.getSticks(), system);
     }
 
     //-------------//
@@ -280,28 +304,6 @@ public class VerticalsBuilder
                     sheet.getSelection(VERTICAL_GLYPH_ID),
                     sheet.getSelection(GLYPH_SET)),
                 new MyCheckBoard(unit, sheet.getSelection(VERTICAL_GLYPH))));
-    }
-
-    //-------------------------//
-    // retrieveSystemVerticals //
-    //-------------------------//
-    private int retrieveSystemVerticals (SystemInfo system)
-        throws ProcessingException
-    {
-        // Get rid of former symbols
-        sheet.getGlyphsBuilder()
-             .removeSystemInactives(system);
-
-        // We cannot reuse the sticks, since thick sticks are allowed for bars
-        // but not for stems.
-        VerticalArea verticalsArea = new VerticalArea(
-            system.getVerticalSections(),
-            sheet,
-            lag,
-            new MySectionPredicate(),
-            scale.toPixels(constants.maxStemThickness));
-
-        return retrieveVerticals(verticalsArea.getSticks(), system);
     }
 
     //-------------------//

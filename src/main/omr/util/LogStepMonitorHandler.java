@@ -1,4 +1,3 @@
-
 //----------------------------------------------------------------------------//
 //                                                                            //
 //                 L o g S t e p M o n i t o r H a n d l e r                  //
@@ -11,6 +10,9 @@
 package omr.util;
 
 import omr.*;
+
+import omr.step.Step;
+import omr.step.StepMonitor;
 
 import java.util.logging.*;
 

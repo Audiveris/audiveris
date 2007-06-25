@@ -7,9 +7,9 @@
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
-package omr;
+package omr.step;
 
-import omr.StepMonitor;
+import omr.ProcessingException;
 
 import omr.sheet.Sheet;
 
@@ -17,19 +17,18 @@ import omr.util.Logger;
 import omr.util.Memory;
 
 import java.io.File;
-import java.lang.reflect.Field;
-
-/**
- * Class <code>Step</code> describes the ordered sequence of processing steps
- * that are defined on a sheet. The comprehensive ordered list of step names is
- * defined in {@link omr.sheet.Sheet} class.
- *
- * @author Herv&eacute; Bitteur
- * @version $Id$
- */
-public class Step
-{
-    //~ Static fields/initializers ---------------------------------------------
+public enum Step {
+    LOAD("Load the sheet picture"),
+    SCALE("Compute the global Skew, and rotate if needed"),
+    SKEW("Detect & remove all Staff Lines"),
+    LINES("Retrieve horizontal Dashes"),
+    HORIZONTALS("Detect vertical Bar lines"),
+    BARS("Detect vertical Bar lines"),
+    SYMBOLS("Recognize Symbols & Compounds"),
+    VERTICALS("Extract verticals"),
+    LEAVES("Recognize Leaves & Compounds"),
+    CLEANUP("Cleanup stems and slurs"),
+    SCORE("Translate glyphs to score items");
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Step.class);
@@ -37,39 +36,23 @@ public class Step
     /** Related UI when used in interactive mode */
     private static volatile StepMonitor monitor;
 
-    /** The most popular step, so it's easier to get it directly */
-    private static Step LOAD;
-
-    //~ Instance fields --------------------------------------------------------
-
-    /** Reflection field to the corresponding sheet InstanceStep */
-    private final Field field;
-
-    /** Readable description */
+    /** Description of the step */
     private final String description;
 
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Create a step, related to a sheet InstanceStep
-     *
-     * @param field       the reflection field of the related InstanceStep
-     * @param description the verbose description of the related InstanceStep
-     */
-    public Step (Field  field,
-                 String description)
+    //------//
+    // Step //
+    //------//
+    Step (String description)
     {
-        this.field = field;
         this.description = description;
     }
-
-    //~ Methods ----------------------------------------------------------------
 
     //---------------//
     // createMonitor //
     //---------------//
     /**
      * Allows to couple the steps with a UI.
+     * @return the monitor to deal with steps
      */
     public static StepMonitor createMonitor ()
     {
@@ -82,43 +65,13 @@ public class Step
     // getDescription //
     //----------------//
     /**
-     * Return a description for this step, usable for a tip for example.
+     * Report the user-friendly description of this step
      *
-     * @return a description string
+     * @return the step description
      */
     public String getDescription ()
     {
         return description;
-    }
-
-    //----------//
-    // getField //
-    //----------//
-    /**
-     * Return the reflection field of the related Sheet.InstanceStep
-     *
-     * @return the related field
-     */
-    public Field getField ()
-    {
-        return field;
-    }
-
-    //-------------//
-    // getLoadStep //
-    //-------------//
-    /**
-     * Return the most popular step accessed by name : LOAD
-     *
-     * @return the LOAD step
-     */
-    public static Step getLoadStep ()
-    {
-        if (LOAD == null) {
-            LOAD = getStep("LOAD");
-        }
-
-        return LOAD;
     }
 
     //---------//
@@ -133,15 +86,15 @@ public class Step
      */
     public static Step getStep (String id)
     {
-        for (Step step : Sheet.getSteps()) {
-            if (id.equalsIgnoreCase(step.toString())) {
-                return step;
-            }
+        Step step = Step.valueOf(id.toUpperCase());
+
+        if (step != null) {
+            return step;
+        } else {
+            logger.severe("Cannot find Step for id " + id);
+
+            return null;
         }
-
-        logger.severe("Cannot find Step for id " + id);
-
-        return null;
     }
 
     //-----------//
@@ -227,20 +180,6 @@ public class Step
         }
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Usual method to return a readable string
-     *
-     * @return a short string
-     */
-    @Override
-    public String toString ()
-    {
-        return field.getName();
-    }
-
     //--------//
     // doStep //
     //--------//
@@ -274,18 +213,18 @@ public class Step
         }
 
         // Check for loading of a sheet
-        if (this != getLoadStep()) {
+        if (this != LOAD) {
             // Standard processing on an existing sheet
-            sheet.getInstanceStep(this)
-                 .undo();
-            sheet.getInstanceStep(this)
-                 .getResult();
+            //            sheet.getInstanceStep(this)
+            //                 .undo();
+            sheet.getSheetSteps()
+                 .getResult(this);
         }
 
         // Update user interface ?
         if (monitor != null) {
-            sheet.getInstanceStep(this)
-                 .displayUI();
+            sheet.getSheetSteps()
+                 .displayUI(this);
         }
 
         if (logger.isFineEnabled()) {

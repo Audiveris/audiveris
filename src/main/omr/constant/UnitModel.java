@@ -13,6 +13,8 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
+import omr.step.Step;
+
 import omr.ui.treetable.AbstractTreeTableModel;
 import omr.ui.treetable.TreeTableModel;
 
@@ -347,7 +349,9 @@ public class UnitModel
                     // current sheet and its scale is available.
                     Sheet sheet = SheetManager.getSelectedSheet();
 
-                    if ((sheet != null) && sheet.SCALE.isDone()) {
+                    if ((sheet != null) &&
+                        sheet.getSheetSteps()
+                             .isDone(Step.SCALE)) {
                         Scale scale = sheet.getScale();
 
                         if (constant instanceof Scale.Fraction) {

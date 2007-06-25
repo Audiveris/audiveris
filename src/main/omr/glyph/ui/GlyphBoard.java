@@ -39,6 +39,7 @@ import java.awt.Dimension;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.*;
@@ -464,6 +465,7 @@ public class GlyphBoard
         public DeassignAction ()
         {
             super("Deassign");
+            this.putValue(Action.SHORT_DESCRIPTION, "Deassign shape");
         }
 
         @Implement(ChangeListener.class)
@@ -480,7 +482,7 @@ public class GlyphBoard
                     Sheet sheet = glyphModel.getSheet();
 
                     if (sheet != null) {
-                        sheet.updateSteps();
+                        sheet.updateLastSteps(Collections.singleton(glyph));
                     }
 
                     // Update focus on current glyph, if reused in a compound
@@ -493,13 +495,14 @@ public class GlyphBoard
                             SelectionHint.GLYPH_INIT);
                     }
                 } else if (inputSelectionList.size() == 1) {
-                    glyphModel.deassignGlyphShape(
-                        (Glyph) inputSelectionList.get(0).getEntity());
+                    Glyph glyph = (Glyph) inputSelectionList.get(0)
+                                                            .getEntity();
+                    glyphModel.deassignGlyphShape(glyph);
 
                     Sheet sheet = glyphModel.getSheet();
 
                     if (sheet != null) {
-                        sheet.updateSteps();
+                        sheet.updateLastSteps(Collections.singleton(glyph));
                     }
                 }
             }

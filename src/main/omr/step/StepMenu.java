@@ -7,9 +7,10 @@
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
-package omr;
+package omr.step;
 
-import omr.sheet.InstanceStep;
+import omr.Main;
+
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
@@ -54,7 +55,7 @@ public class StepMenu
         ActionListener actionListener = new StepListener();
 
         // List of Steps classes
-        for (Step step : Sheet.getSteps()) {
+        for (Step step : Step.values()) {
             menu.add(new StepItem(step, actionListener));
         }
 
@@ -116,12 +117,10 @@ public class StepMenu
                     setState(false);
                     setEnabled(false);
                 } else {
-                    InstanceStep is = sheet.getInstanceStep(step);
-
-                    if (is != null) {
-                        setState(is.isDone());
-                        setEnabled(!is.isDone());
-                    }
+                    boolean bool = sheet.getSheetSteps()
+                                        .isDone(step);
+                    setState(bool);
+                    setEnabled(!bool);
                 }
             }
         }

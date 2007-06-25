@@ -250,20 +250,6 @@ public class ScoreController
         }
     }
 
-    //------------------//
-    // setSynchroWanted //
-    //------------------//
-    /**
-     * Allow to register the need (or lack of) for synchronization of the other
-     * side (score view).
-     *
-     * @param synchroWanted the value to set to the flag
-     */
-    private synchronized void setSynchroWanted (boolean synchroWanted)
-    {
-        this.synchroWanted = synchroWanted;
-    }
-
     //-----------------//
     // isSynchroWanted //
     //-----------------//
@@ -330,8 +316,8 @@ public class ScoreController
 
                         setScoreView(score);
                         sheet.displayAssembly();
-                        sheet.getInstanceStep(sheet.currentStep())
-                             .displayUI();
+                        sheet.getSheetSteps()
+                             .displayUI(sheet.currentStep());
                     } else {
                         history.names.remove(path);
                     }
@@ -343,6 +329,20 @@ public class ScoreController
         };
 
         worker.start();
+    }
+
+    //------------------//
+    // setSynchroWanted //
+    //------------------//
+    /**
+     * Allow to register the need (or lack of) for synchronization of the other
+     * side (score view).
+     *
+     * @param synchroWanted the value to set to the flag
+     */
+    private synchronized void setSynchroWanted (boolean synchroWanted)
+    {
+        this.synchroWanted = synchroWanted;
     }
 
     //~ Inner Classes ----------------------------------------------------------
