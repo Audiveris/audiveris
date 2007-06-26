@@ -16,7 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.sheet.Sheet;
 
-import omr.step.LogStepMonitorHandler;
 import omr.step.StepException;
 
 import omr.ui.util.UIUtilities;
@@ -41,11 +40,6 @@ public class StepMonitor
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(StepMonitor.class);
-
-    static {
-        logger.getParent()
-              .addHandler(new LogStepMonitorHandler());
-    }
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
