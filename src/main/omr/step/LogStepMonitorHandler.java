@@ -7,12 +7,7 @@
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
-package omr.util;
-
-import omr.*;
-
-import omr.step.Step;
-import omr.step.StepMonitor;
+package omr.step;
 
 import java.util.logging.*;
 

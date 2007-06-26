@@ -7,7 +7,7 @@
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
-package omr;
+package omr.util;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;

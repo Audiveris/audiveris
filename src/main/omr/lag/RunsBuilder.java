@@ -9,9 +9,8 @@
 //
 package omr.lag;
 
-import omr.OmrExecutors;
-
 import omr.util.Logger;
+import omr.util.OmrExecutors;
 import omr.util.SignallingRunnable;
 
 import java.awt.Rectangle;

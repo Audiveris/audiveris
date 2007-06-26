@@ -199,7 +199,7 @@ public enum Step {
         long startTime = 0;
 
         if (logger.isFineEnabled()) {
-            logger.fine("Starting " + this);
+            logger.fine(this + " Starting");
             startTime = System.currentTimeMillis();
         }
 
@@ -230,8 +230,8 @@ public enum Step {
         if (logger.isFineEnabled()) {
             final long stopTime = System.currentTimeMillis();
             logger.fine(
-                "Completed " + this + " in " + (stopTime - startTime) +
-                " ms with " + Memory.getValue() + " bytes");
+                this + "Completed in " + (stopTime - startTime) + " ms with " +
+                Memory.getValue() + " bytes");
         }
 
         return sheet;

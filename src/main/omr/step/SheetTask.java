@@ -83,7 +83,10 @@ public abstract class SheetTask
      */
     public void done ()
     {
-        logger.fine("done for " + step);
+        if (logger.isFineEnabled()) {
+            logger.fine(step + " done");
+        }
+
         stepDone = true;
     }
 
@@ -97,11 +100,16 @@ public abstract class SheetTask
     public void getResult ()
         throws StepException
     {
-        ///logger.fine ("getResult " + step);
         if (!isDone()) {
-            logger.fine(step + " doit ...");
+            if (logger.isFineEnabled()) {
+                logger.fine(step + " doit ...");
+            }
+
             doit();
-            logger.fine(step + " doit end");
+
+            if (logger.isFineEnabled()) {
+                logger.fine(step + " doit end");
+            }
         }
     }
 

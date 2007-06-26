@@ -16,6 +16,7 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsBuilder;
+import omr.glyph.Shape;
 import omr.glyph.ui.SymbolsEditor;
 
 import omr.score.Score;
@@ -48,10 +49,8 @@ import omr.util.Logger;
 
 import java.awt.*;
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  * Class <code>Sheet</code> encapsulates the original music image, as well as
@@ -626,6 +625,48 @@ public class Sheet
         return imageFile;
     }
 
+    //--------------------//
+    // getImpactedSystems //
+    //--------------------//
+    /**
+     * Report the collection of systems that are impacted by a shape
+     * modification in the provided glyphs
+     *
+     * @param glyphs the glyphs for which we look for impacted systems
+     * @param shapes the collection of initial shapes of thes glyphs
+     * @return the collection of systems
+     */
+    public Collection<SystemInfo> getImpactedSystems (Collection<Glyph> glyphs,
+                                                      Collection<Shape> shapes)
+    {
+        boolean persistent = false;
+
+        for (Shape shape : shapes) {
+            if (shape.isPersistent()) {
+                persistent = true;
+
+                break;
+            }
+        }
+
+        Collection<SystemInfo> impacted = new HashSet<SystemInfo>();
+
+        for (Glyph glyph : glyphs) {
+            SystemInfo system = getSystemOf(glyph);
+            impacted.add(system);
+
+            Shape shape = glyph.getShape();
+
+            if (persistent || ((shape != null) && shape.isPersistent())) {
+                // Add the following systems
+                int index = systems.indexOf(system);
+                impacted.addAll(systems.subList(index + 1, systems.size()));
+            }
+        }
+
+        return impacted;
+    }
+
     //-----------------//
     // getLinesBuilder //
     //-----------------//
@@ -978,26 +1019,6 @@ public class Sheet
         return list;
     }
 
-    //--------------//
-    // getSystemsOf //
-    //--------------//
-    /**
-     * Report the collection of systems that contain the provided glyphs
-     *
-     * @param glyphs the glyphs for which we look for containing systems
-     * @return the collection of systems
-     */
-    public Collection<SystemInfo> getSystemsOf (Collection<Glyph> glyphs)
-    {
-        Collection<SystemInfo> systems = new HashSet<SystemInfo>();
-
-        for (Glyph glyph : glyphs) {
-            systems.add(getSystemOf(glyph));
-        }
-
-        return systems;
-    }
-
     //----------------//
     // getVerticalLag //
     //----------------//
@@ -1006,7 +1027,7 @@ public class Sheet
      *
      * @return the current vertical lag
      */
-    public GlyphLag getVerticalLag ()
+    public synchronized GlyphLag getVerticalLag ()
     {
         if (vLag == null) {
             try {
@@ -1382,18 +1403,21 @@ public class Sheet
     //-----------------//
     // updateLastSteps //
     //-----------------//
-    public void updateLastSteps (Collection<Glyph> glyphs)
+    public void updateLastSteps (Collection<Glyph> glyphs,
+                                 Collection<Shape> shapes)
     {
-        // Determine impacted systems, from the collection of impacted glyphs
-        Collection<SystemInfo> systems = getSystemsOf(glyphs);
+        // Determine impacted systems, from the collection of modified glyphs
+        Collection<SystemInfo> impactedSystems = getImpactedSystems(
+            glyphs,
+            shapes);
 
         if (logger.isFineEnabled()) {
-            logger.fine(systems.size() + " Impacted system(s)");
+            logger.fine(impactedSystems.size() + " Impacted system(s)");
         }
 
         try {
-            /////            for (SystemInfo system : systems) { // DOES NOT WORK CORRECTLY
-            for (SystemInfo system : getSystems()) {
+            for (SystemInfo system : impactedSystems) {
+                ///for (SystemInfo system : getSystems()) {
                 if (sheetSteps.isDone(LEAVES)) {
                     sheetSteps.doSystem(LEAVES, system);
                 }

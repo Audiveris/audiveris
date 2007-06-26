@@ -16,11 +16,11 @@ import omr.constant.ConstantSet;
 
 import omr.sheet.Sheet;
 
+import omr.step.LogStepMonitorHandler;
 import omr.step.StepException;
 
 import omr.ui.util.UIUtilities;
 
-import omr.util.LogStepMonitorHandler;
 import omr.util.Logger;
 
 import java.awt.Graphics;
@@ -207,8 +207,8 @@ public class StepMonitor
 
                         if (logger.isFineEnabled()) {
                             logger.fine(
-                                "Executing " + step + " sheet=" + sheet +
-                                " param=" + param + " ...");
+                                step + " Executing sheet=" + sheet + " param=" +
+                                param + " ...");
                         }
 
                         try {
@@ -241,7 +241,7 @@ public class StepMonitor
 
                             if (logger.isFineEnabled()) {
                                 logger.fine(
-                                    "Ending " + step + " sheet=" + sheet +
+                                    step + " Ending sheet=" + sheet +
                                     " param=" + param + ".");
                             }
                         }

@@ -10,7 +10,6 @@
 package omr.score.visitor;
 
 import omr.Main;
-import omr.OmrExecutors;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
@@ -45,6 +44,7 @@ import omr.score.Wedge;
 import static omr.score.visitor.MusicXML.*;
 
 import omr.util.Logger;
+import omr.util.OmrExecutors;
 import omr.util.TreeNode;
 
 import proxymusic.*;

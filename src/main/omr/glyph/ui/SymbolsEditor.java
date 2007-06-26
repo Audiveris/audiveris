@@ -200,14 +200,7 @@ public class SymbolsEditor
                 // Force a recomputation of glyph parameters (since environment may
                 // have changed since the time they had been computed)
                 builder.computeGlyphFeatures(glyph);
-
                 super.assignGlyphShape(glyph, shape);
-
-                if (shape != null) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("assign " + shape + " -> updateScore");
-                    }
-                }
             }
         }
     }
@@ -222,12 +215,15 @@ public class SymbolsEditor
      * @param glyphs the collection of glyphs
      * @param shape the shape to be assigned
      * @param compound flag to indicate a compound is desired
+     * @return the set of initial shapes, which may be null
      */
     @Override
-    public void assignSetShape (Collection<Glyph> glyphs,
-                                Shape             shape,
-                                boolean           compound)
+    public Collection<Shape> assignSetShape (Collection<Glyph> glyphs,
+                                             Shape             shape,
+                                             boolean           compound)
     {
+        Collection<Shape> shapes = Glyph.shapesOf(glyphs);
+
         if ((glyphs != null) && (glyphs.size() > 0)) {
             if (compound) {
                 // Build & insert a compound
@@ -251,6 +247,8 @@ public class SymbolsEditor
                 }
             }
         }
+
+        return shapes;
     }
 
     //-------------//
@@ -409,6 +407,7 @@ public class SymbolsEditor
     {
         // Use a copy of glyphs selection
         Collection<Glyph> glyphs = new ArrayList<Glyph>(givenGlyphs);
+        Collection<Shape> shapes = Glyph.shapesOf(glyphs);
 
         deassignSetShape(glyphs);
 
@@ -418,7 +417,7 @@ public class SymbolsEditor
                  .stemSegment(Collections.singletonList(glyph), system);
         }
 
-        sheet.updateLastSteps(glyphs);
+        sheet.updateLastSteps(glyphs, shapes);
     }
 
     //~ Inner Classes ----------------------------------------------------------

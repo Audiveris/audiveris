@@ -171,6 +171,22 @@ public class Glyph
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------//
+    // shapesOf //
+    //----------//
+    public static Collection<Shape> shapesOf (Collection<Glyph> glyphs)
+    {
+        Set<Shape> shapes = new HashSet<Shape>();
+
+        for (Glyph glyph : glyphs) {
+            if (glyph.getShape() != null) {
+                shapes.add(glyph.getShape());
+            }
+        }
+
+        return shapes;
+    }
+
     //------------------//
     // addGlyphSections //
     //------------------//
@@ -772,20 +788,6 @@ public class Glyph
         }
     }
 
-    //------------------//
-    // setTrainingShape //
-    //------------------//
-    /**
-     * Assign the training shape of the registered glyph shape (NB: this is
-     * meant for JAXB)
-     *
-     * @param shape the glyph shape
-     */
-    public void setTrainingShape (Shape shape)
-    {
-        setShape(shape);
-    }
-
     //-----------------//
     // getTranslations //
     //-----------------//
@@ -1182,6 +1184,20 @@ public class Glyph
     public void setStemNumber (int stemNumber)
     {
         this.stemNumber = stemNumber;
+    }
+
+    //------------------//
+    // setTrainingShape //
+    //------------------//
+    /**
+     * Assign the training shape of the registered glyph shape (NB: this is
+     * meant for JAXB)
+     *
+     * @param shape the glyph shape
+     */
+    public void setTrainingShape (Shape shape)
+    {
+        setShape(shape);
     }
 
     //----------------//

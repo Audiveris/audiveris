@@ -216,7 +216,6 @@ public class SheetSteps
      */
     public boolean isDone (Step step)
     {
-        ///logger.fine("SheetSteps. isDone step=" + step);
         return getTask(step)
                    .isDone();
     }
@@ -280,7 +279,10 @@ public class SheetSteps
 
         public void displayUI ()
         {
-            logger.fine("CLEANUP displayUI");
+            if (logger.isFineEnabled()) {
+                logger.fine("CLEANUP displayUI");
+            }
+
             sheet.getSymbolsEditor()
                  .refresh();
         }
@@ -289,6 +291,11 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "CLEANUP doSystem #" + system.getScoreSystem().getId());
+            }
+
             getSystemResult(LEAVES, system);
             sheet.getGlyphInspector()
                  .verifyStems(system);
@@ -351,6 +358,11 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "LEAVES doSystem #" + system.getScoreSystem().getId());
+            }
+
             // Trigger previous processing for this system, if needed
             getSystemResult(VERTICALS, system);
             // Processing for this step
@@ -491,7 +503,10 @@ public class SheetSteps
             getTask(VERTICALS)
                 .displayUI();
 
-            logger.fine("SCORE displayUI");
+            if (logger.isFineEnabled()) {
+                logger.fine("SCORE displayUI");
+            }
+
             sheet.getSymbolsEditor()
                  .refresh();
         }
@@ -499,7 +514,10 @@ public class SheetSteps
         public void doFinal ()
             throws StepException
         {
-            logger.fine("SCORE final");
+            if (logger.isFineEnabled()) {
+                logger.fine("SCORE final");
+            }
+
             // Final cross-system translation tasks
             sheet.getScoreBuilder()
                  .buildFinal();
@@ -509,6 +527,11 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "SCORE doSystem #" + system.getScoreSystem().getId());
+            }
+
             omr.score.System scoreSystem = system.getScoreSystem();
             getSystemResult(CLEANUP, system);
             sheet.getScoreBuilder()
@@ -566,13 +589,21 @@ public class SheetSteps
 
         public void displayUI ()
         {
-            logger.fine("SYMBOLS displayUI");
+            if (logger.isFineEnabled()) {
+                logger.fine("SYMBOLS displayUI");
+            }
+
             sheet.getSymbolsEditor()
                  .refresh();
         }
 
         public void doSystem (SystemInfo system)
         {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "SYMBOLS doSystem #" + system.getScoreSystem().getId());
+            }
+
             sheet.getGlyphInspector()
                  .processGlyphs(
                 system,
@@ -600,25 +631,23 @@ public class SheetSteps
 
         public void displayUI ()
         {
-            logger.fine("VERTICALS displayUI");
+            if (logger.isFineEnabled()) {
+                logger.fine("VERTICALS displayUI");
+            }
+
             // Create verticals display
             sheet.getVerticalsBuilder()
                  .refresh();
         }
 
-        //        public void doit ()
-        //            throws StepException
-        //        {
-        //            super.doit();
-        //
-        //            if (Main.getGui() != null) {
-        //                displayUI();
-        //            }
-        //        }
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            logger.fine("VERTICALS system #" + system.getScoreSystem().getId());
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "VERTICALS doSystem #" + system.getScoreSystem().getId());
+            }
+
             getSystemResult(SYMBOLS, system);
             sheet.getVerticalsBuilder()
                  .retrieveSystemVerticals(system);

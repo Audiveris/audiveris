@@ -37,6 +37,7 @@ import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Collection;
 import java.util.Collections;
 
 import javax.swing.*;
@@ -316,15 +317,17 @@ class EvaluationBoard
         {
             // Assign current glyph with selected shape
             if (glyphModel != null) {
-                Selection glyphSelection = sheet.getSelection(
+                Selection         glyphSelection = sheet.getSelection(
                     SelectionTag.VERTICAL_GLYPH);
-                Glyph     glyph = (Glyph) glyphSelection.getEntity();
-                Shape     shape = Shape.valueOf(button.getText());
+                Glyph             glyph = (Glyph) glyphSelection.getEntity();
+                Collection<Glyph> glyphs = Collections.singleton(glyph);
+                Collection<Shape> shapes = Glyph.shapesOf(glyphs);
+                Shape             shape = Shape.valueOf(button.getText());
 
                 glyphModel.assignGlyphShape(glyph, shape);
 
                 // Update user interface ? (view / selection)
-                sheet.updateLastSteps(Collections.singleton(glyph));
+                sheet.updateLastSteps(glyphs, shapes);
             }
         }
 

@@ -9,8 +9,6 @@
 //
 package omr.score;
 
-import omr.OmrExecutors;
-
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
@@ -23,6 +21,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
+import omr.util.OmrExecutors;
 import omr.util.SignallingRunnable;
 import omr.util.TreeNode;
 
@@ -138,8 +137,6 @@ public class ScoreBuilder
         CountDownLatch doneSignal = new CountDownLatch(
             sheet.getSystems().size());
 
-        // First, cleanup the score, keeping only the systems, staves,
-        // measures, barlines
         for (SystemInfo systemInfo : sheet.getSystems()) {
             final System       system = systemInfo.getScoreSystem();
             SignallingRunnable work = new SignallingRunnable(
@@ -169,8 +166,6 @@ public class ScoreBuilder
      */
     private void buildSequentialInfo ()
     {
-        // First, cleanup the score, keeping only the systems, staves,
-        // measures, barlines
         for (SystemInfo systemInfo : sheet.getSystems()) {
             buildSystem(systemInfo.getScoreSystem());
         }

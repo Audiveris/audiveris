@@ -26,6 +26,7 @@ import omr.ui.util.UILookAndFeel;
 
 import omr.util.Clock;
 import omr.util.Logger;
+import omr.util.OmrExecutors;
 
 import java.io.*;
 import java.util.ArrayList;

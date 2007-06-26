@@ -16,8 +16,7 @@ import omr.sheet.Sheet;
 
 import omr.util.Logger;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Class <code>GlyphModel</code> is a common basis for glyph handling.
@@ -76,6 +75,88 @@ public class GlyphModel
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------------//
+    // assignGlyphShape //
+    //------------------//
+    /**
+     * Manually assign a Shape to a glyph
+     *
+     * @param glyph the glyph to be assigned
+     * @param shape the assigned shape, which may be null
+     */
+    public void assignGlyphShape (Glyph glyph,
+                                  Shape shape)
+    {
+        if (glyph != null) {
+            ///logger.info(" From " + glyph.getTranslations() + " to " + shape);
+            // First, do a manual assignment of the shape to the glyph
+            glyph.setShape(shape, Evaluation.MANUAL_NO_DOUBT);
+
+            // Remember the latest shape assigned
+            if (shape != null) {
+                latestShapeAssigned = shape;
+            }
+
+            // Update immediately the glyph info as displayed
+            if (sheet != null) {
+                sheet.getSelection(
+                    lag.isVertical() ? VERTICAL_GLYPH : HORIZONTAL_GLYPH)
+                     .setEntity(glyph, SelectionHint.GLYPH_MODIFIED);
+            }
+        }
+    }
+
+    //----------------//
+    // assignSetShape //
+    //----------------//
+    /**
+     * Assign a shape to the selected collection of glyphs.
+     *
+     * @param glyphs the collection of glyphs to be assigned
+     * @param shape the shape to be assigned
+     * @param compound flag to build one compound, rather than assign each
+     *                 individual glyph
+     * @return the collection of initial shapes, which may be empty
+     */
+    public Collection<Shape> assignSetShape (Collection<Glyph> glyphs,
+                                             Shape             shape,
+                                             boolean           compound)
+    {
+        // Empty by default
+        logger.warning("No assignSetShape in current model for " + shape);
+
+        return Glyph.shapesOf(glyphs);
+    }
+
+    //--------------------//
+    // deassignGlyphShape //
+    //--------------------//
+    /**
+     * Deassign the shape of a glyph
+     *
+     * @param glyph
+     */
+    public void deassignGlyphShape (Glyph glyph)
+    {
+        // Empty by default
+        logger.warning(
+            "No deassignGlyphShape in current model for " + glyph.getShape());
+    }
+
+    //------------------//
+    // deassignSetShape //
+    //------------------//
+    /**
+     * De-Assign a collection of glyphs.
+     *
+     * @param glyphs the collection of glyphs to be de-assigned
+     */
+    public void deassignSetShape (Collection<Glyph> glyphs)
+    {
+        // Empty by default
+        logger.warning("No deassignSetShape in current model");
+    }
+
     //--------------//
     // getGlyphById //
     //--------------//
@@ -122,84 +203,5 @@ public class GlyphModel
     public Sheet getSheet ()
     {
         return sheet;
-    }
-
-    //------------------//
-    // assignGlyphShape //
-    //------------------//
-    /**
-     * Manually assign a Shape to a glyph
-     *
-     * @param glyph the glyph to be assigned
-     * @param shape the assigned shape, which may be null
-     */
-    public void assignGlyphShape (Glyph glyph,
-                                  Shape shape)
-    {
-        if (glyph != null) {
-            ///logger.info(" From " + glyph.getTranslations() + " to " + shape);
-            // First, do a manual assignment of the shape to the glyph
-            glyph.setShape(shape, Evaluation.MANUAL_NO_DOUBT);
-
-            // Remember the latest shape assigned
-            if (shape != null) {
-                latestShapeAssigned = shape;
-            }
-
-            // Update immediately the glyph info as displayed
-            if (sheet != null) {
-                sheet.getSelection(
-                    lag.isVertical() ? VERTICAL_GLYPH : HORIZONTAL_GLYPH)
-                     .setEntity(glyph, SelectionHint.GLYPH_MODIFIED);
-            }
-        }
-    }
-
-    //----------------//
-    // assignSetShape //
-    //----------------//
-    /**
-     * Assign a shape to the selected collection of glyphs.
-     *
-     * @param glyphs the collection of glyphs to be assigned
-     * @param shape the shape to be assigned
-     * @param compound flag to build one compound, rather than assign each
-     *                 individual glyph
-     */
-    public void assignSetShape (Collection<Glyph> glyphs,
-                                Shape             shape,
-                                boolean           compound)
-    {
-        // Empty by default
-        logger.warning("No assignSetShape in current model for " + shape);
-    }
-
-    //--------------------//
-    // deassignGlyphShape //
-    //--------------------//
-    /**
-     * Deassign the shape of a glyph
-     *
-     * @param glyph
-     */
-    public void deassignGlyphShape (Glyph glyph)
-    {
-        // Empty by default
-        logger.warning(
-            "No deassignGlyphShape in current model for " + glyph.getShape());
-    }
-
-    //------------------//
-    // deassignSetShape //
-    //------------------//
-    /**
-     * De-Assign a collection of glyphs.
-     *
-     * @param glyphs the collection of glyphs to be de-assigned
-     */
-    public void deassignSetShape (Collection<Glyph> glyphs)
-    {
-        // Empty by default
-        logger.warning("No deassignSetShape in current model");
     }
 }

@@ -473,16 +473,19 @@ public class GlyphBoard
         {
             if (glyphModel != null) {
                 if (inputSelectionList.size() > 1) {
-                    Selection   glyphSelection = inputSelectionList.get(0);
-                    Glyph       glyph = (Glyph) glyphSelection.getEntity();
-                    Selection   glyphSetSelection = inputSelectionList.get(1);
-                    List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+                    Selection         glyphSelection = inputSelectionList.get(
+                        0);
+                    Glyph             glyph = (Glyph) glyphSelection.getEntity();
+                    Selection         glyphSetSelection = inputSelectionList.get(
+                        1);
+                    List<Glyph>       glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+                    Collection<Shape> shapes = Glyph.shapesOf(glyphs);
                     glyphModel.deassignSetShape(glyphs);
 
                     Sheet sheet = glyphModel.getSheet();
 
                     if (sheet != null) {
-                        sheet.updateLastSteps(Collections.singleton(glyph));
+                        sheet.updateLastSteps(glyphs, shapes);
                     }
 
                     // Update focus on current glyph, if reused in a compound
@@ -495,14 +498,16 @@ public class GlyphBoard
                             SelectionHint.GLYPH_INIT);
                     }
                 } else if (inputSelectionList.size() == 1) {
-                    Glyph glyph = (Glyph) inputSelectionList.get(0)
-                                                            .getEntity();
+                    Glyph             glyph = (Glyph) inputSelectionList.get(0)
+                                                                        .getEntity();
+                    Collection<Glyph> glyphs = Collections.singleton(glyph);
+                    Collection<Shape> shapes = Glyph.shapesOf(glyphs);
                     glyphModel.deassignGlyphShape(glyph);
 
                     Sheet sheet = glyphModel.getSheet();
 
                     if (sheet != null) {
-                        sheet.updateLastSteps(Collections.singleton(glyph));
+                        sheet.updateLastSteps(glyphs, shapes);
                     }
                 }
             }

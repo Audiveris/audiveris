@@ -15,9 +15,11 @@ import omr.sheet.SystemInfo;
 import omr.step.StepException;
 
 import omr.util.Logger;
+import omr.util.OmrExecutors;
+import omr.util.SignallingRunnable;
 
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Class <code>SystemTask</code> defines the ask for a step at system level
@@ -87,19 +89,24 @@ public abstract class SystemTask
     public void doit ()
         throws StepException
     {
-        logger.fine(step + " SystemTask doit ...");
-
-        // Launch parallel processing per system
-        // TBD
-        for (SystemInfo system : sheet.getSystems()) {
-            // TBD
-            doSystem(system);
+        if (logger.isFineEnabled()) {
+            logger.fine(step + " SystemTask doit ...");
         }
 
-        // Final latch here
-        // TBD
+        // Processing per system
+        if (OmrExecutors.useParallelism() &&
+            (OmrExecutors.getNumberOfCpus() > 1)) {
+            doitParallel();
+        } else {
+            doitSerial();
+        }
+
+        // Final actions
         doFinal();
-        logger.fine(step + " SystemTask doit end");
+
+        if (logger.isFineEnabled()) {
+            logger.fine(step + " SystemTask doit end");
+        }
     }
 
     //------//
@@ -109,10 +116,13 @@ public abstract class SystemTask
      * Flag this system as done
      * @param system the provided system
      */
-    public void done (SystemInfo system)
+    public synchronized void done (SystemInfo system)
     {
-        logger.fine(
-            step + " done for system #" + system.getScoreSystem().getId());
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                step + " done system #" + system.getScoreSystem().getId());
+        }
+
         done();
         systemDone.put(system, Boolean.valueOf(true));
     }
@@ -141,10 +151,49 @@ public abstract class SystemTask
      * @param system the provided system
      * @return true if done/started, false otherwise
      */
-    public boolean isDone (SystemInfo system)
+    public synchronized boolean isDone (SystemInfo system)
     {
         Boolean result = systemDone.get(system);
 
         return (result != null) && result;
+    }
+
+    private void doitParallel ()
+    {
+        Executor       executor = OmrExecutors.getHighExecutor();
+        CountDownLatch doneSignal = new CountDownLatch(
+            sheet.getSystems().size());
+
+        for (SystemInfo info : sheet.getSystems()) {
+            final SystemInfo   system = info;
+            SignallingRunnable work = new SignallingRunnable(
+                doneSignal,
+                new Runnable() {
+                        public void run ()
+                        {
+                            try {
+                                doSystem(system);
+                            } catch (StepException ex) {
+                                logger.warning("Step aborted on system", ex);
+                            }
+                        }
+                    });
+            executor.execute(work);
+        }
+
+        // Wait for end of work
+        try {
+            doneSignal.await();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void doitSerial ()
+        throws StepException
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            doSystem(system);
+        }
     }
 }

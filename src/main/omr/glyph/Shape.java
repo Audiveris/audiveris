@@ -504,6 +504,21 @@ public enum Shape
     }
 
     //~ Methods ----------------------------------------------------------------
+    
+    /**
+     * Report whether the impact of this shape persists across system (actually 
+     * measure) borders (clefs, time signatures, key signatures).
+     * Based on just the shape, we cannot tell whether an accidental is part of 
+     * a key signature or not, so we take a conservative approach.
+     *
+     * @return true if persistent, false otherwise
+     */
+    public boolean isPersistent()
+    {
+        return Clefs.contains(this) || 
+                Times.contains(this) || 
+                Accidentals.contains(this);
+    }
 
     //-------------//
     // isTrainable //

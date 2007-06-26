@@ -15,19 +15,13 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
 
-import omr.score.Note;
-
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
 
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.swing.*;
 import static javax.swing.Action.*;
@@ -114,14 +108,16 @@ public class GlyphMenu
             new ActionListener() {
                     public void actionPerformed (ActionEvent e)
                     {
-                        JMenuItem   source = (JMenuItem) e.getSource();
-                        Shape       shape = Shape.valueOf(source.getText());
-                        List<Glyph> glyphs = getCurrentGlyphs();
+                        JMenuItem         source = (JMenuItem) e.getSource();
+                        Shape             shape = Shape.valueOf(
+                            source.getText());
+                        List<Glyph>       glyphs = getCurrentGlyphs();
+                        Collection<Shape> shapes = Glyph.shapesOf(glyphs);
                         symbolsEditor.assignSetShape(
                             glyphs,
                             shape, /* compound => */
                             false);
-                        sheet.updateLastSteps(glyphs);
+                        sheet.updateLastSteps(glyphs, shapes);
                     }
                 });
         popup.add(assignMenu);
@@ -141,14 +137,17 @@ public class GlyphMenu
             new ActionListener() {
                     public void actionPerformed (ActionEvent e)
                     {
-                        JMenuItem   source = (JMenuItem) e.getSource();
-                        Shape       shape = Shape.valueOf(source.getText());
-                        List<Glyph> glyphs = getCurrentGlyphs();
+                        JMenuItem         source = (JMenuItem) e.getSource();
+                        Shape             shape = Shape.valueOf(
+                            source.getText());
+                        List<Glyph>       glyphs = getCurrentGlyphs();
+                        Collection<Shape> shapes = Glyph.shapesOf(glyphs);
+                        shapes.add(shape);
                         symbolsEditor.assignSetShape(
                             glyphs,
                             shape, /* compound => */
                             true);
-                        sheet.updateLastSteps(glyphs);
+                        sheet.updateLastSteps(glyphs, shapes);
                     }
                 });
         popup.add(compoundMenu);
@@ -329,12 +328,13 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             // Remember which is the current selected glyph
-            Glyph       glyph = getCurrentGlyph();
+            Glyph             glyph = getCurrentGlyph();
 
             // Actually deassign the whole set
-            List<Glyph> glyphs = getCurrentGlyphs();
+            List<Glyph>       glyphs = getCurrentGlyphs();
+            Collection<Shape> shapes = Glyph.shapesOf(glyphs);
             symbolsEditor.deassignSetShape(glyphs);
-            sheet.updateLastSteps(glyphs);
+            sheet.updateLastSteps(glyphs, shapes);
 
             // Update focus on current glyph, if reused in a compound
             Glyph newGlyph = glyph.getFirstSection()
@@ -430,12 +430,13 @@ public class GlyphMenu
     {
         public void actionPerformed (ActionEvent e)
         {
-            JMenuItem   source = (JMenuItem) e.getSource();
-            Shape       shape = Shape.valueOf(source.getText());
-            List<Glyph> glyphs = getCurrentGlyphs();
+            JMenuItem         source = (JMenuItem) e.getSource();
+            Shape             shape = Shape.valueOf(source.getText());
+            List<Glyph>       glyphs = getCurrentGlyphs();
+            Collection<Shape> shapes = Glyph.shapesOf(glyphs);
             symbolsEditor.assignSetShape(glyphs, shape, /* compound => */
                                          false);
-            sheet.updateLastSteps(glyphs);
+            sheet.updateLastSteps(glyphs, shapes);
         }
 
         public void update ()
@@ -465,13 +466,14 @@ public class GlyphMenu
     {
         public void actionPerformed (ActionEvent e)
         {
-            Glyph glyph = getCurrentGlyph();
+            Glyph             glyph = getCurrentGlyph();
+            Collection<Glyph> glyphs = Collections.singleton(glyph);
+            Collection<Shape> shapes = Glyph.shapesOf(glyphs);
 
             if ((glyph != null) && (glyph == proposedGlyph)) {
                 symbolsEditor.assignGlyphShape(glyph, proposedShape);
+                sheet.updateLastSteps(glyphs, shapes);
             }
-
-            sheet.updateLastSteps(Collections.singleton(glyph));
         }
 
         public void update ()
