@@ -11,6 +11,9 @@ package omr.step;
 
 import omr.Main;
 
+import omr.glyph.Glyph;
+import omr.glyph.Shape;
+
 import omr.score.visitor.ScoreChecker;
 
 import omr.sheet.BarsBuilder;
@@ -26,12 +29,17 @@ import static omr.step.Step.*;
 import omr.step.StepException;
 
 import omr.util.Logger;
+import omr.util.OmrExecutors;
+import omr.util.SignallingRunnable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 
 /**
  * Class <code>SheetSteps</code> handles the actual progress of steps for a
@@ -218,6 +226,72 @@ public class SheetSteps
     {
         return getTask(step)
                    .isDone();
+    }
+
+    //-----------------//
+    // updateLastSteps //
+    //-----------------//
+    public void updateLastSteps (Collection<Glyph> glyphs,
+                                 Collection<Shape> shapes)
+    {
+        // Determine impacted systems, from the collection of modified glyphs
+        Collection<SystemInfo> impactedSystems = sheet.getImpactedSystems(
+            glyphs,
+            shapes);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(impactedSystems.size() + " Impacted system(s)");
+        }
+
+        Executor       executor = OmrExecutors.getHighExecutor();
+        CountDownLatch doneSignal = new CountDownLatch(impactedSystems.size());
+
+        for (SystemInfo info : impactedSystems) {
+            final SystemInfo   system = info;
+            SignallingRunnable work = new SignallingRunnable(
+                doneSignal,
+                new Runnable() {
+                        public void run ()
+                        {
+                            try {
+                                if (isDone(LEAVES)) {
+                                    doSystem(LEAVES, system);
+                                }
+
+                                if (isDone(CLEANUP)) {
+                                    doSystem(CLEANUP, system);
+                                }
+
+                                if (isDone(SCORE)) {
+                                    doSystem(SCORE, system);
+                                }
+                            } catch (StepException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+            executor.execute(work);
+        }
+
+        // Wait for end of work
+        try {
+            doneSignal.await();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+
+        // Final cross-system translation tasks
+        sheet.getScoreBuilder()
+             .buildFinal();
+
+        // Always refresh sheet views
+        sheet.getSymbolsEditor()
+             .refresh();
+
+        if (isDone(VERTICALS)) {
+            sheet.getVerticalsBuilder()
+                 .refresh();
+        }
     }
 
     //---------//

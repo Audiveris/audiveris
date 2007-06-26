@@ -46,11 +46,15 @@ import omr.ui.SheetAssembly;
 
 import omr.util.FileUtil;
 import omr.util.Logger;
+import omr.util.OmrExecutors;
+import omr.util.SignallingRunnable;
 
 import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 
 /**
  * Class <code>Sheet</code> encapsulates the original music image, as well as
@@ -1406,46 +1410,7 @@ public class Sheet
     public void updateLastSteps (Collection<Glyph> glyphs,
                                  Collection<Shape> shapes)
     {
-        // Determine impacted systems, from the collection of modified glyphs
-        Collection<SystemInfo> impactedSystems = getImpactedSystems(
-            glyphs,
-            shapes);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(impactedSystems.size() + " Impacted system(s)");
-        }
-
-        try {
-            for (SystemInfo system : impactedSystems) {
-                ///for (SystemInfo system : getSystems()) {
-                if (sheetSteps.isDone(LEAVES)) {
-                    sheetSteps.doSystem(LEAVES, system);
-                }
-
-                if (sheetSteps.isDone(CLEANUP)) {
-                    sheetSteps.doSystem(CLEANUP, system);
-                }
-
-                if (sheetSteps.isDone(SCORE)) {
-                    sheetSteps.doSystem(SCORE, system);
-                }
-            }
-        } catch (StepException ex) {
-            ex.printStackTrace();
-        }
-
-        // Final cross-system translation tasks
-        getScoreBuilder()
-            .buildFinal();
-
-        // Always refresh sheet views
-        getSymbolsEditor()
-            .refresh();
-
-        if (sheetSteps.isDone(VERTICALS)) {
-            getVerticalsBuilder()
-                .refresh();
-        }
+        sheetSteps.updateLastSteps(glyphs, shapes);
     }
 
     //-------------------//
