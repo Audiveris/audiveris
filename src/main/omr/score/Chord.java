@@ -20,6 +20,8 @@ import omr.sheet.PixelPoint;
 import omr.sheet.PixelRectangle;
 import omr.sheet.Scale;
 
+import omr.stick.Stick;
+
 import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.TreeNode;
@@ -653,11 +655,58 @@ public class Chord
         return false;
     }
 
+    //------------//
+    // lookupRest //
+    //------------//
+    /**
+     * Look up for a potential rest interleaved between the given stemed chords
+     * @param left the chord on the left of the area
+     * @param right the chord on the right of the area
+     * @return the rest found, or null otherwise
+     */
+    public static Note lookupRest (Chord left,
+                                   Chord right)
+    {
+        // Define the area limited by the left and right chords with their stems
+        // and check for intersection with a rest note
+        Polygon polygon = new Polygon();
+        polygon.addPoint(left.headLocation.x, left.headLocation.y);
+        polygon.addPoint(left.tailLocation.x, left.tailLocation.y);
+        polygon.addPoint(right.tailLocation.x, right.tailLocation.y);
+        polygon.addPoint(right.headLocation.x, right.headLocation.y);
+
+        for (TreeNode node : left.getMeasure()
+                                 .getChords()) {
+            Chord chord = (Chord) node;
+
+            // Not interested in the bounding chords
+            if ((chord == left) || (chord == right)) {
+                continue;
+            }
+
+            for (TreeNode n : chord.getNotes()) {
+                Note note = (Note) n;
+
+                // Interested in rest notes only
+                if (note.isRest()) {
+                    SystemRectangle box = note.getBox();
+
+                    if (polygon.intersects(box.x, box.y, box.width, box.height)) {
+                        return note;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     //-------------//
     // populateDot //
     //-------------//
     /**
-     * try to assign an augmentation dot to the relevant chord if any
+     * Try to assign an augmentation dot to the relevant chord if any,
+     * otherwise try to assign it to a repeat barline.
      *
      * @param glyph the glyph of the given augmentation dot
      * @param measure the containing measure
@@ -671,68 +720,12 @@ public class Chord
             logger.fine("Chord Populating dot " + glyph);
         }
 
-        Scale      scale = measure.getScale();
-        final int  maxDx = scale.toUnits(constants.maxDotDx);
-        final int  maxDy = scale.toUnits(constants.maxDotDy);
-        Set<Chord> candidates = new HashSet<Chord>();
-
         // A dot can be: an augmentation dot; part of repeat dots; staccato
-        // Check for a note/rest nearby:
-        // - on the left w/ same even pitch (note w/ even pitch)
-        // - slighly above or below (note with odd pitch = on a staff line)
-        ChordLoop: 
-        for (TreeNode node : measure.getChords()) {
-            Chord chord = (Chord) node;
-
-            for (TreeNode n : chord.getNotes()) {
-                Note note = (Note) n;
-
-                if (note.getShape() != Shape.WHOLE_REST) {
-                    SystemPoint noteRef = note.getCenterRight();
-                    SystemPoint toDot = new SystemPoint(
-                        dotCenter.x - noteRef.x,
-                        dotCenter.y - noteRef.y);
-
-                    if (logger.isFineEnabled()) {
-                        logger.info(measure.getContextString() + " " + toDot);
-                    }
-
-                    if ((toDot.x > 0) &&
-                        (toDot.x <= maxDx) &&
-                        (Math.abs(toDot.y) <= maxDy)) {
-                        candidates.add(chord);
-                    }
+        if (!tryAugmentation(glyph, measure, dotCenter)) {
+            if (!tryRepeat(glyph, measure, dotCenter)) {
+                if (!tryStaccato(glyph, measure, dotCenter)) {
+                    // No translation for this dot!
                 }
-            }
-        }
-
-        // Assign the dot to the candidate with longest duration, which boils
-        // down to smallest number of flags/beams, as the note head is the same
-        if (logger.isFineEnabled()) {
-            logger.info(candidates.size() + " Candidates=" + candidates);
-        }
-
-        int   bestFb = Integer.MAX_VALUE;
-        Chord bestChord = null;
-
-        for (Chord chord : candidates) {
-            int fb = chord.getFlagsNumber() + chord.getBeams()
-                                                   .size();
-
-            if (fb < bestFb) {
-                bestFb = fb;
-                bestChord = chord;
-            }
-        }
-
-        if (bestChord != null) {
-            // TBD: we should also handle case of double dots !
-            bestChord.dotsNumber = 1;
-            glyph.setTranslation(bestChord);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    bestChord.getContextString() + " Augmented " + bestChord);
             }
         }
     }
@@ -813,6 +806,23 @@ public class Chord
         return startTime;
     }
 
+    //------------//
+    // getStemDir //
+    //------------//
+    /**
+     * Report the stem direction of this chord
+     *
+     * @return -1 if stem is down, 0 if no stem, +1 if stem is up
+     */
+    public int getStemDir ()
+    {
+        if (stem == null) {
+            return 0;
+        } else {
+            return Integer.signum(getHeadLocation().y - getTailLocation().y);
+        }
+    }
+
     //---------------//
     // getTiedChords //
     //---------------//
@@ -846,6 +856,19 @@ public class Chord
         return tied;
     }
 
+    //-----------------//
+    // getTupletFactor //
+    //-----------------//
+    /**
+     * Report the chord tuplet factor, if any
+     *
+     * @return the factor to apply, or nulkl
+     */
+    public DurationFactor getTupletFactor ()
+    {
+        return tupletFactor;
+    }
+
     //--------------//
     // isEmbracedBy //
     //--------------//
@@ -870,82 +893,6 @@ public class Chord
         }
 
         return false;
-    }
-
-    //------------//
-    // lookupRest //
-    //------------//
-    /**
-     * Look up for a potential rest interleaved between the given stemed chords
-     * @param left the chord on the left of the area
-     * @param right the chord on the right of the area
-     * @return the rest found, or null otherwise
-     */
-    public static Note lookupRest (Chord left,
-                                   Chord right)
-    {
-        // Define the area limited by the left and right chords with their stems
-        // and check for intersection with a rest note
-        Polygon polygon = new Polygon();
-        polygon.addPoint(left.headLocation.x, left.headLocation.y);
-        polygon.addPoint(left.tailLocation.x, left.tailLocation.y);
-        polygon.addPoint(right.tailLocation.x, right.tailLocation.y);
-        polygon.addPoint(right.headLocation.x, right.headLocation.y);
-
-        for (TreeNode node : left.getMeasure()
-                                 .getChords()) {
-            Chord chord = (Chord) node;
-
-            // Not interested in the bounding chords
-            if ((chord == left) || (chord == right)) {
-                continue;
-            }
-
-            for (TreeNode n : chord.getNotes()) {
-                Note note = (Note) n;
-
-                // Interested in rest notes only
-                if (note.isRest()) {
-                    SystemRectangle box = note.getBox();
-
-                    if (polygon.intersects(box.x, box.y, box.width, box.height)) {
-                        return note;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    //------------//
-    // getStemDir //
-    //------------//
-    /**
-     * Report the stem direction of this chord
-     *
-     * @return -1 if stem is down, 0 if no stem, +1 if stem is up
-     */
-    public int getStemDir ()
-    {
-        if (stem == null) {
-            return 0;
-        } else {
-            return Integer.signum(getHeadLocation().y - getTailLocation().y);
-        }
-    }
-
-    //-----------------//
-    // getTupletFactor //
-    //-----------------//
-    /**
-     * Report the chord tuplet factor, if any
-     *
-     * @return the factor to apply, or nulkl
-     */
-    public DurationFactor getTupletFactor ()
-    {
-        return tupletFactor;
     }
 
     //--------------//
@@ -1208,6 +1155,165 @@ public class Chord
         return 0;
     }
 
+    //-----------------//
+    // tryAugmentation //
+    //-----------------//
+    /**
+     * Try to assign a dot as a chord augmentation dot
+     *
+     * @param glyph the glyph of the given dot
+     * @param measure the containing measure
+     * @param dotCenter the system-based location of the dot
+     * @return true if assignment is successful
+     */
+    private static boolean tryAugmentation (Glyph       glyph,
+                                            Measure     measure,
+                                            SystemPoint dotCenter)
+    {
+        Scale      scale = measure.getScale();
+        final int  maxDx = scale.toUnits(constants.maxAugmentationDotDx);
+        final int  maxDy = scale.toUnits(constants.maxAugmentationDotDy);
+        Set<Chord> candidates = new HashSet<Chord>();
+
+        // Check for a note/rest nearby:
+        // - on the left w/ same even pitch (note w/ even pitch)
+        // - slighly above or below (note with odd pitch = on a staff line)
+        ChordLoop: 
+        for (TreeNode node : measure.getChords()) {
+            Chord chord = (Chord) node;
+
+            for (TreeNode n : chord.getNotes()) {
+                Note note = (Note) n;
+
+                if (note.getShape() != Shape.WHOLE_REST) {
+                    SystemPoint noteRef = note.getCenterRight();
+                    SystemPoint toDot = new SystemPoint(
+                        dotCenter.x - noteRef.x,
+                        dotCenter.y - noteRef.y);
+
+                    if (logger.isFineEnabled()) {
+                        logger.info(measure.getContextString() + " " + toDot);
+                    }
+
+                    if ((toDot.x > 0) &&
+                        (toDot.x <= maxDx) &&
+                        (Math.abs(toDot.y) <= maxDy)) {
+                        candidates.add(chord);
+                    }
+                }
+            }
+        }
+
+        // Assign the dot to the candidate with longest duration, which boils
+        // down to smallest number of flags/beams, as the note head is the same
+        if (logger.isFineEnabled()) {
+            logger.info(candidates.size() + " Candidates=" + candidates);
+        }
+
+        int   bestFb = Integer.MAX_VALUE;
+        Chord bestChord = null;
+
+        for (Chord chord : candidates) {
+            int fb = chord.getFlagsNumber() + chord.getBeams()
+                                                   .size();
+
+            if (fb < bestFb) {
+                bestFb = fb;
+                bestChord = chord;
+            }
+        }
+
+        if (bestChord != null) {
+            // TBD: we should also handle case of double dots !
+            bestChord.dotsNumber = 1;
+            glyph.setTranslation(bestChord);
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    bestChord.getContextString() + " Augmented " + bestChord);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    //-----------//
+    // tryRepeat //
+    //-----------//
+    /**
+     * Try to assign a dot to the relevant repeat barline if any
+     *
+     * @param glyph the glyph of the given dot
+     * @param measure the containing measure
+     * @param dotCenter the system-based location of the dot
+     * @return true if assignment is successful
+     */
+    private static boolean tryRepeat (Glyph       glyph,
+                                      Measure     measure,
+                                      SystemPoint dotCenter)
+    {
+        if (glyph.getId() == 488) {
+            logger.info("Bingo");
+        }
+
+        // Check vertical pitch position within the staff : close to +1 or -1
+        double pitchDif = Math.abs(Math.abs(glyph.getPitchPosition()) - 1);
+
+        if (pitchDif > (2 * constants.maxRepeatDotDy.getValue())) {
+            return false;
+        }
+
+        // Check abscissa wrt the (ending) repeat barline on right
+        Barline     barline = measure.getBarline();
+        int         dx = barline.getLeftX() - dotCenter.x;
+        final Scale scale = measure.getScale();
+        final int   maxDx = scale.toUnits(constants.maxRepeatDotDx);
+
+        if ((dx > 0) && (dx <= maxDx)) {
+            barline.addStick((Stick) glyph);
+            glyph.setTranslation(barline);
+
+            return true;
+        }
+
+        // Check abscissa wrt the ending barline of the previous measure on left
+        Measure prevMeasure = (Measure) measure.getPreviousSibling();
+
+        if (prevMeasure != null) {
+            barline = prevMeasure.getBarline();
+            dx = dotCenter.x - barline.getRightX();
+
+            if ((dx > 0) && (dx <= maxDx)) {
+                barline.addStick((Stick) glyph);
+                glyph.setTranslation(barline);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //-------------//
+    // tryStaccato //
+    //-------------//
+    /**
+     * Try to assign a dot as a staccato
+     *
+     * @param glyph the glyph of the given dot
+     * @param measure the containing measure
+     * @param dotCenter the system-based location of the dot
+     * @return true if assignment is successful
+     */
+    private static boolean tryStaccato (Glyph       glyph,
+                                        Measure     measure,
+                                        SystemPoint dotCenter)
+    {
+        return false;
+    }
+
     //------------------//
     // computeLocations //
     //------------------//
@@ -1294,15 +1400,29 @@ public class Chord
         /**
          * Maximum dx between note and augmentation dot
          */
-        Scale.Fraction maxDotDx = new Scale.Fraction(
+        Scale.Fraction maxAugmentationDotDx = new Scale.Fraction(
             1.5d,
             "Maximum dx between note and augmentation dot");
 
         /**
          * Maximum absolute dy between note and augmentation dot
          */
-        Scale.Fraction maxDotDy = new Scale.Fraction(
+        Scale.Fraction maxAugmentationDotDy = new Scale.Fraction(
             1d,
             "Maximum absolute dy between note and augmentation dot");
+
+        /**
+         * Margin for vertical position of a dot againt a repeat barline
+         */
+        Scale.Fraction maxRepeatDotDy = new Scale.Fraction(
+            0.5d,
+            "Margin for vertical position of a dot againt a repeat barline");
+
+        /**
+         * Maximum dx between dot and edge of repeat barline
+         */
+        Scale.Fraction maxRepeatDotDx = new Scale.Fraction(
+            1.5d,
+            "Maximum dx between dot and edge of repeat barline");
     }
 }

@@ -82,6 +82,48 @@ public class Barline
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //----------//
+    // addStick //
+    //----------//
+    /**
+     * Include a new individual bar stick in the (complex) bar line. This
+     * automatically invalidates the other bar line parameters, which will be
+     * lazily re-computed when needed.
+     *
+     * @param stick the bar stick to include
+     */
+    public void addStick (Stick stick)
+    {
+        sticks.add(stick);
+
+        // Invalidate parameters
+        reset();
+    }
+
+    //------------//
+    // forceShape //
+    //------------//
+    /**
+     * Normally, shape should be inferred from the signature of stick
+     * combination that compose the bar line, so this method is provided only
+     * for the (rare) cases when we want to force the bar line shape.
+     *
+     * @param shape the forced shape
+     */
+    public void forceShape (Shape shape)
+    {
+        this.shape = shape;
+    }
+
     //----------//
     // getLeftX //
     //----------//
@@ -178,48 +220,6 @@ public class Barline
         return (sticks == null) ? Collections.<Stick>emptySet() : sticks;
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //----------//
-    // addStick //
-    //----------//
-    /**
-     * Include a new individual bar stick in the (complex) bar line. This
-     * automatically invalidates the other bar line parameters, which will be
-     * lazily re-computed when needed.
-     *
-     * @param stick the bar stick to include
-     */
-    public void addStick (Stick stick)
-    {
-        sticks.add(stick);
-
-        // Invalidate parameters
-        reset();
-    }
-
-    //------------//
-    // forceShape //
-    //------------//
-    /**
-     * Normally, shape should be inferred from the signature of stick
-     * combination that compose the bar line, so this method is provided only
-     * for the (rare) cases when we want to force the bar line shape.
-     *
-     * @param shape the forced shape
-     */
-    public void forceShape (Shape shape)
-    {
-        this.shape = shape;
-    }
-
     //-----------//
     // mergeWith //
     //-----------//
@@ -248,7 +248,10 @@ public class Barline
                         Zoom     z)
     {
         for (Stick stick : getSticks()) {
-            stick.renderLine(g, z);
+            if ((stick.getShape() == Shape.THICK_BAR_LINE) ||
+                (stick.getShape() == Shape.THIN_BAR_LINE)) {
+                stick.renderLine(g, z);
+            }
         }
     }
 
@@ -324,6 +327,7 @@ public class Barline
         case THIN_BAR_LINE :
             return "N";
 
+        case DOT :
         case REPEAT_DOTS :
             return "O";
 
