@@ -614,6 +614,7 @@ public class ScoreExporter
                 // Need an ending forward ?
                 if ((lastChord != null) &&
                     !measure.isImplicit() &&
+                    !measure.isPartial() &&
                     (timeCounter < measure.getExpectedDuration())) {
                     insertForward(
                         measure.getExpectedDuration() - timeCounter,

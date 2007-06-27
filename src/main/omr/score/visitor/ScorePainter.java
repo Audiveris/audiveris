@@ -363,7 +363,7 @@ public class ScorePainter
                         -5);
 
                     g.drawString(
-                        mark.getData().toString(),
+                        Note.quarterValueOf((Integer) mark.getData()),
                         topLeft.x,
                         topLeft.y);
                 }
@@ -448,6 +448,8 @@ public class ScorePainter
                                                   .getDisplayOrigin();
             g.setColor(Color.lightGray);
             g.drawString(
+                (measure.isPartial() ? "P" : "") +
+                (measure.isImplicit() ? "I" : "") +
                 Integer.toString(measure.getId()),
                 zoom.scaled(staffOrigin.x + measure.getLeftX()) - 5,
                 zoom.scaled(staffOrigin.y) - 15);

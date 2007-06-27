@@ -122,7 +122,8 @@ public class ScoreBuilder
         sheet.getErrorsEditor()
              .clearSystem(system);
         new SystemBuilder(system).translateSystem();
-        checkImplicitMeasures(system);
+        Measure.checkPartialMeasures(system);
+        ///Measure.checkImplicitMeasures(system);
     }
 
     //-------------------//
@@ -168,56 +169,6 @@ public class ScoreBuilder
     {
         for (SystemInfo systemInfo : sheet.getSystems()) {
             buildSystem(systemInfo.getScoreSystem());
-        }
-    }
-
-    //-----------------------//
-    // checkImplicitMeasures //
-    //-----------------------//
-    /**
-     * Check for an implicit measure at the beginning of the score.  This
-     * version looks only at the very first measure of the score, which is
-     * too restrictive. TBD.
-     */
-    private void checkImplicitMeasures (System system)
-    {
-        // On the very first system, all parts have their very first measure
-        // ending too short with the same value (or filled by whole rest)
-        ///////////////////////////////////////////System  system = score.getFirstSystem();
-        Integer finalDuration = null;
-
-        for (TreeNode node : system.getParts()) {
-            SystemPart part = (SystemPart) node;
-            Measure    measure = part.getFirstMeasure();
-
-            for (int voice = 0; voice < measure.getVoicesNumber(); voice++) {
-                Integer voiceFinal = measure.getFinalDuration(voice);
-
-                if (voiceFinal != null) {
-                    if (finalDuration == null) {
-                        finalDuration = voiceFinal;
-                    } else if (!voiceFinal.equals(finalDuration)) {
-                        logger.fine("No introduction measure");
-
-                        return;
-                    }
-                }
-            }
-        }
-
-        if ((finalDuration != null) && (finalDuration < 0)) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Found an introduction measure for " + finalDuration);
-            }
-
-            // Flag these measures as implicit, and get rid of their final
-            // forward marks if any
-            for (TreeNode node : system.getParts()) {
-                SystemPart part = (SystemPart) node;
-                part.getFirstMeasure()
-                    .setImplicit();
-            }
         }
     }
 

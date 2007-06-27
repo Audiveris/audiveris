@@ -234,6 +234,9 @@ public class BarsBuilder
                 score.dump();
             }
 
+            // Report number of systems retrieved
+            logger.info(sheet.getSystems().size() + " systems");
+
             // Report number of measures retrieved
             int nb = score.getLastSystem()
                           .getLastPart()
@@ -241,7 +244,7 @@ public class BarsBuilder
                           .getId();
 
             if (nb > 0) {
-                logger.info(nb + " measure" + ((nb > 1) ? "s" : "") + " found");
+                logger.info(nb + " measure" + ((nb > 1) ? "s" : ""));
             } else {
                 logger.warning("No measure found");
             }

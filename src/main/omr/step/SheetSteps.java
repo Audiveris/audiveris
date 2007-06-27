@@ -243,41 +243,24 @@ public class SheetSteps
             logger.fine(impactedSystems.size() + " Impacted system(s)");
         }
 
-        Executor       executor = OmrExecutors.getHighExecutor();
-        CountDownLatch doneSignal = new CountDownLatch(impactedSystems.size());
-
         for (SystemInfo info : impactedSystems) {
-            final SystemInfo   system = info;
-            SignallingRunnable work = new SignallingRunnable(
-                doneSignal,
-                new Runnable() {
-                        public void run ()
-                        {
-                            try {
-                                if (isDone(LEAVES)) {
-                                    doSystem(LEAVES, system);
-                                }
+            final SystemInfo system = info;
 
-                                if (isDone(CLEANUP)) {
-                                    doSystem(CLEANUP, system);
-                                }
+            try {
+                if (isDone(LEAVES)) {
+                    doSystem(LEAVES, system);
+                }
 
-                                if (isDone(SCORE)) {
-                                    doSystem(SCORE, system);
-                                }
-                            } catch (StepException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    });
-            executor.execute(work);
-        }
+                if (isDone(CLEANUP)) {
+                    doSystem(CLEANUP, system);
+                }
 
-        // Wait for end of work
-        try {
-            doneSignal.await();
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
+                if (isDone(SCORE)) {
+                    doSystem(SCORE, system);
+                }
+            } catch (StepException ex) {
+                ex.printStackTrace();
+            }
         }
 
         // Final cross-system translation tasks

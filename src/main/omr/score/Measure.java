@@ -60,10 +60,6 @@ public class Measure
     /** Children: possibly several Beam's per staff */
     private BeamList beams;
 
-    //
-    //    /** Children: possibly several dynamics */
-    //    private DynamicList dynamics;
-    //
     //    /** Children: possibly several lines of lyrics */
     //    private LyricList lyriclines;
     //
@@ -78,6 +74,9 @@ public class Measure
 
     /** Flag for implicit (introduction) measure */
     private boolean implicit;
+
+    /** Flag for partial (short) measure */
+    private boolean partial;
 
     /** Measure Id */
     private int id;
@@ -258,6 +257,70 @@ public class Measure
         }
     }
 
+    //----------------------//
+    // checkPartialMeasures //
+    //----------------------//
+    /**
+     * Check for measures for which all voices are shorter than the expected
+     * duration, and for the same duration, across all parts of the system
+     *
+     * @param system the system to inspect
+     */
+    public static void checkPartialMeasures (System system)
+    {
+        // Use a loop on measures, across system parts
+        final int imMax = system.getFirstPart()
+                                .getMeasures()
+                                .size();
+
+        for (int im = 0; im < imMax; im++) {
+            Integer measureFinal = null;
+            partLoop: 
+            for (TreeNode node : system.getParts()) {
+                SystemPart part = (SystemPart) node;
+                Measure    measure = (Measure) part.getMeasures()
+                                                   .get(im);
+
+                for (int voice = 1; voice <= measure.getVoicesNumber();
+                     voice++) {
+                    Integer voiceFinal = measure.getFinalDuration(voice);
+
+                    if (voiceFinal != null) {
+                        if (measureFinal == null) {
+                            measureFinal = voiceFinal;
+                        } else if (!voiceFinal.equals(measureFinal)) {
+                            if (logger.isFineEnabled()) {
+                                logger.fine("No partial measure");
+                            }
+
+                            measureFinal = null;
+
+                            break partLoop;
+                        }
+                    }
+                }
+            }
+
+            if ((measureFinal != null) && (measureFinal < 0)) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        system.getContextString() + "M" + im +
+                        " Found a partial measure for -" +
+                        Note.quarterValueOf(-measureFinal));
+                }
+
+                // Flag these measures as partial, and get rid of their final
+                // forward marks if any
+                for (TreeNode node : system.getParts()) {
+                    SystemPart part = (SystemPart) node;
+                    Measure    measure = (Measure) part.getMeasures()
+                                                       .get(im);
+                    measure.setPartial(measureFinal);
+                }
+            }
+        }
+    }
+
     //-------------//
     // cleanupNode //
     //-------------//
@@ -279,6 +342,8 @@ public class Measure
         slots = null;
         expectedDuration = null;
         excess = null;
+        implicit = false;
+        partial = false;
 
         // (Re)Allocate specific children lists
         clefs = new ClefList(this);
@@ -981,6 +1046,19 @@ public class Measure
         return implicit;
     }
 
+    //-----------//
+    // isPartial //
+    //-----------//
+    /**
+     * Report whether this measure is partial
+     *
+     * @return true if measure is partial
+     */
+    public boolean isPartial ()
+    {
+        return partial;
+    }
+
     //----------------//
     // resetAbscissae //
     //----------------//
@@ -1016,35 +1094,65 @@ public class Measure
     public void setImplicit ()
     {
         implicit = true;
+    }
 
-        // Remove any final forward mark (to be improved ?)
+    //------------//
+    // setPartial //
+    //------------//
+    /**
+     * Flag this measure as partial (shorter than expected duration)
+     */
+    public void setPartial (int shortening)
+    {
+        // Remove any final forward mark consistent with the shortening
         for (int voice = 1; voice <= getVoicesNumber(); voice++) {
             Integer duration = finalDurations.get(voice);
 
-            if ((duration != null) && (duration < 0)) {
-                Chord chord = finalChords.get(voice);
+            if (duration != null) {
+                if (duration == shortening) {
+                    Chord chord = finalChords.get(voice);
 
-                if (chord != null) {
-                    int nbMarks = chord.getMarks()
-                                       .size();
+                    if (chord != null) {
+                        int nbMarks = chord.getMarks()
+                                           .size();
 
-                    if (nbMarks > 0) {
-                        chord.getMarks()
-                             .remove(chord.getMarks().get(nbMarks - 1));
+                        if (nbMarks > 0) {
+                            Mark mark = chord.getMarks()
+                                             .get(nbMarks - 1);
 
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                getContextString() + " Final forward removed");
+                            if (logger.isFineEnabled()) {
+                                logger.fine(
+                                    getContextString() +
+                                    " Removing final forward: " +
+                                    Note.quarterValueOf(
+                                        (Integer) mark.getData()));
+                            }
+
+                            chord.getMarks()
+                                 .remove(mark);
+                        } else {
+                            chord.addError(
+                                "No final mark to remove in a partial measure");
+
+                            return;
                         }
                     } else {
-                        chord.addError(
-                            "No final mark to remove in an implicit measure");
+                        addError("No final chord in voice " + voice);
+
+                        return;
                     }
                 } else {
-                    addError("No final chord in voice " + voice);
+                    addError(
+                        "Non consistent partial measure shortening:" +
+                        Note.quarterValueOf(-shortening) + " voice #" + voice +
+                        ": " + Note.quarterValueOf(-duration));
+
+                    return;
                 }
             }
         }
+
+        partial = true;
     }
 
     //-----------------//
@@ -1116,7 +1224,7 @@ public class Measure
             point,
             position,
             Shape.FORWARD,
-            Note.quarterValueOf(duration));
+            duration);
         //new Integer(duration));
         chord.addMark(mark);
     }
@@ -1134,18 +1242,6 @@ public class Measure
             super(measure);
         }
     }
-
-    //-------------//
-    // DynamicList //
-    //-------------//
-    //    private static class DynamicList
-    //        extends MeasureNode
-    //    {
-    //        DynamicList (Measure measure)
-    //        {
-    //            super(measure);
-    //        }
-    //    }
 
     //------------//
     // KeySigList //

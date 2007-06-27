@@ -135,9 +135,9 @@ public class LinesBuilder
 
         // User feedback
         if (staves.size() > 1) {
-            logger.info(staves.size() + " staves found");
+            logger.info(staves.size() + " staves");
         } else if (staves.size() > 0) {
-            logger.info(staves.size() + " staff found");
+            logger.info(staves.size() + " staff");
         } else {
             logger.warning("No staff found");
         }

@@ -1254,10 +1254,6 @@ public class Chord
                                       Measure     measure,
                                       SystemPoint dotCenter)
     {
-        if (glyph.getId() == 488) {
-            logger.info("Bingo");
-        }
-
         // Check vertical pitch position within the staff : close to +1 or -1
         double pitchDif = Math.abs(Math.abs(glyph.getPitchPosition()) - 1);
 
