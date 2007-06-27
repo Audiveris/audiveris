@@ -56,21 +56,28 @@ public class UITest
             }
         }
 
-        Selection      rectSelection = sheet.getSelection(
+        Selection rectSelection = sheet.getSelection(
             SelectionTag.SHEET_RECTANGLE);
 
-        Rectangle      r = (Rectangle) rectSelection.getEntity();
-        PixelRectangle rect = new PixelRectangle(r.x, r.y, r.width, r.height);
-        SystemInfo     system = sheet.getSystemAtY(rect.y);
+        Rectangle r = (Rectangle) rectSelection.getEntity();
 
-        System.out.println(
-            "\n" + system.getVerticalSections().size() + " Sections " + system +
-            " " + rect);
-        system.dumpSections(rect);
-        System.out.println(
-            "\n" + system.getGlyphs().size() + " Glyphs " + system + " " +
-            rect);
-        system.dumpGlyphs(rect);
-        System.out.println();
+        if (r != null) {
+            PixelRectangle rect = new PixelRectangle(
+                r.x,
+                r.y,
+                r.width,
+                r.height);
+            SystemInfo     system = sheet.getSystemAtY(rect.y);
+
+            System.out.println(
+                "\n" + system.getVerticalSections().size() + " Sections " +
+                system + " " + rect);
+            system.dumpSections(rect);
+            System.out.println(
+                "\n" + system.getGlyphs().size() + " Glyphs " + system + " " +
+                rect);
+            system.dumpGlyphs(rect);
+            System.out.println();
+        }
     }
 }
