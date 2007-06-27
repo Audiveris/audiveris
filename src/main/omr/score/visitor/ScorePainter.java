@@ -1197,11 +1197,6 @@ public class ScorePainter
             0.3,
             "dx between note and augmentation dot");
 
-        /** dy between note and augmentation dot, when on a line */
-        final Scale.Fraction dotDy = new Scale.Fraction(
-            0.3,
-            "dy between note and augmentation dot " + "when on staff line");
-
         /** Half length of a ledger */
         final Scale.Fraction halfLedgerLength = new Scale.Fraction(
             1,

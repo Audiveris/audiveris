@@ -595,9 +595,6 @@ public class GlyphInspector
     private static final class Constants
         extends ConstantSet
     {
-        Constant.Boolean inspectorDisabled = new Constant.Boolean(
-            false,
-            "Should we (temporarily) disable glyph recognition?");
         Scale.Fraction   boxWiden = new Scale.Fraction(
             0.15,
             "Box widening to check intersection with compound");
