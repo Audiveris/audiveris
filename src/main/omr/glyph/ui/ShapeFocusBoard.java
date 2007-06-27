@@ -19,7 +19,6 @@ import omr.selection.SelectionTag;
 import static omr.selection.SelectionTag.*;
 
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 
 import omr.ui.Board;
 import omr.ui.Board.Tag;
@@ -34,8 +33,7 @@ import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
