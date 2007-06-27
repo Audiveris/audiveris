@@ -67,9 +67,6 @@ public class MainGui
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MainGui.class);
 
-    /** Fix internal split locations (workaround TBD) */
-    private static final int DELTA_DIVIDER = 10;
-
     //~ Instance fields --------------------------------------------------------
 
     /**
@@ -528,30 +525,23 @@ public class MainGui
         final int state = frame.getExtendedState();
         constants.frameState.setValue(state);
 
+        // Remember frame location?
         if (state == Frame.NORMAL) {
             Rectangle bounds = frame.getBounds();
             constants.frameX.setValue(bounds.x);
             constants.frameY.setValue(bounds.y);
             constants.frameWidth.setValue(bounds.width);
             constants.frameHeight.setValue(bounds.height);
+        }
 
-            // Remember internal split locations
+        // Remember internal split locations?
+        if ((state == Frame.NORMAL) || (state == Frame.MAXIMIZED_BOTH)) {
             constants.logDivider.setValue(splitPane.getDividerLocation());
             constants.boardDivider.setValue(bigSplitPane.getDividerLocation());
             SheetAssembly.storeScoreSheetDivider();
-        } else { // Maximized/Iconified window
-
-            if (state == Frame.MAXIMIZED_BOTH) {
-                // Remember internal split locations
-                constants.logDivider.setValue(
-                    splitPane.getDividerLocation() - DELTA_DIVIDER);
-
-                constants.boardDivider.setValue(
-                    bigSplitPane.getDividerLocation() - DELTA_DIVIDER);
-                SheetAssembly.storeScoreSheetDivider();
-            }
         }
 
+        // Remember internal division of the bottom pane?
         bottomPane.storeDivider();
 
         // Store latest constant values on disk
@@ -911,7 +901,7 @@ public class MainGui
         {
             removeErrors();
             setRightComponent(errorsPane);
-            setDivider();
+            loadDivider();
             revalidate();
             repaint();
         }
@@ -927,31 +917,19 @@ public class MainGui
             if (getRightComponent() != null) {
                 final int state = frame.getExtendedState();
 
-                if (state == Frame.NORMAL) {
+                if ((state == Frame.NORMAL) || (state == Frame.MAXIMIZED_BOTH)) {
                     divider.setValue(getDividerLocation());
-
-                    ///logger.info("Divider <- " + divider.getValue());
-                } else if (state == Frame.MAXIMIZED_BOTH) {
-                    divider.setValue(getDividerLocation() - DELTA_DIVIDER);
-
-                    ///logger.info("Divider <- " + divider.getValue());
+//                    logger.info("Divider stored as " + divider.getValue());
+//                } else {
+//                    logger.info("Divider not stored");
                 }
             }
         }
 
-        private void setDivider ()
+        private void loadDivider ()
         {
-            final int state = frame.getExtendedState();
-
-            if (state == Frame.MAXIMIZED_BOTH) {
-                setDividerLocation(divider.getValue() + DELTA_DIVIDER);
-
-                ///logger.info("Location:" + getDividerLocation());
-            } else {
-                setDividerLocation(divider.getValue());
-
-                ///logger.info("Location:" + getDividerLocation());
-            }
+//            logger.info("Divider loaded as " + divider.getValue());
+            setDividerLocation(divider.getValue());
         }
     }
 
