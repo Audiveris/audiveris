@@ -603,7 +603,7 @@ public class ScoreBuilder
                 super.completeSystem();
 
                 if (logger.isFineEnabled()) {
-                    dumpSystemSlots();
+                    Slot.dumpSystemSlots(system);
                 }
             }
 
@@ -620,28 +620,6 @@ public class ScoreBuilder
             public void translate (Glyph glyph)
             {
                 Slot.populate(glyph, currentMeasure, currentCenter);
-            }
-
-            private void dumpSystemSlots ()
-            {
-                // Dump all measure slots
-                logger.fine(system.toString());
-
-                for (TreeNode node : system.getParts()) {
-                    SystemPart part = (SystemPart) node;
-
-                    logger.fine(part.toString());
-
-                    for (TreeNode mn : part.getMeasures()) {
-                        Measure measure = (Measure) mn;
-
-                        logger.fine(measure.toString());
-
-                        for (Slot slot : measure.getSlots()) {
-                            logger.fine(slot.toString());
-                        }
-                    }
-                }
             }
         }
 

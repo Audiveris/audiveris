@@ -20,6 +20,7 @@ import omr.math.Population;
 import omr.sheet.Scale;
 
 import omr.util.Logger;
+import omr.util.TreeNode;
 
 import java.util.*;
 
@@ -334,6 +335,31 @@ public class Slot
     public int compareTo (Slot other)
     {
         return Integer.signum(getX() - other.getX());
+    }
+
+    //-----------------//
+    // dumpSystemSlots //
+    //-----------------//
+    public static void dumpSystemSlots (System system)
+    {
+        // Dump all measure slots
+        logger.fine(system.toString());
+
+        for (TreeNode node : system.getParts()) {
+            SystemPart part = (SystemPart) node;
+
+            logger.fine(part.toString());
+
+            for (TreeNode mn : part.getMeasures()) {
+                Measure measure = (Measure) mn;
+
+                logger.fine(measure.toString());
+
+                for (Slot slot : measure.getSlots()) {
+                    logger.fine(slot.toString());
+                }
+            }
+        }
     }
 
     //---------------//
