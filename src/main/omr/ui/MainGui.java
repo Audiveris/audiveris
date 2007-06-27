@@ -67,6 +67,9 @@ public class MainGui
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MainGui.class);
 
+    /** Fix internal split locations (workaround TBD) */
+    private static final int DELTA_DIVIDER = 10;
+
     //~ Instance fields --------------------------------------------------------
 
     /**
@@ -525,20 +528,29 @@ public class MainGui
         final int state = frame.getExtendedState();
         constants.frameState.setValue(state);
 
-        // Remember frame location?
         if (state == Frame.NORMAL) {
+        // Remember frame location?
             Rectangle bounds = frame.getBounds();
             constants.frameX.setValue(bounds.x);
             constants.frameY.setValue(bounds.y);
             constants.frameWidth.setValue(bounds.width);
             constants.frameHeight.setValue(bounds.height);
-        }
 
-        // Remember internal split locations?
-        if ((state == Frame.NORMAL) || (state == Frame.MAXIMIZED_BOTH)) {
+            // Remember internal split locations
             constants.logDivider.setValue(splitPane.getDividerLocation());
             constants.boardDivider.setValue(bigSplitPane.getDividerLocation());
             SheetAssembly.storeScoreSheetDivider();
+        } else { // Maximized/Iconified window
+
+            if (state == Frame.MAXIMIZED_BOTH) {
+                // Remember internal split locations
+                constants.logDivider.setValue(
+                    splitPane.getDividerLocation() - DELTA_DIVIDER);
+
+                constants.boardDivider.setValue(
+                    bigSplitPane.getDividerLocation() - DELTA_DIVIDER);
+                SheetAssembly.storeScoreSheetDivider();
+            }
         }
 
         // Remember internal division of the bottom pane?
