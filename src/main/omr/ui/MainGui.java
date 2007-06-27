@@ -919,16 +919,16 @@ public class MainGui
 
                 if ((state == Frame.NORMAL) || (state == Frame.MAXIMIZED_BOTH)) {
                     divider.setValue(getDividerLocation());
-//                    logger.info("Divider stored as " + divider.getValue());
-//                } else {
-//                    logger.info("Divider not stored");
+                    logger.info("Divider stored as " + divider.getValue());
+                } else {
+                    logger.info("Divider not stored");
                 }
             }
         }
 
         private void loadDivider ()
         {
-//            logger.info("Divider loaded as " + divider.getValue());
+            logger.info("Divider loaded as " + divider.getValue());
             setDividerLocation(divider.getValue());
         }
     }
