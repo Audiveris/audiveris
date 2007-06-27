@@ -746,6 +746,7 @@ public class Slot
         Chord chord = new Chord(measure);
         chords.add(chord);
         chord.setStem(stem);
+        stem.setTranslation(chord);
 
         return chord;
     }
