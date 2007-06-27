@@ -473,6 +473,7 @@ public class GlyphBoard
         {
             if (glyphModel != null) {
                 if (inputSelectionList.size() > 1) {
+                    // We have selections for glyph and for glyph set
                     Selection         glyphSelection = inputSelectionList.get(
                         0);
                     Glyph             glyph = (Glyph) glyphSelection.getEntity();
@@ -488,16 +489,14 @@ public class GlyphBoard
                         sheet.updateLastSteps(glyphs, shapes);
                     }
 
-                    // Update focus on current glyph, if reused in a compound
+                    // Update focus on current glyph, even if reused in a compound
                     Glyph newGlyph = glyph.getFirstSection()
                                           .getGlyph();
-
-                    if (glyph != newGlyph) {
-                        glyphSelection.setEntity(
-                            newGlyph,
-                            SelectionHint.GLYPH_INIT);
-                    }
+                    glyphSelection.setEntity(
+                        newGlyph,
+                        SelectionHint.GLYPH_INIT);
                 } else if (inputSelectionList.size() == 1) {
+                    // We have selection for glyph only
                     Glyph             glyph = (Glyph) inputSelectionList.get(0)
                                                                         .getEntity();
                     Collection<Glyph> glyphs = Collections.singleton(glyph);
