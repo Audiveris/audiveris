@@ -279,7 +279,7 @@ public class TimeSignature
                             .toUnits(constants.minTimeOffset)) {
             if (logger.isFineEnabled()) {
                 logger.fine(
-                    "Too small offset for time signature" + " (glyph#" +
+                    "Too small offset for time signature" + " (glyph #" +
                     glyph.getId() + ")");
             }
 
@@ -563,7 +563,7 @@ public class TimeSignature
          * signature since start of measure
          */
         Scale.Fraction minTimeOffset = new Scale.Fraction(
-            3d,
+            1d,
             "Minimum horizontal offset for a time" +
             " signature since start of measure");
     }
