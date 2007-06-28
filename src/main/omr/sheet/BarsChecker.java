@@ -248,16 +248,15 @@ public class BarsChecker
         int           top = box.y;
         int           bot = box.y + box.height;
 
-        // Check that middle of part is within bar top & bottom
-        // TO BE REALLY IMPROVED !!!!!!!
-        final int midPart = (part.getFirstStaff()
-                                 .getTopLeft().y +
-                            part.getLastStaff()
+        // Check that part and glyph overlap vertically
+        final int topPart = part.getFirstStaff()
+                                .getTopLeft().y;
+        final int botPart = part.getLastStaff()
                                 .getTopLeft().y +
                             part.getLastStaff()
-                                .getHeight()) / 2;
+                                .getHeight();
 
-        return (midPart > top) && (midPart < bot);
+        return Math.max(topPart, top) < Math.min(botPart, bot);
     }
 
     //------------------//
@@ -270,11 +269,11 @@ public class BarsChecker
      * @param clutter the initial collection of vertical sticks, where
      *                recognized bar sticks are removed
      * @param bars the resulting collection of bar sticks
-     * @exception omr.StepException raised if processing has been stoppped
+     * @exception StepException raised if processing has been stoppped
      */
     public void retrieveMeasures (List<Stick> clutter,
                                   List<Stick> bars)
-        throws omr.step.StepException
+        throws StepException
     {
         // Cache parameters
         this.clutter = clutter;
@@ -315,7 +314,8 @@ public class BarsChecker
 
         // Measures building (Bars are already sorted by increasing abscissa)
         for (Iterator<Stick> bit = bars.iterator(); bit.hasNext();) {
-            Stick      bar = bit.next();
+            Stick bar = bit.next();
+            ///logger.fine(bar.toString());
 
             // Determine the system this bar line belongs to
             SystemInfo systemInfo = getSystemOf(bar, sheet);
@@ -372,10 +372,6 @@ public class BarsChecker
                 }
             }
         }
-
-        //        if (logger.isFineEnabled()) {
-        //        score.dump();
-        //        }
     }
 
     //----------------------------//
@@ -440,11 +436,11 @@ public class BarsChecker
      *                   containing part. For a part with just one staff, both
      *                   indices are equal. For a part of more than 1 staff, the
      *                   indices differ.
-     * @throws omr.StepException raised if processing failed
+     * @throws StepException raised if processing failed
      */
     private void buildSystemsAndParts (int[] systemStarts,
                                        int[] partStarts)
-        throws omr.step.StepException
+        throws StepException
     {
         int            id = 0; // Id for created SystemInfo's
         int            sStart = -1; // Current system start
@@ -540,7 +536,13 @@ public class BarsChecker
         throws StepException
     {
         if (logger.isFineEnabled()) {
-            logger.fine(clutter.size() + " sticks to check");
+            logger.fine(
+                clutter.size() + " sticks to check: " +
+                Glyph.toString(clutter));
+
+            for (Stick stick : clutter) {
+                logger.fine(stick.toString());
+            }
         }
 
         // Total number of staves in the sheet

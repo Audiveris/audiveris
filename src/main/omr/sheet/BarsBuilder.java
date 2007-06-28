@@ -715,14 +715,38 @@ public class BarsBuilder
                                                         .getCenter().x;
 
                     if (measureWidth <= maxDoubleDx) {
-                        // Merge the two bar lines into the first one
-                        prevMeasure.getBarline()
-                                   .mergeWith(measure.getBarline());
+                        // Lines are side by side or one above the other?
+                        Stick stick = (Stick) measure.getBarline()
+                                                     .getSticks()
+                                                     .toArray()[0];
+                        Stick prevStick = (Stick) prevMeasure.getBarline()
+                                                             .getSticks()
+                                                             .toArray()[0];
 
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                "Merged two barlines into " +
-                                prevMeasure.getBarline());
+                        if (Math.max(stick.getStart(), prevStick.getStart()) < Math.min(
+                            stick.getStop(),
+                            prevStick.getStop())) {
+                            // Overlap => side by side
+                            // Merge the two bar lines into the first one
+                            prevMeasure.getBarline()
+                                       .mergeWith(measure.getBarline());
+
+                            if (logger.isFineEnabled()) {
+                                logger.fine(
+                                    "Merged two close barlines into " +
+                                    prevMeasure.getBarline());
+                            }
+                        } else {
+                            // No overlap => one above the other
+                            prevStick.addGlyphSections(stick, true);
+                            stick.destroy(false);
+                            bars.remove(stick);
+
+                            if (logger.isFineEnabled()) {
+                                logger.fine(
+                                    "Merged two barlines segments into " +
+                                    prevMeasure.getBarline());
+                            }
                         }
 
                         mit.remove();

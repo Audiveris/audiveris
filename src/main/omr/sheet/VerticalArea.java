@@ -26,6 +26,8 @@ import omr.util.Predicate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import omr.glyph.Glyph;
+import omr.step.StepException;
 
 /**
  * Class <code>VerticalArea</code> processes a vertical lag to extract vertical
@@ -61,13 +63,13 @@ public class VerticalArea
      * @param sheet the sheet to process
      * @param vLag  the vertical lag from which bar sticks are built
      * @param maxThickness max value for vertical stick thickness
-     * @exception omr.StepException raised when step processing must stop,
+     * @exception StepException raised when step processing must stop,
      *                                 due to encountered error
      */
     public VerticalArea (Sheet    sheet,
                          GlyphLag vLag,
                          int      maxThickness)
-        throws omr.step.StepException
+        throws StepException
     {
         this(sheet, vLag, new UnknownSectionPredicate(), maxThickness);
     }
@@ -83,14 +85,14 @@ public class VerticalArea
      * @param vLag  the vertical lag from which bar sticks are built
      * @param predicate a specific predicate for sections to consider
      * @param maxThickness max value for vertical stick thickness
-     * @exception omr.StepException raised when step processing must stop,
+     * @exception StepException raised when step processing must stop,
      *                                 due to encountered error
      */
     public VerticalArea (Sheet                   sheet,
                          GlyphLag                vLag,
                          Predicate<GlyphSection> predicate,
                          int                     maxThickness)
-        throws omr.step.StepException
+        throws StepException
     {
         this(vLag.getVertices(), sheet, vLag, predicate, maxThickness);
     }
@@ -102,11 +104,12 @@ public class VerticalArea
      * Build a family of vertical sticks, that will later be checked for finer
      * recognition
      *
+     * @param sections 
      * @param sheet the sheet to process
      * @param vLag  the vertical lag from which bar sticks are built
      * @param predicate a specific predicate for sections to consider
      * @param maxThickness max value for vertical stick thickness
-     * @exception omr.StepException raised when step processing must stop,
+     * @exception StepException raised when step processing must stop,
      *                                 due to encountered error
      */
     public VerticalArea (Collection<GlyphSection> sections,
@@ -114,7 +117,7 @@ public class VerticalArea
                          GlyphLag                 vLag,
                          Predicate<GlyphSection>  predicate,
                          int                      maxThickness)
-        throws omr.step.StepException
+        throws StepException
     {
         super(
             vLag,
@@ -158,7 +161,7 @@ public class VerticalArea
         if (logger.isFineEnabled()) {
             logger.fine(
                 "End of scanning Vertical Area, found " + sticks.size() +
-                " stick(s)");
+                " stick(s): " + Glyph.toString(sticks));
         }
     }
 
