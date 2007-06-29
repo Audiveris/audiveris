@@ -30,4 +30,12 @@ public class StepException
     {
         super();
     }
+
+    /**
+     * Construct an <code>StepException</code> from an existing exception.
+     */
+    public StepException (Throwable ex)
+    {
+        super(ex);
+    }
 }
