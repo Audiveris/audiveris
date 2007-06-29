@@ -455,9 +455,9 @@ public class SheetSteps
         }
     }
 
-    //-----------//
+    //----------//
     // LoadTask //
-    //-----------//
+    //----------//
     /**
      * Step to (re)load sheet picture. A brand new sheet is created with the
      * provided image file as parameter.
@@ -487,10 +487,10 @@ public class SheetSteps
                 sheet.setPicture(picture);
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find file " + imageFile);
-                throw new StepException();
+                throw new StepException(ex);
             } catch (IOException ex) {
                 logger.warning("Input error on file " + imageFile);
-                throw new StepException();
+                throw new StepException(ex);
             } catch (ImageFormatException ex) {
                 logger.warning("Unsupported image format in file " + imageFile);
                 logger.warning(ex.getMessage());
@@ -502,11 +502,10 @@ public class SheetSteps
                         "Please use grey scale with 256 values");
                 }
 
-                throw new StepException();
+                throw new StepException(ex);
             } catch (Exception ex) {
-                ex.printStackTrace();
-                logger.warning(ex.getMessage());
-                throw new StepException();
+                logger.warning("Exception", ex);
+                throw new StepException(ex);
             }
         }
     }
