@@ -98,6 +98,8 @@ public class GlyphMenu
         // Direct link to latest shape assigned
         popup.add(new JMenuItem(new IdemAction()));
 
+        popup.addSeparator(); //----------------------------------------------
+
         // Deassign selected glyph(s)
         popup.add(new JMenuItem(new DeassignAction()));
 
@@ -126,6 +128,11 @@ public class GlyphMenu
 
         // Segment the glyph into stems & leaves
         popup.add(new JMenuItem(new StemSegmentAction()));
+
+        // Segment the glyph into short stems & leaves
+        popup.add(new JMenuItem(new ShortStemSegmentAction()));
+
+        popup.addSeparator(); //----------------------------------------------
 
         // Build a compound, with proposed shape
         popup.add(new JMenuItem(new ProposedAction()));
@@ -432,11 +439,14 @@ public class GlyphMenu
         {
             JMenuItem         source = (JMenuItem) e.getSource();
             Shape             shape = Shape.valueOf(source.getText());
+            Glyph             glyph = getCurrentGlyph();
             List<Glyph>       glyphs = getCurrentGlyphs();
             Collection<Shape> shapes = Glyph.shapesOf(glyphs);
-            symbolsEditor.assignSetShape(glyphs, shape, /* compound => */
-                                         false);
-            sheet.updateLastSteps(glyphs, shapes);
+
+            if (glyph != null) {
+                symbolsEditor.assignGlyphShape(glyph, shape);
+                sheet.updateLastSteps(glyphs, shapes);
+            }
         }
 
         public void update ()
@@ -467,7 +477,7 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             Glyph             glyph = getCurrentGlyph();
-            Collection<Glyph> glyphs = Collections.singleton(glyph);
+            List<Glyph>       glyphs = getCurrentGlyphs();
             Collection<Shape> shapes = Glyph.shapesOf(glyphs);
 
             if ((glyph != null) && (glyph == proposedGlyph)) {
@@ -544,6 +554,35 @@ public class GlyphMenu
         }
     }
 
+    //------------------------//
+    // ShortStemSegmentAction //
+    //------------------------//
+    /**
+     * Perform a segmentation on the selected glyphs, into short stems and leaves
+     */
+    private class ShortStemSegmentAction
+        extends DynAction
+    {
+        public void actionPerformed (ActionEvent e)
+        {
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+            symbolsEditor.stemSegment(glyphs, false); // normal
+        }
+
+        public void update ()
+        {
+            putValue(NAME, "Look for short verticals");
+
+            if (glyphNb > 0) {
+                setEnabled(true);
+                putValue(SHORT_DESCRIPTION, "Extract short stems and leaves");
+            } else {
+                setEnabled(false);
+                putValue(SHORT_DESCRIPTION, "No glyph to segment");
+            }
+        }
+    }
+
     //-------------------//
     // StemSegmentAction //
     //-------------------//
@@ -556,18 +595,18 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
-            symbolsEditor.stemSegment(glyphs);
+            symbolsEditor.stemSegment(glyphs, true); // normal
         }
 
         public void update ()
         {
+            putValue(NAME, "Look for verticals");
+
             if (glyphNb > 0) {
                 setEnabled(true);
-                putValue(NAME, "Segment for stems");
                 putValue(SHORT_DESCRIPTION, "Extract stems and leaves");
             } else {
                 setEnabled(false);
-                putValue(NAME, "Segment for stems");
                 putValue(SHORT_DESCRIPTION, "No glyph to segment");
             }
         }
