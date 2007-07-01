@@ -9,6 +9,9 @@
 //
 package omr.score;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.util.Logger;
 import omr.util.TreeNode;
 
@@ -29,6 +32,9 @@ import java.util.TreeSet;
 public class BeamGroup
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(BeamGroup.class);
@@ -224,7 +230,15 @@ public class BeamGroup
         // Separate illegal beam groups
         BeamGroup.Split split;
 
+        int             loopNb = constants.maxSplitLoops.getValue();
+
         while ((split = checkBeamGroups(measure)) != null) {
+            if (--loopNb < 0) {
+                logger.warning("Loop detected in BeamGroup split");
+
+                break;
+            }
+
             ///  java.lang.System.out.println("populate. processSplit " + split);
             split.group.processSplit(split);
         }
@@ -526,6 +540,21 @@ public class BeamGroup
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        /**
+         * Maximum number of loops allowed for splitting beam groups
+         */
+        Constant.Integer maxSplitLoops = new Constant.Integer(
+            "loops",
+            10,
+            "Maximum number of loops allowed for splitting beam groups");
+    }
 
     //-------//
     // Split //
