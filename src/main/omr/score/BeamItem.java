@@ -155,10 +155,16 @@ public class BeamItem
         int size = packCardOf(glyph.getShape());
         glyph.clearTranslations();
 
-        for (int i = 0; i < size; i++) {
-            BeamItem item = new BeamItem(measure, glyph, size, i);
-            glyph.addTranslation(item);
-            Beam.populate(item, measure);
+        try {
+            for (int i = 0; i < size; i++) {
+                BeamItem item = new BeamItem(measure, glyph, size, i);
+                glyph.addTranslation(item);
+                Beam.populate(item, measure);
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                "Error creating BeamItem from glyph #" + glyph.getId(),
+                ex);
         }
     }
 
