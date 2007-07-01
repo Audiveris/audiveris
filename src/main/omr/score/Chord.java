@@ -923,8 +923,9 @@ public class Chord
         } else {
             if (!this.startTime.equals(startTime)) {
                 addError(
-                    "Reassigning startTime from " + this.startTime + " to " +
-                    startTime + " in " + this);
+                    "Reassigning startTime from " +
+                    Note.quarterValueOf(this.startTime) + " to " +
+                    Note.quarterValueOf(startTime) + " in " + this);
             }
         }
     }
