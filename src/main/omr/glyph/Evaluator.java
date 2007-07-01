@@ -17,7 +17,10 @@ import omr.constant.ConstantSet;
 import omr.math.Moments;
 import omr.math.NeuralNetwork;
 
+import omr.sheet.PixelRectangle;
 import omr.sheet.Scale;
+
+import omr.stick.Stick;
 
 import omr.util.Logger;
 
@@ -326,6 +329,10 @@ public abstract class Evaluator
             if (glyph.getStemNumber() != 1) {
                 return null;
             }
+
+            if (!validBeamSlope(glyph)) {
+                return null;
+            }
         } else if (Shape.Times.contains(shape)) {
             // A time signature is on staff !
             if (Math.abs(glyph.getPitchPosition()) >= 3) {
@@ -388,6 +395,25 @@ public abstract class Evaluator
         }
 
         return labels;
+    }
+
+    //----------------//
+    // validBeamSlope //
+    //----------------//
+    private boolean validBeamSlope (Glyph glyph)
+    {
+        Stick stick = (Stick) glyph;
+
+        try {
+            double         slope = stick.getLine()
+                                        .getInvertedSlope(); // vertical lag!
+            PixelRectangle box = glyph.getContourBox();
+            double         maxSlope = (double) box.height / (double) box.width;
+
+            return Math.abs(slope) <= maxSlope;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 
     //~ Inner Interfaces -------------------------------------------------------
