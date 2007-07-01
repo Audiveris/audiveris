@@ -214,7 +214,6 @@ public class Note
 
         // Test on ordinates between stem (if any) and note
         // Be strict when glyph has 2 stems and more relaxed with just one stem
-        /// A TERMINER TBD
         final Glyph stem = chord.getStem();
         final int   dy = chord.getScale()
                               .toUnits(
