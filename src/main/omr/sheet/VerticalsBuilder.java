@@ -14,9 +14,7 @@ import omr.Main;
 import omr.check.Check;
 import omr.check.CheckBoard;
 import omr.check.CheckSuite;
-import omr.check.Checkable;
 import omr.check.FailureResult;
-import omr.check.Result;
 import omr.check.SuccessResult;
 
 import omr.constant.Constant;
@@ -26,7 +24,6 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphSection;
-import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
@@ -58,7 +55,6 @@ import omr.util.Predicate;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Class <code>VerticalsBuilder</code> is in charge of retrieving all the
@@ -229,14 +225,15 @@ public class VerticalsBuilder
             new MySectionPredicate(),
             scale.toPixels(constants.maxStemThickness));
 
-        return retrieveVerticals(verticalsArea.getSticks(), system);
+        return retrieveVerticals(verticalsArea.getSticks(), system, true);
     }
 
     //-------------//
     // stemSegment //
     //-------------//
     public void stemSegment (Collection<Glyph> glyphs,
-                             SystemInfo        system)
+                             SystemInfo        system,
+                             boolean           normal)
     {
         // Gather all sections to be browsed
         Collection<GlyphSection> sections = new ArrayList<GlyphSection>();
@@ -259,10 +256,13 @@ public class VerticalsBuilder
                 scale.toPixels(constants.maxStemThickness));
 
             // Retrieve stems
-            int nb = retrieveVerticals(verticalsArea.getSticks(), system);
+            int nb = retrieveVerticals(
+                verticalsArea.getSticks(),
+                system,
+                normal);
 
             if (nb > 0) {
-                logger.info(nb + " stem" + ((nb > 1) ? "s" : "") + " found");
+                logger.info(nb + " stem" + ((nb > 1) ? "s" : ""));
             } else {
                 logger.info("No stem found");
             }
@@ -317,14 +317,16 @@ public class VerticalsBuilder
      * @param sticks the provided collection of vertical sticks
      * @param system the containing system whose "glyphs" collection will be
      * augmented by the stems found
+     * @param normal true for normal stems, false for short stems
      * @return the number of stems found
      */
     private int retrieveVerticals (Collection<Stick> sticks,
-                                   SystemInfo        system)
+                                   SystemInfo        system,
+                                   boolean           normal)
         throws StepException
     {
         /** Suite of checks for a stem glyph */
-        StemCheckSuite suite = new StemCheckSuite(system);
+        StemCheckSuite suite = new StemCheckSuite(system, normal);
         double minResult = constants.minCheckResult.getValue();
         int    stemNb = 0;
 
@@ -400,6 +402,9 @@ public class VerticalsBuilder
         Scale.Fraction   minStemLengthLow = new Scale.Fraction(
             2.5,
             "Low Minimum length for a stem");
+        Scale.Fraction   minShortStemLengthLow = new Scale.Fraction(
+            1.5,
+            "Low Minimum length for a short stem");
         Scale.Fraction   maxStemThickness = new Scale.Fraction(
             0.4,
             "Maximum thickness of an interesting vertical stick");
@@ -552,13 +557,14 @@ public class VerticalsBuilder
     private class MinLengthCheck
         extends Check<Stick>
     {
-        protected MinLengthCheck ()
+        protected MinLengthCheck (boolean normal)
             throws StepException
         {
             super(
                 "MinLength",
                 "Check that stick is long enough",
-                constants.minStemLengthLow,
+                normal ? constants.minStemLengthLow
+                                : constants.minShortStemLengthLow,
                 constants.minStemLengthHigh,
                 true,
                 TOO_SHORT);
@@ -597,7 +603,7 @@ public class VerticalsBuilder
                     SystemInfo system = sheet.getSystemAtY(
                         stick.getContourBox().y);
                     // Get a fresh suite
-                    setSuite(new StemCheckSuite(system));
+                    setSuite(new StemCheckSuite(system, true));
                     tellObject(stick);
                 } catch (StepException ex) {
                     logger.warning("Glyph cannot be processed");
@@ -725,11 +731,12 @@ public class VerticalsBuilder
     {
         private final SystemInfo system;
 
-        public StemCheckSuite (SystemInfo system)
+        public StemCheckSuite (SystemInfo system,
+                               boolean    normal)
             throws StepException
         {
             super("Stem", constants.minCheckResult.getValue());
-            add(1, new MinLengthCheck());
+            add(1, new MinLengthCheck(normal));
             add(1, new MinAspectCheck());
             add(1, new FirstAdjacencyCheck());
             add(1, new LastAdjacencyCheck());

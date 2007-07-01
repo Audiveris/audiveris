@@ -403,7 +403,7 @@ public class SymbolsEditor
     //-------------//
     // stemSegment //
     //-------------//
-    public void stemSegment (Collection<Glyph> givenGlyphs)
+    public void stemSegment (Collection<Glyph> givenGlyphs, boolean normal)
     {
         // Use a copy of glyphs selection
         Collection<Glyph> glyphs = new ArrayList<Glyph>(givenGlyphs);
@@ -414,7 +414,7 @@ public class SymbolsEditor
         for (Glyph glyph : glyphs) {
             SystemInfo system = sheet.getSystemAtY(glyph.getContourBox().y);
             sheet.getVerticalsBuilder()
-                 .stemSegment(Collections.singletonList(glyph), system);
+                 .stemSegment(Collections.singletonList(glyph), system, normal);
         }
 
         sheet.updateLastSteps(glyphs, shapes);
