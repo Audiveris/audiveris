@@ -404,9 +404,7 @@ class EvaluationBoard
         //----------//
         /**
          * Display the evaluations with some text highlighting. Only relevant
-         * evaluations are displayed (distance less than an evaluator-dependent
-         * threshold, and less than x times (also evaluator-dependent) the best
-         * (first) eval whichever comes first)
+         * evaluations are displayed (distance less than a given threshold)
          *
          * @param evals the ordered list of <b>all</b>evaluations from best to
          *              worst
