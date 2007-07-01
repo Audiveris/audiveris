@@ -123,6 +123,7 @@ public class ScoreBuilder
              .clearSystem(system);
         new SystemBuilder(system).translateSystem();
         Measure.checkPartialMeasures(system);
+
         ///Measure.checkImplicitMeasures(system);
     }
 
