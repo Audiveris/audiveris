@@ -572,8 +572,9 @@ public class Slot
                 getChords()
                     .get(0)
                     .addError(
-                    "Reassigning startTime from " + this.startTime + " to " +
-                    startTime + " in " + this);
+                    "Reassigning startTime from " +
+                    Note.quarterValueOf(this.startTime) + " to " +
+                    Note.quarterValueOf(startTime) + " in " + this);
             }
         }
     }
