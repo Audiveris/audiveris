@@ -871,19 +871,31 @@ public class Stick
         }
 
         if ((line != null) && (line.getNumberOfPoints() > 1)) {
-            PixelPoint start = getStartPoint();
-            sb.append(" start[")
-              .append(start.x)
-              .append(",")
-              .append(start.y)
-              .append("]");
+            try {
+                sb.append(" start[");
 
-            PixelPoint stop = getStopPoint();
-            sb.append(" stop[")
-              .append(stop.x)
-              .append(",")
-              .append(stop.y)
-              .append("]");
+                PixelPoint start = getStartPoint();
+                sb.append(start.x)
+                  .append(",")
+                  .append(start.y);
+            } catch (Exception ignored) {
+                sb.append("INVALID");
+            } finally {
+                sb.append("]");
+            }
+
+            try {
+                sb.append(" stop[");
+
+                PixelPoint stop = getStopPoint();
+                sb.append(stop.x)
+                  .append(",")
+                  .append(stop.y);
+            } catch (Exception ignored) {
+                sb.append("INVALID");
+            } finally {
+                sb.append("]");
+            }
         }
 
         if (this.getClass()
