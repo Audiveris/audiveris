@@ -16,6 +16,8 @@ import omr.score.PageRectangle;
 import static omr.score.ScoreConstants.*;
 import omr.score.UnitDimension;
 
+import omr.step.StepException;
+
 import omr.util.Logger;
 
 import java.awt.Rectangle;
@@ -108,10 +110,10 @@ public class Scale
      *
      * @param sheet the sheet to process
      *
-     * @throws omr.StepException
+     * @throws StepException
      */
     public Scale (Sheet sheet)
-        throws omr.step.StepException
+        throws StepException
     {
         builder = new ScaleBuilder(sheet);
         mainFore = builder.getMainFore();

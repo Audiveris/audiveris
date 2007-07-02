@@ -405,7 +405,7 @@ public class LinesBuilder
      * @param peaks the raw list of peaks found
      */
     private void retrieveStaves (List<Peak> peaks)
-        throws omr.step.StepException
+        throws StepException
     {
         // One single iterator, since from peak area to peak area, we keep
         // moving forward in the ordered list of vertices

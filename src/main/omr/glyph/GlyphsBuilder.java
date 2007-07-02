@@ -450,8 +450,8 @@ public class GlyphsBuilder
                                        SystemInfo system)
     {
         // Ordinate (approximate value)
-        Rectangle box = glyph.getContourBox();
-        int       y = box.y;
+        Rectangle   box = glyph.getContourBox();
+        int         y = box.y;
 
         // Mass center (which makes sure moments are available)
         SystemPoint centroid = system.getScoreSystem()

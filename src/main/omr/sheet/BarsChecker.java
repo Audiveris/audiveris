@@ -314,7 +314,8 @@ public class BarsChecker
 
         // Measures building (Bars are already sorted by increasing abscissa)
         for (Iterator<Stick> bit = bars.iterator(); bit.hasNext();) {
-            Stick bar = bit.next();
+            Stick      bar = bit.next();
+
             ///logger.fine(bar.toString());
 
             // Determine the system this bar line belongs to
@@ -565,7 +566,7 @@ public class BarsChecker
         // Check each candidate stick in turn, leaving in clutter the unlucky
         // candidates
         for (Iterator<Stick> it = clutter.iterator(); it.hasNext();) {
-            Stick stick = it.next();
+            Stick   stick = it.next();
 
             // Allocate the candidate context, and pass the whole check suite
             Context context = new Context(stick);

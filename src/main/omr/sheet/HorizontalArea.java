@@ -14,6 +14,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 
+import omr.step.StepException;
+
 import omr.stick.Stick;
 import omr.stick.SticksBuilder;
 import omr.stick.SticksSource;
@@ -21,7 +23,6 @@ import omr.stick.SticksSource;
 import omr.util.Logger;
 
 import java.util.*;
-import omr.step.StepException;
 
 /**
  * Class <code>HorizontalArea</code> processes a horizontal lag to extract

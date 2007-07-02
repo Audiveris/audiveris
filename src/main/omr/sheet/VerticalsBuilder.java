@@ -266,7 +266,7 @@ public class VerticalsBuilder
             } else {
                 logger.info("No stem found");
             }
-        } catch (omr.step.StepException ex) {
+        } catch (StepException ex) {
             logger.warning("stemSegment. Error in retrieving verticals");
         }
     }
@@ -319,6 +319,7 @@ public class VerticalsBuilder
      * augmented by the stems found
      * @param normal true for normal stems, false for short stems
      * @return the number of stems found
+     * @throws StepException
      */
     private int retrieveVerticals (Collection<Stick> sticks,
                                    SystemInfo        system,

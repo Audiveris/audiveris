@@ -403,7 +403,8 @@ public class SymbolsEditor
     //-------------//
     // stemSegment //
     //-------------//
-    public void stemSegment (Collection<Glyph> givenGlyphs, boolean normal)
+    public void stemSegment (Collection<Glyph> givenGlyphs,
+                             boolean           normal)
     {
         // Use a copy of glyphs selection
         Collection<Glyph> glyphs = new ArrayList<Glyph>(givenGlyphs);

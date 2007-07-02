@@ -202,7 +202,7 @@ public class LineBuilder
         // Sanity check
         if (sticks.size() == 0) {
             logger.warning("No sticks found in line area #" + id);
-            throw new omr.step.StepException();
+            throw new StepException();
         }
 
         // Update left & right extrema

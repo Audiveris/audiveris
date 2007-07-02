@@ -140,6 +140,7 @@ public abstract class SystemTask
     {
         if (!isDone(system)) {
             doSystem(system);
+
             ///logger.info("");
         }
     }
@@ -174,6 +175,7 @@ public abstract class SystemTask
                         {
                             try {
                                 doSystem(system);
+
                                 ///logger.info("");
                             } catch (StepException ex) {
                                 logger.warning("Step aborted on system", ex);
@@ -196,6 +198,7 @@ public abstract class SystemTask
     {
         for (SystemInfo system : sheet.getSystems()) {
             doSystem(system);
+
             ///logger.info("");
         }
     }

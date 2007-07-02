@@ -155,9 +155,10 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
     {
         getViews()
             .add(view);
-//        System.out.println(
-//            getGraph().getName() + ": added view #" + (getViews().size() - 1) +
-//            " to vertex #" + id);
+
+        //        System.out.println(
+        //            getGraph().getName() + ": added view #" + (getViews().size() - 1) +
+        //            " to vertex #" + id);
     }
 
     //------------//
@@ -310,10 +311,9 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
      */
     public VertexView getView (int index)
     {
-//        System.out.println(
-//            getGraph().getName() + ": getting view #" + index +
-//            " from vertex #" + id + " size=" + getViews().size());
-
+        //        System.out.println(
+        //            getGraph().getName() + ": getting view #" + index +
+        //            " from vertex #" + id + " size=" + getViews().size());
         return getViews()
                    .get(index);
     }

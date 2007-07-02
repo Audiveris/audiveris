@@ -12,8 +12,11 @@ package omr.sheet;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+
+import omr.step.StepException;
 
 import omr.stick.Stick;
 import omr.stick.SticksBuilder;
@@ -26,8 +29,6 @@ import omr.util.Predicate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import omr.glyph.Glyph;
-import omr.step.StepException;
 
 /**
  * Class <code>VerticalArea</code> processes a vertical lag to extract vertical
@@ -104,7 +105,7 @@ public class VerticalArea
      * Build a family of vertical sticks, that will later be checked for finer
      * recognition
      *
-     * @param sections 
+     * @param sections
      * @param sheet the sheet to process
      * @param vLag  the vertical lag from which bar sticks are built
      * @param predicate a specific predicate for sections to consider

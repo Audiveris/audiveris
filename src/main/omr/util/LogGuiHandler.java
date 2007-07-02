@@ -64,7 +64,8 @@ public class LogGuiHandler
         MainGui gui = Main.getGui();
 
         if (gui != null) {
-            if (!record.getMessage().equals("")) {
+            if (!record.getMessage()
+                       .equals("")) {
                 gui.logPane.log(record);
             }
         }

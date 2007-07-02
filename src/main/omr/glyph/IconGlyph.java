@@ -70,7 +70,7 @@ public class IconGlyph
     public IconGlyph (SymbolIcon icon,
                       Shape      shape)
     {
-        super(ScoreConstants.INTER_LINE); 
+        super(ScoreConstants.INTER_LINE);
 
         try {
             // Build a dedicated SymbolPicture
@@ -101,8 +101,8 @@ public class IconGlyph
             setShape(shape);
 
             // Ordinate (approximate value)
-            Rectangle box = getContourBox();
-            int       y = box.y;
+            Rectangle  box = getContourBox();
+            int        y = box.y;
 
             // Mass center
             PixelPoint centroid = getCentroid();

@@ -1129,7 +1129,6 @@ public class Glyph
      *
      * @param shape the assigned shape, which may be null
      */
-
     public void setShape (Shape shape)
     {
         setShape(shape, Evaluation.NO_DOUBT);

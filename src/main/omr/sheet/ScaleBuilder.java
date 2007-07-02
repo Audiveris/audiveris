@@ -14,6 +14,8 @@ import omr.constant.ConstantSet;
 
 import omr.lag.RunsBuilder;
 
+import omr.step.StepException;
+
 import omr.util.Implement;
 import omr.util.Logger;
 
@@ -108,10 +110,10 @@ public class ScaleBuilder
      * runs of pixels
      *
      * @return the main back length
-     * @throws omr.StepException
+     * @throws StepException
      */
     int getMainBack ()
-        throws omr.step.StepException
+        throws StepException
     {
         if (mainBack == -1) {
             retrieveScale();
@@ -128,10 +130,10 @@ public class ScaleBuilder
      * runs of pixels
      *
      * @return the main fore length
-     * @throws omr.StepException
+     * @throws StepException
      */
     int getMainFore ()
-        throws omr.step.StepException
+        throws StepException
     {
         if (mainFore == -1) {
             retrieveScale();
@@ -146,10 +148,10 @@ public class ScaleBuilder
     /**
      * Create a scale entity, by processing the provided sheet picture.
      *
-     * @throws omr.StepException
+     * @throws StepException
      */
     private void retrieveScale ()
-        throws omr.step.StepException
+        throws StepException
     {
         Picture picture = sheet.getPicture();
         adapter = new Adapter(sheet, picture.getHeight() - 1);

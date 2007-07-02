@@ -29,9 +29,9 @@ import java.util.Arrays;
  * Class <code>SectionView</code> is an abstract class to define common features
  * needed by a vertical or horizontal section view.
  *
- * @param L the precise lag type 
+ * @param L the precise lag type
  * @param S the precise section type
- * 
+ *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */

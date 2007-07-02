@@ -516,6 +516,35 @@ public class GlyphMenu
         }
     }
 
+    //------------------------//
+    // ShortStemSegmentAction //
+    //------------------------//
+    /**
+     * Perform a segmentation on the selected glyphs, into short stems and leaves
+     */
+    private class ShortStemSegmentAction
+        extends DynAction
+    {
+        public void actionPerformed (ActionEvent e)
+        {
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+            symbolsEditor.stemSegment(glyphs, false); // normal
+        }
+
+        public void update ()
+        {
+            putValue(NAME, "Look for short verticals");
+
+            if (glyphNb > 0) {
+                setEnabled(true);
+                putValue(SHORT_DESCRIPTION, "Extract short stems and leaves");
+            } else {
+                setEnabled(false);
+                putValue(SHORT_DESCRIPTION, "No glyph to segment");
+            }
+        }
+    }
+
     //---------------//
     // SimilarAction //
     //---------------//
@@ -550,35 +579,6 @@ public class GlyphMenu
                 setEnabled(false);
                 putValue(NAME, "Show similar");
                 putValue(SHORT_DESCRIPTION, "No shape defined");
-            }
-        }
-    }
-
-    //------------------------//
-    // ShortStemSegmentAction //
-    //------------------------//
-    /**
-     * Perform a segmentation on the selected glyphs, into short stems and leaves
-     */
-    private class ShortStemSegmentAction
-        extends DynAction
-    {
-        public void actionPerformed (ActionEvent e)
-        {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
-            symbolsEditor.stemSegment(glyphs, false); // normal
-        }
-
-        public void update ()
-        {
-            putValue(NAME, "Look for short verticals");
-
-            if (glyphNb > 0) {
-                setEnabled(true);
-                putValue(SHORT_DESCRIPTION, "Extract short stems and leaves");
-            } else {
-                setEnabled(false);
-                putValue(SHORT_DESCRIPTION, "No glyph to segment");
             }
         }
     }

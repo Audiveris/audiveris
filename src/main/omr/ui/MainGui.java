@@ -529,7 +529,7 @@ public class MainGui
         constants.frameState.setValue(state);
 
         if (state == Frame.NORMAL) {
-        // Remember frame location?
+            // Remember frame location?
             Rectangle bounds = frame.getBounds();
             constants.frameX.setValue(bounds.x);
             constants.frameY.setValue(bounds.y);
