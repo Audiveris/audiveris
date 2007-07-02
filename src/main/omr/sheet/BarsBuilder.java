@@ -221,7 +221,6 @@ public class BarsBuilder
             for (Stick stick : clutter) {
                 stick.destroy( /* cutSections => */
                 false);
-                stick.setInterline(sheet.getScale().interline()); // Safer
             }
 
             // Erase bar pixels from picture (not used for the time being)

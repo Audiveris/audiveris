@@ -85,6 +85,8 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     //-----//
     /**
      * Constructor with specified orientation
+     * @param name the distinguished name for this instance
+     * @param orientation the desired orientation of the lag
      */
     protected Lag (String   name,
                    Oriented orientation)

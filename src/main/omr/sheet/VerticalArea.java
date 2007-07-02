@@ -120,6 +120,7 @@ public class VerticalArea
         throws StepException
     {
         super(
+            sheet,
             vLag,
             new SticksSource(sections, predicate), // source for adequate sections
             sheet.getScale().toPixels(constants.coreSectionLength), // minCoreLength
@@ -134,11 +135,6 @@ public class VerticalArea
 
         // Retrieve the stick(s)
         createSticks(null);
-
-        // Safety
-        for (Stick stick : sticks) {
-            stick.setInterline(sheet.getScale().interline());
-        }
 
         // Merge aligned verticals
         Scale scale = sheet.getScale();

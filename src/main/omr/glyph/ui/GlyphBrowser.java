@@ -625,8 +625,7 @@ class GlyphBrowser
                 glyph.setLag(vLag);
 
                 for (GlyphSection section : glyph.getMembers()) {
-                    section.getViews()
-                           .clear();
+                    section.clearViews();
                     vLag.addVertex(section); // Trick!
                     section.setGraph(vLag);
                     section.complete();

@@ -12,6 +12,8 @@ package omr.sheet;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 
+import omr.step.StepException;
+
 import omr.stick.StickSection;
 
 import omr.util.Logger;
@@ -78,10 +80,12 @@ public class StaffBuilder
      *
      * @param peaks    the histogram peaks that belong to this staff area
      * @param interval the mean interval between peaks of this staff area
+     * @return the created staff information
+     * @throws StepException if anything goes wrong
      */
     public StaffInfo buildInfo (List<Peak> peaks,
                                 double     interval)
-        throws omr.step.StepException
+        throws StepException
     {
         // Id for the newly created staff
         ++id;

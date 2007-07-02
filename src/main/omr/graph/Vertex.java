@@ -106,16 +106,120 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // setGraph //
-    //----------//
+    //---------//
+    // addEdge //
+    //---------//
     /**
-     * (package access from graph) Assign the containing graph of this vertex
-     * @param graph The hosting graph
+     * Create an edge between two vertices
+     *
+     * @param source departure vertex
+     * @param target arrival vertex
      */
-    public void setGraph (D graph)
+    public static <V extends Vertex<D, V>, D extends Digraph<D, V>> void addEdge (V source,
+                                                                                  V target)
     {
-        this.graph = graph;
+        if (logger.isFineEnabled()) {
+            logger.fine("adding edge from " + source + " to " + target);
+        }
+
+        // Assert we have real vertices
+        if ((source == null) || (target == null)) {
+            throw new IllegalArgumentException(
+                "At least one of the edge vertices is null");
+        }
+
+        // Assert they belong to the same graph
+        if (source.getGraph() != target.getGraph()) {
+            throw new RuntimeException(
+                "An edge can link vertices of the same graph only");
+        }
+
+        if (NO_EDGE_DUPLICATES) {
+            source.targets.remove(target);
+            target.sources.remove(source);
+        }
+
+        source.targets.add(target);
+        target.sources.add(source);
+    }
+
+    //---------//
+    // addView //
+    //---------//
+    /**
+     * Add the related view of this vertex
+     *
+     * @param view the view to be linked
+     */
+    public void addView (VertexView view)
+    {
+        getViews()
+            .add(view);
+//        System.out.println(
+//            getGraph().getName() + ": added view #" + (getViews().size() - 1) +
+//            " to vertex #" + id);
+    }
+
+    //------------//
+    // clearViews //
+    //------------//
+    /**
+     * Get rid of all views for this vertex
+     */
+    public void clearViews ()
+    {
+        getViews()
+            .clear();
+    }
+
+    //--------//
+    // delete //
+    //--------//
+    /**
+     * Delete this vertex. This implies also the removal of all its incoming and
+     * outgoing edges.
+     */
+    public void delete ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("deleting vertex " + this);
+        }
+
+        // Remove in vertices of the vertex
+        for (V source : sources) {
+            source.targets.remove(this);
+        }
+
+        // Remove out vertices of the vertex
+        for (V target : targets) {
+            target.sources.remove(this);
+        }
+
+        // Remove from graph
+        graph.removeVertex(this); // Compiler warning here
+    }
+
+    //------//
+    // dump //
+    //------//
+    /**
+     * Prints on standard output a detailed information about this vertex.
+     */
+    public void dump ()
+    {
+        // The vertex
+        System.out.print(" ");
+        System.out.println(this);
+
+        // The in edges
+        for (V vertex : sources) {
+            System.out.println("  - edge from " + vertex);
+        }
+
+        // The out edges
+        for (V vertex : targets) {
+            System.out.println("  + edge to   " + vertex);
+        }
     }
 
     //----------//
@@ -129,20 +233,6 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
     public D getGraph ()
     {
         return graph;
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Assign a new Id (for expert use only)
-     *
-     * @param id The assigned id
-     */
-    @XmlAttribute
-    public void setId (int id)
-    {
-        this.id = id;
     }
 
     //-------//
@@ -210,122 +300,22 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
         return targets;
     }
 
-    //----------//
-    // getViews //
-    //----------//
-    /**
-     * Pointers to the related view if any
-     *
-     * @return the view collection
-     */
-    public List<VertexView> getViews ()
-    {
-        if (views == null) {
-            views = new ArrayList<VertexView>();
-        }
-
-        return views;
-    }
-
     //---------//
-    // addEdge //
+    // getView //
     //---------//
     /**
-     * Create an edge between two vertices
-     *
-     * @param source departure vertex
-     * @param target arrival vertex
+     * Report the view at given index
+     * @param index index of the desired view
+     * @return the desired view
      */
-    public static <V extends Vertex<D, V>, D extends Digraph<D, V>> void addEdge (V source,
-                                                                                  V target)
+    public VertexView getView (int index)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("adding edge from " + source + " to " + target);
-        }
+//        System.out.println(
+//            getGraph().getName() + ": getting view #" + index +
+//            " from vertex #" + id + " size=" + getViews().size());
 
-        // Assert we have real vertices
-        if ((source == null) || (target == null)) {
-            throw new IllegalArgumentException(
-                "At least one of the edge vertices is null");
-        }
-
-        // Assert they belong to the same graph
-        if (source.getGraph() != target.getGraph()) {
-            throw new RuntimeException(
-                "An edge can link vertices of the same graph only");
-        }
-
-        if (NO_EDGE_DUPLICATES) {
-            source.targets.remove(target);
-            target.sources.remove(source);
-        }
-
-        source.targets.add(target);
-        target.sources.add(source);
-    }
-
-    //---------//
-    // addView //
-    //---------//
-    /**
-     * Add the related view of this vertex
-     *
-     * @param view the view to be linked
-     */
-    public void addView (VertexView view)
-    {
-        getViews()
-            .add(view);
-    }
-
-    //--------//
-    // delete //
-    //--------//
-    /**
-     * Delete this vertex. This implies also the removal of all its incoming and
-     * outgoing edges.
-     */
-    public void delete ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("deleting vertex " + this);
-        }
-
-        // Remove in vertices of the vertex
-        for (V source : sources) {
-            source.targets.remove(this);
-        }
-
-        // Remove out vertices of the vertex
-        for (V target : targets) {
-            target.sources.remove(this);
-        }
-
-        // Remove from graph
-        graph.removeVertex(this); // Compiler warning here
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Prints on standard output a detailed information about this vertex.
-     */
-    public void dump ()
-    {
-        // The vertex
-        System.out.print(" ");
-        System.out.println(this);
-
-        // The in edges
-        for (V vertex : sources) {
-            System.out.println("  - edge from " + vertex);
-        }
-
-        // The out edges
-        for (V vertex : targets) {
-            System.out.println("  + edge to   " + vertex);
-        }
+        return getViews()
+                   .get(index);
     }
 
     //------------//
@@ -355,6 +345,32 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
                 "Attempting to remove non-existing edge between " + source +
                 " and " + target);
         }
+    }
+
+    //----------//
+    // setGraph //
+    //----------//
+    /**
+     * (package access from graph) Assign the containing graph of this vertex
+     * @param graph The hosting graph
+     */
+    public void setGraph (D graph)
+    {
+        this.graph = graph;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Assign a new Id (for expert use only)
+     *
+     * @param id The assigned id
+     */
+    @XmlAttribute
+    public void setId (int id)
+    {
+        this.id = id;
     }
 
     //----------//
@@ -400,5 +416,22 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
     protected String getPrefix ()
     {
         return "Vertex";
+    }
+
+    //----------//
+    // getViews //
+    //----------//
+    /**
+     * Pointers to the related view if any
+     *
+     * @return the view collection
+     */
+    private List<VertexView> getViews ()
+    {
+        if (views == null) {
+            views = new ArrayList<VertexView>();
+        }
+
+        return views;
     }
 }

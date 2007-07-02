@@ -364,7 +364,6 @@ public class BarsChecker
 
                     Measure measure = new Measure(part, false); // invented ?
                     Barline barline = new Barline(measure);
-                    bar.setInterline(scale.interline()); // Safer
                     bar.setShape(
                         isThickBar(bar) ? Shape.THICK_BAR_LINE
                                                 : Shape.THIN_BAR_LINE);
@@ -567,7 +566,6 @@ public class BarsChecker
         // candidates
         for (Iterator<Stick> it = clutter.iterator(); it.hasNext();) {
             Stick stick = it.next();
-            stick.setInterline(sheet.getScale().interline());
 
             // Allocate the candidate context, and pass the whole check suite
             Context context = new Context(stick);

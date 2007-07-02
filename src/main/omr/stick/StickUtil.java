@@ -111,6 +111,8 @@ public class StickUtil
      * When a stick is logically removed, the crossing objects must be extended
      * through the former stick.
      *
+     * @param stick the line stick about to be removed
+     * @param lag the containing lag
      * @param minPointNb Minimum number of points, across the stick, to be able
      *                   to compute an extension axis. Otherwise, the extension
      *                   is performed orthogonally to the stick.
@@ -169,7 +171,10 @@ public class StickUtil
         }
 
         // Include the border sections as line members
-        members.addAll(borders);
+        for (GlyphSection s : borders) {
+            stick.addSection(s, /* link=> */
+                             true);
+        }
 
         // Extend crossing objects for borders
         for (GlyphSection s : borders) {

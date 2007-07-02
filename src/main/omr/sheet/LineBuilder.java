@@ -21,6 +21,8 @@ import omr.lag.Run;
 import omr.math.BasicLine;
 import omr.math.Line;
 
+import omr.step.StepException;
+
 import omr.stick.*;
 
 import omr.util.Implement;
@@ -64,8 +66,11 @@ public class LineBuilder
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LineBuilder.class);
-    private static final StickComparator stickComparator = new StickComparator();
-    private static int                   globalId = 0;
+
+    // Allocate comparator once & for all
+    private static final StickStartComparator  stickStartComparator = new StickStartComparator();
+    private static final StickWeightComparator stickWeightComparator = new StickWeightComparator();
+    private static int                         globalId = 0;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -119,6 +124,7 @@ public class LineBuilder
                         Scale                      staffScale)
     {
         super(
+            sheet,
             hLag,
             new LineSource(
                 yTop - staffScale.toPixels(constants.yMargin),
@@ -140,13 +146,13 @@ public class LineBuilder
     // buildInfo //
     //-----------//
     /**
-     * Buils the stick info found in the provided staff line area
+     * Build the stick info found in the provided staff line area
      *
      * @return the info to be kept regarding the single staff line
-     * @exception omr.StepException raised when processing must stop
+     * @exception StepException raised when processing must stop
      */
     public LineInfo buildInfo ()
-        throws omr.step.StepException
+        throws StepException
     {
         id = ++globalId;
 
@@ -163,8 +169,35 @@ public class LineBuilder
                 sticks.size() + " stick(s)");
         }
 
+        // Sort sticks found according to their weight
+        // and make sure their abscissae do not overlap
+        Collections.sort(sticks, stickWeightComparator);
+
+        for (Iterator<Stick> it = sticks.iterator(); it.hasNext();) {
+            Stick stick = it.next();
+
+            // Check with the previous ones in the list
+            for (Iterator<Stick> pit = sticks.iterator(); pit.hasNext();) {
+                Stick s = pit.next();
+
+                if (s == stick) {
+                    break;
+                } else if (s.overlapWith(stick)) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "Removed stick #" + stick.getId() +
+                            " overlapping with #" + s.getId());
+                    }
+
+                    it.remove();
+
+                    break;
+                }
+            }
+        }
+
         // Sort sticks found according to their starting abscissa
-        Collections.sort(sticks, stickComparator);
+        Collections.sort(sticks, stickStartComparator);
 
         // Sanity check
         if (sticks.size() == 0) {
@@ -302,7 +335,7 @@ public class LineBuilder
         }
 
         // Sort new collection of sticks, and check for empty regions
-        Collections.sort(sticks, stickComparator);
+        Collections.sort(sticks, stickStartComparator);
 
         if (logger.isFineEnabled()) {
             si = sticks.listIterator();
@@ -556,6 +589,7 @@ public class LineBuilder
         // Have we found anything ?
         if (holeCandidates != null) {
             SticksBuilder holeArea = new SticksBuilder(
+                sheet,
                 lag,
                 source,
                 0,
@@ -708,10 +742,10 @@ public class LineBuilder
         }
     }
 
-    //-----------------//
-    // StickComparator //
-    //-----------------//
-    private static class StickComparator
+    //----------------------//
+    // StickStartComparator //
+    //----------------------//
+    private static class StickStartComparator
         implements Comparator<Stick>
     {
         @Implement(Comparator.class)
@@ -719,6 +753,21 @@ public class LineBuilder
                             Stick s2)
         {
             return s1.getStart() - s2.getStart();
+        }
+    }
+
+    //-----------------------//
+    // StickWeightComparator //
+    //-----------------------//
+    private static class StickWeightComparator
+        implements Comparator<Stick>
+    {
+        // Sort by DECREASING weight
+        @Implement(Comparator.class)
+        public int compare (Stick s1,
+                            Stick s2)
+        {
+            return s2.getWeight() - s1.getWeight();
         }
     }
 }

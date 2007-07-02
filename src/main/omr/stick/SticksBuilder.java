@@ -20,6 +20,7 @@ import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 
 import omr.sheet.Scale;
+import omr.sheet.Sheet;
 import static omr.stick.SectionRole.*;
 
 import omr.util.Logger;
@@ -67,6 +68,9 @@ public class SticksBuilder
 
     //~ Instance fields --------------------------------------------------------
 
+    /** The related sheet */
+    protected final Sheet sheet;
+
     /** The containing lag */
     protected final GlyphLag lag;
 
@@ -112,6 +116,7 @@ public class SticksBuilder
     /**
      * Creates a new SticksBuilder object.
      *
+     * @param sheet the related sheet
      * @param lag the GlyphLag which hosts the sections and the glyphs
      * @param source An adaptor to get access to participating sections
      * @param minCoreLength Minimum length for a section to be considered as
@@ -122,7 +127,8 @@ public class SticksBuilder
      * @param maxSlope      maximum stick slope
      * @param longAlignment specific flag to indicate long filament retrieval
      */
-    public SticksBuilder (GlyphLag     lag,
+    public SticksBuilder (Sheet        sheet,
+                          GlyphLag     lag,
                           SticksSource source,
                           int          minCoreLength,
                           double       maxAdjacency,
@@ -131,6 +137,7 @@ public class SticksBuilder
                           boolean      longAlignment)
     {
         // Cache computing parameters
+        this.sheet = sheet;
         this.lag = lag;
         this.source = source;
         this.minCoreLength = minCoreLength;
@@ -432,11 +439,13 @@ public class SticksBuilder
      */
     private void aggregateMemberSections ()
     {
+        final int interline = sheet.getInterline();
+
         for (GlyphSection s : members) {
             StickSection section = (StickSection) s;
 
             if (section.isAggregable()) {
-                Stick stick = new Stick();
+                Stick stick = new Stick(interline);
                 stick.setResult(ASSIGNED); // Needed to flag the stick
                 aggregate(section, stick);
                 stick = (Stick) lag.addGlyph(stick);

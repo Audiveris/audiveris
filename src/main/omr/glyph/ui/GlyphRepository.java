@@ -213,8 +213,6 @@ public class GlyphRepository
                             logger.fine("Storing " + glyph);
                         }
 
-                        glyph.setInterline(sheet.getScale().interline());
-
                         // Build the proper glyph file
                         StringBuffer sb = new StringBuffer();
                         sb.append(shape);
@@ -592,8 +590,7 @@ public class GlyphRepository
                     Glyph glyph = getGlyph(gName, null);
 
                     for (GlyphSection section : glyph.getMembers()) {
-                        section.getViews()
-                               .clear();
+                        section.clearViews();
                         section.delete();
                     }
                 }

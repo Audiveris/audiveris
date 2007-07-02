@@ -223,7 +223,7 @@ public class Sheet
      * Create a sheet as a score companion
      *
      * @param score the existing score
-     * @throws omr.StepException
+     * @throws StepException
      */
     public Sheet (Score score)
         throws StepException
@@ -669,6 +669,18 @@ public class Sheet
         }
 
         return impacted;
+    }
+
+    //--------------//
+    // getInterline //
+    //--------------//
+    /**
+     * Convenient method to report the scaling information of the sheet
+     * @return the scale interline
+     */
+    public int getInterline ()
+    {
+        return scale.interline();
     }
 
     //-----------------//

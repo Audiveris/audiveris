@@ -71,6 +71,10 @@ public class Glyph
     @XmlAttribute
     protected int id;
 
+    /** Interline of the containing staff (or sheet) */
+    @XmlAttribute
+    protected final int interline;
+
     /** The containing glyph lag */
     protected GlyphLag lag;
 
@@ -117,9 +121,6 @@ public class Glyph
     /** Doubt in the assigned shape */
     protected double doubt = Evaluation.NO_DOUBT;
 
-    /** Interline of the containing staff (or sheet) */
-    protected int interline;
-
     /** Number of stems it is connected to (0, 1, 2) */
     protected int stemNumber;
 
@@ -163,10 +164,12 @@ public class Glyph
     // Glyph //
     //-------//
     /**
-     * Constructor needed for Class.newInstance method
+     * Constructor with setting of scaling information
+     * @param interline the related interline value for scaling
      */
-    public Glyph ()
+    public Glyph (int interline)
     {
+        this.interline = interline;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -268,8 +271,7 @@ public class Glyph
                           Color color)
     {
         for (GlyphSection section : members) {
-            SectionView view = (SectionView) section.getViews()
-                                                    .get(viewIndex);
+            SectionView view = (SectionView) section.getView(viewIndex);
             view.setColor(color);
         }
     }
@@ -524,7 +526,6 @@ public class Glyph
      *
      * @return the interline value
      */
-    @XmlAttribute
     public int getInterline ()
     {
         return interline;
@@ -972,8 +973,7 @@ public class Glyph
     public void recolorize (int viewIndex)
     {
         for (GlyphSection section : members) {
-            SectionView view = (SectionView) section.getViews()
-                                                    .get(viewIndex);
+            SectionView view = (SectionView) section.getView(viewIndex);
             view.resetColor();
         }
     }
@@ -1014,19 +1014,6 @@ public class Glyph
     public void setId (int id)
     {
         this.id = id;
-    }
-
-    //--------------//
-    // setInterline //
-    //--------------//
-    /**
-     * Setter for the interline value
-     *
-     * @param interline the mean interline value of containing staff
-     */
-    public void setInterline (int interline)
-    {
-        this.interline = interline;
     }
 
     //--------//
@@ -1143,7 +1130,6 @@ public class Glyph
      * @param shape the assigned shape, which may be null
      */
 
-    ///@XmlAttribute(name = "shape")
     public void setShape (Shape shape)
     {
         setShape(shape, Evaluation.NO_DOUBT);

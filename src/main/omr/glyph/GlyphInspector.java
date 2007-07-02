@@ -158,8 +158,6 @@ public class GlyphInspector
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
-                glyph.setInterline(sheet.getScale().interline());
-
                 // Get vote
                 Evaluation vote = evaluator.vote(glyph, maxDoubt);
 

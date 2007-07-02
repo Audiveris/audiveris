@@ -75,6 +75,7 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     //---------//
     /**
      * Default constructor.
+     * @param name the distinguished name for this instance
      */
     public Digraph (String name)
     {

@@ -70,6 +70,8 @@ public class IconGlyph
     public IconGlyph (SymbolIcon icon,
                       Shape      shape)
     {
+        super(ScoreConstants.INTER_LINE); 
+
         try {
             // Build a dedicated SymbolPicture
             SymbolPicture picture = new SymbolPicture(icon, descReduction);
@@ -102,10 +104,6 @@ public class IconGlyph
             Rectangle box = getContourBox();
             int       y = box.y;
 
-            // Staff interline value
-            int interline = ScoreConstants.INTER_LINE;
-            setInterline(interline);
-
             // Mass center
             PixelPoint centroid = getCentroid();
             Scale      scale = new Scale(interline, 1);
@@ -137,19 +135,6 @@ public class IconGlyph
     //~ Methods ----------------------------------------------------------------
 
     //---------//
-    // setIcon //
-    //---------//
-    /**
-     * Assign the related icon
-     *
-     * @param val the icon
-     */
-    public void setIcon (SymbolIcon val)
-    {
-        this.icon = val;
-    }
-
-    //---------//
     // getIcon //
     //---------//
     /**
@@ -160,5 +145,18 @@ public class IconGlyph
     public SymbolIcon getIcon ()
     {
         return icon;
+    }
+
+    //---------//
+    // setIcon //
+    //---------//
+    /**
+     * Assign the related icon
+     *
+     * @param val the icon
+     */
+    public void setIcon (SymbolIcon val)
+    {
+        this.icon = val;
     }
 }

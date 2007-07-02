@@ -204,12 +204,6 @@ class EvaluationBoard
         case VERTICAL_GLYPH :
 
             Glyph glyph = (Glyph) selection.getEntity();
-
-            // Make sure the glyph interline has been set
-            if ((glyph != null) && (glyph.getInterline() == 0)) {
-                glyph.setInterline(sheet.getScale().interline());
-            }
-
             evaluate(glyph);
 
             break;

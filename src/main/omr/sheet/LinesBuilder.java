@@ -31,6 +31,8 @@ import omr.lag.SectionsBuilder;
 import omr.math.Population;
 import static omr.selection.SelectionTag.*;
 
+import omr.step.StepException;
+
 import omr.stick.Stick;
 import omr.stick.StickSection;
 
@@ -101,10 +103,10 @@ public class LinesBuilder
      * This performs the retrieval of the various staves.
      *
      * @param sheet the sheet on which the analysis is performed.
-     * @throws omr.StepException when processing must be interrupted
+     * @throws StepException when processing must be interrupted
      */
     public LinesBuilder (Sheet sheet)
-        throws omr.step.StepException
+        throws StepException
     {
         super(sheet, new GlyphLag("hLag", new HorizontalOrientation()));
 

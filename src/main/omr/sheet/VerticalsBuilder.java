@@ -347,7 +347,6 @@ public class VerticalsBuilder
             if (res >= minResult) {
                 stick.setResult(STEM);
                 stick.setShape(Shape.COMBINING_STEM);
-                stick.setInterline(sheet.getScale().interline());
                 stemNb++;
             } else {
                 stick.setResult(TOO_LIMITED);

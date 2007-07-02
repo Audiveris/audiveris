@@ -158,7 +158,11 @@ public class SlurGlyph
             logger.finest("fixing Large Slur for glyph #" + slur.getId());
         }
 
-        int                minChunkWeight = system.getScoreSystem()
+        final int          interline = system.getScoreSystem()
+                                             .getScore()
+                                             .getSheet()
+                                             .getInterline();
+        final int          minChunkWeight = system.getScoreSystem()
                                                   .getScale()
                                                   .toPixels(
             constants.minChunkWeight);
@@ -265,7 +269,7 @@ public class SlurGlyph
                                           .getGlyphsBuilder();
 
             // Build new slur glyph with sections kept
-            Glyph newGlyph = new Stick();
+            Glyph newGlyph = new Stick(interline);
 
             for (GlyphSection section : kept) {
                 newGlyph.addSection(section, /* link => */

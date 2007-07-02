@@ -114,7 +114,7 @@ public class GlyphsBuilder
     public Glyph buildCompound (Collection<Glyph> parts)
     {
         // Build a glyph from all sections
-        Glyph compound = new Stick();
+        Glyph compound = new Stick(scale.interline());
 
         for (Glyph glyph : parts) {
             compound.addGlyphSections(glyph, /* linkSections => */
@@ -202,11 +202,6 @@ public class GlyphsBuilder
                 removeGlyph(part, system, /* cutSections => */
                             false);
             }
-        }
-
-        // Record related scale ?
-        if (glyph.getInterline() == 0) {
-            glyph.setInterline(scale.interline());
         }
 
         // Insert in lag, which assigns an id to the glyph
@@ -336,7 +331,7 @@ public class GlyphsBuilder
             // Not already visited ?
             if (!section.isKnown() && !visitedSections.contains(section)) {
                 // Let's build a new glyph around this starting section
-                Glyph glyph = new Stick();
+                Glyph glyph = new Stick(scale.interline());
                 considerConnection(glyph, section, visitedSections);
 
                 // Compute all its characteristics
@@ -457,11 +452,6 @@ public class GlyphsBuilder
         // Ordinate (approximate value)
         Rectangle box = glyph.getContourBox();
         int       y = box.y;
-
-        // Interline value ?
-        if (glyph.getInterline() == 0) {
-            glyph.setInterline(scale.interline());
-        }
 
         // Mass center (which makes sure moments are available)
         SystemPoint centroid = system.getScoreSystem()

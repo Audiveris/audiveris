@@ -63,10 +63,12 @@ public class Stick
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Default constructor
+     * Create a stick with the related interline value
+     * @param interline the very important scaling information
      */
-    public Stick ()
+    public Stick (int interline)
     {
+        super(interline);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -95,6 +97,7 @@ public class Stick
      * Add a section as a member of this stick.
      *
      * @param section The section to be included
+     * @param link should the section point back to this stick?
      */
     public void addSection (StickSection section,
                             boolean      link)
@@ -113,6 +116,7 @@ public class Stick
     /**
      * Set the display color of all sections that compose this stick.
      *
+     * @param lag the containing lag
      * @param viewIndex index in the view list
      * @param color     color for the whole stick
      */
@@ -140,97 +144,96 @@ public class Stick
                           Color                    color)
     {
         for (GlyphSection section : sections) {
-            SectionView view = (SectionView) section.getViews()
-                                                    .get(viewIndex);
+            SectionView view = (SectionView) section.getView(viewIndex);
             view.setColor(color);
         }
     }
 
-    //------------------//
-    // computeDensities //
-    //------------------//
-    /**
-     * Computes the densities around the stick mean line
-     */
-    public void computeDensities (int nWidth,
-                                  int nHeight)
-    {
-        final int maxDist = 20; // TBD of course
-
-        // Allocate and initialize density histograms
-        int[] histoLeft = new int[maxDist];
-        int[] histoRight = new int[maxDist];
-
-        for (int i = maxDist - 1; i >= 0; i--) {
-            histoLeft[i] = 0;
-            histoRight[i] = 0;
-        }
-
-        // Compute (horizontal) distances
-        Line line = getLine();
-
-        for (GlyphSection section : members) {
-            int pos = section.getFirstPos(); // Abscissa for vertical
-
-            for (Run run : section.getRuns()) {
-                int stop = run.getStop();
-
-                for (int coord = run.getStart(); coord <= stop; coord++) {
-                    int dist = (int) Math.rint(line.distanceOf(coord, pos));
-
-                    if ((dist < 0) && (dist > -maxDist)) {
-                        histoRight[-dist] += 1;
-                    }
-
-                    if ((dist >= 0) && (dist < maxDist)) {
-                        histoLeft[dist] += 1;
-                    }
-                }
-
-                pos++;
-            }
-        }
-
-        System.out.println("computeDensities for Stick #" + id);
-
-        int     length = getLength();
-        boolean started = false;
-        boolean stopped = false;
-
-        for (int i = maxDist - 1; i >= 0; i--) {
-            if (histoLeft[i] != 0) {
-                started = true;
-            }
-
-            if (started) {
-                System.out.println(i + " : " + ((histoLeft[i] * 100) / length));
-            }
-        }
-
-        for (int i = -1; i > -maxDist; i--) {
-            if (histoRight[-i] == 0) {
-                stopped = true;
-            }
-
-            if (!stopped) {
-                System.out.println(
-                    i + " : " + ((histoRight[-i] * 100) / length));
-            }
-        }
-
-        // Retrieve sections in the neighborhood
-        Rectangle neighborhood = new Rectangle(getBounds());
-        neighborhood.grow(nWidth, nHeight);
-
-        List<GlyphSection> neighbors = lag.getSectionsIn(neighborhood);
-
-        for (GlyphSection section : neighbors) {
-            // Keep only sections that are not part of the stick
-            if (section.getGlyph() != this) {
-                System.out.println(section.toString());
-            }
-        }
-    }
+    //    //------------------//
+    //    // computeDensities //
+    //    //------------------//
+    //    /**
+    //     * Computes the densities around the stick mean line
+    //     */
+    //    public void computeDensities (int nWidth,
+    //                                  int nHeight)
+    //    {
+    //        final int maxDist = 20; // TBD of course
+    //
+    //        // Allocate and initialize density histograms
+    //        int[] histoLeft = new int[maxDist];
+    //        int[] histoRight = new int[maxDist];
+    //
+    //        for (int i = maxDist - 1; i >= 0; i--) {
+    //            histoLeft[i] = 0;
+    //            histoRight[i] = 0;
+    //        }
+    //
+    //        // Compute (horizontal) distances
+    //        Line line = getLine();
+    //
+    //        for (GlyphSection section : members) {
+    //            int pos = section.getFirstPos(); // Abscissa for vertical
+    //
+    //            for (Run run : section.getRuns()) {
+    //                int stop = run.getStop();
+    //
+    //                for (int coord = run.getStart(); coord <= stop; coord++) {
+    //                    int dist = (int) Math.rint(line.distanceOf(coord, pos));
+    //
+    //                    if ((dist < 0) && (dist > -maxDist)) {
+    //                        histoRight[-dist] += 1;
+    //                    }
+    //
+    //                    if ((dist >= 0) && (dist < maxDist)) {
+    //                        histoLeft[dist] += 1;
+    //                    }
+    //                }
+    //
+    //                pos++;
+    //            }
+    //        }
+    //
+    //        System.out.println("computeDensities for Stick #" + id);
+    //
+    //        int     length = getLength();
+    //        boolean started = false;
+    //        boolean stopped = false;
+    //
+    //        for (int i = maxDist - 1; i >= 0; i--) {
+    //            if (histoLeft[i] != 0) {
+    //                started = true;
+    //            }
+    //
+    //            if (started) {
+    //                System.out.println(i + " : " + ((histoLeft[i] * 100) / length));
+    //            }
+    //        }
+    //
+    //        for (int i = -1; i > -maxDist; i--) {
+    //            if (histoRight[-i] == 0) {
+    //                stopped = true;
+    //            }
+    //
+    //            if (!stopped) {
+    //                System.out.println(
+    //                    i + " : " + ((histoRight[-i] * 100) / length));
+    //            }
+    //        }
+    //
+    //        // Retrieve sections in the neighborhood
+    //        Rectangle neighborhood = new Rectangle(getBounds());
+    //        neighborhood.grow(nWidth, nHeight);
+    //
+    //        List<GlyphSection> neighbors = lag.getSectionsIn(neighborhood);
+    //
+    //        for (GlyphSection section : neighbors) {
+    //            // Keep only sections that are not part of the stick
+    //            if (section.getGlyph() != this) {
+    //                System.out.println(section.toString());
+    //            }
+    //        }
+    //    }
 
     //-------------//
     // computeLine //
@@ -765,6 +768,23 @@ public class Stick
     public int getThickness ()
     {
         return getBounds().height;
+    }
+
+    //-------------//
+    // overlapWith //
+    //-------------//
+    /**
+     * Check whether this stick overlaps with the other stick along their
+     * orientation (that is abscissae for horizontal ones, and ordinates for
+     * vertical ones)
+     * @param other the other stick to check with
+     * @return true if overlap, false otherwise
+     */
+    public boolean overlapWith (Stick other)
+    {
+        return Math.max(getStart(), other.getStart()) < Math.min(
+            getStop(),
+            other.getStop());
     }
 
     //-------------//

@@ -29,8 +29,9 @@ import java.util.Arrays;
  * Class <code>SectionView</code> is an abstract class to define common features
  * needed by a vertical or horizontal section view.
  *
- * <p>The sections are displayed using 3 different colors.
- *
+ * @param L the precise lag type 
+ * @param S the precise section type
+ * 
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -229,8 +230,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
         Arrays.fill(colorUsed, false);
 
         for (S sct : section.getTargets()) {
-            SectionView v = (SectionView) sct.getViews()
-                                             .get(viewIndex);
+            SectionView v = (SectionView) sct.getView(viewIndex);
             int         c = v.colorIndex;
 
             if (c != -1) {
@@ -239,8 +239,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
         }
 
         for (S sct : section.getSources()) {
-            SectionView v = (SectionView) sct.getViews()
-                                             .get(viewIndex);
+            SectionView v = (SectionView) sct.getView(viewIndex);
             int         c = v.colorIndex;
 
             if (c != -1) {

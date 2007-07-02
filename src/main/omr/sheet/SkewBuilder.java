@@ -27,6 +27,8 @@ import omr.lag.SectionView;
 import omr.lag.SectionsBuilder;
 import static omr.selection.SelectionTag.*;
 
+import omr.step.StepException;
+
 import omr.stick.Stick;
 import omr.stick.StickSection;
 
@@ -118,10 +120,10 @@ public class SkewBuilder
      * Compute the skew of the sheet picture
      *
      * @return the skew info
-     * @exception omr.StepException to stop processing if needed
+     * @exception StepException to stop processing if needed
      */
     public Skew buildInfo ()
-        throws omr.step.StepException
+        throws StepException
     {
         // Needed out for previous steps
         Picture picture = sheet.getPicture();
@@ -184,20 +186,6 @@ public class SkewBuilder
         writePlot();
     }
 
-    //--------------//
-    // isMajorChunk //
-    //--------------//
-    private boolean isMajorChunk (StickSection section)
-    {
-        // Check section length
-        // Check /quadratic mean/ section thickness
-        int     length = section.getLength();
-        boolean result = (length >= minSectionLength) &&
-                         ((section.getWeight() / length) <= maxThickness);
-
-        return result;
-    }
-
     //---------------//
     // areCompatible //
     //---------------//
@@ -235,7 +223,7 @@ public class SkewBuilder
                     stick = (Stick) section.getGlyph();
                 } else {
                     // Otherwise, start a brand new stick
-                    stick = new Stick();
+                    stick = new Stick(sheet.getInterline());
 
                     // Include this section in the stick list
                     stick.addSection(section, /* link => */
@@ -344,6 +332,20 @@ public class SkewBuilder
                     sLag.getLastVertexId(),
                     sheet.getSelection(SKEW_SECTION),
                     sheet.getSelection(SKEW_SECTION_ID))));
+    }
+
+    //--------------//
+    // isMajorChunk //
+    //--------------//
+    private boolean isMajorChunk (StickSection section)
+    {
+        // Check section length
+        // Check /quadratic mean/ section thickness
+        int     length = section.getLength();
+        boolean result = (length >= minSectionLength) &&
+                         ((section.getWeight() / length) <= maxThickness);
+
+        return result;
     }
 
     //-----------//
@@ -509,8 +511,7 @@ public class SkewBuilder
                 }
 
                 for (GlyphSection section : stick.getMembers()) {
-                    SectionView view = (SectionView) section.getViews()
-                                                            .get(viewIndex);
+                    SectionView view = (SectionView) section.getView(viewIndex);
                     view.setColor(color);
                 }
             }

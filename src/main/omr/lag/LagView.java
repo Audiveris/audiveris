@@ -246,8 +246,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         SectionView view;
 
         for (S section : specificSections) {
-            view = (SectionView) section.getViews()
-                                        .get(viewIndex);
+            view = (SectionView) section.getView(viewIndex);
             view.setColor(SPECIFIC_COLOR);
         }
     }
@@ -490,8 +489,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
                                     Zoom          zoom)
     {
         for (Section section : collection) {
-            SectionView view = (SectionView) section.getViews()
-                                                    .get(index);
+            SectionView view = (SectionView) section.getView(index);
             view.setZoom(zoom);
         }
     }
@@ -507,8 +505,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      */
     private void colorize (S section)
     {
-        SectionView view = (SectionView) section.getViews()
-                                                .get(viewIndex);
+        SectionView view = (SectionView) section.getView(viewIndex);
 
         if (view.getColorIndex() == -1) {
             // Determine suitable color for this section view
@@ -534,8 +531,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
                                    int           index)
     {
         for (Section section : collection) {
-            SectionView view = (SectionView) section.getViews()
-                                                    .get(index);
+            SectionView view = (SectionView) section.getView(index);
             view.render(g);
         }
     }

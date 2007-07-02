@@ -21,6 +21,7 @@ import omr.stick.SticksSource;
 import omr.util.Logger;
 
 import java.util.*;
+import omr.step.StepException;
 
 /**
  * Class <code>HorizontalArea</code> processes a horizontal lag to extract
@@ -56,16 +57,17 @@ public class HorizontalArea
      *
      * @param sheet the sheet to process
      * @param hLag  the horizontal lag from which sticks are built
-     *
-     * @throws omr.StepException raised when step processing must
-     *                                 stop, due to encountered error
+     * @param maxThickness maximum thickness accepted
+     * @throws StepException raised when step processing must stop, due to some
+     * encountered error
      */
     public HorizontalArea (Sheet    sheet,
                            GlyphLag hLag,
                            int      maxThickness)
-        throws omr.step.StepException
+        throws StepException
     {
         super(
+            sheet,
             hLag,
             new SticksSource(hLag.getVertices()), // source for adequate sections
             sheet.getScale().toPixels(constants.coreSectionLength), // minCoreLength
@@ -81,11 +83,6 @@ public class HorizontalArea
         // Retrieve the stick(s)
         Scale scale = sheet.getScale();
         createSticks(null);
-
-        // Safety
-        for (Stick stick : sticks) {
-            stick.setInterline(scale.interline());
-        }
 
         // Merge aligned horizontals
         merge(
