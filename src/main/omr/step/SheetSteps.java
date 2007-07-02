@@ -307,8 +307,7 @@ public class SheetSteps
         public void doit ()
             throws StepException
         {
-            BarsBuilder barsBuilder = new BarsBuilder(sheet);
-            barsBuilder.buildInfo();
+            sheet.getBarsBuilder().buildInfo();
             done();
 
             // Force score view creation if UI is present

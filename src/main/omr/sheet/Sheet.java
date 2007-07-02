@@ -467,6 +467,10 @@ public class Sheet
      */
     public BarsBuilder getBarsBuilder ()
     {
+        if (barsBuilder == null) {
+            barsBuilder = new BarsBuilder(this);
+        }
+
         return barsBuilder;
     }
 

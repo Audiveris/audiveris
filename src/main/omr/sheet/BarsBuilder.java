@@ -95,6 +95,8 @@ public class BarsBuilder
     /** Failure */
     private static final FailureResult NOT_SYSTEM_ALIGNED = new FailureResult(
         "Bar-NotSystemAligned");
+    private static final FailureResult NOT_STAFF_ALIGNED = new FailureResult(
+        "Bar-NotStaffAligned");
     private static final FailureResult SHORTER_THAN_STAFF_HEIGHT = new FailureResult(
         "Bar-ShorterThanStaffHeight");
     private static final FailureResult THICK_BAR_NOT_ALIGNED = new FailureResult(
@@ -488,7 +490,7 @@ public class BarsBuilder
     //--------------------//
     /**
      * Check alignment of each measure of each part with the other part
-     * measures, a test that needs several parts in the system
+     * measures, a test that needs several staves in the system
      *
      * @param system the system to check
      */
@@ -505,14 +507,41 @@ public class BarsBuilder
 
                 for (Iterator mit = part.getMeasures()
                                         .iterator(); mit.hasNext();) {
-                    Measure measure = (Measure) mit.next();
+                    Measure           measure = (Measure) mit.next();
 
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Checking alignment of " + measure);
+                    // Check that all staves in this part are concerned with
+                    // one stick of the barline
+                    Collection<Staff> staves = new ArrayList<Staff>();
+
+                    for (TreeNode node : part.getStaves()) {
+                        staves.add((Staff) node);
+                    }
+
+                    if (!measure.getBarline()
+                                .joinsAllStaves(staves)) {
+                        // Remove the false bar info
+                        for (Stick stick : measure.getBarline()
+                                                  .getSticks()) {
+                            stick.setResult(NOT_STAFF_ALIGNED);
+                            stick.setShape(null);
+                            bars.remove(stick);
+                        }
+
+                        // Remove the false measure
+                        mit.remove();
+
+                        break;
                     }
 
                     // Compare the abscissa with corresponding position in
                     // the other parts
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            system.getContextString() +
+                            " Checking measure alignment at x: " +
+                            measure.getLeftX());
+                    }
+
                     int x = measure.getBarline()
                                    .getCenter().x;
 
@@ -747,9 +776,7 @@ public class BarsBuilder
                                                              .getSticks()
                                                              .toArray()[0];
 
-                        if (Math.max(stick.getStart(), prevStick.getStart()) < Math.min(
-                            stick.getStop(),
-                            prevStick.getStop())) {
+                        if (stick.overlapWith(prevStick)) {
                             // Overlap => side by side
                             // Merge the two bar lines into the first one
                             prevMeasure.getBarline()
@@ -762,14 +789,13 @@ public class BarsBuilder
                             }
                         } else {
                             // No overlap => one above the other
-                            prevStick.addGlyphSections(stick, true);
-                            stick.destroy(false);
-                            bars.remove(stick);
-
+                            //                            prevStick.addGlyphSections(stick, true);
+                            //                            stick.destroy(false);
+                            //                            bars.remove(stick);
                             if (logger.isFineEnabled()) {
                                 logger.fine(
-                                    "Merged two barlines segments into " +
-                                    prevMeasure.getBarline());
+                                    "Two barlines segments one above the other in  " +
+                                    measure.getBarline());
                             }
                         }
 

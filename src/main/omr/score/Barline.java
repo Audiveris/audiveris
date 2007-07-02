@@ -13,6 +13,8 @@ import omr.glyph.Shape;
 
 import omr.score.visitor.ScoreVisitor;
 
+import omr.sheet.Scale;
+
 import omr.stick.Stick;
 
 import omr.ui.view.Zoom;
@@ -220,6 +222,49 @@ public class Barline
         return (sticks == null) ? Collections.<Stick>emptySet() : sticks;
     }
 
+    //----------------//
+    // joinsAllStaves //
+    //----------------//
+    /**
+     * Check whether all staves are physically connected by the sticks of the
+     * barline
+     *
+     * @param staves the collection of staves to check
+     * @return true if the barline touches all staves, false otherwise
+     */
+    public boolean joinsAllStaves (Collection<Staff> staves)
+    {
+        Scale scale = getSystem()
+                          .getScale();
+
+        for (Staff staff : staves) {
+            boolean overlap = false;
+
+            for (Stick stick : getSticks()) {
+                // Extrema of glyph
+                PageRectangle box = scale.toUnits(stick.getContourBox());
+                int           top = box.y;
+                int           bot = box.y + box.height;
+
+                // Check that staff and stick overlap vertically
+                final int topStaff = staff.getTopLeft().y;
+                final int botStaff = topStaff + staff.getHeight();
+
+                if (Math.max(topStaff, top) < Math.min(botStaff, bot)) {
+                    overlap = true;
+
+                    break;
+                }
+            }
+
+            if (!overlap) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     //-----------//
     // mergeWith //
     //-----------//
@@ -344,31 +389,38 @@ public class Barline
     private String getSignature ()
     {
         if (signature == null) {
+            Measure       measure = (Measure) getParent();
+            System        system = measure.getSystem();
             StringBuilder sb = new StringBuilder();
-            String        last = null;
+            String        last = null; // Last stick
+            Staff         staffRef = null; // Reference staff used for bar
 
             for (Stick stick : getSticks()) {
                 String letter = getLetter(stick.getShape());
 
-                if (letter == null) {
-                    continue;
-                }
+                if (letter != null) { // Ignore (safer)
 
-                if (last == null) {
-                    sb.append(letter);
-                } else {
-                    if (last.equals(letter)) {
-                        if (!letter.equals("N")) {
-                            // Nothing ?
-                        } else {
-                            sb.append(letter);
-                        }
-                    } else {
+                    // Staff reference
+                    Staff staff = system.getStaffAt(
+                        system.toSystemPoint(stick.getCenter()));
+
+                    if (last == null) {
                         sb.append(letter);
+                        staffRef = staff;
+                    } else {
+                        if (staff == staffRef) {
+                            if (last.equals(letter)) {
+                                if (letter.equals("N")) {
+                                    sb.append(letter);
+                                }
+                            } else {
+                                sb.append(letter);
+                            }
+                        }
                     }
-                }
 
-                last = letter;
+                    last = letter;
+                }
             }
 
             signature = sb.toString();

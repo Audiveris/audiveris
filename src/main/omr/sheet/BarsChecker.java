@@ -301,7 +301,7 @@ public class BarsChecker
     {
         final int maxDy = scale.toPixels(constants.maxBarOffset);
 
-        // Sort bar lines by increasing abscissa
+        // Sort bar sticks by increasing abscissa
         Collections.sort(
             bars,
             new Comparator<Stick>() {
@@ -312,7 +312,7 @@ public class BarsChecker
                     }
                 });
 
-        // Measures building (Bars are already sorted by increasing abscissa)
+        // Measures building (Sticks are already sorted by increasing abscissa)
         for (Iterator<Stick> bit = bars.iterator(); bit.hasNext();) {
             Stick      bar = bit.next();
 
