@@ -761,9 +761,7 @@ public class Sheet
 
             return scale;
         } catch (StepException ex) {
-            logger.severe("Scale not available");
-
-            return null;
+            throw new RuntimeException(ex);
         }
     }
 
@@ -1001,9 +999,7 @@ public class Sheet
             try {
                 sheetSteps.getResult(BARS);
             } catch (StepException ex) {
-                logger.severe("Bars systems not available");
-
-                return null;
+                throw new RuntimeException(ex);
             }
         }
 

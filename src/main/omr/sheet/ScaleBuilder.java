@@ -9,6 +9,8 @@
 //
 package omr.sheet;
 
+import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -167,8 +169,16 @@ public class ScaleBuilder
 
         // Check picture resolution
         if ((mainFore + mainBack) < constants.minInterline.getValue()) {
-            logger.warning(
-                "Picture resolution is too low: " + (mainFore + mainBack));
+            String msg = "Picture resolution is too low: " +
+                         (mainFore + mainBack);
+            logger.warning(msg);
+
+            if (Main.getGui() != null) {
+                Main.getGui()
+                    .displayWarning(msg);
+            }
+
+            throw new StepException(msg);
         }
     }
 
@@ -204,26 +214,6 @@ public class ScaleBuilder
             }
         }
 
-        //--------//
-        // isFore //
-        //--------//
-        @Implement(RunsBuilder.Reader.class)
-        public boolean isFore (int level)
-        {
-            // Assuming black=0, white=255
-            return level <= Picture.FOREGROUND;
-        }
-
-        //----------//
-        // getLevel //
-        //----------//
-        @Implement(RunsBuilder.Reader.class)
-        public int getLevel (int coord,
-                             int pos)
-        {
-            return picture.getPixel(pos, coord); // swap pos & coord
-        }
-
         //---------//
         // backRun //
         //---------//
@@ -245,6 +235,26 @@ public class ScaleBuilder
                              int cumul)
         {
             fore[length]++;
+        }
+
+        //----------//
+        // getLevel //
+        //----------//
+        @Implement(RunsBuilder.Reader.class)
+        public int getLevel (int coord,
+                             int pos)
+        {
+            return picture.getPixel(pos, coord); // swap pos & coord
+        }
+
+        //--------//
+        // isFore //
+        //--------//
+        @Implement(RunsBuilder.Reader.class)
+        public boolean isFore (int level)
+        {
+            // Assuming black=0, white=255
+            return level <= Picture.FOREGROUND;
         }
 
         //-----------//

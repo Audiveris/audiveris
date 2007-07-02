@@ -32,6 +32,14 @@ public class StepException
     }
 
     /**
+     * Construct an <code>StepException</code> with detail message.
+     */
+    public StepException (String message)
+    {
+        super(message);
+    }
+
+    /**
      * Construct an <code>StepException</code> from an existing exception.
      */
     public StepException (Throwable ex)

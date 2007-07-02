@@ -391,7 +391,32 @@ public class BarsBuilder
      * From system part, define the score parts
      */
     public void defineScoreParts ()
+        throws StepException
     {
+        // First, make sure all the system are consistent wrt parts
+        Integer NbOfParts = null;
+
+        for (SystemInfo systemInfo : sheet.getSystems()) {
+            int nb = systemInfo.getScoreSystem()
+                               .getParts()
+                               .size();
+
+            if (NbOfParts == null) {
+                NbOfParts = nb;
+            } else if (NbOfParts != nb) {
+                String msg = "Systems with different number of parts: " +
+                             NbOfParts + " vs " + nb;
+                logger.warning(msg);
+
+                if (Main.getGui() != null) {
+                    Main.getGui()
+                        .displayWarning(msg);
+                }
+
+                throw new StepException(msg);
+            }
+        }
+
         // (Re)set the global ScorePart list accordingly
         List<ScorePart> partList = null;
         boolean         ok = true;
