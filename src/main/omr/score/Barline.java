@@ -374,7 +374,7 @@ public class Barline
 
         case DOT :
         case REPEAT_DOTS :
-            return "O";
+            return "O"; // Capital o (not zero)
 
         default :
             addError("Unknown bar component : " + shape);
@@ -386,36 +386,57 @@ public class Barline
     //--------------//
     // getSignature //
     //--------------//
+    /**
+     * Compute a signature for this barline, based on the composing sticks.
+     * We elaborate this signature for first staff of the part only, to get rid
+     * of sticks roughly one above the other
+     */
     private String getSignature ()
     {
         if (signature == null) {
-            Measure       measure = (Measure) getParent();
-            System        system = measure.getSystem();
-            StringBuilder sb = new StringBuilder();
-            String        last = null; // Last stick
-            Staff         staffRef = null; // Reference staff used for bar
+            final Measure       measure = (Measure) getParent();
+            final System        system = measure.getSystem();
+            final StringBuilder sb = new StringBuilder();
+            final Staff         staffRef = measure.getPart()
+                                                  .getFirstStaff();
+            final int           topStaff = staffRef.getTopLeft().y -
+                                           system.getTopLeft().y;
+            final int           botStaff = topStaff + staffRef.getHeight();
+            String              last = null; // Last stick
 
             for (Stick stick : getSticks()) {
                 String letter = getLetter(stick.getShape());
 
-                if (letter != null) { // Ignore (safer)
+                if (letter != null) {
+                    if (letter.equals("O")) {
+                        // DOT
+                        Staff staff = system.getStaffAt(
+                            system.toSystemPoint(stick.getCenter()));
 
-                    // Staff reference
-                    Staff staff = system.getStaffAt(
-                        system.toSystemPoint(stick.getCenter()));
+                        if (staff != staffRef) {
+                            continue;
+                        }
+                    } else {
+                        // BAR : Check overlap with staff reference
+                        SystemRectangle box = system.toSystemRectangle(
+                            stick.getContourBox());
+
+                        if (Math.max(box.y, topStaff) > Math.min(
+                            box.y + box.height,
+                            botStaff)) {
+                            continue;
+                        }
+                    }
 
                     if (last == null) {
                         sb.append(letter);
-                        staffRef = staff;
                     } else {
-                        if (staff == staffRef) {
-                            if (last.equals(letter)) {
-                                if (letter.equals("N")) {
-                                    sb.append(letter);
-                                }
-                            } else {
+                        if (last.equals(letter)) {
+                            if (letter.equals("N")) {
                                 sb.append(letter);
                             }
+                        } else {
+                            sb.append(letter);
                         }
                     }
 

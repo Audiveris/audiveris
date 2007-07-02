@@ -38,6 +38,7 @@ public class MusicXML
 
     // A few constants to avoid typos
     static final String           ABOVE = "above";
+    static final String           BACKWARD = "backward";
     static final String           BACKWARD_HOOK = "backward hook";
     static final String           BEGIN = "begin";
     static final String           BELOW = "below";
@@ -48,6 +49,7 @@ public class MusicXML
     static final String           DIMINUENDO = "diminuendo";
     static final String           DOWN = "down";
     static final String           END = "end";
+    static final String           FORWARD = "forward";
     static final String           FORWARD_HOOK = "forward hook";
     static final String           INVERTED = "inverted";
     static final String           NO = "no";

@@ -191,8 +191,17 @@ public class ScoreExporter
     @Override
     public boolean visit (Barline barline)
     {
+//How does MusicXML represent a barline with both 
+//backward and forward repeats?  
+//
+//This is done with a backward repeat and light-heavy bar-style on a
+//right barline, followed by a forward repeat and heavy-light bar-style
+//on the following left barline.
+
         ///logger.info("Visiting " + barline);
-        if (barline.getShape() != omr.glyph.Shape.SINGLE_BARLINE) {
+        Shape shape = barline.getShape();
+
+        if (shape != omr.glyph.Shape.SINGLE_BARLINE) {
             proxymusic.Barline pmBarline = new proxymusic.Barline();
             current.pmMeasure.getNoteOrBackupOrForward()
                              .add(pmBarline);
@@ -201,6 +210,13 @@ public class ScoreExporter
             BarStyle barStyle = new BarStyle();
             pmBarline.setBarStyle(barStyle);
             barStyle.setContent(barStyleOf(barline.getShape()));
+
+            // Repeat?
+            if (shape == RIGHT_REPEAT_SIGN) {
+                Repeat repeat = new Repeat();
+                pmBarline.setRepeat(repeat);
+                repeat.setDirection(BACKWARD);
+            }
         }
 
         return true;
@@ -351,39 +367,46 @@ public class ScoreExporter
     @Override
     public boolean visit (Dynamics dynamics)
     {
-        Direction direction = new Direction();
-        current.pmMeasure.getNoteOrBackupOrForward()
-                         .add(direction);
+        ///logger.info ("dynamics=" + dynamics);
+        try {
+            Object    dynamicsObject = getDynamicsObject(dynamics.getShape());
+            Direction direction = new Direction();
+            current.pmMeasure.getNoteOrBackupOrForward()
+                             .add(direction);
 
-        DirectionType directionType = new DirectionType();
-        direction.getDirectionType()
-                 .add(directionType);
+            DirectionType directionType = new DirectionType();
+            direction.getDirectionType()
+                     .add(directionType);
 
-        proxymusic.Dynamics pmDynamics = new proxymusic.Dynamics();
-        directionType.getDynamics()
-                     .add(pmDynamics);
+            proxymusic.Dynamics pmDynamics = new proxymusic.Dynamics();
+            directionType.getDynamics()
+                         .add(pmDynamics);
 
-        // Precise dynamic signature
-        pmDynamics.getPOrPpOrPpp()
-                  .add(getDynamicsObject(dynamics.getShape()));
+            // Precise dynamic signature
+            pmDynamics.getPOrPpOrPpp()
+                      .add(dynamicsObject);
 
-        // Staff ?
-        Staff staff = current.note.getStaff();
-        insertStaffId(direction, staff);
+            // Staff ?
+            Staff staff = current.note.getStaff();
+            insertStaffId(direction, staff);
 
-        // Placement
-        if (dynamics.getPoint().y < current.note.getCenter().y) {
-            direction.setPlacement(ABOVE);
-        } else {
-            direction.setPlacement(BELOW);
+            // Placement
+            if (dynamics.getPoint().y < current.note.getCenter().y) {
+                direction.setPlacement(ABOVE);
+            } else {
+                direction.setPlacement(BELOW);
+            }
+
+            // default-y
+            pmDynamics.setDefaultY(yOf(dynamics.getPoint(), staff));
+
+            // Relative-x (No offset for the time being) using note left side
+            pmDynamics.setRelativeX(
+                toTenths(
+                    dynamics.getPoint().x - current.note.getCenterLeft().x));
+        } catch (Exception ex) {
+            logger.warning("Error exporting " + dynamics);
         }
-
-        // default-y
-        pmDynamics.setDefaultY(yOf(dynamics.getPoint(), staff));
-
-        // Relative-x (No offset for the time being) using note left side
-        pmDynamics.setRelativeX(
-            toTenths(dynamics.getPoint().x - current.note.getCenterLeft().x));
 
         return false;
     }
@@ -462,6 +485,9 @@ public class ScoreExporter
         if (measure.isImplicit()) {
             current.pmMeasure.setImplicit(YES);
         }
+
+        // Barline
+        visit(measure.getBarline());
 
         if (isFirst.measure) {
             // Allocate Print
@@ -1174,9 +1200,10 @@ public class ScoreExporter
     /**
      * Allocate/populate everything that directly relates to this system in the
      * current part. The rest of processing is directly delegated to the
-     * measures (TBD: add the slurs ?)
+     * measures
      *
      * @param system visit the system to export
+     * @return false
      */
     @Override
     public boolean visit (System system)
