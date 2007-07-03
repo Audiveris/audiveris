@@ -484,26 +484,26 @@ public class GlyphInspector
     public static interface CompoundAdapter
     {
         /** Extension in abscissa to look for neighbors
-         * @return
+         * @return the extension on left and right
          */
         int getBoxDx ();
 
         /** Extension in ordinate to look for neighbors
-         * @return
+         * @return the extension on top and bottom
          */
         int getBoxDy ();
 
         /**
          * Predicate for a glyph to be a potential part of the building (the
          * location criteria is handled separately)
-         * @param glyph
-         * @return
+         * @param glyph the glyph to check
+         * @return true if the glyph is suitable for inclusion
          */
         boolean isSuitable (Glyph glyph);
 
         /** Predicate to check the success of the newly built compound
-         * @param compound
-         * @return
+         * @param compound the resulting compound glyph to check
+         * @return true if the compound is found OK
          */
         boolean isValid (Glyph compound);
     }
