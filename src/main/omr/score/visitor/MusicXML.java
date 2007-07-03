@@ -52,8 +52,10 @@ public class MusicXML
     static final String           FORWARD = "forward";
     static final String           FORWARD_HOOK = "forward hook";
     static final String           INVERTED = "inverted";
+    static final String           LEFT = "left";
     static final String           NO = "no";
     static final String           OVER = "over";
+    static final String           RIGHT = "right";
     static final String           START = "start";
     static final String           STOP = "stop";
     static final String           UNDER = "under";

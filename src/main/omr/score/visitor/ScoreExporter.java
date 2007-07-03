@@ -191,13 +191,6 @@ public class ScoreExporter
     @Override
     public boolean visit (Barline barline)
     {
-//How does MusicXML represent a barline with both 
-//backward and forward repeats?  
-//
-//This is done with a backward repeat and light-heavy bar-style on a
-//right barline, followed by a forward repeat and heavy-light bar-style
-//on the following left barline.
-
         ///logger.info("Visiting " + barline);
         Shape shape = barline.getShape();
 
@@ -205,17 +198,39 @@ public class ScoreExporter
             proxymusic.Barline pmBarline = new proxymusic.Barline();
             current.pmMeasure.getNoteOrBackupOrForward()
                              .add(pmBarline);
-            pmBarline.setLocation("right");
 
             BarStyle barStyle = new BarStyle();
             pmBarline.setBarStyle(barStyle);
-            barStyle.setContent(barStyleOf(barline.getShape()));
 
-            // Repeat?
-            if (shape == RIGHT_REPEAT_SIGN) {
-                Repeat repeat = new Repeat();
-                pmBarline.setRepeat(repeat);
-                repeat.setDirection(BACKWARD);
+            if (barline == current.measure.getBarline()) {
+                // The bar is on right side
+                pmBarline.setLocation(RIGHT);
+
+                if ((shape == RIGHT_REPEAT_SIGN) ||
+                    (shape == BACK_TO_BACK_REPEAT_SIGN)) {
+                    barStyle.setContent("light-heavy");
+
+                    Repeat repeat = new Repeat();
+                    pmBarline.setRepeat(repeat);
+                    repeat.setDirection(BACKWARD);
+                }
+            } else {
+                // The bar is on left side
+                pmBarline.setLocation(LEFT);
+
+                if ((shape == LEFT_REPEAT_SIGN) ||
+                    (shape == BACK_TO_BACK_REPEAT_SIGN)) {
+                    barStyle.setContent("heavy-light");
+
+                    Repeat repeat = new Repeat();
+                    pmBarline.setRepeat(repeat);
+                    repeat.setDirection(MusicXML.FORWARD);
+                }
+            }
+
+            // Default : use style inferred from shape
+            if (barStyle.getContent() == null) {
+                barStyle.setContent(barStyleOf(barline.getShape()));
             }
         }
 
@@ -486,8 +501,15 @@ public class ScoreExporter
             current.pmMeasure.setImplicit(YES);
         }
 
-        // Barline
+        // Right Barline
         visit(measure.getBarline());
+
+        // Left barline ?
+        Measure prevMeasure = (Measure) measure.getPreviousSibling();
+
+        if (prevMeasure != null) {
+            visit(prevMeasure.getBarline());
+        }
 
         if (isFirst.measure) {
             // Allocate Print
@@ -1392,6 +1414,52 @@ public class ScoreExporter
         return current.attributes;
     }
 
+    //-----------//
+    // isNewClef //
+    //-----------//
+    /**
+     * Make sure we have a NEW clef, not already assigned. We have to go back
+     * in current measure, then in current staff, then in same staff in previous
+     * systems, until we find a previous clef. And we compare the two shapes.
+     * @param clef the potentially new clef
+     * @return true if this clef is really new
+     */
+    private boolean isNewClef (Clef clef)
+    {
+        // Perhaps another clef before this one ?
+        Clef previousClef = current.measure.getClefBefore(
+            new SystemPoint(clef.getCenter().x - 1, 0));
+
+        if (previousClef != null) {
+            return previousClef.getShape() != clef.getShape();
+        }
+
+        return true; // Since no previous clef found
+    }
+
+    //-------------------//
+    // isNewKeySignature //
+    //-------------------//
+    /**
+     * Make sure we have a NEW key, not already assigned. We have to go back
+     * in current measure, then in current staff, then in same staff in previous
+     * systems, until we find a previous key. And we compare the two shapes.
+     * @param key the potentially new key
+     * @return true if this key is really new
+     */
+    private boolean isNewKeySignature (KeySignature key)
+    {
+        // Perhaps another key before this one ?
+        KeySignature previousKey = current.measure.getKeyBefore(
+            key.getCenter());
+
+        if (previousKey != null) {
+            return previousKey.getKey() != key.getKey();
+        }
+
+        return true; // Since no previous key found
+    }
+
     //--------------//
     // getNotations //
     //--------------//
@@ -1504,52 +1572,6 @@ public class ScoreExporter
                 logger.severe("Could not setStaff for element " + classe);
             }
         }
-    }
-
-    //-----------//
-    // isNewClef //
-    //-----------//
-    /**
-     * Make sure we have a NEW clef, not already assigned. We have to go back
-     * in current measure, then in current staff, then in same staff in previous
-     * systems, until we find a previous clef. And we compare the two shapes.
-     * @param clef the potentially new clef
-     * @return true if this clef is really new
-     */
-    private boolean isNewClef (Clef clef)
-    {
-        // Perhaps another clef before this one ?
-        Clef previousClef = current.measure.getClefBefore(
-            new SystemPoint(clef.getCenter().x - 1, 0));
-
-        if (previousClef != null) {
-            return previousClef.getShape() != clef.getShape();
-        }
-
-        return true; // Since no previous clef found
-    }
-
-    //-------------------//
-    // isNewKeySignature //
-    //-------------------//
-    /**
-     * Make sure we have a NEW key, not already assigned. We have to go back
-     * in current measure, then in current staff, then in same staff in previous
-     * systems, until we find a previous key. And we compare the two shapes.
-     * @param key the potentially new key
-     * @return true if this key is really new
-     */
-    private boolean isNewKeySignature (KeySignature key)
-    {
-        // Perhaps another key before this one ?
-        KeySignature previousKey = current.measure.getKeyBefore(
-            key.getCenter());
-
-        if (previousKey != null) {
-            return previousKey.getKey() != key.getKey();
-        }
-
-        return true; // Since no previous key found
     }
 
     //~ Inner Classes ----------------------------------------------------------
