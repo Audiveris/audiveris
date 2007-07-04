@@ -16,7 +16,6 @@ import omr.glyph.Shape;
 
 import omr.score.visitor.ScoreChecker;
 
-import omr.sheet.BarsBuilder;
 import omr.sheet.HorizontalsBuilder;
 import omr.sheet.ImageFormatException;
 import omr.sheet.LinesBuilder;
@@ -29,8 +28,6 @@ import static omr.step.Step.*;
 import omr.step.StepException;
 
 import omr.util.Logger;
-import omr.util.OmrExecutors;
-import omr.util.SignallingRunnable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,49 +35,10 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 
 /**
  * Class <code>SheetSteps</code> handles the actual progress of steps for a
  * given sheet instance.
- *
- * <p/>Here is the ordered list of the various steps that sheet processing can
- * go through :
- *
- * <p/> <ol>
- *
- * <li> {@link #LOAD} loads the image for the sheet, from a provided image
- * file. </li>
- *
- * <li> {@link #SCALE} determines the general scale of the sheet, based on the
- * mean distance between staff lines. </li>
- *
- * <li> {@link #SKEW} determines the average skew of the picture, and deskews it
- * if needed. </li>
- *
- * <li> {@link #LINES} retrieves the staff lines, erases their pixels and
- * creates crossing objects when needed. Pixels modifications are made in the
- * original (unblurred) image. </li>
- *
- * <li> {@link #HORIZONTALS} retrieves the horizontal dashes. </li>
- *
- * <li> {@link #BARS} retrieves the vertical bar lines, and so the systems and
- * measures. </li>
- *
- * <li> {@link #SYMBOLS} recognizes isolated symbols glyphs and aggregates
- * unknown symbols into compound glyphs. </li>
- *
- * <li> {@link #VERTICALS} retrieves the vertical items such as stems. </li>
- *
- * <li> {@link #LEAVES} processes leaves, which are glyphs attached to
- * stems and aggregates unknown leaves into compound glyphs. </li>
- *
- * <li> {@link #CLEANUP} is a final cleanup step on stems and slurs. </li>
- *
- * <li> {@link #SCORE} is the score translation step. </li>
- *
- * </ol>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$

@@ -17,19 +17,70 @@ import omr.util.Logger;
 import omr.util.Memory;
 
 import java.io.File;
+/**
+ * Enum <code>Step</code> lists the various sheet processing steps in 
+ * chronological order.
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
+ */
 public enum Step {
+    /**
+     * Load the image for the sheet, from a provided image file
+     */
     LOAD("Load the sheet picture"),
-    SCALE("Compute the global Skew, and rotate if needed"),
-    SKEW("Detect & remove all Staff Lines"),
-    LINES("Retrieve horizontal Dashes"),
-    HORIZONTALS("Detect vertical Bar lines"),
-    BARS("Detect vertical Bar lines"),
-    SYMBOLS("Recognize Symbols & Compounds"),
-    VERTICALS("Extract verticals"),
-    LEAVES("Recognize Leaves & Compounds"),
-    CLEANUP("Cleanup stems and slurs"),
-    SCORE("Translate glyphs to score items");
 
+    /**
+     * Determine the general scale of the sheet, based on the mean distance
+     * between staff lines
+     */
+    SCALE("Compute the global Skew, and rotate if needed"),
+
+    /**
+     * Determine the average skew of the picture, and deskews it if needed
+     */
+    SKEW("Detect & remove all Staff Lines"),
+
+    /**
+     * Retrieve the staff lines, erases their pixels and creates crossing
+     * objects when needed
+     */
+    LINES("Retrieve horizontal Dashes"),
+
+    /**
+     * Retrieve the horizontal dashes (ledgers, endings)
+     */
+    HORIZONTALS("Detect horizontal dashes"),
+    /**
+     * Retrieve the vertical bar lines, and so the systems and measures
+     */
+    BARS("Detect vertical Bar lines"),
+    /**
+     * Recognize isolated symbols glyphs and aggregates unknown symbols into
+     * compound glyphs
+     */
+    SYMBOLS("Recognize Symbols & Compounds"),
+    /**
+     * Retrieve the vertical items such as stems
+     */
+    VERTICALS("Extract verticals"),
+    /**
+     * Process leaves, which are glyphs attached to stems and aggregates unknown
+     * leaves into compound glyphs
+     */
+    LEAVES("Recognize Leaves & Compounds"),
+    /**
+     * Cleanup stems and slurs
+     */
+    CLEANUP("Cleanup stems and slurs"),
+
+    /**
+     * Translate glyphs into score entities
+     */
+    SCORE("Translate glyphs to score items");
+    //
+    //--------------------------------------------------------------------------
+    //
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Step.class);
 
@@ -39,6 +90,8 @@ public enum Step {
     /** Description of the step */
     private final String description;
 
+    //--------------------------------------------------------------------------
+
     //------//
     // Step //
     //------//
@@ -46,6 +99,8 @@ public enum Step {
     {
         this.description = description;
     }
+
+    //--------------------------------------------------------------------------
 
     //---------------//
     // createMonitor //
