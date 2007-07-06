@@ -2,350 +2,360 @@
 <html>
     <head>
 	<!--    $Id$    -->
-	<meta http-equiv="CONTENT-TYPE" content="text/html; charset=windows-1252" />
+	<meta http-equiv="CONTENT-TYPE" content="text/html; charset=windows-1252"/>
 	<title>Audiveris Home Page</title>
 	<meta name="author" content="Herv&eacute; Bitteur"/>
 	<!-- The following links are meant to be solved on my local PC -->
 	<!-- The java.net site uses its own style sheets -->
 	<link rel="stylesheet" type="text/css" href="branding/css/tigris.css"/>
 	<link rel="stylesheet" type="text/css" href="branding/css/inst.css"/>
-	
-<script>
-    function getCVSDate(s)
-    {
-    var as = s.split(" ");
-    var d = new Date(as[3]);
-    var months = new Array("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
-    
-    return d.getDate() + "-" + months[d.getMonth()] + "-" + d.getFullYear()
-    }
-    
-    // Special nonav prefix for java.net hosted files			
-    function nonav(url)
-    {
-    if (document.title != "Audiveris Home Page")
-    return "<A TARGET='_top' HREF='nonav/" + url + "'>";
-    else
-    return "<A TARGET='_top' HREF='" + url + "'>";
-    }
-    </script>
-</head>
-	    
-    <body>
-	
-	<div class="app" style="text-align: justify;">
+	<script>
+function getCVSDate(s)
+{
+	var as = s.split(" ");
+	var d = new Date(as[3]);
+	var months = new Array("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+	return d.getDate() + "-" + months[d.getMonth()] + "-" + d.getFullYear()
+}
+
+// Special nonav prefix for java.net hosted files			
+function nonav(url)
+{
+	if (document.title != "Audiveris Home Page")
+	    return "<A TARGET='_top' HREF='nonav/" + url + "'>";
+	else
+	    return "<A TARGET='_top' HREF='" + url + "'>";
+}
+	    </script>
+	    </head>
 	    
 	    
-	    <h1 style="text-align: center;">Audiveris</h1>
-	    
-	    
-	    <i>Updated:
-		
-		<script type="text/javascript">
-		    document.write(getCVSDate("$Id$"));
-		</script>
-	    </i>
-	    
-	    <div class="donemessage">
-		
-		<p>Current version is 3.0, with a beta release published on
-		    5-Jul-2007. With this version, Audiveris can now be considered as a
-		    fully-fledged music scanner, going all the way from the scanned music
-		    sheet to the MusicXML output.</p>
-	    </div>
-	    
-	    
-	    
-	    <h3>Project Goals</h3>
-	    
-	    
-	    <p> Audiveris is an <b> Optical Music Recognition</b> (OMR)
-		module. It is a music scanner: starting from the simple bitmap
-		of a music sheet (for example by scanning a paper), it is able
-		to infer the music information the sheet contains. It can then
-		provide high-level logical music information to other tools
-		such as a Midi Sequencer, or a Composition Editor, or any
-		other tool that complies with the MusicXML definition.</p>
-	    <p> Audiveris works with printed music sheets only, the task of
-		recognizing hand-written scores is at least one order of
-		magnitude harder.</p>
-	    
-	    <p> There are already commercial tools in this area, such as
-		MusicScan or SharpEye. Audiveris is,&nbsp;to our knowledge,
-		the first Java open-source OMR tool. it is also a
-		cross-platform tool, since developed entirely in Java, and
-		tested on Windows, Solaris, Mac OS (on-going) and Linux
-		(soon).</p>
-	    <p>There is still room for improvement in this program (see below
-		the foreseen contributions), but the internal architecture is
-		now fairly stable and robust enough to be used and augmented
-		by people willing to contribute.</p>
-	    
-	    <h3>Download</h3>
-	    
-	    <div class="filebrowse">
-		
-		<ul>
+	    <body>
+		<div class="app" style="text-align: justify;">
+		    <h1 style="text-align: center;">Audiveris</h1>
+		    <i>Updated:
+			<script type="text/javascript">
+			    document.write(getCVSDate("$Id$"));
+			</script>
+		    </i>
 		    
-		    <li class="leafnode">
-			The <a
-				href="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&amp;expandFolder=3257&amp;folderID=3257">
-			download area</a> always contains the latest stable
-			release, provided as two archives (where <b>"M.m"</b>
-			stands for version number, and
-			<b>"YYYYMMDD"</b> for build date) :
-			
-			<ul>
-			    <li class="leaf">
-				Java source code, jar file and documentation files
-				are available as one zip archive named
-				<b><i>"audiveris-M.m-YYYYMMDD.zip"</i></b></li>
-			    
-			    <li class="leaf">XML-coded glyph information, needed
-				to re-train the evaluators, is available as a
-				separate zip archive named
-				<b><i>"audiveris-M.m-train-YYYYMMDD.zip"</i></b></li>
-			</ul>
-			
-		    </li>
-		    
-		    <li class="leafnode"> The <a
-						  href="https://audiveris.dev.java.net/source/browse/audiveris/">CVS
-			repository</a> can also be accessed to retrieve the very
-			latest version of all software pieces, even before they
-			get packed in a stable release.</li>
-		</ul>
-	    </div>
-	    
-	    
-	    <h3>Documentation</h3>
-	    
-	    <p> All documentations are bundled with the source archive
-		above. They are also available on-line, in their latest
-		version, directly from the CVS repository:</p>
-	    
-	    <div class="filebrowse">
-		
-		<table>
-		    
-		    <tbody>
-			<tr>
-			    <td class="leaf"> The
-				<script type="text/javascript">
-				    document.write(nonav("docs/manual/index.html?manual=releases"));
-				</script>
-				Release notes</td>
-			    <td>The detailed chronology of development
-				activities.</td>
-			</tr>
-			<tr>
-			    <td class="leaf"> The
-				<script type="text/javascript">
-				    document.write(nonav("docs/manual/index.html?manual=installation"));
-				</script>
-				Installation manual</td>
-			    <td>All
-				informations needed to set the software up and
-				running.</td>
-			</tr>
-			
-			<tr>
-			    <td class="leaf"> The
-				<script type="text/javascript">
-				    document.write(nonav("docs/manual/index.html?manual=operation"));
-				</script>
-				Operation manual</td>
-			    <td>How to operate
-				the software, from an end-user point of
-				view.</td>
-			</tr>
-			
-			<tr>
-			    <td class="leaf"> The
-				<script type="text/javascript">
-				    document.write(nonav("docs/manual/index.html?manual=design"));
-				</script>
-				Design manual</td>
-			    <td>Meant to explain the rationales of
-				key decisions made regarding music
-				extraction.</td>
-			</tr>
-			
-			<tr>
-			    <td class="leaf"> The
-				<script type="text/javascript">
-				    document.write(nonav("docs/manual/index.html?manual=implementation"));
-				</script>
-				Implementation manual</td>
-			    <td>How the
-				software is organized, from a programmer's
-				point of view.</td>
-			</tr>
-			
-			<tr>
-			    <td class="leaf"> The
-				<script type="text/javascript">
-				    document.write(nonav("docs/manual/index.html?manual=api"));
-				</script>
-				API documentation</td>
-			    <td>The Javadoc
-				pages of all classes.</td>
-			</tr>
-			
-			
-		    </tbody>
-		</table>
-		
-	    </div>
-	    
-	    <h3>Current Status</h3>
-	    
-	    <p>Starting with version 3.0, Audiveris is now a complete music
-		scanner which aims at automatically translating the 'pixel
-		data' of a sheet of music to the high-level music information
-		carried by a MusicXML file.  Since the translation cannot be
-		perfect, since there may still be some errors in the
-		translation, the program offers the user the ability to guide
-		the translation on the fly. It can also use new translation
-		data in order to further train its internal neural network, in
-		order to improve the glyph recognition task.</p>
-	    <p>More detailed information is available in the provided manuals,
-		but here are the main phases of the application:</p>
-	    
-	    <ol>
-		<li>Detection and correction of potential skew angle of the
-		    sheet,</li>
-		<li>Removal of staff lines, detection of systems, staves and
-		    measures,</li>
-		<li><b>Extraction </b>of individual music
-		    items, essentially based on their appearance and
-		    their structure,</li>	
-		<li>Music <b>translation</b> based on the
-		    extracted music items, and essentially driven by music
-		    grammar,</li>
-		<li>Manual <b> correction </b>of unavoidable remaining
-		    errors,</li>
-		<li>Export of logical music information, using the MusicXML
-		    format definition,</li>
-		<li>Finally, any other application able to read / write
-		    MusicXML format can be chained to it.</li>
-	    </ol>
-	    
-	    <p>Audiveris is the result of several years of&nbsp;development at
-		night, and was initially based on the lessons learnt from a
-		prototype written in Ada several years ago. Development is still
-		on going, and would benefit from additional contribution. We
-		would also appreciate feedback of other users, in the form of
-		suggestions or bug reports (please provide the scanned image
-		with your report, to help us analyze the program behavior).</p>
-	    
-	    <h3>Foreseen Contributions</h3>
-	    
-	    <p> Here is a&nbsp;list of domains and tasks for which
-		contribution would make sense and be really appreciated :</p>
-	    
-	    <ul>
-		<li>Rather easy</li>
-		<ul>
-		    <li>Validate Audiveris on other platforms than Windows or
-			Solaris. Some people volunteered for Mac OS (Brenton
-			Partridge is actively working on it) and Linux.</li>
-		</ul>
-		
-		<li>More significant</li>
-		<ul>
-		    <li>Integrate with a <b> Visual Music Editor</b> for manual
-			correction, for printing, for playing, etc...  For
-			example Xemo (project as seen on NetBeans) would be a
-			natural partnering tool, however the Xemo site doesn't
-			seem active anymore. Audiveris has only an embedded
-			rudimentary editor. So this task remains fully
-			open.</li>
-		    
-		    <li>Find and integrate an open-source <b>OCR</b> (Optical
-			Character Recognition), preferably in Java, in order to
-			handle the various text pieces (typically lyrics) which
-			for the time being are simply discarded.</li>
-		    
-		    <li>Evaluate a move to <b> NetBeans</b>
-			(The <b>platform</b>, not the IDE). This would move
-			Audiveris stand-alone application to a much better
-			integration environment, taking advantage of view and
-			parameter management. This should also ease the
-			integration with visual editors.</li>
-		    
-		</ul>
-		<li>Fairly difficult</li>
-		<ul>
-		    <li>Consider addressing <b> hand-written scores </b>. This
-			domain could take benefit of a significant part of
-			Audiveris framework, however this would really be a
-			sub-project on its own. To be discussed if anyone is
-			interested by this daunting task.</li>
-		</ul>
-	    </ul>
-	    
-	    <h3>Current Implementation</h3>
-	    
-	    <p> Audiveris today is a pure Java stand-alone application, which
-		represents about 260 classes and 85_000 lines of Java
-		code.</p>
-	    
-	    <h5>Techniques</h5>
-	    
-	    <ul>
-		<li><b>Linear Adjacency Graphs</b> (LAG), a technique to
-		    record pixel information as a directed graph structure,
-		    composed of pixel contiguous runs organized in sections
-		    linked by junctions.</li>
-		
-		<li><b>Sticks</b>, a technique developed above LAGs to
-		    specifically take advantage of the structuring sticks of a
-		    music sheet (staff lines, ledgers and legato signs are
-		    examples of horizontal sticks, while stems and bar lines
-		    are examples of vertical sticks).</li>
-		
-		<li><b>Neural Network</b>, to allow efficient pattern
-		    recognition as well as training based on user input for
-		    continuous improvement of the tool efficiency.</li>
-	    </ul>
-	    
-	    <h5>Technologies</h5>
-	    
-	    <ul>
-		<li><b>Java Advanced Imaging</b> (JAI) for number crunching in
-		    image processing (loading image, accessing pixel data,
-		    rotating the image, etc)</li>
-		
-		<li><b>Swing </b>for user interface,
-		    with <b>JGoodies</b>enhancements in terms of forms and look
-		    &amp; feel.</li>
-		
-		<li><b>JFreeChart </b>for charts.</li>
-		
-		<li><b>JAXB 2 </b>for XML persistency.</li>
-		
-		<li><b>JAMA</b> for linear algebra in Java.</li>
-		
-		<li><b>Java&nbsp;5</b> since generics are used wherever the
-		    compiler can help, and preferably <b>Java 6 </b>since JAXB 2
-		    is already integrated with Java&nbsp;6 distribution.</li>
-		
-		<li><b>Ant </b>for project building.
-		</li>
-	    </ul>
-	    
-	    <h5>Companions</h5>
-	    
-	    <ul>
-		<li><b>ProxyMusic</b> is a companion project, dedicated to the
-		    marshalling and unmarshalling between Java objects and
-		    MusicXML files. Audiveris today uses ProxyMusic V1.1 (since
-		    compliant with MusicXML V1.1) and will soon support MusicXML
-		    V2.0 which Recordare has just released. Please refer to <a
-		    href="https://proxymusic.dev.java.net">https://proxymusic.dev.java.net</a></li>
-	    </ul>
-	    
-	</div>
-    </body>
-</html>
+		    <div class="donemessage">
+			<p>Current version is 3.0, with a beta release published on 5-Jul-2007. With this version,
+			    Audiveris can now be considered as a fully-fledged music scanner, going all the way from the
+			    scanned music sheet to the MusicXML output.</p>
+		    </div>
+		    <img src="docs/images/whole-window.png" />
+		    <table style="background-color: rgb(255, 255, 255);">
+			<tbody>
+			    <tr>
+				<td>
+				    <table style="background-color: rgb(255, 255, 255);">
+					<tbody>
+					    <tr>
+						<td style="padding: 5px; background-color: rgb(255, 255, 255);">
+						    <h3>Project Goals</h3>
+
+						    <p> <b>Audiveris</b> is an <b> Optical Music Recognition</b> (OMR)
+							module. Starting from the image of a music sheet, it provides
+							high-level logical music information compliant with the MusicXML
+							definition. Other tools such as a Midi Sequencer, or a
+							Composition Editor can then read and update this standard
+							data.</p>
+						    
+						    <p> There are already commercial tools in this area, such as
+							MusicScan or SharpEye. Audiveris is, to our knowledge, the first
+							Java open-source OMR tool. It is a cross-platform tool, entirely
+							in Java, and tested on Windows, Solaris, Mac OS (on-going) and
+							Linux (soon).</p>
+						    
+						    <p> Audiveris works with printed music sheets only, the task of
+							recognizing hand-written scores being significantly harder.</p>
+						</td>
+					    </tr>
+					    <tr>
+						<td style="padding: 5px; background-color: rgb(255, 255, 255);">
+						    <h3>Current Status</h3>
+						    
+						    <p>Starting with version 3.0, Audiveris is now a complete music
+							scanner.  Since the translation cannot be perfect, since there
+							may still be some errors in the translation, the program offers
+							the user the ability to guide the translation on the fly. It can
+							also use new translation data in order to further train its
+							internal neural network, in order to improve the glyph
+							recognition task.</p>
+						    
+						    <p>More detailed information is available in the provided manuals,
+							but here are the main phases of the application:</p>
+						    
+						    <ol>
+							<li>Detection and correction of potential skew angle of the
+							    sheet,</li>
+							
+							<li>Removal of staff lines, detection of systems, staves and
+							    measures,</li>
+							
+							<li><b>Extraction </b>of individual music
+							    items, essentially based on their appearance and
+							    their structure,</li>
+							
+							<li>Music <b>translation</b> based on the
+							    extracted music items, and essentially driven by music
+							    grammar,</li>
+							
+							<li>Manual <b> correction </b>of unavoidable remaining
+							    errors,</li>
+							
+							<li>Export of logical music information, using the MusicXML
+							    format definition,</li>
+							
+							<li>Finally, any other application able to read / write
+							    MusicXML format can be chained to it.</li>
+						    </ol>
+						    
+						    <p>There is still room for improvement in this program but the
+							internal architecture is now fairly stable and robust enough to
+							be used and augmented by people willing to contribute.</p>
+						    
+						    <p> We would also appreciate feedback of other users, in the form of
+							suggestions or bug reports (please provide the scanned image
+							with your report, to help us analyze the program behavior).</p>
+						</td>
+					    </tr>
+					    
+					    <tr>
+						<td style="padding: 5px; background-color: rgb(255, 255, 255);">
+						    <h3>Foreseen Contributions</h3>
+						    
+						    <p> Here are a few ideas of contribution that would make sense and
+							be really appreciated:</p>
+						    
+						    <ul>
+							<li>Rather easy</li>
+							<ul>
+							    <li>Validate Audiveris on other platforms than Windows or
+								Solaris. Some people volunteered for Mac OS (Brenton
+								Partridge is actively working on it) and Linux.</li>
+							    
+							    <li>Integrate with a MusicXML player such as Xenoage of
+								Andreas Wenger.</li>
+							</ul>
+							
+							<li>More significant</li>
+							<ul>
+							    <li>Find and integrate an open-source <b>OCR</b> (Optical
+								Character Recognition), preferably in Java, in order to
+								handle the various text pieces (typically lyrics) which
+								for the time being are simply discarded.</li>
+							    
+							    <li>Integrate with a <b> Visual Music Editor</b> for manual
+								correction, for printing, etc.  For example Xemo would
+								be a natural partnering tool, however the Xemo site
+								doesn't seem active anymore. Audiveris has only an
+								embedded rudimentary editor.</li>
+							    
+							    
+							    <li>Evaluate a move to <b>NetBeans</b> (the <b>platform</b>,
+								not the IDE). This would move Audiveris stand-alone
+								application to a much better integration environment,
+								taking advantage of view and parameter management. This
+								could also ease the integration with visual
+								editors.</li>
+							</ul>
+							
+							<li>Fairly difficult</li>
+							<ul>
+							    <li>Consider addressing <b>hand-written scores</b>. This
+								domain could take benefit of a significant part of
+								Audiveris framework, however this would really be a
+								project on its own. To be discussed if anyone is
+								interested by this daunting task.</li>
+							</ul>
+						    </ul>
+						</td>
+					    </tr>
+					</tbody>
+				    </table>
+				</td>
+				
+				<td>
+				    <table style="border: 1px solid rgb(170, 170, 170); padding: 5px; background-color: rgb(228, 238, 238);">
+					<tbody>
+					    <tr>
+						<td>
+						    <h3>Download</h3>
+						    
+						    <div class="filebrowse">
+							<ul>
+							    <li class="leafnode">
+								The <a href="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&amp;expandFolder=3257&amp;folderID=3257">
+								download area</a> always contains the latest stable
+								release, provided as two archives:
+								
+								<ul>
+								    <li class="leaf">
+									Java source code, jar file and documentation files
+									are available as one zip archive&nbsp;<b><i></i></b></li>
+								    
+								    <li class="leaf">XML-coded glyph information, needed
+									to re-train the evaluators available as a
+									separate zip archive</li>
+								</ul>
+								
+							    </li>
+							    
+							    <li class="leafnode"> The <a
+											  href="https://audiveris.dev.java.net/source/browse/audiveris/">CVS
+								repository</a> can also be accessed to retrieve the very
+								latest version of all software pieces, even before they
+								get packed in a stable release.</li>
+							</ul>
+						    </div>
+						</td>
+					    </tr>
+					    <tr>
+						<td>
+						    <h3>Documentation</h3>
+						    
+						    <p> All documentations are bundled with the source archive
+							above. They are also available on-line, in their latest version,
+							directly from the CVS repository:</p>
+						    
+						    <div class="filebrowse">
+							<table>
+							    <tbody>
+								<tr>
+								    <td class="leaf">
+									<script type="text/javascript">
+									    document.write(nonav("docs/manual/index.html?manual=releases"));
+									</script>
+									Release notes</td>
+								    <td>The detailed chronology of development
+									activities.</td>
+
+								</tr>
+								<tr>
+								    <td class="leaf"> 
+									<script type="text/javascript">
+									    document.write(nonav("docs/manual/index.html?manual=installation"));
+									</script>
+									Installation </td>
+								    <td>All
+									informations needed to set the software up and
+									running.</td>
+								</tr>
+								<tr>
+								    <td class="leaf"> 
+									<script type="text/javascript">
+									    document.write(nonav("docs/manual/index.html?manual=operation"));
+									</script>
+									Operation </td>
+								    <td>How to operate
+									the software, from an end-user point of
+									view.</td>
+								</tr>
+								<tr>
+								    <td class="leaf"> 
+									<script type="text/javascript">
+									    document.write(nonav("docs/manual/index.html?manual=design"));
+									</script>
+									Design </td>
+								    <td>Meant to explain the rationales of
+									key decisions made regarding music
+									extraction.</td>
+								</tr>
+								<tr>
+								    <td class="leaf"> 
+									<script type="text/javascript">
+									    document.write(nonav("docs/manual/index.html?manual=implementation"));
+									</script>
+									Implementation </td>
+								    <td>How the software is organized, from a
+									programmer's point of view.</td>
+								</tr>
+								<tr>
+								    <td class="leaf"> 
+									<script type="text/javascript">
+									    document.write(nonav("docs/manual/index.html?manual=api"));
+									</script>
+									API </td>
+								    <td>The Javadoc pages of all classes.</td>
+								</tr>
+							    </tbody>
+							</table>
+						    </div>
+						</td>
+					    </tr>
+					    <tr>
+						<td>
+						    <h3>Current Implementation</h3>
+						    
+						    <p> Audiveris today is a pure Java stand-alone application (260 classes, 85000 lines of code)</p>
+						    <ul>
+							<li>Techniques
+							    <ul>
+								<li><b>Linear Adjacency Graphs</b> (LAG) record pixel
+								    information as a directed graph structure, composed
+								    of pixel contiguous runs organized in sections.</li>
+								
+								<li><b>Sticks</b> are developed above LAGs to&nbsp;take
+								    advantage of the structuring sticks of a music sheet
+								    (staff lines, ledgers and legato signs are such
+								    horizontal sticks, while stems and bar lines
+								    are ;vertical sticks).</li>
+
+								<li><b>A Neural Network</b> allows efficient pattern
+								    recognition as well as training based on user input
+								    for continuous improvement of the tool
+								    efficiency.</li>
+							    </ul>
+							</li>
+							
+							<li>Technologies
+							    <ul>
+								<li><b>Java Advanced Imaging</b> (JAI) for number crunching in
+								    image processing (loading image, accessing pixel data,
+								    rotating the image, etc)</li>
+								
+								<li><b>Swing </b> or user interface,
+								    with <b>JGoodies</b> enhancements in terms of forms
+								    and look &amp; feel.</li>
+								
+								<li><b>JFreeChart </b>for charts.</li>
+								
+								<li><b>JAXB 2 </b>for XML persistency.</li>
+								
+								<li><b>Jama</b> for linear algebra in Java.</li>
+								
+								<li><b>Java&nbsp;5</b> is mandatory,
+								    and <b>Java&nbsp;6</b> s the preferred choice since
+								    JAXB 2 is already integrated with Java&nbsp;6
+								    distribution.</li>
+								
+								<li><b>Ant </b>for project building.</li>
+							    </ul>
+							</li>
+							
+							<li>Companions
+							    <ul>
+								<li><b>ProxyMusic</b> is a separate project, dedicated
+								    to the marshalling between Java objects and MusicXML
+								    files. Audiveris today supports MusicXML V1.1 and
+								    will soon support MusicXML V2.0 which Recordare has
+								    just released. Please refer to <a
+												       href="https://proxymusic.dev.java.net">
+								    https://proxymusic.dev.java.net</a></li>
+							    </ul>
+							</li>
+						    </ul>
+						</td>
+					    </tr>
+					</tbody>
+				    </table>
+				</td>
+			    </tr>
+			</tbody>
+		    </table>
+		</div>
+	    </body>
+	</html>
