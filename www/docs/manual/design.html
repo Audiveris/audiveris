@@ -1,29 +1,255 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML>
-    <HEAD>
-        <!--    $Id$        -->
-        <META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252"/>
-        <TITLE>Audiveris Design Manual</TITLE>
-        <META NAME="AUTHOR" CONTENT="Herv&eacute; Bitteur"/>
-        <META NAME="CREATED" CONTENT="20050429;15271809"/>
-        <META NAME="CLASSIFICATION" CONTENT="Design Documentation of Audiveris"/>
-        <META NAME="DESCRIPTION" CONTENT="Rationale of Audiveris decisions"/>
-                
-        <!-- The following links are meant to be solved on my local PC -->
-        <!-- The java.net site uses its own style sheets -->
-        <LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/tigris.css"/>
-        <LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/inst.css"/>
-    </HEAD>
-    
-    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="app" STYLE="text-align: justify;">
-	
-        <BR/>
-        <BR/>
-        <BR/>
-        <BR/>
-	<DIV CLASS="errormessage">
-	    <H2>Sorry, this documentation is not yet available</H2>
-        </DIV>
-	
-    </BODY>
-</HTML>
+<html>
+<head>
+
+<!-- $Id$ -->
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=windows-1252">
+  <title>Audiveris Design Manual</title>
+
+
+  <meta name="AUTHOR" content="Herv&eacute; Bitteur">
+
+  <meta name="CLASSIFICATION" content="Design Documentation of Audiveris">
+
+  <meta name="DESCRIPTION" content="Rationale of Audiveris decisions">
+
+<!-- The following links are meant to be solved on my local PC --><!-- The java.net site uses its own style sheets -->
+  <link rel="stylesheet" type="text/css" href="../../branding/css/tigris.css">
+
+  <link rel="stylesheet" type="text/css" href="../../branding/css/inst.css">
+
+</head>
+
+
+    <body class="app" style="text-align: justify;" marginheight="0" marginwidth="0">
+
+<h1 align="center">Audiveris Design Manual</h1>
+
+<address>Author : <a href="mailto:herve.bitteur@laposte.net">Herv&eacute;
+Bitteur</a></address>
+
+<address>Updated :
+<script type="text/javascript">
+document.write(parent.parent.getCVSDate("$Id$"));
+</script></address>
+
+<p> Purpose of this design manual is to present the rationale for
+key design decisions within the Audiveris application.</p>
+
+<a name="PIXEL_HANDLING">
+<h2>Pixel Handling</h2>
+
+</a>
+<div class="axial"><a name="PIXEL_RUNS">
+<h3>Pixel Runs</h3>
+
+</a>
+<p> The most basic entity handled by a lag is a run, although a
+run is a stand-alone entity that can be used outside of any containing
+lag. A run is a
+sequence of foreground pixels (we don't consider runs of background
+pixels for this application, except for the initial scale computation).
+All the pixels of one run are contiguous
+pixels in the same orientation (all runs are horizontal for a
+horizontal lag, and similarly in a vertical lag, all runs are defined
+as vertical sequences of pixels).</p>
+
+<h5>Foreground vs. Background</h5>
+
+<p>In Audiveris, lag runs are created by processing a provided
+image, where pixels are defined as levels of gray. The only degree of
+freedom is the precise gray level value that separates a rather white
+pixel (thus assigned to background) from a rather black pixel (thus
+assigned to foreground). This value is a symbolic constant in class
+omr.sheet.Picture, and is assigned value 227 (pixels levels are in the
+range 0 .. 255).&nbsp;Any pixel whose level is higher than or equal
+to this value will be considered as foreground.</p>
+
+<p>Runs are created by an instance of class RunsBuilder, which
+needs an adapter to access individual pixels and to do whatever
+processing is needed at the end of each run read :</p>
+
+<ul>
+
+  <li>A RunsBuilder is thus used by the ScaleBuilder to retrieve
+all vertical runs, both foreground and background runs, and the most
+frequent lengths of these two populations of runs provide the global
+scaling of the page. In that case, runs are used in a stand-alone way,
+i.e. not as part of a lag.</li>
+
+  <li>A RunsBuilder is also used in the building of lags, to take
+care of the very first phase which is getting the collection of runs,
+the second phase being the creation of sections from these runs.</li>
+
+</ul>
+
+<a name="LAG_SECTIONS">
+<h3>Lag Sections</h3>
+
+</a>
+<p>Sections are collections of runs. Within a given section, all
+runs are stuck side by side. In a horizontal lag, all sections are made
+of runs piled one on top of the other. A vertical lag is more like
+Manhattan.</p>
+
+<h5>Junctions</h5>
+
+<p>The main question is&nbsp;to determine
+when a section&nbsp;ends. On both edges of a section, the termination
+can be trigerred by:</p>
+
+<ul>
+
+  <li>No run immediately stuck. There is just no foreground
+pixel, thus no run, when we try to extend the last section run, the
+edge run.</li>
+
+  <li>More than one run stuck to the edge run. The section thus
+"diverges" into several sections, and this section boundary if referred
+to as a "junction".</li>
+
+  <li>One single run is available just next to the edge run, but it is
+determined as not being "compatible" with it. Typically, we use the
+length of the candidate run and compare it with&nbsp;the length of
+the edge run. A JunctionPolicy is used to determine if this candidate
+run is compatible.</li>
+
+</ul>
+
+Sections are created by an instance of SectionsBuilder, which thus
+populates its related lag, according to the provided JunctionPolicy.<br>
+
+<h5>Lag instances in Audiveris</h5>
+
+<p>Beside a tiny lag allocated for each synthetic SymbolIcon,
+Audiveris
+application uses 3 lag instances based on pixels from the same sheet
+picture in the
+following order:
+</p>
+
+<ol>
+
+  <li>"<span style="font-style: italic;">sLag</span>", a horizontal lag created by SkewBuilder, is used
+for&nbsp;computing the global skew angle of the sheet. Note that
+this lag cannot be reused for the next step for two reasons: First,
+only runs of significant length are built, since we are interested
+only in long sections to determine skew trends, and thus many pixels
+are discarded though they are present in the original image. Second, when
+a rotation is needed because the sheet must be deskewed, a new
+(rotated) image is generated and thus all pixels are impacted.</li>
+
+  <li>"<span style="font-style: italic;">hLag</span>", a horizontal lag created by LinesBuilder and reused
+by HorizontalsBuilder, is used to retrieve staff lines and horizontal
+sticks (ledgers for example). At the end of horizontal processing,
+certain pixels are erased because they were part of the removed staff
+lines. New ones are created to extend objects that were crossed by the
+former staff lines, so that these objects get their normal appearance
+back, as if no staff line had ever been drawn upon them.</li>
+
+  <li>"<span style="font-style: italic;">vLag</span>", a vertical lag created by BarsBuilder and reused by
+all subsequent steps, is used to retrieve vertical sticks (barlines,
+stems) but also glyphs with no particular orientation.</li>
+
+</ol>
+
+<a name="GLYPHS">
+<h3>Glyphs and Sticks</h3>
+
+</a>
+<p>Glyphs are collections of sections. These sections are
+actually instances of GlyphSection, a subclass of Section, which keeps
+a reference back to the containing glyph. A GlyphLag is a lag augmented
+with a collection of glyphs.</p>
+
+<p>How sections are assembled to form a glyph can use any
+arbitrary logic:</p>
+
+<ul>
+
+  <li> Glyphs made to retrieve and recognize symbols are built
+out of&nbsp;sections which are connected to each other, either
+horizontally or
+vertically. Sections that are connected only in diagonal are not
+connected
+strongly enough to be members of the same glyph.</li>
+
+  <li>Sticks, which are glyphs with an internal Line equation,
+are built to retrieve long
+filaments such as staff lines, or shorter ones such as horizontal
+ledgers or vertical stems. In the case of sticks, sections are
+assembled according to a rather complex logic which is implemented in
+class SticksBuilder. A SticksBuilder instance is dedicated to the
+rectangular area it has to scan. Audiveris application uses instances
+of (subclasses of) SticksBuilder in 5 different occasions:</li>
+</ul>
+<ol>
+  <ol>
+    <li>In step LINES, there is one LineBuilder instance per each
+candidate staff line area to build the actual staff line. Section
+filtering is based on vertical position of the horizontal section (it
+must be located in the staff line area).</li>
+    <li>Still in step LINES, other instances of LineBuilder are also
+used to scan areas where staff lines are interrupted due to missing
+pixels. They use the same source, so the same section filtering, that
+is used for the main staff line retrieval.</li>
+    <li>In step HORIZONTALS, one single HorizontalArea instance is used
+to retrieve horizontal dashes (ledgers and endings) in the whole sheet.</li>
+    <li>In step BARS, one single instance of VerticalArea is used to
+retrieve barlines in the whole sheet. A section predicate is used to
+keep only the sections that are not successfully assigned (their result
+derives from FailureResult). [<span style="font-style: italic;">TBD: Check whether there is&nbsp;duplication between "result" and "assigned glyph" criteria]</span></li>
+    <li>In step VERTICALS, one single instance of VerticalArea is used
+to retrieve stems in the whole sheet. A section predicate keeps only
+sections that are assigned to either no glyph or assigned to just noise
+or structure glyphs.</li>
+  </ol>
+</ol>
+<ul>
+
+</ul>
+
+<p>Whether we build mere glyphs or specific sticks, the assembly
+is made out of a population of "available" sections, that is&nbsp;sections
+not yet assigned to a recognized
+glyph, or assigned to a recognized glyph that we want to break apart. An example
+of such breaking can be found in Structure shape: In the early symbol
+recognition step,&nbsp; a Structure glyph (assembly of notes, stems and beams all
+connected together) can be built and recognized as a Structure. Then, in
+a later step, some of its sections will be reused to build vertical
+sticks (the stems) while the remaining sections will be assembled into
+leaf symbols (the hote heads, the beams).</p>
+
+<h5>Link between glyph and its member sections</h5>
+<p>While sections in a Lag (or GlyphLag) are built once for all,
+the containment link between sections and glyph is more volatile:</p>
+
+<ul>
+
+  <li>Glyphs (and sticks), if not assigned to a final shape,
+may have
+their member sections reassembled in other glyphs (see the Structure
+example above).</li>
+
+  <li>Several glyphs may be merged into a bigger glyph, a
+Compound, which will contain all the sections of the former glyphs.
+This is typically the case of a F clef, for which the staff line
+removal often leads to a segmentation between the left and the right
+parts of the F clef.</li>
+
+</ul>
+What physically defines a glyph is the collection of its member
+sections. Through out&nbsp;the various glyph and stick extractions, the
+same collection of sections may lead to new instances of glyphs/sticks
+which in fact represent already existing glyphs. And since some
+properties may be attached to a glyph (as of today, we keep a set of
+forbidden shapes per glyph), we want to keep these properties even if a
+"new" glyph has been created out of the very same member sections. To
+do this, we handle a GlyphSignature, based on simple physical
+characteristics (weight and contour box), to detect identical glyphs.
+And the set of forbidden shapes for a given glyph is in fact not
+directly attached to the glyph but handled by a map using the glyph
+signature as key.</div>
+
+</body>
+</html>
