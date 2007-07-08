@@ -43,56 +43,34 @@
 	</A>
 	
 	<P> Audiveris is essentially a Java application, and as such
-	    should be usable on a wide variety of platforms. Is has
-	    been successfully used under Linux in the past and is
-	    currently being developed and used under Windows (2000 and
-	    XP).</P>
+	    should be usable on a wide variety of platforms. It is
+	    today being developed under Windows XP, and tested under
+	    Solaris, Linux and Mac OS.</P>
 	
 	<P><B>Beware</B> that Audiveris uses many features
-	    from <B>Java 5.0</B>, so you must have this version of
-	    Java environment available.</P>
-	
-	<P> In terms of resources, memory turns out to be more
-	    important that CPU power. Make sure you have 256MB of
-	    physical memory as a bare minimum, 512MB is much more
-	    comfortable. As an example, Audiveris is developed and run
-	    today on an old AMD Athlon (0.9 GHz, 768 MB).</P>
+	    from <B>Java 5.0</B>, so you must have at least this
+	    version of Java environment available. And since Audiveris
+	    uses <B>JAXB&nbsp;2</B> for XML persistency you
+	    definitively should use <B>Java&nbsp;6</B> which already
+	    provides JAXB&nbsp;2.</P>
 	
 	<A NAME="COMPANIONS">
 	    <H2>Companion tools</H2>
 	</A>
 	
 	<P>This section lists all components that are used by
-	    Audiveris for various functions, and thus need to be
-	    properly installed beforehand.</P>
-
-	<P><B>Nota:</B> Starting with release 2.3, no dedicated music
-	    font is needed any more.</P>
+	    Audiveris for various functions.</P>
 	
 	<A NAME="JAI">
 	    <H3>Java Advanced Imaging (JAI)</H3>
 	</A>
 	
-	<P> JAI is a comprehensive framework for image processing, of
-	    which Audiveris makes a rather limited use :</P>
-	<UL>
-	    <LI><I>"fileload"</I> operator : Loading an image file,
-		taking advantage of the long list of supported file
-		formats supported by JAI</LI>
-	    <LI><I>"mosaic"</I> operator : Combining several images
-		into one</LI>
-	    <LI><I>"rotate"</I> operator : Rotating an image</LI>
-	    <LI><I>"affine"</I> operator : Translating an image</LI>
-	    <LI><I>"crop"</I> operator : Extracting a subimage</LI>
-	    <LI><I>"filestore"</I> operator : Storing an image to a file</LI>
-	    <LI><I>"invert"</I> operator : Reversing the video (used
-		to workaround minor JAI bug)</LI>
-	    <LI><I>"bandcombine"</I> operator : Generating a
-		gray-level image from a color image</LI>
-	    <LI><I>"colorconvert"</I> operator : Converting to a
-		predefined number of pixel levels</LI>
-	</UL>
-	
+	<P> JAI is the only companion that you need to install on your
+	    own into your JDK or JRE. Please refer to the download and
+	    installation information at <A
+	    href="https://jai.dev.java.net/">the JAI web site</A>.</P>
+	<P>JAI is a comprehensive framework for image processing, of
+	    which Audiveris makes a rather limited use.</P>	
 	<P> JAI has its high-level features coded in Java, and
 	    low-level primitives delegated to native libraries. It is
 	    implemented as a collection of jar files and DLLs (under
@@ -116,10 +94,9 @@
 	</A>
 	
 	<P> All the following components need no special installation
-	    procedure, only their jar files have to be made available,
-	    for example via the classpath, to Audiveris at build or
-	    run time (see the provided file 'build.xml' for build and
-	    run examples).</P>
+	    procedure, since their jar files are already provided in
+	    the /lib folder of the Audiveris installation
+	    directory. This section is for your information only.</P>
 	
 	<P><I>Nota : The versions for jar files are the ones used at
 	    the time of this writing, but higher versions should be
@@ -133,17 +110,17 @@
 		<TH>Provider URL</TH>
 	    </TR>
 	    <TR CLASS="a">
-		<TD><B>Ant</B></TD>
-		<TD>Xerces implementation needed by Castor</TD>
-		<TD>xercesImpl.jar</TD>
-		<TD><A HREF="http://ant.apache.org/">
-		    http://ant.apache.org/
+		<TD><B>ProxyMusic</B></TD>
+		<TD>[un]marshalling Java from/to MusicXML</TD>
+		<TD>proxymusic-1.1.jar</TD>
+		<TD><A HREF="https://proxymusic.dev.java.net/">
+		    https://proxymusic.dev.java.net/
 		    </A></TD>
 	    </TR>
 	    <TR CLASS="b">
 		<TD><B>JGoodies/looks</B></TD>
 		<TD>Improvement of appearance of Swing</TD>
-		<TD>looks-1.3.1.jar</TD>
+		<TD>looks-2.0.1.jar</TD>
 		<TD><A HREF="https://looks.dev.java.net/">
 		    https://looks.dev.java.net/
 		    </A></TD>
@@ -151,32 +128,21 @@
 	    <TR CLASS="a">
 		<TD><B>JGoodies/forms</B></TD>
 		<TD>Forms layout system for Swing</TD>
-		<TD>forms-1.0.5.jar</TD>
+		<TD>forms-1.0.6.jar</TD>
 		<TD><A HREF="https://forms.dev.java.net/">
 		    https://forms.dev.java.net/
 		    </A></TD>
 	    </TR>
 	    <TR CLASS="b">
-		<TD><B>JiBX</B></TD>
-		<TD>XML databinding framework</TD>
-		<TD>(version jibx-1.0.1) <BR/>
-		    jibx-bind.jar <BR/>
-		    jibx-run.jar <BR/>
-		    xpp3.jar</TD>
-		<TD><A HREF="http://jibx.sourceforge.net/">
-		    http://jibx.sourceforge.net/
-		    </A></TD>
-	    </TR>
-	    <TR CLASS="a">
 		<TD><B>JFreeChart</B></TD>
 		<TD>Chart generation, with common utilities</TD>
-		<TD>jfreechart-1.0.0-rc1.jar <BR/>
-		    jcommon-1.0.0-rc1.jar</TD>
+		<TD>jfreechart-1.0.1.jar <BR/>
+		    jcommon-1.0.0.jar</TD>
 		<TD><A HREF="http://www.jfree.org/jfreechart/">
 		    http://www.jfree.org/jfreechart/
 		    </A></TD>
 	    </TR>
-	    <TR CLASS="b">
+	    <TR CLASS="a">
 		<TD><B>Java L&amp;F Graphics Repository</B></TD>
 		<TD>Collection of toolbar button graphics</TD>
 		<TD>jlfgr-1_0.jar</TD>
@@ -185,14 +151,13 @@
 			http://java.sun.com/developer/techDocs/hi/repository/
 		    </A></TD>
 	    </TR>
-	    <TR CLASS="a">
-		<TD><B>Log4J</B></TD>
-		<TD>Application logging framework</TD>
-		<TD>log4j-1.2.9.jar</TD>
-		<TD><A HREF="http://logging.apache.org/log4j/docs/">
-		    http://logging.apache.org/log4j/docs/
+	    <TR CLASS="b">
+		<TD><B>Jama</B></TD>
+		<TD>Matrix package for linear algebra</TD>
+		<TD>Jama-1.0.2.jar</TD>
+		<TD><A HREF="http://math.nist.gov/javanumerics/jama/">
+		    http://math.nist.gov/javanumerics/jama/
 		    </A></TD>
-	    </TR>
 	</TABLE>
 	
 	<A NAME="INSTALLATION">
@@ -209,12 +174,12 @@
 		    may be higher than in this example) :
 		    <UL>
 			<LI CLASS="leaf">
-			    <CODE><B>audiveris-2.1-20050510.zip</B></CODE>
+			    <CODE><B>audiveris-3.0-20070707.zip</B></CODE>
 			    contains the various Audiveris components,
 			    source and binary, but without the
 			    training material.</LI>
 			<LI CLASS="leaf">
-			    <CODE><B>audiveris-2.1-train-20050510.zip</B></CODE>
+			    <CODE><B>audiveris-3.0-train-20070707.zip</B></CODE>
 			    is dedicated to the core and whole bases
 			    of training material.</LI>
 		    </UL>
@@ -236,14 +201,18 @@
 	
 	<DIV  CLASS="filebrowse" >
 	    <UL>
+		
 		<LI CLASS="leaf">
-		    The root contains only
-		    the <CODE><B>build.xml</B></CODE> build file, from
-		    which the application can be (re)built and
+		    <CODE><B>audiveris-M.m.jar</B></CODE> is the
+		    application jar file, with "M" and "m" for release
+		    numbers.</LI>
+		<LI CLASS="leaf">
+		    <CODE><B>build.xml</B></CODE> is a build file,
+		    from which the application can be (re)built and
 		    launched via Ant </LI>
 		
 		<LI CLASS="leafnode">
-		    bin/
+		    <u>bin</u>/
 		    <UL>
 			<LI CLASS="leaf">
 			    <CODE><B>audiveris.bat</B></CODE> is the
@@ -253,47 +222,33 @@
 		</LI>
 		
 		<LI CLASS="leafnode">
-		    config/
-		    <UL>
-			<LI CLASS="leaf">
-			    <CODE><B>Neural.def</B></CODE> is a system
-			    backup of the glyph neural network
-			    evaluator</LI>
-			<LI CLASS="leaf">
-			    <CODE><B>build.default.properties</B></CODE>
-			    defines all default property values used
-			    by build.xml</LI>
-			<LI CLASS="leaf">
-			    <CODE><B>build.properties</B></CODE> is
-			    initially an empty file, meant to override
-			    some properties
-			    of <CODE><B>build.default.properties</B></CODE>
-			    file.</LI>
-			<LI CLASS="leaf">
-			    <CODE><B>castor-glyph-mapping.xml</B></CODE>
-			    defines the mapping used by Castor utility
-			    to marshal and unmarshal glyphs</LI>
-			<LI CLASS="leaf">
-			    <CODE><B>castor.properties</B></CODE>
-			    defines properties that drive the behavior
-			    of Castor utility</LI>
-			<LI CLASS="leaf">
-			    <CODE><B>log4j.properties</B></CODE>
-			    defines the detailed rules for application
-			    logging</LI>
-			<LI CLASS="leaf">
-			    <CODE><B>run.default.properties</B></CODE>
-			    defines the property values used by
-			    Audiveris at run time. These properties
-			    can be overridden
-			    by <CODE><B>audiveris.run.properties</B></CODE>
-			    file located in the user.home
-			    directory</LI>
+		    <u>lib</u>/
+		    <UL>All the companion components have their jar
+			file located in this folder. See the <A
+			href="#OTHER_COMPONENTS">dedicated
+			section</A>.
 		    </UL>
 		</LI>
 		
 		<LI CLASS="leafnode">
-		    examples/
+		    <u>config</u>/
+		    <UL>
+			<LI CLASS="leaf">
+			    <CODE><B>neural-network.xml</B></CODE> is
+			    a optional custom definition of the glyph
+			    neural network evaluator, which is created
+			    only when you retrain the network. The
+			    default definition is provided in the
+			    Audiveris jar resource.</LI>
+			<LI CLASS="leaf">
+			    <CODE><B>logging.properties</B></CODE> is
+			    an optional file which allows to set the
+			    logging level of some units.</LI>
+		    </UL>
+		</LI>
+		
+		<LI CLASS="leafnode">
+		    <u>examples</u>/
 		    <UL>
 			<LI CLASS="leaf">
 			    A set of image files that can be used as
@@ -302,25 +257,8 @@
 		</LI>
 		
 		<LI CLASS="leafnode">
-		    lib/
+		    <u>train</u>/
 		    <UL>
-			<LI CLASS="leaf">
-			    <CODE><B>audiveris-M.m.jar</B></CODE> is
-			    the application jar file, with "M" and "m"
-			    for release numbers.</LI>
-		    </UL>
-		</LI>
-		
-		<LI CLASS="leafnode">
-		    train/
-		    <UL>
-			<LI CLASS="leaf">
-			    <CODE><B>Neural.def</B></CODE> is a
-			    potential customized version of the glyph
-			    neural network evaluator. If this file
-			    exists, it supersedes the Neural.def file
-			    located in the "<U>/config</U>"
-			    folder.</LI>
 			<LI CLASS="leafnode">
 			    core/
 			    <UL>
@@ -365,12 +303,12 @@
 			       is the web-site home page</LI>
 			<LI CLASS="leafnode">
 			    <A HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3258&expandFolder=3258&folderID=3259" title="view contents">
-				docs/
+				<u>docs</u>/
 			    </A>
 			    <UL>
 				<LI CLASS="leafnode">
 				    <A HREF="https://audiveris.dev.java.net/nonav/docs/api/index.html" TARGET="_top" TITLE="view contents">
-					api/
+					<u>api</u>/
 				    </A>
 				    <UL>
 					<LI CLASS="leaf">
@@ -380,7 +318,7 @@
 				</LI>
 				<LI CLASS="leafnode">
 				    <A HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3259&expandFolder=3259&folderID=3259" title="view contents">
-					manual/
+					<u>manual</u>/
 				    </A>
 				    The directory contains several
 				    html files, used to handle a frame
@@ -388,28 +326,31 @@
 				    stored in the following files:
 				    <UL>
 					<LI CLASS="leaf">
+					    <CODE><B>example.html</B></CODE>
+					    is a quick start guide
+					    built around a small
+					    example.
+					</LI>
+					<LI CLASS="leaf">
 					    <CODE><B>installation.html</B></CODE>
 					    is the installation manual
 					    you are currently looking
 					    at
 					</LI>
 					<LI CLASS="leaf">
-					    <A HREF="javascript:top.selectManual('operation');">
-						<CODE><B>operation.html</B></CODE></A>
+					    <CODE><B>operation.html</B></CODE>
 					    describes how to operate
 					    the application
 					</LI>
 					<LI CLASS="leaf">
-					    <A HREF="javascript:top.selectManual('design');">
-						<CODE><B>design.html</B></CODE></A>
+					    <CODE><B>design.html</B></CODE>
 					    presents the rationale
 					    behind several Audiveris
 					    constructions (doc not yet
 					    available).
 					</LI>
 					<LI CLASS="leaf">
-					    <A HREF="javascript:top.selectManual('implementation');">
-						<CODE><B>implementation.html</B></CODE></A>
+					    <CODE><B>implementation.html</B></CODE>
 					    details a few techniques
 					    used throughout Audiveris,
 					    such as Lags, GlyphLags
@@ -417,35 +358,21 @@
 					</LI>
 				    </UL>
 				</LI>
+				<LI CLASS="leafnode">
+				    <u>wiki</u>/
+				    <UL>
+					<LI CLASS="leaf">
+					    <CODE><B>notebook.html</B></CODE>
+					    is a tiddly wiki to handle
+					    various notes on Audiveris
+					    development.</LI>
+				    </UL>
+				</LI>
 			    </UL>
 			</LI>
 		    </UL>
 		</LI>
 	    </UL>
-	</DIV>
-	
-	<A NAME="CUSTOMIZATION">
-	    <H3>Build Customization</H3>
-	</A>
-	
-	<P> Before launching any action, you'll have to customize some
-	    environment definitions pre-defined in
-	    the <CODE><U>config</U>/<B>build.default.properties</B>
-	    </CODE> file which is not meant to be edited by the
-	    user.</P>
-	
-	<P> Instead, you can override these property values, by
-	    redefining them in
-	    the <CODE><U>config</U>/<B>build.properties</B></CODE>
-	    file. </P>
-	
-	<P> These property values can on their turn be overridden by
-	    defining new values in the
-	    <CODE><B>build.properties</B></CODE> file located in
-	    the <U>${<I>user.home</I>}/.audiveris</U> directory</P>
-	    
-	    <HR/>
-	    <I>End of Installation Manual</I>
 	</DIV>
     </BODY>
 </HTML>
