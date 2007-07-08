@@ -10,10 +10,10 @@
 //      $Id$
 
 // Table of defined manuals, add any new manual to this list
-var manuals = new Array("releases", "installation", "operation", "design", "implementation", "notes", "api");
+var manuals = new Array("releases", "installation", "example", "operation", "design", "implementation", "notes", "api");
 
 // Must be parallel to previous table
-var manualNames = new Array("Releases", "Installation", "Operation", "Design", "Implementation", "Notes", "API-javadoc");
+var manualNames = new Array("Releases", "Installation", "Example", "Operation", "Design", "Implementation", "Notes", "API-javadoc");
 
 // Selected Manual
 top.selectedManual = "";

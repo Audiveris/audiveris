@@ -1,0 +1,418 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+    <head>
+	
+	<!-- $Id$ -->
+	
+	<meta http-equiv="CONTENT-TYPE" content="text/html;
+						 charset=windows-1252"/>
+	<title>Audiveris Example</title>
+	
+	<meta name="AUTHOR" content="Herv&eacute; Bitteur"/>
+	
+	<meta name="CLASSIFICATION" content="Quick example for Audiveris
+					     operation"/>
+	
+	<meta name="DESCRIPTION" content="Using Audiveris on a short example"/>
+	
+	<!-- The following links are meant to be solved on my local PC -->
+	<!-- The java.net site uses its own style sheets -->
+	
+	<link rel="stylesheet" type="text/css"
+	      href="../../branding/css/tigris.css"/>
+	
+	<link rel="stylesheet" type="text/css"
+	      href="../../branding/css/inst.css"/>
+    </head>
+    
+    <body class="app" style="text-align: justify;" marginheight="0" marginwidth="0">
+	
+	<h1 align="center">Audiveris Quick Example</h1>
+	
+	<address>
+	    Author: <a href="mailto:herve.bitteur@laposte.net">Herv&eacute;
+	    Bitteur</a>
+	</address>
+	
+	<address>
+	    Updated:
+	    <script type="text/javascript">
+		document.write(parent.parent.getCVSDate("$Id: operation.html,v
+		1.16 2006/01/15 19:03:43 hbitteur Exp $"));
+	    </script>
+	</address>
+
+	<a name="INITIAL">
+	    <h2>Initial actions</h2>
+	</a>
+	
+	<a name="LAUNCHING">
+	    <h3>Launch Audiveris</h3>
+	</a>
+	<p>The easiest way is to move to the directory where you have extracted
+	    the Audiveris distribution archive, and use the following
+	    command:</p>
+	<p>$&gt; java -jar audiveris-3.0beta.jar</p>
+	
+	<a name="LOAD">
+	    <h3>Load an image</h3>
+	</a>
+	<p>From the <u><i>Sheet</i></u> menu, select the <u><i>Open
+	    Sheet</i></u> item and in the dialog box which appears, select
+	    the <b>chula.png</b> file.</p>
+	
+	<p>The application window now looks like the following:</p>
+	
+	<p>
+	    <img style="width: 909px; height: 723px;" alt="Chula after load"
+		 title="Windows just after loading the Chula image file"
+		 src="../images/chula-load.png"/>
+	</p>
+	
+	<a name="AUTOMATIC">
+	    <h2>Let Audiveris work</h2>
+	</a>
+	
+	<p>From the <u><i>Step</i></u> menu, directly select
+	    the <u><i>SCORE</i></u> step.</p>
+	<p>Audiveris will execute all the steps until the final one. The user
+	    interface will evolve in parallel to the final view as in following
+	    picture.</p>
+	<p>Notice that:</p>
+	<ul>
+	    <li> The staff lines have been erased and replaced by straight
+		lines</li>
+	    <li>The barlines and the braces are displayed in light gray</li>
+	    <li>The stems are in green with a straight vertical segment
+		line</li>
+	    <li>The other symbols are displayed in specific colors, which is a
+		visual help to detect no recognition (red color) or wrong
+		recognition (the color is not the one espected).</li>
+	</ul>
+	
+	You can have a look at the other tabs:
+	<ul>
+	    <li>Picture: the original image</li>
+	    <li>Lines: focus on staff lines</li>
+	    <li>Horizontals: focus on horizontal segments, such as ledgers</li>
+	    <li>Bars: the barlines</li>
+	    <li>Verticals: the stems</li>
+	    <li>Score: the result of glyph extraction</li>
+	</ul>
+	
+	<p>The upper part of the window displays a synthetic view of the
+	    resulting score, as translated from the extracted glyphs. If you
+	    can't see this view, make sure it is not collapsed, by dragging down
+	    the split line located just above the tabs.</p>
+	
+	<p>
+	    <img style="width: 909px; height: 723px;" alt="Image after
+							   processing"
+							   title="The display
+							   when all steps have
+							   been run"
+		 src="../images/chula-score.png"></img>
+	</p>
+	
+	<a name="MANUAL">
+	    <h2>Manual Corrections</h2>
+	</a>
+	
+	<p>You can notice that the time signature of the second staff is wrong:
+	    instead of a 2/4 signature, it displays a C (cut-time).</p>
+	<p>In such few cases, Audiveris will have misunderstood the music
+	    information, and the user will need to make corrections on the
+	    fly.</p>
+	<p>Here are all the corrections needed on the Chula sheet:</p>
+	
+	<a name="TIME">
+	    <h3>Time Signature</h3>
+	</a>
+	
+	Note that it's a good habit to always check the time signature first,
+	since a wrong value there has major consequences on the rest of the
+	score.
+	<ul>
+	    <li>In that case, the easiest way is to select the two glyphs '2'
+		&amp; '4' as a whole. You do so by using the <u><i>left</i></u>
+		mouse button and drag it, while holding down
+		a <u><i>Shift</i></u> key, which gives a kind of lasso.  You
+		thus select the glyphs which are fully contained by the lasso
+		rectangle, as in the following picture:
+		<p>
+		    <img style="width: 602px; height: 206px;" alt="Selection of
+								   time
+								   signature"
+								   title="See
+								   the 2/4 glyph
+								   selection"
+			 src="../images/chula-lasso.png"/>
+		</p>
+		
+		<p>Notice also that, by selecting these 2 glyphs as a whole, the
+		    Neural board on the right proposes TIME_TWO_FOUR as its best
+		    evaluation. Just click on this button in the Neural board,
+		    and the assignment is done.</p>
+	    </li>
+	    <li>Notice the score view now correctly displays a 2/4 time
+		signature at the beginning of the second staff.</li>
+	    <li>Notice also that the various measures numbers of the score view
+		are now displayed as P1, 2, 3, 4 etc while they were P1, P2, P3,
+		P4 before the user action. 'P' means 'Partial', indicating that
+		the total duration of the chords in a measure is less that the
+		expected measure duration. Now, only the very first measure is a
+		partial one, so the P1 indication.</li>
+	</ul>
+	
+	<a name="NOTE">
+	    <h3>Note Head</h3>
+	</a>
+	
+	We now use the "Error pane", which is located at the bottom of the
+	screen.
+	<ul>
+	    <li>It displays the set of errors found, sorted by their location
+		within the score:
+		<p>
+		    <img style="width: 605px; height: 102px;" alt="Chula errors
+								   pane"
+								   title="Sorted
+								   set of errors
+								   found"
+			 src="../images/chula-errors.png"/>
+		</p>
+		
+		The location is here coded as "S2P1M8T1" (System 2, Part 1,
+		Measure 8, Staff 1) for the first error.
+	    </li>
+	    
+	    <li>Here, "Reassigning startTime ..."  indicates a problem with note
+		start time within a measure, which is not consistent with the
+		previous notes in the measure.  Simply click on the error
+		message, and both the score view at the top and the sheet view
+		in the middle with focus on the error location, as depicted by
+		the following image:
+		<p>
+		    <img style="width: 909px; height: 723px;" alt="Chula head
+								   mistaken for
+								   a rest"
+								   title="Note
+								   head mistaken
+								   for a rest"
+			 src="../images/chula-rest.png"/>
+		</p>
+	    </li>
+	    
+	    <li>Looking at the bottom of this measure, you can notice a note
+		head in green (green is for rests, while orange is for such note
+		heads). In the score view, the same location displays a
+		sixteenth rest.  This is obviously a mistake, due to the fact
+		that the stem had been cut by the staff line removal, the shape
+		of the remaining glyph is now closer to a sixteenth rest than to
+		a note head!
+    </li>
+	    
+	    <li>We have to correct this. However, the evaluations as proposed by
+		the Neural board do not contain a note head indication. So we
+		have to click on the note head in the sheet view, and using a
+		right click, in the menu which pops up, navigate to the proper
+		shape, as follows:
+		<p>
+		    <img style="width: 613px; height: 534px;" alt="Navigation to
+								   proper shape"
+								   title="Selection
+								   of note head
+								   black"
+			 src="../images/chula-assign.png"/>
+		</p>
+	    </li>
+	    
+	    <li>The glyph is now assigned the proper shape, its color turns
+		orange in the sheet view, and the score view displays a filled
+		note head at the correct location, despite the stem chunk which
+		was left stuck to the note head glyph
+	    </li>
+	    
+	    <li>Notice also that the error has been removed from the errors
+		pane.</li>
+	    
+	</ul>
+	
+	<a name="TUPLETS">
+	    <h3>Tuplets</h3>
+	</a>
+	
+	<p>We now select the next error at the top of the errors pane.</p>
+	<ul>
+	    <li>It indicates a too long voice as in the following picture:
+		<p>
+		    <img style="width: 412px; height: 360px;" alt="Tuplet error"
+			 title="Voice flagged as too long"
+			 src="../images/chula-tuplet.png"/>
+		</p>
+	    </li>
+	    
+	    <li>This is often due to non-recognized tuplet signs, as in the
+		present case.
+	    </li>
+	    
+	    <li>It suffices to select the '3' glyph, and the Neural board
+		indicates a TUPLET_THREE (rated 1.010) right after a CLUTTER
+		(rated 1.000). The clutter shape had consequently be preferred
+		by the program. [Perhaps, we should improve the program by
+		letting Clutter shapes be discarded for closely rated
+		non-clutter shapes. This deserves some further
+		investigation]. Anyway, clicking on the Tuplet_Three evaluation
+		is enough to correct the error.
+	    </li>
+	    
+	    <li>Selecting the next 3 or 4 errors will lead us to similar tuplet
+		errors, to be fixed the same way.
+	    </li>
+	</ul>
+	
+	<a name="SHARPS">
+	    <h3>Segmented Sharps</h3>
+	</a>
+	<ul>
+	    
+	    <li>The next error in the errors pane this time leads us to a
+		measure where sharp signs have been unduely segmented into stems
+		and tiny leaves, some of them being assigned a beam shape or a
+		hote head shape. See the picture below:
+		<p>
+		    <img style="width: 401px; height: 372px;" alt="Measure with
+								   two segmented
+								   sharps"
+								   title="Sharps
+								   too
+								   segmented"
+			 src="../images/chula-sharps.png"/>
+		</p>
+	    </li>
+	    
+	    <li>This behavior is rather frequent: the sharp glyph had not been
+		recognized in first place, and then has been searched for
+		internal stems. A future improvement of Audiveris should be able
+		to more correctly handle this case, however this segmentation
+		has an interesting side effect of cutting the note head glyph
+		from the rest of the sharp glyph. In the original image, these
+		two glyphs were stuck, resulting in the non-recognition of both
+		of them.
+	    </li>
+	    
+	    <li>To correct this, we have to select a whole sharp glyph with a
+		lasso. Let's begin with the one at the upper right corner. We
+		then use a right click to display the related popup menu, and
+		select the item named "<u><i>Deassign 4 glyphs with 2
+		stems</i></u>". Notice that the glyph turns dark blue (typical
+		of sharp shape), while the Neural board displays SHARP as its
+		preferred evaluation.</li>
+	    
+	    <li>We can do the same operation on the sharp glyph in the lower
+		left corner of the measure. This time, once we have deassigned
+		it, the sharp glyphs turns red (typical of non-recognized
+		shapes). This is due to the fact that the glyph is stuck to a
+		stem. Anyway, we have to manually assign the proper shape to the
+		glyph, using a right click and selecting the "<u><i>Assign glyph
+		as...</i></u>" down to the proper "<u><i>Accidentals</i></u>"
+		and "<u><i>Sharp</i></u>" item.</li>
+	</ul>
+	
+	<a name="STEMS">
+	    <h3>Stems</h3>
+	</a>
+	<p>The errors pane is now empty.  Which only means that the program has
+	    not detected any other error!</p>
+	
+	<ul>
+	    <li>
+		Browsing through the sheet view, you can notice the strange
+		looking glyph:
+		<p>
+		    <img style="width: 326px; height: 192px;" alt="glyph
+								   mistaken for
+								   a grace note"
+								   title="Strange
+								   looking grace
+								   note"
+			 src="../images/chula-grace.png"/>
+		</p>
+	    </li>
+	    
+	    <li>The glyph has been mistaken for a grace note, due the fact that
+		the stem had been cut by the staff line removal.
+	    </li>
+	    
+	    <li>To correct this, we select the glyph, and in the popup menu got
+		through a right click, we select the item "<u><i>Look for
+		verticals</i></u>"
+		<p>
+		    <img style="width: 468px; height: 168px;" alt="Chula
+								   verticals"
+								   title="Look
+								   for
+								   verticals"
+			 src="../images/chula-verticals.png"/>
+		</p>
+	    </li>
+	    
+	    <li>It immediately segments this glyph into one stem, one beam hook
+		and one black hote head.</li>
+	</ul>
+	
+	<a name="DEASSIGN">
+	    <h3>Deassign glyph</h3>
+	</a>
+	<ul>
+	    <li> Browsing till the end of the score, you may notice the flag
+		shape of one of the last notes, in measure 19:
+		<p>
+		    <img style="width: 207px; height: 436px;" alt="Chula flags"
+			 title="Strange-looking flag"
+			 src="../images/chula-flags.png"/>
+		</p>
+	    </li>
+	    <li>This time, we have the merge of two glyphs (a flag and a quarter
+		rest) resulting into something that we cannot split. [For the
+		time being, only stems and slurs can be handled this way by
+		Audiveris].</li>
+	    <li>The simplest action is to deassign the glyph, by selecting it,
+		and clicking the "<u><i>Deassign</i></u>" button in the Glyph
+		board.</li>
+	</ul>
+
+	<a name="FINAL">
+	    <h2>Final</h2>
+	</a>
+	
+	<a name="WRITING">
+	    <h3>Score writing</h3>
+	</a>
+	
+	<p>Now that we are rather satisfied with the final translation, we can
+	    write the result into a MusicXML file.</p>
+	<p>In the <u><i>Score</i></u> menu, we select the <u><i>Store in
+	    Xml</i></u> item which presents a dialog box to choose a target
+	    file.</p>
+	<p>We finally click on the <u><i>Record</i></u> button, et voila!</p>
+	
+	<a name="PLAY">
+	    <h3>Score playback</h3>
+	</a>
+	<p>There is no playback embedded with Audiveris (at least for the time
+	    being).  But we can simply take another tool, for example you
+	    can download a free demo version of Finale 2007.</p>
+	<p> In the <u><i>File</i></u> menu, use its <u><i>Music XML</i></u>
+	    | <u><i>Import</i></u> item, and get a display of our score. Then,
+	    press
+	    <u><i>Play</i></u> button, and you are gone!
+	</p>
+	<p>
+	    <img style="width: 889px; height: 840px;"
+		 alt="Finale window" title="Finale on Chula"
+		 src="../images/chula-finale.png"/>
+	</p>
+	
+    </body>
+</html>
