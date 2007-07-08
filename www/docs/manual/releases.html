@@ -46,13 +46,9 @@
 		    <TH>Introduction</TH>
 		    <TD>
 			<UL>
-			    <LI>This future release should be the
-				 first one providing the recognition
-				 feature, thus the "3.x" numbering of
-				 the release. It should provide a
-				 dedicated score window, and the
-				 storing of the output in MusicXML
-				 format..</LI>
+			    <LI>This 3.0 release is a major release
+				which makes Audiveris a really usable
+				music scanner.
 			</UL>
 		    </TD>
 		</TR>
@@ -61,6 +57,17 @@
 		    <TH>Distribution Changes</TH>
 		    <TD>
 			<UL>
+			    <LI>XML binding : No more JiBX or Castor,
+				we use JAXB 2 for all [un]marshalling
+				including the score writing delegated
+				to ProxyMusic.</LI>
+			    <LI>Installation : To simplify
+				installation, all companion jar files
+				are stored in the /lib subfolder, with
+				audiveris jar file refering them in
+				its manifest. The only exception is
+				JAI which needs to be specifically
+				installed in JRE or JDK.</LI>
 			</UL>
 		    </TD>
 		</TR>
@@ -69,15 +76,15 @@
 		    <TH>New Features</TH>
 		    <TD>
 			<UL>
-			    <LI>Recognition : Implementation of
-				recognition on the base of extracted
+			    <LI>Translation : Implementation of
+				translation on the base of extracted
 				symbols.</LI>
-			    <LI>Recognition : Storing of the
-				recognition result in MusicXML
+			    <LI>Translation : Storing of the
+				translation result in MusicXML
 				format.</LI>
 			    <LI>GUI : New window dedicated to score
 				view, to more easily check the
-				recognition results.</LI>
+				translation results.</LI>
 			</UL>
 		    </TD>
 		</TR>
@@ -86,6 +93,7 @@
 		    <TH>Bug Fixes</TH>
 		    <TD>
 			<UL>
+			    A lot!
 			</UL>
 		    </TD>
 		</TR>
@@ -94,6 +102,9 @@
 		    <TH>Known Issues</TH>
 		    <TD>
 			<UL>
+			    <LI>OCR : An OCR is still needed to handle
+				lyrics and other written
+				informations.</LI>
 			</UL>
 		    </TD>
 		</TR>
@@ -102,6 +113,11 @@
 		    <TH>Other Changes</TH>
 		    <TD>
 			<UL>
+			    A lot!
+			    <LI>Parallelism : we now take advantage of
+				multi-processors when available, in
+				the building of lag runs, and in the
+				processing of system symbols.</LI>
 			</UL>
 		    </TD>
 		</TR>
