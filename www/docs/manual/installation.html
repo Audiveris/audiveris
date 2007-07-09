@@ -28,351 +28,93 @@
 	    </SCRIPT>
 	</ADDRESS>
 	
-	<A NAME="DOWNLOAD">
-	    <H2>Getting Audiveris software</H2>
-	</A>
-	
-	<P>The latest version is always available on the <A
-	    HREF="https://audiveris.dev.java.net/nonav/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
-	    Audiveris download area</A>. If you are interested by
-	    previous distributions, you can browse the "archives"
-	    subfolder of the download area.</P>
-	
 	<A NAME="REQUIREMENTS">
 	    <H2>System Requirements</H2>
 	</A>
 	
-	<P> Audiveris is essentially a Java application, and as such
-	    should be usable on a wide variety of platforms. It is
-	    today being developed under Windows XP, and tested under
-	    Solaris, Linux and Mac OS.</P>
+	<UL>
+	    <LI><B>OS</B>: Audiveris is essentially a Java
+		application, and as such should be usable on a wide
+		variety of platforms. It is today being developed
+		under <B>Windows&nbsp;XP</B>, and tested
+		under <B>Solaris</B>, <B>Linux</B> and
+		<B>Mac&nbsp;OS</B>.</LI>
+	    
+	    <LI><B>Java</B>: <B>Java&nbsp;6</B> is highly recommended
+		since it already contains the <B>JAXB&nbsp;2</B>
+		component which is needed for XML persistency. You can
+		use <B>Java&nbsp;5</B> as the oldest Java release but
+		you will have to download <B>JAXB&nbsp;2</B> from the 
+		<A href="https://jaxb.dev.java.net/">JAXB web site</A>
+		and install it on your own.</LI>
+	</UL>
 	
-	<P><B>Beware</B> that Audiveris uses many features
-	    from <B>Java 5.0</B>, so you must have at least this
-	    version of Java environment available. And since Audiveris
-	    uses <B>JAXB&nbsp;2</B> for XML persistency you
-	    definitively should use <B>Java&nbsp;6</B> which already
-	    provides JAXB&nbsp;2.</P>
+	<A NAME="DOWNLOAD">
+	    <H2>Downloading Audiveris software</H2>
+	</A>
+	
+	<P>The latest version is always available on the
+	    <A HREF="https://audiveris.dev.java.net/nonav/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
+		Audiveris download area</A>.</P>
+	
+	<P>Just grab an archive like <B>audiveris-3.0-20070707.zip</B>
+	    which contains the executable pieces, source code,
+	    documentation and training material. Then simply unzip the
+	    archive in the directory of your choice.</P>
+	
+	<P>Nota: If you are interested by previous distributions, you
+	    can browse the "archives" subfolder of the download
+	    area.</P>
 	
 	<A NAME="COMPANIONS">
 	    <H2>Companion tools</H2>
 	</A>
-	
-	<P>This section lists all components that are used by
-	    Audiveris for various functions.</P>
 	
 	<A NAME="JAI">
 	    <H3>Java Advanced Imaging (JAI)</H3>
 	</A>
 	
 	<P> JAI is the only companion that you need to install on your
-	    own into your JDK or JRE. Please refer to the download and
-	    installation information at <A
-	    href="https://jai.dev.java.net/">the JAI web site</A>.</P>
-	<P>JAI is a comprehensive framework for image processing, of
-	    which Audiveris makes a rather limited use.</P>	
+	    own into your JDK or JRE.</P>
 	<P> JAI has its high-level features coded in Java, and
-	    low-level primitives delegated to native libraries. It is
-	    implemented as a collection of jar files and DLLs (under
-	    Windows). It is better installed directly in your JDK (or
-	    JRE) by using the installation procedure found at the <A
-	    HREF="http://java.sun.com/products/java-media/jai/">JAI
-	    web-site</A>.</P>
+	    low-level primitives delegated to native libraries. Please
+	    refer to the download and installation information at the <A
+	    href="https://jai.dev.java.net/">JAI web site</A>
+	    since its installation depends on the target operating
+	    system. Audiveris uses the latest JAI version (1.1.3 as of
+	    this writing).</P>
 	
-	<P> Audiveris uses the latest JAI version (1.1.3-alpha).</P>
+	<table border="0">
+	    <tr>
+		<td>
+		    <p><B>Nota:</B> If not correctly installed, JAI
+			cannot use the native libraries and will run
+			much slower. It then issues the following
+			warning:</p>
+		</td>
+		<td>
+		    <DIV CLASS="warningmessage">
+			Could not load mediaLib accelerator wrapper
+			classes. Continuing in pure Java mode.
+		    </DIV>
+		</td>
+	    </tr>
+	</table>
 	
-	<P> <B>Nota:</B> If not correctly installed, the native
-	    libraries cannot be used, and JAI issues the following
-	    warning :
-	    <DIV CLASS="warningmessage">
-		Could not load mediaLib accelerator wrapper
-		classes. Continuing in pure Java mode.
-	    </DIV></P>
+	<A NAME="JAXB">
+	    <H3>Java API for XML Binding (JAXB)</H3>
+	</A>
+	<P>[<I>Should we add a specific section on JAXB2 for Mac OS?</I>]</P>
 	
 	<A NAME="OTHER_COMPONENTS">
 	    <H3>Other components</H3>
 	</A>
 	
-	<P> All the following components need no special installation
+	<P> All the other components need no special installation
 	    procedure, since their jar files are already provided in
-	    the /lib folder of the Audiveris installation
-	    directory. This section is for your information only.</P>
-	
-	<P><I>Nota : The versions for jar files are the ones used at
-	    the time of this writing, but higher versions should be
-	    usable as well (though not yet tested)</I></P>
-	
-	<TABLE WIDTH=100% BORDER=1>
-	    <TR>
-		<TH>Component</TH>
-		<TH>Purpose</TH>
-		<TH>Jar File(s)</TH>
-		<TH>Provider URL</TH>
-	    </TR>
-	    <TR CLASS="a">
-		<TD><B>ProxyMusic</B></TD>
-		<TD>[un]marshalling Java from/to MusicXML</TD>
-		<TD>proxymusic-1.1.jar</TD>
-		<TD><A HREF="https://proxymusic.dev.java.net/">
-		    https://proxymusic.dev.java.net/
-		    </A></TD>
-	    </TR>
-	    <TR CLASS="b">
-		<TD><B>JGoodies/looks</B></TD>
-		<TD>Improvement of appearance of Swing</TD>
-		<TD>looks-2.0.1.jar</TD>
-		<TD><A HREF="https://looks.dev.java.net/">
-		    https://looks.dev.java.net/
-		    </A></TD>
-	    </TR>
-	    <TR CLASS="a">
-		<TD><B>JGoodies/forms</B></TD>
-		<TD>Forms layout system for Swing</TD>
-		<TD>forms-1.0.6.jar</TD>
-		<TD><A HREF="https://forms.dev.java.net/">
-		    https://forms.dev.java.net/
-		    </A></TD>
-	    </TR>
-	    <TR CLASS="b">
-		<TD><B>JFreeChart</B></TD>
-		<TD>Chart generation, with common utilities</TD>
-		<TD>jfreechart-1.0.1.jar <BR/>
-		    jcommon-1.0.0.jar</TD>
-		<TD><A HREF="http://www.jfree.org/jfreechart/">
-		    http://www.jfree.org/jfreechart/
-		    </A></TD>
-	    </TR>
-	    <TR CLASS="a">
-		<TD><B>Java L&amp;F Graphics Repository</B></TD>
-		<TD>Collection of toolbar button graphics</TD>
-		<TD>jlfgr-1_0.jar</TD>
-		<TD><A
-			HREF="http://java.sun.com/developer/techDocs/hi/repository/">
-			http://java.sun.com/developer/techDocs/hi/repository/
-		    </A></TD>
-	    </TR>
-	    <TR CLASS="b">
-		<TD><B>Jama</B></TD>
-		<TD>Matrix package for linear algebra</TD>
-		<TD>Jama-1.0.2.jar</TD>
-		<TD><A HREF="http://math.nist.gov/javanumerics/jama/">
-		    http://math.nist.gov/javanumerics/jama/
-		    </A></TD>
-	</TABLE>
-	
-	<A NAME="INSTALLATION">
-	    <H2>Installation</H2>
-	</A>
-	
-	<DIV CLASS="filebrowse" >
-	    <UL>
-		<LI CLASS="leafnode">
-		    The <A
-		    HREF="https://audiveris.dev.java.net/nonav/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
-		    download area</A> contains a pair of archives
-		    similar to the following ones (the version numbers
-		    may be higher than in this example) :
-		    <UL>
-			<LI CLASS="leaf">
-			    <CODE><B>audiveris-3.0-20070707.zip</B></CODE>
-			    contains the various Audiveris components,
-			    source and binary, but without the
-			    training material.</LI>
-			<LI CLASS="leaf">
-			    <CODE><B>audiveris-3.0-train-20070707.zip</B></CODE>
-			    is dedicated to the core and whole bases
-			    of training material.</LI>
-		    </UL>
-		</LI>
-	    </UL>
-	</DIV>
-	
-	<P>You simply need to expand the first archive into a
-	    directory of your choice. The second archive (to be
-	    expanded in the same directory) is needed only if you want
-	    to be able to re-train the Neural evaluator.</P>
-	
-	<A NAME="STRUCTURE">
-	    <H3>Audiveris Directory Structure</H3>
-	</A>
-	
-	<P>Once expanded, the Audiveris archives create the structure
-	    described in this section :</P>
-	
-	<DIV  CLASS="filebrowse" >
-	    <UL>
-		
-		<LI CLASS="leaf">
-		    <CODE><B>audiveris-M.m.jar</B></CODE> is the
-		    application jar file, with "M" and "m" for release
-		    numbers.</LI>
-		<LI CLASS="leaf">
-		    <CODE><B>build.xml</B></CODE> is a build file,
-		    from which the application can be (re)built and
-		    launched via Ant </LI>
-		
-		<LI CLASS="leafnode">
-		    <u>bin</u>/
-		    <UL>
-			<LI CLASS="leaf">
-			    <CODE><B>audiveris.bat</B></CODE> is the
-			    application launcher file
-			</LI>
-		    </UL>
-		</LI>
-		
-		<LI CLASS="leafnode">
-		    <u>lib</u>/
-		    <UL>All the companion components have their jar
-			file located in this folder. See the <A
-			href="#OTHER_COMPONENTS">dedicated
-			section</A>.
-		    </UL>
-		</LI>
-		
-		<LI CLASS="leafnode">
-		    <u>config</u>/
-		    <UL>
-			<LI CLASS="leaf">
-			    <CODE><B>neural-network.xml</B></CODE> is
-			    a optional custom definition of the glyph
-			    neural network evaluator, which is created
-			    only when you retrain the network. The
-			    default definition is provided in the
-			    Audiveris jar resource.</LI>
-			<LI CLASS="leaf">
-			    <CODE><B>logging.properties</B></CODE> is
-			    an optional file which allows to set the
-			    logging level of some units.</LI>
-		    </UL>
-		</LI>
-		
-		<LI CLASS="leafnode">
-		    <u>examples</u>/
-		    <UL>
-			<LI CLASS="leaf">
-			    A set of image files that can be used as
-			    input examples</LI>
-		    </UL>
-		</LI>
-		
-		<LI CLASS="leafnode">
-		    <u>train</u>/
-		    <UL>
-			<LI CLASS="leafnode">
-			    core/
-			    <UL>
-				<LI CLASS="leaf">
-				    A selected subset of the glyph
-				    material, representing the "core"
-				    of the training material, to be
-				    used as an efficient training
-				    input for a first re-training from
-				    scratch.</LI>
-			    </UL>
-			</LI>
-			<LI CLASS="leafnode">
-			    sheets/
-			    <UL>
-				<LI CLASS="leaf">
-				    The whole base of glyph material
-				    composed by all recognized glyphs
-				    stored so far. Using this whole
-				    base gives the best final results,
-				    but is fairly expensive in terms
-				    of computing time. It is meant to
-				    be used for incremental training,
-				    after the core material has been
-				    used.</LI>
-			    </UL>
-			</LI>
-		    </UL>
-		</LI>
-		
-		<LI CLASS="leafnode">
-		    <A HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=0&expandFolder=0&folderID=3258" title="view contents">
-			www/
-		    </A>
-		    This folder directly mirrors the Audiveris
-		    web-site on java.net
-		    <UL>
-			<LI CLASS="leaf">
-			    <A HREF="../../index.html" TARGET="_top"
-			       TITLE="view
-			       file"><CODE><B>index.html</B></CODE></A>
-			       is the web-site home page</LI>
-			<LI CLASS="leafnode">
-			    <A HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3258&expandFolder=3258&folderID=3259" title="view contents">
-				<u>docs</u>/
-			    </A>
-			    <UL>
-				<LI CLASS="leafnode">
-				    <A HREF="https://audiveris.dev.java.net/nonav/docs/api/index.html" TARGET="_top" TITLE="view contents">
-					<u>api</u>/
-				    </A>
-				    <UL>
-					<LI CLASS="leaf">
-					    The whole hierarchy of
-					    JavaDoc files</LI>
-				    </UL>
-				</LI>
-				<LI CLASS="leafnode">
-				    <A HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3259&expandFolder=3259&folderID=3259" title="view contents">
-					<u>manual</u>/
-				    </A>
-				    The directory contains several
-				    html files, used to handle a frame
-				    layout. But the main content is
-				    stored in the following files:
-				    <UL>
-					<LI CLASS="leaf">
-					    <CODE><B>example.html</B></CODE>
-					    is a quick start guide
-					    built around a small
-					    example.
-					</LI>
-					<LI CLASS="leaf">
-					    <CODE><B>installation.html</B></CODE>
-					    is the installation manual
-					    you are currently looking
-					    at
-					</LI>
-					<LI CLASS="leaf">
-					    <CODE><B>operation.html</B></CODE>
-					    describes how to operate
-					    the application
-					</LI>
-					<LI CLASS="leaf">
-					    <CODE><B>design.html</B></CODE>
-					    presents the rationale
-					    behind several Audiveris
-					    constructions (doc not yet
-					    available).
-					</LI>
-					<LI CLASS="leaf">
-					    <CODE><B>implementation.html</B></CODE>
-					    details a few techniques
-					    used throughout Audiveris,
-					    such as Lags, GlyphLags
-					    and Sticks.
-					</LI>
-				    </UL>
-				</LI>
-				<LI CLASS="leafnode">
-				    <u>wiki</u>/
-				    <UL>
-					<LI CLASS="leaf">
-					    <CODE><B>notebook.html</B></CODE>
-					    is a tiddly wiki to handle
-					    various notes on Audiveris
-					    development.</LI>
-				    </UL>
-				</LI>
-			    </UL>
-			</LI>
-		    </UL>
-		</LI>
-	    </UL>
-	</DIV>
+	    the /lib folder of the Audiveris installation directory
+	    and directly referenced from the Audiveris jar file. See
+	    the Programmer's manual if you need more detailed
+	    information on these components.</P>
     </BODY>
 </HTML>
