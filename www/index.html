@@ -81,23 +81,22 @@ function nonav(url)
 						<td style="padding: 5px; background-color: rgb(255, 255, 255);">
 						    <h3>Current Status</h3>
 						    
-						    <p>Starting with version 3.0, Audiveris is now a complete music
-							scanner.  Since the translation cannot be perfect, since there
-							may still be some errors in the translation, the program offers
-							the user the ability to guide the translation on the fly. It can
-							also use new translation data in order to further train its
-							internal neural network, in order to improve the glyph
-							recognition task.</p>
+						    <p>Starting with version 3.0, Audiveris is now a fully functional
+							music scanner.  Since there may still be remaining errors in the
+							translation, the program offers the user the ability to guide
+							the translation on the fly. It can also take advantage of
+							user-supplied data in order to further train its internal neural
+							network, and thus improve the glyph recognition task.</p>
 						    
 						    <p>More detailed information is available in the provided manuals,
 							but here are the main phases of the application:</p>
 						    
 						    <ol>
-							<li>Detection and correction of potential skew angle of the
-							    sheet,</li>
+							<li>Detection and correction of potential <b>skew</b> angle of
+							    the sheet,</li>
 							
-							<li>Removal of staff lines, detection of systems, staves and
-							    measures,</li>
+							<li>Removal of <b>staff lines</b>, detection of systems, staves
+							    and measures,</li>
 							
 							<li><b>Extraction </b>of individual music
 							    items, essentially based on their appearance and
@@ -134,11 +133,12 @@ function nonav(url)
 							<li>Rather easy</li>
 							<ul>
 							    <li>Validate Audiveris on other platforms than Windows or
-								Solaris. Some people volunteered for Mac OS (Brenton
-								Partridge is actively working on it) and Linux.</li>
+								Solaris. Some people volunteered for <B>Mac&nbsp;OS</B>
+								(Brenton Partridge is actively working on it)
+								and <B>Linux</B>.</li>
 							    
-							    <li>Integrate with a MusicXML player such as Xenoage of
-								Andreas Wenger.</li>
+							    <li>Integrate with a <B>MusicXML player</B> such as Xenoage
+								of Andreas Wenger.</li>
 							</ul>
 							
 							<li>More significant</li>
@@ -149,10 +149,10 @@ function nonav(url)
 								for the time being are simply discarded.</li>
 							    
 							    <li>Integrate with a <b> Visual Music Editor</b> for manual
-								correction, for printing, etc.  For example Xemo would
-								be a natural partnering tool, however the Xemo site
-								doesn't seem active anymore. Audiveris has only an
-								embedded rudimentary editor.</li>
+								correction, for printing, etc. Audiveris has only an
+								embedded rudimentary editor.  For example Xemo would be
+								a natural partnering tool, however the Xemo site doesn't
+								seem active anymore.</li>
 							    
 							    
 							    <li>Evaluate a move to <b>NetBeans</b> (the <b>platform</b>,
@@ -188,27 +188,20 @@ function nonav(url)
 						    <div class="filebrowse">
 							<ul>
 							    <li class="leafnode">
-								The <a href="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&amp;expandFolder=3257&amp;folderID=3257">
-								download area</a> always contains the latest stable
-								release, provided as two archives:
-								
-								<ul>
-								    <li class="leaf">
-									Java source code, jar file and documentation files
-									are available as one zip archive&nbsp;<b><i></i></b></li>
-								    
-								    <li class="leaf">XML-coded glyph information, needed
-									to re-train the evaluators available as a
-									separate zip archive</li>
-								</ul>
-								
+								The <a
+									href="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3257&amp;expandFolder=3257&amp;folderID=3257">
+									download area</a> always contains the latest
+									stable release, provided as one single archive
+									for jar files, source code, documentation and
+									training material.
 							    </li>
 							    
-							    <li class="leafnode"> The <a
-											  href="https://audiveris.dev.java.net/source/browse/audiveris/">CVS
-								repository</a> can also be accessed to retrieve the very
-								latest version of all software pieces, even before they
-								get packed in a stable release.</li>
+							    <li class="leafnode">
+								The <a
+									href="https://audiveris.dev.java.net/source/browse/audiveris/">CVS
+									repository</a> gives you access to the very
+									latest version of all software pieces, even
+									before they get packed in a stable release.</li>
 							</ul>
 						    </div>
 						</td>
@@ -218,8 +211,7 @@ function nonav(url)
 						    <h3>Documentation</h3>
 						    
 						    <p> All documentations are bundled with the source archive
-							above. They are also available on-line, in their latest version,
-							directly from the CVS repository:</p>
+							above. They are also available on-line here:</p>
 						    
 						    <div class="filebrowse">
 							<table>
@@ -230,8 +222,7 @@ function nonav(url)
 									    document.write(nonav("docs/manual/index.html?manual=releases"));
 									</script>
 									Release notes</td>
-								    <td>The detailed chronology of development
-									activities.</td>
+								    <td>The chronology of development activities.</td>
 
 								</tr>
 								<tr>
@@ -240,12 +231,11 @@ function nonav(url)
 									    document.write(nonav("docs/manual/index.html?manual=installation"));
 									</script>
 									Installation </td>
-								    <td>All
-									informations needed to set the software up and
+								    <td>Informations to set the software up and
 									running.</td>
 								</tr>
 								<tr>
-								    <td class="leaf"> 
+								    <td class="leaf">
 									<script type="text/javascript">
 									    document.write(nonav("docs/manual/index.html?manual=example"));
 									</script>
@@ -267,8 +257,8 @@ function nonav(url)
 									    document.write(nonav("docs/manual/index.html?manual=design"));
 									</script>
 									Design </td>
-								    <td>Key decisions made regarding
-									music extraction and translation.</td>
+								    <td>Key decisions made on music extraction and
+									translation.</td>
 								</tr>
 								<tr>
 								    <td class="leaf"> 
@@ -285,7 +275,7 @@ function nonav(url)
 									    document.write(nonav("docs/manual/index.html?manual=notes"));
 									</script>
 									Notes </td>
-								    <td>A collection of notes on Audiveris progress.</td>
+								    <td>A collection of tiny notes on Audiveris evolution.</td>
 								</tr>
 								<tr>
 								    <td class="leaf"> 
@@ -302,9 +292,10 @@ function nonav(url)
 					    </tr>
 					    <tr>
 						<td>
-						    <h3>Current Implementation</h3>
+						    <h3>Implementation</h3>
 						    
-						    <p> Audiveris today is a pure Java stand-alone application (260 classes, 85000 lines of code)</p>
+						    <p> Audiveris is a pure Java stand-alone application (about 260
+						    classes for 85000 lines of Java code)</p>
 						    <ul>
 							<li>Techniques
 							    <ul>
@@ -312,11 +303,11 @@ function nonav(url)
 								    information as a directed graph structure, composed
 								    of pixel contiguous runs organized in sections.</li>
 								
-								<li><b>Sticks</b> are developed above LAGs to&nbsp;take
+								<li><b>Sticks</b> are developed above LAGs to take
 								    advantage of the structuring sticks of a music sheet
 								    (staff lines, ledgers and legato signs are such
-								    horizontal sticks, while stems and bar lines
-								    are ;vertical sticks).</li>
+								    horizontal sticks, while stems and barlines are
+								    vertical sticks).</li>
 
 								<li><b>A Neural Network</b> allows efficient pattern
 								    recognition as well as training based on user input
@@ -341,12 +332,9 @@ function nonav(url)
 								
 								<li><b>Jama</b> for linear algebra in Java.</li>
 								
-								<li><b>Java&nbsp;5</b> is mandatory,
-								    and <b>Java&nbsp;6</b> s the preferred choice since
-								    JAXB 2 is already integrated with Java&nbsp;6
+								<li><b>Java&nbsp;6</b> is the preferred choice for Java,
+								    since JAXB 2 is already integrated in this
 								    distribution.</li>
-								
-								<li><b>Ant </b>for project building.</li>
 							    </ul>
 							</li>
 							
