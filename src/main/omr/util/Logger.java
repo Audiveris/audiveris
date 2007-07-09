@@ -13,8 +13,13 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.constant.UnitManager;
 
+import omr.step.LogStepMonitorHandler;
+
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Class <code>Logger</code> is a specific subclass of standard java Logger,
@@ -40,6 +45,9 @@ public class Logger
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
+
+    /** Cache this log manager */
+    private static LogManager manager;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -79,8 +87,13 @@ public class Logger
      */
     public static synchronized Logger getLogger (String name)
     {
-        LogManager manager = LogManager.getLogManager();
-        Logger     result = (Logger) manager.getLogger(name);
+        // Lazy initialization if needed
+        if (manager == null) {
+            manager = LogManager.getLogManager();
+            setGlobalParameters();
+        }
+
+        Logger result = (Logger) manager.getLogger(name);
 
         if (result == null) {
             result = new Logger(name);
@@ -179,10 +192,6 @@ public class Logger
     {
         super.severe(msg);
         new Throwable().printStackTrace();
-
-        if (constants.exitOnSevere.getValue()) {
-            System.exit(-1);
-        }
     }
 
     //--------//
@@ -199,10 +208,6 @@ public class Logger
     {
         super.severe(msg);
         thrown.printStackTrace();
-
-        if (constants.exitOnSevere.getValue()) {
-            System.exit(-1);
-        }
     }
 
     //---------//
@@ -226,6 +231,51 @@ public class Logger
         }
     }
 
+    //---------------------//
+    // setGlobalParameters //
+    //---------------------//
+    /**
+     * This method define configuration parameters in a programmatic way, so
+     * that only specific loggers if any need to be set in a configuration file
+     * This file would simply contain lines like:
+     *  # omr.step.StepMonitor.level=FINEST
+     */
+    private static void setGlobalParameters ()
+    {
+        // Retrieve the logger at the top of the hierarchy
+        java.util.logging.Logger topLogger;
+        topLogger = java.util.logging.Logger.getLogger("");
+
+        // Handler for console (reuse it if it already exists)
+        Handler consoleHandler = null;
+
+        for (Handler handler : topLogger.getHandlers()) {
+            if (handler instanceof ConsoleHandler) {
+                consoleHandler = handler;
+
+                break;
+            }
+        }
+
+        if (consoleHandler == null) {
+            consoleHandler = new ConsoleHandler();
+            topLogger.addHandler(consoleHandler);
+        }
+
+        ///        consoleHandler.setFormatter(new SimpleFormatter());
+        ///        consoleHandler.setFormatter(new LogBasicFormatter());
+        consoleHandler.setLevel(java.util.logging.Level.FINE);
+
+        // Handler for GUI log pane
+        topLogger.addHandler(new LogGuiHandler());
+
+        // Handler for animation of progress in StepMonitor
+        topLogger.addHandler(new LogStepMonitorHandler());
+
+        // Default level
+        topLogger.setLevel(java.util.logging.Level.INFO);
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -237,8 +287,5 @@ public class Logger
         Constant.Boolean printStackOnWarning = new Constant.Boolean(
             false,
             "Should we print out the stack of any warning logged with exception?");
-        Constant.Boolean exitOnSevere = new Constant.Boolean(
-            false,
-            "Should we exit the application when a severe error is logged?");
     }
 }

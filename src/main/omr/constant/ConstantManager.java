@@ -13,13 +13,8 @@ import omr.Main;
 
 import omr.util.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Properties;
+import java.io.*;
+import java.util.*;
 
 /**
  * Class <code>ConstantManager</code> manages the whole population of Constants,
@@ -94,7 +89,7 @@ public class ConstantManager
     private static Properties defaultProperties = new Properties();
 
     /** Default properties file name */
-    private static String DEFAULT_FILE_NAME = "run.default.properties";
+    private static String DEFAULT_FILE_NAME = "/config/run.default.properties";
 
     /** User properties */
     private static Properties userProperties = null;
@@ -157,6 +152,23 @@ public class ConstantManager
     }
 
     //-------------//
+    // setProperty //
+    //-------------//
+    /**
+     * Meant to be called by <code>Constant</code> class, to update the property
+     * value that relates to the given constant.
+     *
+     * @param qualifiedName name of the constant
+     * @param val           the new value
+     */
+    static void setProperty (String qualifiedName,
+                             String val)
+    {
+        getUserProperties()
+            .setProperty(qualifiedName, val);
+    }
+
+    //-------------//
     // getProperty //
     //-------------//
     /**
@@ -180,23 +192,6 @@ public class ConstantManager
     {
         getUserProperties()
             .remove(qualifiedName);
-    }
-
-    //-------------//
-    // setProperty //
-    //-------------//
-    /**
-     * Meant to be called by <code>Constant</code> class, to update the property
-     * value that relates to the given constant.
-     *
-     * @param qualifiedName name of the constant
-     * @param val           the new value
-     */
-    static void setProperty (String qualifiedName,
-                             String val)
-    {
-        getUserProperties()
-            .setProperty(qualifiedName, val);
     }
 
     //-------------------//
@@ -228,10 +223,11 @@ public class ConstantManager
     {
         // Load DEFAULT properties from the distribution
         try {
-            FileInputStream in = new FileInputStream(
-                new File(Main.getConfigFolder(), DEFAULT_FILE_NAME));
+            InputStream in = Main.class.getResourceAsStream(DEFAULT_FILE_NAME);
             defaultProperties.load(in);
             in.close();
+
+            ///logger.info("Loaded default constants from resource " + DEFAULT_FILE_NAME);
         } catch (Exception ex) {
             logger.severe(
                 "Error while loading DEFAULT resource as " + DEFAULT_FILE_NAME);
@@ -245,6 +241,8 @@ public class ConstantManager
             FileInputStream in = new FileInputStream(USER_FILE_NAME);
             userProperties.load(in);
             in.close();
+
+            ///logger.info("Loaded user constants from file " + USER_FILE_NAME);
         } catch (FileNotFoundException ex) {
             // This is not at all a fatal error, let the user know this.
             logger.info(

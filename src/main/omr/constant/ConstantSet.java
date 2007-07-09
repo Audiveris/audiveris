@@ -29,12 +29,10 @@ import java.util.TreeMap;
  */
 public abstract class ConstantSet
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ConstantSet.class);
-
-    //~ Instance fields --------------------------------------------------------
+    ///private static final Logger logger = Logger.getLogger(ConstantSet.class);
 
     /**  Name of the containing unit/class */
     private final String unit;
@@ -240,7 +238,8 @@ public abstract class ConstantSet
                     constant.setName(name);
                     map.put(name, constant);
                 } else {
-                    logger.severe(
+                    Logger.getLogger(ConstantSet.class)
+                          .severe(
                         "ConstantSet in unit '" + unit +
                         "' contains a non Constant field '" + name + "' obj= " +
                         obj);

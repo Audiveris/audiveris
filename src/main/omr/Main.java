@@ -16,7 +16,6 @@ import omr.score.Score;
 import omr.score.ScoreManager;
 import omr.score.visitor.ScoreExporter;
 
-import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
 import omr.step.Step;
@@ -86,11 +85,11 @@ public class Main
         Clock.resetTime();
     }
 
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
-
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Main.class);
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Installation container and folder */
     private static File container;

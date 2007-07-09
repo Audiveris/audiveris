@@ -11,7 +11,6 @@ package omr.glyph;
 
 import omr.Main;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.math.Moments;
@@ -45,9 +44,6 @@ public abstract class Evaluator
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Evaluator.class);
-
-    /** Extension used by evaluator backup files */
-    private static final String BACKUP_EXTENSION = ".def";
 
     /** Number of useful moments : {@value} */
     public static final int inMoments = 10;
@@ -261,35 +257,6 @@ public abstract class Evaluator
         } else {
             return null;
         }
-    }
-
-    //---------------//
-    // getCustomFile //
-    //---------------//
-    /**
-     * Report the custom file used to store or load the internal evaluator data
-     *
-     * @return the evaluator custom backup file
-     */
-    protected File getCustomFile ()
-    {
-        // The custom file, if any, is located at the root of the train
-        // folder
-        return new File(Main.getConfigFolder(), "neural-network.xml");
-    }
-
-    //----------------//
-    // getDefaultFile //
-    //----------------//
-    /**
-     * Report the default file used to load the internal evaluator data
-     *
-     * @return the evaluator default backup file
-     */
-    protected File getDefaultFile ()
-    {
-        // The system file, is located in the config folder
-        return new File(Main.getConfigFolder(), "neural-network.default.xml");
     }
 
     //--------------------//

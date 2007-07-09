@@ -9,9 +9,6 @@
 //
 package omr.util;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import java.io.*;
 import java.text.*;
 import java.util.Date;
@@ -28,14 +25,20 @@ public class LogBasicFormatter
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
-
     /** Line separator string.  This is the value of the line.separator */
     private static String lineSeparator = "\n";
 
     /** Standard format */
     private static final String format = "{0,time}";
+
+    /** Should we print time in log */
+    private static final boolean PRINT_TIME = true;
+
+    /** Should we print Class name in log */
+    private static final boolean PRINT_CLASS = true;
+
+    /** Should we print Method name in log */
+    private static final boolean PRINT_METHOD = true;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -58,7 +61,7 @@ public class LogBasicFormatter
         sb.append(" ");
 
         // First line (if any)
-        if (constants.printTime.getValue()) {
+        if (PRINT_TIME) {
             dat.setTime(record.getMillis());
             args[0] = dat;
 
@@ -72,7 +75,7 @@ public class LogBasicFormatter
             sb.append(text);
         }
 
-        if (constants.printClass.getValue()) {
+        if (PRINT_CLASS) {
             sb.append(" ");
 
             if (record.getSourceClassName() != null) {
@@ -82,7 +85,7 @@ public class LogBasicFormatter
             }
         }
 
-        if (constants.printMethod.getValue()) {
+        if (PRINT_METHOD) {
             if (record.getSourceMethodName() != null) {
                 sb.append(" ");
                 sb.append(record.getSourceMethodName());
@@ -113,24 +116,5 @@ public class LogBasicFormatter
         }
 
         return sb.toString();
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        Constant.Boolean printClass = new Constant.Boolean(
-            false,
-            "Should we print Class name in log");
-        Constant.Boolean printMethod = new Constant.Boolean(
-            false,
-            "Should we print Method in log");
-        Constant.Boolean printTime = new Constant.Boolean(
-            false,
-            "Should we print time in log");
     }
 }

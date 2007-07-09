@@ -9,6 +9,8 @@
 //
 package omr.glyph;
 
+import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -26,7 +28,21 @@ import javax.xml.bind.JAXBException;
 
 /**
  * Class <code>GlyphNetwork</code> encapsulates a neural network dedicated to
- * glyph recognition
+ * glyph recognition. It wraps the generic {@link omr.math.NeuralNetwork} with
+ * application information, for training, storing, loading and using the neural
+ * network.
+ *
+ * <p>The application neural network data is loaded as follows: <ol>
+ * <li>It first tries to find a file in the /config sub-folder of the
+ * application, looking for a file named 'neural-network.xml' which contains a
+ * custom definition of the network, typically after a training.</li>
+ * <li>If not found, it falls back reading the default definition from the
+ * application resource, reading the /config/neural-network.xml file provided
+ * in the distribution jar file.</ol></p>
+ *
+ * <p>Similarly, after a training of the neural network, the data is stored as
+ * the custom definition in the local file 'config/neural-network.xml', which
+ * will be picked first when the application is run again.</p>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -44,6 +60,13 @@ public class GlyphNetwork
 
     /** The singleton */
     private static GlyphNetwork INSTANCE;
+
+    /** Neural network backup file name */
+    private static final String NETWORK_FILE_NAME = "neural-network.xml";
+
+    /** URL for default backup within distribution */
+    private static final String NETWORK_DEFAULT_URL = "/config/" +
+                                                      NETWORK_FILE_NAME;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -332,7 +355,7 @@ public class GlyphNetwork
     // marshal //
     //---------//
     /**
-     * Store the neural network in XML format
+     * Store the neural network in XML format, always as the custom file
      */
     public void marshal ()
     {
@@ -453,6 +476,20 @@ public class GlyphNetwork
     }
 
     //---------------//
+    // getCustomFile //
+    //---------------//
+    /**
+     * Report the custom file used to store or load the internal evaluator data
+     *
+     * @return the evaluator custom backup file
+     */
+    private File getCustomFile ()
+    {
+        // The custom file, if any, is located in the configuration folder
+        return new File(Main.getConfigFolder(), NETWORK_FILE_NAME);
+    }
+
+    //---------------//
     // createNetwork //
     //---------------//
     private NeuralNetwork createNetwork ()
@@ -475,24 +512,20 @@ public class GlyphNetwork
     //-----------//
     // unmarshal //
     //-----------//
-    private NeuralNetwork unmarshal (File file)
+    private NeuralNetwork unmarshal (InputStream is,
+                                     String      name)
     {
         try {
-            if (file.exists()) {
-                logger.fine("Unmarshalling GlyphNetwork from " + file);
+            NeuralNetwork nn = NeuralNetwork.unmarshal(is);
+            is.close();
 
-                InputStream   is = new FileInputStream(file);
-                NeuralNetwork nn = NeuralNetwork.unmarshal(is);
-                is.close();
-
-                return nn;
-            }
+            return nn;
         } catch (FileNotFoundException ex) {
-            logger.warning("Cannot find or read " + file);
+            logger.warning("Cannot find or read " + name);
         } catch (IOException ex) {
-            logger.warning("IO error on " + file);
+            logger.warning("IO error on " + name);
         } catch (JAXBException ex) {
-            logger.warning("Error unmarshalling glyph network from " + file);
+            logger.warning("Error unmarshalling glyph network from " + name);
         }
 
         return null;
@@ -503,12 +536,30 @@ public class GlyphNetwork
     //-----------//
     private NeuralNetwork unmarshal ()
     {
-        // First, look for a custom version
-        NeuralNetwork nn = unmarshal(getCustomFile());
+        NeuralNetwork nn = null;
 
-        // Second, use the system default
+        // Look for a custom version first
+        File file = getCustomFile();
+
+        if (file.exists()) {
+            try {
+                logger.fine("Unmarshalling GlyphNetwork from " + file);
+                nn = unmarshal(
+                    new java.io.FileInputStream(file),
+                    file.getPath());
+            } catch (FileNotFoundException ex) {
+                logger.warning("Cannot find file " + file, ex);
+            }
+        }
+
+        // If no custom file is loaded, use system default from distribution
         if (nn == null) {
-            nn = unmarshal(getDefaultFile());
+            logger.fine(
+                "Unmarshalling GlyphNetwork from resource " +
+                NETWORK_DEFAULT_URL);
+            nn = unmarshal(
+                getClass().getResourceAsStream(NETWORK_DEFAULT_URL),
+                " resource " + NETWORK_DEFAULT_URL);
         }
 
         return nn;
