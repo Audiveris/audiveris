@@ -135,6 +135,7 @@ class EvaluationBoard
      * Create an evaluation board with one neural network evaluator, ability to
      * force glyph shape, and test buttons
      *
+     * @param name a rather unique name for this board
      * @param glyphModel the related glyph model
      * @param inputSelection the Glyph input to evaluate
      * @param sheet the related sheet, or null

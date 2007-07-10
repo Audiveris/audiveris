@@ -133,15 +133,16 @@ public class SymbolsEditor
             sheet.getSelection(VERTICAL_GLYPH),
             sheet.getSelection(GLYPH_SET));
 
+        final String unit = sheet.getRadix() + ":SymbolsEditor";
+
         glyphBoard = new SymbolGlyphBoard(
-            "Editor-SymbolGlyphBoard",
+            unit +"-SymbolGlyphBoard",
             this,
             0,
             sheet.getSelection(VERTICAL_GLYPH),
             sheet.getSelection(VERTICAL_GLYPH_ID),
             sheet.getSelection(GLYPH_SET));
 
-        final String unit = "GlyphPane";
         BoardsPane   boardsPane = new BoardsPane(
             sheet,
             view,
@@ -156,7 +157,7 @@ public class SymbolsEditor
             //new ActionsBoard(sheet, this),
             focus,
             new EvaluationBoard(
-                "Evaluation-ActiveBoard",
+                unit + "-Evaluation-ActiveBoard",
                 this,
                 sheet.getSelection(VERTICAL_GLYPH),
                 sheet,

@@ -391,6 +391,7 @@ public class BarsBuilder
     //------------------//
     /**
      * From system part, define the score parts
+     * @throws StepException 
      */
     public void defineScoreParts ()
         throws StepException
@@ -695,7 +696,7 @@ public class BarsBuilder
         glyphSelection.addObserver(lagView);
         lagView.colorize();
 
-        final String  unit = "BarsBuilder";
+        final String  unit = sheet.getRadix() + ":BarsBuilder";
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
             lagView,

@@ -287,32 +287,6 @@ public class MainGui
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // addBoardsPane //
-    //---------------//
-    /**
-     * Add a new boardspane to the boards holder
-     *
-     * @param boards the boards pane to be added
-     */
-    public void addBoardsPane (JComponent boards)
-    {
-        boardsPane.addBoards(boards);
-    }
-
-    //---------------//
-    // addErrorsPane //
-    //---------------//
-    /**
-     * Add/show a new errors pane
-     *
-     * @param errorsPane the errors pane to be added
-     */
-    public void addErrorsPane (JComponent errorsPane)
-    {
-        bottomPane.addErrors(errorsPane);
-    }
-
     //----------------//
     // displayMessage //
     //----------------//
@@ -431,6 +405,32 @@ public class MainGui
     public void removeErrorsPane ()
     {
         bottomPane.removeErrors();
+    }
+
+    //---------------//
+    // setBoardsPane //
+    //---------------//
+    /**
+     * Set a new boardspane to the boards holder
+     *
+     * @param boards the boards pane to be shown
+     */
+    public void setBoardsPane (JComponent boards)
+    {
+        boardsPane.addBoards(boards);
+    }
+
+    //---------------//
+    // setErrorsPane //
+    //---------------//
+    /**
+     * Set/show a new errors pane
+     *
+     * @param errorsPane the errors pane to be shown
+     */
+    public void setErrorsPane (JComponent errorsPane)
+    {
+        bottomPane.addErrors(errorsPane);
     }
 
     //-----------//

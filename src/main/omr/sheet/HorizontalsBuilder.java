@@ -306,7 +306,7 @@ public class HorizontalsBuilder
         // Specific rubber display
         lagView = new MyView(lag, members);
 
-        final String  unit = "HorizontalsBuilder";
+        final String  unit = sheet.getRadix() + ":HorizontalsBuilder";
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
             lagView,

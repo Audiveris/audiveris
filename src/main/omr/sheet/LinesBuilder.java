@@ -281,7 +281,7 @@ public class LinesBuilder
 
         lagView = new MyLagView(lag, members);
 
-        final String  unit = "LinesBuilder";
+        final String  unit = sheet.getRadix() + ":LinesBuilder";
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
             lagView,

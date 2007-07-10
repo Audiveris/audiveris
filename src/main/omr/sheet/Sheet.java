@@ -1265,7 +1265,7 @@ public class Sheet
                 new BoardsPane(
                     Sheet.this,
                     pictureView.getView(),
-                    new PixelBoard("Picture")));
+                    new PixelBoard(getRadix() + ":Picture")));
         }
     }
 

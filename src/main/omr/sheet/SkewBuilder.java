@@ -317,7 +317,7 @@ public class SkewBuilder
         view.colorize();
 
         // Create a hosting frame for the view
-        final String unit = "SkewBuilder";
+        final String unit = sheet.getRadix() + ":SkewBuilder";
         sheet.getAssembly()
              .addViewTab(
             "Skew",

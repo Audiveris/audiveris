@@ -205,25 +205,25 @@ public class SheetAssembly
         tabbedPane.setSelectedComponent(sv.getComponent());
     }
 
-    //--------------------//
-    // assemblyDeselected //
-    //--------------------//
-    /**
-     * Method called when this sheet assembly is no longer selected.
-     */
-    public void assemblyDeselected ()
-    {
-        int viewIndex = tabbedPane.getSelectedIndex();
-
-        // Disconnect the current board
-        if (logger.isFineEnabled()) {
-            logger.fine("assemblyDeselected viewIndex=" + viewIndex);
-        }
-
-        if (viewIndex != -1) {
-            viewTabs.get(viewIndex).boardsPane.hidden();
-        }
-    }
+    //    //--------------------//
+    //    // assemblyDeselected //
+    //    //--------------------//
+    //    /**
+    //     * Method called when this sheet assembly is no longer selected.
+    //     */
+    //    public void assemblyDeselected ()
+    //    {
+    //        int viewIndex = tabbedPane.getSelectedIndex();
+    //
+    //        // Disconnect the current board
+    //        if (logger.isFineEnabled()) {
+    //            logger.fine(sheet.getRadix() + " assemblyDeselected viewIndex=" + viewIndex);
+    //        }
+    //
+    //        if (viewIndex != -1) {
+    //            viewTabs.get(viewIndex).boardsPane.hidden();
+    //        }
+    //    }
 
     //------------------//
     // assemblySelected //
@@ -236,10 +236,17 @@ public class SheetAssembly
      */
     public void assemblySelected ()
     {
-        ///logger.info("assemblySelected");
+        if (logger.isFineEnabled()) {
+            logger.fine(sheet.getRadix() + " assemblySelected");
+        }
 
-        // Display current context
-        displayContext();
+        // Display current context (no reconnection required)
+        displayContext( /* connectBoards => */
+        false);
+
+        // Display the errors pane of this assembly
+        Main.getGui()
+            .setErrorsPane(getErrorsPane());
     }
 
     //-------//
@@ -405,7 +412,7 @@ public class SheetAssembly
     // stateChanged //
     //--------------//
     /**
-     * This method is called whenever a view tab is selected in the Sheet
+     * This method is called whenever another view tab is selected in the Sheet
      * Assembly.
      *
      * @param e the originating change event (not used actually)
@@ -414,13 +421,13 @@ public class SheetAssembly
     public void stateChanged (ChangeEvent e)
     {
         if (previousViewIndex != -1) {
-            tabDeselected(previousViewIndex);
+            viewTabDeselected(previousViewIndex);
         }
 
         final int viewIndex = tabbedPane.getSelectedIndex();
 
         if (viewIndex != -1) {
-            tabSelected(viewIndex);
+            viewTabSelected(viewIndex);
         }
 
         previousViewIndex = viewIndex;
@@ -442,37 +449,44 @@ public class SheetAssembly
     //----------------//
     // displayContext //
     //----------------//
-    private void displayContext ()
+    private void displayContext (boolean connectBoards)
     {
         ///logger.info("displayContext");
 
         // Make sure the tab is ready
         int viewIndex = tabbedPane.getSelectedIndex();
 
-        if (viewIndex == -1) {
-            return;
+        if (viewIndex != -1) {
+            // Display the proper boards pane
+            BoardsPane boardsPane = viewTabs.get(viewIndex).boardsPane;
+
+            if (logger.isFineEnabled()) {
+                logger.fine("displaying " + boardsPane);
+            }
+
+            // (Re)connect the boards to their selection inputs?
+            if (connectBoards) {
+                boardsPane.shown();
+            }
+
+            // Display the boards pane of this assembly
+            Main.getGui()
+                .setBoardsPane(boardsPane.getComponent());
         }
-
-        // Display the proper boards pane
-        BoardsPane boardsPane = viewTabs.get(viewIndex).boardsPane;
-
-        if (logger.isFineEnabled()) {
-            logger.fine("displaying " + boardsPane);
-        }
-
-        boardsPane.shown();
-
-        Main.getGui()
-            .addBoardsPane(boardsPane.getComponent());
     }
 
-    //---------------//
-    // tabDeselected //
-    //---------------//
-    private void tabDeselected (int previousIndex)
+    //-------------------//
+    // viewTabDeselected //
+    //-------------------//
+    private void viewTabDeselected (int previousIndex)
     {
-        ///logger.info("tabDeselected for " + tabs.get(previousIndex).title);
         final ViewTab tab = viewTabs.get(previousIndex);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "SheetAssembly: " + sheet.getRadix() +
+                " viewTabDeselected for " + tab.title);
+        }
 
         // Disconnection of related view
         locationSelection.deleteObserver(tab.scrollView.getView());
@@ -481,13 +495,18 @@ public class SheetAssembly
         tab.boardsPane.hidden();
     }
 
-    //-------------//
-    // tabSelected //
-    //-------------//
-    private void tabSelected (int viewIndex)
+    //-----------------//
+    // viewTabSelected //
+    //-----------------//
+    private void viewTabSelected (int viewIndex)
     {
-        ///logger.info("tabSelected for " + tabs.get(viewIndex).title);
-        final ViewTab     tab = viewTabs.get(viewIndex);
+        final ViewTab tab = viewTabs.get(viewIndex);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "SheetAssembly: " + sheet.getRadix() + " viewTabSelected for " +
+                tab.title);
+        }
 
         ScrollView        scrollView = getSelectedView();
         RubberZoomedPanel view = scrollView.getView();
@@ -511,7 +530,8 @@ public class SheetAssembly
         locationSelection.addObserver(scrollView.getView());
 
         // Restore display of proper context
-        displayContext();
+        displayContext( /* connectBoards => */
+        true);
 
         // Force update
         locationSelection.reNotifyObservers(null);

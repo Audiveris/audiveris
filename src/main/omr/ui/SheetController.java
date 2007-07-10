@@ -150,11 +150,46 @@ public class SheetController
         // Initially disabled actions
         UIUtilities.enableActions(sheetDependentActions, false);
 
-        // Listener on tab operations
+        // Listener on sheet tab operations
         component.addChangeListener(this);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------//
+    // close //
+    //-------//
+    /**
+     * Remove the specified view from the tabbed pane
+     *
+     * @param assembly the sheet assembly to close
+     */
+    public void close (SheetAssembly assembly)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("closing " + assembly.toString());
+        }
+
+        // Forget about this sheet assembly
+        previousSheetIndex = -1;
+
+        // Disable sheet-based menu actions
+        UIUtilities.enableActions(sheetDependentActions, false);
+
+        int sheetIndex = component.indexOfComponent(assembly.getComponent());
+
+        if (sheetIndex != -1) {
+            // Remove from assemblies
+            assemblies.remove(sheetIndex);
+            // Remove from tabs
+            component.remove(sheetIndex);
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "closed " + assembly.toString() + " assemblies=" + assemblies);
+        }
+    }
 
     //--------------//
     // getComponent //
@@ -248,41 +283,6 @@ public class SheetController
         }
     }
 
-    //-------//
-    // close //
-    //-------//
-    /**
-     * Remove the specified view from the tabbed pane
-     *
-     * @param assembly the sheet assembly to close
-     */
-    public void close (SheetAssembly assembly)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("closing " + assembly.toString());
-        }
-
-        // Forget about this sheet assembly
-        previousSheetIndex = -1;
-
-        // Disable sheet-based menu actions
-        UIUtilities.enableActions(sheetDependentActions, false);
-
-        int sheetIndex = component.indexOfComponent(assembly.getComponent());
-
-        if (sheetIndex != -1) {
-            // Remove from assemblies
-            assemblies.remove(sheetIndex);
-            // Remove from tabs
-            component.remove(sheetIndex);
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "closed " + assembly.toString() + " assemblies=" + assemblies);
-        }
-    }
-
     //---------------//
     // showSheetView //
     //---------------//
@@ -307,7 +307,7 @@ public class SheetController
     /**
      * This method is called whenever the sheet selection is modified, whether
      * it's programmatically (by means of setSheetView) of by user action
-     * (manual selection of the tab).
+     * (manual selection of the sheet tab).
      *
      * <p> Set the state (enabled or disabled) of all menu items that depend on
      * status of current sheet.
@@ -318,16 +318,17 @@ public class SheetController
         final Object source = e.getSource();
 
         if (source == component) {
-            // User has selected a new tab
+            // Finalize previous sheet tab?
+            if (previousSheetIndex != -1) {
+                ////sheetTabDeselected(previousSheetIndex);
+            }
+
             final int sheetIndex = component.getSelectedIndex();
 
-            ///logger.info("Controller-stateChanged. previousSheetIndex=" + previousSheetIndex + " sheetIndex=" + sheetIndex);
+            // User has selected a new sheet tab?
             if (sheetIndex != -1) {
-                if (previousSheetIndex != -1) {
-                    tabDeselected(previousSheetIndex);
-                }
-
-                tabSelected(sheetIndex);
+                // Connect the new sheet tab
+                sheetTabSelected(sheetIndex);
             }
 
             previousSheetIndex = sheetIndex;
@@ -372,20 +373,6 @@ public class SheetController
         } else {
             return null;
         }
-    }
-
-    //------------------//
-    // setSynchroWanted //
-    //------------------//
-    /**
-     * Allow to register the need (or lack of) for synchronization of the other
-     * side (score view).
-     *
-     * @param synchroWanted the value to set to the flag
-     */
-    private synchronized void setSynchroWanted (boolean synchroWanted)
-    {
-        this.synchroWanted = synchroWanted;
     }
 
     //-----------------//
@@ -442,26 +429,49 @@ public class SheetController
         }
     }
 
-    //---------------//
-    // tabDeselected //
-    //---------------//
-    private void tabDeselected (int previousIndex)
+    //------------------//
+    // setSynchroWanted //
+    //------------------//
+    /**
+     * Allow to register the need (or lack of) for synchronization of the other
+     * side (score view).
+     *
+     * @param synchroWanted the value to set to the flag
+     */
+    private synchronized void setSynchroWanted (boolean synchroWanted)
     {
-        ///logger.info("tabDeselected previousIndex=" + previousIndex);
-        SheetAssembly prevAssembly = assemblies.get(previousIndex);
-        prevAssembly.assemblyDeselected();
+        this.synchroWanted = synchroWanted;
     }
 
-    //-------------//
-    // tabSelected //
-    //-------------//
-    private void tabSelected (int sheetIndex)
+    //    //--------------------//
+    //    // sheetTabDeselected //
+    //    //--------------------//
+    //    private void sheetTabDeselected (int previousIndex)
+    //    {
+    //        logger.info(
+    //            "SheetController: sheetTabDeselected previousIndex=" +
+    //            previousIndex);
+    //
+    //        SheetAssembly prevAssembly = assemblies.get(previousIndex);
+    //        prevAssembly.assemblyDeselected();
+    //    }
+
+    //------------------//
+    // sheetTabSelected //
+    //------------------//
+    private void sheetTabSelected (int sheetIndex)
     {
         // Remember the new selected sheet
         SheetAssembly assembly = assemblies.get(sheetIndex);
         Sheet         sheet = assembly.getSheet();
 
-        ///logger.info("tabSelected sheetIndex=" + sheetIndex + " sheet=" + sheet);
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "SheetController: sheetTabSelected sheetIndex=" + sheetIndex +
+                " sheet=" + sheet);
+        }
+
+        // Tell everyone about the new selected sheet
         Selection sheetSelection = SheetManager.getSelection();
         sheetSelection.setEntity(sheet, null);
 
@@ -469,8 +479,6 @@ public class SheetController
         UIUtilities.enableActions(sheetDependentActions, true);
 
         // Tell the selected assembly that it now has the focus...
-        Main.getGui()
-            .addErrorsPane(assembly.getErrorsPane());
         assembly.assemblySelected();
     }
 

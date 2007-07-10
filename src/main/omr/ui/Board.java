@@ -11,7 +11,6 @@ package omr.ui;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
-import omr.selection.SelectionManager;
 import omr.selection.SelectionObserver;
 
 import omr.ui.util.Panel;
@@ -136,6 +135,7 @@ public abstract class Board
      * Create a board
      *
      * @param tag the tag to wrap the board
+     * @param name a name assigned to the board, for debug reason
      */
     public Board (Tag    tag,
                   String name)
@@ -250,6 +250,7 @@ public abstract class Board
      */
     public void setInputSelectionList (List<Selection> inputSelectionList)
     {
+        // First unregister from previous ones, if any
         if (this.inputSelectionList != null) {
             for (Selection input : this.inputSelectionList) {
                 input.deleteObserver(this);

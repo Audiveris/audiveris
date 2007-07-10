@@ -17,8 +17,9 @@ import omr.util.Logger;
 import omr.util.Memory;
 
 import java.io.File;
+
 /**
- * Enum <code>Step</code> lists the various sheet processing steps in 
+ * Enum <code>Step</code> lists the various sheet processing steps in
  * chronological order.
  *
  * @author Herv&eacute Bitteur
@@ -34,45 +35,45 @@ public enum Step {
      * Determine the general scale of the sheet, based on the mean distance
      * between staff lines
      */
-    SCALE("Compute the global Skew, and rotate if needed"),
+    SCALE("Compute the global Skew, and rotate if needed"), 
 
     /**
      * Determine the average skew of the picture, and deskews it if needed
      */
-    SKEW("Detect & remove all Staff Lines"),
+    SKEW("Detect & remove all Staff Lines"), 
 
     /**
      * Retrieve the staff lines, erases their pixels and creates crossing
      * objects when needed
      */
-    LINES("Retrieve horizontal Dashes"),
+    LINES("Retrieve horizontal Dashes"), 
 
     /**
      * Retrieve the horizontal dashes (ledgers, endings)
      */
-    HORIZONTALS("Detect horizontal dashes"),
+    HORIZONTALS("Detect horizontal dashes"), 
     /**
      * Retrieve the vertical bar lines, and so the systems and measures
      */
-    BARS("Detect vertical Bar lines"),
+    BARS("Detect vertical Bar lines"), 
     /**
      * Recognize isolated symbols glyphs and aggregates unknown symbols into
      * compound glyphs
      */
-    SYMBOLS("Recognize Symbols & Compounds"),
+    SYMBOLS("Recognize Symbols & Compounds"), 
     /**
      * Retrieve the vertical items such as stems
      */
-    VERTICALS("Extract verticals"),
+    VERTICALS("Extract verticals"), 
     /**
      * Process leaves, which are glyphs attached to stems and aggregates unknown
      * leaves into compound glyphs
      */
-    LEAVES("Recognize Leaves & Compounds"),
+    LEAVES("Recognize Leaves & Compounds"), 
     /**
      * Cleanup stems and slurs
      */
-    CLEANUP("Cleanup stems and slurs"),
+    CLEANUP("Cleanup stems and slurs"), 
 
     /**
      * Translate glyphs into score entities

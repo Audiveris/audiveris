@@ -281,7 +281,7 @@ public class VerticalsBuilder
         view.colorize();
 
         // Create a hosting frame for the view
-        final String unit = "VerticalsBuilder";
+        final String unit = sheet.getRadix() + ":VerticalsBuilder";
 
         sheet.getAssembly()
              .addViewTab(

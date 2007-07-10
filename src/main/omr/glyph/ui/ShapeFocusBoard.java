@@ -121,7 +121,7 @@ class ShapeFocusBoard
                             GlyphModel     glyphModel,
                             ActionListener filterListener)
     {
-        super(Tag.CUSTOM, "ShapeFocusBoard");
+        super(Tag.CUSTOM, sheet.getRadix() + "-ShapeFocusBoard");
 
         this.sheet = sheet;
         this.view = view;
