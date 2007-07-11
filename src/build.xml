@@ -41,14 +41,13 @@
     
     <!-- Tools classpath -->
     <path id="tools.classpath">
-        <pathelement path="${ant.dir}/lib/xercesImpl.jar"/>
         <pathelement path="${jcommon.jar}"/>
         <pathelement path="${jfreechart.jar}"/>
         <pathelement path="${jgoodies.forms.jar}"/>
         <pathelement path="${jgoodies.looks.jar}"/>
         <pathelement path="${proxymusic.jar}"/>
         <pathelement path="${jama.jar}"/>
-	<fileset dir="${jaxb.dir}/lib" includes="*.jar"/>
+<!-- 	<fileset dir="${jaxb.dir}/lib" includes="*.jar"/> -->
     </path>
     
     <!-- Build classpath -->
@@ -67,7 +66,7 @@
     
     <!-- Run classpath -->
     <path id="run.classpath">
-        <pathelement path="${dist.jar}"/>
+<!--         <pathelement path="${dist.jar}"/> -->
         <pathelement path="${icons.music.jar}"/>
         <pathelement path="${icons.buttons.jar}"/>
         <path refid="tools.classpath"/>
@@ -180,21 +179,6 @@
             <compilerarg value="-Xlint:-path"/>
         </javac>
     </target>
-
-    <!-- =============================== -->
-    <!--  - C O P Y - E V A L U A T O R  -->
-    <!-- =============================== -->
-    <target name="-copy-evaluator"
-	    if="custom.evaluator.present">
-<!-- 	    description="Copy the custom evaluator file to config dir." -->
-
-        <copy
-            verbose="${verbose}"
-            todir="${config.dir}">
-            <fileset dir="${train.dir}"  
-                     includes="*.def"/>
-        </copy>
-    </target>
     
     <!-- =========== -->
     <!--  - I N I T  -->
@@ -280,28 +264,6 @@
 	<echo message="Done with ${uml.html}"/>
 	
     </target>
-
-    <!-- =================== -->
-    <!--  - Z I P - C O R E  -->
-    <!-- =================== -->
-    <target name="-zip-core"
-            depends="-init">
-<!--             description="Build zip archive of just core training files." -->
-
-        <delete verbose="${verbose}">
-            <fileset dir="${core.dir}" 
-                     includes="core.zip" 
-                     />
-        </delete>
-
-        <zip
-            destfile="${core.zip}" >
-            <zipfileset dir="${core.dir}" prefix="core"
-                     includes="**/*.xml"
-                     excludes="${dist.excludes}"
-                     />
-        </zip>
-    </target>
     
     <!-- ================================================================ -->
     <!-- =======================  Public Targets  ======================= -->
@@ -319,15 +281,10 @@
     <!--  D I S T  -->
     <!-- ========= -->
     <target name="dist"
- 	    depends="clean, -zip-core, jar, launcher, javadoc"
-            description="Rebuild and package everything for distribution.">
+ 	    depends="clean, jar, launcher, javadoc"
+            description="Rebuild and package the whole distribution.">
 
         <mkdir dir="${dist.dir}"/>
-
-        <!-- Copy the custom evaluator file if any to config dir -->
-     	<available file="${train.dir}/Neural.def"
-		   property="custom.evaluator.present"/>
-	<antcall target="-copy-evaluator"/>
 
         <!-- Generate the global zip archive -->
         <zip 
@@ -335,7 +292,7 @@
 
             <!-- Files on top dir-->
             <fileset dir="${basedir}" 
-                     includes="*.txt, *.html, *.xml, *.bat" 
+                     includes="build.xml" 
                      excludes="${dist.excludes}"
                      />
         
@@ -346,25 +303,25 @@
                      />
         
             <!-- Jar file -->
-            <zipfileset dir="${dist.dir}" prefix="lib"
-                     includes="**"
+            <zipfileset dir="${dist.dir}"
+                     includes="*.jar"
                      excludes="${dist.excludes}"
                      />
-
-            <!-- Config files -->
-            <zipfileset dir="${config.dir}" prefix="config"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-
-            <!-- Www files -->
-            <zipfileset dir="${www.dir}" prefix="www"
+        
+            <!-- lib jar files -->
+            <zipfileset dir="${dist.dir}/lib" prefix="lib"
                      includes="**"
                      excludes="${dist.excludes}"
                      />
             
             <!-- Source main and test files -->
-            <zipfileset dir="${src.dir}" prefix="src"
+            <zipfileset dir="${basedir}/src" prefix="src"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+            
+            <!-- Icons -->
+            <zipfileset dir="${basedir}/icons" prefix="icons"
                      includes="**"
                      excludes="${dist.excludes}"
                      />
@@ -375,39 +332,25 @@
                      excludes="${dist.excludes}"
                      />
 
-            <!-- Core srchive -->
-            <zipfileset dir="${train.dir}" prefix="train"
-                     includes="${core.file}"
-                     />
-        </zip>
-        
-    </target>
-    
-    <!-- ===================== -->
-    <!--  D I S T - T R A I N  -->
-    <!-- ===================== -->
-    <target name="dist-train"
-            depends="-init"
-            description="Zip all training material.">
-
-        <mkdir dir="${dist.dir}"/>
-
-        <delete verbose="${verbose}">
-            <fileset dir="${dist.dir}" 
-                     includes="*train*.zip" 
-                     />
-        </delete>
-        
-        <!-- Generate the train zip archive -->
-        <zip 
-            destfile="${dist.dir}/${full.name}-train-${DSTAMP}.zip" >
-
-            <!-- Train files -->
-            <zipfileset dir="${sheets.dir}" prefix="train/sheets"
-                     includes="**/*.xml"
+            <!-- Www + javadoc files -->
+            <zipfileset dir="${www.dir}" prefix="www"
+                     includes="**"
                      excludes="${dist.excludes}"
                      />
-        </zip>
+
+            <!-- Core Train files -->
+            <zipfileset dir="${core.dir}" prefix="train/core"
+			includes="**/*.xml"
+			excludes="${dist.excludes}"
+			/>
+
+            <!-- Sheet Train files -->
+            <zipfileset dir="${sheets.dir}" prefix="train/sheets"
+			includes="**/*.xml"
+			excludes="${dist.excludes}"
+			/>
+
+	</zip>
     </target>
 
     <!-- ============= -->
@@ -452,16 +395,40 @@
             depends="-format"
             description="Format Java source with Jalopy."/>
     
+    <!-- ===================== -->
+    <!--  - C O P Y - L I B S  -->
+    <!-- ===================== -->
+    <target name="-copy-libs">
+        <mkdir dir="${dist.dir}/lib"/>
+
+<!--         <pathconvert pathsep=" " refid="run.classpath" property="jar.classpath"> -->
+<!--             <chainedmapper> -->
+<!--                 <flattenmapper/> -->
+<!--                 <globmapper from="*" to="lib/*"/> -->
+<!--             </chainedmapper> -->
+<!--         </pathconvert> -->
+<!-- 	<echo message="jar.classpath=${jar.classpath}" /> -->
+
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jcommon.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jfreechart.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.forms.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.looks.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${proxymusic.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jama.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.music.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.buttons.jar}"/>
+
+    </target>
+	     
+    
     <!-- ======= -->
     <!--  J A R  -->
     <!-- ======= -->
     <target name="jar"
-        depends="-compile, -pre-jar"
-        description="Compile and generate the Audiveris jar file.">
+        depends="-compile, -pre-jar, -copy-libs"
+        description="Compile and generate the application jar file.">
 
-        <mkdir dir="${dist.dir}"/>
-        
-        <!-- Put all ${build.classes.dir} into the Audiveris jar file -->
+        <!-- Put all ${build.classes.dir} into the application jar file -->
         <jar basedir="${build.classes.dir}"
 	     jarfile="${dist.jar}">
             <manifest>
@@ -475,6 +442,8 @@
                            value="${spec.version}"/>
                 <attribute name="Implementation-Version"
                            value="${impl.version} ${DSTAMP}"/>
+                <attribute name="Class-Path"
+                           value="${jar.classpath}"/>
             </manifest>
         </jar>
         
@@ -497,9 +466,9 @@
         <mkdir dir="${bin.dir}"/>
 
         <!-- .bat file for windows -->
-        <echo file="${bin.dir}/audiveris.bat" append="false">@ECHO OFF
-REM audiveris.bat - file generated on ${DSTAMP}
-java -cp ${run.string} ${Name} %1 %2 %3 %4 %5 %6 %7 %8 %9
+        <echo file="${bin.dir}/${name}.bat" append="false">@ECHO OFF
+REM ${name}.bat - file generated on ${DSTAMP}
+java -Xmx128M -jar ../${full.name}.jar
         </echo>
         
     </target>
@@ -526,14 +495,14 @@ java -cp ${run.string} ${Name} %1 %2 %3 %4 %5 %6 %7 %8 %9
 	<property name="run.step"  value=""/>
 	
         <java
-	    classname="Audiveris"
+	    classname="${Name}"
             classpathref="run.classpath"
             failonerror="true"
             fork="true"
             maxmemory="128m">
             
             <!-- Specific JVM arguments, if any -->
-<!--   	    <jvmarg value="-verbose:class"/> -->
+<!--    	    <jvmarg value="-verbose:class"/>  -->
  	    <jvmarg value="-Dcom.sun.management.jmxremote"/>
  	    
             <!-- Configuration file for logging -->
@@ -565,7 +534,7 @@ java -cp ${run.string} ${Name} %1 %2 %3 %4 %5 %6 %7 %8 %9
 	<property name="run.step"  value=""/>
 	
         <java
-	    classname="Audiveris"
+	    classname="${Name}"
             classpathref="jmp.classpath"
             failonerror="true"
             fork="true"
@@ -646,7 +615,7 @@ java -cp ${run.string} ${Name} %1 %2 %3 %4 %5 %6 %7 %8 %9
         description="Run to prepare the Heap Analysis Tool.">
         
         <java
-	    classname="Audiveris"
+	    classname="${Name}"
             classpathref="run.classpath"
             failonerror="true"
             fork="true"
@@ -912,23 +881,14 @@ java -cp ${run.string} ${Name} %1 %2 %3 %4 %5 %6 %7 %8 %9
     </target>
 
     <target name="fix-ledger">
-
         <!-- Make sure we use width-ledger rather than ledger -->
-        <echo message="Fixing ledger tags 1 ..." />
+        <echo message="Fixing ledger tags..." />
         <replaceregexp replace="/with-ledger"
                        match="/ledger" >
             <fileset dir="${train.dir}" 
                      includes="**/*.xml" 
                      />
         </replaceregexp>
-<!--         <echo message="Fixing ledger tags 2 ..." /> -->
-<!--         <replaceregexp replace="with" -->
-<!--                        match="with-with" > -->
-<!--             <fileset dir="${train.dir}"  -->
-<!--                      includes="**/*.xml"  -->
-<!--                      /> -->
-<!--         </replaceregexp> -->
-
     </target>
     
 </project>
