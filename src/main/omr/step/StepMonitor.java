@@ -29,7 +29,7 @@ import javax.swing.*;
 
 /**
  * Class <code>StepMonitor</code> is the user interface entity that allows to
- * monitor step progression, and require manually a step series to be performed.
+ * monitor step progression, and to require manually that a step be performed.
  *
  * @author Herv&eacute; Bitteur and Brenton Partridge
  * @version $Id$
@@ -181,8 +181,7 @@ public class StepMonitor
      * Start the performance of a series of steps, with an online display of a
      * progress monitor.
      *
-     * @param step the target step, all intermediate steps will be performed
-     *                 beforehand if any.
+     * @param step the target step
      * @param sheet the sheet being analyzed
      * @param param an eventual parameter for targeted step
      */

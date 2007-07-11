@@ -12,8 +12,7 @@ package omr.step;
 
 /**
  * Class <code>StepException</code> describes an exception occurring while
- * doing OMR processing, and which should immediately stop the current Step, as
- * well as potential subsequent steps.
+ * doing OMR processing, and which should immediately stop the current Step.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -33,6 +32,7 @@ public class StepException
 
     /**
      * Construct an <code>StepException</code> with detail message.
+     * @param message the related message
      */
     public StepException (String message)
     {
@@ -41,6 +41,7 @@ public class StepException
 
     /**
      * Construct an <code>StepException</code> from an existing exception.
+     * @param ex the related exception
      */
     public StepException (Throwable ex)
     {

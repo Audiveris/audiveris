@@ -36,7 +36,7 @@ public abstract class SheetTask
     protected final Sheet sheet;
 
     /** The related step for this task */
-    final Step step;
+    protected final Step step;
 
     /** Flag to indicate the task has been done (actually launched) */
     protected volatile boolean stepDone;
@@ -46,8 +46,13 @@ public abstract class SheetTask
     //-----------//
     // SheetTask //
     //-----------//
-    SheetTask (Sheet sheet,
-               Step  step)
+    /**
+     * Creates a task at sheet level
+     * @param sheet the processed sheet
+     * @param step the step performed by the task
+     */
+    protected SheetTask (Sheet sheet,
+                         Step  step)
     {
         this.sheet = sheet;
         this.step = step;
@@ -63,6 +68,7 @@ public abstract class SheetTask
      */
     public void displayUI ()
     {
+        // Void by default
     }
 
     //------//

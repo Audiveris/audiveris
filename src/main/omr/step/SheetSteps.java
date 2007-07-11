@@ -63,6 +63,10 @@ public class SheetSteps
     //------------//
     // SheetSteps //
     //------------//
+    /**
+     * Create all the task definitions for the given sheet instance
+     * @param sheet the given sheet instance
+     */
     public SheetSteps (Sheet sheet)
     {
         this.sheet = sheet;
@@ -115,6 +119,8 @@ public class SheetSteps
         if (task instanceof SystemTask) {
             SystemTask systemTask = (SystemTask) task;
             systemTask.doSystem(system);
+        } else {
+            logger.severe("Illegal system processing from step " + step);
         }
     }
 
@@ -175,8 +181,8 @@ public class SheetSteps
     // isDone //
     //--------//
     /**
-     * Convenient method to check whether a given step has been done /
-     * started
+     * Convenient method to check whether a given step has been done (or simply
+     * started)
      * @param step the provided step
      * @return true if step has been done / started
      */
@@ -189,6 +195,13 @@ public class SheetSteps
     //-----------------//
     // updateLastSteps //
     //-----------------//
+    /**
+     * Following the modification of a collection of glyphs, this method
+     * launches the re-processing of the steps following VERTICALS on the
+     * systems impacted by the modifications
+     * @param glyphs the modified glyphs
+     * @param shapes the previous shapes of these glyphs
+     */
     public void updateLastSteps (Collection<Glyph> glyphs,
                                  Collection<Shape> shapes)
     {
@@ -201,6 +214,8 @@ public class SheetSteps
             logger.fine(impactedSystems.size() + " Impacted system(s)");
         }
 
+        // The re-processing is done sequentially (though LEAVES & CLEANUP could
+        // be done on several systems in parallel)
         for (SystemInfo info : impactedSystems) {
             final SystemInfo system = info;
 
@@ -253,6 +268,9 @@ public class SheetSteps
     //----------//
     // BarsTask //
     //----------//
+    /**
+     * Step to retrieve barlines, and thus systems and measures
+     */
     class BarsTask
         extends SheetTask
     {
@@ -419,11 +437,6 @@ public class SheetSteps
     /**
      * Step to (re)load sheet picture. A brand new sheet is created with the
      * provided image file as parameter.
-     *
-     * <p>The result of this step (a Picture) is <b>transient</b>, thus not
-     * saved nor restored, since a picture is too costly. If picture is indeed
-     * needed, then it is explicitly reloaded from the image file through the
-     * <b>getPicture</b> method.
      */
     class LoadTask
         extends SheetTask

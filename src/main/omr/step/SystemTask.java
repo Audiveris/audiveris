@@ -22,7 +22,8 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * Class <code>SystemTask</code> defines the ask for a step at system level
+ * Class <code>SystemTask</code> defines the task for a step at system level for
+ * a given sheet
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -37,7 +38,7 @@ public abstract class SystemTask
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Flag which systems have been done */
+    /** Flag which systems have been processed by this step */
     private final SortedMap<SystemInfo, Boolean> systemDone;
 
     //~ Constructors -----------------------------------------------------------
@@ -45,8 +46,13 @@ public abstract class SystemTask
     //------------//
     // SystemTask //
     //------------//
-    SystemTask (Sheet sheet,
-                Step  step)
+    /**
+     * Create a system-based task for a given sheet
+     * @param sheet the related sheet
+     * @param step the step that governs this task
+     */
+    protected SystemTask (Sheet sheet,
+                          Step  step)
     {
         super(sheet, step);
         systemDone = new TreeMap<SystemInfo, Boolean>();
@@ -160,6 +166,9 @@ public abstract class SystemTask
         return (result != null) && result;
     }
 
+    //--------------//
+    // doitParallel //
+    //--------------//
     private void doitParallel ()
     {
         Executor       executor = OmrExecutors.getHighExecutor();
@@ -176,7 +185,7 @@ public abstract class SystemTask
                             try {
                                 doSystem(system);
 
-                                ///logger.info("");
+                                ///logger.info(""); // for bar animation?
                             } catch (StepException ex) {
                                 logger.warning("Step aborted on system", ex);
                             }
@@ -193,13 +202,16 @@ public abstract class SystemTask
         }
     }
 
+    //------------//
+    // doitSerial //
+    //------------//
     private void doitSerial ()
         throws StepException
     {
         for (SystemInfo system : sheet.getSystems()) {
             doSystem(system);
 
-            ///logger.info("");
+            ///logger.info(""); // for bar animation?
         }
     }
 }

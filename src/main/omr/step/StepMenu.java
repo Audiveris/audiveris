@@ -54,7 +54,7 @@ public class StepMenu
         // Listener to item selection
         ActionListener actionListener = new StepListener();
 
-        // List of Steps classes
+        // List of Steps classes in proper order
         for (Step step : Step.values()) {
             menu.add(new StepItem(step, actionListener));
         }
@@ -132,7 +132,7 @@ public class StepMenu
     /**
      * Class <code>Listener</code> is triggered when the whole sub-menu is
      * entered. This is done with respect to currently displayed sheet. The
-     * steps already done are flagged as such.
+     * steps already performed are flagged as such.
      */
     private class Listener
         implements MenuListener

@@ -96,7 +96,7 @@ public enum Step {
     //------//
     // Step //
     //------//
-    Step (String description)
+    private Step (String description)
     {
         this.description = description;
     }
@@ -157,7 +157,7 @@ public enum Step {
     // doPerform //
     //-----------//
     /**
-     * Meant to actually perform the series of step(s), with or without UI.
+     * Meant to actually perform a step, with or without UI.
      *
      * @param sheet the sheet on which analysis is performed, sheet may be null
      *              (case of loading a brand new sheet)
@@ -186,6 +186,10 @@ public enum Step {
     //------------//
     // getMonitor //
     //------------//
+    /**
+     * Give access to a related UI monitor
+     * @return the related step monitor, or null
+     */
     public static StepMonitor getMonitor ()
     {
         return monitor;
@@ -213,14 +217,14 @@ public enum Step {
     // perform //
     //---------//
     /**
-     * Trigger the execution of all needed steps up to this one.
+     * Trigger the execution of  this step
      *
      * <p> This is delegated to the UI if there is such interface, which will
      * ultimately call doPerform(). If there is no UI, doPerform() is called
      * directly.
      *
      * @param sheet the sheet on which analysis is performed
-     * @param param a potential parameters (depending on the processing)
+     * @param param a potential parameter (depending on the processing)
      */
     public void perform (Sheet  sheet,
                          Object param)
@@ -240,7 +244,7 @@ public enum Step {
     // doStep //
     //--------//
     /**
-     * Do just one step (probably within a larger series)
+     * Do one step
      *
      * @param sheet the sheet to be processed
      * @param param the potential step parameter
@@ -271,8 +275,6 @@ public enum Step {
         // Check for loading of a sheet
         if (this != LOAD) {
             // Standard processing on an existing sheet
-            //            sheet.getInstanceStep(this)
-            //                 .undo();
             sheet.getSheetSteps()
                  .getResult(this);
         }
