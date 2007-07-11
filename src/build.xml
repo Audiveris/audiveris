@@ -401,12 +401,12 @@
     <target name="-copy-libs">
         <mkdir dir="${dist.dir}/lib"/>
 
-<!--         <pathconvert pathsep=" " refid="run.classpath" property="jar.classpath"> -->
-<!--             <chainedmapper> -->
-<!--                 <flattenmapper/> -->
-<!--                 <globmapper from="*" to="lib/*"/> -->
-<!--             </chainedmapper> -->
-<!--         </pathconvert> -->
+        <pathconvert pathsep=" " refid="run.classpath" property="jar.classpath">
+            <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*" to="lib/*"/>
+            </chainedmapper>
+        </pathconvert>
 <!-- 	<echo message="jar.classpath=${jar.classpath}" /> -->
 
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jcommon.jar}"/>
