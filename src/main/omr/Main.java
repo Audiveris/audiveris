@@ -54,8 +54,8 @@ import javax.swing.*;
  * available in batch mode only. </dd>
  *
  * <dt> <b>-save SAVEPATH</b> </dt> <dd> to specify the directory where score
- * output files are saved. If not specified, files are simply written to the
- * 'save' sub-directory of the application. </dd>
+ * output files are saved. This is meant for batch mode, since in interactive
+ * mode, the user is presented a file chooser dialog.</dd>
  *
  * <dt> <b>-sheet (SHEETNAME | &#64;SHEETLIST)+</b> </dt> <dd> to specify some
  * sheets to be read, either by naming the image file or by referencing (flagged
@@ -65,11 +65,12 @@ import javax.swing.*;
  *
  * <dt> <b>-score (SCORENAME | &#64;SCORELIST)+</b> </dt> <dd> to specify some
  * scores to be read, using the same mechanism than sheets. These score files
- * contain binary data in saved during a previous run.</dd>
+ * contain binary data in saved during a previous run. <i><b>NOTA</b>: this 
+ * feature is currently disabled.</i></dd>
  *
  * <dt> <b>-step STEPNAME</b> </dt> <dd> to run till the specified
  * step. 'STEPNAME' can be any one of the step names (the case is irrelevant) as
- * defined in the {@link omr.sheet.Sheet} class.
+ * defined in the {@link omr.step.Step} class.
  *
  * </dd> </dl>
  *
@@ -507,9 +508,9 @@ public class Main
                 } else if (token.equalsIgnoreCase("-sheet")) {
                     status = SHEET;
                     paramNeeded = true;
-                } else if (token.equalsIgnoreCase("-score")) {
-                    status = SCORE;
-                    paramNeeded = true;
+//                } else if (token.equalsIgnoreCase("-score")) {
+//                    status = SCORE;
+//                    paramNeeded = true;
                 } else if (token.equalsIgnoreCase("-save")) {
                     status = SAVE;
                     paramNeeded = true;
