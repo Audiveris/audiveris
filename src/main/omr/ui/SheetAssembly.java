@@ -451,13 +451,11 @@ public class SheetAssembly
     //----------------//
     private void displayContext (boolean connectBoards)
     {
-        ///logger.info("displayContext");
-
         // Make sure the tab is ready
         int viewIndex = tabbedPane.getSelectedIndex();
 
         if (viewIndex != -1) {
-            // Display the proper boards pane
+            // Retrieve the proper boards pane
             BoardsPane boardsPane = viewTabs.get(viewIndex).boardsPane;
 
             if (logger.isFineEnabled()) {
@@ -469,7 +467,7 @@ public class SheetAssembly
                 boardsPane.shown();
             }
 
-            // Display the boards pane of this assembly
+            // Display the boards pane related to the selected view
             Main.getGui()
                 .setBoardsPane(boardsPane.getComponent());
         }
