@@ -271,7 +271,7 @@ public class SheetSteps
     /**
      * Step to retrieve barlines, and thus systems and measures
      */
-    class BarsTask
+    private class BarsTask
         extends SheetTask
     {
         BarsTask (Sheet sheet,
@@ -289,8 +289,7 @@ public class SheetSteps
 
             // Force score view creation if UI is present
             if (Main.getGui() != null) {
-                Main.getGui().scoreController.setScoreView(
-                    SheetSteps.this.sheet.getScore());
+                Main.getGui().scoreController.setScoreView(sheet.getScore());
             }
         }
     }
@@ -301,7 +300,7 @@ public class SheetSteps
     /**
      * Step to clean up undue constructions, such as wrong stems..
      */
-    class CleanupTask
+    private class CleanupTask
         extends SystemTask
     {
         CleanupTask (Sheet sheet,
@@ -348,7 +347,7 @@ public class SheetSteps
     /**
      * Step to retrieve all horizontal dashes
      */
-    class HorizontalsTask
+    private class HorizontalsTask
         extends SheetTask
     {
         HorizontalsTask (Sheet sheet,
@@ -373,7 +372,7 @@ public class SheetSteps
      * Step to extract newly segmented leaves, since sections belonging to stems
      * are properly assigned.
      */
-    class LeavesTask
+    private class LeavesTask
         extends SystemTask
     {
         LeavesTask (Sheet sheet,
@@ -413,7 +412,7 @@ public class SheetSteps
     /**
      * Step to retrieve all staff lines, and remove them from the picture
      */
-    class LinesTask
+    private class LinesTask
         extends SheetTask
     {
         LinesTask (Sheet sheet,
@@ -438,7 +437,7 @@ public class SheetSteps
      * Step to (re)load sheet picture. A brand new sheet is created with the
      * provided image file as parameter.
      */
-    class LoadTask
+    private class LoadTask
         extends SheetTask
     {
         LoadTask (Sheet sheet,
@@ -491,7 +490,7 @@ public class SheetSteps
      * come from staff lines, and most frequent background runs come from inter
      * staff lines.
      */
-    class ScaleTask
+    private class ScaleTask
         extends SheetTask
     {
         ScaleTask (Sheet sheet,
@@ -515,7 +514,7 @@ public class SheetSteps
     /**
      * Step to translate recognized glyphs into score items
      */
-    class ScoreTask
+    private class ScoreTask
         extends SystemTask
     {
         ScoreTask (Sheet sheet,
@@ -576,11 +575,9 @@ public class SheetSteps
      * pseudo-horizontal (staff) lines. If the absolute value of the computed
      * slope is above a maximum threshold, then the image as a whole is
      * "deskewed", since this significantly eases the subsequent processing.
-     * The resulting (deskewed) image is stored on disk, and reloaded in place
-     * of the original (skewed) image. From this step on, we'll play only with
-     * the deskewed image.
+     * From this step on, we'll play only with the deskewed image.
      */
-    class SkewTask
+    private class SkewTask
         extends SheetTask
     {
         SkewTask (Sheet sheet,
@@ -605,7 +602,7 @@ public class SheetSteps
      * Step to process all glyphs, built with connected sections from the
      * current collection of non-recognized sections.
      */
-    class SymbolsTask
+    private class SymbolsTask
         extends SystemTask
     {
         SymbolsTask (Sheet sheet,
@@ -647,7 +644,7 @@ public class SheetSteps
      * recognize newly segmented leaves, since sections belonging to stems are
      * properly assigned.
      */
-    class VerticalsTask
+    private class VerticalsTask
         extends SystemTask
     {
         VerticalsTask (Sheet sheet,
