@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<waiter id="456">
+    <matrix>
+        <row>
+            <item>0.0</item>
+            <item>1.0</item>
+            <item>2.0</item>
+        </row>
+        <row>
+            <item>10.0</item>
+            <item>11.0</item>
+            <item>12.0</item>
+        </row>
+    </matrix>
+    <results>
+        <val>1.0</val>
+        <val>2.0</val>
+        <val>4.0</val>
+        <val>67.0</val>
+    </results>
+    <first-name>Robert</first-name>
+    <tips>
+        <tip>1.0</tip>
+        <tip>2.345</tip>
+        <tip>4.5</tip>
+    </tips>
+    <day label="FRIDAY">
+        <meeting stop="9" start="8"/>
+        <meeting stop="12" start="10"/>
+    </day>
+    <day label="THURSDAY">
+        <meeting stop="9" start="8"/>
+        <meeting stop="17" start="15"/>
+    </day>
+    <location>
+        <x>1234</x>
+        <y>5678</y>
+    </location>
+    <titles>
+        <title>One</title>
+        <title>Two</title>
+        <title>Three</title>
+    </titles>
+</waiter>

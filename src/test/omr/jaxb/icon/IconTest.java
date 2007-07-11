@@ -7,19 +7,16 @@
 //  License. Please contact the author at herve.bitteur@laposte.net      //
 //  to report bugs & suggestions.                                        //
 //-----------------------------------------------------------------------//
-package omr.ui.icon;
+package omr.jaxb.icon;
 
-import omr.glyph.Shape;
+import omr.ui.icon.IconManager;
+import omr.ui.icon.SymbolIcon;
 
 import omr.util.BaseTestCase;
 import omr.util.Dumper;
 import static junit.framework.Assert.*;
 
-import java.awt.Dimension;
-import java.awt.Image;
 import java.io.*;
-
-import javax.swing.ImageIcon;
 
 /**
  * DOCUMENT ME!
@@ -40,25 +37,6 @@ public class IconTest
         new IconTest().play(args[0]);
     }
 
-    //---------//
-    // convert //
-    //---------//
-//    public void convert ()
-//    {
-//        // Convert icon files (raw -> xml)
-//        for (Shape shape : Shape.values()) {
-//            SymbolIcon icon = (SymbolIcon) shape.getIcon();
-//
-//            if (icon != null) {
-//                System.out.println("Processing " + shape);
-//                IconManager.getInstance()
-//                           .storeSymbolIcon((SymbolIcon) shape.getIcon());
-//            } else {
-//                System.out.println("***Skipping " + shape);
-//            }
-//        }
-//    }
-
     //------//
     // play //
     //------//
@@ -71,6 +49,12 @@ public class IconTest
 
             Dumper.dump(icon);
 
+            if (icon.bitmap != null) {
+                for (String s : icon.bitmap) {
+                    System.out.println(s);
+                }
+            }
+
             IconManager.getInstance()
                        .storeToXmlStream(
                 icon,
@@ -81,30 +65,30 @@ public class IconTest
         }
     }
 
-    //-----------//
-    // playBasic //
-    //-----------//
-    public void playBasic (String fileName)
-    {
-//        try {
-//            XmlMapper  mapper = new XmlMapper(SymbolIcon.class);
-//            SymbolIcon icon = (SymbolIcon) mapper.load(new File(fileName));
-//
-//            Dumper.dump(icon);
-//
-//            mapper.store(icon, new File(fileName + ".out.xml"));
-//            System.out.println("Store done.");
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-    }
+    //    //-----------//
+    //    // playBasic //
+    //    //-----------//
+    //    public void playBasic (String fileName)
+    //    {
+    //        try {
+    //            XmlMapper  mapper = new XmlMapper(SymbolIcon.class);
+    //            SymbolIcon icon = (SymbolIcon) mapper.load(new File(fileName));
+    //
+    //            Dumper.dump(icon);
+    //
+    //            mapper.store(icon, new File(fileName + ".out.xml"));
+    //            System.out.println("Store done.");
+    //        } catch (Exception ex) {
+    //            ex.printStackTrace();
+    //        }
+    //    }
 
     //--------------//
     // testMarshall //
     //--------------//
     public void testMarshall ()
     {
-        play("/soft/audiveris/src/test/omr/ui/icon/icon-data.xml");
+        play("/soft/audiveris/src/test/omr/jaxb/icon/icon-data.xml");
 
         //convert();
     }

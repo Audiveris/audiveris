@@ -1,0 +1,46 @@
+<binding>
+    <!-- waiter -->
+    <mapping name="waiter" class="omr.jibx.Waiter">
+	<value name="id" field="id"
+	       style="attribute" />
+	
+	<value name="first-name" field="firstName" />
+
+	<structure name="location" field="location">
+	    <value name="x" field="x" />
+	    <value name="y" field="y" />
+	</structure>
+	
+	<structure name="tips" field="purse">
+	    <collection get-method="getTips" set-method="setTips">
+		<value name="tip" />
+	    </collection>
+	</structure>
+	
+	<collection
+	    type="java.util.ArrayList"
+	    item-type="omr.jibx.Day"
+	    get-method="getDays"
+	    set-method="setDays"
+	    />
+	
+    </mapping>
+	     
+    <!-- day -->
+    <mapping name="day" class="omr.jibx.Day"
+             value-style="attribute">
+        <value name="label" field="label"
+	       deserializer="omr.jibx.Weekday.valueOf"
+	       />
+        <collection field="meetings"
+                    type="java.util.ArrayList"
+                    item-type="omr.jibx.Meeting" />
+    </mapping>
+    
+    <!-- meeting -->
+    <mapping name="meeting" class="omr.jibx.Meeting" value-style="attribute">
+        <value name="start" field="start" />
+        <value name="stop" field="stop" />
+    </mapping>
+
+</binding>
