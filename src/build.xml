@@ -41,12 +41,15 @@
     
     <!-- Tools classpath -->
     <path id="tools.classpath">
+        <pathelement path="${jama.jar}"/>
         <pathelement path="${jcommon.jar}"/>
         <pathelement path="${jfreechart.jar}"/>
         <pathelement path="${jgoodies.forms.jar}"/>
         <pathelement path="${jgoodies.looks.jar}"/>
         <pathelement path="${proxymusic.jar}"/>
-        <pathelement path="${jama.jar}"/>
+        <pathelement path="${java.home}/lib/ext/jai_codec.jar"/>
+        <pathelement path="${java.home}/lib/ext/jai_core.jar"/>
+        <pathelement path="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
 <!-- 	<fileset dir="${jaxb.dir}/lib" includes="*.jar"/> -->
     </path>
     
@@ -66,10 +69,9 @@
     
     <!-- Run classpath -->
     <path id="run.classpath">
-<!--         <pathelement path="${dist.jar}"/> -->
-        <pathelement path="${icons.music.jar}"/>
-        <pathelement path="${icons.buttons.jar}"/>
         <path refid="tools.classpath"/>
+        <pathelement path="${icons.buttons.jar}"/>
+        <pathelement path="${icons.music.jar}"/>
     </path>
     <property name="run.string" refid="run.classpath"/>
     
@@ -407,16 +409,19 @@
                 <globmapper from="*" to="lib/*"/>
             </chainedmapper>
         </pathconvert>
-<!-- 	<echo message="jar.classpath=${jar.classpath}" /> -->
+	<echo message="jar.classpath=${jar.classpath}" /> 
 
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.buttons.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.music.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jama.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jcommon.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jfreechart.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.forms.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.looks.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${proxymusic.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jama.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.music.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.buttons.jar}"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_codec.jar"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_core.jar"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
 
     </target>
 	     
@@ -434,6 +439,8 @@
             <manifest>
                 <attribute name="Main-Class"
                            value="${Name}"/>
+                <attribute name="Class-Path"
+                           value="${jar.classpath}"/>
                 <attribute name="Built-By"
                            value="${build.owner}"/>
                 <attribute name="Specification-Title"
@@ -442,8 +449,6 @@
                            value="${spec.version}"/>
                 <attribute name="Implementation-Version"
                            value="${impl.version} ${DSTAMP}"/>
-                <attribute name="Class-Path"
-                           value="${jar.classpath}"/>
             </manifest>
         </jar>
         
