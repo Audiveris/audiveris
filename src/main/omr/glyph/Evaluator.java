@@ -253,7 +253,21 @@ public abstract class Evaluator
         Evaluation[] evaluations = getEvaluations(glyph);
 
         if ((evaluations.length > 0) && (evaluations[0].doubt <= maxDoubt)) {
-            return evaluations[0];
+            Evaluation best = evaluations[0];
+
+            // Temporary logic, to be validated:
+            // If the best shape found is a CLUTTER while a second best is also 
+            // acceptable wrt maxDoubt, we choose the second
+            if ((best.shape == Shape.CLUTTER) &&
+                (evaluations.length > 1) &&
+                (evaluations[1].doubt <= maxDoubt)) {
+                best = evaluations[1];
+                logger.info(
+                    "Shape CLUTTER discarded for " + best.shape +
+                    " at glyph #" + glyph.getId());
+            }
+
+            return best;
         } else {
             return null;
         }
