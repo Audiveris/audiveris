@@ -499,7 +499,8 @@ public class Chord
                 Note note = (Note) getNotes()
                                        .get(0);
 
-                if (note.getShape() != Shape.WHOLE_REST) {
+                if ((note.getShape() != Shape.WHOLE_REST) &&
+                    (note.getShape() != Shape.MULTI_REST)) {
                     duration = note.getTypeDuration(note.getShape());
 
                     // Apply fraction
