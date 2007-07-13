@@ -706,7 +706,7 @@ public class Main
     {
         /** Selection of locale country code (2 letters), or empty */
         Constant.String localeCountry = new Constant.String(
-            "FR",
+            "US",
             "Locale country to be used in the whole application (US, FR, ...)");
 
         /** Directory for saved files, defaulted to 'save' audiveris subdir */
