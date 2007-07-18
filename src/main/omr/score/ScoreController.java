@@ -102,6 +102,7 @@ public class ScoreController
     public ScoreController (JToolBar toolBar)
     {
         this.toolBar = toolBar;
+        scoreMenu.setToolTipText("Select action for current score");
 
         // Binary actions
         //        new History(BINARY);
@@ -138,6 +139,18 @@ public class ScoreController
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // setEnabled //
+    //------------//
+    /**
+     * Allow to enable or disable this whole menu
+     * @param bool true to enable, false to disable
+     */
+    public void setEnabled (boolean bool)
+    {
+        scoreMenu.setEnabled(bool);
+    }
 
     //-----------------//
     // getCurrentScore //

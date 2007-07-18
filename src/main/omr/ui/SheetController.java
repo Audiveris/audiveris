@@ -18,6 +18,8 @@ import omr.glyph.ui.GlyphRepository;
 
 import omr.score.Score;
 
+import omr.script.ScriptController;
+
 import omr.selection.Selection;
 
 import omr.sheet.*;
@@ -80,10 +82,10 @@ public class SheetController
     private final ArrayList<SheetAssembly> assemblies;
 
     /** Collection of sheet-dependent actions */
-    private final Collection<AbstractAction> sheetDependentActions = new ArrayList<AbstractAction>();
+    private final Collection<Action> sheetDependentActions = new ArrayList<Action>();
 
     /** Menu dedicated to sheet-related actions */
-    private final JMenu menu = new JMenu("Sheet");
+    private final JMenu menu = new JMenu("File");
 
     /** The concrete tabbed pane, one tab per sheet */
     private final JTabbedPane component;
@@ -92,7 +94,7 @@ public class SheetController
     private final JToolBar toolBar;
 
     /** Should we synchronize the (score) pane on the other side ? */
-    private boolean synchroWanted = true;
+    private volatile boolean synchroWanted = true;
 
     /** Index of previously selected sheet tab */
     private int previousSheetIndex = -1;
@@ -111,6 +113,7 @@ public class SheetController
     public SheetController (MainGui  gui,
                             JToolBar toolBar)
     {
+        menu.setToolTipText("Sheet or script file selection");
         component = new JTabbedPane();
         assemblies = new ArrayList<SheetAssembly>();
 
@@ -122,7 +125,7 @@ public class SheetController
         JMenuItem historyMenu = SheetManager.getInstance()
                                             .getHistory()
                                             .menu(
-            "History",
+            "Sheet History",
             new HistoryListener());
         historyMenu.setToolTipText("List of previous sheet files");
         historyMenu.setIcon(
@@ -131,6 +134,14 @@ public class SheetController
 
         // Various actions
         new SelectSheetAction();
+
+        // Script actions
+        menu.addSeparator();
+
+        ScriptController scriptController = new ScriptController();
+        menu.add(new JMenuItem(scriptController.getOpenAction()));
+        menu.add(new JMenuItem(scriptController.getStoreAction()));
+        sheetDependentActions.add(scriptController.getStoreAction());
 
         menu.addSeparator();
         new ZoomWidthAction();
@@ -202,6 +213,25 @@ public class SheetController
     public JComponent getComponent ()
     {
         return component;
+    }
+
+    //-----------------//
+    // getCurrentSheet //
+    //-----------------//
+    /**
+     * Report the currently processed sheet
+     *
+     * @return the current sheet, or null otherwise
+     */
+    public Sheet getCurrentSheet ()
+    {
+        SheetAssembly assembly = getSelectedAssembly();
+
+        if (assembly != null) {
+            return assembly.getSheet();
+        } else {
+            return null;
+        }
     }
 
     //---------//
@@ -337,25 +367,6 @@ public class SheetController
         }
     }
 
-    //-----------------//
-    // getCurrentSheet //
-    //-----------------//
-    /**
-     * Report the currently processed sheet
-     *
-     * @return the current sheet, or null otherwise
-     */
-    private Sheet getCurrentSheet ()
-    {
-        SheetAssembly assembly = getSelectedAssembly();
-
-        if (assembly != null) {
-            return assembly.getSheet();
-        } else {
-            return null;
-        }
-    }
-
     //---------------------//
     // getSelectedAssembly //
     //---------------------//
@@ -419,7 +430,7 @@ public class SheetController
                 }
 
                 // Actually load the sheet picture
-                Step.LOAD.perform(null, file);
+                Step.LOAD.performParallel(null, file);
 
                 // Remember (even across runs) the parent directory
                 constants.initImgDir.setValue(file.getParent());
@@ -438,7 +449,7 @@ public class SheetController
      *
      * @param synchroWanted the value to set to the flag
      */
-    private synchronized void setSynchroWanted (boolean synchroWanted)
+    private void setSynchroWanted (boolean synchroWanted)
     {
         this.synchroWanted = synchroWanted;
     }
@@ -522,7 +533,7 @@ public class SheetController
 
             Main.getGui()
                 .setTarget(fileName);
-            Step.LOAD.perform(null, new File(fileName));
+            Step.LOAD.performParallel(null, new File(fileName));
 
             if (logger.isFineEnabled()) {
                 logger.fine("End of HistoryListener");

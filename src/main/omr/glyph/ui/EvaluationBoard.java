@@ -19,6 +19,8 @@ import omr.glyph.GlyphModel;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
 
+import omr.script.AssignTask;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
@@ -319,6 +321,16 @@ class EvaluationBoard
                 Collection<Shape> shapes = Glyph.shapesOf(glyphs);
                 Shape             shape = Shape.valueOf(button.getText());
 
+                // Add to script
+                boolean isCompound = glyph.getId() == 0;
+                sheet.getScript()
+                     .addTask(
+                    new AssignTask(
+                        shape,
+                        isCompound,
+                        isCompound ? glyph.getParts() : glyphs));
+
+                // Actually assign the shape
                 glyphModel.assignGlyphShape(glyph, shape);
 
                 // Update user interface ? (view / selection)

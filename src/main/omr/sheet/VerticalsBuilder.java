@@ -138,7 +138,7 @@ public class VerticalsBuilder
 
         switch (shape) {
         case COMBINING_STEM :
-            sheet.getSymbolsEditor()
+            sheet.getSymbolsBuilder()
                  .deassignGlyphShape(glyph);
 
             break;
@@ -158,7 +158,7 @@ public class VerticalsBuilder
     @Override
     public void deassignSetShape (Collection<Glyph> glyphs)
     {
-        sheet.getSymbolsEditor()
+        sheet.getSymbolsBuilder()
              .deassignSetShape(glyphs);
     }
 
@@ -166,19 +166,21 @@ public class VerticalsBuilder
     // refresh //
     //---------//
     /**
-     * Refresh the display, with proper colors for sections
+     * Refresh the display if any, with proper colors for sections
      */
     public void refresh ()
     {
-        if ((view == null) && constants.displayFrame.getValue()) {
-            displayFrame();
-        } else if (view != null) {
-            for (Glyph glyph : sheet.getVerticalLag()
-                                    .getActiveGlyphs()) {
-                view.colorizeGlyph(glyph, null);
-            }
+        if (Main.getGui() != null) {
+            if ((view == null) && constants.displayFrame.getValue()) {
+                displayFrame();
+            } else if (view != null) {
+                for (Glyph glyph : sheet.getVerticalLag()
+                                        .getActiveGlyphs()) {
+                    view.colorizeGlyph(glyph, null);
+                }
 
-            view.repaint();
+                view.repaint();
+            }
         }
     }
 
@@ -233,7 +235,7 @@ public class VerticalsBuilder
     //-------------//
     public void stemSegment (Collection<Glyph> glyphs,
                              SystemInfo        system,
-                             boolean           normal)
+                             boolean           isShort)
     {
         // Gather all sections to be browsed
         Collection<GlyphSection> sections = new ArrayList<GlyphSection>();
@@ -259,12 +261,14 @@ public class VerticalsBuilder
             int nb = retrieveVerticals(
                 verticalsArea.getSticks(),
                 system,
-                normal);
+                isShort);
 
-            if (nb > 0) {
-                logger.info(nb + " stem" + ((nb > 1) ? "s" : ""));
-            } else {
-                logger.info("No stem found");
+            if (logger.isFineEnabled()) {
+                if (nb > 0) {
+                    logger.fine(nb + " stem" + ((nb > 1) ? "s" : ""));
+                } else {
+                    logger.fine("No stem found");
+                }
             }
         } catch (StepException ex) {
             logger.warning("stemSegment. Error in retrieving verticals");
@@ -317,17 +321,17 @@ public class VerticalsBuilder
      * @param sticks the provided collection of vertical sticks
      * @param system the containing system whose "glyphs" collection will be
      * augmented by the stems found
-     * @param normal true for normal stems, false for short stems
+     * @param isShort true for short stems
      * @return the number of stems found
      * @throws StepException
      */
     private int retrieveVerticals (Collection<Stick> sticks,
                                    SystemInfo        system,
-                                   boolean           normal)
+                                   boolean           isShort)
         throws StepException
     {
         /** Suite of checks for a stem glyph */
-        StemCheckSuite suite = new StemCheckSuite(system, normal);
+        StemCheckSuite suite = new StemCheckSuite(system, isShort);
         double minResult = constants.minCheckResult.getValue();
         int    stemNb = 0;
 
@@ -557,14 +561,14 @@ public class VerticalsBuilder
     private class MinLengthCheck
         extends Check<Stick>
     {
-        protected MinLengthCheck (boolean normal)
+        protected MinLengthCheck (boolean isShort)
             throws StepException
         {
             super(
                 "MinLength",
                 "Check that stick is long enough",
-                normal ? constants.minStemLengthLow
-                                : constants.minShortStemLengthLow,
+                isShort ? constants.minShortStemLengthLow
+                                : constants.minStemLengthLow,
                 constants.minStemLengthHigh,
                 true,
                 TOO_SHORT);
@@ -732,11 +736,11 @@ public class VerticalsBuilder
         private final SystemInfo system;
 
         public StemCheckSuite (SystemInfo system,
-                               boolean    normal)
+                               boolean    isShort)
             throws StepException
         {
             super("Stem", constants.minCheckResult.getValue());
-            add(1, new MinLengthCheck(normal));
+            add(1, new MinLengthCheck(isShort));
             add(1, new MinAspectCheck());
             add(1, new FirstAdjacencyCheck());
             add(1, new LastAdjacencyCheck());

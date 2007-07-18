@@ -88,7 +88,11 @@ public class GlyphModel
                                   Shape shape)
     {
         if (glyph != null) {
-            ///logger.info(" From " + glyph.getTranslations() + " to " + shape);
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "shape " + shape + " assigned to glyph #" + glyph.getId());
+            }
+
             // First, do a manual assignment of the shape to the glyph
             glyph.setShape(shape, Evaluation.MANUAL_NO_DOUBT);
 

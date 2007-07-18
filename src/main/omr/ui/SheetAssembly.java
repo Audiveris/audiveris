@@ -161,6 +161,24 @@ public class SheetAssembly
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------//
+    // selectTab //
+    //-----------//
+    public void selectTab (String title)
+    {
+        for (int i = 0, count = tabbedPane.getTabCount(); i < count; i++) {
+            if (tabbedPane.getTitleAt(i)
+                          .equals(title)) {
+                tabbedPane.setSelectedIndex(i);
+                logger.info("Selected tab " + title);
+
+                return;
+            }
+        }
+
+        ///logger.warning("Cannot find view tab " + title);
+    }
+
     //------------//
     // addViewTab //
     //------------//

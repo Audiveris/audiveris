@@ -83,6 +83,32 @@ public class ScoreManager
         return INSTANCE;
     }
 
+    //-------------------//
+    // setChangeListener //
+    //-------------------//
+    /**
+     * Register one change listener
+     *
+     * @param changeListener the entity to be notified of any change
+     */
+    public void setChangeListener (ChangeListener changeListener)
+    {
+        this.changeListener = changeListener;
+    }
+
+    //-----------//
+    // getScores //
+    //-----------//
+    /**
+     * Get the collection of scores currently handled by OMR
+     *
+     * @return The collection
+     */
+    public List<Score> getScores ()
+    {
+        return instances;
+    }
+
     //---------------//
     // checkInserted //
     //---------------//
@@ -253,6 +279,8 @@ public class ScoreManager
 
                     // Remember (even across runs) the selected directory
                     Main.setOutputFolder(xmlFile.getParent());
+                } else {
+                    return;
                 }
             }
         }
@@ -285,19 +313,6 @@ public class ScoreManager
         for (Score score : instances) {
             score.export();
         }
-    }
-
-    //-----------//
-    // getScores //
-    //-----------//
-    /**
-     * Get the collection of scores currently handled by OMR
-     *
-     * @return The collection
-     */
-    public List<Score> getScores ()
-    {
-        return instances;
     }
 
     //---------------//
@@ -436,19 +451,6 @@ public class ScoreManager
                 logger.warning("Could not serialize " + score);
             }
         }
-    }
-
-    //-------------------//
-    // setChangeListener //
-    //-------------------//
-    /**
-     * Register one change listener
-     *
-     * @param changeListener the entity to be notified of any change
-     */
-    public void setChangeListener (ChangeListener changeListener)
-    {
-        this.changeListener = changeListener;
     }
 
     //--------//

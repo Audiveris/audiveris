@@ -14,6 +14,10 @@ import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
+import omr.glyph.SymbolsBuilder;
+
+import omr.script.AssignTask;
+import omr.script.DeassignTask;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -40,7 +44,7 @@ public class GlyphMenu
     // Links to partnering entities
     private final Sheet           sheet;
     private final ShapeFocusBoard shapeFocus;
-    private final SymbolsEditor   symbolsEditor;
+    private final SymbolsBuilder  symbolsBuilder;
     private final Evaluator       evaluator;
 
     /** Set of actions to update menu according to selected glyphs */
@@ -79,15 +83,15 @@ public class GlyphMenu
      * @param glyphSelection the currently selected glyph
      * @param glyphSetSelection the currently selected glyphs
      */
-    public GlyphMenu (final Sheet         sheet,
-                      final SymbolsEditor symbolsEditor,
-                      Evaluator           evaluator,
-                      ShapeFocusBoard     shapeFocus,
-                      Selection           glyphSelection,
-                      Selection           glyphSetSelection)
+    public GlyphMenu (final Sheet          sheet,
+                      final SymbolsBuilder symbolsBuilder,
+                      Evaluator            evaluator,
+                      ShapeFocusBoard      shapeFocus,
+                      Selection            glyphSelection,
+                      Selection            glyphSetSelection)
     {
         this.sheet = sheet;
-        this.symbolsEditor = symbolsEditor;
+        this.symbolsBuilder = symbolsBuilder;
         this.evaluator = evaluator;
         this.shapeFocus = shapeFocus;
         this.glyphSelection = glyphSelection;
@@ -108,6 +112,7 @@ public class GlyphMenu
         Shape.addShapeItems(
             assignMenu,
             new ActionListener() {
+                    @Override
                     public void actionPerformed (ActionEvent e)
                     {
                         JMenuItem         source = (JMenuItem) e.getSource();
@@ -115,7 +120,10 @@ public class GlyphMenu
                             source.getText());
                         List<Glyph>       glyphs = getCurrentGlyphs();
                         Collection<Shape> shapes = Glyph.shapesOf(glyphs);
-                        symbolsEditor.assignSetShape(
+                        // Record this task to the sheet script
+                        sheet.getScript()
+                             .addTask(new AssignTask(shape, false, glyphs));
+                        symbolsBuilder.assignSetShape(
                             glyphs,
                             shape, /* compound => */
                             false);
@@ -150,7 +158,7 @@ public class GlyphMenu
                         List<Glyph>       glyphs = getCurrentGlyphs();
                         Collection<Shape> shapes = Glyph.shapesOf(glyphs);
                         shapes.add(shape);
-                        symbolsEditor.assignSetShape(
+                        symbolsBuilder.assignSetShape(
                             glyphs,
                             shape, /* compound => */
                             true);
@@ -340,7 +348,9 @@ public class GlyphMenu
             // Actually deassign the whole set
             List<Glyph>       glyphs = getCurrentGlyphs();
             Collection<Shape> shapes = Glyph.shapesOf(glyphs);
-            symbolsEditor.deassignSetShape(glyphs);
+            sheet.getScript()
+                 .addTask(new DeassignTask(glyphs));
+            symbolsBuilder.deassignSetShape(glyphs);
             sheet.updateLastSteps(glyphs, shapes);
 
             // Update focus on current glyph, if reused in a compound
@@ -444,14 +454,23 @@ public class GlyphMenu
             Collection<Shape> shapes = Glyph.shapesOf(glyphs);
 
             if (glyph != null) {
-                symbolsEditor.assignGlyphShape(glyph, shape);
+                // Record this task to the sheet script
+                boolean isCompound = glyph.getId() == 0;
+                sheet.getScript()
+                     .addTask(
+                    new AssignTask(
+                        shape,
+                        isCompound,
+                        isCompound ? glyphs : Collections.singleton(glyph)));
+
+                symbolsBuilder.assignGlyphShape(glyph, shape);
                 sheet.updateLastSteps(glyphs, shapes);
             }
         }
 
         public void update ()
         {
-            Shape latest = symbolsEditor.getLatestShapeAssigned();
+            Shape latest = symbolsBuilder.getLatestShapeAssigned();
 
             if ((glyphNb > 0) && (latest != null)) {
                 setEnabled(true);
@@ -481,7 +500,11 @@ public class GlyphMenu
             Collection<Shape> shapes = Glyph.shapesOf(glyphs);
 
             if ((glyph != null) && (glyph == proposedGlyph)) {
-                symbolsEditor.assignGlyphShape(glyph, proposedShape);
+                // Record this task to the sheet script
+                sheet.getScript()
+                     .addTask(new AssignTask(proposedShape, true, glyphs));
+
+                symbolsBuilder.assignGlyphShape(glyph, proposedShape);
                 sheet.updateLastSteps(glyphs, shapes);
             }
         }
@@ -528,7 +551,7 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
-            symbolsEditor.stemSegment(glyphs, false); // normal
+            symbolsBuilder.stemSegment(glyphs, true); // isShort
         }
 
         public void update ()
@@ -595,7 +618,7 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
-            symbolsEditor.stemSegment(glyphs, true); // normal
+            symbolsBuilder.stemSegment(glyphs, false); // isShort
         }
 
         public void update ()
@@ -624,7 +647,7 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
-            symbolsEditor.showTranslations(glyphs);
+            symbolsBuilder.getEditor().showTranslations(glyphs);
         }
 
         public void update ()

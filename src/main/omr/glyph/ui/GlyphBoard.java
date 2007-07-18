@@ -16,6 +16,8 @@ import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.Shape;
 
+import omr.script.DeassignTask;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
@@ -483,7 +485,10 @@ public class GlyphBoard
                     Collection<Shape> shapes = Glyph.shapesOf(glyphs);
                     glyphModel.deassignSetShape(glyphs);
 
+                    // Record this task to the sheet script
                     Sheet sheet = glyphModel.getSheet();
+                    sheet.getScript()
+                         .addTask(new DeassignTask(glyphs));
 
                     if (sheet != null) {
                         sheet.updateLastSteps(glyphs, shapes);
@@ -501,9 +506,10 @@ public class GlyphBoard
                                                                         .getEntity();
                     Collection<Glyph> glyphs = Collections.singleton(glyph);
                     Collection<Shape> shapes = Glyph.shapesOf(glyphs);
+                    Sheet             sheet = glyphModel.getSheet();
+                    sheet.getScript()
+                         .addTask(new DeassignTask(glyphs));
                     glyphModel.deassignGlyphShape(glyph);
-
-                    Sheet sheet = glyphModel.getSheet();
 
                     if (sheet != null) {
                         sheet.updateLastSteps(glyphs, shapes);

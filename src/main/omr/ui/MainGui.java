@@ -33,7 +33,6 @@ import omr.sheet.SheetManager;
 import omr.step.Step;
 import omr.step.StepMenu;
 
-import omr.ui.SheetController;
 import omr.ui.icon.IconManager;
 import omr.ui.treetable.JTreeTable;
 import omr.ui.util.MemoryMeter;
@@ -89,11 +88,10 @@ public class MainGui
     private JFrame frame;
 
     // Menus & tools in the frame
-    private final JMenu      fileMenu = new JMenu("File");
-    private final JMenu      helpMenu = new JMenu("Help");
     private final JMenu      stepMenu = new StepMenu("Step").getMenu();
     private final JMenu      viewMenu = new JMenu("Views");
     private final JMenu      toolMenu = new JMenu("Tools");
+    private final JMenu      helpMenu = new JMenu("Help");
     private final JSplitPane bigSplitPane;
 
     /** The splitted panes */
@@ -129,6 +127,7 @@ public class MainGui
 
         frame.addWindowListener(
             new WindowAdapter() {
+                    @Override
                     public void windowClosing (WindowEvent e)
                     {
                         exit(); // Needed for last wishes.
@@ -140,11 +139,13 @@ public class MainGui
         // Tools in the frame and set of actions
         toolBar = new JToolBar(JToolBar.HORIZONTAL); // VERTICAL
 
-        // File actions
-        new ExitAction(fileMenu);
-
         // Sheet actions
+        Action exitAction = new ExitAction();
         sheetController = new SheetController(this, toolBar);
+        sheetController.getMenu()
+                       .addSeparator();
+        sheetController.getMenu()
+                       .add(exitAction);
 
         // Score actions
         toolBar.addSeparator();
@@ -162,7 +163,7 @@ public class MainGui
         }
 
         // Frame title
-        updateTitle();
+        updateGui();
 
         // Views
         ScorePainter.insertMenuItems(viewMenu);
@@ -192,7 +193,6 @@ public class MainGui
         // Menus in the frame
         JMenuBar menuBar = new JMenuBar();
         frame.setJMenuBar(menuBar);
-        menuBar.add(fileMenu);
         menuBar.add(sheetController.getMenu());
         menuBar.add(stepMenu);
         menuBar.add(scoreController.getMenu());
@@ -287,39 +287,30 @@ public class MainGui
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // displayMessage //
-    //----------------//
+    //---------------//
+    // setBoardsPane //
+    //---------------//
     /**
-     * Allow to display a modal dialog with an html content
+     * Set a new boardspane to the boards holder
      *
-     * @param htmlStr the HTML string
+     * @param boards the boards pane to be shown
      */
-    public void displayMessage (String htmlStr)
+    public void setBoardsPane (JComponent boards)
     {
-        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
-        htmlPane.setEditable(false);
-        JOptionPane.showMessageDialog(frame, htmlPane);
+        boardsPane.addBoards(boards);
     }
 
-    //----------------//
-    // displayWarning //
-    //----------------//
+    //---------------//
+    // setErrorsPane //
+    //---------------//
     /**
-     * Allow to display a modal dialog with an html content
+     * Set/show a new errors pane
      *
-     * @param htmlStr the HTML string
+     * @param errorsPane the errors pane to be shown
      */
-    public void displayWarning (String htmlStr)
+    public void setErrorsPane (JComponent errorsPane)
     {
-        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
-        htmlPane.setEditable(false);
-
-        JOptionPane.showMessageDialog(
-            frame,
-            htmlPane,
-            "Warning",
-            JOptionPane.WARNING_MESSAGE);
+        bottomPane.addErrors(errorsPane);
     }
 
     //----------//
@@ -344,9 +335,40 @@ public class MainGui
      * @return observer name
      */
     @Implement(SelectionObserver.class)
+    @Override
     public String getName ()
     {
         return "MainGui";
+    }
+
+    //-----------//
+    // setTarget //
+    //-----------//
+    /**
+     * Specify what the current interest of the user is, by means of the current
+     * score. Thus, when for example a sheet image is loaded sometime later,
+     * this information will be used to trigger or not the actual display of the
+     * sheet view.
+     *
+     * @param score the contextual score
+     */
+    public void setTarget (omr.score.Score score)
+    {
+        setObjectTarget(score);
+    }
+
+    //-----------//
+    // setTarget //
+    //-----------//
+    /**
+     * Specify what the current interest of the user is, by means of the desired
+     * sheet file name.
+     *
+     * @param name the (canonical) sheet file name
+     */
+    public void setTarget (String name)
+    {
+        setObjectTarget(name);
     }
 
     //----------//
@@ -385,6 +407,41 @@ public class MainGui
         return result;
     }
 
+    //----------------//
+    // displayMessage //
+    //----------------//
+    /**
+     * Allow to display a modal dialog with an html content
+     *
+     * @param htmlStr the HTML string
+     */
+    public void displayMessage (String htmlStr)
+    {
+        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
+        htmlPane.setEditable(false);
+        JOptionPane.showMessageDialog(frame, htmlPane);
+    }
+
+    //----------------//
+    // displayWarning //
+    //----------------//
+    /**
+     * Allow to display a modal dialog with an html content
+     *
+     * @param htmlStr the HTML string
+     */
+    public void displayWarning (String htmlStr)
+    {
+        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
+        htmlPane.setEditable(false);
+
+        JOptionPane.showMessageDialog(
+            frame,
+            htmlPane,
+            "Warning",
+            JOptionPane.WARNING_MESSAGE);
+    }
+
     //------------------//
     // removeBoardsPane //
     //------------------//
@@ -407,62 +464,6 @@ public class MainGui
         bottomPane.removeErrors();
     }
 
-    //---------------//
-    // setBoardsPane //
-    //---------------//
-    /**
-     * Set a new boardspane to the boards holder
-     *
-     * @param boards the boards pane to be shown
-     */
-    public void setBoardsPane (JComponent boards)
-    {
-        boardsPane.addBoards(boards);
-    }
-
-    //---------------//
-    // setErrorsPane //
-    //---------------//
-    /**
-     * Set/show a new errors pane
-     *
-     * @param errorsPane the errors pane to be shown
-     */
-    public void setErrorsPane (JComponent errorsPane)
-    {
-        bottomPane.addErrors(errorsPane);
-    }
-
-    //-----------//
-    // setTarget //
-    //-----------//
-    /**
-     * Specify what the current interest of the user is, by means of the current
-     * score. Thus, when for example a sheet image is loaded sometime later,
-     * this information will be used to trigger or not the actual display of the
-     * sheet view.
-     *
-     * @param score the contextual score
-     */
-    public void setTarget (omr.score.Score score)
-    {
-        setObjectTarget(score);
-    }
-
-    //-----------//
-    // setTarget //
-    //-----------//
-    /**
-     * Specify what the current interest of the user is, by means of the desired
-     * sheet file name.
-     *
-     * @param name the (canonical) sheet file name
-     */
-    public void setTarget (String name)
-    {
-        setObjectTarget(name);
-    }
-
     //--------//
     // update //
     //--------//
@@ -473,12 +474,13 @@ public class MainGui
      * @param hint processing hint (not used)
      */
     @Implement(SelectionObserver.class)
+    @Override
     public void update (Selection     selection,
                         SelectionHint hint)
     {
         switch (selection.getTag()) {
         case SHEET :
-            updateTitle();
+            updateGui();
 
             break;
 
@@ -486,37 +488,53 @@ public class MainGui
         }
     }
 
-    //-------------//
-    // updateTitle //
-    //-------------//
+    //-----------//
+    // updateGui //
+    //-----------//
     /**
-     * This method is called whenever a display modification has occurred,
-     * either a score or sheet, so that the frame title always shows what the
-     * current context is.
+     * This method is called whenever a modification has occurred, either a
+     * score or sheet, so that the frame title and the pull-down menus are
+     * always consistent with the current context.
      */
-    public void updateTitle ()
+    public void updateGui ()
     {
         StringBuilder sb = new StringBuilder();
         Sheet         sheet = SheetManager.getSelectedSheet();
 
         if (sheet != null) {
-            sb.append(sheet.getRadix());
+            // Menus
+            stepMenu.setEnabled(true);
+            scoreController.setEnabled(sheet.getScore() != null);
 
-            Step step = sheet.currentStep();
-
-            if (step != null) {
-                sb.append(" - ")
-                  .append(step);
-            }
-
-            sb.append(" - ");
+            // Frame title tells sheet name + step
+            sb.append(sheet.getRadix())
+              .append(" - ")
+              .append(sheet.currentStep())
+              .append(" - ");
+        } else {
+            // Menus
+            stepMenu.setEnabled(false);
+            scoreController.setEnabled(false);
         }
 
+        // Update frame title
         sb.append(Main.getToolName())
           .append(" ")
           .append(Main.getToolVersion());
 
         frame.setTitle(sb.toString());
+    }
+
+    //-----------------//
+    // setObjectTarget //
+    //-----------------//
+    private synchronized void setObjectTarget (Object target)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("setObjectTarget " + target);
+        }
+
+        this.target = target;
     }
 
     //------//
@@ -563,18 +581,6 @@ public class MainGui
         java.lang.System.exit(0);
     }
 
-    //-----------------//
-    // setObjectTarget //
-    //-----------------//
-    private synchronized void setObjectTarget (Object target)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setObjectTarget " + target);
-        }
-
-        this.target = target;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //-------------//
@@ -610,18 +616,19 @@ public class MainGui
     private class ExitAction
         extends AbstractAction
     {
-        public ExitAction (JMenu menu)
+        public ExitAction ()
         {
             super(
                 "Exit",
                 IconManager.getInstance().loadImageIcon("general/Stop"));
             putValue(SHORT_DESCRIPTION, "Exit the program");
-            menu.add(this);
+
             toolBar.add(this)
                    .setBorder(getToolBorder());
         }
 
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             exit();

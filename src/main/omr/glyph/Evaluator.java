@@ -262,9 +262,12 @@ public abstract class Evaluator
                 (evaluations.length > 1) &&
                 (evaluations[1].doubt <= maxDoubt)) {
                 best = evaluations[1];
-                logger.info(
-                    "Shape CLUTTER discarded for " + best.shape +
-                    " at glyph #" + glyph.getId());
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Shape CLUTTER discarded for " + best.shape +
+                        " at glyph #" + glyph.getId());
+                }
             }
 
             return best;

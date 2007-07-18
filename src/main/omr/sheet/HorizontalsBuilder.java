@@ -127,9 +127,6 @@ public class HorizontalsBuilder
     /** The collection of all horizontal items */
     private final List<Dash> allDashes = new ArrayList<Dash>();
 
-    /** The containing sheet */
-    private Sheet sheet;
-
     //~ Constructors -----------------------------------------------------------
 
     //--------------------//
@@ -143,7 +140,6 @@ public class HorizontalsBuilder
         // Reuse the horizontal lag of runs (from staff lines)
         super(sheet, sheet.getHorizontalLag());
 
-        this.sheet = sheet;
         info = new Horizontals();
     }
 
