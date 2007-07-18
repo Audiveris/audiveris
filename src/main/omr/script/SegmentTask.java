@@ -19,8 +19,8 @@ import omr.step.StepException;
 import java.util.Collection;
 
 /**
- * Class <code>VerticalTask</code> is a script task which attempts to segment a
- * collection of glyphs along verticals
+ * Class <code>SegmentTask</code> is a script task which attempts to segment a
+ * collection of glyphs (along verticals for the time being)
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -79,7 +79,7 @@ public class SegmentTask
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(" vertical");
+        sb.append(" segment");
 
         if (isShort) {
             sb.append(" ")
