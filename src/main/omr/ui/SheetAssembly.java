@@ -170,7 +170,10 @@ public class SheetAssembly
             if (tabbedPane.getTitleAt(i)
                           .equals(title)) {
                 tabbedPane.setSelectedIndex(i);
-                logger.info("Selected tab " + title);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("Selected view tab " + title);
+                }
 
                 return;
             }
