@@ -12,6 +12,7 @@ package omr.step;
 import omr.Main;
 
 import omr.glyph.Glyph;
+import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
 
 import omr.score.visitor.ScoreChecker;
@@ -25,7 +26,6 @@ import omr.sheet.Sheet;
 import omr.sheet.SkewBuilder;
 import omr.sheet.SystemInfo;
 import static omr.step.Step.*;
-import omr.step.StepException;
 
 import omr.util.Logger;
 
@@ -87,6 +87,59 @@ public class SheetSteps
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // isDone //
+    //--------//
+    /**
+     * Convenient method to check whether a given step has been done (or simply
+     * started)
+     * @param step the provided step
+     * @return true if step has been done / started
+     */
+    public boolean isDone (Step step)
+    {
+        return getTask(step)
+                   .isDone();
+    }
+
+    //-----------//
+    // getResult //
+    //-----------//
+    /**
+     * Convenient method to make sure the result of a given step is
+     * available
+     * @param step the provided step
+     * @exception StepException if processing goes wrong
+     */
+    public void getResult (Step step)
+        throws StepException
+    {
+        getTask(step)
+            .getResult();
+    }
+
+    //-----------------//
+    // getSystemResult //
+    //-----------------//
+    /**
+     * Convenient method to make sure the result of a given step on a given
+     * system is available
+     * @param step the provided step
+     * @param system the provided system
+     * @exception StepException if processing goes wrong
+     */
+    public void getSystemResult (Step       step,
+                                 SystemInfo system)
+        throws StepException
+    {
+        SheetTask task = getTask(step);
+
+        if (task instanceof SystemTask) {
+            SystemTask systemTask = (SystemTask) task;
+            systemTask.getResult(system);
+        }
+    }
+
     //-----------//
     // displayUI //
     //-----------//
@@ -139,59 +192,6 @@ public class SheetSteps
             .doit();
     }
 
-    //-----------//
-    // getResult //
-    //-----------//
-    /**
-     * Convenient method to make sure the result of a given step is
-     * available
-     * @param step the provided step
-     * @exception StepException if processing goes wrong
-     */
-    public void getResult (Step step)
-        throws StepException
-    {
-        getTask(step)
-            .getResult();
-    }
-
-    //-----------------//
-    // getSystemResult //
-    //-----------------//
-    /**
-     * Convenient method to make sure the result of a given step on a given
-     * system is available
-     * @param step the provided step
-     * @param system the provided system
-     * @exception StepException if processing goes wrong
-     */
-    public void getSystemResult (Step       step,
-                                 SystemInfo system)
-        throws StepException
-    {
-        SheetTask task = getTask(step);
-
-        if (task instanceof SystemTask) {
-            SystemTask systemTask = (SystemTask) task;
-            systemTask.getResult(system);
-        }
-    }
-
-    //--------//
-    // isDone //
-    //--------//
-    /**
-     * Convenient method to check whether a given step has been done (or simply
-     * started)
-     * @param step the provided step
-     * @return true if step has been done / started
-     */
-    public boolean isDone (Step step)
-    {
-        return getTask(step)
-                   .isDone();
-    }
-
     //-----------------//
     // updateLastSteps //
     //-----------------//
@@ -240,9 +240,11 @@ public class SheetSteps
         sheet.getScoreBuilder()
              .buildFinal();
 
-        // Always refresh sheet views
-        sheet.getSymbolsEditor()
-             .refresh();
+        // Always refresh sheet views if any
+        if (sheet.getSymbolsEditor() != null) {
+            sheet.getSymbolsEditor()
+                 .refresh();
+        }
 
         if (isDone(VERTICALS)) {
             sheet.getVerticalsBuilder()
@@ -280,6 +282,7 @@ public class SheetSteps
             super(sheet, step);
         }
 
+        @Override
         public void doit ()
             throws StepException
         {
@@ -309,6 +312,7 @@ public class SheetSteps
             super(sheet, step);
         }
 
+        @Override
         public void displayUI ()
         {
             if (logger.isFineEnabled()) {
@@ -334,9 +338,7 @@ public class SheetSteps
             sheet.getGlyphInspector()
                  .verifySlurs(system);
             sheet.getGlyphInspector()
-                 .processGlyphs(
-                system,
-                sheet.getGlyphInspector().getCleanupMaxDoubt());
+                 .processGlyphs(system, GlyphInspector.getCleanupMaxDoubt());
             done(system);
         }
     }
@@ -356,6 +358,7 @@ public class SheetSteps
             super(sheet, step);
         }
 
+        @Override
         public void doit ()
             throws StepException
         {
@@ -381,12 +384,14 @@ public class SheetSteps
             super(sheet, step);
         }
 
+        @Override
         public void displayUI ()
         {
             sheet.getSymbolsEditor()
                  .refresh();
         }
 
+        @Override
         public void doSystem (SystemInfo system)
             throws StepException
         {
@@ -399,9 +404,7 @@ public class SheetSteps
             getSystemResult(VERTICALS, system);
             // Processing for this step
             sheet.getGlyphInspector()
-                 .processGlyphs(
-                system,
-                sheet.getGlyphInspector().getLeafMaxDoubt());
+                 .processGlyphs(system, GlyphInspector.getLeafMaxDoubt());
             done(system);
         }
     }
@@ -421,6 +424,7 @@ public class SheetSteps
             super(sheet, step);
         }
 
+        @Override
         public void doit ()
             throws StepException
         {
@@ -446,6 +450,7 @@ public class SheetSteps
             super(sheet, step);
         }
 
+        @Override
         public void doit ()
             throws StepException
         {
@@ -499,6 +504,7 @@ public class SheetSteps
             super(sheet, step);
         }
 
+        @Override
         public void doit ()
             throws StepException
         {
@@ -523,6 +529,7 @@ public class SheetSteps
             super(sheet, step);
         }
 
+        @Override
         public void displayUI ()
         {
             // Make sure the verticals are displayed too
@@ -535,8 +542,12 @@ public class SheetSteps
 
             sheet.getSymbolsEditor()
                  .refresh();
+
+            sheet.getAssembly()
+                 .selectTab("Glyphs");
         }
 
+        @Override
         public void doFinal ()
             throws StepException
         {
@@ -586,6 +597,7 @@ public class SheetSteps
             super(sheet, step);
         }
 
+        @Override
         public void doit ()
             throws StepException
         {
@@ -611,6 +623,7 @@ public class SheetSteps
             super(sheet, step);
         }
 
+        @Override
         public void displayUI ()
         {
             if (logger.isFineEnabled()) {
@@ -621,6 +634,7 @@ public class SheetSteps
                  .refresh();
         }
 
+        @Override
         public void doSystem (SystemInfo system)
         {
             if (logger.isFineEnabled()) {
@@ -629,9 +643,7 @@ public class SheetSteps
             }
 
             sheet.getGlyphInspector()
-                 .processGlyphs(
-                system,
-                sheet.getGlyphInspector().getSymbolMaxDoubt());
+                 .processGlyphs(system, GlyphInspector.getSymbolMaxDoubt());
             done(system);
         }
     }
@@ -653,6 +665,7 @@ public class SheetSteps
             super(sheet, step);
         }
 
+        @Override
         public void displayUI ()
         {
             if (logger.isFineEnabled()) {
@@ -664,6 +677,7 @@ public class SheetSteps
                  .refresh();
         }
 
+        @Override
         public void doSystem (SystemInfo system)
             throws StepException
         {

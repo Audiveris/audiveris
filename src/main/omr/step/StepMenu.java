@@ -50,20 +50,30 @@ public class StepMenu
     public StepMenu (String label)
     {
         menu = new JMenu(label);
-
-        // Listener to item selection
-        ActionListener actionListener = new StepListener();
+        menu.setToolTipText("Select processing step for the current sheet");
 
         // List of Steps classes in proper order
         for (Step step : Step.values()) {
-            menu.add(new StepItem(step, actionListener));
+            menu.add(new StepItem(step));
         }
 
         // Listener to modify attributes on-the-fly
-        menu.addMenuListener(new Listener());
+        menu.addMenuListener(new MyMenuListener());
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // setEnabled //
+    //------------//
+    /**
+     * Allow to enable or disable this whole menu
+     * @param bool true to enable, false to disable
+     */
+    public void setEnabled (boolean bool)
+    {
+        menu.setEnabled(bool);
+    }
 
     //---------//
     // getMenu //
@@ -80,6 +90,35 @@ public class StepMenu
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //------------//
+    // StepAction //
+    //------------//
+    /**
+     * Action to be performed when the related step item is selected
+     */
+    private static class StepAction
+        extends AbstractAction
+    {
+        // The related step
+        final Step step;
+
+        public StepAction (Step step)
+        {
+            super(step.toString());
+            this.step = step;
+            putValue(SHORT_DESCRIPTION, step.getDescription());
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            Sheet sheet = SheetManager.getSelectedSheet();
+            Main.getGui()
+                .setTarget(sheet.getPath());
+            step.performParallel(sheet, null);
+        }
+    }
+
     //----------//
     // StepItem //
     //----------//
@@ -89,19 +128,12 @@ public class StepMenu
     private static class StepItem
         extends JCheckBoxMenuItem
     {
-        // The related step
-        final transient Step step;
-
         //----------//
         // StepItem //
         //----------//
-        public StepItem (Step           step,
-                         ActionListener actionListener)
+        public StepItem (Step step)
         {
-            super(step.toString());
-            this.step = step;
-            this.setToolTipText(step.getDescription());
-            this.addActionListener(actionListener);
+            super(new StepAction(step));
         }
 
         //--------------//
@@ -109,16 +141,18 @@ public class StepMenu
         //--------------//
         public void displayState (Sheet sheet)
         {
+            StepAction action = (StepAction) getAction();
+
             if (sheet == null) {
                 setState(false);
-                setEnabled(false);
+                action.setEnabled(false);
             } else {
                 if (sheet.isBusy()) {
                     setState(false);
                     setEnabled(false);
                 } else {
                     boolean bool = sheet.getSheetSteps()
-                                        .isDone(step);
+                                        .isDone(action.step);
                     setState(bool);
                     setEnabled(!bool);
                 }
@@ -126,28 +160,31 @@ public class StepMenu
         }
     }
 
-    //----------//
-    // Listener //
-    //----------//
+    //----------------//
+    // MyMenuListener //
+    //----------------//
     /**
-     * Class <code>Listener</code> is triggered when the whole sub-menu is
-     * entered. This is done with respect to currently displayed sheet. The
-     * steps already performed are flagged as such.
+     * Class <code>MyMenuListener</code> is triggered when the whole sub-menu
+     * is entered. This is done with respect to currently displayed sheet. The
+     * steps already done are flagged as such.
      */
-    private class Listener
+    private class MyMenuListener
         implements MenuListener
     {
         @Implement(MenuListener.class)
+        @Override
         public void menuCanceled (MenuEvent e)
         {
         }
 
         @Implement(MenuListener.class)
+        @Override
         public void menuDeselected (MenuEvent e)
         {
         }
 
         @Implement(MenuListener.class)
+        @Override
         public void menuSelected (MenuEvent e)
         {
             Sheet sheet = SheetManager.getSelectedSheet();
@@ -158,30 +195,6 @@ public class StepMenu
                 // Adjust the status for each step
                 item.displayState(sheet);
             }
-        }
-    }
-
-    //--------------//
-    // StepListener //
-    //--------------//
-    /**
-     * Class <code>StepListener</code> is triggered when a specific menu item is
-     * selected
-     */
-    private class StepListener
-        implements ActionListener
-    {
-        //------------------//
-        // itemStateChanged //
-        //------------------//
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            StepItem item = (StepItem) e.getSource();
-            Sheet    sheet = SheetManager.getSelectedSheet();
-            Main.getGui()
-                .setTarget(sheet.getPath());
-            item.step.perform(sheet, null);
         }
     }
 }

@@ -16,8 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.sheet.Sheet;
 
-import omr.step.StepException;
-
 import omr.ui.util.UIUtilities;
 
 import omr.util.Logger;
@@ -76,6 +74,19 @@ public class StepMonitor
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the monitoring bar
+     *
+     * @return the step progress bar
+     */
+    public JProgressBar getComponent ()
+    {
+        return bar;
+    }
+
     //---------//
     // animate //
     //---------//
@@ -105,6 +116,7 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
             new Runnable() {
+                    @Override
                     public void run ()
                     {
                         bar.setIndeterminate(false);
@@ -129,6 +141,7 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
             new Runnable() {
+                    @Override
                     public void run ()
                     {
                         int old = bar.getValue();
@@ -140,19 +153,6 @@ public class StepMonitor
                         bar.setValue(old + increment);
                     }
                 });
-    }
-
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the monitoring bar
-     *
-     * @return the step progress bar
-     */
-    public JProgressBar getComponent ()
-    {
-        return bar;
     }
 
     //-----------//
@@ -167,6 +167,7 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
             new Runnable() {
+                    @Override
                     public void run ()
                     {
                         bar.setString(msg);
@@ -178,8 +179,8 @@ public class StepMonitor
     // perform //
     //---------//
     /**
-     * Start the performance of a series of steps, with an online display of a
-     * progress monitor.
+     * Start the performance of a step, with an online display of a progress
+     * monitor.
      *
      * @param step the target step
      * @param sheet the sheet being analyzed
@@ -192,6 +193,7 @@ public class StepMonitor
         // Post the request
         executor.execute(
             new Runnable() {
+                    @Override
                     public void run ()
                     {
                         // This is supposed to run in the background, so...
@@ -214,16 +216,16 @@ public class StepMonitor
                                 sheet.setBusy(true);
                             }
 
-                            step.doPerform(sheet, param);
+                            step.doStep(sheet, param);
 
                             // Update title of the frame
                             Main.getGui()
-                                .updateTitle();
+                                .updateGui();
 
                             if (sheet != null) {
                                 sheet.setBusy(false);
                             }
-                        } catch (StepException ex) {
+                        } catch (Exception ex) {
                             logger.warning("Processing aborted");
                         } finally {
                             // Reset the progress bar

@@ -9,12 +9,13 @@
 //
 package omr.step;
 
-import omr.sheet.Sheet;
+import omr.script.StepTask;
 
-import omr.step.StepException;
+import omr.sheet.Sheet;
 
 import omr.util.Logger;
 import omr.util.Memory;
+import omr.util.OmrExecutors;
 
 import java.io.File;
 
@@ -96,6 +97,9 @@ public enum Step {
     //------//
     // Step //
     //------//
+    /**
+     * This enumeration is not meant to be instantiated outside of this class
+     */
     private Step (String description)
     {
         this.description = description;
@@ -153,36 +157,6 @@ public enum Step {
         }
     }
 
-    //-----------//
-    // doPerform //
-    //-----------//
-    /**
-     * Meant to actually perform a step, with or without UI.
-     *
-     * @param sheet the sheet on which analysis is performed, sheet may be null
-     *              (case of loading a brand new sheet)
-     * @param param a potential parameter for the step. This is actually used
-     *              only when loading a new sheet.
-     *
-     * @throws StepException Raised when processing has failed
-     */
-    public void doPerform (Sheet  sheet,
-                           Object param)
-        throws StepException
-    {
-        Step current = null;
-
-        try {
-            // Force execution of specified step
-            current = this;
-            doStep(sheet, param);
-        } catch (StepException ex) {
-            // User has already been informed, so just stop
-        } catch (Exception ex) {
-            logger.warning("Exception in performing step " + current, ex);
-        }
-    }
-
     //------------//
     // getMonitor //
     //------------//
@@ -213,38 +187,57 @@ public enum Step {
         }
     }
 
-    //---------//
-    // perform //
-    //---------//
+    //---------------//
+    // performSerial //
+    //---------------//
     /**
-     * Trigger the execution of  this step
-     *
-     * <p> This is delegated to the UI if there is such interface, which will
-     * ultimately call doPerform(). If there is no UI, doPerform() is called
-     * directly.
+     * Trigger the execution of this step serially
      *
      * @param sheet the sheet on which analysis is performed
      * @param param a potential parameter (depending on the processing)
      */
-    public void perform (Sheet  sheet,
-                         Object param)
+    public void performSerial (Sheet  sheet,
+                               Object param)
     {
         try {
             if (monitor != null) {
                 monitor.perform(this, sheet, param);
             } else {
-                doPerform(sheet, param);
+                doStep(sheet, param);
             }
-        } catch (StepException ex) {
-            // User has already been informed of error details, so do nothing
+        } catch (Exception ex) {
+            logger.warning("Error in processing " + this, ex);
         }
+    }
+
+    //-----------------//
+    // performParallel //
+    //-----------------//
+    /**
+     * Trigger the execution of this step in parallel
+     *
+     * @param sheet the sheet on which analysis is performed
+     * @param param a potential parameter (depending on the processing)
+     */
+    public void performParallel (final Sheet  sheet,
+                                 final Object param)
+    {
+        OmrExecutors.getLowExecutor()
+                    .execute(
+            new Runnable() {
+                    @Override
+                    public void run ()
+                    {
+                        performSerial(sheet, param);
+                    }
+                });
     }
 
     //--------//
     // doStep //
     //--------//
     /**
-     * Do one step
+     * Do this step
      *
      * @param sheet the sheet to be processed
      * @param param the potential step parameter
@@ -252,8 +245,8 @@ public enum Step {
      * @return the (created or modified) sheet
      * @throws StepException
      */
-    private Sheet doStep (Sheet  sheet,
-                          Object param)
+    Sheet doStep (Sheet  sheet,
+                  Object param)
         throws StepException
     {
         long startTime = 0;
@@ -281,6 +274,9 @@ public enum Step {
 
         // Update user interface ?
         if (monitor != null) {
+            // Record the step action into sheet script
+            sheet.getScript()
+                 .addTask(new StepTask(this));
             sheet.getSheetSteps()
                  .displayUI(this);
         }
