@@ -147,7 +147,10 @@ public class ScoreExporter
      */
     public static void preloadJaxbContext ()
     {
-        logger.info("preloadJaxbContext...");
+        if (logger.isFineEnabled()) {
+            logger.fine("pre-loading JaxbContext for ScorerExporter...");
+        }
+
         try {
             Marshalling.getContext();
         } catch (JAXBException ex) {
