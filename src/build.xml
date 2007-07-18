@@ -292,11 +292,8 @@
         <zip 
             destfile="${dist.dir}/${full.name}-${DSTAMP}.zip" >
 
-            <!-- Files on top dir-->
-            <fileset dir="${basedir}" 
-                     includes="build.xml" 
-                     excludes="${dist.excludes}"
-                     />
+            <!-- Special build.xml file for NetBeans on top dir-->
+	    <zipfileset dir="${basedir}" includes="build.xml" fullpath="build-for-netbeans.xml"/>
         
             <!-- Bin files -->
             <zipfileset dir="${bin.dir}" prefix="bin"
