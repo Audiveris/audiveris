@@ -122,6 +122,32 @@ public class GlyphLagView
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------------//
+    // getGlyphById //
+    //--------------//
+    /**
+     * Give access to a glyph, knowing its id.
+     *
+     * @param id the glyph id
+     *
+     * @return the corresponding glyph, or null if none
+     */
+    public Glyph getGlyphById (int id)
+    {
+        // Look up in specific glyphs first
+        for (Glyph glyph : specificGlyphs) {
+            if (glyph.getId() == id) {
+                return glyph;
+            }
+        }
+
+        if (model != null) {
+            return model.getGlyphById(id);
+        } else {
+            return null;
+        }
+    }
+
     //-------------------//
     // colorizeAllGlyphs //
     //-------------------//
@@ -181,32 +207,6 @@ public class GlyphLagView
         }
     }
 
-    //--------------//
-    // getGlyphById //
-    //--------------//
-    /**
-     * Give access to a glyph, knowing its id.
-     *
-     * @param id the glyph id
-     *
-     * @return the corresponding glyph, or null if none
-     */
-    public Glyph getGlyphById (int id)
-    {
-        // Look up in specific glyphs first
-        for (Glyph glyph : specificGlyphs) {
-            if (glyph.getId() == id) {
-                return glyph;
-            }
-        }
-
-        if (model != null) {
-            return model.getGlyphById(id);
-        } else {
-            return null;
-        }
-    }
-
     //-----------------//
     // insertMenuItems //
     //-----------------//
@@ -221,32 +221,6 @@ public class GlyphLagView
             new CircleAction());
         circleItem.setSelected(constants.circlePainting.getValue());
         menu.add(circleItem);
-    }
-
-    //--------------//
-    // lookupGlyphs //
-    //--------------//
-    /**
-     * Lookup for <b>all</b> glyphs, view-specific ones if such collection
-     * exists, otherwise lag glyphs, that are contained in the provided
-     * rectangle
-     *
-     * @param rect the given rectangle
-     *
-     * @return the list of glyphs found, which may be empty
-     */
-    public List<Glyph> lookupGlyphs (Rectangle rect)
-    {
-        List<Glyph> found;
-
-        // Specific glyphs if any
-        if (specificGlyphs.size() > 0) {
-            found = lag.lookupGlyphs(specificGlyphs, rect);
-        } else {
-            found = lag.lookupGlyphs(lag.getActiveGlyphs(), rect);
-        }
-
-        return found;
     }
 
     //-------------------//
@@ -273,6 +247,32 @@ public class GlyphLagView
     public void setGlyphSetSelection (Selection glyphSetSelection)
     {
         this.glyphSetSelection = glyphSetSelection;
+    }
+
+    //--------------//
+    // lookupGlyphs //
+    //--------------//
+    /**
+     * Lookup for <b>all</b> glyphs, view-specific ones if such collection
+     * exists, otherwise lag glyphs, that are contained in the provided
+     * rectangle
+     *
+     * @param rect the given rectangle
+     *
+     * @return the list of glyphs found, which may be empty
+     */
+    public List<Glyph> lookupGlyphs (Rectangle rect)
+    {
+        List<Glyph> found;
+
+        // Specific glyphs if any
+        if (specificGlyphs.size() > 0) {
+            found = lag.lookupGlyphs(specificGlyphs, rect);
+        } else {
+            found = lag.lookupGlyphs(lag.getActiveGlyphs(), rect);
+        }
+
+        return found;
     }
 
     //--------//
@@ -523,6 +523,7 @@ public class GlyphLagView
         }
 
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
@@ -568,6 +569,7 @@ public class GlyphLagView
         }
 
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();

@@ -12,11 +12,10 @@ package omr;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.score.Score;
-import omr.score.ScoreManager;
 import omr.score.visitor.ScoreExporter;
 
-import omr.sheet.SheetManager;
+import omr.script.Script;
+import omr.script.ScriptManager;
 
 import omr.step.Step;
 
@@ -32,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
-import java.util.concurrent.Executor;
 
 import javax.swing.*;
 
@@ -63,10 +61,9 @@ import javax.swing.*;
  * recursively). A list file is a simple text file, with one image file name per
  * line.</dd>
  *
- * <dt> <b>-score (SCORENAME | &#64;SCORELIST)+</b> </dt> <dd> to specify some
- * scores to be read, using the same mechanism than sheets. These score files
- * contain binary data in saved during a previous run. <i><b>NOTA</b>: this 
- * feature is currently disabled.</i></dd>
+ * <dt> <b>-script (SCRIPTNAME | &#64;SCRIPTLIST)+</b> </dt> <dd> to specify some
+ * scripts to be read, using the same mechanism than sheets. These script files
+ * contain tasks saved during a previous run.</dd>
  *
  * <dt> <b>-step STEPNAME</b> </dt> <dd> to run till the specified
  * step. 'STEPNAME' can be any one of the step names (the case is irrelevant) as
@@ -118,8 +115,8 @@ public class Main
     /** Master View */
     private MainGui gui;
 
-    /** List of score file names to process */
-    private List<String> scoreNames = new ArrayList<String>();
+    /** List of script file names to process */
+    private List<String> scriptNames = new ArrayList<String>();
 
     /** List of sheet file names to process */
     private List<String> sheetNames = new ArrayList<String>();
@@ -222,6 +219,19 @@ public class Main
     public static File getIconsFolder ()
     {
         return new File(getHomeFolder(), ICONS_NAME);
+    }
+
+    //-----------------//
+    // setOutputFolder //
+    //-----------------//
+    /**
+     * Set the folder defined for output/saved files
+     *
+     * @param saveDir the directory for output
+     */
+    public static void setOutputFolder (String saveDir)
+    {
+        constants.savePath.setValue(saveDir);
     }
 
     //-----------------//
@@ -347,19 +357,6 @@ public class Main
         }
     }
 
-    //-----------------//
-    // setOutputFolder //
-    //-----------------//
-    /**
-     * Set the folder defined for output/saved files
-     *
-     * @param saveDir the directory for output
-     */
-    public static void setOutputFolder (String saveDir)
-    {
-        constants.savePath.setValue(saveDir);
-    }
-
     //---------------//
     // getHomeFolder //
     //---------------//
@@ -415,31 +412,47 @@ public class Main
 
             // We do not register the sheet target, since there may be several
             // in a row.  But we perform all steps through the desired step
-            targetStep.perform(null, file);
+            targetStep.performParallel(null, file);
 
-            // Batch part?
-            if (batchMode) {
-                // Do we have to write down the score?
-                if (writeScore) {
-                    ScoreManager.getInstance()
-                                .exportAll();
-                }
-
-                // Dispose allocated stuff
-                SheetManager.getInstance()
-                            .closeAll();
-                ScoreManager.getInstance()
-                            .closeAll();
-            }
+            //            // Batch part?
+            //            if (batchMode) {
+            //                // Do we have to write down the score?
+            //                if (writeScore) {
+            //                    ScoreManager.getInstance()
+            //                                .exportAll();
+            //                }
+            //
+            //                // Dispose allocated stuff
+            //                SheetManager.getInstance()
+            //                            .closeAll();
+            //                ScoreManager.getInstance()
+            //                            .closeAll();
+            //            }
         }
 
-        // Browse desired scores
-        for (String name : scoreNames) {
-            Score score = ScoreManager.getInstance()
-                                      .load(new File(name));
+        // Browse desired scripts
+        for (String name : scriptNames) {
+            File file = new File(name);
+            logger.info("Loading script file " + file + " ...");
 
-            if (!batchMode) {
-                Main.getGui().scoreController.setScoreView(score);
+            try {
+                final Script script = ScriptManager.getInstance()
+                                                   .load(
+                    new FileInputStream(file));
+                script.dump();
+
+                // Run the script in parallel
+                OmrExecutors.getLowExecutor()
+                            .execute(
+                    new Runnable() {
+                            @Override
+                            public void run ()
+                            {
+                                script.run();
+                            }
+                        });
+            } catch (FileNotFoundException ex) {
+                logger.warning("Cannot find script file " + file);
             }
         }
     }
@@ -474,7 +487,7 @@ public class Main
         // Status of the finite state machine
         final int STEP = 0;
         final int SHEET = 1;
-        final int SCORE = 2;
+        final int SCRIPT = 2;
         final int SAVE = 3;
         boolean   paramNeeded = false; // Are we expecting a param?
         int       status = SHEET; // By default
@@ -508,9 +521,9 @@ public class Main
                 } else if (token.equalsIgnoreCase("-sheet")) {
                     status = SHEET;
                     paramNeeded = true;
-//                } else if (token.equalsIgnoreCase("-score")) {
-//                    status = SCORE;
-//                    paramNeeded = true;
+                } else if (token.equalsIgnoreCase("-script")) {
+                    status = SCRIPT;
+                    paramNeeded = true;
                 } else if (token.equalsIgnoreCase("-save")) {
                     status = SAVE;
                     paramNeeded = true;
@@ -555,8 +568,8 @@ public class Main
 
                     break;
 
-                case SCORE :
-                    addRef(token, scoreNames);
+                case SCRIPT :
+                    addRef(token, scriptNames);
                     paramNeeded = false;
 
                     break;
@@ -593,7 +606,7 @@ public class Main
             logger.fine("savePath=" + constants.savePath.getValue());
             logger.fine("targetStep=" + targetStep);
             logger.fine("sheetNames=" + sheetNames);
-            logger.fine("scoreNames=" + scoreNames);
+            logger.fine("scriptNames=" + scriptNames);
         }
     }
 
@@ -633,12 +646,12 @@ public class Main
             // Launch the GUI
             gui = new MainGui();
 
-            // Do we have sheet or score actions specified?
-            if ((sheetNames.size() > 0) || (scoreNames.size() > 0)) {
-                Executor executor = OmrExecutors.getLowExecutor();
-
-                executor.execute(
+            // Do we have sheet or script actions specified?
+            if ((sheetNames.size() > 0) || (scriptNames.size() > 0)) {
+                OmrExecutors.getLowExecutor()
+                            .execute(
                     new Runnable() {
+                            @Override
                             public void run ()
                             {
                                 browse();
@@ -647,7 +660,15 @@ public class Main
             }
 
             // Background task : JaxbContext
-            ScoreExporter.preloadJaxbContext();
+            OmrExecutors.getLowExecutor()
+                        .execute(
+                new Runnable() {
+                        @Override
+                        public void run ()
+                        {
+                            ScoreExporter.preloadJaxbContext();
+                        }
+                    });
         } else {
             logger.info("Batch processing");
             browse();
@@ -676,7 +697,7 @@ public class Main
            .append(" [-save SAVEPATH]")
            .append(" [-step STEPNAME]")
            .append(" [-sheet (SHEETNAME|@SHEETLIST)+]")
-           .append(" [-score (SCORENAME|@SCORELIST)+]");
+           .append(" [-script (SCRIPTNAME|@SCRIPTLIST)+]");
 
         // Print all allowed step names
         buf.append("\n      Known step names are in order")

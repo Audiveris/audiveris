@@ -34,13 +34,13 @@ public class OmrExecutors
 
     /** Number of processors available */
     private static final int cpuNb = Runtime.getRuntime()
-                                            .availableProcessors();
+                                            .availableProcessors() + 10;
 
     /** Pool with high priority */
-    private static Executor highExecutor;
+    private static volatile Executor highExecutor;
 
     /** Pool with low priority */
-    private static Executor lowExecutor;
+    private static volatile Executor lowExecutor;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -59,12 +59,16 @@ public class OmrExecutors
      *
      * @return the high pool, allocated if needed
      */
-    public static synchronized Executor getHighExecutor ()
+    public static Executor getHighExecutor ()
     {
         if (highExecutor == null) {
-            highExecutor = Executors.newFixedThreadPool(
-                cpuNb + 1,
-                new HighFactory());
+            synchronized (OmrExecutors.class) {
+                if (highExecutor == null) {
+                    highExecutor = Executors.newFixedThreadPool(
+                        cpuNb + 1,
+                        new HighFactory());
+                }
+            }
         }
 
         return highExecutor;
@@ -81,9 +85,13 @@ public class OmrExecutors
     public static synchronized Executor getLowExecutor ()
     {
         if (lowExecutor == null) {
-            lowExecutor = Executors.newFixedThreadPool(
-                cpuNb + 1,
-                new LowFactory());
+            synchronized (OmrExecutors.class) {
+                if (lowExecutor == null) {
+                    lowExecutor = Executors.newFixedThreadPool(
+                        cpuNb + 1,
+                        new LowFactory());
+                }
+            }
         }
 
         return lowExecutor;
@@ -133,6 +141,7 @@ public class OmrExecutors
                             .getThreadGroup();
         }
 
+        @Override
         public Thread newThread (Runnable r)
         {
             Thread t = new Thread(group, r, getThreadName(), 0);
@@ -166,6 +175,7 @@ public class OmrExecutors
     {
         private final AtomicInteger highThreadNumber = new AtomicInteger(1);
 
+        @Override
         public Thread newThread (Runnable r)
         {
             Thread t = super.newThread(r);
@@ -177,6 +187,7 @@ public class OmrExecutors
             return t;
         }
 
+        @Override
         protected String getThreadName ()
         {
             return "high-thread-" + highThreadNumber.getAndIncrement();
@@ -191,6 +202,7 @@ public class OmrExecutors
     {
         private final AtomicInteger lowThreadNumber = new AtomicInteger(1);
 
+        @Override
         public Thread newThread (Runnable r)
         {
             Thread t = super.newThread(r);
@@ -202,6 +214,7 @@ public class OmrExecutors
             return t;
         }
 
+        @Override
         protected String getThreadName ()
         {
             return "low-thread-" + lowThreadNumber.getAndIncrement();

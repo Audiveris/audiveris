@@ -764,7 +764,7 @@ public class Picture
 
         if (pixelSize != 8) {
             logger.info("pixelSize=" + pixelSize + " colorModel=" + colorModel);
-            image = grayToGray256(image);
+///            image = grayToGray256(image);
         }
     }
 

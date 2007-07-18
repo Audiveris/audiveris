@@ -439,33 +439,38 @@ public abstract class Constant
      *
      * @return the String view of the value
      */
-    synchronized java.lang.String getCurrentString ()
+    java.lang.String getCurrentString ()
     {
         if (currentString == null) {
-            checkInitialized();
-            currentString = ConstantManager.getProperty(qualifiedName);
+            synchronized(this) {
+                if (currentString == null) {
 
-            if (currentString == null) { // Not defined by property files
+                    checkInitialized();
+                    currentString = ConstantManager.getProperty(qualifiedName);
 
-                if (defaultString != null) {
-                    if (logger.isFineEnabled()) {
+                    if (currentString == null) { // Not defined by property files
+
+                        if (defaultString != null) {
+                            if (logger.isFineEnabled()) {
+                                logger.fine(
+                                            "Property " + qualifiedName + " = " +
+                                            currentString + " -> " + defaultString);
+                            }
+
+                            currentString = defaultString; // Use default
+                            // } else {
+                            //     logger.warning(
+                            //         "No value found for Property " + qualifiedName);
+                        }
+                    } else if (logger.isFineEnabled()) {
                         logger.fine(
-                            "Property " + qualifiedName + " = " +
-                            currentString + " -> " + defaultString);
+                                    "Property " + qualifiedName + " = " + currentString);
                     }
 
-                    currentString = defaultString; // Use default
-                                                   //                } else {
-                                                   //                    logger.warning(
-                                                   //                        "No value found for Property " + qualifiedName);
+                    // Save this initial value string
+                    initialString = currentString;
                 }
-            } else if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Property " + qualifiedName + " = " + currentString);
             }
-
-            // Save this initial value string
-            initialString = currentString;
         }
 
         return currentString;

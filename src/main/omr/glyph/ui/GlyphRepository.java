@@ -100,10 +100,10 @@ public class GlyphRepository
     //~ Instance fields --------------------------------------------------------
 
     /** Core collection of glyphs */
-    private List<String> coreBase;
+    private volatile List<String> coreBase;
 
     /** Whole collection of glyphs */
-    private List<String> wholeBase;
+    private volatile List<String> wholeBase;
 
     /**
      * Map of all glyphs deserialized so far, using full glyph name as key. Full
@@ -293,10 +293,15 @@ public class GlyphRepository
      *
      * @return the core collection of recorded glyphs
      */
-    synchronized List<String> getCoreBase (Monitor monitor)
+    List<String> getCoreBase (Monitor monitor)
     {
         if (coreBase == null) {
-            coreBase = loadCoreBase(monitor);
+            synchronized(this) {
+                if (coreBase == null) {
+                    coreBase = loadCoreBase(monitor);
+                }
+            }
+
         }
 
         return coreBase;
@@ -423,10 +428,14 @@ public class GlyphRepository
      *
      * @return the whole collection of recorded glyphs
      */
-    synchronized List<String> getWholeBase (Monitor monitor)
+     List<String> getWholeBase (Monitor monitor)
     {
         if (wholeBase == null) {
-            wholeBase = loadWholeBase(monitor);
+            synchronized(this) {
+                if (wholeBase == null) {
+                    wholeBase = loadWholeBase(monitor);
+                }
+            }
         }
 
         return wholeBase;

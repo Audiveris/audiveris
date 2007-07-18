@@ -94,7 +94,6 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
      * @param vertex the newly created vertex
      */
     public synchronized void addVertex (V vertex) // HB PUBLIC just for Verifier
-
     {
         if (vertex == null) {
             throw new IllegalArgumentException("Cannot add a null vertex");

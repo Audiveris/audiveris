@@ -142,24 +142,17 @@ public class ScoreExporter
     // preloadJaxbContext //
     //--------------------//
     /**
-     * This method allows to preload the JaxbContext in a background task, so
-     * that it is immediately available when the interactive user needs it.
+     * This method allows to preload the JaxbContext, so that it is immediately
+     * available when the interactive user needs it.
      */
     public static void preloadJaxbContext ()
     {
-        Executor executor = OmrExecutors.getLowExecutor();
-
-        executor.execute(
-            new Runnable() {
-                    public void run ()
-                    {
-                        try {
-                            Marshalling.getContext();
-                        } catch (JAXBException ex) {
-                            logger.warning("Error preloading JaxbContext", ex);
-                        }
-                    }
-                });
+        logger.info("preloadJaxbContext...");
+        try {
+            Marshalling.getContext();
+        } catch (JAXBException ex) {
+            logger.warning("Error preloading JaxbContext", ex);
+        }
     }
 
     //------------------//
@@ -1411,6 +1404,52 @@ public class ScoreExporter
         return current.attributes;
     }
 
+    //-----------//
+    // isNewClef //
+    //-----------//
+    /**
+     * Make sure we have a NEW clef, not already assigned. We have to go back
+     * in current measure, then in current staff, then in same staff in previous
+     * systems, until we find a previous clef. And we compare the two shapes.
+     * @param clef the potentially new clef
+     * @return true if this clef is really new
+     */
+    private boolean isNewClef (Clef clef)
+    {
+        // Perhaps another clef before this one ?
+        Clef previousClef = current.measure.getClefBefore(
+            new SystemPoint(clef.getCenter().x - 1, 0));
+
+        if (previousClef != null) {
+            return previousClef.getShape() != clef.getShape();
+        }
+
+        return true; // Since no previous clef found
+    }
+
+    //-------------------//
+    // isNewKeySignature //
+    //-------------------//
+    /**
+     * Make sure we have a NEW key, not already assigned. We have to go back
+     * in current measure, then in current staff, then in same staff in previous
+     * systems, until we find a previous key. And we compare the two shapes.
+     * @param key the potentially new key
+     * @return true if this key is really new
+     */
+    private boolean isNewKeySignature (KeySignature key)
+    {
+        // Perhaps another key before this one ?
+        KeySignature previousKey = current.measure.getKeyBefore(
+            key.getCenter());
+
+        if (previousKey != null) {
+            return previousKey.getKey() != key.getKey();
+        }
+
+        return true; // Since no previous key found
+    }
+
     //--------------//
     // getNotations //
     //--------------//
@@ -1523,52 +1562,6 @@ public class ScoreExporter
                 logger.severe("Could not setStaff for element " + classe);
             }
         }
-    }
-
-    //-----------//
-    // isNewClef //
-    //-----------//
-    /**
-     * Make sure we have a NEW clef, not already assigned. We have to go back
-     * in current measure, then in current staff, then in same staff in previous
-     * systems, until we find a previous clef. And we compare the two shapes.
-     * @param clef the potentially new clef
-     * @return true if this clef is really new
-     */
-    private boolean isNewClef (Clef clef)
-    {
-        // Perhaps another clef before this one ?
-        Clef previousClef = current.measure.getClefBefore(
-            new SystemPoint(clef.getCenter().x - 1, 0));
-
-        if (previousClef != null) {
-            return previousClef.getShape() != clef.getShape();
-        }
-
-        return true; // Since no previous clef found
-    }
-
-    //-------------------//
-    // isNewKeySignature //
-    //-------------------//
-    /**
-     * Make sure we have a NEW key, not already assigned. We have to go back
-     * in current measure, then in current staff, then in same staff in previous
-     * systems, until we find a previous key. And we compare the two shapes.
-     * @param key the potentially new key
-     * @return true if this key is really new
-     */
-    private boolean isNewKeySignature (KeySignature key)
-    {
-        // Perhaps another key before this one ?
-        KeySignature previousKey = current.measure.getKeyBefore(
-            key.getCenter());
-
-        if (previousKey != null) {
-            return previousKey.getKey() != key.getKey();
-        }
-
-        return true; // Since no previous key found
     }
 
     //~ Inner Classes ----------------------------------------------------------
