@@ -19,12 +19,13 @@ import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.*;
-import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -97,8 +98,8 @@ public class Picture
     private final AffineTransform scaleTransform = AffineTransform.getScaleInstance(
         1d,
         1d);
-    private DataBuffer  dataBuffer;
-    private Dimension   dimension;
+    private DataBuffer     dataBuffer;
+    private Dimension      dimension;
 
     /** Original image dimension */
     private Dimension originalDimension;
@@ -106,15 +107,21 @@ public class Picture
     /** Current image */
     private PlanarImage image;
 
-    /** Selection objects where grey level of pixel is to be written to when so
+    /** Selection objects where gray level of pixel is to be written to when so
        asked for by calling the update method */
     private Selection levelSelection;
 
     /** Remember if we have actually rotated the image */
     private boolean rotated = false;
 
-    /** To speedup ... */
-    private int dimensionWidth;
+    /** Cached dimension */
+    ///private int dimensionWidth;
+
+    /** The image (writable) raster */
+    private WritableRaster raster;
+
+    /** The factor to apply to raw pixel value to get gray level on 0..255 */
+    private int grayFactor = 1;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -224,8 +231,8 @@ public class Picture
     // Picture //
     //---------//
     /**
-     * Create a picture as a mosaic or other images, which are to be composed
-     * one above the following one.
+     * Create a picture as a mosaic of other images, which are to be composed
+     * one above the other.
      *
      * This method is not currently used
      *
@@ -238,7 +245,7 @@ public class Picture
      */
     public Picture (File[]   files,
                     double[] thetas)
-        throws FileNotFoundException, IOException
+        throws FileNotFoundException, IOException, ImageFormatException
     {
         int           globalWidth = 0; // Width of resulting mosaic
         int           globalHeight = 0; // Height of resulting mosaic
@@ -336,6 +343,192 @@ public class Picture
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------------//
+    // getDimension //
+    //--------------//
+    /**
+     * Report the dimension in pixels of the current image
+     *
+     * @return the image dimension
+     */
+    public Dimension getDimension ()
+    {
+        return new Dimension(dimension);
+    }
+
+    //-----------//
+    // getHeight //
+    //-----------//
+    /**
+     * Report the picture height in pixels.
+     *
+     * @return the height value
+     */
+    @Implement(PixelSource.class)
+    @Override
+    public int getHeight ()
+    {
+        return dimension.height;
+    }
+
+    //------------------//
+    // getMaxForeground //
+    //------------------//
+    @Implement(PixelSource.class)
+    @Override
+    public int getMaxForeground ()
+    {
+        return FOREGROUND;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name for this Observer
+     *
+     * @return Observer name
+     */
+    @Implement(SelectionObserver.class)
+    @Override
+    public String getName ()
+    {
+        return "Picture";
+    }
+
+    //---------------//
+    // getOrigHeight //
+    //---------------//
+    /**
+     * Report the original picture height, as read from the image file, before
+     * any potential rotation.
+     *
+     * @return the original height value, in pixels
+     */
+    public int getOrigHeight ()
+    {
+        return originalDimension.height;
+    }
+
+    //--------------//
+    // getOrigWidth //
+    //--------------//
+    /**
+     * Report the original picture width, as read from the image file, before
+     * any potential rotation.
+     *
+     * @return the original width value, in pixels
+     */
+    public int getOrigWidth ()
+    {
+        return originalDimension.width;
+    }
+
+    //----------//
+    // getPixel //
+    //----------//
+    /**
+     * Report the pixel element, as read at location (x, y) in the picture.
+     *
+     * @param x abscissa value
+     * @param y ordinate value
+     *
+     * @return the pixel value
+     */
+    @Implement(PixelSource.class)
+    @Override
+    public final int getPixel (int x,
+                               int y)
+    {
+        int[] pixel = null;
+        pixel = raster.getPixel(x, y, pixel); // This allocates pixel!
+
+        return grayFactor * pixel[0];
+
+        ///            return dataBuffer.getElem(x + (y * dimensionWidth));
+    }
+
+    //-------------------//
+    // setLevelSelection //
+    //-------------------//
+    /**
+     * Inject the selection object where pixel gray level must be written to,
+     * when triggered through the update method.
+     *
+     * @param levelSelection the output selection object
+     */
+    public void setLevelSelection (Selection levelSelection)
+    {
+        this.levelSelection = levelSelection;
+    }
+
+    //----------//
+    // setPixel //
+    //----------//
+    /**
+     * Write a pixel at the provided location, in the currently writable data
+     * buffer
+     *
+     * @param pt  pixel coordinates
+     * @param val pixel value
+     */
+    public final void setPixel (Point pt,
+                                int   val)
+    {
+        ///        dataBuffer.setElem(pt.x + (pt.y * dimensionWidth), val);
+        int[] pixel = new int[1];
+
+        if (grayFactor == 1) {
+            pixel[0] = val;
+        } else {
+            pixel[0] = (val + (grayFactor - FOREGROUND - 1)) / grayFactor;
+        }
+
+        raster.setPixel(pt.x, pt.y, pixel);
+    }
+
+    //-----------//
+    // isRotated //
+    //-----------//
+    /**
+     * Predicate to report whether the picture has been rotated.
+     *
+     * @return true if rotated
+     */
+    public boolean isRotated ()
+    {
+        return rotated;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the current width of the picture image. Note that it may have been
+     * modified by a rotation.
+     *
+     * @return the current width value, in pixels.
+     */
+    @Implement(PixelSource.class)
+    @Override
+    public int getWidth ()
+    {
+        return dimension.width;
+    }
+
+    //-------//
+    // close //
+    //-------//
+    /**
+     * Release the resources linked to the picture image
+     */
+    public void close ()
+    {
+        if (image != null) {
+            image.dispose();
+        }
+    }
+
     //---------------//
     // dumpRectangle //
     //---------------//
@@ -398,102 +591,6 @@ public class Picture
         System.out.println();
     }
 
-    //--------------//
-    // getDimension //
-    //--------------//
-    /**
-     * Report the dimension in pixels of the current image
-     *
-     * @return the image dimension
-     */
-    public Dimension getDimension ()
-    {
-        return new Dimension(dimension);
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    /**
-     * Report the picture height in pixels.
-     *
-     * @return the height value
-     */
-    @Implement(PixelSource.class)
-    public int getHeight ()
-    {
-        return dimension.height;
-    }
-
-    //------------------//
-    // getMaxForeground //
-    //------------------//
-    @Implement(PixelSource.class)
-    public int getMaxForeground ()
-    {
-        return FOREGROUND;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name for this Observer
-     *
-     * @return Observer name
-     */
-    @Implement(SelectionObserver.class)
-    public String getName ()
-    {
-        return "Picture";
-    }
-
-    //---------------//
-    // getOrigHeight //
-    //---------------//
-    /**
-     * Report the original picture height, as read from the image file, before
-     * any potential rotation.
-     *
-     * @return the original height value, in pixels
-     */
-    public int getOrigHeight ()
-    {
-        return originalDimension.height;
-    }
-
-    //--------------//
-    // getOrigWidth //
-    //--------------//
-    /**
-     * Report the original picture width, as read from the image file, before
-     * any potential rotation.
-     *
-     * @return the original width value, in pixels
-     */
-    public int getOrigWidth ()
-    {
-        return originalDimension.width;
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    /**
-     * Report the pixel element, as read at location (x, y) in the picture.
-     *
-     * @param x abscissa value
-     * @param y ordinate value
-     *
-     * @return the pixel value
-     */
-    @Implement(PixelSource.class)
-    public final int getPixel (int x,
-                               int y)
-    {
-        return dataBuffer.getElem(x + (y * dimensionWidth));
-    }
-
     //--------//
     // render //
     //--------//
@@ -521,6 +618,7 @@ public class Picture
      * clockwise, negative for counter-clockwise
      */
     public void rotate (double theta)
+        throws ImageFormatException
     {
         // Invert
         PlanarImage img = invert(image);
@@ -565,77 +663,6 @@ public class Picture
         logger.info("Image rotated " + getWidth() + " x " + getHeight());
     }
 
-    //-------------------//
-    // setLevelSelection //
-    //-------------------//
-    /**
-     * Inject the selection object where pixel grey level must be written to,
-     * when triggered through the update method.
-     *
-     * @param levelSelection the output selection object
-     */
-    public void setLevelSelection (Selection levelSelection)
-    {
-        this.levelSelection = levelSelection;
-    }
-
-    //----------//
-    // setPixel //
-    //----------//
-    /**
-     * Write a pixel at the provided location, in the currently writable data
-     * buffer
-     *
-     * @param pt  pixel coordinates
-     * @param val pixel value
-     */
-    public final void setPixel (Point pt,
-                                int   val)
-    {
-        dataBuffer.setElem(pt.x + (pt.y * dimensionWidth), val);
-    }
-
-    //-------//
-    // close //
-    //-------//
-    /**
-     * Release the resources linked to the picture image
-     */
-    public void close ()
-    {
-        if (image != null) {
-            image.dispose();
-        }
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the current width of the picture image. Note that it may have been
-     * modified by a rotation.
-     *
-     * @return the current width value, in pixels.
-     */
-    @Implement(PixelSource.class)
-    public int getWidth ()
-    {
-        return dimensionWidth;
-    }
-
-    //-----------//
-    // isRotated //
-    //-----------//
-    /**
-     * Predicate to report whether the picture has been rotated.
-     *
-     * @return true if rotated
-     */
-    public boolean isRotated ()
-    {
-        return rotated;
-    }
-
     //-------//
     // store //
     //-------//
@@ -660,13 +687,14 @@ public class Picture
     //--------//
     /**
      * Call-back triggered when Pixel Selection has been modified.  Based on
-     * pixel location, we forward the pixel grey level to whoever is interested
+     * pixel location, we forward the pixel gray level to whoever is interested
      * in it.
      *
      * @param selection the (Pixel) Selection
      * @param hint potential notification hint
      */
     @Implement(SelectionObserver.class)
+    @Override
     public void update (Selection     selection,
                         SelectionHint hint)
     {
@@ -677,7 +705,7 @@ public class Picture
 
             if ((hint == SelectionHint.LOCATION_ADD) ||
                 (hint == SelectionHint.LOCATION_INIT)) {
-                // Compute and forward pixel grey level
+                // Compute and forward pixel gray level
                 Rectangle rect = (Rectangle) selection.getEntity();
 
                 if (rect != null) {
@@ -747,6 +775,10 @@ public class Picture
         int numBands = image.getSampleModel()
                             .getNumBands();
 
+        if (logger.isFineEnabled()) {
+            logger.fine("checkImageFormat. numBands=" + numBands);
+        }
+
         if (numBands != 1) {
             if (numBands == 3) {
                 image = RGBToGray(image);
@@ -757,39 +789,30 @@ public class Picture
                     "Unsupported sample model" + " numBands=" + numBands);
             }
         }
-
-        // Check pixel size
-        ColorModel colorModel = image.getColorModel();
-        int        pixelSize = colorModel.getPixelSize();
-
-        if (pixelSize != 8) {
-            logger.info("pixelSize=" + pixelSize + " colorModel=" + colorModel);
-///            image = grayToGray256(image);
-        }
     }
 
-    //---------------//
-    // grayToGray256 //
-    //---------------//
-    private static PlanarImage grayToGray256 (PlanarImage image)
-    {
-        logger.info("Converting gray image to gray-256 ...");
-
-        ColorSpace colorSpace = ColorSpace.getInstance(
-            java.awt.color.ColorSpace.CS_GRAY);
-
-        return JAI.create("colorConvert", image, colorSpace, null);
-
-        //        ParameterBlock pb = new ParameterBlock();
-        //
-        //        pb.addSource(image);
-        //
-        //        ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-        //        ColorModel colorModel = new ColorModel
-        //        //pb.add(cs);
-        //
-        //        return JAI.create("ColorConvert", pb);
-    }
+    //    //---------------//
+    //    // grayToGray256 //
+    //    //---------------//
+    //    private static PlanarImage grayToGray256 (PlanarImage image)
+    //    {
+    //        logger.info("Converting gray image to gray-256 ...");
+    //
+    //        ColorSpace colorSpace = ColorSpace.getInstance(
+    //            java.awt.color.ColorSpace.CS_GRAY);
+    //
+    //        return JAI.create("colorConvert", image, colorSpace, null);
+    //
+    //        //        ParameterBlock pb = new ParameterBlock();
+    //        //
+    //        //        pb.addSource(image);
+    //        //
+    //        //        ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+    //        //        ColorModel colorModel = new ColorModel
+    //        //        //pb.add(cs);
+    //        //
+    //        //        return JAI.create("ColorConvert", pb);
+    //    }
 
     //--------//
     // invert //
@@ -811,20 +834,7 @@ public class Picture
     {
         image = PlanarImage.wrapRenderedImage(renderedImage);
 
-        // Check that the whole image has been loaded
-        if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
-            throw new RuntimeException("Unusable image for Picture");
-        } else {
-            // Check image format, and convert to gray if needed. This may
-            // throw ImageFormatException
-            checkImageFormat();
-
-            // Cache dimensions
-            updateParams();
-
-            // Remember original dimension
-            originalDimension = getDimension();
-        }
+        checkImage();
     }
 
     //----------//
@@ -834,11 +844,12 @@ public class Picture
                            float         scaling)
         throws ImageFormatException
     {
-        //        logger.info(
-        //            "bufferedImage hasAlpha=" +
-        //            bufferedImage.getColorModel().hasAlpha());
         image = PlanarImage.wrapRenderedImage(bufferedImage);
-        logger.info("planarImage hasAlpha=" + image.getColorModel().hasAlpha());
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "planarImage hasAlpha=" + image.getColorModel().hasAlpha());
+        }
 
         if (scaling != 1.0f) {
             ParameterBlock pb = new ParameterBlock().addSource(image)
@@ -849,18 +860,27 @@ public class Picture
                                                     .add(
                 new InterpolationNearest());
             image = JAI.create("scale", pb);
-            logger.info("scaled hasAlpha=" + image.getColorModel().hasAlpha());
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "scaled hasAlpha=" + image.getColorModel().hasAlpha());
+            }
         }
 
+        checkImage();
+    }
+
+    //------------//
+    // checkImage //
+    //------------//
+    private void checkImage ()
+        throws ImageFormatException
+    {
         // Check that the whole image has been loaded
         if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
             throw new RuntimeException("Unusable image for Picture");
         } else {
-            // Check image format, and convert to gray if needed. This may
-            // throw ImageFormatException
-            checkImageFormat();
-
-            // Cache dimensions
+            // Check & cache all parameters
             updateParams();
 
             // Remember original dimension
@@ -872,13 +892,47 @@ public class Picture
     // updateParams //
     //--------------//
     private void updateParams ()
+        throws ImageFormatException
     {
-        // Cache dimensions
-        dimension = new Dimension(image.getWidth(), image.getHeight());
-        dimensionWidth = dimension.width;
+        checkImageFormat();
 
-        // Point to the image data buffer
-        dataBuffer = image.getData()
-                          .getDataBuffer();
+        // Cache dimensions
+        dimension = new java.awt.Dimension(image.getWidth(), image.getHeight());
+        ///dimensionWidth = dimension.width;
+        raster = Raster.createWritableRaster(
+            image.getData().getSampleModel(),
+            image.getData().getDataBuffer(),
+            null);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("raster=" + raster);
+        }
+
+        ///dataBuffer = raster.getDataBuffer();
+
+        // Check pixel size
+        ColorModel colorModel = image.getColorModel();
+        int        pixelSize = colorModel.getPixelSize();
+
+        if (logger.isFineEnabled()) {
+            logger.fine("colorModel=" + colorModel + " pixelSize=" + pixelSize);
+        }
+
+        if (pixelSize == 8) {
+            grayFactor = 1;
+        } else if (pixelSize == 1) {
+            logger.warning(
+                "Images with pixels coded on 1 bit are expensive to process");
+            logger.warning(
+                "Consider converting to a format which codes pixels on 1 byte");
+            grayFactor = 255;
+        } else {
+            throw new java.lang.RuntimeException(
+                "Unsupported pixel size:" + pixelSize);
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine("grayFactor=" + grayFactor);
+        }
     }
 }
