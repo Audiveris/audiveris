@@ -121,8 +121,8 @@ public class Main
     /** List of sheet file names to process */
     private List<String> sheetNames = new ArrayList<String>();
 
-    /** Target step */
-    private Step targetStep;
+    /** Target step, LOAD by default */
+    private Step targetStep = Step.LOAD;
 
     /** Batch mode if any */
     private boolean batchMode = false;
