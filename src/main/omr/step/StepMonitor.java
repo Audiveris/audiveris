@@ -226,7 +226,7 @@ public class StepMonitor
                                 sheet.setBusy(false);
                             }
                         } catch (Exception ex) {
-                            logger.warning("Processing aborted");
+                            logger.warning("Processing aborted", ex);
                         } finally {
                             // Reset the progress bar
                             if (bar != null) {
