@@ -2,7 +2,8 @@
 //                                                                            //
 //                               P i c t u r e                                //
 //                                                                            //
-//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
+//  Copyright (C) Herve Bitteur and Brenton Partridge 2000-2007.              //
+//  All rights reserved.                                                      //
 //  This software is released under the GNU General Public License.           //
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
@@ -15,22 +16,20 @@ import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
 
-import omr.util.Implement;
-import omr.util.Logger;
+import omr.util.*;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
+import java.awt.image.*;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Iterator;
 
+import javax.imageio.*;
+import javax.imageio.event.*;
+import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.InterpolationBilinear;
 import javax.media.jai.InterpolationNearest;
 import javax.media.jai.JAI;
@@ -69,7 +68,7 @@ import javax.media.jai.operator.MosaicDescriptor;
  * </ul>
  * </dl>
  *
- * @author Herv&eacute; Bitteur
+ * @author Herv&eacute; Bitteur and Brenton Partridge
  * @version $Id$
  */
 public class Picture
@@ -91,6 +90,21 @@ public class Picture
      * as background.
      */
     public static final int FOREGROUND = 227;
+
+    static {
+        long startTime = System.currentTimeMillis();
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Awaiting JAI loading");
+        }
+
+        JaiLoader.ensureLoaded();
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "Waited " + (System.currentTimeMillis() - startTime) + "ms");
+        }
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -219,9 +233,7 @@ public class Picture
     public Picture (File imgFile)
         throws FileNotFoundException, IOException, ImageFormatException
     {
-        // Try to read the image file
-        logger.info("Loading image from " + imgFile + " ...");
-        setImage(JAI.create("fileload", imgFile.getPath()));
+        setImage(loadFile(imgFile));
 
         logger.info(
             "Image loaded " + image.getWidth() + " x " + image.getHeight());
@@ -257,7 +269,8 @@ public class Picture
         PlanarImage[] images = new PlanarImage[files.length];
 
         for (int i = 0; i < files.length; i++) {
-            // Load from file
+            logger.info("Loading image " + files[i].getPath());
+            
             PlanarImage img0 = JAI.create("fileload", files[i].getPath());
             System.out.println("i=" + i + " file=" + files[i]);
             System.out.println(
@@ -343,7 +356,30 @@ public class Picture
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
+    private static RenderedImage loadFile(File imgFile) throws IOException
+	{
+	    logger.info("Loading image from " + imgFile + " ...");
+	
+	    ImageInputStream stream = ImageIO.createImageInputStream(imgFile);
+	
+	    if (stream == null) {
+	        throw new IOException("Cannot create image input stream");
+	    }
+	
+	    Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+	
+	    if (readers.hasNext()) {
+	        ImageReader reader = readers.next();
+	        reader.addIIOReadProgressListener(new Listener());
+	        reader.setInput(stream, true);
+	        return (reader.read(0));
+	    } else {
+	    	logger.info("ImageIO cannot read file, using JAI");
+	        return (JAI.create("fileload", imgFile.getPath()));
+	    }
+	}
+
+	//--------------//
     // getDimension //
     //--------------//
     /**
@@ -365,7 +401,6 @@ public class Picture
      * @return the height value
      */
     @Implement(PixelSource.class)
-    @Override
     public int getHeight ()
     {
         return dimension.height;
@@ -375,7 +410,6 @@ public class Picture
     // getMaxForeground //
     //------------------//
     @Implement(PixelSource.class)
-    @Override
     public int getMaxForeground ()
     {
         return FOREGROUND;
@@ -390,7 +424,6 @@ public class Picture
      * @return Observer name
      */
     @Implement(SelectionObserver.class)
-    @Override
     public String getName ()
     {
         return "Picture";
@@ -436,7 +469,6 @@ public class Picture
      * @return the pixel value
      */
     @Implement(PixelSource.class)
-    @Override
     public final int getPixel (int x,
                                int y)
     {
@@ -446,6 +478,19 @@ public class Picture
         return grayFactor * pixel[0];
 
         ///            return dataBuffer.getElem(x + (y * dimensionWidth));
+    }
+    
+    //------------------//
+    // getAsBufferedImage //
+    //------------------//
+    /**
+     * Return a copy of the underlying image as a buffered image.
+     * 
+     * @return 
+     */
+    public final BufferedImage getAsBufferedImage()
+    {
+        return image.getAsBufferedImage();
     }
 
     //-------------------//
@@ -510,7 +555,6 @@ public class Picture
      * @return the current width value, in pixels.
      */
     @Implement(PixelSource.class)
-    @Override
     public int getWidth ()
     {
         return dimension.width;
@@ -694,7 +738,6 @@ public class Picture
      * @param hint potential notification hint
      */
     @Implement(SelectionObserver.class)
-    @Override
     public void update (Selection     selection,
                         SelectionHint hint)
     {
@@ -934,5 +977,102 @@ public class Picture
         if (logger.isFineEnabled()) {
             logger.fine("grayFactor=" + grayFactor);
         }
+    }
+    
+    
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * Listener allows ImageIO to log image loading status.
+     */
+    private static class Listener
+        implements IIOReadProgressListener, IIOWriteProgressListener
+    {
+        private volatile float lastProgress = 0;
+
+        public void imageComplete (ImageReader source)
+        {
+            logger.info("Image loading complete");
+            lastProgress = 0;
+        }
+
+        public void imageProgress (ImageReader source,
+                                   float       percentageDone)
+        {
+            if ((percentageDone - lastProgress) > 10) {
+                lastProgress = percentageDone;
+                logger.info("Image loaded " + percentageDone + "%");
+            }
+        }
+
+        public void imageStarted (ImageReader source,
+                                  int         imageIndex)
+        {
+            logger.info("Image loading started");
+        }
+
+        public void readAborted (ImageReader source)
+        {
+            logger.info("Image loading aborted");
+        }
+
+        public void sequenceComplete (ImageReader source)
+        {
+        }
+
+        public void sequenceStarted (ImageReader source,
+                                     int         minIndex)
+        {
+        }
+
+        public void thumbnailComplete (ImageReader source)
+        {
+        }
+
+        public void thumbnailProgress (ImageReader source,
+                                       float       percentageDone)
+        {
+        }
+
+        public void thumbnailStarted (ImageReader source,
+                                      int         imageIndex,
+                                      int         thumbnailIndex)
+        {
+        }
+
+		public void imageComplete(ImageWriter imagewriter)
+		{
+			logger.info("Image writing complete");
+			lastProgress = 0;
+		}
+
+		public void imageProgress(ImageWriter imagewriter, float percentageDone)
+		{
+			if ((percentageDone - lastProgress) > 10) {
+                lastProgress = percentageDone;
+                logger.info("Image written " + percentageDone + "%");
+            }
+		}
+
+		public void imageStarted(ImageWriter imagewriter, int i)
+		{
+			logger.info("Image writing started");
+		}
+
+		public void thumbnailComplete(ImageWriter imagewriter)
+		{
+		}
+
+		public void thumbnailProgress(ImageWriter imagewriter, float f)
+		{
+		}
+
+		public void thumbnailStarted(ImageWriter imagewriter, int i, int j)
+		{
+		}
+
+		public void writeAborted(ImageWriter imagewriter)
+		{
+		}
     }
 }
