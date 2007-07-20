@@ -109,7 +109,7 @@ public class StepMenu
             putValue(SHORT_DESCRIPTION, step.getDescription());
         }
 
-        @Override
+        @Implement(AbstractAction.class)
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = SheetManager.getSelectedSheet();
@@ -172,19 +172,16 @@ public class StepMenu
         implements MenuListener
     {
         @Implement(MenuListener.class)
-        @Override
         public void menuCanceled (MenuEvent e)
         {
         }
 
         @Implement(MenuListener.class)
-        @Override
         public void menuDeselected (MenuEvent e)
         {
         }
 
         @Implement(MenuListener.class)
-        @Override
         public void menuSelected (MenuEvent e)
         {
             Sheet sheet = SheetManager.getSelectedSheet();
