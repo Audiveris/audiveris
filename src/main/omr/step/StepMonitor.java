@@ -13,11 +13,13 @@ import omr.Main;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+import omr.constant.Constant.Ratio;
 
 import omr.sheet.Sheet;
 
 import omr.ui.util.UIUtilities;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.Graphics;
@@ -62,7 +64,8 @@ public class StepMonitor
     public StepMonitor ()
     {
         // Progress Bar
-        bar.setBorder(UIUtilities.getToolBorder());
+        if (!omr.Main.MAC_OS_X) 
+        	bar.setBorder(UIUtilities.getToolBorder());
         bar.setToolTipText("On going Step activity");
         bar.setStringPainted(true);
         animate(false);
@@ -98,11 +101,7 @@ public class StepMonitor
      */
     public void animate (final boolean animating)
     {
-        animate(0);
-
-        if (animating) {
-            animate();
-        }
+        animate(animating ? constants.ratio.getValue() : 0);
     }
 
     //---------//
@@ -116,8 +115,8 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
             new Runnable() {
-                    @Override
-                    public void run ()
+            		@Implement(Runnable.class)
+                	public void run ()
                     {
                         bar.setIndeterminate(false);
 
@@ -141,16 +140,18 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
             new Runnable() {
-                    @Override
+                    @Implement(Runnable.class)
                     public void run ()
                     {
                         int old = bar.getValue();
-                        int diff = bar.getMaximum() - old;
-                        int increment = (int) Math.round(
-                            diff * constants.ratio.getValue());
-
-                        bar.setIndeterminate(false);
-                        bar.setValue(old + increment);
+						if (old > bar.getMinimum())
+						{
+							int diff = bar.getMaximum() - old;
+							int increment = (int)Math.round(diff
+								* constants.ratio.getValue());
+							bar.setIndeterminate(false);
+							bar.setValue(old + increment);
+						}
                     }
                 });
     }
@@ -167,8 +168,8 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
             new Runnable() {
-                    @Override
-                    public void run ()
+            		@Implement(Runnable.class)
+                	public void run ()
                     {
                         bar.setString(msg);
                     }
@@ -193,12 +194,12 @@ public class StepMonitor
         // Post the request
         executor.execute(
             new Runnable() {
-                    @Override
-                    public void run ()
+            		@Implement(Runnable.class)
+                	public void run ()
                     {
                         // This is supposed to run in the background, so...
-                        Thread.currentThread()
-                              .setPriority(Thread.MIN_PRIORITY);
+//                        Thread.currentThread()
+//                              .setPriority(Thread.MIN_PRIORITY);
 
                         if (logger.isFineEnabled()) {
                             logger.fine(
@@ -256,8 +257,7 @@ public class StepMonitor
             "divisions",
             1000,
             "Number of divisions (amount of precision) of step monitor, minimum 10");
-        Constant.Double  ratio = new Constant.Double(
-            "",
+        Ratio ratio = new Ratio(
             1.0 / 10.0,
             "Amount by which to increase step monitor percentage per animation, between 0 and 1");
     }
