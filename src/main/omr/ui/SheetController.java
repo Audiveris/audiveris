@@ -26,8 +26,6 @@ import omr.sheet.*;
 
 import omr.step.Step;
 
-import omr.ui.MainGui;
-import omr.ui.SheetAssembly;
 import omr.ui.icon.IconManager;
 import omr.ui.util.FileFilter;
 import omr.ui.util.SwingWorker;
@@ -343,6 +341,7 @@ public class SheetController
      * status of current sheet.
      */
     @Implement(ChangeListener.class)
+    @Override
     public void stateChanged (ChangeEvent e)
     {
         final Object source = e.getSource();
@@ -523,6 +522,7 @@ public class SheetController
         implements ActionListener
     {
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             String fileName = e.getActionCommand();
@@ -603,6 +603,7 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -640,6 +641,7 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -672,6 +674,7 @@ public class SheetController
                 false);
         }
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             int answer = JOptionPane.showConfirmDialog(
@@ -683,6 +686,7 @@ public class SheetController
             }
 
             final SwingWorker worker = new SwingWorker() {
+                @Override
                 public Object construct ()
                 {
                     Sheet sheet = getCurrentSheet();
@@ -720,6 +724,7 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -752,6 +757,7 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             selectSheet();
@@ -779,6 +785,7 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -817,6 +824,7 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             SheetAssembly assembly = getSelectedAssembly();
@@ -847,6 +855,7 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             SheetAssembly assembly = getSelectedAssembly();
