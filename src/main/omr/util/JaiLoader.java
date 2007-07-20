@@ -13,7 +13,7 @@ import java.util.concurrent.Executor;
  * is guaranteed to block until the initialization is complete.
  * 
  * @author Brenton Partridge
- * @version $Id: JaiLoader.java,v 1.0 2007/06/11 10:05:00 bpartridge
+ * @version $Id$
  */
 public class JaiLoader
 {
