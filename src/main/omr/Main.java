@@ -22,9 +22,7 @@ import omr.step.Step;
 import omr.ui.MainGui;
 import omr.ui.util.UILookAndFeel;
 
-import omr.util.Clock;
-import omr.util.Logger;
-import omr.util.OmrExecutors;
+import omr.util.*;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -100,6 +98,11 @@ public class Main
 
     /** Specific folder name for icons */
     public static final String ICONS_NAME = "icons";
+    
+    /** Tells if using Mac OS X for special GUI functionality */
+    public static final boolean MAC_OS_X = 
+    	System.getProperty("os.name").toLowerCase().
+    	startsWith("mac os x");
 
     //~ Instance fields --------------------------------------------------------
 
@@ -445,8 +448,8 @@ public class Main
                 OmrExecutors.getLowExecutor()
                             .execute(
                     new Runnable() {
-                            @Override
-                            public void run ()
+                    		@Implement(Runnable.class)
+                        	public void run ()
                             {
                                 script.run();
                             }
@@ -632,6 +635,10 @@ public class Main
     {
         // First parse the provided arguments if any
         parseArguments(args);
+        
+        // Then, preload the JAI class so image operations are ready
+        // Commented out for now
+        // JaiLoader.preload();
 
         // Interactive or Batch mode ?
         if (!batchMode) {
@@ -651,8 +658,8 @@ public class Main
                 OmrExecutors.getLowExecutor()
                             .execute(
                     new Runnable() {
-                            @Override
-                            public void run ()
+                    		@Implement(Runnable.class)
+                        	public void run ()
                             {
                                 browse();
                             }
@@ -663,8 +670,8 @@ public class Main
             OmrExecutors.getLowExecutor()
                         .execute(
                 new Runnable() {
-                        @Override
-                        public void run ()
+                		@Implement(Runnable.class)
+                    	public void run ()
                         {
                             ScoreExporter.preloadJaxbContext();
                         }
