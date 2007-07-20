@@ -191,6 +191,7 @@ public class ScoreController
     // getName //
     //---------//
     @Implement(SelectionObserver.class)
+    @Override
     public String getName ()
     {
         return "ScoreController";
@@ -238,6 +239,7 @@ public class ScoreController
      * @param e the event
      */
     @Implement(ChangeListener.class)
+    @Override
     public void stateChanged (ChangeEvent e)
     {
         //        // Event from ScoreManager ?
@@ -252,6 +254,7 @@ public class ScoreController
     // update //
     //--------//
     @Implement(SelectionObserver.class)
+    @Override
     public void update (Selection     selection,
                         SelectionHint hint)
     {
@@ -286,6 +289,7 @@ public class ScoreController
     {
         final SwingWorker<Score> worker = new SwingWorker<Score>() {
             // This runs on worker's thread
+            @Override
             public Score construct ()
             {
                 if (file.exists()) {
@@ -306,6 +310,7 @@ public class ScoreController
             }
 
             // This runs on the event-dispatching thread.
+            @Override
             public void finished ()
             {
                 Score score = getValue();
@@ -403,6 +408,7 @@ public class ScoreController
                 IconManager.getInstance().loadImageIcon("general/Search"));
         }
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             getCurrentScore()
@@ -437,6 +443,7 @@ public class ScoreController
                 IconManager.getInstance().loadImageIcon("general/PrintPreview"));
         }
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             getCurrentScore()
@@ -455,6 +462,7 @@ public class ScoreController
             super(true, "Dump all scores", "Dump all score instances", null);
         }
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             ScoreManager.getInstance()
@@ -482,6 +490,7 @@ public class ScoreController
             JMenuItem historyMenu = names.menu(
                 format.name + " History",
                 new ActionListener() {
+                        @Override
                         public void actionPerformed (ActionEvent e)
                         {
                             File file = new File(e.getActionCommand());
@@ -554,6 +563,7 @@ public class ScoreController
                 IconManager.getInstance().loadImageIcon("general/Remove"));
         }
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Score score = getCurrentScore();
@@ -587,6 +597,7 @@ public class ScoreController
                 IconManager.getInstance().loadImageIcon("general/Import"));
         }
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Let the user select a file
@@ -631,9 +642,11 @@ public class ScoreController
                 IconManager.getInstance().loadImageIcon("general/Export"));
         }
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             final SwingWorker worker = new SwingWorker() {
+                @Override
                 public Object construct ()
                 {
                     Score score = getCurrentScore();
