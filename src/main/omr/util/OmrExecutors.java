@@ -141,7 +141,7 @@ public class OmrExecutors
                             .getThreadGroup();
         }
 
-        @Override
+        @Implement(ThreadFactory.class)
         public Thread newThread (Runnable r)
         {
             Thread t = new Thread(group, r, getThreadName(), 0);
