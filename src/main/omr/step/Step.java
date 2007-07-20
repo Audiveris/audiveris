@@ -225,7 +225,6 @@ public enum Step {
         OmrExecutors.getLowExecutor()
                     .execute(
             new Runnable() {
-                    @Override
                     public void run ()
                     {
                         performSerial(sheet, param);
