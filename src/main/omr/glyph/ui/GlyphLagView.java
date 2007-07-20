@@ -523,7 +523,6 @@ public class GlyphLagView
         }
 
         @Implement(ActionListener.class)
-        @Override
         public void actionPerformed (ActionEvent e)
         {
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
@@ -569,7 +568,6 @@ public class GlyphLagView
         }
 
         @Implement(ActionListener.class)
-        @Override
         public void actionPerformed (ActionEvent e)
         {
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
