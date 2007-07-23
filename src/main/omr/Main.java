@@ -409,7 +409,7 @@ public class Main
     //--------//
     private void browse ()
     {
-        // Browse desired sheets
+        // Browse desired sheets in parallel
         for (String name : sheetNames) {
             File file = new File(name);
 
@@ -433,30 +433,36 @@ public class Main
             //            }
         }
 
-        // Browse desired scripts
+        // Browse desired scripts in parallel
         for (String name : scriptNames) {
-            File file = new File(name);
-            logger.info("Loading script file " + file + " ...");
+            // Run each script in parallel
+            final String scriptName = name;
+            OmrExecutors.getLowExecutor()
+                        .execute(
+                new Runnable() {
+                        public void run ()
+                        {
+                            long start = System.currentTimeMillis();
+                            File file = new File(scriptName);
+                            logger.info("Loading script file " + file + " ...");
 
-            try {
-                final Script script = ScriptManager.getInstance()
-                                                   .load(
-                    new FileInputStream(file));
-                script.dump();
-
-                // Run the script in parallel
-                OmrExecutors.getLowExecutor()
-                            .execute(
-                    new Runnable() {
-                    		@Implement(Runnable.class)
-                        	public void run ()
-                            {
+                            try {
+                                final Script script = ScriptManager.getInstance()
+                                                                   .load(
+                                    new FileInputStream(file));
+                                script.dump();
                                 script.run();
+                            } catch (FileNotFoundException ex) {
+                                logger.warning(
+                                    "Cannot find script file " + file);
                             }
-                        });
-            } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find script file " + file);
-            }
+
+                            long stop = System.currentTimeMillis();
+                            logger.info(
+                                "Script file " + file + " run in " +
+                                (stop - start) + " ms");
+                        }
+                    });
         }
     }
 
@@ -653,19 +659,6 @@ public class Main
             // Launch the GUI
             gui = new MainGui();
 
-            // Do we have sheet or script actions specified?
-            if ((sheetNames.size() > 0) || (scriptNames.size() > 0)) {
-                OmrExecutors.getLowExecutor()
-                            .execute(
-                    new Runnable() {
-                    		@Implement(Runnable.class)
-                        	public void run ()
-                            {
-                                browse();
-                            }
-                        });
-            }
-
             // Background task : JaxbContext
             OmrExecutors.getLowExecutor()
                         .execute(
@@ -676,6 +669,11 @@ public class Main
                             ScoreExporter.preloadJaxbContext();
                         }
                     });
+
+            // Do we have sheet or script actions specified?
+            if ((sheetNames.size() > 0) || (scriptNames.size() > 0)) {
+                browse();
+            }
         } else {
             logger.info("Batch processing");
             browse();
