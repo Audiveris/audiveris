@@ -203,7 +203,7 @@ public class GlyphLagView
     public void deassignGlyph (Glyph glyph)
     {
         if (model != null) {
-            model.deassignGlyphShape(glyph);
+            model.deassignGlyphShape(glyph, true);
         }
     }
 

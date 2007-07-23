@@ -348,7 +348,7 @@ class GlyphBrowser
         }
 
         @Override
-        public void deassignGlyphShape (Glyph glyph)
+        public void deassignGlyphShape (Glyph glyph, boolean record)
         {
             deleteGlyph(); // Using current glyph
         }
