@@ -98,7 +98,7 @@ public class Picture
             logger.fine("Awaiting JAI loading");
         }
 
-        JaiLoader.ensureLoaded();
+        ///JaiLoader.ensureLoaded();
 
         if (logger.isFineEnabled()) {
             logger.fine(
