@@ -335,7 +335,6 @@ public class MainGui
      * @return observer name
      */
     @Implement(SelectionObserver.class)
-    @Override
     public String getName ()
     {
         return "MainGui";
@@ -474,7 +473,6 @@ public class MainGui
      * @param hint processing hint (not used)
      */
     @Implement(SelectionObserver.class)
-    @Override
     public void update (Selection     selection,
                         SelectionHint hint)
     {
@@ -498,31 +496,38 @@ public class MainGui
      */
     public void updateGui ()
     {
-        StringBuilder sb = new StringBuilder();
-        Sheet         sheet = SheetManager.getSelectedSheet();
+        final Sheet sheet = SheetManager.getSelectedSheet();
 
-        if (sheet != null) {
-            // Menus
-            stepMenu.setEnabled(true);
-            scoreController.setEnabled(sheet.getScore() != null);
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    public void run ()
+                    {
+                        final StringBuilder sb = new StringBuilder();
 
-            // Frame title tells sheet name + step
-            sb.append(sheet.getRadix())
-              .append(" - ")
-              .append(sheet.currentStep())
-              .append(" - ");
-        } else {
-            // Menus
-            stepMenu.setEnabled(false);
-            scoreController.setEnabled(false);
-        }
+                        if (sheet != null) {
+                            // Menus
+                            stepMenu.setEnabled(true);
+                            scoreController.setEnabled(
+                                sheet.getScore() != null);
 
-        // Update frame title
-        sb.append(Main.getToolName())
-          .append(" ")
-          .append(Main.getToolVersion());
+                            // Frame title tells sheet name + step
+                            sb.append(sheet.getRadix())
+                              .append(" - ")
+                              .append(sheet.currentStep())
+                              .append(" - ");
+                        } else {
+                            // Menus
+                            stepMenu.setEnabled(false);
+                            scoreController.setEnabled(false);
+                        }
 
-        frame.setTitle(sb.toString());
+                        // Update frame title
+                        sb.append(Main.getToolName())
+                          .append(" ")
+                          .append(Main.getToolVersion());
+                        frame.setTitle(sb.toString());
+                    }
+                });
     }
 
     //-----------------//
@@ -542,6 +547,9 @@ public class MainGui
     //------//
     private void exit ()
     {
+        // Save scripts for opened sheets?
+        SheetManager.getInstance().closeAll();
+
         // Remember latest gui frame parameters
         final int state = frame.getExtendedState();
         constants.frameState.setValue(state);
@@ -628,7 +636,6 @@ public class MainGui
         }
 
         @Implement(ActionListener.class)
-        @Override
         public void actionPerformed (ActionEvent e)
         {
             exit();

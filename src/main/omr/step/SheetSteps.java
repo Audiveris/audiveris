@@ -211,7 +211,7 @@ public class SheetSteps
             shapes);
 
         if (logger.isFineEnabled()) {
-            logger.fine(impactedSystems.size() + " Impacted system(s)");
+            logger.fine("Impact: " + SystemInfo.toString(impactedSystems));
         }
 
         // The re-processing is done sequentially (though LEAVES & CLEANUP could
@@ -532,17 +532,18 @@ public class SheetSteps
         @Override
         public void displayUI ()
         {
-            // Make sure the verticals are displayed too
-            getTask(VERTICALS)
-                .displayUI();
-
             if (logger.isFineEnabled()) {
                 logger.fine("SCORE displayUI");
             }
 
+            // Make sure the verticals are displayed too
+            getTask(VERTICALS)
+                .displayUI();
+
             sheet.getSymbolsEditor()
                  .refresh();
 
+            // Kludge, to put the Glyphs tab on top of all others.
             sheet.getAssembly()
                  .selectTab("Glyphs");
         }

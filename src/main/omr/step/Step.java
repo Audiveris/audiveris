@@ -19,6 +19,8 @@ import omr.util.OmrExecutors;
 
 import java.io.File;
 
+import javax.swing.SwingUtilities;
+
 /**
  * Enum <code>Step</code> lists the various sheet processing steps in
  * chronological order.
@@ -264,6 +266,13 @@ public enum Step {
                               false);
         }
 
+        // Record the step action into sheet script
+        // (except for LOAD step, which is done by default)
+        if (this != LOAD) {
+            sheet.getScript()
+                 .addTask(new StepTask(this));
+        }
+
         // Check for loading of a sheet
         if (this != LOAD) {
             // Standard processing on an existing sheet
@@ -273,11 +282,15 @@ public enum Step {
 
         // Update user interface ?
         if (monitor != null) {
-            // Record the step action into sheet script
-            sheet.getScript()
-                 .addTask(new StepTask(this));
-            sheet.getSheetSteps()
-                 .displayUI(this);
+            final Sheet finalSheet = sheet;
+            SwingUtilities.invokeLater(
+                new Runnable() {
+                        public void run ()
+                        {
+                            finalSheet.getSheetSteps()
+                                      .displayUI(Step.this);
+                        }
+                    });
         }
 
         if (logger.isFineEnabled()) {
