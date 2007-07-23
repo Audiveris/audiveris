@@ -197,9 +197,6 @@ public class StepMonitor
             		@Implement(Runnable.class)
                 	public void run ()
                     {
-                        // This is supposed to run in the background, so...
-//                        Thread.currentThread()
-//                              .setPriority(Thread.MIN_PRIORITY);
 
                         if (logger.isFineEnabled()) {
                             logger.fine(
@@ -241,8 +238,6 @@ public class StepMonitor
                                     " param=" + param + ".");
                             }
                         }
-                    }
-                });
     }
 
     //~ Inner Classes ----------------------------------------------------------
