@@ -64,8 +64,8 @@ public class StepMonitor
     public StepMonitor ()
     {
         // Progress Bar
-        if (!omr.Main.MAC_OS_X) 
-        	bar.setBorder(UIUtilities.getToolBorder());
+        if (!omr.Main.MAC_OS_X)
+                bar.setBorder(UIUtilities.getToolBorder());
         bar.setToolTipText("On going Step activity");
         bar.setStringPainted(true);
         animate(false);
@@ -115,8 +115,8 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
             new Runnable() {
-            		@Implement(Runnable.class)
-                	public void run ()
+                        @Implement(Runnable.class)
+                        public void run ()
                     {
                         bar.setIndeterminate(false);
 
@@ -139,21 +139,21 @@ public class StepMonitor
     public void animate ()
     {
         SwingUtilities.invokeLater(
-            new Runnable() {
-                    @Implement(Runnable.class)
-                    public void run ()
-                    {
-                        int old = bar.getValue();
-						if (old > bar.getMinimum())
-						{
-							int diff = bar.getMaximum() - old;
-							int increment = (int)Math.round(diff
-								* constants.ratio.getValue());
-							bar.setIndeterminate(false);
-							bar.setValue(old + increment);
-						}
-                    }
-                });
+                                   new Runnable() {
+                                       @Implement(Runnable.class)
+                                           public void run ()
+                                       {
+                                           int old = bar.getValue();
+                                           if (old > bar.getMinimum())
+                                               {
+                                                   int diff = bar.getMaximum() - old;
+                                                   int increment = (int)Math.round(diff
+                                                                                   * constants.ratio.getValue());
+                                                   bar.setIndeterminate(false);
+                                                   bar.setValue(old + increment);
+                                               }
+                                       }
+                                   });
     }
 
     //-----------//
@@ -168,8 +168,8 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
             new Runnable() {
-            		@Implement(Runnable.class)
-                	public void run ()
+                        @Implement(Runnable.class)
+                        public void run ()
                     {
                         bar.setString(msg);
                     }
@@ -191,12 +191,14 @@ public class StepMonitor
                          final Sheet  sheet,
                          final Object param)
     {
-        // Post the request
-        executor.execute(
-            new Runnable() {
-            		@Implement(Runnable.class)
-                	public void run ()
-                    {
+//        // Post the request
+//        executor.execute(
+//            new Runnable() {
+//                    public void run ()
+//                    {
+//                        // This is supposed to run in the background, so...
+//                        Thread.currentThread()
+//                              .setPriority(Thread.MIN_PRIORITY);
 
                         if (logger.isFineEnabled()) {
                             logger.fine(
@@ -238,6 +240,8 @@ public class StepMonitor
                                     " param=" + param + ".");
                             }
                         }
+//                    }
+//                });
     }
 
     //~ Inner Classes ----------------------------------------------------------
