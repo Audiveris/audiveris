@@ -34,7 +34,7 @@ public class OmrExecutors
 
     /** Number of processors available */
     private static final int cpuNb = Runtime.getRuntime()
-                                            .availableProcessors() + 10;
+                                            .availableProcessors() + 1;
 
     /** Pool with high priority */
     private static volatile Executor highExecutor;
