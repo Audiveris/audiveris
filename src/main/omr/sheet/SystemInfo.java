@@ -125,134 +125,17 @@ public class SystemInfo
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // addGlyph //
-    //----------//
-    public synchronized void addGlyph (Glyph glyph)
-    {
-        ///logger.info("addGlyph");
-        glyphs.add(glyph);
-    }
-
-    //---------//
-    // addPart //
-    //---------//
-    public void addPart (PartInfo partInfo)
-    {
-        parts.add(partInfo);
-    }
-
-    //----------//
-    // addStaff //
-    //----------//
-    public void addStaff (int idx)
-    {
-        StaffInfo staff = sheet.getStaves()
-                               .get(idx);
-        LineInfo  firstLine = staff.getFirstLine();
-        staves.add(staff);
-
-        // Remember left side
-        if (left == -1) {
-            left = staff.getLeft();
-        } else {
-            left = Math.min(left, staff.getLeft());
-        }
-
-        // Remember width
-        if (width == -1) {
-            width = staff.getRight() - left + 1;
-        } else {
-            width = Math.max(width, staff.getRight() - left + 1);
-        }
-
-        // First staff ?
-        if (startIdx == -1) {
-            startIdx = idx;
-            top = firstLine.getLine()
-                           .yAt(firstLine.getLeft());
-        }
-
-        // Last staff (so far)
-        stopIdx = idx;
-        deltaY = firstLine.getLine()
-                          .yAt(firstLine.getLeft()) - top;
-
-        LineInfo lastLine = staff.getLastLine();
-        bottom = lastLine.getLine()
-                         .yAt(lastLine.getLeft());
-    }
-
-    //-----------//
-    // compareTo //
-    //-----------//
-    public int compareTo (SystemInfo o)
-    {
-        return Integer.signum(id - o.id);
-    }
-
-    //------------//
-    // dumpGlyphs //
-    //------------//
+    //---------------//
+    // setAreaBottom //
+    //---------------//
     /**
-     * Dump all glyphs handled by this system
-     */
-    public void dumpGlyphs ()
-    {
-        dumpGlyphs(null);
-    }
-
-    //------------//
-    // dumpGlyphs //
-    //------------//
-    /**
-     * Dump the glyphs handled by this system and that are contained by the
-     * provided rectangle
+     * Set the ordinate of bottom of system area
      *
-     * @param rect the region of interest
+     * @param areaBottom ordinate of bottom of system area in pixels
      */
-    public void dumpGlyphs (PixelRectangle rect)
+    public void setAreaBottom (int areaBottom)
     {
-        for (Glyph glyph : getGlyphs()) {
-            if ((rect == null) || (rect.contains(glyph.getContourBox()))) {
-                java.lang.System.out.println(
-                    (glyph.isActive() ? "active " : "       ") +
-                    (glyph.isKnown() ? "known " : "      ") +
-                    (glyph.isWellKnown() ? "wellKnown " : "          ") +
-                    glyph.toString());
-            }
-        }
-    }
-
-    //--------------//
-    // dumpSections //
-    //--------------//
-    /**
-     * Dump all (vertical) sections handled by this system
-     */
-    public void dumpSections ()
-    {
-        dumpSections(null);
-    }
-
-    //--------------//
-    // dumpSections //
-    //--------------//
-    /**
-     * Dump the (vertical) sections handled by this system and that are
-     * contained by the provided rectangle
-     *
-     * @param rect the region of interest
-     */
-    public void dumpSections (PixelRectangle rect)
-    {
-        for (GlyphSection section : getVerticalSections()) {
-            if ((rect == null) || (rect.contains(section.getContourBox()))) {
-                java.lang.System.out.println(
-                    (section.isKnown() ? "known " : "      ") +
-                    section.toString());
-            }
-        }
+        this.areaBottom = areaBottom;
     }
 
     //---------------//
@@ -267,6 +150,19 @@ public class SystemInfo
     public int getAreaBottom ()
     {
         return areaBottom;
+    }
+
+    //------------//
+    // setAreaTop //
+    //------------//
+    /**
+     * Set the ordinate of top of systemp area
+     *
+     * @param areaTop ordinate of top of system area in pixels
+     */
+    public void setAreaTop (int areaTop)
+    {
+        this.areaTop = areaTop;
     }
 
     //------------//
@@ -446,6 +342,19 @@ public class SystemInfo
     }
 
     //----------------//
+    // setScoreSystem //
+    //----------------//
+    /**
+     * Set the link : physical sheet.SystemInfo -> logical score.System
+     *
+     * @param scoreSystem the logical score System counterpart
+     */
+    public void setScoreSystem (System scoreSystem)
+    {
+        this.scoreSystem = scoreSystem;
+    }
+
+    //----------------//
     // getScoreSystem //
     //----------------//
     /**
@@ -477,6 +386,19 @@ public class SystemInfo
 
         // Return the last staff
         return staves.get(staves.size() - 1);
+    }
+
+    //-------------//
+    // setStartIdx //
+    //-------------//
+    /**
+     * Set the index of the starting staff of this system
+     *
+     * @param startIdx the staff index, counted from 0
+     */
+    public void setStartIdx (int startIdx)
+    {
+        this.startIdx = startIdx;
     }
 
     //-------------//
@@ -558,6 +480,136 @@ public class SystemInfo
         return width;
     }
 
+    //----------//
+    // addGlyph //
+    //----------//
+    public synchronized void addGlyph (Glyph glyph)
+    {
+        ///logger.info("addGlyph");
+        glyphs.add(glyph);
+    }
+
+    //---------//
+    // addPart //
+    //---------//
+    public void addPart (PartInfo partInfo)
+    {
+        parts.add(partInfo);
+    }
+
+    //----------//
+    // addStaff //
+    //----------//
+    public void addStaff (int idx)
+    {
+        StaffInfo staff = sheet.getStaves()
+                               .get(idx);
+        LineInfo  firstLine = staff.getFirstLine();
+        staves.add(staff);
+
+        // Remember left side
+        if (left == -1) {
+            left = staff.getLeft();
+        } else {
+            left = Math.min(left, staff.getLeft());
+        }
+
+        // Remember width
+        if (width == -1) {
+            width = staff.getRight() - left + 1;
+        } else {
+            width = Math.max(width, staff.getRight() - left + 1);
+        }
+
+        // First staff ?
+        if (startIdx == -1) {
+            startIdx = idx;
+            top = firstLine.getLine()
+                           .yAt(firstLine.getLeft());
+        }
+
+        // Last staff (so far)
+        stopIdx = idx;
+        deltaY = firstLine.getLine()
+                          .yAt(firstLine.getLeft()) - top;
+
+        LineInfo lastLine = staff.getLastLine();
+        bottom = lastLine.getLine()
+                         .yAt(lastLine.getLeft());
+    }
+
+    //-----------//
+    // compareTo //
+    //-----------//
+    public int compareTo (SystemInfo o)
+    {
+        return Integer.signum(id - o.id);
+    }
+
+    //------------//
+    // dumpGlyphs //
+    //------------//
+    /**
+     * Dump all glyphs handled by this system
+     */
+    public void dumpGlyphs ()
+    {
+        dumpGlyphs(null);
+    }
+
+    //------------//
+    // dumpGlyphs //
+    //------------//
+    /**
+     * Dump the glyphs handled by this system and that are contained by the
+     * provided rectangle
+     *
+     * @param rect the region of interest
+     */
+    public void dumpGlyphs (PixelRectangle rect)
+    {
+        for (Glyph glyph : getGlyphs()) {
+            if ((rect == null) || (rect.contains(glyph.getContourBox()))) {
+                java.lang.System.out.println(
+                    (glyph.isActive() ? "active " : "       ") +
+                    (glyph.isKnown() ? "known " : "      ") +
+                    (glyph.isWellKnown() ? "wellKnown " : "          ") +
+                    glyph.toString());
+            }
+        }
+    }
+
+    //--------------//
+    // dumpSections //
+    //--------------//
+    /**
+     * Dump all (vertical) sections handled by this system
+     */
+    public void dumpSections ()
+    {
+        dumpSections(null);
+    }
+
+    //--------------//
+    // dumpSections //
+    //--------------//
+    /**
+     * Dump the (vertical) sections handled by this system and that are
+     * contained by the provided rectangle
+     *
+     * @param rect the region of interest
+     */
+    public void dumpSections (PixelRectangle rect)
+    {
+        for (GlyphSection section : getVerticalSections()) {
+            if ((rect == null) || (rect.contains(section.getContourBox()))) {
+                java.lang.System.out.println(
+                    (section.isKnown() ? "known " : "      ") +
+                    section.toString());
+            }
+        }
+    }
+
     //-------------------------//
     // lookupIntersectedGlyphs //
     //-------------------------//
@@ -610,58 +662,6 @@ public class SystemInfo
         return glyphs.remove(glyph);
     }
 
-    //---------------//
-    // setAreaBottom //
-    //---------------//
-    /**
-     * Set the ordinate of bottom of system area
-     *
-     * @param areaBottom ordinate of bottom of system area in pixels
-     */
-    public void setAreaBottom (int areaBottom)
-    {
-        this.areaBottom = areaBottom;
-    }
-
-    //------------//
-    // setAreaTop //
-    //------------//
-    /**
-     * Set the ordinate of top of systemp area
-     *
-     * @param areaTop ordinate of top of system area in pixels
-     */
-    public void setAreaTop (int areaTop)
-    {
-        this.areaTop = areaTop;
-    }
-
-    //----------------//
-    // setScoreSystem //
-    //----------------//
-    /**
-     * Set the link : physical sheet.SystemInfo -> logical score.System
-     *
-     * @param scoreSystem the logical score System counterpart
-     */
-    public void setScoreSystem (System scoreSystem)
-    {
-        this.scoreSystem = scoreSystem;
-    }
-
-    //-------------//
-    // setStartIdx //
-    //-------------//
-    /**
-     * Set the index of the starting staff of this system
-     *
-     * @param startIdx the staff index, counted from 0
-     */
-    public void setStartIdx (int startIdx)
-    {
-        this.startIdx = startIdx;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -684,6 +684,35 @@ public class SystemInfo
         }
 
         sb.append("}");
+
+        return sb.toString();
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the ids of the system
+     * collection
+     *
+     * @param systems the collection of glysystemsphs
+     * @return the string built
+     */
+    public static String toString (Collection<SystemInfo> systems)
+    {
+        if (systems == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(" systems[");
+
+        for (SystemInfo system : systems) {
+            sb.append("#")
+              .append(system.getId());
+        }
+
+        sb.append("]");
 
         return sb.toString();
     }
