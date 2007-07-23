@@ -317,24 +317,10 @@ class EvaluationBoard
                 Selection         glyphSelection = sheet.getSelection(
                     SelectionTag.VERTICAL_GLYPH);
                 Glyph             glyph = (Glyph) glyphSelection.getEntity();
-                Collection<Glyph> glyphs = Collections.singleton(glyph);
-                Collection<Shape> shapes = Glyph.shapesOf(glyphs);
                 Shape             shape = Shape.valueOf(button.getText());
 
-                // Add to script
-                boolean isCompound = glyph.getId() == 0;
-                sheet.getScript()
-                     .addTask(
-                    new AssignTask(
-                        shape,
-                        isCompound,
-                        isCompound ? glyph.getParts() : glyphs));
-
                 // Actually assign the shape
-                glyphModel.assignGlyphShape(glyph, shape);
-
-                // Update user interface ? (view / selection)
-                sheet.updateLastSteps(glyphs, shapes);
+                glyphModel.assignGlyphShape(glyph, shape, true);
             }
         }
 

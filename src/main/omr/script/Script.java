@@ -18,6 +18,7 @@ import omr.util.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -51,8 +52,12 @@ public class Script
         , @XmlElement(name = "assign", type = AssignTask.class)
         , @XmlElement(name = "deassign", type = DeassignTask.class)
         , @XmlElement(name = "segment", type = SegmentTask.class)
+        , @XmlElement(name = "export", type = ExportTask.class)
     })
     private final List<Task> tasks = new ArrayList<Task>();
+
+    /** Nb of tasks when stored, if any */
+    private int storedTasksNb = 0;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -80,6 +85,25 @@ public class Script
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // isStored //
+    //----------//
+    public boolean isStored ()
+    {
+//        logger.info(
+//            "tasks.size=" + tasks.size() + " storedTasksNb=" + storedTasksNb);
+
+        return tasks.size() == storedTasksNb;
+    }
+
+    //-----------//
+    // setStored //
+    //-----------//
+    public void setStored ()
+    {
+        storedTasksNb = tasks.size();
+    }
 
     //----------//
     // getSheet //
@@ -127,9 +151,15 @@ public class Script
     //-----//
     // run //
     //-----//
+    /**
+     * This methods runs sequentially and synchronously the various tasks of the
+     * script. It is up to the caller to run this method in a separate thread.
+     */
     public void run ()
     {
-        logger.info("Running " + this);
+        logger.info(
+            "Running " + this +
+            ((sheet != null) ? (" on sheet " + sheet.getRadix()) : ""));
 
         // Make sheet concrete
         if (sheet == null) {
@@ -151,12 +181,26 @@ public class Script
         // Run the tasks in sequence
         try {
             for (Task task : tasks) {
+                // Actually run this task
+                logger.info(
+                    "Launching " + task + " on sheet " + sheet.getRadix());
                 task.run(sheet);
             }
 
-            // Kludge, to put this tab on top of all others. TBD
-            sheet.getAssembly()
-                 .selectTab("Glyphs");
+            logger.info("All tasks launched on sheet " + sheet.getRadix());
+
+            // Kludge, to put the Glyphs tab on top of all others.
+            SwingUtilities.invokeLater(
+                new Runnable() {
+                        public void run ()
+                        {
+                            sheet.getAssembly()
+                                 .selectTab("Glyphs");
+                        }
+                    });
+
+            // Flag the active script as up-to-date
+            sheet.getScript().setStored();
         } catch (StepException ex) {
             logger.warning("Task aborted", ex);
         }

@@ -16,13 +16,12 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
 import omr.glyph.SymbolsBuilder;
 
-import omr.script.AssignTask;
-import omr.script.DeassignTask;
-
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
+
+import omr.util.Implement;
 
 import java.awt.event.*;
 import java.util.*;
@@ -77,7 +76,7 @@ public class GlyphMenu
      * Create the popup menu
      *
      * @param sheet the related sheet
-     * @param symbolsEditor the top companion
+     * @param symbolsBuilder the top companion
      * @param evaluator the glyph evaluator
      * @param shapeFocus the current shape focus
      * @param glyphSelection the currently selected glyph
@@ -112,22 +111,15 @@ public class GlyphMenu
         Shape.addShapeItems(
             assignMenu,
             new ActionListener() {
-                    @Override
+                    @Implement(ActionListener.class)
                     public void actionPerformed (ActionEvent e)
                     {
-                        JMenuItem         source = (JMenuItem) e.getSource();
-                        Shape             shape = Shape.valueOf(
-                            source.getText());
-                        List<Glyph>       glyphs = getCurrentGlyphs();
-                        Collection<Shape> shapes = Glyph.shapesOf(glyphs);
-                        // Record this task to the sheet script
-                        sheet.getScript()
-                             .addTask(new AssignTask(shape, false, glyphs));
+                        JMenuItem source = (JMenuItem) e.getSource();
                         symbolsBuilder.assignSetShape(
-                            glyphs,
-                            shape, /* compound => */
-                            false);
-                        sheet.updateLastSteps(glyphs, shapes);
+                            getCurrentGlyphs(),
+                            Shape.valueOf(source.getText()),
+                            false, // compound
+                            true); // record
                     }
                 });
         popup.add(assignMenu);
@@ -150,19 +142,15 @@ public class GlyphMenu
         Shape.addShapeItems(
             compoundMenu,
             new ActionListener() {
+                    @Implement(ActionListener.class)
                     public void actionPerformed (ActionEvent e)
                     {
-                        JMenuItem         source = (JMenuItem) e.getSource();
-                        Shape             shape = Shape.valueOf(
-                            source.getText());
-                        List<Glyph>       glyphs = getCurrentGlyphs();
-                        Collection<Shape> shapes = Glyph.shapesOf(glyphs);
-                        shapes.add(shape);
+                        JMenuItem source = (JMenuItem) e.getSource();
                         symbolsBuilder.assignSetShape(
-                            glyphs,
-                            shape, /* compound => */
-                            true);
-                        sheet.updateLastSteps(glyphs, shapes);
+                            getCurrentGlyphs(),
+                            Shape.valueOf(source.getText()),
+                            true, // compound
+                            true); // record
                     }
                 });
         popup.add(compoundMenu);
@@ -276,12 +264,14 @@ public class GlyphMenu
     private class AssignAction
         extends DynAction
     {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Default action is to open the menu
             assert false;
         }
 
+        @Override
         public void update ()
         {
             if (glyphNb > 0) {
@@ -311,12 +301,14 @@ public class GlyphMenu
     private class CompoundAction
         extends DynAction
     {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Default action is to open the menu
             assert false;
         }
 
+        @Override
         public void update ()
         {
             if (glyphNb > 1) {
@@ -340,6 +332,7 @@ public class GlyphMenu
     private class DeassignAction
         extends DynAction
     {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Remember which is the current selected glyph
@@ -347,11 +340,7 @@ public class GlyphMenu
 
             // Actually deassign the whole set
             List<Glyph>       glyphs = getCurrentGlyphs();
-            Collection<Shape> shapes = Glyph.shapesOf(glyphs);
-            sheet.getScript()
-                 .addTask(new DeassignTask(glyphs));
-            symbolsBuilder.deassignSetShape(glyphs);
-            sheet.updateLastSteps(glyphs, shapes);
+            symbolsBuilder.deassignSetShape(glyphs, true);
 
             // Update focus on current glyph, if reused in a compound
             Glyph newGlyph = glyph.getFirstSection()
@@ -362,6 +351,7 @@ public class GlyphMenu
             }
         }
 
+        @Override
         public void update ()
         {
             if (knownNb > 0) {
@@ -405,6 +395,7 @@ public class GlyphMenu
     private class DumpAction
         extends DynAction
     {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             for (Glyph glyph : (List<Glyph>) glyphSetSelection.getEntity()) { // Compiler warning
@@ -412,6 +403,7 @@ public class GlyphMenu
             }
         }
 
+        @Override
         public void update ()
         {
             if (glyphNb > 0) {
@@ -445,29 +437,19 @@ public class GlyphMenu
     private class IdemAction
         extends DynAction
     {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             JMenuItem         source = (JMenuItem) e.getSource();
             Shape             shape = Shape.valueOf(source.getText());
             Glyph             glyph = getCurrentGlyph();
-            List<Glyph>       glyphs = getCurrentGlyphs();
-            Collection<Shape> shapes = Glyph.shapesOf(glyphs);
 
             if (glyph != null) {
-                // Record this task to the sheet script
-                boolean isCompound = glyph.getId() == 0;
-                sheet.getScript()
-                     .addTask(
-                    new AssignTask(
-                        shape,
-                        isCompound,
-                        isCompound ? glyphs : Collections.singleton(glyph)));
-
-                symbolsBuilder.assignGlyphShape(glyph, shape);
-                sheet.updateLastSteps(glyphs, shapes);
+                symbolsBuilder.assignGlyphShape(glyph, shape, true);
             }
         }
 
+        @Override
         public void update ()
         {
             Shape latest = symbolsBuilder.getLatestShapeAssigned();
@@ -493,22 +475,17 @@ public class GlyphMenu
     private class ProposedAction
         extends DynAction
     {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Glyph             glyph = getCurrentGlyph();
-            List<Glyph>       glyphs = getCurrentGlyphs();
-            Collection<Shape> shapes = Glyph.shapesOf(glyphs);
 
             if ((glyph != null) && (glyph == proposedGlyph)) {
-                // Record this task to the sheet script
-                sheet.getScript()
-                     .addTask(new AssignTask(proposedShape, true, glyphs));
-
-                symbolsBuilder.assignGlyphShape(glyph, proposedShape);
-                sheet.updateLastSteps(glyphs, shapes);
+                symbolsBuilder.assignGlyphShape(glyph, proposedShape, true);
             }
         }
 
+        @Override
         public void update ()
         {
             // Proposed compound?
@@ -548,12 +525,14 @@ public class GlyphMenu
     private class ShortStemSegmentAction
         extends DynAction
     {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
             symbolsBuilder.stemSegment(glyphs, true); // isShort
         }
 
+        @Override
         public void update ()
         {
             putValue(NAME, "Look for short verticals");
@@ -577,6 +556,7 @@ public class GlyphMenu
     private class SimilarAction
         extends DynAction
     {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = getCurrentGlyphs();
@@ -644,12 +624,15 @@ public class GlyphMenu
     private class TranslationAction
         extends DynAction
     {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
-            symbolsBuilder.getEditor().showTranslations(glyphs);
+            symbolsBuilder.getEditor()
+                          .showTranslations(glyphs);
         }
 
+        @Override
         public void update ()
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning

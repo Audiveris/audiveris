@@ -20,12 +20,11 @@ import omr.ui.icon.IconManager;
 import omr.ui.util.FileFilter;
 import omr.ui.util.SwingWorker;
 
+import omr.util.Implement;
 import omr.util.Logger;
-import omr.util.OmrExecutors;
 
 import java.awt.event.ActionEvent;
 import java.io.*;
-import java.util.concurrent.Executor;
 
 import javax.swing.*;
 
@@ -112,34 +111,34 @@ public class ScriptController
                 new String[] { ScriptManager.SCRIPT_EXTENSION }));
 
         if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            final File file = fc.getSelectedFile();
+            final SwingWorker<Void> worker = new SwingWorker<Void>() {
+                // This runs on worker's thread
+                @Implement(SwingWorker.class)
+                public Void construct ()
+                {
+                    final File file = fc.getSelectedFile();
 
-            // Actually load the script
-            logger.info("Loading script file " + file + " ...");
+                    // Actually load the script
+                    logger.info("Loading script file " + file + " ...");
 
-            try {
-                final Script script = ScriptManager.getInstance()
-                                                   .load(
-                    new FileInputStream(file));
-                script.dump();
+                    try {
+                        final Script script = ScriptManager.getInstance()
+                                                           .load(
+                            new FileInputStream(file));
+                        script.dump();
 
-                // Remember (even across runs) the parent directory
-                constants.initScriptDir.setValue(file.getParent());
+                        // Remember (even across runs) the parent directory
+                        constants.initScriptDir.setValue(file.getParent());
+                        script.run();
+                    } catch (FileNotFoundException ex) {
+                        logger.warning("Cannot find script file " + file);
+                    }
 
-                // Run the script in parallel
-                Executor executor = OmrExecutors.getLowExecutor();
+                    return null;
+                }
+            };
 
-                executor.execute(
-                    new Runnable() {
-                            @Override
-                            public void run ()
-                            {
-                                script.run();
-                            }
-                        });
-            } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find script file " + file);
-            }
+            worker.start();
         }
     }
 
@@ -147,22 +146,12 @@ public class ScriptController
     // storeScript //
     //-------------//
     /**
-     * Store the script ot the current sheet
+     * Store a script
+     *
+     * @param script the script to save on disk
      */
-    private void storeScript ()
+    private void storeScript (final Script script)
     {
-        Sheet sheet = Main.getGui().sheetController.getCurrentSheet();
-
-        if (sheet == null) {
-            return;
-        }
-
-        final Script script = sheet.getScript();
-
-        if (script == null) {
-            return;
-        }
-
         // Where do we write the script file?
         File         xmlFile = new File(
             Main.getOutputFolder(),
@@ -184,6 +173,8 @@ public class ScriptController
 
             // Remember (even across runs) the selected directory
             Main.setOutputFolder(xmlFile.getParent());
+        } else {
+            return;
         }
 
         if (xmlFile != null) {
@@ -204,6 +195,7 @@ public class ScriptController
                                                 .store(
                             script,
                             new java.io.FileOutputStream(file));
+                        logger.info("Script stored as " + file);
                     } catch (FileNotFoundException ex) {
                         logger.warning("Cannot find script file " + file, ex);
                     }
@@ -213,6 +205,22 @@ public class ScriptController
             };
 
             worker.start();
+        }
+    }
+
+    //-------------//
+    // checkStored //
+    //-------------//
+    public void checkStored (Script script)
+    {
+        if (!script.isStored() && constants.closeConfirmation.getValue()) {
+            int answer = JOptionPane.showConfirmDialog(
+                null,
+                "Save script for sheet " + script.getSheet().getRadix() + "?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                storeScript(script);
+            }
         }
     }
 
@@ -264,7 +272,15 @@ public class ScriptController
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            storeScript();
+            Sheet sheet = Main.getGui().sheetController.getCurrentSheet();
+
+            if (sheet != null) {
+                final Script script = sheet.getScript();
+
+                if (script != null) {
+                    storeScript(script);
+                }
+            }
         }
     }
 
@@ -278,5 +294,10 @@ public class ScriptController
         Constant.String initScriptDir = new Constant.String(
             "",
             "Default directory for selection of script files");
+
+        /** User confirmation for closing unsaved script */
+        Constant.Boolean closeConfirmation = new Constant.Boolean(
+            true,
+            "Should we ask confirmation for closing a sheet with unsaved script?");
     }
 }

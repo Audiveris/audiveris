@@ -84,8 +84,7 @@ public class AssignTask
     {
         super.run(sheet);
         sheet.getSymbolsBuilder()
-             .assignSetShape(glyphs, shape, compound);
-        sheet.updateLastSteps(glyphs, null);
+             .assignSetShape(glyphs, shape, compound, true);
     }
 
     //-----------------//

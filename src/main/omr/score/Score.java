@@ -304,13 +304,6 @@ public class Score
     public void setSheet (Sheet sheet)
     {
         this.sheet = sheet;
-
-        // Make sure the containing score has been inserted in the score
-        // instances
-        if (sheet != null) {
-            ScoreManager.getInstance()
-                        .checkInserted(this);
-        }
     }
 
     //----------//
@@ -404,25 +397,6 @@ public class Score
         return visitor.visit(this);
     }
 
-    //----------//
-    // addChild //
-    //----------//
-    /**
-     * Overriding version, so that we can register the score in the list of
-     * score instances.
-     *
-     * @param node a score node
-     */
-    @Override
-    public void addChild (TreeNode node)
-    {
-        super.addChild(node);
-
-        // Side effect on score
-        ScoreManager.getInstance()
-                    .checkInserted(this);
-    }
-
     //-------//
     // close //
     //-------//
@@ -431,9 +405,6 @@ public class Score
      */
     public void close ()
     {
-        ScoreManager.getInstance()
-                    .close(this);
-
         // Close related view if any
         if (view != null) {
             view.close();
@@ -513,8 +484,6 @@ public class Score
             }
 
             // Make the sheet assembly visible
-            getSheet()
-                .checkTransientSteps();
             getSheet()
                 .displayAssembly();
         } else {
@@ -677,21 +646,6 @@ public class Score
 
         // Return the last system in the score
         return recentSystem = system;
-    }
-
-    //-----------//
-    // serialize //
-    //-----------//
-    /**
-     * Serialize the score to its binary file
-     *
-     * @throws java.lang.Exception if anything goes wrong
-     */
-    public void serialize ()
-        throws Exception
-    {
-        ScoreManager.getInstance()
-                    .serialize(this);
     }
 
     //----------//

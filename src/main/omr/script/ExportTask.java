@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                              S t e p T a s k                               //
+//                            E x p o r t T a s k                             //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
@@ -9,49 +9,53 @@
 //
 package omr.script;
 
+import omr.score.ScoreManager;
+
 import omr.sheet.Sheet;
 
-import omr.step.Step;
 import omr.step.StepException;
+
+import java.io.File;
 
 import javax.xml.bind.annotation.*;
 
 /**
- * Class <code>StepTask</code> is a script task which performs a step on a sheet
+ * Class <code>ExportTask</code> is a script task which exports score entities
+ * to a MusicXML file
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public class StepTask
+public class ExportTask
     extends Task
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The step launched */
-    @XmlAttribute(name = "name")
-    private Step step;
+    /** The file used for export */
+    @XmlAttribute
+    private String path;
 
     //~ Constructors -----------------------------------------------------------
 
-    //----------//
-    // StepTask //
-    //----------//
+    //------------//
+    // ExportTask //
+    //------------//
     /**
-     * Create a task to apply a given step to the related sheet
+     * Create a task to export the related score entities of a sheet
      *
-     * @param step the step to apply
+     * @param path the full path of the export file
      */
-    public StepTask (Step step)
+    public ExportTask (String path)
     {
-        this.step = step;
+        this.path = path;
     }
 
-    //----------//
-    // StepTask //
-    //----------//
+    //------------//
+    // ExportTask //
+    //------------//
     /** No-arg constructor needed by JAXB */
-    private StepTask ()
+    private ExportTask ()
     {
     }
 
@@ -64,14 +68,8 @@ public class StepTask
     public void run (Sheet sheet)
         throws StepException
     {
-        if (!sheet.getSheetSteps()
-                  .isDone(step)) {
-            step.performSerial(sheet, null);
-//            sheet.getSheetSteps()
-//                 .doit(step);
-        } else {
-            logger.info(this + " already done");
-        }
+        ScoreManager.getInstance()
+                    .export(sheet.getScore(), new File(path));
     }
 
     //-----------------//
@@ -80,6 +78,6 @@ public class StepTask
     @Override
     protected String internalsString ()
     {
-        return " step " + step;
+        return " export " + path;
     }
 }

@@ -22,7 +22,6 @@ import omr.glyph.ui.SymbolsEditor;
 
 import omr.score.Score;
 import omr.score.ScoreBuilder;
-import omr.score.ScoreManager;
 import omr.score.SystemNode;
 import omr.score.visitor.ScoreColorizer;
 import omr.score.visitor.ScoreVisitor;
@@ -133,17 +132,8 @@ public class Sheet
     /** All Current selections for this sheet */
     private transient SelectionManager selectionManager;
 
-    /** Related assembly instance */
-    private transient SheetAssembly assembly;
-
     /** Dedicated skew builder */
     private transient SkewBuilder skewBuilder;
-
-    /** Specific builder dealing with glyphs */
-    private transient SymbolsBuilder symbolsBuilder;
-
-    /** Related verticals builder */
-    private transient VerticalsBuilder verticalsBuilder;
 
     /** Score builder */
     private transient ScoreBuilder scoreBuilder;
@@ -159,6 +149,15 @@ public class Sheet
 
     /** The script of user actions on this sheet */
     private Script script;
+
+    /** Related assembly instance */
+    private transient volatile SheetAssembly assembly;
+
+    /** Specific builder dealing with glyphs */
+    private transient volatile SymbolsBuilder symbolsBuilder;
+
+    /** Related verticals builder */
+    private transient volatile VerticalsBuilder verticalsBuilder;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -210,10 +209,6 @@ public class Sheet
         SheetManager.getInstance()
                     .insertInstance(this);
 
-        // Try to update links with score side
-        ScoreManager.getInstance()
-                    .linkAllScores();
-
         // Update UI information if so needed
         displayAssembly();
     }
@@ -247,7 +242,6 @@ public class Sheet
     private Sheet ()
     {
         sheetSteps = new SheetSteps(this);
-        checkTransientSteps();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -289,7 +283,11 @@ public class Sheet
     public SheetAssembly getAssembly ()
     {
         if (assembly == null) {
-            setAssembly(new SheetAssembly(this));
+            synchronized (this) {
+                if (assembly == null) {
+                    setAssembly(new SheetAssembly(this));
+                }
+            }
         }
 
         return assembly;
@@ -306,7 +304,11 @@ public class Sheet
     public BarsBuilder getBarsBuilder ()
     {
         if (barsBuilder == null) {
-            barsBuilder = new BarsBuilder(this);
+            synchronized (this) {
+                if (barsBuilder == null) {
+                    barsBuilder = new BarsBuilder(this);
+                }
+            }
         }
 
         return barsBuilder;
@@ -374,7 +376,11 @@ public class Sheet
     public ErrorsEditor getErrorsEditor ()
     {
         if (errorsEditor == null) {
-            errorsEditor = new ErrorsEditor(this);
+            synchronized (this) {
+                if (errorsEditor == null) {
+                    errorsEditor = new ErrorsEditor(this);
+                }
+            }
         }
 
         return errorsEditor;
@@ -392,7 +398,13 @@ public class Sheet
     public GlyphInspector getGlyphInspector ()
     {
         if (glyphInspector == null) {
-            glyphInspector = new GlyphInspector(this, getGlyphsBuilder());
+            synchronized (this) {
+                if (glyphInspector == null) {
+                    glyphInspector = new GlyphInspector(
+                        this,
+                        getGlyphsBuilder());
+                }
+            }
         }
 
         return glyphInspector;
@@ -409,7 +421,11 @@ public class Sheet
     public GlyphsBuilder getGlyphsBuilder ()
     {
         if (glyphBuilder == null) {
-            glyphBuilder = new GlyphsBuilder(this);
+            synchronized (this) {
+                if (glyphBuilder == null) {
+                    glyphBuilder = new GlyphsBuilder(this);
+                }
+            }
         }
 
         return glyphBuilder;
@@ -468,11 +484,16 @@ public class Sheet
     public GlyphLag getHorizontalLag ()
     {
         if (hLag == null) {
-            try {
-                // Brought by LinesBuilder, so...
-                sheetSteps.getResult(LINES);
-            } catch (StepException ex) {
-                logger.severe("Cannot retrieve HorizontalLag from LINES");
+            synchronized (this) {
+                if (hLag == null) {
+                    try {
+                        // Brought by LinesBuilder, so...
+                        sheetSteps.getResult(LINES);
+                    } catch (StepException ex) {
+                        logger.severe(
+                            "Cannot retrieve HorizontalLag from LINES");
+                    }
+                }
             }
         }
 
@@ -561,10 +582,10 @@ public class Sheet
      *
      * @param glyphs the glyphs for which we look for impacted systems
      * @param shapes the collection of initial shapes of thes glyphs
-     * @return the collection of systems
+     * @return the ordered collection of systems
      */
-    public Collection<SystemInfo> getImpactedSystems (Collection<Glyph> glyphs,
-                                                      Collection<Shape> shapes)
+    public SortedSet<SystemInfo> getImpactedSystems (Collection<Glyph> glyphs,
+                                                     Collection<Shape> shapes)
     {
         boolean persistent = false;
 
@@ -580,7 +601,7 @@ public class Sheet
             persistent = true; // safer
         }
 
-        Collection<SystemInfo> impacted = new HashSet<SystemInfo>();
+        SortedSet<SystemInfo> impacted = new TreeSet<SystemInfo>();
 
         for (Glyph glyph : glyphs) {
             SystemInfo system = getSystemOf(glyph);
@@ -1037,7 +1058,11 @@ public class Sheet
     public SymbolsBuilder getSymbolsBuilder ()
     {
         if (symbolsBuilder == null) {
-            symbolsBuilder = new SymbolsBuilder(this);
+            synchronized (this) {
+                if (symbolsBuilder == null) {
+                    symbolsBuilder = new SymbolsBuilder(this);
+                }
+            }
         }
 
         return symbolsBuilder;
@@ -1053,7 +1078,8 @@ public class Sheet
      */
     public SymbolsEditor getSymbolsEditor ()
     {
-        return getSymbolsBuilder().getEditor();
+        return getSymbolsBuilder()
+                   .getEditor();
     }
 
     //--------------//
@@ -1301,20 +1327,6 @@ public class Sheet
         }
     }
 
-    //---------------------//
-    // checkTransientSteps //
-    //---------------------//
-    /**
-     * Some transient steps (LOAD) have to be allocated after deserialization of
-     * sheet backup
-     */
-    public void checkTransientSteps ()
-    {
-        //        if (LOAD == null) {
-        //            LOAD = new LoadStep();
-        //        }
-    }
-
     //-------//
     // close //
     //-------//
@@ -1323,20 +1335,16 @@ public class Sheet
      */
     public void close ()
     {
+        // Close related UI assembly if any
+        if (assembly != null) {
+            assembly.close();
+        }
+
         SheetManager.getInstance()
                     .close(this);
 
         if (picture != null) {
             picture.close();
-        }
-
-        if (score != null) {
-            score.setSheet(null);
-        }
-
-        // Close related assembly if any
-        if (assembly != null) {
-            assembly.close();
         }
     }
 
@@ -1400,12 +1408,7 @@ public class Sheet
             // Prepare a assembly on this sheet, this uses the initial zoom
             // ratio
             int viewIndex = gui.sheetController.setSheetAssembly(this);
-
-            // if this is the current target, then show this sheet immediately
-            //////if (gui.isTarget(getPath())) {
-            gui.sheetController.showSheetView(viewIndex, true);
-
-            /////}
+            gui.sheetController.showSheetView(viewIndex);
         }
     }
 

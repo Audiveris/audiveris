@@ -482,17 +482,7 @@ public class GlyphBoard
                     Selection         glyphSetSelection = inputSelectionList.get(
                         1);
                     List<Glyph>       glyphs = (List<Glyph>) glyphSetSelection.getEntity();
-                    Collection<Shape> shapes = Glyph.shapesOf(glyphs);
-                    glyphModel.deassignSetShape(glyphs);
-
-                    // Record this task to the sheet script
-                    Sheet sheet = glyphModel.getSheet();
-                    sheet.getScript()
-                         .addTask(new DeassignTask(glyphs));
-
-                    if (sheet != null) {
-                        sheet.updateLastSteps(glyphs, shapes);
-                    }
+                    glyphModel.deassignSetShape(glyphs, true);
 
                     // Update focus on current glyph, even if reused in a compound
                     Glyph newGlyph = glyph.getFirstSection()
@@ -504,16 +494,7 @@ public class GlyphBoard
                     // We have selection for glyph only
                     Glyph             glyph = (Glyph) inputSelectionList.get(0)
                                                                         .getEntity();
-                    Collection<Glyph> glyphs = Collections.singleton(glyph);
-                    Collection<Shape> shapes = Glyph.shapesOf(glyphs);
-                    Sheet             sheet = glyphModel.getSheet();
-                    sheet.getScript()
-                         .addTask(new DeassignTask(glyphs));
-                    glyphModel.deassignGlyphShape(glyph);
-
-                    if (sheet != null) {
-                        sheet.updateLastSteps(glyphs, shapes);
-                    }
+                    glyphModel.deassignGlyphShape(glyph, true);
                 }
             }
         }

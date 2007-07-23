@@ -28,7 +28,7 @@ public abstract class Task
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Task.class);
+    protected static final Logger logger = Logger.getLogger(Task.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -50,11 +50,8 @@ public abstract class Task
      * @param sheet the sheet to run this task against
      * @exception StepException raised if processing error occurs
      */
-    public void run (Sheet sheet)
-        throws StepException
-    {
-        logger.info("Running " + this);
-    }
+    public abstract void run (Sheet sheet)
+        throws StepException;
 
     //----------//
     // toString //

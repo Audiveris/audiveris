@@ -130,16 +130,18 @@ public class VerticalsBuilder
      * This method is limited to deassignment of stems
      *
      * @param glyph the glyph to deassign
+     * @param record true if this action is to be recorded in the script
      */
     @Override
-    public void deassignGlyphShape (Glyph glyph)
+    public void deassignGlyphShape (Glyph   glyph,
+                                    boolean record)
     {
         Shape shape = glyph.getShape();
 
         switch (shape) {
         case COMBINING_STEM :
             sheet.getSymbolsBuilder()
-                 .deassignGlyphShape(glyph);
+                 .deassignGlyphShape(glyph, false);
 
             break;
 
@@ -154,12 +156,14 @@ public class VerticalsBuilder
      * This method is limited to deassignment of stems
      *
      * @param glyphs the collection of glyphs to be de-assigned
+     * @param record true if this action is to be recorded in the script
      */
     @Override
-    public void deassignSetShape (Collection<Glyph> glyphs)
+    public void deassignSetShape (Collection<Glyph> glyphs,
+                                  boolean           record)
     {
         sheet.getSymbolsBuilder()
-             .deassignSetShape(glyphs);
+             .deassignSetShape(glyphs, false);
     }
 
     //---------//

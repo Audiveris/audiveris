@@ -15,8 +15,6 @@ import omr.sheet.Sheet;
 
 import omr.step.StepException;
 
-import omr.util.Logger;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,11 +32,6 @@ import javax.xml.bind.annotation.*;
 public abstract class GlyphTask
     extends Task
 {
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(GlyphTask.class);
-
     //~ Instance fields --------------------------------------------------------
 
     /** The collection of glyphs which are concerned by this task */
@@ -82,8 +75,6 @@ public abstract class GlyphTask
     public void run (Sheet sheet)
         throws StepException
     {
-        super.run(sheet);
-
         // Make sure the glyphs are available
         if (glyphs == null) {
             if (sigs == null) {
@@ -116,7 +107,7 @@ public abstract class GlyphTask
         }
 
         if (sigs != null) {
-            return " sigs:" + sigs.toString();
+            return " ids:" + sigs.toString();
         }
 
         return "";

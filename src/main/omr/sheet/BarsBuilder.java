@@ -282,9 +282,11 @@ public class BarsBuilder
      * Measure. The related stick must also be assigned a failure result.
      *
      * @param glyph the (false) bar glyph to deassign
+     * @param record true if this action is to be recorded in the script
      */
     @Override
-    public void deassignGlyphShape (Glyph glyph)
+    public void deassignGlyphShape (Glyph   glyph,
+                                    boolean record)
     {
         if ((glyph.getShape() == Shape.THICK_BAR_LINE) ||
             (glyph.getShape() == Shape.THIN_BAR_LINE)) {
@@ -354,7 +356,7 @@ public class BarsBuilder
                 }
             }
 
-            assignGlyphShape(glyph, null);
+            assignGlyphShape(glyph, null, false);
 
             // Update score internal data
             score.accept(new ScoreFixer());
@@ -377,12 +379,14 @@ public class BarsBuilder
      * Remove a set of bars
      *
      * @param glyphs the collection of glyphs to be de-assigned
+     * @param record true if this action is to be recorded in the script
      */
     @Override
-    public void deassignSetShape (Collection<Glyph> glyphs)
+    public void deassignSetShape (Collection<Glyph> glyphs,
+                                  boolean           record)
     {
         for (Glyph glyph : glyphs) {
-            deassignGlyphShape(glyph);
+            deassignGlyphShape(glyph, false);
         }
     }
 
@@ -391,7 +395,7 @@ public class BarsBuilder
     //------------------//
     /**
      * From system part, define the score parts
-     * @throws StepException 
+     * @throws StepException
      */
     public void defineScoreParts ()
         throws StepException

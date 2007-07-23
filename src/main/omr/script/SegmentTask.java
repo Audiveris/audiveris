@@ -69,7 +69,6 @@ public class SegmentTask
         super.run(sheet);
         sheet.getSymbolsBuilder()
              .stemSegment(glyphs, isShort);
-        sheet.updateLastSteps(glyphs, null);
     }
 
     //-----------------//

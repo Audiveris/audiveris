@@ -63,8 +63,7 @@ public class DeassignTask
     {
         super.run(sheet);
         sheet.getSymbolsBuilder()
-             .deassignSetShape(glyphs);
-        sheet.updateLastSteps(glyphs, null);
+             .deassignSetShape(glyphs, true);
     }
 
     //-----------------//
