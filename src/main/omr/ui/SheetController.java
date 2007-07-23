@@ -43,7 +43,7 @@ import javax.swing.event.*;
 
 /**
  * Class <code>SheetController</code> encapsulates the display of (possibly
- * several) sheet(s).
+ * several) sheet(s). It is the UI on top of SheetManager.
  *
  * <p>Multiple sheets are handled by means of a tabbed pane. For each tab, and
  * thus for each sheet, we have a separate {@link SheetAssembly}.
@@ -75,6 +75,9 @@ public class SheetController
     public static final int DIFFERED_INDEX = -2;
 
     //~ Instance fields --------------------------------------------------------
+    
+    /** The UI controller for scripts */
+    private final ScriptController scriptController;
 
     /** Ordered list of sheet assemblies */
     private final ArrayList<SheetAssembly> assemblies;
@@ -90,12 +93,6 @@ public class SheetController
 
     /** Ref of toolbar where buttons are inserted */
     private final JToolBar toolBar;
-
-    /** Should we synchronize the (score) pane on the other side ? */
-    private volatile boolean synchroWanted = true;
-
-    /** Index of previously selected sheet tab */
-    private int previousSheetIndex = -1;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -136,7 +133,7 @@ public class SheetController
         // Script actions
         menu.addSeparator();
 
-        ScriptController scriptController = new ScriptController();
+        scriptController = new ScriptController();
         menu.add(new JMenuItem(scriptController.getOpenAction()));
         menu.add(new JMenuItem(scriptController.getStoreAction()));
         sheetDependentActions.add(scriptController.getStoreAction());
@@ -178,9 +175,10 @@ public class SheetController
         if (logger.isFineEnabled()) {
             logger.fine("closing " + assembly.toString());
         }
-
-        // Forget about this sheet assembly
-        previousSheetIndex = -1;
+        
+        // Check whether the script has been written correctly
+        final Sheet sheet = assembly.getSheet();
+        scriptController.checkStored(sheet.getScript());
 
         // Disable sheet-based menu actions
         UIUtilities.enableActions(sheetDependentActions, false);
@@ -319,14 +317,10 @@ public class SheetController
      *
      * @param sheetIndex the index to the SheetView to be made current, with its
      *                potential focus point, or -1 to show a blank panel.
-     * @param synchro specify whether other side is to be shown also
      */
-    public void showSheetView (int     sheetIndex,
-                               boolean synchro)
+    public void showSheetView (int sheetIndex)
     {
-        setSynchroWanted(synchro);
         component.setSelectedIndex(sheetIndex);
-        setSynchroWanted(true);
     }
 
     //--------------//
@@ -341,17 +335,11 @@ public class SheetController
      * status of current sheet.
      */
     @Implement(ChangeListener.class)
-    @Override
     public void stateChanged (ChangeEvent e)
     {
         final Object source = e.getSource();
 
         if (source == component) {
-            // Finalize previous sheet tab?
-            if (previousSheetIndex != -1) {
-                ////sheetTabDeselected(previousSheetIndex);
-            }
-
             final int sheetIndex = component.getSelectedIndex();
 
             // User has selected a new sheet tab?
@@ -359,8 +347,6 @@ public class SheetController
                 // Connect the new sheet tab
                 sheetTabSelected(sheetIndex);
             }
-
-            previousSheetIndex = sheetIndex;
         } else {
             logger.warning("Unexpected event from " + source);
         }
@@ -383,21 +369,6 @@ public class SheetController
         } else {
             return null;
         }
-    }
-
-    //-----------------//
-    // isSynchroWanted //
-    //-----------------//
-    /**
-     * Check if synchronization of the other side view (score) is wanted. This
-     * is usually true, except in specific case, where the initial order already
-     * comes from the other side, so there is no need to go back there.
-     *
-     * @return the flag value
-     */
-    private boolean isSynchroWanted ()
-    {
-        return synchroWanted;
     }
 
     //-------------//
@@ -438,33 +409,6 @@ public class SheetController
             }
         }
     }
-
-    //------------------//
-    // setSynchroWanted //
-    //------------------//
-    /**
-     * Allow to register the need (or lack of) for synchronization of the other
-     * side (score view).
-     *
-     * @param synchroWanted the value to set to the flag
-     */
-    private void setSynchroWanted (boolean synchroWanted)
-    {
-        this.synchroWanted = synchroWanted;
-    }
-
-    //    //--------------------//
-    //    // sheetTabDeselected //
-    //    //--------------------//
-    //    private void sheetTabDeselected (int previousIndex)
-    //    {
-    //        logger.info(
-    //            "SheetController: sheetTabDeselected previousIndex=" +
-    //            previousIndex);
-    //
-    //        SheetAssembly prevAssembly = assemblies.get(previousIndex);
-    //        prevAssembly.assemblyDeselected();
-    //    }
 
     //------------------//
     // sheetTabSelected //
@@ -522,7 +466,6 @@ public class SheetController
         implements ActionListener
     {
         @Implement(ActionListener.class)
-        @Override
         public void actionPerformed (ActionEvent e)
         {
             String fileName = e.getActionCommand();
@@ -563,6 +506,7 @@ public class SheetController
                             boolean onToolBar)
         {
             super(label, icon);
+            putValue(SHORT_DESCRIPTION, tip);
 
             // Sheet-dependent action ?
             if (!enabled) {
@@ -570,14 +514,12 @@ public class SheetController
             }
 
             // Menu item
-            menu.add(this)
-                .setToolTipText(tip);
+            menu.add(this);
 
             // Tool bar
             if (onToolBar) {
                 final JButton button = toolBar.add(this);
                 button.setBorder(UIUtilities.getToolBorder());
-                button.setToolTipText(tip);
             }
         }
     }
@@ -603,7 +545,6 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
-        @Override
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -641,7 +582,6 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
-        @Override
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -724,7 +664,6 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
-        @Override
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -757,7 +696,6 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
-        @Override
         public void actionPerformed (ActionEvent e)
         {
             selectSheet();
@@ -785,7 +723,6 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
-        @Override
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -824,7 +761,6 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
-        @Override
         public void actionPerformed (ActionEvent e)
         {
             SheetAssembly assembly = getSelectedAssembly();
@@ -855,7 +791,6 @@ public class SheetController
         }
 
         @Implement(ActionListener.class)
-        @Override
         public void actionPerformed (ActionEvent e)
         {
             SheetAssembly assembly = getSelectedAssembly();
