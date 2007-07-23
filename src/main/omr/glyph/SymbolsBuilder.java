@@ -16,6 +16,8 @@ import omr.glyph.ui.SymbolsEditor;
 
 import omr.score.Note;
 
+import omr.script.AssignTask;
+import omr.script.DeassignTask;
 import omr.script.SegmentTask;
 import static omr.selection.SelectionTag.*;
 
@@ -98,13 +100,31 @@ public class SymbolsBuilder
      *
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
+     * @param record true if this action is to be recorded in the script
      */
     @Override
-    public void assignGlyphShape (Glyph glyph,
-                                  Shape shape)
+    public void assignGlyphShape (Glyph   glyph,
+                                  Shape   shape,
+                                  boolean record)
     {
         if (glyph != null) {
-            boolean isCompound = glyph.getId() == 0;
+            Collection<Shape> shapes = null;
+            boolean           isCompound = glyph.getId() == 0;
+            Collection<Glyph> glyphs;
+
+            if (isCompound) {
+                glyphs = glyph.getParts();
+            } else {
+                glyphs = Collections.singleton(glyph);
+            }
+
+            // Record this task to the sheet script?
+            if (record) {
+                shapes = Glyph.shapesOf(glyphs);
+
+                sheet.getScript()
+                     .addTask(new AssignTask(shape, isCompound, glyphs));
+            }
 
             // If this is a transient glyph (with no Id yet), insert it
             if (isCompound) {
@@ -117,7 +137,13 @@ public class SymbolsBuilder
                 // Force a recomputation of glyph parameters (since environment may
                 // have changed since the time they had been computed)
                 glyphsBuilder.computeGlyphFeatures(glyph);
-                super.assignGlyphShape(glyph, shape);
+                super.assignGlyphShape(glyph, shape, false);
+            }
+
+            // Update final steps?
+            if (record) {
+                shapes.add(shape);
+                sheet.updateLastSteps(glyphs, shapes);
             }
         }
     }
@@ -132,12 +158,13 @@ public class SymbolsBuilder
      * @param glyphs the collection of glyphs
      * @param shape the shape to be assigned
      * @param compound flag to indicate a compound is desired
-     * @return the set of initial shapes, which may be null
+     * @param record true if this action is to be recorded in the script
      */
     @Override
-    public Collection<Shape> assignSetShape (Collection<Glyph> glyphs,
-                                             Shape             shape,
-                                             boolean           compound)
+    public void assignSetShape (Collection<Glyph> glyphs,
+                                Shape             shape,
+                                boolean           compound,
+                                boolean           record)
     {
         Collection<Shape> shapes = Glyph.shapesOf(glyphs);
 
@@ -146,14 +173,14 @@ public class SymbolsBuilder
                 // Build & insert a compound
                 Glyph glyph = glyphsBuilder.buildCompound(glyphs);
                 glyphsBuilder.insertGlyph(glyph);
-                assignGlyphShape(glyph, shape);
+                assignGlyphShape(glyph, shape, false);
             } else {
                 int              noiseNb = 0;
                 ArrayList<Glyph> glyphsCopy = new ArrayList<Glyph>(glyphs);
 
                 for (Glyph glyph : glyphsCopy) {
                     if (glyph.getShape() != Shape.NOISE) {
-                        assignGlyphShape(glyph, shape);
+                        assignGlyphShape(glyph, shape, false);
                     } else {
                         noiseNb++;
                     }
@@ -163,9 +190,15 @@ public class SymbolsBuilder
                     logger.fine(noiseNb + " noise glyphs skipped");
                 }
             }
-        }
 
-        return shapes;
+            // Record this task to the sheet script?
+            if (record) {
+                sheet.getScript()
+                     .addTask(new AssignTask(shape, compound, glyphs));
+                shapes.add(shape);
+                sheet.updateLastSteps(glyphs, shapes);
+            }
+        }
     }
 
     //-------------//
@@ -198,7 +231,7 @@ public class SymbolsBuilder
             SystemInfo system = sheet.getSystemAtY(stem.getContourBox().y);
             glyphsBuilder.removeGlyph(stem, system, /* cutSections => */
                                       true);
-            assignGlyphShape(stem, null);
+            assignGlyphShape(stem, null, false);
             impactedSystems.add(system);
         }
 
@@ -220,10 +253,23 @@ public class SymbolsBuilder
      * De-assign the shape of a glyph
      *
      * @param glyph the glyph to deassign
+     * @param record true if this action is to be recorded in the script
      */
     @Override
-    public void deassignGlyphShape (Glyph glyph)
+    public void deassignGlyphShape (Glyph   glyph,
+                                    boolean record)
     {
+        Collection<Glyph> glyphs = null;
+        Collection<Shape> shapes = null;
+
+        // Record this action in the sheet script?
+        if (record) {
+            glyphs = Collections.singleton(glyph);
+            shapes = Glyph.shapesOf(glyphs);
+            sheet.getScript()
+                 .addTask(new DeassignTask(glyphs));
+        }
+
         Shape shape = glyph.getShape();
 
         // Processing depends on shape at hand
@@ -231,7 +277,7 @@ public class SymbolsBuilder
         case THICK_BAR_LINE :
         case THIN_BAR_LINE :
             sheet.getBarsBuilder()
-                 .deassignGlyphShape(glyph);
+                 .deassignGlyphShape(glyph, false);
 
             break;
 
@@ -258,9 +304,14 @@ public class SymbolsBuilder
                     glyph.getId());
             }
 
-            assignGlyphShape(glyph, null);
+            assignGlyphShape(glyph, null, false);
 
             break;
+        }
+
+        // Update last steps?
+        if (record) {
+            sheet.updateLastSteps(glyphs, shapes);
         }
     }
 
@@ -271,10 +322,18 @@ public class SymbolsBuilder
      * Deassign all the glyphs of the provided collection
      *
      * @param glyphs the collection of glyphs to deassign
+     * @param record true if this action is to be recorded in the script
      */
     @Override
-    public void deassignSetShape (Collection<Glyph> glyphs)
+    public void deassignSetShape (Collection<Glyph> glyphs,
+                                  boolean           record)
     {
+        Collection<Shape> shapes = null;
+
+        if (record) {
+            shapes = Glyph.shapesOf(glyphs);
+        }
+
         // First phase, putting the stems apart
         List<Glyph> stems = new ArrayList<Glyph>();
         List<Glyph> glyphsCopy = new ArrayList<Glyph>(glyphs);
@@ -283,13 +342,21 @@ public class SymbolsBuilder
             if (glyph.getShape() == Shape.COMBINING_STEM) {
                 stems.add(glyph);
             } else if (glyph.isKnown()) {
-                deassignGlyphShape(glyph);
+                deassignGlyphShape(glyph, false);
             }
         }
 
         // Second phase dedicated to stems, if any
         if (stems.size() > 0) {
             cancelStems(stems);
+        }
+
+        // Record this action in the sheet script?
+        if (record) {
+            sheet.getScript()
+                 .addTask(new DeassignTask(glyphs));
+
+            sheet.updateLastSteps(glyphs, shapes);
         }
     }
 
@@ -324,7 +391,7 @@ public class SymbolsBuilder
         Collection<Glyph> glyphs = new ArrayList<Glyph>(givenGlyphs);
         Collection<Shape> shapes = Glyph.shapesOf(glyphs);
 
-        deassignSetShape(glyphs);
+        deassignSetShape(glyphs, false);
 
         for (Glyph glyph : glyphs) {
             SystemInfo system = sheet.getSystemAtY(glyph.getContourBox().y);

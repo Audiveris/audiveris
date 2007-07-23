@@ -56,8 +56,8 @@ public class GlyphModel
     /**
      * Create an instance of GlyphModel, with its underlying glyph lag
      *
-     * @param sheet the related sheet
-     * @param lag the related lag
+     * @param sheet the related sheet (can be null)
+     * @param lag the related lag (cannot be null)
      */
     public GlyphModel (Sheet    sheet,
                        GlyphLag lag)
@@ -79,13 +79,15 @@ public class GlyphModel
     // assignGlyphShape //
     //------------------//
     /**
-     * Manually assign a Shape to a glyph
+     * Assign a Shape to a glyph
      *
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
+     * @param record true if this action is to be recorded in the script
      */
-    public void assignGlyphShape (Glyph glyph,
-                                  Shape shape)
+    public void assignGlyphShape (Glyph   glyph,
+                                  Shape   shape,
+                                  boolean record)
     {
         if (glyph != null) {
             if (logger.isFineEnabled()) {
@@ -120,16 +122,15 @@ public class GlyphModel
      * @param shape the shape to be assigned
      * @param compound flag to build one compound, rather than assign each
      *                 individual glyph
-     * @return the collection of initial shapes, which may be empty
+     * @param record true if this action is to be recorded in the script
      */
-    public Collection<Shape> assignSetShape (Collection<Glyph> glyphs,
+    public void assignSetShape (Collection<Glyph> glyphs,
                                              Shape             shape,
-                                             boolean           compound)
+                                             boolean           compound,
+                                             boolean           record)
     {
         // Empty by default
         logger.warning("No assignSetShape in current model for " + shape);
-
-        return Glyph.shapesOf(glyphs);
     }
 
     //--------------------//
@@ -138,9 +139,11 @@ public class GlyphModel
     /**
      * Deassign the shape of a glyph
      *
-     * @param glyph
+     * @param glyph the glyph to deassign
+     * @param record true if this action is to be recorded in the script
      */
-    public void deassignGlyphShape (Glyph glyph)
+    public void deassignGlyphShape (Glyph   glyph,
+                                    boolean record)
     {
         // Empty by default
         logger.warning(
@@ -154,8 +157,10 @@ public class GlyphModel
      * De-Assign a collection of glyphs.
      *
      * @param glyphs the collection of glyphs to be de-assigned
+     * @param record true if this action is to be recorded in the script
      */
-    public void deassignSetShape (Collection<Glyph> glyphs)
+    public void deassignSetShape (Collection<Glyph> glyphs,
+                                  boolean           record)
     {
         // Empty by default
         logger.warning("No deassignSetShape in current model");
