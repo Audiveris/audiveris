@@ -16,19 +16,16 @@ import omr.score.visitor.ScoreExporter;
 import omr.script.ExportTask;
 
 import omr.ui.util.FileFilter;
+import omr.ui.util.UIUtilities;
 
 import omr.util.Logger;
 
 import java.io.*;
-import java.util.*;
-
-import javax.swing.JFileChooser;
-import javax.swing.event.*;
 
 /**
  * Class <code>ScoreManager</code> handles a collection of score instances.
  *
- * @author Herv&eacute; Bitteur
+ * @author Herv&eacute; Bitteur and Brenton Partridge
  * @version $Id$
  */
 public class ScoreManager
@@ -111,28 +108,18 @@ public class ScoreManager
             // Ask user confirmation, if Gui available
             if (Main.getGui() != null) {
                 // Let the user select a score output file
-                JFileChooser fc = new JFileChooser(Main.getOutputFolder());
-                fc.addChoosableFileFilter(
-                    new FileFilter(
+                FileFilter filter = new FileFilter(
                         "XML files",
-                        new String[] { SCORE_EXTENSION }));
-                fc.setSelectedFile(xmlFile);
-
-                // Let the user play with the dialog
-                int res = fc.showSaveDialog(Main.getGui().getFrame());
-
-                if (res == JFileChooser.APPROVE_OPTION) {
-                    xmlFile = fc.getSelectedFile();
-
-                    // Remember (even across runs) the selected directory
-                    Main.setOutputFolder(xmlFile.getParent());
-                } else {
-                    return;
-                }
+                        new String[] { SCORE_EXTENSION });
+                xmlFile = UIUtilities.fileChooser(true, 
+                	null, xmlFile.getPath(), filter);
             }
         }
 
         if (xmlFile != null) {
+        	// Remember (even across runs) the selected directory
+        	Main.setOutputFolder(xmlFile.getParent());
+        	
             // Make sure the folder exists
             File folder = new File(xmlFile.getParent());
 
