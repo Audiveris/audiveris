@@ -22,6 +22,7 @@ import java.io.File;
  */
 public class FileFilter
     extends javax.swing.filechooser.FileFilter
+    implements java.io.FilenameFilter
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -134,5 +135,11 @@ public class FileFilter
         }
 
         return false;
+    }
+    
+    public boolean accept(File dir, String name)
+    {
+    	File f = new File(dir, name);
+    	return accept(f);
     }
 }
