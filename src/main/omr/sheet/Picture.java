@@ -16,7 +16,9 @@ import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
 
-import omr.util.*;
+import omr.util.Implement;
+import omr.util.JaiLoader;
+import omr.util.Logger;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -87,7 +89,7 @@ public class Picture
     /**
      * Constant color of the picture foreground (generally black), which means
      * that any pixel whose level is higher than this value will be considered
-     * as background.
+     * as background. [Should be an application constant? TBD]
      */
     public static final int FOREGROUND = 227;
 
@@ -112,8 +114,12 @@ public class Picture
     private final AffineTransform scaleTransform = AffineTransform.getScaleInstance(
         1d,
         1d);
-    private DataBuffer     dataBuffer;
-    private Dimension      dimension;
+
+    /** Direct access to image buffer (not used) */
+    private DataBuffer dataBuffer;
+
+    /** Dimension of current image */
+    private Dimension dimension;
 
     /** Original image dimension */
     private Dimension originalDimension;
@@ -270,7 +276,7 @@ public class Picture
 
         for (int i = 0; i < files.length; i++) {
             logger.info("Loading image " + files[i].getPath());
-            
+
             PlanarImage img0 = JAI.create("fileload", files[i].getPath());
             System.out.println("i=" + i + " file=" + files[i]);
             System.out.println(
@@ -356,30 +362,36 @@ public class Picture
 
     //~ Methods ----------------------------------------------------------------
 
-    private static RenderedImage loadFile(File imgFile) throws IOException
-	{
-	    logger.info("Loading image from " + imgFile + " ...");
-	
-	    ImageInputStream stream = ImageIO.createImageInputStream(imgFile);
-	
-	    if (stream == null) {
-	        throw new IOException("Cannot create image input stream");
-	    }
-	
-	    Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
-	
-	    if (readers.hasNext()) {
-	        ImageReader reader = readers.next();
-	        reader.addIIOReadProgressListener(new Listener());
-	        reader.setInput(stream, true);
-	        return (reader.read(0));
-	    } else {
-	    	logger.info("ImageIO cannot read file, using JAI");
-	        return (JAI.create("fileload", imgFile.getPath()));
-	    }
-	}
+    //----------//
+    // loadFile //
+    //----------//
+    private static RenderedImage loadFile (File imgFile)
+        throws IOException
+    {
+        logger.info("Loading image from " + imgFile + " ...");
 
-	//--------------//
+        ImageInputStream stream = ImageIO.createImageInputStream(imgFile);
+
+        if (stream == null) {
+            throw new IOException("Cannot create image input stream");
+        }
+
+        Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+
+        if (readers.hasNext()) {
+            ImageReader reader = readers.next();
+            reader.addIIOReadProgressListener(new Listener());
+            reader.setInput(stream, true);
+
+            return (reader.read(0));
+        } else {
+            logger.info("ImageIO cannot read file, using JAI");
+
+            return (JAI.create("fileload", imgFile.getPath()));
+        }
+    }
+
+    //--------------//
     // getDimension //
     //--------------//
     /**
@@ -479,16 +491,16 @@ public class Picture
 
         ///            return dataBuffer.getElem(x + (y * dimensionWidth));
     }
-    
+
     //------------------//
     // getAsBufferedImage //
     //------------------//
     /**
      * Return a copy of the underlying image as a buffered image.
-     * 
-     * @return 
+     *
+     * @return
      */
-    public final BufferedImage getAsBufferedImage()
+    public final BufferedImage getAsBufferedImage ()
     {
         return image.getAsBufferedImage();
     }
@@ -978,10 +990,12 @@ public class Picture
             logger.fine("grayFactor=" + grayFactor);
         }
     }
-    
-    
+
     //~ Inner Classes ----------------------------------------------------------
 
+    //----------//
+    // Listener //
+    //----------//
     /**
      * Listener allows ImageIO to log image loading status.
      */
@@ -992,28 +1006,35 @@ public class Picture
 
         public void imageComplete (ImageReader source)
         {
-            logger.info("Image loading complete");
+            if (logger.isFineEnabled()) {
+                logger.fine("Image loading complete");
+            }
+
             lastProgress = 0;
         }
 
         public void imageProgress (ImageReader source,
                                    float       percentageDone)
         {
-            if ((percentageDone - lastProgress) > 10) {
-                lastProgress = percentageDone;
-                logger.info("Image loaded " + percentageDone + "%");
+            if (logger.isFineEnabled()) {
+                if ((percentageDone - lastProgress) > 10) {
+                    lastProgress = percentageDone;
+                    logger.fine("Image loaded " + percentageDone + "%");
+                }
             }
         }
 
         public void imageStarted (ImageReader source,
                                   int         imageIndex)
         {
-            logger.info("Image loading started");
+            if (logger.isFineEnabled()) {
+                logger.info("Image loading started");
+            }
         }
 
         public void readAborted (ImageReader source)
         {
-            logger.info("Image loading aborted");
+            logger.warning("Image loading aborted");
         }
 
         public void sequenceComplete (ImageReader source)
@@ -1040,39 +1061,51 @@ public class Picture
         {
         }
 
-		public void imageComplete(ImageWriter imagewriter)
-		{
-			logger.info("Image writing complete");
-			lastProgress = 0;
-		}
-
-		public void imageProgress(ImageWriter imagewriter, float percentageDone)
-		{
-			if ((percentageDone - lastProgress) > 10) {
-                lastProgress = percentageDone;
-                logger.info("Image written " + percentageDone + "%");
+        public void imageComplete (ImageWriter imagewriter)
+        {
+            if (logger.isFineEnabled()) {
+                logger.info("Image writing complete");
             }
-		}
 
-		public void imageStarted(ImageWriter imagewriter, int i)
-		{
-			logger.info("Image writing started");
-		}
+            lastProgress = 0;
+        }
 
-		public void thumbnailComplete(ImageWriter imagewriter)
-		{
-		}
+        public void imageProgress (ImageWriter imagewriter,
+                                   float       percentageDone)
+        {
+            if (logger.isFineEnabled()) {
+                if ((percentageDone - lastProgress) > 10) {
+                    lastProgress = percentageDone;
+                    logger.info("Image written " + percentageDone + "%");
+                }
+            }
+        }
 
-		public void thumbnailProgress(ImageWriter imagewriter, float f)
-		{
-		}
+        public void imageStarted (ImageWriter imagewriter,
+                                  int         i)
+        {
+            if (logger.isFineEnabled()) {
+                logger.info("Image writing started");
+            }
+        }
 
-		public void thumbnailStarted(ImageWriter imagewriter, int i, int j)
-		{
-		}
+        public void thumbnailComplete (ImageWriter imagewriter)
+        {
+        }
 
-		public void writeAborted(ImageWriter imagewriter)
-		{
-		}
+        public void thumbnailProgress (ImageWriter imagewriter,
+                                       float       f)
+        {
+        }
+
+        public void thumbnailStarted (ImageWriter imagewriter,
+                                      int         i,
+                                      int         j)
+        {
+        }
+
+        public void writeAborted (ImageWriter imagewriter)
+        {
+        }
     }
 }
