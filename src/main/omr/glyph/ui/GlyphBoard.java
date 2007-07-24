@@ -308,7 +308,7 @@ public class GlyphBoard
         Object entity = selection.getEntity();
 
         if (logger.isFineEnabled()) {
-            logger.info(
+            logger.fine(
                 "GlyphBoard " + selection.getTag() + " selfUpdating=" +
                 selfUpdating + " : " + entity);
         }
