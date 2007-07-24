@@ -24,6 +24,7 @@ import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 
 import javax.swing.*;
@@ -113,7 +114,8 @@ public class ScriptController
         if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             final SwingWorker<Void> worker = new SwingWorker<Void>() {
                 // This runs on worker's thread
-                @Implement(SwingWorker.class)
+            	@Implement(SwingWorker.class)
+                @Override
                 public Void construct ()
                 {
                     final File file = fc.getSelectedFile();
@@ -244,7 +246,7 @@ public class ScriptController
             putValue(SHORT_DESCRIPTION, "Open a score script file");
         }
 
-        @Override
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             selectScript();
@@ -269,7 +271,7 @@ public class ScriptController
             putValue(SHORT_DESCRIPTION, "Store current score script");
         }
 
-        @Override
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = Main.getGui().sheetController.getCurrentSheet();
