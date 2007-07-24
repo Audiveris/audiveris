@@ -37,6 +37,7 @@ import omr.ui.icon.IconManager;
 import omr.ui.treetable.JTreeTable;
 import omr.ui.util.MemoryMeter;
 import omr.ui.util.Panel;
+import omr.ui.util.SeparableMenu;
 import static omr.ui.util.UIUtilities.*;
 
 import omr.util.Implement;
@@ -45,6 +46,7 @@ import omr.util.Memory;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.reflect.Constructor;
 
 import javax.swing.*;
 
@@ -88,10 +90,10 @@ public class MainGui
     private JFrame frame;
 
     // Menus & tools in the frame
+    private final JMenu      helpMenu = new SeparableMenu("Help");
     private final JMenu      stepMenu = new StepMenu("Step").getMenu();
-    private final JMenu      viewMenu = new JMenu("Views");
-    private final JMenu      toolMenu = new JMenu("Tools");
-    private final JMenu      helpMenu = new JMenu("Help");
+    private final JMenu      viewMenu = new SeparableMenu("Views");
+    private final JMenu      toolMenu = new SeparableMenu("Tools");
     private final JSplitPane bigSplitPane;
 
     /** The splitted panes */
@@ -137,10 +139,20 @@ public class MainGui
         // Build the UI part
         //------------------
         // Tools in the frame and set of actions
-        toolBar = new JToolBar(JToolBar.HORIZONTAL); // VERTICAL
+        toolBar = new JToolBar(JToolBar.HORIZONTAL)
+        {
+        	@Override
+			public void addSeparator()
+        	{
+        		Component[] components = super.getComponents();
+        		int count = components.length;
+        		if (count > 0 && !(components[count - 1] instanceof JSeparator))
+        			super.addSeparator();
+        	}
+        };
 
         // Sheet actions
-        Action exitAction = new ExitAction();
+        Action exitAction = new ExitAction(true);
         sheetController = new SheetController(this, toolBar);
         sheetController.getMenu()
                        .addSeparator();
@@ -188,18 +200,41 @@ public class MainGui
         new OptionAction(toolMenu);
 
         // Help
-        new AboutAction(helpMenu);
+        if (!omr.Main.MAC_OS_X) new AboutAction(helpMenu);
 
         // Menus in the frame
         JMenuBar menuBar = new JMenuBar();
         frame.setJMenuBar(menuBar);
-        menuBar.add(sheetController.getMenu());
-        menuBar.add(stepMenu);
-        menuBar.add(scoreController.getMenu());
-        menuBar.add(viewMenu);
-        menuBar.add(toolMenu);
-        menuBar.add(Box.createHorizontalStrut(30));
-        menuBar.add(helpMenu);
+        for (JMenu menu : new JMenu[] {
+        	sheetController.getMenu(), stepMenu,
+        	scoreController.getMenu(), viewMenu, toolMenu, helpMenu}) {
+        	if (menu.getItemCount() > 0) {
+        		if (menu == helpMenu) 
+        			menuBar.add(Box.createHorizontalStrut(30));
+        		menuBar.add(menu);
+        	}
+        }
+        
+        //Mac Application menu
+        if (omr.Main.MAC_OS_X)
+        {
+        	try
+        	{
+        		Class clazz = Class.forName("omr.ui.MacApplication");
+        		Constructor constructor = clazz.getConstructor(new Class[] {
+        			Action.class, Action.class, Action.class
+        			});
+        		constructor.newInstance(
+        			new AboutAction(null),
+        			new OptionAction(null),
+        			new ExitAction(false)
+        			);
+        	}
+        	catch (Exception e)
+        	{
+        		logger.warning("Unable to load Mac OS X Application menu", e);
+        	}
+        }
 
         /*
            +============================================================+
@@ -253,7 +288,7 @@ public class MainGui
 
         JPanel toolKeyPanel = new JPanel();
         toolKeyPanel.setLayout(new BorderLayout());
-        toolKeyPanel.add(toolBar, BorderLayout.WEST);
+//        toolKeyPanel.add(toolBar, BorderLayout.WEST);
         toolKeyPanel.add(
             Step.createMonitor().getComponent(),
             BorderLayout.CENTER);
@@ -261,6 +296,9 @@ public class MainGui
             new MemoryMeter(
                 IconManager.getInstance().loadImageIcon("general/Delete")).getComponent(),
             BorderLayout.EAST);
+        toolBar.add(toolKeyPanel);
+        frame.getContentPane().add(toolBar, BorderLayout.NORTH);
+        
 
         bigSplitPane = new JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT,
@@ -272,8 +310,8 @@ public class MainGui
         bigSplitPane.setResizeWeight(1d); // Give extra space to left part
 
         // Global layout
-        frame.getContentPane()
-             .add(toolKeyPanel, BorderLayout.NORTH);
+//        frame.getContentPane()
+//             .add(toolKeyPanel, BorderLayout.NORTH);
         frame.getContentPane()
              .add(bigSplitPane, BorderLayout.CENTER);
 
@@ -624,14 +662,13 @@ public class MainGui
     private class ExitAction
         extends AbstractAction
     {
-        public ExitAction ()
+        public ExitAction (boolean addToToolBar)
         {
             super(
                 "Exit",
                 IconManager.getInstance().loadImageIcon("general/Stop"));
             putValue(SHORT_DESCRIPTION, "Exit the program");
-
-            toolBar.add(this)
+            if (addToToolBar) toolBar.add(this)
                    .setBorder(getToolBorder());
         }
 
@@ -700,7 +737,7 @@ public class MainGui
                 "Options",
                 IconManager.getInstance().loadImageIcon("general/Properties"));
             putValue(SHORT_DESCRIPTION, "Constants tree for all units");
-            menu.add(this);
+            if (menu != null) menu.add(this);
         }
 
         @Implement(ActionListener.class)
@@ -800,7 +837,7 @@ public class MainGui
                 "About",
                 IconManager.getInstance().loadImageIcon("general/About"));
             putValue(SHORT_DESCRIPTION, "About " + Main.getToolName());
-            menu.add(this);
+            if (menu != null) menu.add(this);
         }
 
         @Implement(ActionListener.class)
