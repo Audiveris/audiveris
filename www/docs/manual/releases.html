@@ -25,9 +25,9 @@
         
         <H1 ALIGN=CENTER>Audiveris Releases</H1>
         
-        <ADDRESS>Author : <A HREF="mailto:herve.bitteur@laposte.net">Herv&eacute;
+        <ADDRESS>Author: <A HREF="mailto:herve.bitteur@laposte.net">Herv&eacute;
             Bitteur</A></ADDRESS>
-        <ADDRESS>Updated :
+        <ADDRESS>Updated:
             <SCRIPT TYPE="text/javascript" >
                 document.write(parent.parent.getCVSDate("$Id$"));
             </SCRIPT>
@@ -56,11 +56,11 @@
                         <TH>Distribution Changes</TH>
                         <TD>
                             <UL>
-                                <LI>XML binding : No more JiBX or Castor, we now
+                                <LI>XML binding: No more JiBX or Castor, we now
                                     use the standard JAXB 2 for all
                                     [un]marshalling tasks, including the score
                                     writing delegated to ProxyMusic.</LI>
-                                <LI>Installation : To simplify installation, all
+                                <LI>Installation: To simplify installation, all
                                     companion jar files are stored in the /lib
                                     subfolder, with audiveris jar file refering
                                     them in its manifest. The only exception is
@@ -74,13 +74,16 @@
                         <TH>New Features</TH>
                         <TD>
                             <UL>
-                                <LI>Translation : Implementation of translation
+                                <LI>Translation: Implementation of translation
                                     on the base of extracted symbols.</LI>
-                                <LI>Translation : Storing of the translation
+                                <LI>Translation: Storing of the translation
                                     result in MusicXML format.</LI>
-                                <LI>GUI : New window dedicated to score view, to
+                                <LI>GUI: New window dedicated to score view, to
                                     more easily check the translation
                                     results.</LI>
+				<LI>Script: A scripting feature allows to record
+				    every action made on a given sheet, and to
+				    replay and augment the script at will.
                             </UL>
                         </TD>
                     </TR>
@@ -98,7 +101,7 @@
                         <TH>Known Issues</TH>
                         <TD>
                             <UL>
-                                <LI>OCR : We are still looking for an OCR to
+                                <LI>OCR: We are still looking for an OCR to
                                     handle lyrics and other written
                                     informations.</LI>
                             </UL>
@@ -110,7 +113,7 @@
                         <TD>
                             <UL>
                                 A lot!
-                                <LI>Parallelism : we now take advantage of
+                                <LI>Parallelism: we now take advantage of
                                     multi-processors when available, in the
                                     building of lag runs, and in the processing
                                     of system symbols.</LI>
@@ -142,7 +145,7 @@
                         <TH>Distribution Changes</TH>
                         <TD>
                             <UL>
-                                <LI>XML Mapping : We've dropped Castor for
+                                <LI>XML Mapping: We've dropped Castor for
                                     JiBX. JiBX is reported more performant,
                                     especially at startup, since the binding is
                                     pre-compiled directly in the class byte
@@ -153,7 +156,7 @@
                                     now be installed (see the <A
                                     HREF="installation.html#OTHER_COMPONENTS">
                                     Installation Manual</A> for details). </LI>
-                                <LI>Tests : The distribution archive now
+                                <LI>Tests: The distribution archive now
                                     comprises the source code for unit tests,
                                     based on the JUnit framework.</LI>
                             </UL>
@@ -172,8 +175,8 @@
                         <TH>Bug Fixes</TH>
                         <TD>
                             <UL>
-                                <LI>Memory : At last, the origin of memory leak
-                                    was discovered : it originated in Swing
+                                <LI>Memory: At last, the origin of memory leak
+                                    was discovered: it originated in Swing
                                     component handling an HTML text. So the
                                     workaround has been to simply drop HTML used
                                     by FilterBoard in favor of standard JGoodies
@@ -186,7 +189,7 @@
                         <TH>Known Issues</TH>
                         <TD>
                             <UL>
-                                <LI>Java : There are 4 compiler warnings related
+                                <LI>Java: There are 4 compiler warnings related
                                     to generics.</LI>
                             </UL>
                         </TD>
@@ -196,11 +199,11 @@
                         <TH>Other Changes</TH>
                         <TD>
                             <UL>
-                                <LI>Math : The Line class is now better defined
+                                <LI>Math: The Line class is now better defined
                                     as an interface with a BasicLine
                                     implementation which can be used whatever
                                     the orientation of the Line.</LI>
-                                <LI>Java : Consistent application of an inner
+                                <LI>Java: Consistent application of an inner
                                     Swing component rather than direct
                                     derivation from Swing, except in obvious
                                     specializations. Main improvement is visible
@@ -237,17 +240,17 @@
                         <TH>Distribution Changes</TH>
                         <TD>
                             <UL>
-                                <LI>Properties : the user property files, used
+                                <LI>Properties: the user property files, used
                                     respectively for build and run phases, are
                                     now located within a ".audiveris" folder in
                                     ${user.home} directory.</LI>
-                                <LI>Icons : The "Musette" font is no longer
+                                <LI>Icons: The "Musette" font is no longer
                                     used, since it lacked too many
                                     symbols. Instead, we now use our own drawing
                                     of icons for all shape symbols, using a
                                     simple text format for storing icon
                                     definitions.</LI>
-                                <LI>Training : A set of representative glyphs is
+                                <LI>Training: A set of representative glyphs is
                                     provided as a "core", should the user need
                                     to retrain the glyph evaluator. This core is
                                     a carefully selected subset of the whole
@@ -260,17 +263,17 @@
                         <TH>New Features</TH>
                         <TD>
                             <UL>
-                                <LI>Extraction : Added two specific Shapes,
+                                <LI>Extraction: Added two specific Shapes,
                                     known as CLUTTER and STRUCTURE, so that
                                     evaluator can differentiate between a valid
                                     symbol and symbols that either should be
                                     discarded (Clutter) or kept for later leaves
                                     retrievals (Structure).</LI>
-                                <LI>Extraction : Got rid of the Regression
+                                <LI>Extraction: Got rid of the Regression
                                     evaluator, and organized all recognition
                                     steps on the sole use of Neural Network
                                     evaluator.
-                                    <LI>GUI : Simplified and rationalized the
+                                    <LI>GUI: Simplified and rationalized the
                                         mouse events related to selection,
                                         lasso, etc... It is now possible to
                                         incrementally select several glyphs and
@@ -285,7 +288,7 @@
                             <TH>Bug Fixes</TH>
                             <TD>
                                 <UL>
-                                    <LI>GUI : Removed duplications of mouse
+                                    <LI>GUI: Removed duplications of mouse
                                         events.</LI>
                                 </UL>
                             </TD>
@@ -295,9 +298,9 @@
                             <TH>Known Issues</TH>
                             <TD>
                                 <UL>
-                                    <LI>Memory : The memory leak (see previous
+                                    <LI>Memory: The memory leak (see previous
                                         version) is still to be fixed.</LI>
-                                    <LI>Java : There are still 5 compiler
+                                    <LI>Java: There are still 5 compiler
                                         warnings related to generics, no harm,
                                         but they should be sorted out.</LI>
                                 </UL>
@@ -308,7 +311,7 @@
                             <TH>Other Changes</TH>
                             <TD>
                                 <UL>
-                                    <LI>Icons : To define custom icons, there is
+                                    <LI>Icons: To define custom icons, there is
                                         a new stand-alone tool (SymbolRipper)
                                         which allows to store a symbol
                                         representation drawn with help of any
@@ -346,11 +349,11 @@
                             <TH>Distribution Changes</TH>
                             <TD>
                                 <UL>
-                                    <LI>Tools : All the companion tools have
+                                    <LI>Tools: All the companion tools have
                                         been upgraded to their latest version,
                                         and the Installation manual updated
                                         accordingly. </LI>
-                                    <LI>Documentation : The whole set of
+                                    <LI>Documentation: The whole set of
                                         documentations, including the JavaDoc
                                         API, has been organized under the same
                                         umbrella to allow convenient access to
@@ -364,12 +367,12 @@
                             <TH>New Features</TH>
                             <TD>
                                 <UL>
-                                    <LI>Image : Added the conversion from color
+                                    <LI>Image: Added the conversion from color
                                         image to gray-scale image. This
                                         operation is launched automatically when
                                         a color image is detected at load
                                         time.</LI>
-                                    <LI>Glyphs : Added a Deassign button in the
+                                    <LI>Glyphs: Added a Deassign button in the
                                         Glyph board, with action depending upon
                                         the glyph at hand (for example
                                         deassigning a stem has important
@@ -383,10 +386,10 @@
                             <TH>Bug Fixes</TH>
                             <TD>
                                 <UL>
-                                    <LI>GUI : No more toggle button is active
+                                    <LI>GUI: No more toggle button is active
                                         for the Bars step, since there were no
                                         specific Sections to handle.</LI>
-                                    <LI>Documentation : Fixed the use of CVS
+                                    <LI>Documentation: Fixed the use of CVS
                                         tags in java files (for version
                                         information) which were mistaken with
                                         real CVS tags in related javadoc HTML
@@ -399,7 +402,7 @@
                             <TH>Known Issues</TH>
                             <TD>
                                 <UL>
-                                    <LI>Memory : There is still a memory leak,
+                                    <LI>Memory: There is still a memory leak,
                                         since even after current Sheet has been
                                         closed, there is still a Sheet instance
                                         referenced with Score, related views,
@@ -407,12 +410,12 @@
                                         to be processed interactively is to exit
                                         the application after each
                                         processing.</LI>
-                                    <LI>Documentation : Because of JavaScript
+                                    <LI>Documentation: Because of JavaScript
                                         building of doc frames, the "Back" and
                                         "Forward" commands trigger duplicate
                                         frame loads. Function is OK, but this
                                         flickering should be avoided.</LI>
-                                    <LI>Java : There is still half a dozen of
+                                    <LI>Java: There is still half a dozen of
                                         compiler warnings related to unchecked
                                         generics assignments, to be cleaned in a
                                         next release.</LI>
@@ -424,7 +427,7 @@
                             <TH>Other Changes</TH>
                             <TD>
                                 <UL>
-                                    <LI>Verticals : Managing of stems is done as
+                                    <LI>Verticals: Managing of stems is done as
                                         much as possible like other glyphs,
                                         since managing separate lists in synch
                                         was too much error-prone.</LI>
