@@ -18,7 +18,7 @@ import omr.util.Logger;
  * Handles loading, sorting, and instantiating Audiveris plugins.
  * 
  * @author Brenton Partridge
- * @version 
+ * @version $Id$
  */
 public class Plugins
 {
