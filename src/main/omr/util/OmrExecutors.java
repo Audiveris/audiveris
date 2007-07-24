@@ -12,9 +12,10 @@ package omr.util;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -29,6 +30,9 @@ public class OmrExecutors
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(OmrExecutors.class);
+
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
@@ -37,10 +41,10 @@ public class OmrExecutors
                                             .availableProcessors() + 1;
 
     /** Pool with high priority */
-    private static volatile Executor highExecutor;
+    private static volatile ExecutorService highExecutor;
 
     /** Pool with low priority */
-    private static volatile Executor lowExecutor;
+    private static volatile ExecutorService lowExecutor;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -59,7 +63,7 @@ public class OmrExecutors
      *
      * @return the high pool, allocated if needed
      */
-    public static Executor getHighExecutor ()
+    public static ExecutorService getHighExecutor ()
     {
         if (highExecutor == null) {
             synchronized (OmrExecutors.class) {
@@ -82,7 +86,7 @@ public class OmrExecutors
      *
      * @return the low pool, allocated if needed
      */
-    public static synchronized Executor getLowExecutor ()
+    public static ExecutorService getLowExecutor ()
     {
         if (lowExecutor == null) {
             synchronized (OmrExecutors.class) {
@@ -110,6 +114,22 @@ public class OmrExecutors
         return cpuNb;
     }
 
+    //----------//
+    // shutdown //
+    //----------//
+    public static void shutdown ()
+    {
+        if (lowExecutor != null) {
+            logger.info("Shutting down low executors");
+            shutdownAndAwaitTermination(lowExecutor);
+        }
+
+        if (highExecutor != null) {
+            logger.info("Shutting down high executors");
+            shutdownAndAwaitTermination(highExecutor);
+        }
+    }
+
     //----------------//
     // useParallelism //
     //----------------//
@@ -121,6 +141,37 @@ public class OmrExecutors
     public static boolean useParallelism ()
     {
         return constants.useParallelism.getValue();
+    }
+
+    //-----------------------------//
+    // shutdownAndAwaitTermination //
+    //-----------------------------//
+    private static void shutdownAndAwaitTermination (ExecutorService pool)
+    {
+        pool.shutdown(); // Disable new tasks from being submitted
+
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(
+                constants.graceDelay.getValue(),
+                TimeUnit.SECONDS)) {
+                // Cancel currently executing tasks
+                pool.shutdownNow();
+
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(
+                    constants.graceDelay.getValue(),
+                    TimeUnit.SECONDS)) {
+                    logger.warning("Pool did not terminate");
+                }
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread()
+                  .interrupt();
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -165,6 +216,12 @@ public class OmrExecutors
         Constant.Boolean useParallelism = new Constant.Boolean(
             true,
             "Should we use parallelism when we have several processors?");
+
+        //
+        Constant.Integer graceDelay = new Constant.Integer(
+            "seconds",
+            15,
+            "Time to wait for terminating tasks");
     }
 
     //-------------//
