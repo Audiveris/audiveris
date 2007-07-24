@@ -17,13 +17,14 @@ import omr.util.Logger;
 // import com.jgoodies.looks.windows.*;
 // import com.jgoodies.looks.plastic.*;
 // import com.jgoodies.looks.plastic.theme.*;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 /**
  * Class <code>UILookAndFeel</code> enables to select the UI Look & Feel to
  * be used in this application.
  *
- * @author Herv&eacute; Bitteur
+ * @author Herv&eacute; Bitteur and Brenton Partridge
  * @version $Id$
  */
 public class UILookAndFeel
@@ -119,5 +120,16 @@ public class UILookAndFeel
         Constant.String lookAndFeel = new Constant.String(
             "com.jgoodies.looks.plastic.Plastic3DLookAndFeel",
             "Full class path to the desired UI Look & Feel");
+    }
+    
+	static
+    {
+    	if (omr.Main.MAC_OS_X)
+    	{
+    		System.setProperty("apple.laf.useScreenMenuBar", "true");
+//    		System.setProperty("apple.awt.brushMetalLook", "true");
+//    		System.setProperty("apple.awt.brushMetalRounded", "true");
+    		constants.lookAndFeel.setValue(UIManager.getSystemLookAndFeelClassName());
+    	}
     }
 }
