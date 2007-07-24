@@ -643,8 +643,7 @@ public class Main
         parseArguments(args);
         
         // Then, preload the JAI class so image operations are ready
-        // Commented out for now
-        // JaiLoader.preload();
+        JaiLoader.preload();
 
         // Interactive or Batch mode ?
         if (!batchMode) {
