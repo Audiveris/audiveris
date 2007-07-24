@@ -41,6 +41,10 @@
 	    </script>
 	</address>
 
+	<p>Purpose of this document is to describe a very simple yet realistic
+	    use of Audiveris, so that you can get acquainted with some of its
+	    major features.</p>
+	
 	<a name="INITIAL">
 	    <h2>Initial actions</h2>
 	</a>
@@ -48,19 +52,30 @@
 	<a name="LAUNCHING">
 	    <h3>Launch Audiveris</h3>
 	</a>
-	<p>The easiest way is to move to the directory where you have extracted
-	    the Audiveris distribution archive, and use the following
-	    command:</p>
-	<p>$&gt; java -jar audiveris-3.0beta.jar</p>
+
+	<ul>
+	    <li>First, navigate to the directory where you have extracted the
+		Audiveris distribution archive.</li>
+	    <li>Then the easiest way is to double-click on the jar file
+		named <u><b>audiveris-3.0.jar</b></u></li>
+	    
+	    <li>You can also use the following command:
+		<p><code>$&gt; java -jar audiveris-3.0.jar</code></p>
+		<p>or if for example you need more memory:</p>
+		<p><code>$&gt; java -Xms128m -Xmx256m -jar audiveris-3.0.jar</code></p>
+	    </li>
+	</ul>
 	
 	<a name="LOAD">
 	    <h3>Load an image</h3>
 	</a>
-	<p>From the <u><i>Sheet</i></u> menu, select the <u><i>Open
+	<p>From the <u><i>File</i></u> menu, select the <u><i>Open
 	    Sheet</i></u> item and in the dialog box which appears, select
-	    the <b>chula.png</b> file.</p>
+	    the <b>chula.png</b> file located in the <b>/examples</b>
+	    folder.</p>
 	
-	<p>The application window now looks like the following:</p>
+	<p>This loads the image out of the selected file, and the application
+	    window now looks like the following:</p>
 	
 	<p>
 	    <img style="width: 909px; height: 723px;" alt="Chula after load"
@@ -74,7 +89,7 @@
 	
 	<p>From the <u><i>Step</i></u> menu, directly select
 	    the <u><i>SCORE</i></u> step.</p>
-	<p>Audiveris will execute all the steps until the final one. The user
+	<p>Audiveris will execute all the steps until the selected one. The user
 	    interface will evolve in parallel to the final view as in following
 	    picture.</p>
 	<p>Notice that:</p>
@@ -128,16 +143,16 @@
 	    <h3>Time Signature</h3>
 	</a>
 	
-	Note that it's a good habit to always check the time signature first,
-	since a wrong value there has major consequences on the rest of the
-	score.
+	<p> Note that it's a good habit to always check the time signature
+	    first, since a wrong value there has major consequences on the rest
+	    of the score.</p>
 	<ul>
 	    <li>In that case, the easiest way is to select the two glyphs '2'
 		&amp; '4' as a whole. You do so by using the <u><i>left</i></u>
 		mouse button and drag it, while holding down
 		a <u><i>Shift</i></u> key, which gives a kind of lasso.  You
 		thus select the glyphs which are fully contained by the lasso
-		rectangle, as in the following picture:
+		rectangle, as in the left part of the following picture:
 		<p>
 		    <img style="width: 602px; height: 206px;" alt="Selection of
 								   time
@@ -167,8 +182,8 @@
 	    <h3>Note Head</h3>
 	</a>
 	
-	We now use the "Error pane", which is located at the bottom of the
-	screen.
+	<p>We now use the "Error pane", which is located in the middle at the
+	    bottom of the screen.</p>
 	<ul>
 	    <li>It displays the set of errors found, sorted by their location
 		within the score:
@@ -224,50 +239,20 @@
 								   black"
 			 src="../images/chula-assign.png"/>
 		</p>
+		<p>[Note: This hierarchy of submenus is really ackward, we
+		    consider moving to a more user-friendly selecting mechanism
+		    for a new release]</p>
 	    </li>
 	    
 	    <li>The glyph is now assigned the proper shape, its color turns
 		orange in the sheet view, and the score view displays a filled
 		note head at the correct location, despite the stem chunk which
-		was left stuck to the note head glyph
+		was left stuck to the note head glyph.
 	    </li>
 	    
 	    <li>Notice also that the error has been removed from the errors
 		pane.</li>
 	    
-	</ul>
-	
-	<a name="TUPLETS">
-	    <h3>Tuplets</h3>
-	</a>
-	
-	<p>We now select the next error at the top of the errors pane.</p>
-	<ul>
-	    <li>It indicates a too long voice as in the following picture:
-		<p>
-		    <img style="width: 412px; height: 360px;" alt="Tuplet error"
-			 title="Voice flagged as too long"
-			 src="../images/chula-tuplet.png"/>
-		</p>
-	    </li>
-	    
-	    <li>This is often due to non-recognized tuplet signs, as in the
-		present case.
-	    </li>
-	    
-	    <li>It suffices to select the '3' glyph, and the Neural board
-		indicates a TUPLET_THREE (rated 1.010) right after a CLUTTER
-		(rated 1.000). The clutter shape had consequently be preferred
-		by the program. [Perhaps, we should improve the program by
-		letting Clutter shapes be discarded for closely rated
-		non-clutter shapes. This deserves some further
-		investigation]. Anyway, clicking on the Tuplet_Three evaluation
-		is enough to correct the error.
-	    </li>
-	    
-	    <li>Selecting the next 3 or 4 errors will lead us to similar tuplet
-		errors, to be fixed the same way.
-	    </li>
 	</ul>
 	
 	<a name="SHARPS">
@@ -321,8 +306,9 @@
 	<a name="STEMS">
 	    <h3>Stems</h3>
 	</a>
-	<p>The errors pane is now empty.  Which only means that the program has
-	    not detected any other error!</p>
+	<p>The errors pane is now empty.  This does not mean there is no error
+	    left, but rather than the program has not detected any other
+	    error!</p>
 	
 	<ul>
 	    <li>
@@ -396,16 +382,54 @@
 	    file.</p>
 	<p>We finally click on the <u><i>Record</i></u> button, et voila!</p>
 	
+	<a name="SCRIPT">
+	    <h3>Script writing</h3>
+	</a>
+	
+	<p>You can decide to store the script of your actions related to 'chula'
+	    sheet, by selecting the <u><i>Store script</i></u> item in
+	    the <u><i>File</i></u> menu.</p>
+	<p>Select the location, and your script is written by default
+	    as <b>chula.script</b> file.</p>
+
+	<p>If you close the current sheet without saving your script first you
+	    will be asked for saving the related script of your actions:</p>
+	<p>
+	    <img alt="Script prompt" title="Script prompt"
+		 src="../images/chula-script.png"/>
+	</p>
+	
+	<a name="SCRIPT_REPLAY">
+	    <h3>Script replay</h3>
+	</a>
+	
+	<p>You can replay any script, by simply selecting the <u><i>Open
+	    script</i></u> item in the <u><i>File</i></u> menu, and choosing a
+	    script file.</p>
+	<p>For example, just choose the script you've just stored, and watch
+	    'chula' image be reloaded, the various steps performed, and the
+	    series of your manual actions done again. From that point on, you
+	    can make additional actions through the user interface, these
+	    actions will be added at the end of the sheet script. It's a
+	    convenient way to work again on a previous session for example. If
+	    you are curious, have a look at the 'chula.script' file, which is a
+	    simple xml file where all your actions are easily recognized.</p>
+
+	
+	<a name="FINAL">
+	    <h2>External</h2>
+	</a>
+	
 	<a name="PLAY">
 	    <h3>Score playback</h3>
 	</a>
 	<p>There is no playback embedded with Audiveris (at least for the time
 	    being).  But we can simply take another tool, for example you
 	    can download a free demo version of Finale 2007.</p>
-	<p> In the <u><i>File</i></u> menu, use its <u><i>Music XML</i></u>
-	    | <u><i>Import</i></u> item, and get a display of our score. Then,
-	    press
-	    <u><i>Play</i></u> button, and you are gone!
+	<p> Within Finale application, in the <u><i>File</i></u> menu, use
+	    its <u><i>Music XML</i></u> | <u><i>Import</i></u> item, and get a
+	    display of our score. Then, press
+	    <u><i>Play</i></u> button, and listen!
 	</p>
 	<p>
 	    <img style="width: 889px; height: 840px;"
