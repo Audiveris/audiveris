@@ -22,13 +22,15 @@ import omr.step.Step;
 import omr.ui.MainGui;
 import omr.ui.util.UILookAndFeel;
 
-import omr.util.*;
+import omr.util.Clock;
+import omr.util.Implement;
+import omr.util.JaiLoader;
+import omr.util.Logger;
+import omr.util.OmrExecutors;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.util.concurrent.*;
 
 import javax.swing.*;
 
@@ -98,11 +100,11 @@ public class Main
 
     /** Specific folder name for icons */
     public static final String ICONS_NAME = "icons";
-    
+
     /** Tells if using Mac OS X for special GUI functionality */
-    public static final boolean MAC_OS_X = 
-    	System.getProperty("os.name").toLowerCase().
-    	startsWith("mac os x");
+    public static final boolean MAC_OS_X = System.getProperty("os.name")
+                                                 .toLowerCase()
+                                                 .startsWith("mac os x");
 
     //~ Instance fields --------------------------------------------------------
 
@@ -404,66 +406,61 @@ public class Main
         }
     }
 
-    //--------//
-    // browse //
-    //--------//
-    private void browse ()
+    //----------//
+    // getTasks //
+    //----------//
+    private Collection getTasks ()
     {
+        List<Callable> callables = new ArrayList<Callable>();
+
         // Browse desired sheets in parallel
         for (String name : sheetNames) {
-            File file = new File(name);
+            final File file = new File(name);
 
-            // We do not register the sheet target, since there may be several
-            // in a row.  But we perform all steps through the desired step
-            targetStep.performParallel(null, file);
-
-            //            // Batch part?
-            //            if (batchMode) {
-            //                // Do we have to write down the score?
-            //                if (writeScore) {
-            //                    ScoreManager.getInstance()
-            //                                .exportAll();
-            //                }
-            //
-            //                // Dispose allocated stuff
-            //                SheetManager.getInstance()
-            //                            .closeAll();
-            //                ScoreManager.getInstance()
-            //                            .closeAll();
-            //            }
+            // Perform desired step on each sheet in parallel
+            callables.add(
+                Executors.callable(
+                    new Runnable() {
+                            public void run ()
+                            {
+                                targetStep.performSerial(null, file);
+                            }
+                        }));
         }
 
         // Browse desired scripts in parallel
         for (String name : scriptNames) {
             // Run each script in parallel
             final String scriptName = name;
-            OmrExecutors.getLowExecutor()
-                        .execute(
-                new Runnable() {
-                        public void run ()
-                        {
-                            long start = System.currentTimeMillis();
-                            File file = new File(scriptName);
-                            logger.info("Loading script file " + file + " ...");
+            callables.add(
+                Executors.callable(
+                    new Runnable() {
+                            public void run ()
+                            {
+                                long start = System.currentTimeMillis();
+                                File file = new File(scriptName);
+                                logger.info(
+                                    "Loading script file " + file + " ...");
 
-                            try {
-                                final Script script = ScriptManager.getInstance()
-                                                                   .load(
-                                    new FileInputStream(file));
-                                script.dump();
-                                script.run();
-                            } catch (FileNotFoundException ex) {
-                                logger.warning(
-                                    "Cannot find script file " + file);
+                                try {
+                                    final Script script = ScriptManager.getInstance()
+                                                                       .load(
+                                        new FileInputStream(file));
+                                    script.run();
+                                } catch (FileNotFoundException ex) {
+                                    logger.warning(
+                                        "Cannot find script file " + file);
+                                }
+
+                                long stop = System.currentTimeMillis();
+                                logger.info(
+                                    "Script file " + file + " run in " +
+                                    (stop - start) + " ms");
                             }
-
-                            long stop = System.currentTimeMillis();
-                            logger.info(
-                                "Script file " + file + " run in " +
-                                (stop - start) + " ms");
-                        }
-                    });
+                        }));
         }
+
+        return callables;
     }
 
     //-------------//
@@ -641,7 +638,7 @@ public class Main
     {
         // First parse the provided arguments if any
         parseArguments(args);
-        
+
         // Then, preload the JAI class so image operations are ready
         JaiLoader.preload();
 
@@ -662,20 +659,27 @@ public class Main
             OmrExecutors.getLowExecutor()
                         .execute(
                 new Runnable() {
-                		@Implement(Runnable.class)
-                    	public void run ()
+                        @Implement(Runnable.class)
+                        public void run ()
                         {
                             ScoreExporter.preloadJaxbContext();
                         }
                     });
+        }
 
-            // Do we have sheet or script actions specified?
-            if ((sheetNames.size() > 0) || (scriptNames.size() > 0)) {
-                browse();
+        // Perform sheet and script actions
+        if ((sheetNames.size() > 0) || (scriptNames.size() > 0)) {
+            try {
+                OmrExecutors.getLowExecutor()
+                            .invokeAll(getTasks());
+            } catch (InterruptedException ex) {
+                logger.warning("Error while running sheets & scripts", ex);
             }
-        } else {
-            logger.info("Batch processing");
-            browse();
+        }
+
+        // Batch closing
+        if (batchMode) {
+            OmrExecutors.shutdown();
         }
     }
 
