@@ -34,6 +34,7 @@ import omr.sheet.Sheet;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.*;
@@ -126,7 +127,7 @@ public class SymbolsEditor
             view,
             symbolsBuilder,
             new ActionListener() {
-                    @Override
+                    @Implement(ActionListener.class)
                     public void actionPerformed (ActionEvent e)
                     {
                         view.colorizeAllGlyphs();
