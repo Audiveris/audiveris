@@ -109,7 +109,9 @@ public class ScriptManager
                        OutputStream output)
     {
         try {
-            logger.info("Storing " + script);
+            if (logger.isFineEnabled()) {
+                logger.fine("Storing " + script);
+            }
 
             Marshaller m = getJaxbContext()
                                .createMarshaller();

@@ -127,7 +127,10 @@ public class ScriptController
                         final Script script = ScriptManager.getInstance()
                                                            .load(
                             new FileInputStream(file));
-                        script.dump();
+
+                        if (logger.isFineEnabled()) {
+                            script.dump();
+                        }
 
                         // Remember (even across runs) the parent directory
                         constants.initScriptDir.setValue(file.getParent());

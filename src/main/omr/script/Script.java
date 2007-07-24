@@ -89,17 +89,22 @@ public class Script
     //----------//
     // isStored //
     //----------//
+    /**
+     * Check whether the script is consistent with its backup on disk
+     *
+     * @return true if OK
+     */
     public boolean isStored ()
     {
-//        logger.info(
-//            "tasks.size=" + tasks.size() + " storedTasksNb=" + storedTasksNb);
-
         return tasks.size() == storedTasksNb;
     }
 
     //-----------//
     // setStored //
     //-----------//
+    /**
+     * Flag the script as being currently consistent with its backup
+     */
     public void setStored ()
     {
         storedTasksNb = tasks.size();
@@ -129,7 +134,10 @@ public class Script
     public void addTask (Task task)
     {
         tasks.add(task);
-        logger.info("Script: added task " + task);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Script: added task " + task);
+        }
     }
 
     //------//
@@ -157,9 +165,11 @@ public class Script
      */
     public void run ()
     {
-        logger.info(
-            "Running " + this +
-            ((sheet != null) ? (" on sheet " + sheet.getRadix()) : ""));
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "Running " + this +
+                ((sheet != null) ? (" on sheet " + sheet.getRadix()) : ""));
+        }
 
         // Make sheet concrete
         if (sheet == null) {
@@ -182,12 +192,17 @@ public class Script
         try {
             for (Task task : tasks) {
                 // Actually run this task
-                logger.info(
-                    "Launching " + task + " on sheet " + sheet.getRadix());
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Launching " + task + " on sheet " + sheet.getRadix());
+                }
+
                 task.run(sheet);
             }
 
-            logger.info("All tasks launched on sheet " + sheet.getRadix());
+            if (logger.isFineEnabled()) {
+                logger.fine("All tasks launched on sheet " + sheet.getRadix());
+            }
 
             // Kludge, to put the Glyphs tab on top of all others.
             SwingUtilities.invokeLater(
@@ -200,7 +215,8 @@ public class Script
                     });
 
             // Flag the active script as up-to-date
-            sheet.getScript().setStored();
+            sheet.getScript()
+                 .setStored();
         } catch (StepException ex) {
             logger.warning("Task aborted", ex);
         }

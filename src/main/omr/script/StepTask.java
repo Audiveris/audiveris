@@ -67,10 +67,8 @@ public class StepTask
         if (!sheet.getSheetSteps()
                   .isDone(step)) {
             step.performSerial(sheet, null);
-//            sheet.getSheetSteps()
-//                 .doit(step);
-        } else {
-            logger.info(this + " already done");
+        } else if (logger.isFineEnabled()) {
+            logger.fine(this + " already done");
         }
     }
 
