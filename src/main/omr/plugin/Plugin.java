@@ -24,6 +24,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Plugin 
-{ 
+{
 	PluginType type() default PluginType.DEFAULT; 
 }
