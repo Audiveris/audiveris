@@ -181,14 +181,14 @@ public class Sheet
         this();
 
         if (logger.isFineEnabled()) {
-            logger.fine("creating Sheet form image " + imageFile);
+            logger.fine("creating Sheet from image " + imageFile);
         }
 
         try {
             // We make sure we have a canonical form for the file name
             this.imageFile = imageFile.getCanonicalFile();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.warning(ex.toString(), ex);
         }
 
         // Load this image picture
