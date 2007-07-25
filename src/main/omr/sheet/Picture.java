@@ -492,13 +492,13 @@ public class Picture
         ///            return dataBuffer.getElem(x + (y * dimensionWidth));
     }
 
-    //------------------//
+    //--------------------//
     // getAsBufferedImage //
-    //------------------//
+    //--------------------//
     /**
      * Return a copy of the underlying image as a buffered image.
      *
-     * @return
+     * @return the proper buffered image
      */
     public final BufferedImage getAsBufferedImage ()
     {
