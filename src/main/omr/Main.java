@@ -47,13 +47,10 @@ import javax.swing.*;
  * <dt> <b>-batch</b> </dt> <dd> to run in batch mode, with no user
  * interface. </dd>
  *
- * <dt> <b>-write</b> </dt> <dd> to specify that the resulting score has to be
- * written down once the specified step has been reached. This feature is
- * available in batch mode only. </dd>
- *
- * <dt> <b>-save SAVEPATH</b> </dt> <dd> to specify the directory where score
- * output files are saved. This is meant for batch mode, since in interactive
- * mode, the user is presented a file chooser dialog.</dd>
+ * <dt> <b>-step STEPNAME</b> </dt> <dd> to run till the specified
+ * step. 'STEPNAME' can be any one of the step names (the case is irrelevant) as
+ * defined in the {@link omr.step.Step} class. This step will be performed on
+ * each sheet referenced from the command line.</dd>
  *
  * <dt> <b>-sheet (SHEETNAME | &#64;SHEETLIST)+</b> </dt> <dd> to specify some
  * sheets to be read, either by naming the image file or by referencing (flagged
@@ -63,11 +60,7 @@ import javax.swing.*;
  *
  * <dt> <b>-script (SCRIPTNAME | &#64;SCRIPTLIST)+</b> </dt> <dd> to specify some
  * scripts to be read, using the same mechanism than sheets. These script files
- * contain tasks saved during a previous run.</dd>
- *
- * <dt> <b>-step STEPNAME</b> </dt> <dd> to run till the specified
- * step. 'STEPNAME' can be any one of the step names (the case is irrelevant) as
- * defined in the {@link omr.step.Step} class.
+ * contain actions recorded during a previous run.</dd>
  *
  * </dd> </dl>
  *
@@ -131,9 +124,6 @@ public class Main
 
     /** Batch mode if any */
     private boolean batchMode = false;
-
-    /** Request to write score if any */
-    private boolean writeScore = false;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -224,32 +214,6 @@ public class Main
     public static File getIconsFolder ()
     {
         return new File(getHomeFolder(), ICONS_NAME);
-    }
-
-    //-----------------//
-    // setOutputFolder //
-    //-----------------//
-    /**
-     * Set the folder defined for output/saved files
-     *
-     * @param saveDir the directory for output
-     */
-    public static void setOutputFolder (String saveDir)
-    {
-        constants.savePath.setValue(saveDir);
-    }
-
-    //-----------------//
-    // getOutputFolder //
-    //-----------------//
-    /**
-     * Report the folder defined for output/saved files
-     *
-     * @return the directory for output
-     */
-    public static String getOutputFolder ()
-    {
-        return constants.savePath.getValue();
     }
 
     //--------------//
@@ -494,7 +458,6 @@ public class Main
         final int STEP = 0;
         final int SHEET = 1;
         final int SCRIPT = 2;
-        final int SAVE = 3;
         boolean   paramNeeded = false; // Are we expecting a param?
         int       status = SHEET; // By default
         String    currentCommand = null;
@@ -518,9 +481,6 @@ public class Main
                 } else if (token.equalsIgnoreCase("-batch")) {
                     batchMode = true;
                     paramNeeded = false;
-                } else if (token.equalsIgnoreCase("-write")) {
-                    writeScore = true;
-                    paramNeeded = false;
                 } else if (token.equalsIgnoreCase("-step")) {
                     status = STEP;
                     paramNeeded = true;
@@ -529,9 +489,6 @@ public class Main
                     paramNeeded = true;
                 } else if (token.equalsIgnoreCase("-script")) {
                     status = SCRIPT;
-                    paramNeeded = true;
-                } else if (token.equalsIgnoreCase("-save")) {
-                    status = SAVE;
                     paramNeeded = true;
                 } else {
                     printCommandLine(args);
@@ -545,15 +502,7 @@ public class Main
                 switch (status) {
                 case STEP :
                     // Read a step name
-                    targetStep = null;
-
-                    for (Step step : Step.values()) {
-                        if (token.equalsIgnoreCase(step.toString())) {
-                            targetStep = step;
-
-                            break;
-                        }
-                    }
+                    targetStep = Step.valueOf(token.toUpperCase());
 
                     if (targetStep == null) {
                         printCommandLine(args);
@@ -579,21 +528,6 @@ public class Main
                     paramNeeded = false;
 
                     break;
-
-                case SAVE :
-
-                    // Make sure that it ends with proper separator
-                    if (!(token.endsWith("\\") || token.endsWith("/"))) {
-                        token = token + "/";
-                    }
-
-                    constants.savePath.setValue(token);
-
-                    // By default, sheets are now expected
-                    status = SHEET;
-                    paramNeeded = false;
-
-                    break;
                 }
             }
         }
@@ -608,8 +542,6 @@ public class Main
         // Results
         if (logger.isFineEnabled()) {
             logger.fine("batchMode=" + batchMode);
-            logger.fine("writeScore=" + writeScore);
-            logger.fine("savePath=" + constants.savePath.getValue());
             logger.fine("targetStep=" + targetStep);
             logger.fine("sheetNames=" + sheetNames);
             logger.fine("scriptNames=" + scriptNames);
@@ -701,8 +633,6 @@ public class Main
            .append(getToolName())
            .append(" [-help]")
            .append(" [-batch]")
-           .append(" [-write]")
-           .append(" [-save SAVEPATH]")
            .append(" [-step STEPNAME]")
            .append(" [-sheet (SHEETNAME|@SHEETLIST)+]")
            .append(" [-script (SCRIPTNAME|@SCRIPTLIST)+]");
@@ -714,7 +644,7 @@ public class Main
         for (Step step : Step.values()) {
             buf.append(
                 String.format(
-                    "%n%-17s : %s",
+                    "%n%-11s : %s",
                     step.toString().toUpperCase(),
                     step.getDescription()));
         }
@@ -737,11 +667,6 @@ public class Main
         Constant.String localeCountry = new Constant.String(
             "US",
             "Locale country to be used in the whole application (US, FR, ...)");
-
-        /** Directory for saved files, defaulted to 'save' audiveris subdir */
-        Constant.String savePath = new Constant.String(
-            "",
-            "Directory for saved files");
 
         /** Utility constant */
         Constant.String toolName = new Constant.String(
