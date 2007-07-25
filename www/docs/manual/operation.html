@@ -110,10 +110,10 @@
 	    <DD>Audiveris provides many ways to inspect intermediate results,
 		through specific graphic charts, dedicated sheet views,
 		context-dependent tables, etc.</DD>
-	    <DD>There is (there should be) no hard-coded constant in Audiveris
-		code. All values are defined as "<I>logical constants</I>" and
-		backed up on disk. A general purpose interface is available in
-		interactive mode to browse these constants and modify them if so
+	    <DD>There is no hard-coded constant in Audiveris code. All values
+		are defined as "<I>logical constants</I>" and backed up on
+		disk. A general purpose interface is available in interactive
+		mode to browse these constants and modify them if so
 		desired. Any new value is then made available for the current
 		and the next runs of Audiveris.</DD>
 	</DL>
@@ -234,7 +234,8 @@ SCORE       : Translate glyphs to score items
 		    <TD>Display histogram of run lengths for foreground (black)
 			and background (white) pixels. This gives the general
 			scale (interline value) of the sheet.  Here is <A
-			HREF="#SCALE_PLOT">a scale plot example</A>.
+			HREF="#SCALE_PLOT">a scale plot example produced by the
+			SCALE step</A>.
 		    </TD>
 		</TR>
 		<TR>
@@ -242,23 +243,26 @@ SCORE       : Translate glyphs to score items
 		    <TD>Display histogram of measured slopes of longest
 			horizontal sticks. This gives the angle to de-skew the
 			image.  Here is <A HREF="#SKEW_PLOT">a skew plot
-			example</A>.
+			example produced by the SKEW step</A>.
 		    </TD>
 		</TR>
 		<TR>
 		    <TH>Line Plot</TH>
 		    <TD>Display histogram of horizontal projections of black
 			pixels. This indicates area for each staff line.  Here
-			is <A HREF="#LINE_PLOT">a line plot example</A>.
+			is <A HREF="#LINE_PLOT">a line plot example produced by
+			the LINES step</A>.
 		    </TD>
 		</TR>
 		<TR>
 		    <TH>Close Sheet</TH>
-		    <TD>Close the current sheet</TD>
+		    <TD>Close the current sheet, and release all resources
+			linked to it.</TD>
 		</TR>
 		<TR>
 		    <TH WIDTH="120px">Exit</TH>
-		    <TD>Exit Audiveris application</TD>
+		    <TD>Exit the application. If you have pending unsaved
+			scripts, you'll be prompted to save them.</TD>
 		</TR>
 	    </TABLE>
 	    
@@ -292,24 +296,7 @@ SCORE       : Translate glyphs to score items
 	    
 	    <TABLE WIDTH=100% BORDER=1>
 		<TR>
-		    <TH WIDTH="120px">History</TH>
-		    <TD>List the more recent score files you've written</TD>
-		</TR>
-		<TR>
-		    <TH>Open Score</TH>
-		    <TD>Select a score file for reading. A score file contains
-			in a binary proprietary format the information built
-			while processing the original sheet. Re-loading such a
-			score file saves you the initial processing, when
-			getting back to the final steps</TD>
-		</TR>
-		<TR>
-		    <TH>Save Score</TH>
-		    <TD>Save the current information about the current score,
-			for potential later reload</TD>
-		</TR>
-		<TR>
-		    <TH>View Score</TH>
+		    <TH>Browse Score</TH>
 		    <TD>Display and browse the hierarchical information about
 			the current score</TD>
 		</TR>
@@ -318,8 +305,57 @@ SCORE       : Translate glyphs to score items
 		    <TD>Print main score information on the output console</TD>
 		</TR>
 		<TR>
-		    <TH>Dump all Scores</TH>
-		    <TD>Dump information about every score currently loaded</TD>
+		    <TH>Store in XML</TH>
+		    <TD>Save the current score,, using MusicXML format.</TD>
+		</TR>
+	    </TABLE>
+	    
+	    <A NAME="VIEWS">
+		<H3>Views</H3>
+	    </A>
+	    
+	    <P> These commands define switches used in different views, from top
+		to bottom: score view, sheet views, log pane</P>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH>Show score Voices</TH>
+		    <TD>In the score view, display the different voices found,
+			as colored lines between the participating notes</TD>
+		</TR>
+		<TR>
+		    <TH>Show score Slots</TH>
+		    <TD>In the score view, display the vertical blue lines that
+			indicate time slots</TD>
+		</TR>
+		<TR>
+		    <TH>Show score Marks</TH>
+		    <TD>In the score view, display the marks that indicate
+			insertion of forwards</TD>
+		</TR>
+		<TR>
+		    <TH>Show stick Lines</TH>
+		    <TD>In the sheet symbol view, display the mean line of every
+			selected stick.</TD>
+		</TR>
+		<TR>
+		    <TH>Show slur Circles</TH>
+		    <TD>In the sheet symbol view, display the approximating
+			circle arc of any selected slur.</TD>
+		</TR>
+		<TR>
+		    <TH>Show original staff lines</TH>
+		    <TD>In the sheet LINES view, display in yellow the original
+			staff lines that have been removed</TD>
+		</TR>
+		<TR>
+		    <TH>Show original ledger lines</TH>
+		    <TD>In the sheet HORIZONTALS view, display in yellow the original
+			ledger lines that have been removed</TD>
+		</TR>
+		<TR>
+		    <TH>Clear log</TH>
+		    <TD>Erase all lines in the log pane</TD>
 		</TR>
 	    </TABLE>
 	    
@@ -441,8 +477,9 @@ SCORE       : Translate glyphs to score items
 	    histogram the white interval between two staff lines. The interline
 	    value is thus defined as the sum of these two values.</P>
 	
-	<P> This step has no related sheet view. But, using the menu <I>Sheet
-	    &gt; Scale Plot</I>, we get a separate chart as displayed below:
+	<P> This step has no related sheet view. But, using the
+	    menu <I><U>File</U> &gt; <U>Scale Plot</U></I>, we get a separate
+	    chart as displayed below:
 	    <UL>
 		<LI>The red histogram describes the lengths of the black runs,
 		    with a sharp peak on value 3 for this example.</LI>
@@ -502,8 +539,8 @@ SCORE       : Translate glyphs to score items
 	
 	<IMG SRC="../images/skew.png" TITLE="Sections for skew computation" />
 	
-	<P> We can also get the following chart, by using the menu <I>Sheet &gt;
-	    Skew Plot</I>:</P>
+	<P> We can also get the following chart, by using the
+	    menu <I><U>File</U> &gt; <U>Skew Plot</U></I>:</P>
 	
 	<A NAME="SKEW_PLOT">
 	    <IMG SRC="../images/slope-chart.png" TITLE="Histogram of main
@@ -518,12 +555,13 @@ SCORE       : Translate glyphs to score items
 	    and "remove" them from the sheet.</P>
 	
 	<P> The detection is driven by the horizontal projection of foreground
-	    (black) pixels. A dedicated chart, displayed from menu <I>Sheet &gt;
-	    Line Plot</I>, makes this more obvious as can be seen on the
-	    following chart. We use a threshold (at roughly half the maximum
-	    histogram value, and indicated by a vertical red line on the chart),
-	    and every regular series of 5 peaks above this threshold defines the
-	    5 stick areas supposed to contain one staff line each.</P>
+	    (black) pixels. A dedicated chart, displayed from
+	    menu <I><U>File</U> &gt; <U>Line Plot</U></I>, makes this more
+	    obvious as can be seen on the following chart. We use a threshold
+	    (at roughly half the maximum histogram value, and indicated by a
+	    vertical red line on the chart), and every regular series of 5 peaks
+	    above this threshold defines the 5 stick areas supposed to contain
+	    one staff line each.</P>
 	
 	<A NAME="LINE_PLOT">
 	    <IMG SRC="../images/line-chart.png" TITLE="Histogram of horizontal
@@ -791,7 +829,7 @@ SCORE       : Translate glyphs to score items
 	    <OL>
 		<LI>The <B>Sheet</B> selector. It allows to select one or
 		    several sheets from the base at hand (which by default is
-		    the global <I>/train/sheets</I> directory</LI>
+		    the global <I><U>/train/sheets</U></I> directory</LI>
 		<LI>The <B>Shape</B> selector. Only the shapes that are
 		    contained in the selected sheets in the Sheet selector are
 		    displayed here. And you can select some or all shapes form
@@ -826,7 +864,7 @@ SCORE       : Translate glyphs to score items
 	</P>
 	
 	<P> By default, this user interface looks for glyphs files under
-	    the <I>/train/sheets</I> directory. However, from
+	    the <I><U>/train/sheets</U></I> directory. However, from
 	    the <B>Trainers</B> interface, you can ask to <B>Verify</B> glyphs
 	    (see that interface). In that latter case, the <B>Training
 	    Material</B> interface is automatically loaded with the
@@ -854,8 +892,9 @@ SCORE       : Translate glyphs to score items
 		<P> To build the Core part out of the whole set of recorded
 		    glyphs, it suffices to define the maximum number of similar
 		    shapes (20 is a good guess) and press the "Select Core"
-		    button. The <I>/train/core</I> directory will be emptied and
-		    repopulated by the core selected glyph files.</P>
+		    button. The <I><U>/train/core</U></I> directory will be
+		    emptied and repopulated by the core selected glyph
+		    files.</P>
 		<DIV CLASS="warningmessage">
 		    <I>Nota</I>: this notion of Core may well be dropped in a
 		    future version, since although it saves computing time in
@@ -916,8 +955,9 @@ SCORE       : Translate glyphs to score items
 	    <H3>Options</H3>
 	</A>
 	
-	<P> This interface, accessible from <I>Tool | Options</I>, allows to
-	    interactively display and modify data related to Audiveris classes:
+	<P> This interface, accessible from <I><U>Tool</U>
+	    &gt; <U>Options</U></I>, allows to interactively display and modify
+	    data related to Audiveris classes:
 	    <UL>
 		<LI>Logging level</LI>
 		<LI>Logical constants</LI>
@@ -1001,14 +1041,11 @@ SCORE       : Translate glyphs to score items
 		    and contains the constant name, then its related value is
 		    taken for the constant. This last file is not meant to be
 		    manually edited by a user, it is automatically updated each
-		    time the user uses the <I>Options</I> interface to modify a
-		    constant value, thus making the modification persistent for
-		    the subsequent runs of the application.</LI>
+		    time the user uses the <I><U>Options</U></I> interface to
+		    modify a constant value, thus making the modification
+		    persistent for the subsequent runs of the application.</LI>
 	    </OL>
 	</P>
-	
-	<BR/> <BR/> <HR/>
-	<I>End of Operation Manual</I>
 	
     </BODY>
 </HTML>
