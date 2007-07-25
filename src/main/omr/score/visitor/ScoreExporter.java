@@ -44,7 +44,6 @@ import omr.score.Wedge;
 import static omr.score.visitor.MusicXML.*;
 
 import omr.util.Logger;
-import omr.util.OmrExecutors;
 import omr.util.TreeNode;
 
 import proxymusic.*;
@@ -54,7 +53,6 @@ import proxymusic.util.Marshalling;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.Executor;
 
 import javax.xml.bind.JAXBException;
 
