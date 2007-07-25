@@ -95,6 +95,22 @@ public class ScriptController
         return storeAction;
     }
 
+    //-------------//
+    // checkStored //
+    //-------------//
+    public void checkStored (Script script)
+    {
+        if (!script.isStored() && constants.closeConfirmation.getValue()) {
+            int answer = JOptionPane.showConfirmDialog(
+                null,
+                "Save script for sheet " + script.getSheet().getRadix() + "?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                storeScript(script);
+            }
+        }
+    }
+
     //--------------//
     // selectScript //
     //--------------//
@@ -105,7 +121,7 @@ public class ScriptController
     {
         // Let the user select a script file
         final JFileChooser fc = new JFileChooser(
-            constants.initScriptDir.getValue());
+            constants.defaultScriptDirectory.getValue());
         fc.addChoosableFileFilter(
             new FileFilter(
                 "Score script files",
@@ -114,7 +130,7 @@ public class ScriptController
         if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             final SwingWorker<Void> worker = new SwingWorker<Void>() {
                 // This runs on worker's thread
-            	@Implement(SwingWorker.class)
+                @Implement(SwingWorker.class)
                 @Override
                 public Void construct ()
                 {
@@ -133,7 +149,8 @@ public class ScriptController
                         }
 
                         // Remember (even across runs) the parent directory
-                        constants.initScriptDir.setValue(file.getParent());
+                        constants.defaultScriptDirectory.setValue(
+                            file.getParent());
                         script.run();
                     } catch (FileNotFoundException ex) {
                         logger.warning("Cannot find script file " + file);
@@ -159,11 +176,12 @@ public class ScriptController
     {
         // Where do we write the script file?
         File         xmlFile = new File(
-            Main.getOutputFolder(),
+            constants.defaultScriptDirectory.getValue(),
             script.getSheet().getRadix() + ScriptManager.SCRIPT_EXTENSION);
 
         // Ask user confirmation: let the user select a script output file
-        JFileChooser fc = new JFileChooser(Main.getOutputFolder());
+        JFileChooser fc = new JFileChooser(
+            constants.defaultScriptDirectory.getValue());
         fc.addChoosableFileFilter(
             new FileFilter(
                 "Script files",
@@ -177,7 +195,7 @@ public class ScriptController
             xmlFile = fc.getSelectedFile();
 
             // Remember (even across runs) the selected directory
-            Main.setOutputFolder(xmlFile.getParent());
+            constants.defaultScriptDirectory.setValue(xmlFile.getParent());
         } else {
             return;
         }
@@ -210,22 +228,6 @@ public class ScriptController
             };
 
             worker.start();
-        }
-    }
-
-    //-------------//
-    // checkStored //
-    //-------------//
-    public void checkStored (Script script)
-    {
-        if (!script.isStored() && constants.closeConfirmation.getValue()) {
-            int answer = JOptionPane.showConfirmDialog(
-                null,
-                "Save script for sheet " + script.getSheet().getRadix() + "?");
-
-            if (answer == JOptionPane.YES_OPTION) {
-                storeScript(script);
-            }
         }
     }
 
@@ -295,10 +297,10 @@ public class ScriptController
     private static final class Constants
         extends ConstantSet
     {
-        /** Default directory for selection of script files */
-        Constant.String initScriptDir = new Constant.String(
+        /** Default directory for saved scripts */
+        Constant.String defaultScriptDirectory = new Constant.String(
             "",
-            "Default directory for selection of script files");
+            "Default directory for saved scripts");
 
         /** User confirmation for closing unsaved script */
         Constant.Boolean closeConfirmation = new Constant.Boolean(
