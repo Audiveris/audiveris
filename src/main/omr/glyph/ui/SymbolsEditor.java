@@ -11,7 +11,6 @@ package omr.glyph.ui;
 
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
-import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.GlyphsBuilder;
@@ -76,14 +75,8 @@ public class SymbolsEditor
     /** Evaluator to check for NOISE glyphs */
     private final Evaluator evaluator = GlyphNetwork.getInstance();
 
-    /** Glyph builder */
+    /** Glyphs builder */
     private final GlyphsBuilder glyphsBuilder;
-
-    /** Glyph inspector */
-    private final GlyphInspector inspector;
-
-    /** Repository of known glyphs */
-    private final GlyphRepository repository = GlyphRepository.getInstance();
 
     /** Related Lag view */
     private GlyphLagView view;
@@ -114,9 +107,8 @@ public class SymbolsEditor
         this.sheet = sheet;
         this.symbolsBuilder = symbolsBuilder;
 
-        // Link with glyph builder & glyph inspector
+        // Link with glyph builder
         glyphsBuilder = sheet.getGlyphsBuilder();
-        inspector = sheet.getGlyphInspector();
 
         view = new MyView(symbolsBuilder.getLag());
         view.setLocationSelection(
