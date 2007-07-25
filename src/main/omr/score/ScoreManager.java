@@ -11,6 +11,9 @@ package omr.score;
 
 import omr.Main;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.score.visitor.ScoreExporter;
 
 import omr.script.ExportTask;
@@ -31,6 +34,9 @@ import java.io.*;
 public class ScoreManager
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreManager.class);
@@ -102,24 +108,27 @@ public class ScoreManager
         // Where do we write the score xml file?
         if (xmlFile == null) {
             xmlFile = new File(
-                Main.getOutputFolder(),
+                constants.defaultScoreDirectory.getValue(),
                 score.getRadix() + SCORE_EXTENSION);
 
             // Ask user confirmation, if Gui available
             if (Main.getGui() != null) {
                 // Let the user select a score output file
                 FileFilter filter = new FileFilter(
-                        "XML files",
-                        new String[] { SCORE_EXTENSION });
-                xmlFile = UIUtilities.fileChooser(true, 
-                	null, xmlFile.getPath(), filter);
+                    "XML files",
+                    new String[] { SCORE_EXTENSION });
+                xmlFile = UIUtilities.fileChooser(
+                    true,
+                    null,
+                    xmlFile.getPath(),
+                    filter);
             }
         }
 
         if (xmlFile != null) {
-        	// Remember (even across runs) the selected directory
-        	Main.setOutputFolder(xmlFile.getParent());
-        	
+            // Remember (even across runs) the selected directory
+            constants.defaultScoreDirectory.setValue(xmlFile.getParent());
+
             // Make sure the folder exists
             File folder = new File(xmlFile.getParent());
 
@@ -135,5 +144,19 @@ public class ScoreManager
             // Actually export the score material
             new ScoreExporter(score, xmlFile);
         }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        /** Default directory for saved scores */
+        Constant.String defaultScoreDirectory = new Constant.String(
+            "",
+            "Default directory for saved scores");
     }
 }
