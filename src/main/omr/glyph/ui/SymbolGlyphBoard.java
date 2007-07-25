@@ -23,6 +23,7 @@ import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
 import static omr.ui.field.SpinnerUtilities.*;
 
+import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Predicate;
 
@@ -108,6 +109,7 @@ class SymbolGlyphBoard
 
     /** Predicate for symbol glyphs */
     private Predicate<Glyph> symbolPredicate = new Predicate<Glyph>() {
+        @Implement(Predicate.class)
         public boolean check (Glyph glyph)
         {
             return (glyph != null) && (glyph.getId() >= firstSymbolId) &&
