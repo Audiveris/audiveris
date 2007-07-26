@@ -11,6 +11,7 @@ package omr.util;
 
 import omr.Main;
 
+import omr.step.LogStepMonitorHandler;
 import omr.ui.MainGui;
 
 import java.util.logging.*;
@@ -37,7 +38,8 @@ public class LogGuiHandler
      * Called when the handler must be closed. It's a void routine for the time
      * being.
      */
-    public void close ()
+    @Override
+	public void close ()
     {
     }
 
@@ -47,7 +49,8 @@ public class LogGuiHandler
     /**
      * Flush any buffered output. It's a void routine for the time being.
      */
-    public void flush ()
+    @Override
+	public void flush ()
     {
     }
 
@@ -59,13 +62,15 @@ public class LogGuiHandler
      *
      * @param record the record to be logged
      */
-    public void publish (LogRecord record)
+    @Override
+	public void publish (LogRecord record)
     {
         MainGui gui = Main.getGui();
 
         if (gui != null) {
-            if (!record.getMessage()
-                       .equals("")) {
+        	String message = record.getMessage();
+            if (!message.equals("") &&
+            	!message.equals(LogStepMonitorHandler.FORCE)) {
                 gui.logPane.log(record);
             }
         }
