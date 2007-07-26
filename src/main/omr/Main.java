@@ -334,42 +334,6 @@ public class Main
         return homeFolder;
     }
 
-    //--------//
-    // addRef //
-    //--------//
-    private void addRef (String       ref,
-                         List<String> list)
-    {
-        // The ref may be a plain file name or the name of a pack that lists
-        // ref(s). This is signalled by a starting '@' character in ref
-        if (ref.startsWith("@")) {
-            // File with other refs inside
-            String pack = ref.substring(1);
-
-            try {
-                BufferedReader br = new BufferedReader(new FileReader(pack));
-                String         newRef;
-
-                try {
-                    while ((newRef = br.readLine()) != null) {
-                        addRef(newRef.trim(), list);
-                    }
-
-                    br.close();
-                } catch (IOException ex) {
-                    logger.warning(
-                        "IO error while reading file '" + pack + "'");
-                }
-            } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find file '" + pack + "'");
-            }
-        } else
-        // Plain file name
-        if (ref.length() > 0) {
-            list.add(ref);
-        }
-    }
-
     //----------//
     // getTasks //
     //----------//
@@ -425,6 +389,42 @@ public class Main
         }
 
         return callables;
+    }
+
+    //--------//
+    // addRef //
+    //--------//
+    private void addRef (String       ref,
+                         List<String> list)
+    {
+        // The ref may be a plain file name or the name of a pack that lists
+        // ref(s). This is signalled by a starting '@' character in ref
+        if (ref.startsWith("@")) {
+            // File with other refs inside
+            String pack = ref.substring(1);
+
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(pack));
+                String         newRef;
+
+                try {
+                    while ((newRef = br.readLine()) != null) {
+                        addRef(newRef.trim(), list);
+                    }
+
+                    br.close();
+                } catch (IOException ex) {
+                    logger.warning(
+                        "IO error while reading file '" + pack + "'");
+                }
+            } catch (FileNotFoundException ex) {
+                logger.warning("Cannot find file '" + pack + "'");
+            }
+        } else
+        // Plain file name
+        if (ref.length() > 0) {
+            list.add(ref);
+        }
     }
 
     //-------------//
@@ -575,8 +575,10 @@ public class Main
         JaiLoader.preload();
 
         // Interactive or Batch mode ?
-        if (!batchMode) {
-            logger.fine("Interactive processing");
+        if (batchMode) {
+            logger.info("Running in batch mode");
+        } else {
+            logger.fine("Running in interactive mode");
 
             // UI Look and Feel
             UILookAndFeel.setUI(null);
