@@ -283,73 +283,8 @@
     <!--  D I S T  -->
     <!-- ========= -->
     <target name="dist"
- 	    depends="clean, jar, launcher, javadoc"
+ 	    depends="clean, jar, launcher, javadoc, -dist"
             description="Rebuild and package the whole distribution.">
-
-        <mkdir dir="${dist.dir}"/>
-
-        <!-- Generate the global zip archive -->
-        <zip 
-            destfile="${dist.dir}/${full.name}-${DSTAMP}.zip" >
-
-            <!-- Special build.xml file for NetBeans on top dir-->
-	    <zipfileset dir="${basedir}" includes="build.xml" fullpath="build-for-netbeans.xml"/>
-        
-            <!-- Bin files -->
-            <zipfileset dir="${bin.dir}" prefix="bin"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-        
-            <!-- Jar file -->
-            <zipfileset dir="${dist.dir}"
-                     includes="*.jar"
-                     excludes="${dist.excludes}"
-                     />
-        
-            <!-- lib jar files -->
-            <zipfileset dir="${dist.dir}/lib" prefix="lib"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-            
-            <!-- Source main and test files -->
-            <zipfileset dir="${basedir}/src" prefix="src"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-            
-            <!-- Icons -->
-            <zipfileset dir="${basedir}/icons" prefix="icons"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-
-            <!-- Examples files -->
-            <zipfileset dir="${examples.dir}" prefix="examples"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-
-            <!-- Www + javadoc files -->
-            <zipfileset dir="${www.dir}" prefix="www"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-
-            <!-- Core Train files -->
-            <zipfileset dir="${core.dir}" prefix="train/core"
-			includes="**/*.xml"
-			excludes="${dist.excludes}"
-			/>
-
-            <!-- Sheet Train files -->
-            <zipfileset dir="${sheets.dir}" prefix="train/sheets"
-			includes="**/*.xml"
-			excludes="${dist.excludes}"
-			/>
-
-	</zip>
     </target>
 
     <!-- ============= -->
