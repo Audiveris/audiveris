@@ -87,16 +87,16 @@ public class Script
     //~ Methods ----------------------------------------------------------------
 
     //----------//
-    // isStored //
+    // getSheet //
     //----------//
     /**
-     * Check whether the script is consistent with its backup on disk
+     * Report the sheet this script is linked to
      *
-     * @return true if OK
+     * @return the sheet concerned
      */
-    public boolean isStored ()
+    public Sheet getSheet ()
     {
-        return tasks.size() == storedTasksNb;
+        return sheet;
     }
 
     //-----------//
@@ -111,16 +111,22 @@ public class Script
     }
 
     //----------//
-    // getSheet //
+    // isStored //
     //----------//
     /**
-     * Report the sheet this script is linked to
+     * Check whether the script is consistent with its backup on disk
      *
-     * @return the sheet concerned
+     * @return true if OK
      */
-    public Sheet getSheet ()
+    public boolean isStored ()
     {
-        return sheet;
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "tasks.size()=" + tasks.size() + " storedTasksNb=" +
+                storedTasksNb);
+        }
+
+        return tasks.size() <= storedTasksNb;
     }
 
     //---------//
@@ -203,6 +209,12 @@ public class Script
             if (logger.isFineEnabled()) {
                 logger.fine("All tasks launched on sheet " + sheet.getRadix());
             }
+        } catch (Exception ex) {
+            logger.warning("Task aborted", ex);
+        } finally {
+            // Flag the active script as up-to-date
+            sheet.getScript()
+                 .setStored();
 
             // Kludge, to put the Glyphs tab on top of all others.
             SwingUtilities.invokeLater(
@@ -213,12 +225,6 @@ public class Script
                                  .selectTab("Glyphs");
                         }
                     });
-
-            // Flag the active script as up-to-date
-            sheet.getScript()
-                 .setStored();
-        } catch (StepException ex) {
-            logger.warning("Task aborted", ex);
         }
     }
 
