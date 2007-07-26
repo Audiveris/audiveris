@@ -9,8 +9,6 @@
 //
 package omr.lag;
 
-import omr.sheet.Picture;
-
 import omr.util.Implement;
 import omr.util.Logger;
 
@@ -118,12 +116,10 @@ public class LagReader
                                int pos)
     {
         if (swapNeeded) {
-            int temp = pos;
-            pos = coord;
-            coord = temp;
+            return source.getPixel(pos, coord);
+        } else {
+            return source.getPixel(coord, pos);
         }
-
-        return source.getPixel(coord, pos);
     }
 
     //---------//
