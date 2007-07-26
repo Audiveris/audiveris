@@ -21,6 +21,7 @@ import java.util.logging.*;
  * logger instance, either programmatically or in a properties file.
  *
  * @author Brenton Partridge
+ * @version $Id$
  */
 public class LogStepMonitorHandler
     extends Handler
