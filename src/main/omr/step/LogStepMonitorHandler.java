@@ -11,8 +11,6 @@ package omr.step;
 
 import java.util.logging.*;
 
-import javax.swing.JProgressBar;
-
 /**
  * Class <code>LogStepMonitorHandler</code> provides a connection between
  * the default step monitor's progress bar and any INFO messages
@@ -27,12 +25,15 @@ import javax.swing.JProgressBar;
 public class LogStepMonitorHandler
     extends Handler
 {
+	public static final String FORCE = "Force StepMonitor Increment";
+	
     //~ Methods ----------------------------------------------------------------
 
     //-------//
     // close //
     //-------//
-    public void close ()
+    @Override
+	public void close ()
         throws SecurityException
     {
     }
@@ -40,31 +41,22 @@ public class LogStepMonitorHandler
     //-------//
     // flush //
     //-------//
-    public void flush ()
+    @Override
+	public void flush ()
     {
     }
 
     //---------//
     // publish //
     //---------//
-    public void publish (final LogRecord record)
+    @Override
+	public void publish (final LogRecord record)
     {
-        if (record.getLevel()
-                  .equals(Level.INFO)) {
-            final StepMonitor monitor = Step.getMonitor();
-
+        if (record.getLevel().equals(Level.INFO) ||
+        	record.getMessage().equals(FORCE)) {
+            StepMonitor monitor = Step.getMonitor();
             if (monitor != null) {
-                javax.swing.SwingUtilities.invokeLater(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                JProgressBar bar = monitor.getComponent();
-
-                                if (bar.getValue() > bar.getMinimum()) {
-                                    monitor.animate();
-                                }
-                            }
-                        });
+                monitor.animate();
             }
         }
     }
