@@ -84,6 +84,113 @@ public class ScorePart
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------------------//
+    // getDurationDivisor //
+    //--------------------//
+    /**
+     * Report the duration divisor for this part
+     * @return the divisor for this part, or null if not computable
+     */
+    public Integer getDurationDivisor ()
+    {
+        if (durationDivisor == null) {
+            score.accept(new ScoreReductor());
+        }
+
+        return durationDivisor;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Assign an id to this part
+     *
+     * @param id the assigned id
+     */
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the id of this part
+     *
+     * @return the part id
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
+    //--------------//
+    // isMultiStaff //
+    //--------------//
+    /**
+     * Report whether there are more than a single staff in this part
+     *
+     * @return true if this part is multi-staff
+     */
+    public boolean isMultiStaff ()
+    {
+        return ids.size() > 1;
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign a name to this part
+     *
+     * @param name the new part name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the assigned name
+     *
+     * @return the part name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //--------//
+    // getPid //
+    //--------//
+    /**
+     * Report a pid string, using format "Pn", where 'n' is the id
+     *
+     * @return the Pid
+     */
+    public String getPid ()
+    {
+        return "P" + id;
+    }
+
+    //-------------//
+    // getStaffIds //
+    //-------------//
+    /**
+     * Report the staff ids for this part
+     *
+     * @return the list of staff ids
+     */
+    public List<Integer> getStaffIds ()
+    {
+        return ids;
+    }
+
     //-------------//
     // addDuration //
     //-------------//
@@ -140,103 +247,13 @@ public class ScorePart
         }
     }
 
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the id of this part
-     *
-     * @return the part id
-     */
-    public int getId ()
-    {
-        return id;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the assigned name
-     *
-     * @return the part name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //--------//
-    // getPid //
-    //--------//
-    /**
-     * Report a pid string, using format "Pn", where 'n' is the id
-     *
-     * @return the Pid
-     */
-    public String getPid ()
-    {
-        return "P" + id;
-    }
-
-    //-------------//
-    // getStaffIds //
-    //-------------//
-    /**
-     * Report the staff ids for this part
-     *
-     * @return the list of staff ids
-     */
-    public List<Integer> getStaffIds ()
-    {
-        return ids;
-    }
-
-    //--------------//
-    // isMultiStaff //
-    //--------------//
-    /**
-     * Report whether there are more than a single staff in this part
-     *
-     * @return true if this part is multi-staff
-     */
-    public boolean isMultiStaff ()
-    {
-        return ids.size() > 1;
-    }
-
     //----------------//
     // resetDurations //
     //----------------//
     public void resetDurations ()
     {
         durations.clear();
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Assign an id to this part
-     *
-     * @param id the assigned id
-     */
-    public void setId (int id)
-    {
-        this.id = id;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign a name to this part
-     *
-     * @param name the new part name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
+        durationDivisor = null;
     }
 
     //------------------//
