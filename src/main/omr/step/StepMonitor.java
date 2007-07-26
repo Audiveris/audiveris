@@ -99,7 +99,7 @@ public class StepMonitor
      *                  bar.  If true, activates an indeterminate or
      *                  pseudo-indeterminate animation.
      */
-    public void animate (final boolean animating)
+    private void animate (final boolean animating)
     {
         animate(animating ? constants.ratio.getValue() : 0);
     }
@@ -111,7 +111,7 @@ public class StepMonitor
      * Sets the progress bar to show a percentage.
      * @param amount percentage, in decimal form, from 0.0 to 1.0
      */
-    public void animate (final double amount)
+    void animate (final double amount)
     {
         SwingUtilities.invokeLater(
             new Runnable() {
@@ -136,7 +136,7 @@ public class StepMonitor
      * the previous percentage value (or above 0 if the bar had been
      * indeterminate).
      */
-    public void animate ()
+    void animate ()
     {
         SwingUtilities.invokeLater(
                                    new Runnable() {
