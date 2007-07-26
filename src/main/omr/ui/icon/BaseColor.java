@@ -1,7 +1,7 @@
 /*
  * BaseColor.java
  *
- * Created on 8 décembre 2006, 17:13
+ * Created on 8 decembre 2006, 17:13
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
