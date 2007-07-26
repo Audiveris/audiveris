@@ -375,15 +375,15 @@ public class Main
                                                                        .load(
                                         new FileInputStream(file));
                                     script.run();
+
+                                    long stop = System.currentTimeMillis();
+                                    logger.info(
+                                        "Script file " + file + " run in " +
+                                        (stop - start) + " ms");
                                 } catch (FileNotFoundException ex) {
                                     logger.warning(
                                         "Cannot find script file " + file);
                                 }
-
-                                long stop = System.currentTimeMillis();
-                                logger.info(
-                                    "Script file " + file + " run in " +
-                                    (stop - start) + " ms");
                             }
                         }));
         }
