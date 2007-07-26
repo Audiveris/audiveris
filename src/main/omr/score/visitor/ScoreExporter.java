@@ -512,13 +512,23 @@ public class ScoreExporter
                 // New Page ? TBD
 
                 // Divisions
-                Divisions divisions = new Divisions();
-                getMeasureAttributes()
-                    .setDivisions(divisions);
-                divisions.setContent(
-                    "" +
-                    current.part.simpleDurationOf(
-                        omr.score.Note.QUARTER_DURATION));
+                try {
+                    Divisions divisions = new Divisions();
+                    divisions.setContent(
+                        "" +
+                        current.part.simpleDurationOf(
+                            omr.score.Note.QUARTER_DURATION));
+                    getMeasureAttributes()
+                        .setDivisions(divisions);
+                } catch (Exception ex) {
+                    if (current.part.getDurationDivisor() == 0) {
+                        logger.warning(
+                            "Not able to infer division value for part " +
+                            current.part.getPid());
+                    } else {
+                        logger.warning("Error on divisions", ex);
+                    }
+                }
 
                 // Number of staves, if > 1
                 if (current.part.isMultiStaff()) {
@@ -760,9 +770,8 @@ public class ScoreExporter
         // Duration
         try {
             Duration duration = new Duration();
-            current.pmNote.setDuration(duration);
 
-            Integer dur = chord.getDuration();
+            Integer  dur = chord.getDuration();
 
             if (dur == null) { // Case of whole rests
                 dur = chord.getMeasure()
@@ -770,7 +779,11 @@ public class ScoreExporter
             }
 
             duration.setContent("" + current.part.simpleDurationOf(dur));
-        } catch (InvalidTimeSignature ex) {
+            current.pmNote.setDuration(duration);
+        } catch (Exception ex) {
+            if (current.part.getDurationDivisor() != 0) {
+                logger.warning("Not able to get duration of note", ex);
+            }
         }
 
         // Voice
@@ -1504,13 +1517,19 @@ public class ScoreExporter
     //--------------//
     private void insertBackup (int delta)
     {
-        Backup backup = new Backup();
-        current.pmMeasure.getNoteOrBackupOrForward()
-                         .add(backup);
+        try {
+            Backup   backup = new Backup();
 
-        Duration duration = new Duration();
-        backup.setDuration(duration);
-        duration.setContent("" + current.part.simpleDurationOf(delta));
+            Duration duration = new Duration();
+            backup.setDuration(duration);
+            duration.setContent("" + current.part.simpleDurationOf(delta));
+            current.pmMeasure.getNoteOrBackupOrForward()
+                             .add(backup);
+        } catch (Exception ex) {
+            if (current.part.getDurationDivisor() != 0) {
+                logger.warning("Not able to insert backup", ex);
+            }
+        }
     }
 
     //---------------//
@@ -1519,20 +1538,25 @@ public class ScoreExporter
     private void insertForward (int   delta,
                                 Chord chord)
     {
-        Forward forward = new Forward();
-        current.pmMeasure.getNoteOrBackupOrForward()
-                         .add(forward);
+        try {
+            Forward  forward = new Forward();
+            Duration duration = new Duration();
+            forward.setDuration(duration);
+            duration.setContent("" + current.part.simpleDurationOf(delta));
 
-        Duration duration = new Duration();
-        forward.setDuration(duration);
-        duration.setContent("" + current.part.simpleDurationOf(delta));
+            Voice voice = new Voice();
+            forward.setVoice(voice);
+            voice.setContent("" + current.voice);
+            current.pmMeasure.getNoteOrBackupOrForward()
+                             .add(forward);
 
-        Voice voice = new Voice();
-        forward.setVoice(voice);
-        voice.setContent("" + current.voice);
-
-        // Staff ? (only if more than one staff in part)
-        insertStaffId(forward, chord.getStaff());
+            // Staff ? (only if more than one staff in part)
+            insertStaffId(forward, chord.getStaff());
+        } catch (Exception ex) {
+            if (current.part.getDurationDivisor() != 0) {
+                logger.warning("Not able to insert forward", ex);
+            }
+        }
     }
 
     //---------------//
