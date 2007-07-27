@@ -398,7 +398,7 @@ public class SheetController
         File file = UIUtilities.fileChooser(
             false,
             component,
-            constants.defaultSheetDirectory.getValue(),
+            new File(constants.defaultSheetDirectory.getValue()),
             new FileFilter(
                 "Major image files",
                 new String[] { ".bmp", ".gif", ".jpg", ".png", ".tif" }));

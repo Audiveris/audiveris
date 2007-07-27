@@ -120,7 +120,7 @@ public class ScoreManager
                 xmlFile = UIUtilities.fileChooser(
                     true,
                     null,
-                    xmlFile.getPath(),
+                    xmlFile,
                     filter);
             }
         }

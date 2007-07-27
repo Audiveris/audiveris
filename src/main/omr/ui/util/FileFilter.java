@@ -10,12 +10,14 @@
 package omr.ui.util;
 
 import omr.util.FileUtil;
+import omr.util.Implement;
 
 import java.io.File;
+import java.io.FilenameFilter;
 
 /**
- * Class <code>FileFilter</code> is a dialog to let the user choose
- * interactively among a hierarchy of files.
+ * Class <code>FileFilter</code> is a special file filter, based on file
+ * extensions
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -110,12 +112,11 @@ public class FileFilter
     // accept //
     //--------//
     /**
-     * Return a boolean to state whether the provided file should be
-     * considered. Directories are always accepted, and tests on file name
-     * extensions are not case sensitive
+     * Tests if a specified file should be included in a file list.
+     * Directories are always accepted, and tests on file name extensions are 
+     * not case sensitive.
      *
      * @param f the candidate file entity
-     *
      * @return true if the file is OK, false otherwise
      */
     public boolean accept (File f)
@@ -136,10 +137,22 @@ public class FileFilter
 
         return false;
     }
-    
-    public boolean accept(File dir, String name)
+
+    //--------//
+    // accept //
+    //--------//
+    /**
+     * Tests if a specified file should be included in a file list.
+     *
+     * @param   dir    the directory in which the file was found.
+     * @param   name   the name of the file.
+     * @return  <code>true</code> if and only if the name should be
+     * included in the file list; <code>false</code> otherwise.
+     */
+    @Implement(FilenameFilter.class)
+    public boolean accept (File   dir,
+                           String name)
     {
-    	File f = new File(dir, name);
-    	return accept(f);
+        return accept(new File(dir, name));
     }
 }
