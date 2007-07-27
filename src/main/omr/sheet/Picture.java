@@ -15,6 +15,7 @@ import omr.lag.PixelSource;
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
+import omr.step.LogStepMonitorHandler;
 
 import omr.util.Implement;
 import omr.util.JaiLoader;
@@ -1016,11 +1017,12 @@ public class Picture
         public void imageProgress (ImageReader source,
                                    float       percentageDone)
         {
-            if (logger.isFineEnabled()) {
-                if ((percentageDone - lastProgress) > 10) {
-                    lastProgress = percentageDone;
+        	if ((percentageDone - lastProgress) > 10) {
+        		lastProgress = percentageDone;
+        		if (logger.isFineEnabled()) {
                     logger.fine("Image loaded " + percentageDone + "%");
                 }
+        		logger.info(LogStepMonitorHandler.FORCE);
             }
         }
 
@@ -1028,8 +1030,9 @@ public class Picture
                                   int         imageIndex)
         {
             if (logger.isFineEnabled()) {
-                logger.info("Image loading started");
+                logger.fine("Image loading started");
             }
+            logger.info(LogStepMonitorHandler.FORCE);
         }
 
         public void readAborted (ImageReader source)
