@@ -27,27 +27,30 @@ import java.util.*;
  *
  * <ol> <li> First, <b>SOURCE</b> values are always provided within
  * <em><b>source declaration</b></em> of the constants in the Java source file
- * itself. For example, in the "omr/ui/MainGui.java" file, we can find:
+ * itself. For example, in the "omr/sheet/ScaleBuilder.java" file, we can find
+ * the following declaration which defines the minimum value for sheet
+ * interline, here specified in pixels (we reject scans with lower values).
  *
  * <pre>
- * Constant.Integer frameWidth = new Constant.Integer
- *      (1024,
- *       "Width in pixels of the main frame");
+ * Constant.Integer minInterline = new Constant.Integer(
+ *    "Pixels",
+ *    15,
+ *    "Minimum number of pixels per interline");
  * </pre>
  * </li>
  *
  * <li> Then, <b>DEFAULT</b> values, contained in a property file named
  * <em><b>"config/run.default.properties"</b></em> can assign overriding values
- * to some constants. For example, the <code>frameWidth</code> constant above
+ * to some constants. For example, the <code>minInterline</code> constant above
  * could be altered by the following line in this default file: <pre>
- * omr.ui.MainGui.frameWidth=640 </pre> This file is mandatory, although it can
- * be empty, and must be located at the root of application binary (either the
- * class hierarchy or the jar file). If this file is not found at start-up the
- * application is stopped.  Typically, these DEFAULT values define values for a
- * distribution of the application, for example Linux and Windows binaries might
- * need different values for some constants. The only way to modify the content
- * of this file is to manually edit it, and this should be reserved to omr
- * developer. </li> <br/>
+ * omr.sheet.ScaleBuilder.minInterline=12</pre> This file is mandatory, although
+ * it can be empty, and must be located in the <u>config</u> folder (either in
+ * the jar file, or in the distribution file hierarchy). If this file is not
+ * found at start-up the application is stopped.  Typically, these DEFAULT
+ * values define values for a distribution of the application, for example Linux
+ * and Windows binaries might need different values for some constants. The only
+ * way to modify the content of this file is to manually edit it, and this
+ * should be reserved to omr developer.</li> <br/>
  *
  * <li> Finally, <b>USER</b> values, may be contained in another property file
  * named <em><b>"run.properties"</b></em>. This file is modified every time the
@@ -61,10 +64,11 @@ import java.util.*;
  * default file, and it is not meant to be edited manually, but rather through
  * the provided GUI tool. </li> </ol>
  *
- * <p> The whole set of constant values is stored on disk, every time the user
- * modifies a constant via {@link UnitTreeTable}). Doing so, the disk values are
- * always kept in synch with the program values. It can also be stored by
- * manually calling the method <code>storeResource</code>.
+ * <p> The whole set of constant values is stored on disk when the application
+ * is closed. Doing so, the disk values are always kept in synch with the
+ * program values, <b>provided the application is closed rather than
+ * killed</b>. It can also be stored by manually calling the method
+ * <code>storeResource</code>.
  *
  * <p> Only the user property file is written, the source value in the source
  * code, or the potential overriding default values, are not altered.
@@ -88,7 +92,7 @@ public class ConstantManager
     /** Default properties */
     private static Properties defaultProperties = new Properties();
 
-    /** Default properties file name */
+    /** Default properties file (or resource) name */
     private static String DEFAULT_FILE_NAME = "/config/run.default.properties";
 
     /** User properties */
