@@ -81,13 +81,13 @@
                      />
         
             <!-- Jar file -->
-            <zipfileset dir="${dist.dir}"
+            <zipfileset dir="${dist.dir}" prefix="bin"
                      includes="*.jar"
                      excludes="${dist.excludes}"
                      />
         
             <!-- lib jar files -->
-            <zipfileset dir="${dist.dir}/lib" prefix="lib"
+            <zipfileset dir="${dist.dir}/lib" prefix="bin/lib"
                      includes="**"
                      excludes="${dist.excludes}"
                      />
