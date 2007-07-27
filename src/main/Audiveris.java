@@ -39,6 +39,6 @@ public final class Audiveris
      */
     public static void main (final String[] args)
     {
-        omr.Main.main(args, Audiveris.class);
+        omr.Main.main(args);
     }
 }

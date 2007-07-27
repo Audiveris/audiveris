@@ -135,8 +135,7 @@ public class Main
     //------//
     // Main //
     //------//
-    private Main (String[] args,
-                  Class    caller)
+    private Main ()
     {
         // Locale  to be used in the whole application ?
         checkLocale();
@@ -282,12 +281,10 @@ public class Main
      * Specific starting method for the application.
      *
      * @param args the command line parameters
-     * @param caller the precise class of the caller
      *
      * @see omr.Main the possible command line parameters
      */
-    public static void main (String[] args,
-                             Class    caller)
+    public static void main (String[] args)
     {
         // Problem, from Emacs all args are passed in one string sequence.  We
         // recognize this by detecting a single argument starting with '-'
@@ -318,7 +315,7 @@ public class Main
         }
 
         // Launch the processing
-        INSTANCE = new Main(args, caller);
+        INSTANCE = new Main();
 
         if (logger.isFineEnabled()) {
             logger.fine("homeFolder=" + homeFolder);
