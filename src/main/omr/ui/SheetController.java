@@ -16,7 +16,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.ui.GlyphRepository;
 
-import omr.plugin.*;
+import omr.plugin.PluginType;
+import omr.plugin.Plugins;
 
 import omr.score.Score;
 
@@ -29,8 +30,10 @@ import omr.sheet.*;
 import omr.step.Step;
 
 import omr.ui.icon.IconManager;
-import omr.ui.util.*;
 import omr.ui.util.FileFilter;
+import omr.ui.util.SeparableMenu;
+import omr.ui.util.SwingWorker;
+import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
 import omr.util.Logger;
@@ -77,7 +80,7 @@ public class SheetController
     public static final int DIFFERED_INDEX = -2;
 
     //~ Instance fields --------------------------------------------------------
-    
+
     /** The UI controller for scripts */
     private final ScriptController scriptController;
 
@@ -130,12 +133,11 @@ public class SheetController
         // Various actions
         new SelectSheetAction();
 
-        for (Action plugin : Plugins.getActions(PluginType.SHEET_IMPORT))
-        {
-        	new SheetAction(plugin);
+        for (Action plugin : Plugins.getActions(PluginType.SHEET_IMPORT)) {
+            new SheetAction(plugin);
         }
 
-		// Script actions
+        // Script actions
         menu.addSeparator();
         toolBar.addSeparator();
 
@@ -143,8 +145,8 @@ public class SheetController
         menu.add(new JMenuItem(scriptController.getOpenAction()));
         menu.add(new JMenuItem(scriptController.getStoreAction()));
         sheetDependentActions.add(scriptController.getStoreAction());
-		
-		toolBar.addSeparator();
+
+        toolBar.addSeparator();
         menu.addSeparator();
         new ZoomWidthAction();
         new ZoomHeightAction();
@@ -153,19 +155,18 @@ public class SheetController
         // Tool actions
         menu.addSeparator();
         toolBar.addSeparator();
-        
+
         new ScalePlotAction();
         new SkewPlotAction();
         new LinePlotAction();
 
         menu.addSeparator();
         toolBar.addSeparator();
-        
-        for (Action plugin : Plugins.getActions(PluginType.SHEET_EXPORT))
-        {
-        	new SheetAction(plugin);
+
+        for (Action plugin : Plugins.getActions(PluginType.SHEET_EXPORT)) {
+            new SheetAction(plugin);
         }
-        
+
         new CloseAction();
 
         // Initially disabled actions
@@ -190,7 +191,7 @@ public class SheetController
         if (logger.isFineEnabled()) {
             logger.fine("closing " + assembly.toString());
         }
-        
+
         // Check whether the script has been written correctly
         final Sheet sheet = assembly.getSheet();
         scriptController.checkStored(sheet.getScript());
@@ -258,23 +259,7 @@ public class SheetController
         return menu;
     }
 
-    //---------------//
-	// setInitImgDir //
-	//---------------//
-	public static void setInitImgDir(String value)
-	{
-		constants.initImgDir.setValue(value);
-	}
-
-	//---------------//
-	// getInitImgDir //
-	//---------------//
-	public static String getInitImgDir()
-	{
-		return constants.initImgDir.getValue();
-	}
-
-	//------------------//
+    //------------------//
     // setSheetAssembly //
     //------------------//
     /**
@@ -410,30 +395,33 @@ public class SheetController
      */
     private void selectSheet ()
     {
-    	File file = UIUtilities.fileChooser(false, component,
-    		getInitImgDir(), 
-    		new FileFilter(
+        File file = UIUtilities.fileChooser(
+            false,
+            component,
+            constants.defaultSheetDirectory.getValue(),
+            new FileFilter(
                 "Major image files",
                 new String[] { ".bmp", ".gif", ".jpg", ".png", ".tif" }));
-    	if (file != null) {
-    		if (file.exists()) {
-    			// Register that as a user target
-    			try {
-    				Main.getGui()
-    				.setTarget(file.getCanonicalPath());
-    			} catch (IOException ex) {
-    				ex.printStackTrace();
-    			}
-    			
-    			// Actually load the sheet picture
-    			Step.LOAD.performParallel(null, file);
-    			
-    			// Remember (even across runs) the parent directory
-    			setInitImgDir(file.getParent());
-    		} else {
-    			logger.warning("File not found " + file);
-    		}
-    	}
+
+        if (file != null) {
+            if (file.exists()) {
+                // Register that as a user target
+                try {
+                    Main.getGui()
+                        .setTarget(file.getCanonicalPath());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                // Actually load the sheet picture
+                Step.LOAD.performParallel(null, file);
+
+                // Remember (even across runs) the parent directory
+                constants.defaultSheetDirectory.setValue(file.getParent());
+            } else {
+                logger.warning("File not found " + file);
+            }
+        }
     }
 
     //------------------//
@@ -470,10 +458,10 @@ public class SheetController
     private static final class Constants
         extends ConstantSet
     {
-        /** Default directory for selection of image files */
-        Constant.String initImgDir = new Constant.String(
-            "c:/",
-            "Default directory for selection of image files");
+        /** Default directory for selection of sheet image files */
+        Constant.String defaultSheetDirectory = new Constant.String(
+            "",
+            "Default directory for selection of sheet image files");
 
         /** Initial zoom ratio for displayed sheet pictures */
         Constant.Ratio initialZoomRatio = new Constant.Ratio(
@@ -514,67 +502,6 @@ public class SheetController
     }
 
     //-------------//
-    // SheetAction //
-    //-------------//
-    /**
-     * Class <code>SheetAction</code> is a template for any sheet-related action
-     * : it builds the action, registers it in the list of sheet-dependent
-     * actions if needed, inserts the action in the sheet menu, and inserts a
-     * button in the toolbar if an icon is provided.
-     */
-    private class SheetAction
-        extends AbstractAction
-    {    	
-    	private Action delegate = null;
-    	
-        public SheetAction (boolean enabled,
-                            String  label,
-                            String  tip,
-                            Icon    icon,
-                            boolean onToolBar)
-        {
-            super(label, icon);
-            
-            // Sheet-dependent action ?
-            if (!enabled) {
-                sheetDependentActions.add(this);
-            }
-
-            // Menu item
-            JMenuItem item = menu.add(this);
-            if (tip.endsWith(")"))
-            {
-            	char c = tip.charAt(tip.length() - 2);
-            	item.setAccelerator(KeyStroke.getKeyStroke((int)c,
-            	    Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-            	tip = tip.substring(0, tip.lastIndexOf("("));
-            }
-            putValue(SHORT_DESCRIPTION, tip);
-
-            // Tool bar
-            if (onToolBar) {
-                final JButton button = toolBar.add(this);
-                button.setBorder(UIUtilities.getToolBorder());
-            }
-        }
-        
-        public SheetAction (Action delegate)
-        {
-        	this(delegate.isEnabled(),
-        		(String)delegate.getValue(Action.NAME),
-        		(String)delegate.getValue(Action.SHORT_DESCRIPTION),
-        		(Icon)delegate.getValue(Action.SMALL_ICON),
-        		true);
-        	this.delegate = delegate;
-        }
-
-		public void actionPerformed(ActionEvent e)
-		{
-			if (delegate != null) delegate.actionPerformed(e);
-		}
-    }
-
-    //-------------//
     // CloseAction //
     //-------------//
     /**
@@ -595,7 +522,7 @@ public class SheetController
         }
 
         @Override
-		@Implement(ActionListener.class)
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -633,7 +560,7 @@ public class SheetController
         }
 
         @Override
-		@Implement(ActionListener.class)
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -667,7 +594,7 @@ public class SheetController
         }
 
         @Override
-		public void actionPerformed (ActionEvent e)
+        public void actionPerformed (ActionEvent e)
         {
             int answer = JOptionPane.showConfirmDialog(
                 component,
@@ -679,7 +606,7 @@ public class SheetController
 
             final SwingWorker worker = new SwingWorker() {
                 @Override
-				public Object construct ()
+                public Object construct ()
                 {
                     Sheet sheet = getCurrentSheet();
                     GlyphRepository.getInstance()
@@ -716,7 +643,7 @@ public class SheetController
         }
 
         @Override
-		@Implement(ActionListener.class)
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -749,10 +676,77 @@ public class SheetController
         }
 
         @Override
-		@Implement(ActionListener.class)
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             selectSheet();
+        }
+    }
+
+    //-------------//
+    // SheetAction //
+    //-------------//
+    /**
+     * Class <code>SheetAction</code> is a template for any sheet-related action
+     * : it builds the action, registers it in the list of sheet-dependent
+     * actions if needed, inserts the action in the sheet menu, and inserts a
+     * button in the toolbar if an icon is provided.
+     */
+    private class SheetAction
+        extends AbstractAction
+    {
+        private Action delegate = null;
+
+        public SheetAction (boolean enabled,
+                            String  label,
+                            String  tip,
+                            Icon    icon,
+                            boolean onToolBar)
+        {
+            super(label, icon);
+
+            // Sheet-dependent action ?
+            if (!enabled) {
+                sheetDependentActions.add(this);
+            }
+
+            // Menu item
+            JMenuItem item = menu.add(this);
+
+            if (tip.endsWith(")")) {
+                char c = tip.charAt(tip.length() - 2);
+                item.setAccelerator(
+                    KeyStroke.getKeyStroke(
+                        (int) c,
+                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                tip = tip.substring(0, tip.lastIndexOf("("));
+            }
+
+            putValue(SHORT_DESCRIPTION, tip);
+
+            // Tool bar
+            if (onToolBar) {
+                final JButton button = toolBar.add(this);
+                button.setBorder(UIUtilities.getToolBorder());
+            }
+        }
+
+        public SheetAction (Action delegate)
+        {
+            this(
+                delegate.isEnabled(),
+                (String) delegate.getValue(Action.NAME),
+                (String) delegate.getValue(Action.SHORT_DESCRIPTION),
+                (Icon) delegate.getValue(Action.SMALL_ICON),
+                true);
+            this.delegate = delegate;
+        }
+
+        public void actionPerformed (ActionEvent e)
+        {
+            if (delegate != null) {
+                delegate.actionPerformed(e);
+            }
         }
     }
 
@@ -777,7 +771,7 @@ public class SheetController
         }
 
         @Override
-		@Implement(ActionListener.class)
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = getCurrentSheet();
@@ -816,7 +810,7 @@ public class SheetController
         }
 
         @Override
-		@Implement(ActionListener.class)
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             SheetAssembly assembly = getSelectedAssembly();
