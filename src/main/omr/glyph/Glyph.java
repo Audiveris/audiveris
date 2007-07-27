@@ -172,6 +172,17 @@ public class Glyph
         this.interline = interline;
     }
 
+    //-------//
+    // Glyph //
+    //-------//
+    /**
+     * No-arg constructor to please JAXB
+     */
+    protected Glyph ()
+    {
+        interline = 0; // Dummy
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     //----------//

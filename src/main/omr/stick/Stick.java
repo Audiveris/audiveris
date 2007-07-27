@@ -62,6 +62,9 @@ public class Stick
 
     //~ Constructors -----------------------------------------------------------
 
+    //-------//
+    // Stick //
+    //-------//
     /**
      * Create a stick with the related interline value
      * @param interline the very important scaling information
@@ -71,6 +74,15 @@ public class Stick
         super(interline);
     }
 
+    //-------//
+    // Stick //
+    //-------//
+    /**
+     * No-arg constructor to please JAXB
+     */
+    private Stick()
+    {
+    }
     //~ Methods ----------------------------------------------------------------
 
     //------------------//
