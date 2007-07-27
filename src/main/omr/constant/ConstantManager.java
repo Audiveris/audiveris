@@ -65,12 +65,12 @@ import java.util.*;
  * </ol>
  *
  * <p>The difference between DEFAULT and USER, besides the fact that USER values
- * override DEFAULT values, is that there is at exactly one DEFAULT file but
- * there may be zero or several USER files. They address different purposes.
+ * override DEFAULT values, is that there is exactly one DEFAULT file but there
+ * may be zero or several USER files. They address different purposes.
  * Different users on the same machine may want to have some common Audiveris
  * technical values, while allowing separate user-related values for each
- * user. The common values should go to the DEFAULT file, while the user
- * specific values should go to the USER file.
+ * user. The common (shared) values should go to the DEFAULT file, while the
+ * user specific values should go to the USER file.
  *
  * <p> The whole set of constant values is stored on disk when the application
  * is closed. Doing so, the disk values are always kept in synch with the
