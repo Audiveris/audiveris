@@ -139,17 +139,19 @@ public class MainGui
         // Build the UI part
         //------------------
         // Tools in the frame and set of actions
-        toolBar = new JToolBar(JToolBar.HORIZONTAL)
-        {
-        	@Override
-			public void addSeparator()
-        	{
-        		Component[] components = super.getComponents();
-        		int count = components.length;
-        		if (count > 0 && !(components[count - 1] instanceof JSeparator))
-        			super.addSeparator();
-        	}
-        };
+        toolBar = new JToolBar(JToolBar.HORIZONTAL) {
+                @Override
+                public void addSeparator ()
+                {
+                    Component[] components = super.getComponents();
+                    int         count = components.length;
+
+                    if ((count > 0) &&
+                        !(components[count - 1] instanceof JSeparator)) {
+                        super.addSeparator();
+                    }
+                }
+            };
 
         // Sheet actions
         Action exitAction = new ExitAction(true);
@@ -200,40 +202,40 @@ public class MainGui
         new OptionAction(toolMenu);
 
         // Help
-        if (!omr.Main.MAC_OS_X) new AboutAction(helpMenu);
+        if (!omr.Main.MAC_OS_X) {
+            new AboutAction(helpMenu);
+        }
 
         // Menus in the frame
         JMenuBar menuBar = new JMenuBar();
         frame.setJMenuBar(menuBar);
+
         for (JMenu menu : new JMenu[] {
-        	sheetController.getMenu(), stepMenu,
-        	scoreController.getMenu(), viewMenu, toolMenu, helpMenu}) {
-        	if (menu.getItemCount() > 0) {
-        		if (menu == helpMenu) 
-        			menuBar.add(Box.createHorizontalStrut(30));
-        		menuBar.add(menu);
-        	}
+                 sheetController.getMenu(), stepMenu, scoreController.getMenu(),
+                 viewMenu, toolMenu, helpMenu
+             }) {
+            if (menu.getItemCount() > 0) {
+                if (menu == helpMenu) {
+                    menuBar.add(Box.createHorizontalStrut(30));
+                }
+
+                menuBar.add(menu);
+            }
         }
-        
+
         //Mac Application menu
-        if (omr.Main.MAC_OS_X)
-        {
-        	try
-        	{
-        		Class clazz = Class.forName("omr.ui.MacApplication");
-        		Constructor constructor = clazz.getConstructor(new Class[] {
-        			Action.class, Action.class, Action.class
-        			});
-        		constructor.newInstance(
-        			new AboutAction(null),
-        			new OptionAction(null),
-        			new ExitAction(false)
-        			);
-        	}
-        	catch (Exception e)
-        	{
-        		logger.warning("Unable to load Mac OS X Application menu", e);
-        	}
+        if (omr.Main.MAC_OS_X) {
+            try {
+                Class       clazz = Class.forName("omr.ui.MacApplication");
+                Constructor constructor = clazz.getConstructor(
+                    new Class[] { Action.class, Action.class, Action.class });
+                constructor.newInstance(
+                    new AboutAction(null),
+                    new OptionAction(null),
+                    new ExitAction(false));
+            } catch (Exception e) {
+                logger.warning("Unable to load Mac OS X Application menu", e);
+            }
         }
 
         /*
@@ -288,7 +290,7 @@ public class MainGui
 
         JPanel toolKeyPanel = new JPanel();
         toolKeyPanel.setLayout(new BorderLayout());
-//        toolKeyPanel.add(toolBar, BorderLayout.WEST);
+        //        toolKeyPanel.add(toolBar, BorderLayout.WEST);
         toolKeyPanel.add(
             Step.createMonitor().getComponent(),
             BorderLayout.CENTER);
@@ -297,8 +299,8 @@ public class MainGui
                 IconManager.getInstance().loadImageIcon("general/Delete")).getComponent(),
             BorderLayout.EAST);
         toolBar.add(toolKeyPanel);
-        frame.getContentPane().add(toolBar, BorderLayout.NORTH);
-        
+        frame.getContentPane()
+             .add(toolBar, BorderLayout.NORTH);
 
         bigSplitPane = new JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT,
@@ -310,8 +312,8 @@ public class MainGui
         bigSplitPane.setResizeWeight(1d); // Give extra space to left part
 
         // Global layout
-//        frame.getContentPane()
-//             .add(toolKeyPanel, BorderLayout.NORTH);
+        //        frame.getContentPane()
+        //             .add(toolKeyPanel, BorderLayout.NORTH);
         frame.getContentPane()
              .add(bigSplitPane, BorderLayout.CENTER);
 
@@ -586,7 +588,8 @@ public class MainGui
     private void exit ()
     {
         // Save scripts for opened sheets?
-        SheetManager.getInstance().closeAll();
+        SheetManager.getInstance()
+                    .closeAll();
 
         // Remember latest gui frame parameters
         final int state = frame.getExtendedState();
@@ -668,8 +671,11 @@ public class MainGui
                 "Exit",
                 IconManager.getInstance().loadImageIcon("general/Stop"));
             putValue(SHORT_DESCRIPTION, "Exit the program");
-            if (addToToolBar) toolBar.add(this)
-                   .setBorder(getToolBorder());
+
+            if (addToToolBar) {
+                toolBar.add(this)
+                       .setBorder(getToolBorder());
+            }
         }
 
         @Implement(ActionListener.class)
@@ -737,7 +743,10 @@ public class MainGui
                 "Options",
                 IconManager.getInstance().loadImageIcon("general/Properties"));
             putValue(SHORT_DESCRIPTION, "Constants tree for all units");
-            if (menu != null) menu.add(this);
+
+            if (menu != null) {
+                menu.add(this);
+            }
         }
 
         @Implement(ActionListener.class)
@@ -837,13 +846,17 @@ public class MainGui
                 "About",
                 IconManager.getInstance().loadImageIcon("general/About"));
             putValue(SHORT_DESCRIPTION, "About " + Main.getToolName());
-            if (menu != null) menu.add(this);
+
+            if (menu != null) {
+                menu.add(this);
+            }
         }
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             StringBuffer sb = new StringBuffer();
+            // Version information
             sb.append("<HTML>")
               .append("<B>")
               .append(Main.getToolName())
@@ -851,15 +864,22 @@ public class MainGui
               .append("<I>version ")
               .append(Main.getToolVersion());
 
+            // Build information, if available
             if (Main.getToolBuild() != null) {
-                sb.append("<BR>")
-                  .append(" build ")
+                sb.append(", build ")
                   .append(Main.getToolBuild());
             }
+            sb.append("</I>");
 
-            sb.append("</I>")
-              .append("<BR>")
-              .append("Refer to <B>https://audiveris.dev.java.net</B>")
+            // Launch information
+            sb.append("<BR>")
+              .append("Launched from <I>")
+              .append(Main.getClassesContainer())
+              .append("</I>");
+
+            // Web site
+            sb.append("<BR>")
+              .append("Visit <B>https://audiveris.dev.java.net</B>")
               .append("</HTML>");
 
             displayMessage(sb.toString());
