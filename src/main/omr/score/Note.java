@@ -737,7 +737,8 @@ public class Note
 
         if (packCard != 1) {
             sb.append(" [")
-              .append(packIndex)
+              .append(packIndex + 1) // For easier reading by end user
+
               .append("/")
               .append(packCard)
               .append("]");
