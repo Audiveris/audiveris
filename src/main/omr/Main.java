@@ -76,17 +76,22 @@ public class Main
         Clock.resetTime();
     }
 
+    /** Classes container */
+    private static File container = new File(
+        Main.class.getProtectionDomain().getCodeSource().getLocation().getFile());
+
+    /** Installation folder (needs to be initialized before logger) */
+    // .../build/classes
+    // .../dist/audiveris.jar
+    // .../bin/audiveris.jar
+    private static File homeFolder = container.getParentFile()
+                                              .getParentFile();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Main.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
-
-    /** Installation container and folder */
-    private static File container;
-
-    /** Installation container and folder */
-    private static File homeFolder;
 
     /** Singleton */
     private static Main INSTANCE;
@@ -159,19 +164,21 @@ public class Main
 
         // Tool build
         toolBuild = thisPackage.getImplementationVersion();
-
-        // Remember installation home
-        container = new File(
-            caller.getProtectionDomain().getCodeSource().getLocation().getFile());
-
-        // Home Folder
-        // .../build/classes
-        // .../dist/audiveris.jar
-        homeFolder = container.getParentFile()
-                              .getParentFile();
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------------------//
+    // getClassesContainer //
+    //---------------------//
+    /**
+     * Report the container from which the application classes were loaded
+     * @return either the jar file, or the directory of .class files
+     */
+    public static File getClassesContainer ()
+    {
+        return container;
+    }
 
     //-----------------//
     // getConfigFolder //
@@ -316,7 +323,7 @@ public class Main
         if (logger.isFineEnabled()) {
             logger.fine("homeFolder=" + homeFolder);
             logger.fine("container=" + container);
-            logger.fine("isDirectory=" + container.isDirectory());
+            logger.fine("container.isDirectory=" + container.isDirectory());
         }
 
         try {

@@ -44,39 +44,47 @@ import java.util.*;
  * to some constants. For example, the <code>minInterline</code> constant above
  * could be altered by the following line in this default file: <pre>
  * omr.sheet.ScaleBuilder.minInterline=12</pre> This file is mandatory, although
- * it can be empty, and must be located in the <u>config</u> folder (either in
- * the jar file, or in the distribution file hierarchy). If this file is not
- * found at start-up the application is stopped.  Typically, these DEFAULT
- * values define values for a distribution of the application, for example Linux
- * and Windows binaries might need different values for some constants. The only
- * way to modify the content of this file is to manually edit it, and this
- * should be reserved to omr developer.</li> <br/>
+ * it can be empty, and must be located in the <u>config</u> subfolder of the
+ * distribution file hierarchy. If this file is not found at start-up the
+ * application is stopped.  Typically, this file defines values for a
+ * distribution of the application, for example Linux and Windows binaries might
+ * need different values for some constants.</li> <br/>
  *
  * <li> Finally, <b>USER</b> values, may be contained in another property file
  * named <em><b>"run.properties"</b></em>. This file is modified every time the
  * user updates the value of a constant by means of the provided Constant user
  * interface at run-time. The file is not mandatory, the user's home directory
  * (which corresponds to java property <b>user.home</b>) is searched for a
- * <b>.audiveris</b> folder to contain such file. Its values override the Source
- * (and Default if any) corresponding constants. Typically, these USER values
+ * <b>.audiveris</b> folder to contain such file. Its values override the SOURCE
+ * (and DEFAULT if any) corresponding constants. Typically, these USER values
  * represent some modification made by the end user at run-time and thus saved
  * from one run to the other. The format of the user file is the same as the
  * default file, and it is not meant to be edited manually, but rather through
- * the provided GUI tool. </li> </ol>
+ * the provided GUI tool. The only way to modify the content of this file is to
+ * manually edit it, and this should be reserved to a knowledgeable person.</li>
+ * </ol>
+ *
+ * <p>The difference between DEFAULT and USER, besides the fact that USER values
+ * override DEFAULT values, is that there is at exactly one DEFAULT file but
+ * there may be zero or several USER files. They address different purposes.
+ * Different users on the same machine may want to have some common Audiveris
+ * technical values, while allowing separate user-related values for each
+ * user. The common values should go to the DEFAULT file, while the user
+ * specific values should go to the USER file.
  *
  * <p> The whole set of constant values is stored on disk when the application
  * is closed. Doing so, the disk values are always kept in synch with the
- * program values, <b>provided the application is closed rather than
- * killed</b>. It can also be stored by manually calling the method
- * <code>storeResource</code>.
+ * program values, <b>provided the application is normally closed rather than
+ * killed</b>. It can also be stored programmatically by calling the
+ * <code>storeResource</code> method.
  *
- * <p> Only the user property file is written, the source value in the source
- * code, or the potential overriding default values, are not altered.
+ * <p> Only the USER property file is written, the SOURCE values in the source
+ * code, or the potential overriding DEFAULT values, are not altered.
  *
  * </p> Moreover, if the user has modified a value in such a way that the final
- * value is the same as found in the default stage, the value is simply
- * discarded from the user property file. Doing so, the user property file
- * really contains only the additions of the user. </p>
+ * value is the same as found in the DEFAULT file, the value is simply discarded
+ * from the USER property file. Doing so, the USER property file really contains
+ * only the additions of the user.</p>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -92,8 +100,8 @@ public class ConstantManager
     /** Default properties */
     private static Properties defaultProperties = new Properties();
 
-    /** Default properties file (or resource) name */
-    private static String DEFAULT_FILE_NAME = "/config/run.default.properties";
+    /** Default properties file name */
+    private static String DEFAULT_FILE_NAME = "run.default.properties";
 
     /** User properties */
     private static Properties userProperties = null;
@@ -225,16 +233,18 @@ public class ConstantManager
      */
     private static void loadResource ()
     {
-        // Load DEFAULT properties from the distribution
+        // Load DEFAULT properties from the config folder
+        File defaultFile = new File(Main.getConfigFolder(), DEFAULT_FILE_NAME);
+
         try {
-            InputStream in = Main.class.getResourceAsStream(DEFAULT_FILE_NAME);
+            ///System.out.println("Loading default constants from " + defaultFile.getAbsolutePath() + "...");
+            InputStream in = new FileInputStream(defaultFile);
             defaultProperties.load(in);
             in.close();
 
-            ///logger.info("Loaded default constants from resource " + DEFAULT_FILE_NAME);
+            ///logger.info("Loaded default constants from " + defaultFile);
         } catch (Exception ex) {
-            logger.severe(
-                "Error while loading DEFAULT resource as " + DEFAULT_FILE_NAME);
+            logger.severe("Error while loading DEFAULT file " + defaultFile);
         }
 
         // Create program properties with default properties as default
