@@ -404,8 +404,8 @@
 
         <!-- .bat file for windows -->
         <echo file="${bin.dir}/${name}.bat" append="false">@ECHO OFF
-REM ${name}.bat - file generated on ${DSTAMP}
-java -Xmx128M -jar ../${full.name}.jar
+REM ${name}.bat
+java -Xmx128M -jar ${full.name}.jar
         </echo>
         
     </target>
