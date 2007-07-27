@@ -9,6 +9,7 @@
 //
 package omr.score;
 
+import omr.plugin.*;
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
@@ -18,19 +19,18 @@ import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
 import omr.ui.icon.IconManager;
-import omr.ui.util.SwingWorker;
+import omr.ui.util.*;
 import static omr.ui.util.UIUtilities.*;
 
 import omr.util.Implement;
 import omr.util.Logger;
 
+import java.awt.Toolkit;
 import java.awt.event.*;
-import java.io.*;
+import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.List;
 
 import javax.swing.*;
-import javax.swing.event.*;
 
 /**
  * Class <code>ScoreController</code> encapsulates a set of user interface means
@@ -52,14 +52,14 @@ public class ScoreController
     //~ Instance fields --------------------------------------------------------
 
     /** Menu for score actions */
-    private final JMenu scoreMenu = new JMenu("Score");
+    private final JMenu scoreMenu = new SeparableMenu("Score");
 
     /** Toolbar needed to add buttons in it */
     private final JToolBar toolBar;
 
     /** Collection of score-dependent actions, that are enabled only if there is
        a current score. */
-    private final List<Object> scoreDependentActions = new ArrayList<Object>();
+    protected final List<Object> scoreDependentActions = new ArrayList<Object>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -76,13 +76,36 @@ public class ScoreController
         this.toolBar = toolBar;
         scoreMenu.setToolTipText("Select action for current score");
 
+        // Load actions
+        for (Action plugin : Plugins.getActions(PluginType.SCORE_IMPORT))
+        {
+        	new ScoreAction(plugin);
+        }
+        scoreMenu.addSeparator();
+        toolBar.addSeparator();
+        
+        // Edit actions
+        for (Action plugin : Plugins.getActions(PluginType.SCORE_EDIT))
+        {
+        	new ScoreAction(plugin);
+        }
+        scoreMenu.addSeparator();
+        toolBar.addSeparator();
+
         // Display Actions
         new BrowseAction();
         new DumpAction();
         scoreMenu.addSeparator();
+        toolBar.addSeparator();
 
-        // XML Actions
+        // Store Actions
         new StoreAction();
+        
+        // Export actions
+        for (Action plugin : Plugins.getActions(PluginType.SCORE_EXPORT))
+        {
+        	new ScoreAction(plugin);
+        }
 
         // Initially disabled actions
         enableActions(scoreDependentActions, false);
@@ -218,7 +241,7 @@ public class ScoreController
         }
 
         @Override
-        public void actionPerformed (ActionEvent e)
+		public void actionPerformed (ActionEvent e)
         {
             getCurrentScore()
                 .viewScore();
@@ -241,7 +264,7 @@ public class ScoreController
         }
 
         @Override
-        public void actionPerformed (ActionEvent e)
+		public void actionPerformed (ActionEvent e)
         {
             getCurrentScore()
                 .dump();
@@ -257,16 +280,17 @@ public class ScoreController
      * actions if needed, inserts the action in the score menu, and inserts a
      * button in the toolbar if an icon is provided.
      */
-    private abstract class ScoreAction
+    private class ScoreAction
         extends AbstractAction
     {
+    	private Action delegate;
+    	
         public ScoreAction (boolean enabled,
                             String  label,
                             String  tip,
                             Icon    icon)
         {
             super(label, icon);
-            putValue(SHORT_DESCRIPTION, tip);
 
             // Is this a Score-dependent action ? If so, it is by default
             // disabled, so we use this characteristic to detect such actions
@@ -275,13 +299,35 @@ public class ScoreController
             }
 
             // Add the related Menu item
-            scoreMenu.add(this);
+            JMenuItem item = scoreMenu.add(this);
+            if (tip.endsWith(")"))
+            {
+            	char c = tip.charAt(tip.length() - 2);
+            	item.setAccelerator(KeyStroke.getKeyStroke((int)c,
+            	    Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+            	tip = tip.substring(0, tip.lastIndexOf("("));
+            }
+            putValue(SHORT_DESCRIPTION, tip);
 
             // Add an icon in the Tool bar, if any icon is provided
             if (icon != null) {
                 final JButton button = toolBar.add(this);
                 button.setBorder(getToolBorder());
             }
+        }
+        
+        public ScoreAction(Action delegate)
+        {
+        	this(delegate.isEnabled(), 
+    			(String) delegate.getValue(Action.NAME), 
+    			(String) delegate.getValue(Action.SHORT_DESCRIPTION), 
+    			(Icon) delegate.getValue(Action.SMALL_ICON));
+    		this.delegate = delegate;
+        }
+        
+        public void actionPerformed(ActionEvent e)
+        {
+        	if (delegate != null) delegate.actionPerformed(e);
         }
     }
 
@@ -304,11 +350,11 @@ public class ScoreController
         }
 
         @Override
-        public void actionPerformed (ActionEvent e)
+		public void actionPerformed (ActionEvent e)
         {
             final SwingWorker worker = new SwingWorker() {
                 @Override
-                public Object construct ()
+				public Object construct ()
                 {
                     Score score = getCurrentScore();
 
