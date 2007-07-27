@@ -630,6 +630,20 @@ public class MainGui
         java.lang.System.exit(0);
     }
 
+    //-------------//
+    // addTableRow //
+    //-------------//
+    private void addTableRow (StringBuilder sb,
+                              String        name,
+                              Object        value)
+    {
+        sb.append("<TR><TH>")
+          .append(name)
+          .append("<TH><TD>")
+          .append(value)
+          .append("</TD></TR>");
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-------------//
@@ -855,32 +869,28 @@ public class MainGui
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
+            sb.append("<HTML><TABLE BORDER='0'>");
+
+            // Application information
+            addTableRow(sb, "Application", Main.getToolName());
+
             // Version information
-            sb.append("<HTML>")
-              .append("<B>")
-              .append(Main.getToolName())
-              .append("</B> ")
-              .append("<I>version ")
-              .append(Main.getToolVersion());
+            addTableRow(sb, "Version", Main.getToolVersion());
 
             // Build information, if available
-            if (Main.getToolBuild() != null) {
-                sb.append(", build ")
-                  .append(Main.getToolBuild());
-            }
-            sb.append("</I>");
+            addTableRow(
+                sb,
+                "Build",
+                (Main.getToolBuild() != null) ? Main.getToolBuild() : "");
 
             // Launch information
-            sb.append("<BR>")
-              .append("Launched from <I>")
-              .append(Main.getClassesContainer())
-              .append("</I>");
+            addTableRow(sb, "Classes", Main.getClassesContainer());
 
             // Web site
-            sb.append("<BR>")
-              .append("Visit <B>https://audiveris.dev.java.net</B>")
-              .append("</HTML>");
+            addTableRow(sb, "WebSite", "https://audiveris.dev.java.net");
+
+            sb.append("</TABLE></HTML>");
 
             displayMessage(sb.toString());
         }
