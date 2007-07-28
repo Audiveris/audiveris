@@ -149,7 +149,16 @@ public class UIUtilities
             }
         } else {
             final JFileChooser fc = new JFileChooser(startFile);
-            fc.setSelectedFile(startFile);
+
+            // Pre-select the directory, and potentially the file to save to
+            if (startFile != null) {
+                fc.setCurrentDirectory(startFile);
+
+                if (save) {
+                    fc.setSelectedFile(startFile);
+                }
+            }
+
             fc.addChoosableFileFilter(filter);
 
             int result = save ? fc.showSaveDialog(parent)
