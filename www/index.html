@@ -33,7 +33,7 @@ function nonav(url)
 	    
 	    <body>
 		
-		<div class="app"">
+		<div class="app">
 		    <h1 style="text-align: center;">Audiveris Music Scanner</h1>
 		    <i>Updated:
 			<script type="text/javascript">
@@ -190,11 +190,13 @@ function nonav(url)
 					    <tr>
 						<td>
 						    <h3>Exported MusicXML</h3>
-						    <iframe src="nonav/docs/manual/chula.xml.html" width="100%" height="200" frameborder="0">
-							<a href="nonav/docs/manual/chula.xml.html">You are using a very old browser.
-							    Click here to go directly to included content.</a>
-						    </iframe>		    
 						    
+						    <script type="text/javascript">
+							if (document.title != "Audiveris Home Page")
+							document.write("<iframe src='nonav/docs/manual/chula.xml.html' width='100%' height='200' frameborder='0'></iframe>");
+							else
+							document.write("<iframe src='docs/manual/chula.xml.html' width='100%' height='200' frameborder='0'></iframe>");
+						    </script>						    
 						</td>
 					    </tr>
 					    
