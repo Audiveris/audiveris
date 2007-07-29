@@ -27,17 +27,34 @@ import java.util.*;
  *
  * <ol> <li> First, <b>SOURCE</b> values are always provided within
  * <em><b>source declaration</b></em> of the constants in the Java source file
- * itself. For example, in the "omr/sheet/ScaleBuilder.java" file, we can find
- * the following declaration which defines the minimum value for sheet
- * interline, here specified in pixels (we reject scans with lower values).
+ * itself. For example, in the <em><b>"omr/sheet/ScaleBuilder.java"</b></em>
+ * file, we can find the following declaration which defines the minimum value
+ * for sheet interline, here specified in pixels (the application reject scans
+ * with lower values).
  *
  * <pre>
  * Constant.Integer minInterline = new Constant.Integer(
  *    "Pixels",
  *    15,
  *    "Minimum number of pixels per interline");
- * </pre>
- * </li>
+ * </pre>This declaration must be read as follows:<ul>
+ *
+ * <li><code>minInterline</code> is the Java object used in the application. It
+ * is defined as a Constant.Integer, a subtype of Constant meant to host Integer
+ * values</li>
+ *
+ * <li><code>"Pixels"</code> specifes the unit used. Here we are counting in
+ * pixels.</li>
+ *
+ * <li><code>15</code> is the constant value. This is the value used by the
+ * application, provided it is not overridden in the DEFAULT or USER properties
+ * files.</li>
+ *
+ * <li><code>"Minimum number of pixels per interline"</code> is the constant
+ * description, which will be used as a tool tip in the GUI interface in charge
+ * of editing these constants.</li></ul>
+ *
+ * </li><br/>
  *
  * <li> Then, <b>DEFAULT</b> values, contained in a property file named
  * <em><b>"config/run.default.properties"</b></em> can assign overriding values
