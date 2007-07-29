@@ -65,7 +65,9 @@ import java.util.*;
  * distribution file hierarchy. If this file is not found at start-up the
  * application is stopped.  Typically, this file defines values for a
  * distribution of the application, for example Linux and Windows binaries might
- * need different values for some constants.</li> <br/>
+ * need different values for some constants. The only way to modify the content
+ * of this file is to manually edit it, and this should be reserved to a
+ * knowledgeable person.</li> <br/>
  *
  * <li> Finally, <b>USER</b> values, may be contained in another property file
  * named <em><b>"run.properties"</b></em>. This file is modified every time the
@@ -77,9 +79,7 @@ import java.util.*;
  * represent some modification made by the end user at run-time and thus saved
  * from one run to the other. The format of the user file is the same as the
  * default file, and it is not meant to be edited manually, but rather through
- * the provided GUI tool. The only way to modify the content of this file is to
- * manually edit it, and this should be reserved to a knowledgeable person.</li>
- * </ol>
+ * the provided GUI tool.</li> </ol>
  *
  * <p>The difference between DEFAULT and USER, besides the fact that USER values
  * override DEFAULT values, is that there is exactly one DEFAULT file but there
@@ -96,12 +96,11 @@ import java.util.*;
  * <code>storeResource</code> method.
  *
  * <p> Only the USER property file is written, the SOURCE values in the source
- * code, or the potential overriding DEFAULT values, are not altered.
- *
- * </p> Moreover, if the user has modified a value in such a way that the final
- * value is the same as found in the DEFAULT file, the value is simply discarded
- * from the USER property file. Doing so, the USER property file really contains
- * only the additions of the user.</p>
+ * code, or the potential overriding DEFAULT values, are not altered. Moreover,
+ * if the user has modified a value in such a way that the final value is the
+ * same as found in the DEFAULT file, the value is simply discarded from the
+ * USER property file. Doing so, the USER property file really contains only the
+ * additions of this particular user.</p>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
