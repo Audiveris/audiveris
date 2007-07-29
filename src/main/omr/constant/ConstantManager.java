@@ -121,7 +121,7 @@ public class ConstantManager
     private static String DEFAULT_FILE_NAME = "run.default.properties";
 
     /** User properties */
-    private static Properties userProperties = null;
+    private static volatile Properties userProperties = null;
 
     /** User properties file name */
     private static String USER_FILE_NAME = System.getProperty("user.home") +
@@ -234,7 +234,11 @@ public class ConstantManager
     private static Properties getUserProperties ()
     {
         if (userProperties == null) {
-            loadResource();
+            synchronized (ConstantManager.class) {
+                if (userProperties == null) {
+                    loadResource();
+                }
+            }
         }
 
         return userProperties;
