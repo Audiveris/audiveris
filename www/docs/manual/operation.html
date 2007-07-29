@@ -23,7 +23,8 @@
 	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/inst.css"/>
     </HEAD>
     
-    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="app" STYLE="text-align: justify;">
+    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="app" STYLE="text-align: justify;"
+	   onLoad="parent.parent.clientSideInclude(document, 'includeone', 'example.xml.html');">
 	
 	<H1 ALIGN=CENTER>Audiveris Operation Manual</H1>
 	
@@ -41,8 +42,12 @@
 		for Audiveris 3.0, some sections may not yet be in line with
 		Audiveris actual features.</P>
 	</DIV>
+
 	
-	<A NAME="OPERATIONS">
+	<DIV id="includeone">
+	</DIV>
+	
+	<A NAME="OPERATIONS_SECTION">
 	    <H2>Possible Operations</H2>
 	</A>
 	
@@ -84,6 +89,15 @@
 		adjustments if needed, and then write the resulting score
 		material into a file using MusicXML format.
 	    </DD>
+	    <DD>The automatic processing is organized in a sequence of <A
+		href="#STEPS_SECTION">steps</A> which are detailed below. Every
+		step, with the exception of <A href="#SCALE">SCALE</A>, has a
+		related sheet view which provides visual feedback on what is
+		being done. The user can modify the <A
+		href="#OPTIONS">parameters</A> values used for a specific
+		processing. The user can also directly modify the shape assigned
+		to one or several glyphs, by selecting these glyphs and use menu
+		items or buttons to modify the assignment.</DD>
 	    
 	    <DT>Run a script</DT>
 	    <DD>A script defines a sequence of actions to be performed on a
@@ -93,8 +107,8 @@
 		end. You can then go on and any action you'll perform on the
 		sheet will be recorded as an additional task at the end of the
 		script.</DD>
-	    <DD>Scripts can be run in batch mode as well as in interactive
-		(non-batch) mode.</DD>
+	    <DD><A href="#SCRIPTS">Scripts</A> can be run in batch mode as well
+		as in interactive (non-batch) mode.</DD>
 
 	    <DT>Train the evaluator</DT>
 	    <DD>At the heart of Audiveris, a neural network is in charge of
@@ -118,7 +132,7 @@
 		and the next runs of Audiveris.</DD>
 	</DL>
 	
-	<A NAME="LAUNCHING">
+	<A NAME="LAUNCHING_SECTION">
 	    <H2>Launching Audiveris</H2>
 	</A>
 	
@@ -126,20 +140,28 @@
 	    archive. Audiveris can be launched by different means:</P>
 	<OL>
 	    <LI>A double click on the jar file <u>audiveris-3.0.jar</u> located
-		at the root of the installation directory.</LI>  <BR/>
+		in the <u>bin</u> folder of the installation directory.</LI>
+		<BR/>
 	    <LI>Using the command line:
 		<UL>
 		    <LI>For a simple launch:
 			<DIV CLASS="info">$&gt; java -jar
-			    audiveris-3.0.jar</DIV></LI> <BR/>
+			    bin/audiveris-3.0.jar</DIV></LI> <BR/>
 		    <LI>For a launch with additional JVM parameters (this
 			example provides additional memory to the application):
 			<DIV CLASS="info">$&gt; java -Xmx256m -jar
-			    audiveris-3.0.jar</DIV></LI> <BR/>
+			    bin/audiveris-3.0.jar</DIV></LI> <BR/>
 		    <LI>The full command line syntax is the following:
-			<PRE CLASS="info">
-$&gt; java -jar audiveris-3.0.jar [-help] [-batch] [-step STEPNAME] [-sheet (SHEETNAME|@SHEETLIST)+] [-script (SCRIPTNAME|@SCRIPTLIST)+]
+			<BR/>
+			<BR/>
+			<TEXTAREA style="background-color: rgb(255, 255, 240);
+					 color: rgb(0,0,150)"
+				  COLS="80" ROWS="17" WRAP="off" READONLY="true">
+			    
+$&gt; java -jar bin/audiveris-3.0.jar [-help] [-batch] [-step STEPNAME] [-sheet (SHEETNAME|@SHEETLIST)+] [-script (SCRIPTNAME|@SCRIPTLIST)+]
+			    
 	Known step names are in order (non case-sensitive):
+			    
 LOAD        : Load the sheet picture
 SCALE       : Compute the global Skew, and rotate if needed
 SKEW        : Detect & remove all Staff Lines
@@ -150,8 +172,7 @@ SYMBOLS     : Recognize Symbols & Compounds
 VERTICALS   : Extract verticals
 LEAVES      : Recognize Leaves & Compounds
 CLEANUP     : Cleanup stems and slurs
-SCORE       : Translate glyphs to score items
-			</PRE>
+SCORE       : Translate glyphs to score items</TEXTAREA>
 			<P> Most of the time, there is no need for command-line
 			    arguments. They are useful when a batch mode
 			    (i.e. with no user interface) is required, or to set
@@ -168,18 +189,183 @@ SCORE       : Translate glyphs to score items
 	    <LI>Other possibilities include:
 		<UL>
 		    <LI>Using the .bat file located in the <u>bin</u>
-			folder. You can add parameters to the file.</LI>
+			folder. You can add parameters to the file, so this is a
+			convenient way to register these parameters</LI>
 		    <LI>Using the <i>ant</i> utility from the <u>src</u> folder,
 			and running the <b>run</b> target.</LI>
-		    <LI>Using NetBeans IDE. For this you'll have first to rename
-			the <u>build-for-netbeans.xml</u> file
+		    <LI>Using NetBeans IDE. For this, after creating a NetBeans
+			project in the installation directory, you'll have first
+			to rename the <u>build-for-netbeans.xml</u> file
 			as <u>build.xml</u> and then ask NetBeans to launch the
 			application.</LI>
 		</UL>
 	    </LI>
 	</OL>
 	
-	<A NAME="MENUS">
+	<A NAME="INTERACTIONS_SECTION">
+	    <H2>Interactions</H2>
+	</A>
+	
+	<A NAME="UI">
+	    <H3>User Interface</H3>
+	</A>
+	
+	<P> Here is a quick presentation of the main user interface. This main
+	    windows is organized as follows:
+	    <UL>
+		<LI>The top pane is dedicated to the <b><i><u>Score
+		    View</u></i></b> of one sheet. We can have several sheets
+		    opened, in that case there will be several sheets tabs. The
+		    score view is organized horizontally, all systems are
+		    presented one besides the other.</LI>
+		<LI>In the center, there are several <b><i><u>Sheet
+		    Views</u></i></b>, roughly one per step. All the sheet views
+		    present the same organization of a sheet of music where the
+		    various systems are located one above the other. The Picture
+		    view is the original image (perhaps deskewed), while the
+		    other ones display synthetic objects.</LI>
+		<LI>The bottom left pane is the <b><i><u>Log Pane</u></i></b>
+		    where all messages are logged.</LI>
+		<LI>The bottom middle pane is the <b><i><u>Errors
+		    Pane</u></i></b> where the set of translation errors are
+		    displayed.</LI>
+		<LI>The right pane of the window is used by the <b><i><u>Boards
+		    Pane</u></i></b> which is a vertical assembly of boards. The
+		    Boards Pane contant depends on the selected Sheet View. Here
+		    are the various types of Boards available:
+		    <UL>
+			<LI><B>Pixel:</B> Displays the current position (point
+			    or rectangle) in pixels in the sheet space. The
+			    'Level' field is filled only in the Picture sheet
+			    view, it gives the level of gray for the selected
+			    pixel. Note that apart Level, all the other fields
+			    are also input fields. Just modify their values and
+			    press return to modify the selected location.</LI>
+			<LI><B>Run:</B> Displays the current lag Run if any</LI>
+			<LI><B>Section:</B> Display the current lag Section if
+			    any, with parameters related to the section
+			    itself. The Id field is both output and input, so a
+			    Section can be directly selected via its ID. The 3
+			    last fields (layer, dir and role) describe the
+			    relation between this section and a Stick if
+			    any</LI>
+			<LI><B>Glyph:</B> Displays parameters of the selected
+			    Glyph if any. The 'Id' field allows to browse all
+			    glyphs, while the 'Known' field handles only the
+			    glyphs with an assigned shape, and the 'Symb' field
+			    the glyphs that are symbols. A glyph is collection
+			    of sections, and it is never deleted. A glyph is
+			    said 'Active' if its sections point back to it, so
+			    the selection of one of its sections will select
+			    that glyph. The current glyph shape is displayed,
+			    both the graphic and the name of the shape, and a
+			    button allows to deassign the shape at once.</LI>
+			<LI><B>Focus:</B> Allows to browse the whole sheet for
+			    specific shapes of glyphs. It also allows to switch
+			    the sheet display for all glyphs, just the known
+			    (shape assigned) or just the unknown ones, just the
+			    translated (to score entity) or just the
+			    untranslated ones.</LI>
+			<LI><B>Neural:</B> Displays the result of the glyph
+			    evaluation by the neural network, the 5 best shapes
+			    are displayed, with their related doubt (1.0 is the
+			    best value, infinity is the worst). The color gives
+			    information about the decision made: green means an
+			    accepted shape, red a non-accepted shape, red
+			    background color indicates a shape manually
+			    discarded.</LI>
+			<LI><B>Check:</B> There are many different Check boards,
+			    but they are all organized as a table which displays
+			    a suite of checks and their results for the glyph at
+			    hand.</LI>
+		    </UL>
+		</LI>
+	    </UL>
+	</P>
+	
+	<IMG SRC="../images/whole-window-annotated.png" TITLE="Main Window
+	     Layout" />
+	<BR/>
+	
+	<A NAME="MANUALS">
+	    <H3>Manual Interactions</H3>
+	</A>
+
+	<DL>
+	    <DT>Selection</DT>
+	    <DD>An entity can be selected:
+		<UL>
+		    <LI>By <B>typing</B> its ID (section ID, glyph ID) in the
+			proper board. The ID of a section, or the ID of a glyph
+			never changes, whatever the actions performed on the
+			sheet. This is the reason why many log or error messages
+			use the glyph ID.</LI>
+		    <LI>By <B>pointing</B> to it with the mouse in the sheet
+			view (or in the score view). A left click selects a
+			section (if there is one at this location) which in turn
+			selects a glyph if this section is assigned to a
+			glyph. Other glyphs can be added to the selection, by
+			pressing the Control key while pointing to another glyph
+			in the sheet view.</LI>
+		    <LI>By using a <B>lasso</B>, a rectangle displayed by
+			dragging the mouse (left button) in the sheet view while
+			a Shift key is pressed. To be selected, the glyphs must
+			be fully enclosed by the rectangle</LI>
+		</UL>
+	    </DD>
+	    <DD>The current location is indicated by the crossing of vertical
+		and horizontal brown lines. Note that the score view and the
+		sheet view are synchronized regarding the location
+		selection.</DD>
+	    <DD>The coordinates of the selection are displayed in the
+		Pixel board for the sheet view, while coordinates expressed as a
+		SystemPoint are displayed just under the score view.</DD>
+	    <DD>According to the current selection, the various boards have
+		their content updated dynamically. In particular, the Neural
+		board runs on the current selection and displays the best
+		evaluations. Note that if several glyphs are selected, the
+		evaluation is computed against a compound dynamically built from
+		all the selected glyphs.</DD>
+
+	    <DT>Actions</DT>
+	    <DD>Actions are performed on the selected entity (or entities).</DD>
+	</DL>
+	
+	<A NAME="SCRIPTS">
+	    <H3>Scripts</H3>
+	</A>
+	<P> The loading and processing of a sheet produces a related script,
+	    that the user may save on disk or discard.</P>
+	<P> Here after is the script file which corresponds to the actions
+	    performed on the 'Chula.png' sheet as described in the quick start
+	    <A target="Pack" href="index.html?manual=example">example</A>.</P>
+	<P> Its understanding is straightforward: the tag name defines an action
+	    (step, assign, segment, deassign, export) associated with its proper
+	    parameters. You can manually edit the script, but note that the
+	    glyphs are designated via their ID, a simplistic solution to be
+	    secured in a future release of Audiveris.</P>
+	<B><I>chula.script</I></B>
+	<BR/>
+	<iframe src="chula.script.html" width="60%" height="200" frameborder="1">
+	    <a href="chula.script.html">You are using a very old browser.
+		Click here to go directly to included content.</a>
+	</iframe>		    
+	
+	<A NAME="EXPORT">
+	    <H3>Score Export</H3>
+	</A>
+	<P> A score can be exported to a file, using MusicXML format (V1.1 for
+	    the time being, as this is the most common version).</P>
+	<P> Here is the export of the 'chula.png' sheet, processed through the quick start example:</P>
+	<B><I>chula.xml</I></B>
+	<BR/>
+	<iframe src="chula.xml.html" width="100%" height="300" frameborder="1">
+	    <a href="chula.xml.html">You are using a very old browser.
+		Click here to go directly to included content.</a>
+	</iframe>		    
+	
+	
+	<A NAME="MENUS_SECTION">
 	    <H2>Menu description</H2>
 	</A>
 	
@@ -316,7 +502,7 @@ SCORE       : Translate glyphs to score items
 	    
 	    <P> These commands define switches used in different views, from top
 		to bottom: score view, sheet views, log pane</P>
-	    
+
 	    <TABLE WIDTH=100% BORDER=1>
 		<TR>
 		    <TH>Show score Voices</TH>
@@ -359,8 +545,8 @@ SCORE       : Translate glyphs to score items
 		</TR>
 	    </TABLE>
 	    
-	    <A NAME="TOOL">
-		<H3>Tool</H3>
+	    <A NAME="TOOLS">
+		<H3>Tools</H3>
 	    </A>
 	    
 	    <TABLE WIDTH=100% BORDER=1>
@@ -397,15 +583,18 @@ SCORE       : Translate glyphs to score items
 	    <TABLE WIDTH=100% BORDER=1>
 		<TR>
 		    <TH WIDTH="120px">About</TH>
-		    <TD>Display information about Audiveris version and related
-			web-site</TD>
+		    <TD>Display information about Audiveris version, build,
+			launch mode and related web-site</TD>
 		</TR>
 	    </TABLE>
 	</DIV>
 	
-	<A NAME="STEPS">
+	<A NAME="STEPS_SECTION">
 	    <H2>Steps</H2>
 	</A>
+	
+	    <P CLASS="alert"><b>BEWARE:</b> This section on steps needs to be
+		updated</P>
 	
 	<P> To present the various operations, and the related user interface,
 	    we'll use a tour based on the usual sequence of processing steps,
@@ -788,8 +977,10 @@ SCORE       : Translate glyphs to score items
 	<!-- <IMG SRC="../images/xxx.png" -->
 		 <!-- TITLE="Example of undue stem" /> -->
 	
-	
-	<H2>Tools</H2>
+
+	<A NAME="TOOLS_SECTION">
+	    <H2>Tools</H2>
+	</A>
 	
 	<A NAME="SHAPE_COLORS">
 	    <H3>Shape Colors</H3>
@@ -979,22 +1170,22 @@ SCORE       : Translate glyphs to score items
 		    removing the staff lines.</LI>
 		<LI>This class has a logging level, currently assigned
 		    to <I>"INFO"</I>. This information comes from
-		    the <U>config/log4j.properties</U> file, but can be modified
+		    the <U>config/logging.properties</U> file, but can be modified
 		    on the fly, thanks to this interface, to any legal logging
 		    value (such as DEBUG, INFO, etc...). <B>NOTA</B>: these
 		    logging level modifications are meant to be temporary, and
 		    thus not stored on disk. For persistent modification, please
-		    edit the log4j property file directly.</LI>
+		    edit the logging property file directly.</LI>
 		<LI>The class also contains several logical constants, which are
 		    application-level parameters, whose precise value is kept
-		    separate from the algorithmic code. For example, the third
+		    separate from the algorithmic code. For example, the second
 		    constant, named <I>histoThresholdFrac</I>, is a java
 		    variable declared in the <I>LinesBuilder</I> class. It is a
-		    Double, whose current value is 0.5. A tip text is displayed,
-		    which says "Peak threshold stated as a ration of maximum
-		    histogram value". In other words, this defines the threshold
-		    that indicates a staff line on the histogram built with
-		    horizontal projections.</LI>
+		    Constant.Double, whose current value is 0.5. A tip text is
+		    displayed, which says "Peak threshold stated as a ration of
+		    maximum histogram value". In other words, this defines the
+		    threshold that indicates a staff line on the histogram built
+		    with horizontal projections.</LI>
 	    </OL>
 	</P>
 	
