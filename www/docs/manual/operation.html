@@ -47,15 +47,89 @@
 	<DIV id="includeone">
 	</DIV>
 	
-	<A NAME="OPERATIONS_SECTION">
-	    <H2>Possible Operations</H2>
+	<A NAME="BASICS_SECTION">
+	    <H2>Basics</H2>
+	</A>
+	
+	<A NAME="LAUNCHING">
+	    <H3>Launching Audiveris</H3>
+	</A>
+	
+	<P>First, move to the directory where you've extracted the Audiveris
+	    archive. Audiveris can be launched by different means:</P>
+	<OL>
+	    <LI>A double click on the jar file <u>audiveris-3.0.jar</u> located
+		in the <u>bin</u> folder of the installation directory.</LI>
+		<BR/>
+	    <LI>Using the command line:
+		<UL>
+		    <LI>For a simple launch:
+			<DIV CLASS="info">$&gt; java -jar
+			    bin/audiveris-3.0.jar</DIV></LI> <BR/>
+		    <LI>For a launch with additional JVM parameters (this
+			example provides additional memory to the application):
+			<DIV CLASS="info">$&gt; java -Xmx256m -jar
+			    bin/audiveris-3.0.jar</DIV></LI> <BR/>
+		    <LI>The full command line syntax is the following:
+			<BR/>
+			<BR/>
+			<TEXTAREA style="background-color: rgb(255, 255, 240);
+					 color: rgb(0,0,150)"
+				  COLS="80" ROWS="17" WRAP="off" READONLY="true">
+			    
+$&gt; java -jar bin/audiveris-3.0.jar [-help] [-batch] [-step STEPNAME] [-sheet (SHEETNAME|@SHEETLIST)+] [-script (SCRIPTNAME|@SCRIPTLIST)+]
+			    
+	Known step names are in order (non case-sensitive):
+			    
+LOAD        : Load the sheet picture
+SCALE       : Compute the global Skew, and rotate if needed
+SKEW        : Detect & remove all Staff Lines
+LINES       : Retrieve horizontal Dashes
+HORIZONTALS : Detect horizontal dashes
+BARS        : Detect vertical Bar lines
+SYMBOLS     : Recognize Symbols & Compounds
+VERTICALS   : Extract verticals
+LEAVES      : Recognize Leaves & Compounds
+CLEANUP     : Cleanup stems and slurs
+SCORE       : Translate glyphs to score items</TEXTAREA>
+			<P> Most of the time, there is no need for command-line
+			    arguments. They are useful when a batch mode
+			    (i.e. with no user interface) is required, or to set
+			    some parameters beforehand.</P>
+			
+			<P> A comprehensive list of command-line arguments is
+			    available in the javadoc API of the <A
+			    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/Main.html">Main</A>
+			    class.</P>
+		    </LI>
+		</UL>
+	    </LI>
+	    <BR/>
+	    <LI>Other possibilities include:
+		<UL>
+		    <LI>Using the .bat file located in the <u>bin</u>
+			folder. You can add parameters to the file, so this is a
+			convenient way to register these parameters</LI>
+		    <LI>Using the <i>ant</i> utility from the <u>src</u> folder,
+			and running the <b>run</b> target.</LI>
+		    <LI>Using NetBeans IDE. For this, after creating a NetBeans
+			project in the installation directory, you'll have first
+			to rename the <u>build-for-netbeans.xml</u> file
+			as <u>build.xml</u> and then ask NetBeans to launch the
+			application.</LI>
+		</UL>
+	    </LI>
+	</OL>
+	
+	<A NAME="POSSIBLE">
+	    <H3>Possible Operations</H3>
 	</A>
 	
 	<P>The purpose of this section is to identify and quickly present the
 	    various operations that an end user may perform with
 	    Audiveris. Additional details will be provided in the other sections
 	    of this document.</P>
-
+	
 	<DL>
 	    <DT>Get the scan of a sheet of music</DT>
 	    <DD>
@@ -131,76 +205,6 @@
 		desired. Any new value is then made available for the current
 		and the next runs of Audiveris.</DD>
 	</DL>
-	
-	<A NAME="LAUNCHING_SECTION">
-	    <H2>Launching Audiveris</H2>
-	</A>
-	
-	<P>First, move to the directory where you've extracted the Audiveris
-	    archive. Audiveris can be launched by different means:</P>
-	<OL>
-	    <LI>A double click on the jar file <u>audiveris-3.0.jar</u> located
-		in the <u>bin</u> folder of the installation directory.</LI>
-		<BR/>
-	    <LI>Using the command line:
-		<UL>
-		    <LI>For a simple launch:
-			<DIV CLASS="info">$&gt; java -jar
-			    bin/audiveris-3.0.jar</DIV></LI> <BR/>
-		    <LI>For a launch with additional JVM parameters (this
-			example provides additional memory to the application):
-			<DIV CLASS="info">$&gt; java -Xmx256m -jar
-			    bin/audiveris-3.0.jar</DIV></LI> <BR/>
-		    <LI>The full command line syntax is the following:
-			<BR/>
-			<BR/>
-			<TEXTAREA style="background-color: rgb(255, 255, 240);
-					 color: rgb(0,0,150)"
-				  COLS="80" ROWS="17" WRAP="off" READONLY="true">
-			    
-$&gt; java -jar bin/audiveris-3.0.jar [-help] [-batch] [-step STEPNAME] [-sheet (SHEETNAME|@SHEETLIST)+] [-script (SCRIPTNAME|@SCRIPTLIST)+]
-			    
-	Known step names are in order (non case-sensitive):
-			    
-LOAD        : Load the sheet picture
-SCALE       : Compute the global Skew, and rotate if needed
-SKEW        : Detect & remove all Staff Lines
-LINES       : Retrieve horizontal Dashes
-HORIZONTALS : Detect horizontal dashes
-BARS        : Detect vertical Bar lines
-SYMBOLS     : Recognize Symbols & Compounds
-VERTICALS   : Extract verticals
-LEAVES      : Recognize Leaves & Compounds
-CLEANUP     : Cleanup stems and slurs
-SCORE       : Translate glyphs to score items</TEXTAREA>
-			<P> Most of the time, there is no need for command-line
-			    arguments. They are useful when a batch mode
-			    (i.e. with no user interface) is required, or to set
-			    some parameters beforehand.</P>
-			
-			<P> A comprehensive list of command-line arguments is
-			    available in the javadoc API of the <A
-			    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/Main.html">Main</A>
-			    class.</P>
-		    </LI>
-		</UL>
-	    </LI>
-	    <BR/>
-	    <LI>Other possibilities include:
-		<UL>
-		    <LI>Using the .bat file located in the <u>bin</u>
-			folder. You can add parameters to the file, so this is a
-			convenient way to register these parameters</LI>
-		    <LI>Using the <i>ant</i> utility from the <u>src</u> folder,
-			and running the <b>run</b> target.</LI>
-		    <LI>Using NetBeans IDE. For this, after creating a NetBeans
-			project in the installation directory, you'll have first
-			to rename the <u>build-for-netbeans.xml</u> file
-			as <u>build.xml</u> and then ask NetBeans to launch the
-			application.</LI>
-		</UL>
-	    </LI>
-	</OL>
 	
 	<A NAME="INTERACTIONS_SECTION">
 	    <H2>Interactions</H2>
@@ -290,6 +294,11 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	<A NAME="MANUALS">
 	    <H3>Manual Interactions</H3>
 	</A>
+	
+	<P>Besides the predefined steps which operate on the whole set of
+	    sections and glyphs, any manual interaction can only be performed on
+	    selected glyphs. So this section first describes how to set one or
+	    several glyphs, then goes through the possible actions.</P>
 
 	<DL>
 	    <DT>Selection</DT>
@@ -328,7 +337,48 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 		all the selected glyphs.</DD>
 
 	    <DT>Actions</DT>
-	    <DD>Actions are performed on the selected entity (or entities).</DD>
+	    <DD>On the selected entity (or entities), several manual actions are
+		possible:
+		<DL>
+		    <DT>Assignment</DT>
+		    <DD>A shape is assigned to the selected entities. This
+			manually assigned shape will never be called into
+			question by the program. Only another manual operation
+			can change this assignment.</DD>
+		    <DT>Deassignment</DT>
+		    <DD>A null shape is assigned to the selected entities. Each
+			of the previously assigned entities registers its former
+			shape in a personal blacklist. Doing so, the shape that
+			has been manually deassigned won't be reassigned by the
+			program. Only a manual operation can change this.</DD>
+		    <DT>Merging</DT>
+		    <DD>The selected glyphs (more precisely the sections they
+			are composed of) are assembled into one new compound
+			glyph. If the new glyph is found to have the same
+			signature than an existing glyph, they are considered as
+			being the same entity.</DD>
+		    <DT>Segmentation</DT>
+		    <DD>The selected glyphs are looked up for the presence of
+			verticals (such as potential stems, or shorter vertical
+			segments). The remaining sections are then assembled
+			into leaf glyphs.</DD>
+		</DL>
+	    </DD>
+
+	    <DT>Injection</DT>
+	    <DD>Score entities, as they appear in the score view and are
+		exported to MusicXML, are "translated" from assigned glyphs by
+		the ScoreBuilder class.</DD>
+	    <DD>There is no "direct injection" of any score entity to the score
+		structure. This is consistent with the rationale that Audiveris
+		is a music scanner, not a score editor. Manually injecting score
+		entities is typically an editor feature, and should be addressed
+		by connecting an external score editor to Audiveris MusicXML
+		output.</DD>
+	    <DD>Unless such editor can be tightly integrated with Audiveris,
+		this unability to inject score entities may be felt as a
+		limitation, perhaps to be addressed in a future Audiveris
+		release.</DD>
 	</DL>
 	
 	<A NAME="SCRIPTS">
@@ -365,236 +415,232 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	</iframe>		    
 	
 	
-	<A NAME="MENUS_SECTION">
-	    <H2>Menu description</H2>
+	<A NAME="MENUS">
+	    <H3>Menu description</H3>
 	</A>
 	
 	<P> Here is a quick catalog of the various menu items, as found on
 	    Audiveris main user interface.</P>
 	
 	<DIV CLASS="axial">
-	    
-	    <A NAME="FILE">
-		<H3>File</H3>
-	    </A>
-	    
-	    <P>All these commands deal with the sheet at hand</P>
-	    
-	    <TABLE WIDTH=100% BORDER=1>
-		<TR>
-		    <TH WIDTH="120px">Sheet History</TH>
-		    <TD>List the more recent sheet files you've loaded</TD>
-		</TR>
-		<TR>
-		    <TH>Open Sheet</TH>
-		    <TD>Select a file that contains a printed sheet of
-			music. Most graphic file formats should be
-			usable, <EM>provided the pixel info uses a grey scale of
-			256 values</EM>. </TD>
-		</TR>
-		<TR>
-		    <TH>Open Script</TH>
-		    <TD>Select and run a script file</TD>
-		</TR>
-		<TR>
-		    <TH>Store Script</TH>
-		    <TD>Save the current script of the sheet</TD>
-		</TR>
-		<TR>
-		    <TH>Width Fit</TH>
-		    <TD>Adjust the zoom ratio so that the sheet WIDTH is fully
-			displayed in the window</TD>
-		</TR>
-		<TR>
-		    <TH>Height Fit</TH>
-		    <TD>Adjust the zoom ratio so that the sheet HEIGHT is fully
-			displayed in the window</TD>
-		</TR>
-		<TR>
-		    <TH>Record Glyphs</TH>
-		    <TD>Save on disk the definition of recognized glyphs as
-			material for future training of the evaluator</TD>
-		</TR>
-		<TR>
-		    <TH>Scale Plot</TH>
-		    <TD>Display histogram of run lengths for foreground (black)
-			and background (white) pixels. This gives the general
-			scale (interline value) of the sheet.  Here is <A
-			HREF="#SCALE_PLOT">a scale plot example produced by the
-			SCALE step</A>.
-		    </TD>
-		</TR>
-		<TR>
-		    <TH>Skew Plot</TH>
-		    <TD>Display histogram of measured slopes of longest
-			horizontal sticks. This gives the angle to de-skew the
-			image.  Here is <A HREF="#SKEW_PLOT">a skew plot
-			example produced by the SKEW step</A>.
-		    </TD>
-		</TR>
-		<TR>
-		    <TH>Line Plot</TH>
-		    <TD>Display histogram of horizontal projections of black
-			pixels. This indicates area for each staff line.  Here
-			is <A HREF="#LINE_PLOT">a line plot example produced by
-			the LINES step</A>.
-		    </TD>
-		</TR>
-		<TR>
-		    <TH>Close Sheet</TH>
-		    <TD>Close the current sheet, and release all resources
-			linked to it.</TD>
-		</TR>
-		<TR>
-		    <TH WIDTH="120px">Exit</TH>
-		    <TD>Exit the application. If you have pending unsaved
-			scripts, you'll be prompted to save them.</TD>
-		</TR>
-	    </TABLE>
-	    
-	    <A NAME="STEP">
-		<H3>Step</H3>
-	    </A>
-	    
-	    <P> Launch the processing of a step on the sheet at hand </P>
-	    
-	    <TABLE WIDTH=100% BORDER=1>
-		<TR>
-		    <TH WIDTH="120px"><A HREF="#STEPS">&lt;Any Step&gt;</A></TH>
-		    <TD>Select the target in this menu which lists in order the
-			defined processing steps, as described in <A
-			HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/step/Step.html">Step</A>
-			class documentation. Note that you can only move
-			forward.
-			
-			<P> Direct access to any step is available from the
-			    navigation frame on the left of the window</P>
-		    </TD>
-		</TR>
-	    </TABLE>
-	    
-	    <A NAME="SCORE">
-		<H3>Score</H3>
-	    </A>
-	    
-	    <P> All these commands deal with the score part of the sheet at
-		hand</P>
-	    
-	    <TABLE WIDTH=100% BORDER=1>
-		<TR>
-		    <TH>Browse Score</TH>
-		    <TD>Display and browse the hierarchical information about
-			the current score</TD>
-		</TR>
-		<TR>
-		    <TH>Dump Score</TH>
-		    <TD>Print main score information on the output console</TD>
-		</TR>
-		<TR>
-		    <TH>Store in XML</TH>
-		    <TD>Save the current score,, using MusicXML format.</TD>
-		</TR>
-	    </TABLE>
-	    
-	    <A NAME="VIEWS">
-		<H3>Views</H3>
-	    </A>
-	    
-	    <P> These commands define switches used in different views, from top
-		to bottom: score view, sheet views, log pane</P>
 
-	    <TABLE WIDTH=100% BORDER=1>
-		<TR>
-		    <TH>Show score Voices</TH>
-		    <TD>In the score view, display the different voices found,
-			as colored lines between the participating notes</TD>
-		</TR>
-		<TR>
-		    <TH>Show score Slots</TH>
-		    <TD>In the score view, display the vertical blue lines that
-			indicate time slots</TD>
-		</TR>
-		<TR>
-		    <TH>Show score Marks</TH>
-		    <TD>In the score view, display the marks that indicate
-			insertion of forwards</TD>
-		</TR>
-		<TR>
-		    <TH>Show stick Lines</TH>
-		    <TD>In the sheet symbol view, display the mean line of every
-			selected stick.</TD>
-		</TR>
-		<TR>
-		    <TH>Show slur Circles</TH>
-		    <TD>In the sheet symbol view, display the approximating
-			circle arc of any selected slur.</TD>
-		</TR>
-		<TR>
-		    <TH>Show original staff lines</TH>
-		    <TD>In the sheet LINES view, display in yellow the original
-			staff lines that have been removed</TD>
-		</TR>
-		<TR>
-		    <TH>Show original ledger lines</TH>
-		    <TD>In the sheet HORIZONTALS view, display in yellow the original
-			ledger lines that have been removed</TD>
-		</TR>
-		<TR>
-		    <TH>Clear log</TH>
-		    <TD>Erase all lines in the log pane</TD>
-		</TR>
-	    </TABLE>
+	    <DL>
+		<DT><B>File</B></DT>
+		
+		<DD>All these commands deal with the sheet at hand</DD>
+		
+		<TABLE WIDTH=100% BORDER=1>
+		    <TR>
+			<TH WIDTH="120px">Sheet History</TH>
+			<TD>List the more recent sheet files you've loaded</TD>
+		    </TR>
+		    <TR>
+			<TH>Open Sheet</TH>
+			<TD>Select a file that contains a printed sheet of
+			    music. Most graphic file formats should be
+			    usable, <EM>provided the pixel info uses a grey
+			    scale of 256 values</EM>. </TD>
+		    </TR>
+		    <TR>
+			<TH>Open Script</TH>
+			<TD>Select and run a script file</TD>
+		    </TR>
+		    <TR>
+			<TH>Store Script</TH>
+			<TD>Save the current script of the sheet</TD>
+		    </TR>
+		    <TR>
+			<TH>Width Fit</TH>
+			<TD>Adjust the zoom ratio so that the sheet WIDTH is
+			    fully displayed in the window</TD>
+		    </TR>
+		    <TR>
+			<TH>Height Fit</TH>
+			<TD>Adjust the zoom ratio so that the sheet HEIGHT is
+			    fully displayed in the window</TD>
+		    </TR>
+		    <TR>
+			<TH>Record Glyphs</TH>
+			<TD>Save on disk the definition of recognized glyphs as
+			    material for future training of the evaluator</TD>
+		    </TR>
+		    <TR>
+			<TH>Scale Plot</TH>
+			<TD>Display histogram of run lengths for foreground
+			    (black) and background (white) pixels. This gives
+			    the general scale (interline value) of the sheet.
+			    Here is <A HREF="#SCALE_PLOT">a scale plot example
+			    produced by the SCALE step</A>.
+			</TD>
+		    </TR>
+		    <TR>
+			<TH>Skew Plot</TH>
+			<TD>Display histogram of measured slopes of longest
+			    horizontal sticks. This gives the angle to de-skew
+			    the image.  Here is <A HREF="#SKEW_PLOT">a skew plot
+			    example produced by the SKEW step</A>.
+			</TD>
+		    </TR>
+		    <TR>
+			<TH>Line Plot</TH>
+			<TD>Display histogram of horizontal projections of black
+			    pixels. This indicates area for each staff line.
+			    Here is <A HREF="#LINE_PLOT">a line plot example
+			    produced by the LINES step</A>.
+			</TD>
+		    </TR>
+		    <TR>
+			<TH>Close Sheet</TH>
+			<TD>Close the current sheet, and release all resources
+			    linked to it.</TD>
+		    </TR>
+		    <TR>
+			<TH WIDTH="120px">Exit</TH>
+			<TD>Exit the application. If you have pending unsaved
+			    scripts, you'll be prompted to save them.</TD>
+		    </TR>
+		</TABLE>
+		
+		<DT><B>Step</B></DT>
+		
+		<DD> Launch the processing of a step on the sheet at hand </DD>
+		
+		<TABLE WIDTH=100% BORDER=1>
+		    <TR>
+			<TH WIDTH="120px"><A HREF="#STEPS">&lt;Any
+			    Step&gt;</A></TH>
+			<TD>Select the target in this menu which lists in order
+			    the defined processing steps, as described in <A
+			    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/step/Step.html">Step</A>
+			    class documentation. Note that you can only move
+			    forward.
+			    
+			    <P> Direct access to any step is available from the
+				navigation frame on the left of the window</P>
+			</TD>
+		    </TR>
+		</TABLE>
+		
+		<DT><B>Score</B></DT>
+		
+		<DD> All these commands deal with the score part of the sheet at
+		    hand</DD>
+		
+		<TABLE WIDTH=100% BORDER=1>
+		    <TR>
+			<TH>Browse Score</TH>
+			<TD>Display and browse the hierarchical information
+			    about the current score</TD>
+		    </TR>
+		    <TR>
+			<TH>Dump Score</TH>
+			<TD>Print main score information on the output
+			    console</TD>
+		    </TR>
+		    <TR>
+			<TH>Store in XML</TH>
+			<TD>Save the current score,, using MusicXML format.</TD>
+		    </TR>
+		</TABLE>
+		
+		<DT><B>Views</B></DT>
+		
+		<DD> These commands define switches used in different views,
+		    from top to bottom: score view, sheet views, log pane</DD>
+		
+		<TABLE WIDTH=100% BORDER=1>
+		    <TR>
+			<TH>Show score Voices</TH>
+			<TD>In the score view, display the different voices
+			    found, as colored lines between the participating
+			    notes</TD>
+		    </TR>
+		    <TR>
+			<TH>Show score Slots</TH>
+			<TD>In the score view, display the vertical blue lines
+			    that indicate time slots</TD>
+		    </TR>
+		    <TR>
+			<TH>Show score Marks</TH>
+			<TD>In the score view, display the marks that indicate
+			    insertion of forwards</TD>
+		    </TR>
+		    <TR>
+			<TH>Show stick Lines</TH>
+			<TD>In the sheet symbol view, display the mean line of
+			    every selected stick.</TD>
+		    </TR>
+		    <TR>
+			<TH>Show slur Circles</TH>
+			<TD>In the sheet symbol view, display the approximating
+			    circle arc of any selected slur.</TD>
+		    </TR>
+		    <TR>
+			<TH>Show original staff lines</TH>
+			<TD>In the sheet LINES view, display in yellow the
+			    original staff lines that have been removed</TD>
+		    </TR>
+		    <TR>
+			<TH>Show original ledger lines</TH>
+			<TD>In the sheet HORIZONTALS view, display in yellow the
+			    original ledger lines that have been removed</TD>
+		    </TR>
+		    <TR>
+			<TH>Clear log</TH>
+			<TD>Erase all lines in the log pane</TD>
+		    </TR>
+		</TABLE>
 	    
-	    <A NAME="TOOLS">
-		<H3>Tools</H3>
-	    </A>
+		<DT><B>Tools</B></DT>
+
+		
+		<TABLE WIDTH=100% BORDER=1>
+		    <TR>
+			<TH WIDTH="120px"><A HREF="#SHAPE_COLORS">Shape
+			    Colors</A></TH>
+			<TD>Select the color display for each recognized
+			    shape</TD>
+		    </TR>
+		    <TR>
+			<TH><A HREF="#TRAINING_MATERIAL">Training
+			    Material</A></TH>
+			<TD>Verify and potentially discard glyph material used
+			    to train the evaluators</TD>
+		    </TR>
+		    <TR>
+			<TH><A HREF="#TRAINERS">Trainers</A></TH>
+			<TD>Launch and monitor the training phases of the
+			    evaluators</TD>
+		    </TR>
+		    <TR>
+			<TH>Memory</TH>
+			<TD>Display the current memory occupancy</TD>
+		    </TR>
+		    <TR>
+			<TH><A HREF="#OPTIONS">Options</A></TH>
+			<TD>Set the various parameters used by Audiveris
+			    software</TD>
+		    </TR>
+		</TABLE>
 	    
-	    <TABLE WIDTH=100% BORDER=1>
-		<TR>
-		    <TH WIDTH="120px"><A HREF="#SHAPE_COLORS">Shape
-			Colors</A></TH>
-		    <TD>Select the color display for each recognized shape</TD>
-		</TR>
-		<TR>
-		    <TH><A HREF="#TRAINING_MATERIAL">Training Material</A></TH>
-		    <TD>Verify and potentially discard glyph material used to
-			train the evaluators</TD>
-		</TR>
-		<TR>
-		    <TH><A HREF="#TRAINERS">Trainers</A></TH>
-		    <TD>Launch and monitor the training phases of the
-			evaluators</TD>
-		</TR>
-		<TR>
-		    <TH>Memory</TH>
-		    <TD>Display the current memory occupancy</TD>
-		</TR>
-		<TR>
-		    <TH><A HREF="#OPTIONS">Options</A></TH>
-		    <TD>Set the various parameters used by Audiveris
-			software</TD>
-		</TR>
-	    </TABLE>
-	    
-	    <A NAME="HELP">
-		<H3>Help</H3>
-	    </A>
-	    
-	    <TABLE WIDTH=100% BORDER=1>
-		<TR>
-		    <TH WIDTH="120px">About</TH>
-		    <TD>Display information about Audiveris version, build,
-			launch mode and related web-site</TD>
-		</TR>
-	    </TABLE>
+		<DT><B>Help</B></DT>
+		
+		<TABLE WIDTH=100% BORDER=1>
+		    <TR>
+			<TH WIDTH="120px">About</TH>
+			<TD>Display information about Audiveris version, build,
+			    launch mode and related web-site</TD>
+		    </TR>
+		</TABLE>
+	    </DL>
 	</DIV>
 	
 	<A NAME="STEPS_SECTION">
 	    <H2>Steps</H2>
 	</A>
 	
-	    <P CLASS="alert"><b>BEWARE:</b> This section on steps needs to be
-		updated</P>
+	<P CLASS="alert"><b>BEWARE:</b> This section on steps needs to be
+	    updated for certain pictures, but the logic still apply.</P>
 	
 	<P> To present the various operations, and the related user interface,
 	    we'll use a tour based on the usual sequence of processing steps,
@@ -700,8 +746,10 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	    and horizontal sticks.</P>
 	
 	<P> We can display the sheet view related to the skew computation, as in
-	    the following picture. The <I>"common"</I> sections are colorized in
-	    colors close to green or blue, while the sections that compose
+	    the following picture. Nota: if this view is not displayed, check
+	    the property <em>"omr.SkewBuilder.displayFrame"</em> using
+	    the <B>Options</B> tool. The <I>"common"</I> sections are colorized
+	    in colors close to green or blue, while the sections that compose
 	    the <I>"significant"</I> horizontal sections are colorized in
 	    red. We can notice that the staff lines are the main contributors to
 	    the long horizontal section.</P>
@@ -772,7 +820,8 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	<IMG SRC="../images/lines.png" TITLE="Staff lines detected and cleaned
 					      up" />
 	
-	<P> Note that we can use a toggle button to switch between:
+	<P> Note that, by using <I><U>Views</U> &gt; <U>Show original staff
+	    lines</U></I>, we can switch between:
 	    <UL>
 		<LI>The display of the former line pixels (colorized in
 		    yellow),</LI>
@@ -781,20 +830,16 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	    </UL>
 	</P>
 	
-	<P> Here is the toggle button:</P> <IMG SRC="../images/toggle.png"
-						 TITLE="Toggle button" />
+	<P> Here is the display of retrieved staff lines:</P>
 	
-	<P> Here is the display of retrieved staff lines:</P> <IMG
-								   SRC="../images/lines-toggled.png"
-								   TITLE="Display
-								   of staff line
-									  pixels" />
+	<IMG SRC="../images/lines-toggled.png" TITLE="Display of staff line
+						      pixels" />
 	
 	<P> Here are two zoomed view of details from the sheet, first the
 	    original staff line pixels, then the resulting data, where line
 	    pixels have been removed, and crossing objects have been carefully
 	    extended (note the extension goes until the synthetic staff line)
-	   : </P>
+	    : </P>
 	
 	<IMG SRC="../images/lines-toggled-large.png" TITLE="Focus on staff line
 							    pixels" />
@@ -808,14 +853,15 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	    <H3>Horizontal Step</H3>
 	</A>
 	
-	<P> This step retrieves and remove the horizontal sticks that are
+	<P> This step retrieves and removes the horizontal sticks that are
 	    recognized as ledgers of alternate endings. The following figure
 	    shows that the ledger for a 'A' note has been removed and the two
 	    parts of the note head have been properly joined into one glyph (a
 	    black note head.</P>
 	
-	<IMG SRC="../images/horizontals.png" TITLE="Focus on horizontal ledger"
-	     />
+	<IMG SRC="../images/horizontals.png" TITLE="Focus on horizontal ledger"/>
+	<EM><B>Changed for:</B></EM>
+	<IMG SRC="../images/horizontals-replaced.png" TITLE="Focus on horizontal ledger"/>
 	
 	
 	<BR/>
@@ -856,45 +902,21 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	<IMG SRC="../images/symbols.png" TITLE="Extraction of stand-alone
 						symbols" />
 	
-	
-	<BR/>
-	<A NAME="SYMBOLS_COMPOUNDS">
-	    <H3>Symbols_Compounds Step</H3>
-	</A>
-	
-	<P> This step focuses on non-recognized glyphs that may be the result of
-	    undesired segmentation. This frequently occurs because of staff line
-	    removal for symbols such as F clef or common time signature.</P>
+	<P> This step then focuses on non-recognized glyphs that may be the
+	    result of undesired segmentation. This frequently occurs because of
+	    staff line removal for symbols such as F clef or common time
+	    signature.</P>
 	
 	<P> The algorithm used is to browse through all unknown glyphs, ordered
-	    by decreasing weight, and to try to aggregate neighbours that are
+	    by decreasing weight, and to try to aggregate neighbors that are
 	    other unknown glyphs of the same system. If the result of this
 	    combination leads to some recognized symbol, then we keep it as a
 	    (compound) glyph. Otherwise, we don't keep the compound.</P>
 	
-	<IMG SRC="../images/common.png" width="200px" TITLE="Common time symbol
-							     segmented" />
-	
-	<P> The image above exhibits a segmented common time symbol: because of
-	    the staff line removal, the initial symbol had been segmented into 3
-	    parts, and nothing has been recognized (everything is displayed in
-	    red color). The "symbols_compounds" step has aggregated 2 parts and
-	    the result has been recognized as a common sign, as displayed on the
-	    following image (notice the non-red color, that signals a recognized
-	    glyph).</P>
-	
-	<IMG SRC="../images/common-compound.png" width="200px" TITLE="Common
-								      time
-								      symbol as
-								      a
-								      compound"
-	     />
-	
-	<P> There is an obvious limitation in the current algorithm, which deals
-	    only with 2-part compounds: we should be able to try more complex
-	    compounds (here, we typically need the ability to make a 3-part
-	    compound).</P>
-	
+	<P> This cares for symbols that are typically segmentd by the removal of
+	    staff lines, despite the efforts made to keep crossing objects
+	    connected. This happens frequently for bass clefs, or for common
+	    time signatures.</P>
 	
 	<BR/>
 	<A NAME="VERTICALS">
@@ -937,12 +959,8 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	
 	
 	<BR/>
-	<A NAME="LEAVES_COMPOUNDS">
-	    <H3>Leaves_Compounds Step</H3>
-	</A>
 	
-	<P> Just like symbols, leaves may have been unduely segmented. So the
-	    apply another compound step, to recompose these leaves.</P>
+	<P> Just like symbols, leaves may have been unduely segmented.</P>
 	
 	<IMG SRC="../images/void_notehead-segmented.png" TITLE="Void notehead
 								unduely
@@ -974,10 +992,22 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	    sections. If we get to recognized glyphs, then we keep these glyphs,
 	    otherwise we "resurrect" the stems.</P>
 	
-	<!-- <IMG SRC="../images/xxx.png" -->
-		 <!-- TITLE="Example of undue stem" /> -->
+	<BR/>
+	<A NAME="SCORE">
+	    <H3>Score Step</H3>
+	</A>
 	
-
+	<P> The purpose of this step if, starting from the set of recognized
+	    glyphs, to translate each of them into proper score entity.</P>
+	
+	<P> Note that several such glyphs may be translated to a single score
+	    entity. This is the case for all the glyphs that compose a key
+	    signature: the collection of all related sharps for example are
+	    assigned to one key signature score entity.</P>
+	
+	<P> The result is a complete Score hierarchy, whose components are
+	    displayed in the Score view, ready to be exported to MusicXML.</P>
+	
 	<A NAME="TOOLS_SECTION">
 	    <H2>Tools</H2>
 	</A>

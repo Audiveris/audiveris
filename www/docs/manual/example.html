@@ -23,6 +23,16 @@
 	
 	<link rel="stylesheet" type="text/css"
 	      href="../../branding/css/inst.css"/>
+
+	<SCRIPT>
+	    var jsVar = "Hello World from jsVar";
+	    
+	    function jsFnct() {
+	    return "Hello World from jsFnct";
+	    }
+	    
+	</SCRIPT>
+	
     </head>
     
     <body class="app" style="text-align: justify;" marginheight="0" marginwidth="0">
@@ -33,7 +43,7 @@
 	    Author: <a href="mailto:herve.bitteur@laposte.net">Herv&eacute;
 	    Bitteur</a>
 	</address>
-	
+	&{jsVar};
 	<address>
 	    Updated:
 	    <script type="text/javascript">
@@ -57,12 +67,13 @@
 	    <li>First, navigate to the directory where you have extracted the
 		Audiveris distribution archive.</li>
 	    <li>Then the easiest way is to double-click on the jar file
-		named <u><b>audiveris-3.0.jar</b></u></li>
+		named <u><b>audiveris-3.0.jar</b></u> located in
+		the <u><b>bin</b></u> subfolder.</li>
 	    
 	    <li>You can also use the following command:
-		<p><code>$&gt; java -jar audiveris-3.0.jar</code></p>
+		<p><code>$&gt; java -jar bin/audiveris-3.0.jar</code></p>
 		<p>or if for example you need more memory:</p>
-		<p><code>$&gt; java -Xms128m -Xmx256m -jar audiveris-3.0.jar</code></p>
+		<p><code>$&gt; java -Xms128m -Xmx256m -jar bin/audiveris-3.0.jar</code></p>
 	    </li>
 	</ul>
 	
@@ -78,9 +89,9 @@
 	    window now looks like the following:</p>
 	
 	<p>
-	    <img style="width: 909px; height: 723px;" alt="Chula after load"
-		 title="Windows just after loading the Chula image file"
-		 src="../images/chula-load.png"/>
+	    <img alt="Chula after load" title="Windows just after loading the
+					       Chula image file"
+					       src="../images/chula-load.png"/>
 	</p>
 	
 	<a name="AUTOMATIC">
@@ -101,7 +112,7 @@
 		line</li>
 	    <li>The other symbols are displayed in specific colors, which is a
 		visual help to detect no recognition (red color) or wrong
-		recognition (the color is not the one espected).</li>
+		recognition (the color is not the one expected).</li>
 	</ul>
 	
 	You can have a look at the other tabs:
@@ -111,7 +122,7 @@
 	    <li>Horizontals: focus on horizontal segments, such as ledgers</li>
 	    <li>Bars: the barlines</li>
 	    <li>Verticals: the stems</li>
-	    <li>Score: the result of glyph extraction</li>
+	    <li>Glyphs: the result of glyph extraction</li>
 	</ul>
 	
 	<p>The upper part of the window displays a synthetic view of the
@@ -120,12 +131,8 @@
 	    the split line located just above the tabs.</p>
 	
 	<p>
-	    <img style="width: 909px; height: 723px;" alt="Image after
-							   processing"
-							   title="The display
-							   when all steps have
-							   been run"
-		 src="../images/chula-score.png"></img>
+	    <img alt="Image after processing" title="The display when all steps
+		 have been run" src="../images/chula-score.png"></img>
 	</p>
 	
 	<a name="MANUAL">
@@ -154,15 +161,13 @@
 		thus select the glyphs which are fully contained by the lasso
 		rectangle, as in the left part of the following picture:
 		<p>
-		    <img style="width: 602px; height: 206px;" alt="Selection of
-								   time
-								   signature"
-								   title="See
-								   the 2/4 glyph
-								   selection"
-			 src="../images/chula-lasso.png"/>
+		    <img alt="Selection of time signature" title="See the 2/4
+			 glyph selection" src="../images/chula-lasso.png"/>
 		</p>
 		
+		<p>Another way to select these 2 glyphs, is to click on the
+		    first one with the left mouse button, and while pressing the
+		    Control key, clicking on the second glyph.</p>
 		<p>Notice also that, by selecting these 2 glyphs as a whole, the
 		    Neural board on the right proposes TIME_TWO_FOUR as its best
 		    evaluation. Just click on this button in the Neural board,
@@ -188,12 +193,8 @@
 	    <li>It displays the set of errors found, sorted by their location
 		within the score:
 		<p>
-		    <img style="width: 605px; height: 102px;" alt="Chula errors
-								   pane"
-								   title="Sorted
-								   set of errors
-								   found"
-			 src="../images/chula-errors.png"/>
+		    <img alt="Chula errors pane" title="Sorted set of errors
+			 found" src="../images/chula-errors.png"/>
 		</p>
 		
 		The location is here coded as "S2P1M8T1" (System 2, Part 1,
@@ -207,13 +208,8 @@
 		in the middle with focus on the error location, as depicted by
 		the following image:
 		<p>
-		    <img style="width: 909px; height: 723px;" alt="Chula head
-								   mistaken for
-								   a rest"
-								   title="Note
-								   head mistaken
-								   for a rest"
-			 src="../images/chula-rest.png"/>
+		    <img alt="Chula head mistaken for a rest" title="Note head
+			 mistaken for a rest" src="../images/chula-rest.png"/>
 		</p>
 	    </li>
 	    
@@ -232,12 +228,11 @@
 		right click, in the menu which pops up, navigate to the proper
 		shape, as follows:
 		<p>
-		    <img style="width: 613px; height: 534px;" alt="Navigation to
-								   proper shape"
-								   title="Selection
-								   of note head
-								   black"
-			 src="../images/chula-assign.png"/>
+		    <img alt="Navigation to proper shape" title="Selection of
+			 note head black" src="../images/chula-assign.png"/>
+		    <em><b>Fixed As:</b></em>
+		    <img alt="Navigation to proper shape" title="Fixed
+			 note head black" src="../images/chula-assign-fixed.png"/>
 		</p>
 		<p>[Note: This hierarchy of submenus is really ackward, we
 		    consider moving to a more user-friendly selecting mechanism
@@ -265,13 +260,11 @@
 		and tiny leaves, some of them being assigned a beam shape or a
 		note head shape. See the picture below:
 		<p>
-		    <img style="width: 401px; height: 372px;" alt="Measure with
-								   two segmented
-								   sharps"
-								   title="Sharps
-								   too
-								   segmented"
-			 src="../images/chula-sharps.png"/>
+		    <img alt="Measure with two segmented sharps" title="Sharps
+			 too segmented" src="../images/chula-sharps.png"/>
+		    <em><b>Fixed As:</b></em>
+		    <img alt="Measure with fixed sharps" title="Sharps
+			 fixed" src="../images/chula-sharps-fixed.png"/>
 		</p>
 	    </li>
 	    
@@ -315,13 +308,11 @@
 		Browsing through the sheet view, you can notice the strange
 		looking glyph:
 		<p>
-		    <img style="width: 326px; height: 192px;" alt="glyph
-								   mistaken for
-								   a grace note"
-								   title="Strange
-								   looking grace
-								   note"
-			 src="../images/chula-grace.png"/>
+		    <img alt="glyph mistaken for a grace note" title="Strange
+			 looking grace note" src="../images/chula-grace.png"/>
+		    <em><b>Fixed As:</b></em>
+		    <img alt="fixed grace note" title="Fixed grace note"
+			 src="../images/chula-grace-fixed.png"/>
 		</p>
 	    </li>
 	    
@@ -333,11 +324,7 @@
 		through a right click, we select the item "<u><i>Look for
 		verticals</i></u>"
 		<p>
-		    <img style="width: 468px; height: 168px;" alt="Chula
-								   verticals"
-								   title="Look
-								   for
-								   verticals"
+		    <img alt="Chula verticals" title="Look for verticals"
 			 src="../images/chula-verticals.png"/>
 		</p>
 	    </li>
@@ -353,9 +340,11 @@
 	    <li> Browsing till the end of the score, you may notice the flag
 		shape of one of the last notes, in measure 19:
 		<p>
-		    <img style="width: 207px; height: 436px;" alt="Chula flags"
-			 title="Strange-looking flag"
+		    <img alt="Chula flags" title="Strange-looking flag"
 			 src="../images/chula-flags.png"/>
+		    <em><b>Fixed As:</b></em>
+		    <img alt="Chula flags fixed" title="Fixed flag"
+			 src="../images/chula-flags-fixed.png"/>
 		</p>
 	    </li>
 	    <li>This time, we have the merge of two glyphs (a flag and a quarter
@@ -375,29 +364,61 @@
 	    <h3>Score writing</h3>
 	</a>
 	
-	<p>Now that we are rather satisfied with the final translation, we can
-	    write the result into a MusicXML file.</p>
-	<p>In the <u><i>Score</i></u> menu, we select the <u><i>Store in
-	    Xml</i></u> item which presents a dialog box to choose a target
-	    file.</p>
-	<p>We finally click on the <u><i>Record</i></u> button, et voila!</p>
+	<table border="0">
+	    <tr>
+		<td width="50%">
+		    <p>Now that we are rather satisfied with the final
+			translation, we can write the result into a MusicXML
+			file.</p>
+		    <p>In the <u><i>Score</i></u> menu, we select
+			the <u><i>Store in Xml</i></u> item which presents a
+			dialog box to choose a target file.</p>
+		    <p>We finally click on the <u><i>Record</i></u> button, et
+			voila!</p>
+		</td>
+		<td>
+		    <p>Here is the content of <b>chula.xml</b>:</p>
+		    <iframe src="chula.xml.html" width="100%" height="200" frameborder="1">
+			<a href="chula.xml.html">You are using a very old
+			    browser.  Click here to go directly to included
+			    content.</a>
+		    </iframe>
+		</td>
+	    </tr>
+	</table>
 	
 	<a name="SCRIPT">
 	    <h3>Script writing</h3>
 	</a>
 	
-	<p>You can decide to store the script of your actions related to 'chula'
-	    sheet, by selecting the <u><i>Store script</i></u> item in
-	    the <u><i>File</i></u> menu.</p>
-	<p>Select the location, and your script is written by default
-	    as <b>chula.script</b> file.</p>
-
-	<p>If you close the current sheet without saving your script first you
-	    will be asked for saving the related script of your actions:</p>
-	<p>
-	    <img alt="Script prompt" title="Script prompt"
-		 src="../images/chula-script.png"/>
-	</p>
+	<table border="0">
+	    <tr>
+		<td width="50%">
+		    <p>You can decide to store the script of your actions
+			related to 'chula' sheet, by selecting the <u><i>Store
+			script</i></u> item in the <u><i>File</i></u> menu.</p>
+		    <p>Select the location, and your script is written by
+			default as <b>chula.script</b> file.</p>
+		    
+		    <p>If you close the current sheet without saving your script
+			first you will be asked for saving the related script of
+			your actions:</p>
+		    <p>
+			<img alt="Script prompt" title="Script prompt"
+			     src="../images/chula-script.png"/>
+		    </p>
+		</td>
+		<td>
+		    <p>Here is the content of <b>chula.script</b>:</p>
+		    <iframe src="chula.script.html" width="100%" height="200" frameborder="1">
+			<a href="chula.script.html">You are using a very old
+			    browser.  Click here to go directly to included
+			    content.</a>
+		    </iframe>
+		</td>
+	    </tr>
+	</table>
+	
 	
 	<a name="SCRIPT_REPLAY">
 	    <h3>Script replay</h3>
@@ -432,8 +453,7 @@
 	    <u><i>Play</i></u> button, and listen!
 	</p>
 	<p>
-	    <img style="width: 889px; height: 840px;"
-		 alt="Finale window" title="Finale on Chula"
+	    <img alt="Finale window" title="Finale on Chula"
 		 src="../images/chula-finale.png"/>
 	</p>
 	
