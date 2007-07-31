@@ -97,7 +97,7 @@ public class VerticalsBuilder
     //~ Instance fields --------------------------------------------------------
 
     /** Related user display if any */
-    private GlyphLagView view;
+    private MyGlyphLagView view;
 
     /** Global sheet scale */
     private final Scale scale;
@@ -178,11 +178,7 @@ public class VerticalsBuilder
             if ((view == null) && constants.displayFrame.getValue()) {
                 displayFrame();
             } else if (view != null) {
-                for (Glyph glyph : sheet.getVerticalLag()
-                                        .getActiveGlyphs()) {
-                    view.colorizeGlyph(glyph, null);
-                }
-
+                view.colorize();
                 view.repaint();
             }
         }
@@ -616,6 +612,8 @@ public class VerticalsBuilder
                 } catch (StepException ex) {
                     logger.warning("Glyph cannot be processed");
                 }
+            } else {
+                tellObject(null);
             }
         }
     }
@@ -636,15 +634,13 @@ public class VerticalsBuilder
                 sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
 
             // Glyph
-            Selection glyphSelection = sheet.getSelection(
+            glyphSelection = sheet.getSelection(
                 SelectionTag.VERTICAL_GLYPH);
-            setGlyphSelection(glyphSelection);
             glyphSelection.addObserver(this);
 
             // Glyph set
-            Selection glyphSetSelection = sheet.getSelection(
+            glyphSetSelection = sheet.getSelection(
                 SelectionTag.GLYPH_SET);
-            setGlyphSetSelection(glyphSetSelection);
             glyphSetSelection.addObserver(this);
         }
 
@@ -655,8 +651,6 @@ public class VerticalsBuilder
         public void colorize ()
         {
             super.colorize();
-
-            final int viewIndex = lag.viewIndexOf(this);
 
             // Use light gray color for past successful entities
             sheet.colorize(lag, viewIndex, Color.lightGray);
