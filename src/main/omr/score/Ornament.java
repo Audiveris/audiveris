@@ -91,11 +91,15 @@ public class Ornament
                           SystemPoint point)
     {
         // An Ornament relates to the note below on the same time slot
-        Slot  slot = measure.getClosestSlot(point);
-        Chord chord = slot.getChordBelow(point);
+        Slot slot = measure.getClosestSlot(point);
 
-        if (chord != null) {
-            glyph.setTranslation(new Ornament(measure, point, chord, glyph));
+        if (slot != null) {
+            Chord chord = slot.getChordBelow(point);
+
+            if (chord != null) {
+                glyph.setTranslation(
+                    new Ornament(measure, point, chord, glyph));
+            }
         }
     }
 }
