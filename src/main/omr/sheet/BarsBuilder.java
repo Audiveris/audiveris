@@ -235,20 +235,29 @@ public class BarsBuilder
                 score.dump();
             }
 
-            // Report number of systems retrieved
-            logger.info(sheet.getSystems().size() + " systems");
+            // Report number of systems & measures retrieved
+            StringBuilder sb = new StringBuilder();
+            sb.append(sheet.getSystems().size())
+              .append(" systems");
 
-            // Report number of measures retrieved
             int nb = score.getLastSystem()
                           .getLastPart()
                           .getLastMeasure()
                           .getId();
 
             if (nb > 0) {
-                logger.info(nb + " measure" + ((nb > 1) ? "s" : ""));
+                sb.append(", ")
+                  .append(nb)
+                  .append(" measure");
+
+                if (nb > 1) {
+                    sb.append("s");
+                }
             } else {
-                logger.warning("No measure found");
+                sb.append(", no measure found");
             }
+
+            logger.info(sb.toString());
 
             // Split everything, including horizontals, per system
             SystemSplit.computeSystemLimits(sheet);
