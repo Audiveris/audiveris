@@ -82,7 +82,7 @@ public class GlyphLag
      * Collection of active glyphs. This is derived from the glyphMap, to give
      * direct access to all the active glyphs. It is kept in sync with glyphMap.
      */
-    private SortedSet<Glyph> activeGlyphs;
+    private volatile SortedSet<Glyph> activeGlyphs;
 
     /** Selection on glyph, output where found glyph is written */
     private transient Selection glyphSelection;
@@ -202,7 +202,11 @@ public class GlyphLag
     public Collection<Glyph> getActiveGlyphs ()
     {
         if (activeGlyphs == null) {
-            activeGlyphs = new TreeSet<Glyph>(glyphMap.values());
+            synchronized (this) {
+                if (activeGlyphs == null) {
+                    activeGlyphs = new TreeSet<Glyph>(glyphMap.values());
+                }
+            }
         }
 
         return Collections.unmodifiableCollection(activeGlyphs);
@@ -480,8 +484,8 @@ public class GlyphLag
      * @param section the section to map
      * @param glyph the assigned glyph
      */
-    void mapSection (GlyphSection section,
-                     Glyph        glyph)
+    synchronized void mapSection (GlyphSection section,
+                                  Glyph        glyph)
     {
         if (glyph != null) {
             glyphMap.put(section, glyph);
