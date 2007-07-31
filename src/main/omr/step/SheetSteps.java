@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import javax.swing.SwingUtilities;
 
 /**
  * Class <code>SheetSteps</code> handles the actual progress of steps for a
@@ -132,12 +133,8 @@ public class SheetSteps
                                  SystemInfo system)
         throws StepException
     {
-        SheetTask task = getTask(step);
-
-        if (task instanceof SystemTask) {
-            SystemTask systemTask = (SystemTask) task;
-            systemTask.getResult(system);
-        }
+        SystemTask systemTask = (SystemTask) getTask(step);
+        systemTask.getResult(system);
     }
 
     //-----------//
@@ -237,18 +234,28 @@ public class SheetSteps
         }
 
         // Final cross-system translation tasks
-        sheet.getScoreBuilder()
-             .buildFinal();
-
-        // Always refresh sheet views if any
-        if (sheet.getSymbolsEditor() != null) {
-            sheet.getSymbolsEditor()
-                 .refresh();
+        if (isDone(SCORE)) {
+            sheet.getScoreBuilder()
+                 .buildFinal();
         }
 
-        if (isDone(VERTICALS)) {
-            sheet.getVerticalsBuilder()
-                 .refresh();
+        // Always refresh views if any
+        if (Main.getGui() != null) {
+            SwingUtilities.invokeLater(
+                new Runnable() {
+                        public void run ()
+                        {
+                            if (isDone(SYMBOLS)) {
+                                getTask(SYMBOLS)
+                                    .displayUI();
+                            }
+
+                            if (isDone(VERTICALS)) {
+                                getTask(VERTICALS)
+                                    .displayUI();
+                            }
+                        }
+                    });
         }
     }
 
@@ -319,8 +326,10 @@ public class SheetSteps
                 logger.fine("CLEANUP displayUI");
             }
 
-            sheet.getSymbolsEditor()
-                 .refresh();
+            getTask(SYMBOLS)
+                .displayUI();
+            getTask(VERTICALS)
+                .displayUI();
         }
 
         @Override
@@ -387,8 +396,10 @@ public class SheetSteps
         @Override
         public void displayUI ()
         {
-            sheet.getSymbolsEditor()
-                 .refresh();
+            getTask(SYMBOLS)
+                .displayUI();
+            getTask(VERTICALS)
+                .displayUI();
         }
 
         @Override
@@ -536,12 +547,11 @@ public class SheetSteps
                 logger.fine("SCORE displayUI");
             }
 
-            // Make sure the verticals are displayed too
+            // Make sure symbols & verticals are displayed
+            getTask(SYMBOLS)
+                .displayUI();
             getTask(VERTICALS)
                 .displayUI();
-
-            sheet.getSymbolsEditor()
-                 .refresh();
 
             // Kludge, to put the Glyphs tab on top of all others.
             sheet.getAssembly()
@@ -672,6 +682,9 @@ public class SheetSteps
             if (logger.isFineEnabled()) {
                 logger.fine("VERTICALS displayUI");
             }
+
+            getTask(SYMBOLS)
+                .displayUI();
 
             // Create verticals display
             sheet.getVerticalsBuilder()

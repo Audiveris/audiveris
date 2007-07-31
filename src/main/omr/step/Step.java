@@ -296,7 +296,7 @@ public enum Step {
         if (logger.isFineEnabled()) {
             final long stopTime = System.currentTimeMillis();
             logger.fine(
-                this + "Completed in " + (stopTime - startTime) + " ms with " +
+                this + " completed in " + (stopTime - startTime) + " ms with " +
                 Memory.getValue() + " bytes");
         }
 

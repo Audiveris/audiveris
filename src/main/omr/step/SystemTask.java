@@ -12,8 +12,6 @@ package omr.step;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.step.StepException;
-
 import omr.util.Logger;
 import omr.util.OmrExecutors;
 import omr.util.SignallingRunnable;
@@ -146,8 +144,6 @@ public abstract class SystemTask
     {
         if (!isDone(system)) {
             doSystem(system);
-
-            ///logger.info("");
         }
     }
 
@@ -184,8 +180,6 @@ public abstract class SystemTask
                         {
                             try {
                                 doSystem(system);
-
-                                ///logger.info(""); // for bar animation?
                             } catch (StepException ex) {
                                 logger.warning("Step aborted on system", ex);
                             }
@@ -210,8 +204,6 @@ public abstract class SystemTask
     {
         for (SystemInfo system : sheet.getSystems()) {
             doSystem(system);
-
-            ///logger.info(""); // for bar animation?
         }
     }
 }
