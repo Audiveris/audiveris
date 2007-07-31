@@ -671,7 +671,7 @@ public class Main
     {
         /** Selection of locale country code (2 letters), or empty */
         Constant.String localeCountry = new Constant.String(
-            "US",
+            "",
             "Locale country to be used in the whole application (US, FR, ...)");
 
         /** Utility constant */
