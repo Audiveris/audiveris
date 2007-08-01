@@ -634,13 +634,11 @@ public class VerticalsBuilder
                 sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
 
             // Glyph
-            glyphSelection = sheet.getSelection(
-                SelectionTag.VERTICAL_GLYPH);
+            glyphSelection = sheet.getSelection(SelectionTag.VERTICAL_GLYPH);
             glyphSelection.addObserver(this);
 
             // Glyph set
-            glyphSetSelection = sheet.getSelection(
-                SelectionTag.GLYPH_SET);
+            glyphSetSelection = sheet.getSelection(SelectionTag.GLYPH_SET);
             glyphSetSelection.addObserver(this);
         }
 
