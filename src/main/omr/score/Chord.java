@@ -501,7 +501,7 @@ public class Chord
 
                 if ((note.getShape() != Shape.WHOLE_REST) &&
                     (note.getShape() != Shape.MULTI_REST)) {
-                    duration = note.getTypeDuration(note.getShape());
+                    duration = Note.getTypeDuration(note.getShape());
 
                     // Apply fraction
                     int fbn = getFlagsNumber() + getBeams()
