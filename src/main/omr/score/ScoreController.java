@@ -9,7 +9,9 @@
 //
 package omr.score;
 
-import omr.plugin.*;
+import omr.plugin.PluginType;
+import omr.plugin.Plugins;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
@@ -18,8 +20,11 @@ import omr.selection.SelectionTag;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
+import omr.step.Step;
+
 import omr.ui.icon.IconManager;
-import omr.ui.util.*;
+import omr.ui.util.SeparableMenu;
+import omr.ui.util.SwingWorker;
 import static omr.ui.util.UIUtilities.*;
 
 import omr.util.Implement;
@@ -27,14 +32,13 @@ import omr.util.Logger;
 
 import java.awt.Toolkit;
 import java.awt.event.*;
-import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.swing.*;
 
 /**
  * Class <code>ScoreController</code> encapsulates a set of user interface means
- * on top of ScoreManager, related to score handling actions, typically 
+ * on top of ScoreManager, related to score handling actions, typically
  * triggered through menus and buttons.
  *
  * @author Herv&eacute; Bitteur
@@ -77,20 +81,24 @@ public class ScoreController
         scoreMenu.setToolTipText("Select action for current score");
 
         // Load actions
-        for (Action plugin : Plugins.getActions(PluginType.SCORE_IMPORT))
-        {
-        	new ScoreAction(plugin);
+        for (Action plugin : Plugins.getActions(PluginType.SCORE_IMPORT)) {
+            new ScoreAction(plugin);
         }
+
         scoreMenu.addSeparator();
         toolBar.addSeparator();
-        
+
         // Edit actions
-        for (Action plugin : Plugins.getActions(PluginType.SCORE_EDIT))
-        {
-        	new ScoreAction(plugin);
+        for (Action plugin : Plugins.getActions(PluginType.SCORE_EDIT)) {
+            new ScoreAction(plugin);
         }
+
         scoreMenu.addSeparator();
         toolBar.addSeparator();
+
+        // Rebuild Action
+        new RebuildAction();
+        scoreMenu.addSeparator();
 
         // Display Actions
         new BrowseAction();
@@ -100,11 +108,10 @@ public class ScoreController
 
         // Store Actions
         new StoreAction();
-        
+
         // Export actions
-        for (Action plugin : Plugins.getActions(PluginType.SCORE_EXPORT))
-        {
-        	new ScoreAction(plugin);
+        for (Action plugin : Plugins.getActions(PluginType.SCORE_EXPORT)) {
+            new ScoreAction(plugin);
         }
 
         // Initially disabled actions
@@ -241,7 +248,7 @@ public class ScoreController
         }
 
         @Override
-		public void actionPerformed (ActionEvent e)
+        public void actionPerformed (ActionEvent e)
         {
             getCurrentScore()
                 .viewScore();
@@ -264,10 +271,51 @@ public class ScoreController
         }
 
         @Override
-		public void actionPerformed (ActionEvent e)
+        public void actionPerformed (ActionEvent e)
         {
             getCurrentScore()
                 .dump();
+        }
+    }
+
+    //---------------//
+    // RebuildAction //
+    //---------------//
+    /**
+     * Class <code>RebuildAction</code> re-translates all sheet glyphs to
+     * score entities.
+     */
+    private class RebuildAction
+        extends ScoreAction
+    {
+        public RebuildAction ()
+        {
+            super(
+                false,
+                "Refresh Score",
+                "Refresh the whole score view from sheet glyphs",
+                IconManager.getInstance().loadImageIcon("general/Refresh"));
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final SwingWorker worker = new SwingWorker() {
+                public Object construct ()
+                {
+                    try {
+                        SheetManager.getSelectedSheet()
+                                    .getSheetSteps()
+                                    .doit(Step.SCORE);
+                    } catch (Exception ex) {
+                        logger.warning("Could not refresh score", ex);
+                    }
+
+                    return null;
+                }
+            };
+
+            worker.start();
         }
     }
 
@@ -283,8 +331,8 @@ public class ScoreController
     private class ScoreAction
         extends AbstractAction
     {
-    	private Action delegate;
-    	
+        private Action delegate;
+
         public ScoreAction (boolean enabled,
                             String  label,
                             String  tip,
@@ -300,13 +348,16 @@ public class ScoreController
 
             // Add the related Menu item
             JMenuItem item = scoreMenu.add(this);
-            if (tip.endsWith(")"))
-            {
-            	char c = tip.charAt(tip.length() - 2);
-            	item.setAccelerator(KeyStroke.getKeyStroke((int)c,
-            	    Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-            	tip = tip.substring(0, tip.lastIndexOf("("));
+
+            if (tip.endsWith(")")) {
+                char c = tip.charAt(tip.length() - 2);
+                item.setAccelerator(
+                    KeyStroke.getKeyStroke(
+                        (int) c,
+                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                tip = tip.substring(0, tip.lastIndexOf("("));
             }
+
             putValue(SHORT_DESCRIPTION, tip);
 
             // Add an icon in the Tool bar, if any icon is provided
@@ -315,19 +366,22 @@ public class ScoreController
                 button.setBorder(getToolBorder());
             }
         }
-        
-        public ScoreAction(Action delegate)
+
+        public ScoreAction (Action delegate)
         {
-        	this(delegate.isEnabled(), 
-    			(String) delegate.getValue(Action.NAME), 
-    			(String) delegate.getValue(Action.SHORT_DESCRIPTION), 
-    			(Icon) delegate.getValue(Action.SMALL_ICON));
-    		this.delegate = delegate;
+            this(
+                delegate.isEnabled(),
+                (String) delegate.getValue(Action.NAME),
+                (String) delegate.getValue(Action.SHORT_DESCRIPTION),
+                (Icon) delegate.getValue(Action.SMALL_ICON));
+            this.delegate = delegate;
         }
-        
-        public void actionPerformed(ActionEvent e)
+
+        public void actionPerformed (ActionEvent e)
         {
-        	if (delegate != null) delegate.actionPerformed(e);
+            if (delegate != null) {
+                delegate.actionPerformed(e);
+            }
         }
     }
 
@@ -343,18 +397,18 @@ public class ScoreController
     {
         public StoreAction ()
         {
-            super(false, 
+            super(
+                false,
                 "Store in XML",
                 "Store current score in MusicXML",
                 IconManager.getInstance().loadImageIcon("general/Export"));
         }
 
         @Override
-		public void actionPerformed (ActionEvent e)
+        public void actionPerformed (ActionEvent e)
         {
             final SwingWorker worker = new SwingWorker() {
-                @Override
-				public Object construct ()
+                public Object construct ()
                 {
                     Score score = getCurrentScore();
 
