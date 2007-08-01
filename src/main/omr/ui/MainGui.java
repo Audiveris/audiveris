@@ -153,8 +153,11 @@ public class MainGui
                 }
             };
 
-        // Sheet actions
+        // Program actions
         Action exitAction = new ExitAction(true);
+        toolBar.addSeparator();
+
+        // Sheet actions
         sheetController = new SheetController(this, toolBar);
         sheetController.getMenu()
                        .addSeparator();
