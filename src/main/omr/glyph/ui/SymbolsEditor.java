@@ -248,52 +248,9 @@ public class SymbolsEditor
         @Override
         public void colorizeGlyph (Glyph glyph)
         {
-            switch (focus.getFilter()) {
-            case ALL :
-                super.colorizeGlyph(glyph);
-
-                break;
-
-            case KNOWN :
-
-                if (glyph.isKnown()) {
-                    super.colorizeGlyph(glyph);
-                } else {
-                    super.colorizeGlyph(glyph, hiddenColor);
-                }
-
-                break;
-
-            case UNKNOWN :
-
-                if (!glyph.isKnown()) {
-                    super.colorizeGlyph(glyph);
-                } else {
-                    super.colorizeGlyph(glyph, hiddenColor);
-                }
-
-                break;
-
-            case TRANSLATED :
-
-                if (glyph.isKnown() && glyph.isTranslated()) {
-                    super.colorizeGlyph(glyph);
-                } else {
-                    super.colorizeGlyph(glyph, hiddenColor);
-                }
-
-                break;
-
-            case UNTRANSLATED :
-
-                if (glyph.isKnown() && !glyph.isTranslated()) {
-                    super.colorizeGlyph(glyph);
-                } else {
-                    super.colorizeGlyph(glyph, hiddenColor);
-                }
-
-                break;
-            }
+            colorizeGlyph(
+                glyph,
+                focus.isDisplayed(glyph) ? glyph.getColor() : hiddenColor);
         }
 
         //-----------------//

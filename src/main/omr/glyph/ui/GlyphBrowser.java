@@ -348,7 +348,8 @@ class GlyphBrowser
         }
 
         @Override
-        public void deassignGlyphShape (Glyph glyph, boolean record)
+        public void deassignGlyphShape (Glyph   glyph,
+                                        boolean record)
         {
             deleteGlyph(); // Using current glyph
         }
@@ -404,6 +405,15 @@ class GlyphBrowser
             setLocationSelection(localPixelSelection);
             localPixelSelection.addObserver(this);
             localGlyphSelection.addObserver(this);
+        }
+
+        //---------------//
+        // colorizeGlyph //
+        //---------------//
+        @Override
+        public void colorizeGlyph (Glyph glyph)
+        {
+            colorizeGlyph(glyph, glyph.getColor());
         }
 
         //---------------//

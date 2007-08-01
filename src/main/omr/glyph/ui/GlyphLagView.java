@@ -169,7 +169,7 @@ public class GlyphLagView
      */
     public void colorizeGlyph (Glyph glyph)
     {
-        colorizeGlyph(glyph, glyph.getColor());
+        // Empty
     }
 
     //---------------//

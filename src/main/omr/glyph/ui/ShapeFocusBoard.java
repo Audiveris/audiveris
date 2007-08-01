@@ -226,6 +226,7 @@ class ShapeFocusBoard
      * @param selection the notified selection
      * @param hint the processing hint if any
      */
+    @Override
     public void update (Selection     selection,
                         SelectionHint hint)
     {
@@ -250,17 +251,36 @@ class ShapeFocusBoard
         }
     }
 
-    //-----------//
-    // getFilter //
-    //-----------//
+    //-------------//
+    // isDisplayed //
+    //-------------//
     /**
-     * Report the current filter in action
-     *
-     * @return current filter value
+     * Report whether the glyph at hand is to be displayed, according to the
+     * current filter
+     * @param glyph the glyph at hande
+     * @return true if to be displayed
      */
-    Filter getFilter ()
+    public boolean isDisplayed (Glyph glyph)
     {
-        return (Filter) filterButton.getSelectedItem();
+        switch ((Filter) filterButton.getSelectedItem()) {
+        case ALL :
+            return true;
+
+        case KNOWN :
+            return glyph.isKnown();
+
+        case UNKNOWN :
+            return !glyph.isKnown();
+
+        case TRANSLATED :
+            return glyph.isKnown() && glyph.isTranslated();
+
+        case UNTRANSLATED :
+            return glyph.isKnown() && !glyph.isTranslated();
+        }
+
+        // To please the compiler
+        return true;
     }
 
     //--------------//
