@@ -1,0 +1,197 @@
+<!-- +=====================================================================+ -->
+<!-- |                                                                     | -->
+<!-- |                         b u i l d . x m l                           | -->
+<!-- |                                                                     | -->
+<!-- | abstract: Netbeans/ant build for Audiveris application              | -->
+<!-- | location: ${basedir}/build.xml                                      | -->
+<!-- | author:   herve.bitteur@laposte.net                                 | -->
+<!-- |                                                                     | -->
+<!-- +=====================================================================+ -->
+
+<!--    CookBook for NetBeans users:
+     
+     1/ Since you cannot create a NetBeans project in a folder which already
+     contains a file named 'build.xml', first create your NetBeans project here,
+     then rename this 'build-for-netbeans.xml' file as 'build.xml'.
+
+     2/ Then have NetBeans create a Java project with existing Java sources,
+     named audiveris, to be hosted in this directory (so in the creation wizard,
+     enter the name of the parent folder of this directory)
+
+     3/ Specify src/main and src/test as the respective source and test packages
+     repositories.
+
+     4/ Define the needed libraries (JAI, Jama, JavaLookAndFeel, JFreeChart,
+     JGoodiesForms, JGoodiesLooks, ProxyMusic)
+
+     5/ Clean and build the whole project
+--> 
+
+<project name="audiveris" default="default" basedir=".">
+    <description>
+	Build, test, and run the Audiveris project via NetBeans
+        $Id$
+	
+	This 'build.xml' file is located in top project directory to be
+	automatically picked up by NetBeans
+    </description>
+
+    <!-- Give users first chance to override properties -->
+    <property file="${user.home}/.audiveris/build.properties" />
+    
+    <property name="dev.dir"          location="${basedir}/src"/>
+    <property name="config.dir"       location="${basedir}/config"/>
+    <property name="nb.javadoc.dir"   location="${basedir}/dist/javadoc"/>
+    
+    <!-- Give users second chance to override properties -->
+    <property file="${dev.dir}/build.properties" />
+
+    <!-- Finally, get all default property values -->
+    <property file="${dev.dir}/build.default.properties" />
+
+    <path id="build.classpath">
+        <pathelement path="${build.classes.dir}"/>
+    </path>
+    
+    <!-- ================================================================ -->
+    <!-- =======================  Public Targets  ======================= -->
+    <!-- ================================================================ -->
+    
+    <!-- ========= -->
+    <!--  D I S T  -->
+    <!-- ========= -->
+    <target name="dist"
+ 	    depends="clean, jar, javadoc, audiveris-targets.-dist"
+            description="Rebuild and package the whole distribution.">
+    </target>
+
+    <!-- ============= -->
+    <!--  F O R M A T  -->
+    <!-- ============= -->
+    <target name="format"
+            depends="-format"
+            description="Format Java source with Jalopy."/>
+    
+    <!-- =============== -->
+    <!--  J A V A D O C  -->
+    <!-- =============== -->
+    <target name="javadoc"
+            depends="init, audiveris-targets.-javadoc-build, -post-javadoc, -post-post-javadoc,-javadoc-browse"
+            description="Build Javadoc."/>
+    
+    <!-- ======= -->
+    <!--  R U N  -->
+    <!-- ======= -->
+    <target name="run"
+	    depends="-pre-jar"
+	    description="Run the application">
+	<property name="run-sys-prop.java.util.logging.config.file"
+		  value="${config.dir}/logging.properties"/>
+	<antcall target="audiveris-impl.run" />
+    </target>
+    
+    <!-- ================================================================ -->
+    <!-- ======================  Internal Targets  ====================== -->
+    <!-- ================================================================ -->
+
+    <!-- =============================== -->
+    <!--  - J A V A D O C - B R O W S E  -->
+    <!-- =============================== -->
+    <target name="-javadoc-browse"
+	    if="netbeans.home"
+	    unless="no.javadoc.preview"
+	    depends="init,audiveris-targets.-javadoc-build">
+        <nbbrowse file="${dist.javadoc.dir}/index.html"/>
+    </target>
+
+    <!-- ======================= -->
+    <!--  - P O S T - C L E A N  -->
+    <!-- ======================= -->
+    <target name="-post-clean"
+	    depends="-clean-icons"/>
+
+    <!-- =========================== -->
+    <!--  - P O S T - C O M P I L E  -->
+    <!-- =========================== -->
+    <target name="-post-compile" depends="-build-icons"/>        
+
+    <!-- ================= -->
+    <!--  - P R E - J A R  -->
+    <!-- ================= -->
+    <target name="-pre-jar"
+	    depends="audiveris-targets.-pre-jar" />
+
+    <!-- === Imports ======================================================== -->
+
+    <!-- Load NetBeans implementation targets -->
+    <import file="nbproject/build-impl.xml"/>
+
+    <!-- Next line will be inserted the first time you use the profiler -->
+<!--     <import file="nbproject/profiler-build-impl.xml"/> -->
+    
+    <!-- Load internal targets common to Emacs/Ant and NetBeans -->
+    <import file="${dev.dir}/build-targets.xml"/>
+    
+<!--
+
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
+
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
+
+    (Targets beginning with '-' are not intended to be called on their own.)
+
+    Example of inserting an obfuscator after compilation could look like this:
+
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
+
+
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are: 
+
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar-with-manifest:    JAR building (if you are using a manifest)
+      -do-jar-without-manifest: JAR building (if you are not using a manifest)
+      run:                      execution of project 
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
+
+    An example of overriding the target for project execution could look like this:
+
+        <target name="run" depends="audiveris-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that the overridden target depends on the jar target and not only on 
+    the compile target as the regular run target does. Again, for a list of available 
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file. 
+
+    -->
+    
+</project>
