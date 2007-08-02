@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="21" id="932">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>2.604651162790698</pitch-position>
+    <section first-pos="1573" id="3160">
+        <run start="632" level="42" length="13"/>
+        <run start="632" level="42" length="13"/>
+        <run start="632" level="42" length="13"/>
+        <run start="632" level="42" length="13"/>
+        <run start="632" level="44" length="13"/>
+        <run start="632" level="46" length="12"/>
+        <run start="632" level="46" length="12"/>
+        <run start="632" level="46" length="12"/>
+        <run start="632" level="46" length="12"/>
+        <run start="632" level="46" length="12"/>
+        <run start="632" level="47" length="12"/>
+        <run start="632" level="47" length="12"/>
+        <run start="632" level="47" length="12"/>
+        <run start="632" level="47" length="12"/>
+        <run start="632" level="47" length="12"/>
+        <run start="632" level="47" length="12"/>
+        <run start="632" level="47" length="12"/>
+        <run start="632" level="47" length="12"/>
+        <run start="632" level="48" length="12"/>
+        <run start="632" level="48" length="12"/>
+        <run start="632" level="48" length="12"/>
+        <run start="632" level="48" length="12"/>
+        <run start="632" level="48" length="12"/>
+        <run start="632" level="48" length="12"/>
+        <run start="632" level="48" length="12"/>
+        <run start="632" level="48" length="12"/>
+        <run start="632" level="49" length="12"/>
+        <run start="632" level="49" length="12"/>
+        <run start="632" level="49" length="12"/>
+        <run start="632" level="49" length="12"/>
+        <run start="632" level="49" length="12"/>
+        <run start="632" level="49" length="12"/>
+        <run start="632" level="49" length="12"/>
+        <run start="632" level="48" length="12"/>
+        <run start="632" level="46" length="13"/>
+        <run start="632" level="47" length="13"/>
+        <run start="632" level="50" length="12"/>
+        <run start="632" level="50" length="12"/>
+        <run start="632" level="50" length="12"/>
+        <run start="632" level="50" length="12"/>
+        <run start="632" level="50" length="12"/>
+        <run start="632" level="49" length="12"/>
+        <run start="632" level="47" length="13"/>
+        <run start="632" level="48" length="13"/>
+        <run start="632" level="50" length="12"/>
+        <run start="632" level="49" length="13"/>
+        <run start="632" level="50" length="12"/>
+        <run start="632" level="47" length="13"/>
+        <run start="632" level="47" length="13"/>
+        <run start="632" level="49" length="13"/>
+        <run start="632" level="52" length="12"/>
+        <run start="632" level="52" length="12"/>
+        <run start="632" level="51" length="12"/>
+        <run start="632" level="48" length="13"/>
+    </section>
+</stick>

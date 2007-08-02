@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="21" id="869">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>4.188235294117647</pitch-position>
+    <section first-pos="1064" id="2246">
+        <run start="403" level="94" length="15"/>
+        <run start="403" level="84" length="15"/>
+        <run start="403" level="84" length="15"/>
+        <run start="403" level="84" length="15"/>
+        <run start="403" level="84" length="15"/>
+        <run start="403" level="84" length="15"/>
+        <run start="403" level="93" length="15"/>
+        <run start="404" level="90" length="14"/>
+        <run start="404" level="98" length="14"/>
+        <run start="404" level="100" length="14"/>
+        <run start="404" level="90" length="14"/>
+        <run start="404" level="90" length="14"/>
+        <run start="404" level="98" length="14"/>
+        <run start="404" level="97" length="13"/>
+        <run start="404" level="100" length="14"/>
+        <run start="404" level="98" length="14"/>
+        <run start="404" level="97" length="13"/>
+        <run start="404" level="97" length="13"/>
+        <run start="404" level="97" length="13"/>
+        <run start="404" level="97" length="13"/>
+        <run start="404" level="97" length="13"/>
+        <run start="404" level="97" length="13"/>
+        <run start="404" level="97" length="13"/>
+        <run start="404" level="97" length="13"/>
+        <run start="404" level="97" length="13"/>
+        <run start="403" level="99" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="100" length="14"/>
+        <run start="404" level="97" length="13"/>
+        <run start="404" level="97" length="13"/>
+        <run start="403" level="99" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="90" length="14"/>
+        <run start="403" level="100" length="14"/>
+        <run start="404" level="100" length="14"/>
+        <run start="403" level="100" length="15"/>
+    </section>
+</stick>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="DOT" interline="21" id="310">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-1.1162790697674418</pitch-position>
+    <section first-pos="1278" id="2568">
+        <run start="595" level="170" length="6"/>
+        <run start="594" level="45" length="8"/>
+        <run start="594" level="22" length="9"/>
+        <run start="593" level="38" length="11"/>
+        <run start="593" level="24" length="11"/>
+        <run start="593" level="24" length="11"/>
+        <run start="593" level="33" length="11"/>
+        <run start="594" level="26" length="10"/>
+        <run start="594" level="44" length="10"/>
+        <run start="595" level="77" length="8"/>
+        <run start="597" level="131" length="4"/>
+    </section>
+</stick>

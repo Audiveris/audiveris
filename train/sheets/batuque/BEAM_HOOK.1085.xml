@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM_HOOK" interline="21" id="1085">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>0.4235294117647059</pitch-position>
+    <section first-pos="610" id="1462">
+        <run start="1185" level="72" length="13"/>
+        <run start="1186" level="65" length="12"/>
+        <run start="1186" level="65" length="12"/>
+        <run start="1186" level="65" length="12"/>
+        <run start="1186" level="66" length="12"/>
+        <run start="1186" level="66" length="12"/>
+        <run start="1186" level="66" length="12"/>
+        <run start="1186" level="66" length="12"/>
+        <run start="1186" level="66" length="12"/>
+        <run start="1186" level="66" length="12"/>
+        <run start="1186" level="66" length="12"/>
+        <run start="1186" level="67" length="12"/>
+        <run start="1186" level="67" length="12"/>
+        <run start="1186" level="67" length="13"/>
+        <run start="1186" level="62" length="13"/>
+        <run start="1186" level="62" length="13"/>
+        <run start="1186" level="63" length="12"/>
+        <run start="1186" level="69" length="11"/>
+        <run start="1186" level="192" length="10"/>
+    </section>
+    <section first-pos="629" id="1511">
+        <run start="1189" level="202" length="1"/>
+    </section>
+</stick>
