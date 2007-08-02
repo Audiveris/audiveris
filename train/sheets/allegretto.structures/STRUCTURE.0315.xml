@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="315" interline="22" shape="STRUCTURE">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-3.5402298850574714</pitch-position>
+        <section id="3644" first-pos="2103">
+            <run start="719" length="1" level="163"/>
+        </section>
+        <section id="3650" first-pos="2104">
+            <run start="715" length="8" level="140"/>
+            <run start="713" length="12" level="54"/>
+            <run start="712" length="16" level="46"/>
+            <run start="711" length="17" level="35"/>
+            <run start="710" length="18" level="33"/>
+            <run start="709" length="19" level="31"/>
+            <run start="709" length="19" level="23"/>
+            <run start="708" length="20" level="30"/>
+            <run start="707" length="21" level="28"/>
+            <run start="706" length="22" level="28"/>
+            <run start="706" length="22" level="28"/>
+            <run start="705" length="23" level="36"/>
+            <run start="705" length="23" level="36"/>
+            <run start="705" length="23" level="36"/>
+            <run start="705" length="23" level="36"/>
+            <run start="705" length="22" level="28"/>
+            <run start="705" length="21" level="24"/>
+            <run start="705" length="20" level="25"/>
+            <run start="705" length="19" level="27"/>
+            <run start="705" length="18" level="28"/>
+            <run start="705" length="17" level="30"/>
+            <run start="705" length="16" level="31"/>
+            <run start="705" length="15" level="40"/>
+        </section>
+        <section id="3653" first-pos="2127">
+            <run start="626" length="92" level="166"/>
+            <run start="625" length="92" level="24"/>
+        </section>
+        <section id="3654" first-pos="2129">
+            <run start="625" length="58" level="31"/>
+        </section>
+        <section id="3658" first-pos="2130">
+            <run start="625" length="12" level="3"/>
+            <run start="625" length="12" level="3"/>
+            <run start="625" length="12" level="3"/>
+            <run start="625" length="12" level="3"/>
+            <run start="625" length="12" level="3"/>
+            <run start="625" length="12" level="3"/>
+            <run start="625" length="12" level="3"/>
+            <run start="625" length="12" level="3"/>
+            <run start="625" length="12" level="3"/>
+            <run start="625" length="12" level="3"/>
+            <run start="625" length="12" level="3"/>
+            <run start="625" length="12" level="3"/>
+            <run start="625" length="12" level="7"/>
+            <run start="626" length="12" level="22"/>
+            <run start="625" length="13" level="36"/>
+            <run start="625" length="13" level="21"/>
+            <run start="625" length="13" level="24"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="625" length="13" level="36"/>
+            <run start="625" length="13" level="24"/>
+            <run start="626" length="12" level="22"/>
+            <run start="625" length="13" level="36"/>
+            <run start="625" length="13" level="21"/>
+            <run start="625" length="13" level="24"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="18"/>
+            <run start="626" length="13" level="25"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="18"/>
+            <run start="626" length="13" level="21"/>
+            <run start="626" length="13" level="21"/>
+            <run start="626" length="13" level="25"/>
+            <run start="626" length="12" level="22"/>
+            <run start="626" length="12" level="18"/>
+            <run start="626" length="13" level="21"/>
+            <run start="626" length="13" level="21"/>
+            <run start="626" length="13" level="21"/>
+            <run start="626" length="13" level="21"/>
+            <run start="626" length="13" level="21"/>
+            <run start="626" length="13" level="21"/>
+            <run start="626" length="13" level="24"/>
+            <run start="626" length="13" level="36"/>
+            <run start="626" length="13" level="24"/>
+            <run start="627" length="12" level="22"/>
+            <run start="626" length="13" level="36"/>
+            <run start="626" length="13" level="24"/>
+            <run start="626" length="13" level="36"/>
+            <run start="626" length="13" level="21"/>
+            <run start="626" length="13" level="21"/>
+            <run start="626" length="13" level="21"/>
+            <run start="626" length="13" level="24"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="22"/>
+            <run start="627" length="12" level="19"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="24"/>
+            <run start="627" length="13" level="36"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+            <run start="627" length="13" level="21"/>
+        </section>
+        <section id="3929" first-pos="2248">
+            <run start="628" length="102" level="124"/>
+            <run start="628" length="100" level="30"/>
+        </section>
+        <section id="3845" first-pos="2201">
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="18"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+            <run start="645" length="13" level="21"/>
+        </section>
+        <section id="3841" first-pos="2198">
+            <run start="645" length="73" level="39"/>
+            <run start="645" length="71" level="42"/>
+            <run start="645" length="67" level="90"/>
+        </section>
+        <section id="3839" first-pos="2197">
+            <run start="645" length="55" level="137"/>
+        </section>
+        <section id="3743" first-pos="2163">
+            <run start="644" length="17" level="37"/>
+            <run start="644" length="17" level="3"/>
+            <run start="644" length="17" level="22"/>
+            <run start="644" length="13" level="21"/>
+            <run start="644" length="13" level="25"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="27"/>
+            <run start="644" length="12" level="34"/>
+            <run start="644" length="13" level="21"/>
+            <run start="644" length="13" level="21"/>
+            <run start="644" length="13" level="21"/>
+            <run start="644" length="13" level="21"/>
+            <run start="644" length="13" level="21"/>
+            <run start="644" length="13" level="21"/>
+            <run start="644" length="13" level="21"/>
+            <run start="644" length="13" level="20"/>
+            <run start="644" length="13" level="25"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+            <run start="645" length="12" level="22"/>
+        </section>
+        <section id="3659" first-pos="2130">
+            <run start="642" length="13" level="7"/>
+            <run start="643" length="12" level="3"/>
+            <run start="643" length="12" level="3"/>
+            <run start="643" length="12" level="3"/>
+            <run start="643" length="12" level="3"/>
+            <run start="643" length="12" level="3"/>
+            <run start="643" length="12" level="3"/>
+            <run start="643" length="12" level="8"/>
+            <run start="644" length="11" level="3"/>
+            <run start="644" length="11" level="3"/>
+            <run start="644" length="11" level="3"/>
+            <run start="644" length="11" level="3"/>
+            <run start="644" length="11" level="3"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="12" level="22"/>
+            <run start="644" length="13" level="31"/>
+        </section>
+        <section id="3739" first-pos="2162">
+            <run start="660" length="1" level="199"/>
+        </section>
+        <section id="3838" first-pos="2196">
+            <run start="682" length="1" level="195"/>
+        </section>
+        <section id="3832" first-pos="2194">
+            <run start="686" length="1" level="202"/>
+            <run start="684" length="3" level="201"/>
+            <run start="684" length="5" level="194"/>
+        </section>
+        <section id="3809" first-pos="2181">
+            <run start="706" length="22" level="47"/>
+            <run start="706" length="22" level="39"/>
+            <run start="706" length="22" level="37"/>
+            <run start="706" length="22" level="37"/>
+            <run start="706" length="22" level="37"/>
+            <run start="706" length="22" level="37"/>
+            <run start="706" length="22" level="37"/>
+            <run start="706" length="22" level="37"/>
+            <run start="706" length="22" level="41"/>
+            <run start="706" length="21" level="39"/>
+            <run start="706" length="20" level="36"/>
+            <run start="706" length="19" level="38"/>
+            <run start="706" length="18" level="40"/>
+            <run start="706" length="17" level="42"/>
+            <run start="706" length="16" level="44"/>
+            <run start="706" length="15" level="47"/>
+            <run start="701" length="19" level="91"/>
+        </section>
+        <section id="3807" first-pos="2180">
+            <run start="707" length="1" level="200"/>
+        </section>
+        <section id="3802" first-pos="2177">
+            <run start="711" length="17" level="54"/>
+            <run start="710" length="18" level="35"/>
+            <run start="709" length="19" level="33"/>
+            <run start="709" length="19" level="24"/>
+        </section>
+        <section id="3788" first-pos="2175">
+            <run start="714" length="9" level="109"/>
+            <run start="713" length="12" level="42"/>
+        </section>
+        <section id="3779" first-pos="2174">
+            <run start="718" length="3" level="165"/>
+        </section>
+        <section id="3846" first-pos="2201">
+            <run start="682" length="1" level="117"/>
+        </section>
+        <section id="3847" first-pos="2201">
+            <run start="686" length="1" level="217"/>
+        </section>
+        <section id="3848" first-pos="2201">
+            <run start="706" length="2" level="200"/>
+        </section>
+        <section id="3925" first-pos="2247">
+            <run start="682" length="1" level="202"/>
+        </section>
+        <section id="3899" first-pos="2223">
+            <run start="727" length="1" level="200"/>
+            <run start="726" length="4" level="189"/>
+            <run start="725" length="8" level="151"/>
+            <run start="724" length="10" level="94"/>
+            <run start="723" length="12" level="79"/>
+            <run start="722" length="14" level="68"/>
+            <run start="721" length="16" level="64"/>
+            <run start="720" length="18" level="66"/>
+            <run start="719" length="19" level="54"/>
+            <run start="718" length="20" level="52"/>
+            <run start="718" length="20" level="44"/>
+            <run start="718" length="20" level="44"/>
+            <run start="717" length="21" level="49"/>
+            <run start="717" length="21" level="42"/>
+            <run start="717" length="21" level="42"/>
+            <run start="716" length="22" level="52"/>
+            <run start="716" length="21" level="42"/>
+            <run start="716" length="21" level="42"/>
+            <run start="716" length="21" level="46"/>
+            <run start="716" length="20" level="49"/>
+            <run start="716" length="19" level="56"/>
+            <run start="717" length="17" level="51"/>
+            <run start="717" length="17" level="57"/>
+            <run start="717" length="16" level="66"/>
+            <run start="718" length="14" level="76"/>
+        </section>
+        <section id="3934" first-pos="2250">
+            <run start="632" length="95" level="90"/>
+        </section>
+        <section id="3935" first-pos="2251">
+            <run start="660" length="3" level="176"/>
+        </section>
+        <section id="3936" first-pos="2251">
+            <run start="682" length="1" level="134"/>
+        </section>
+        <section id="3937" first-pos="2251">
+            <run start="686" length="1" level="174"/>
+            <run start="686" length="1" level="200"/>
+        </section>
+        <section id="3938" first-pos="2251">
+            <run start="725" length="1" level="149"/>
+        </section>
+        <section id="3660" first-pos="2130">
+            <run start="658" length="8" level="119"/>
+        </section>
+        <section id="3666" first-pos="2131">
+            <run start="661" length="2" level="200"/>
+        </section>
+        <section id="3661" first-pos="2130">
+            <run start="671" length="4" level="78"/>
+        </section>
+        <section id="3662" first-pos="2130">
+            <run start="677" length="3" level="82"/>
+        </section>
+        <section id="3663" first-pos="2130">
+            <run start="682" length="1" level="93"/>
+        </section>
+        <section id="3655" first-pos="2129">
+            <run start="684" length="32" level="94"/>
+        </section>
+        <section id="3664" first-pos="2130">
+            <run start="684" length="5" level="127"/>
+            <run start="684" length="2" level="200"/>
+        </section>
+        <section id="3665" first-pos="2130">
+            <run start="700" length="1" level="102"/>
+        </section>
+</stick>

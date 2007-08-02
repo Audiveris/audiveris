@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="1076" interline="22" shape="BEAM">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>5.395348837209302</pitch-position>
+        <section id="3636" first-pos="2102">
+            <run start="1100" length="12" level="2"/>
+            <run start="1100" length="12" level="2"/>
+            <run start="1100" length="12" level="4"/>
+            <run start="1100" length="12" level="20"/>
+            <run start="1100" length="12" level="4"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1100" length="11" level="3"/>
+            <run start="1100" length="11" level="3"/>
+            <run start="1100" length="11" level="3"/>
+            <run start="1100" length="11" level="2"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="3"/>
+            <run start="1099" length="12" level="6"/>
+            <run start="1099" length="12" level="22"/>
+            <run start="1099" length="12" level="22"/>
+            <run start="1099" length="12" level="22"/>
+            <run start="1099" length="12" level="22"/>
+        </section>
+</stick>

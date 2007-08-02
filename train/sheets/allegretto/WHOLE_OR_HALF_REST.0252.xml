@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="252" interline="22" shape="WHOLE_OR_HALF_REST">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-1.4588235294117646</pitch-position>
+        <section id="1296" first-pos="631">
+            <run start="439" length="13" level="89"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="62"/>
+            <run start="439" length="13" level="61"/>
+            <run start="439" length="12" level="64"/>
+            <run start="439" length="11" level="90"/>
+            <run start="439" length="9" level="211"/>
+        </section>
+</stick>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="807" interline="22" shape="BEAM">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-2.6206896551724137</pitch-position>
+        <section id="2707" first-pos="1542">
+            <run start="670" length="15" level="32"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="29"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+            <run start="671" length="14" level="30"/>
+        </section>
+</stick>

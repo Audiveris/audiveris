@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="511" interline="22" shape="CLUTTER">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-9.701149425287356</pitch-position>
+        <section id="2065" first-pos="1147">
+            <run start="1526" length="3" level="98"/>
+            <run start="1525" length="4" level="70"/>
+            <run start="1525" length="4" level="65"/>
+            <run start="1525" length="4" level="65"/>
+            <run start="1525" length="4" level="65"/>
+            <run start="1525" length="4" level="65"/>
+            <run start="1525" length="4" level="65"/>
+            <run start="1525" length="4" level="65"/>
+            <run start="1526" length="4" level="68"/>
+            <run start="1526" length="4" level="65"/>
+            <run start="1526" length="4" level="65"/>
+            <run start="1526" length="4" level="65"/>
+            <run start="1526" length="4" level="65"/>
+            <run start="1526" length="4" level="65"/>
+            <run start="1526" length="4" level="65"/>
+            <run start="1526" length="4" level="65"/>
+            <run start="1526" length="4" level="65"/>
+            <run start="1527" length="3" level="84"/>
+            <run start="1527" length="3" level="86"/>
+            <run start="1527" length="3" level="86"/>
+            <run start="1527" length="3" level="86"/>
+            <run start="1527" length="4" level="69"/>
+            <run start="1527" length="4" level="65"/>
+            <run start="1527" length="4" level="65"/>
+            <run start="1527" length="4" level="65"/>
+            <run start="1527" length="4" level="65"/>
+            <run start="1527" length="4" level="65"/>
+            <run start="1527" length="4" level="65"/>
+            <run start="1527" length="4" level="65"/>
+            <run start="1528" length="3" level="84"/>
+            <run start="1527" length="4" level="69"/>
+            <run start="1528" length="3" level="84"/>
+            <run start="1528" length="4" level="69"/>
+            <run start="1528" length="4" level="65"/>
+            <run start="1528" length="4" level="65"/>
+            <run start="1528" length="4" level="65"/>
+            <run start="1528" length="4" level="65"/>
+            <run start="1528" length="4" level="65"/>
+            <run start="1528" length="4" level="65"/>
+            <run start="1528" length="4" level="65"/>
+            <run start="1528" length="4" level="65"/>
+            <run start="1528" length="4" level="65"/>
+            <run start="1528" length="4" level="65"/>
+            <run start="1528" length="4" level="65"/>
+            <run start="1528" length="4" level="65"/>
+            <run start="1529" length="4" level="68"/>
+            <run start="1529" length="4" level="65"/>
+            <run start="1529" length="4" level="65"/>
+            <run start="1529" length="4" level="65"/>
+            <run start="1529" length="4" level="65"/>
+            <run start="1529" length="4" level="65"/>
+            <run start="1529" length="4" level="65"/>
+        </section>
+</stick>

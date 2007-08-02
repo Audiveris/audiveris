@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="1284" interline="22" shape="BEAM">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>5.011494252873563</pitch-position>
+        <section id="3441" first-pos="1987">
+            <run start="1683" length="13" level="21"/>
+            <run start="1683" length="13" level="21"/>
+            <run start="1683" length="13" level="25"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+            <run start="1684" length="12" level="22"/>
+        </section>
+</stick>

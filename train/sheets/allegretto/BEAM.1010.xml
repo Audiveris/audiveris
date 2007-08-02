@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="1010" interline="22" shape="BEAM">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-2.511627906976744</pitch-position>
+        <section id="2409" first-pos="1364">
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1261" length="14" level="55"/>
+            <run start="1260" length="15" level="62"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1260" length="15" level="52"/>
+            <run start="1259" length="16" level="59"/>
+            <run start="1259" length="16" level="49"/>
+        </section>
+</stick>

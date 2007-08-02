@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="778" interline="22" shape="NOTEHEAD_BLACK">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-0.04597701149425287</pitch-position>
+        <section id="1959" first-pos="1100">
+            <run start="706" length="1" level="200"/>
+        </section>
+        <section id="1965" first-pos="1101">
+            <run start="704" length="7" level="186"/>
+            <run start="703" length="10" level="131"/>
+            <run start="701" length="13" level="107"/>
+            <run start="700" length="14" level="82"/>
+            <run start="699" length="16" level="72"/>
+            <run start="698" length="18" level="69"/>
+            <run start="697" length="19" level="65"/>
+            <run start="697" length="19" level="52"/>
+            <run start="696" length="21" level="59"/>
+            <run start="696" length="21" level="51"/>
+            <run start="695" length="21" level="52"/>
+            <run start="695" length="21" level="51"/>
+            <run start="695" length="21" level="51"/>
+            <run start="695" length="20" level="47"/>
+            <run start="695" length="20" level="54"/>
+            <run start="694" length="21" level="59"/>
+            <run start="694" length="20" level="47"/>
+            <run start="694" length="20" level="58"/>
+            <run start="695" length="18" level="52"/>
+            <run start="695" length="17" level="55"/>
+            <run start="695" length="16" level="58"/>
+        </section>
+        <section id="1960" first-pos="1100">
+            <run start="708" length="1" level="200"/>
+        </section>
+        <section id="2006" first-pos="1122">
+            <run start="695" length="13" level="56"/>
+            <run start="696" length="11" level="41"/>
+            <run start="696" length="11" level="49"/>
+            <run start="696" length="11" level="56"/>
+        </section>
+        <section id="2007" first-pos="1122">
+            <run start="709" length="1" level="78"/>
+        </section>
+</stick>

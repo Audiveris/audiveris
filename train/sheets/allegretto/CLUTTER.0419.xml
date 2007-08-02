@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="419" interline="22" shape="CLUTTER">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>9.209302325581396</pitch-position>
+        <section id="3274" first-pos="1899">
+            <run start="1151" length="3" level="210"/>
+            <run start="1150" length="6" level="111"/>
+            <run start="1150" length="7" level="66"/>
+            <run start="1150" length="8" level="58"/>
+            <run start="1150" length="8" level="52"/>
+            <run start="1153" length="5" level="62"/>
+            <run start="1154" length="4" level="65"/>
+            <run start="1154" length="4" level="65"/>
+            <run start="1154" length="4" level="65"/>
+            <run start="1154" length="4" level="56"/>
+        </section>
+        <section id="3295" first-pos="1909">
+            <run start="1144" length="14" level="85"/>
+            <run start="1145" length="12" level="27"/>
+            <run start="1145" length="11" level="33"/>
+            <run start="1146" length="9" level="46"/>
+            <run start="1148" length="6" level="86"/>
+        </section>
+        <section id="3291" first-pos="1907">
+            <run start="1142" length="7" level="73"/>
+            <run start="1143" length="7" level="73"/>
+        </section>
+        <section id="3282" first-pos="1903">
+            <run start="1138" length="8" level="133"/>
+            <run start="1137" length="9" level="29"/>
+            <run start="1137" length="10" level="44"/>
+            <run start="1136" length="12" level="48"/>
+        </section>
+        <section id="3280" first-pos="1902">
+            <run start="1141" length="3" level="214"/>
+        </section>
+        <section id="3290" first-pos="1907">
+            <run start="1135" length="5" level="61"/>
+            <run start="1135" length="4" level="76"/>
+            <run start="1135" length="3" level="86"/>
+            <run start="1135" length="3" level="86"/>
+            <run start="1135" length="5" level="135"/>
+            <run start="1135" length="6" level="78"/>
+            <run start="1135" length="6" level="51"/>
+            <run start="1136" length="5" level="61"/>
+            <run start="1137" length="4" level="98"/>
+        </section>
+</stick>

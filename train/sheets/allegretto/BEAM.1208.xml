@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="1208" interline="22" shape="BEAM">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-1.4883720930232558</pitch-position>
+        <section id="2228" first-pos="1265">
+            <run start="1860" length="13" level="58"/>
+            <run start="1860" length="13" level="69"/>
+            <run start="1860" length="12" level="63"/>
+            <run start="1860" length="13" level="66"/>
+            <run start="1860" length="13" level="58"/>
+            <run start="1860" length="13" level="69"/>
+            <run start="1860" length="13" level="66"/>
+            <run start="1860" length="13" level="69"/>
+            <run start="1860" length="12" level="63"/>
+            <run start="1860" length="12" level="63"/>
+            <run start="1860" length="12" level="63"/>
+            <run start="1860" length="13" level="66"/>
+            <run start="1860" length="13" level="58"/>
+            <run start="1860" length="13" level="58"/>
+            <run start="1860" length="13" level="69"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="13" level="66"/>
+            <run start="1860" length="13" level="58"/>
+            <run start="1860" length="13" level="57"/>
+            <run start="1860" length="13" level="69"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="13" level="65"/>
+            <run start="1860" length="13" level="57"/>
+            <run start="1860" length="13" level="69"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="12" level="62"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="13" level="64"/>
+            <run start="1860" length="13" level="68"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="61"/>
+            <run start="1860" length="12" level="60"/>
+            <run start="1860" length="12" level="60"/>
+            <run start="1860" length="12" level="60"/>
+            <run start="1860" length="12" level="60"/>
+            <run start="1860" length="12" level="60"/>
+            <run start="1860" length="13" level="64"/>
+            <run start="1860" length="13" level="56"/>
+        </section>
+</stick>
