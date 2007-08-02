@@ -59,17 +59,17 @@
 	    archive. Audiveris can be launched by different means:</P>
 	<OL>
 	    <LI>A double click on the jar file <u>audiveris-3.0.jar</u> located
-		in the <u>bin</u> folder of the installation directory.</LI>
+		in the <u>dist</u> folder of the installation directory.</LI>
 		<BR/>
 	    <LI>Using the command line:
 		<UL>
 		    <LI>For a simple launch:
 			<DIV CLASS="info">$&gt; java -jar
-			    bin/audiveris-3.0.jar</DIV></LI> <BR/>
+			    dist/audiveris-3.0.jar</DIV></LI> <BR/>
 		    <LI>For a launch with additional JVM parameters (this
 			example provides additional memory to the application):
 			<DIV CLASS="info">$&gt; java -Xmx256m -jar
-			    bin/audiveris-3.0.jar</DIV></LI> <BR/>
+			    dist/audiveris-3.0.jar</DIV></LI> <BR/>
 		    <LI>The full command line syntax is the following:
 			<BR/>
 			<BR/>
@@ -77,7 +77,7 @@
 					 color: rgb(0,0,150)"
 				  COLS="80" ROWS="17" WRAP="off" READONLY="true">
 			    
-$&gt; java -jar bin/audiveris-3.0.jar [-help] [-batch] [-step STEPNAME] [-sheet (SHEETNAME|@SHEETLIST)+] [-script (SCRIPTNAME|@SCRIPTLIST)+]
+$&gt; java -jar dist/audiveris-3.0.jar [-help] [-batch] [-step STEPNAME] [-sheet (SHEETNAME|@SHEETLIST)+] [-script (SCRIPTNAME|@SCRIPTLIST)+]
 			    
 	Known step names are in order (non case-sensitive):
 			    
@@ -107,7 +107,7 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	    <BR/>
 	    <LI>Other possibilities include:
 		<UL>
-		    <LI>Using the .bat file located in the <u>bin</u>
+		    <LI>Using the .bat file located in the <u>dist</u>
 			folder. You can add parameters to the file, so this is a
 			convenient way to register these parameters</LI>
 		    <LI>Using the <i>ant</i> utility from the <u>src</u> folder,
