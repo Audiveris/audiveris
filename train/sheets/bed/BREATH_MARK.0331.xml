@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="331" interline="21" shape="BREATH_MARK">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-6.476190476190476</pitch-position>
+        <section id="1291" first-pos="898">
+            <run start="858" length="7" level="92"/>
+            <run start="857" length="9" level="43"/>
+            <run start="856" length="11" level="36"/>
+            <run start="856" length="12" level="29"/>
+            <run start="855" length="13" level="24"/>
+            <run start="855" length="13" level="21"/>
+        </section>
+        <section id="1293" first-pos="904">
+            <run start="855" length="23" level="42"/>
+            <run start="855" length="22" level="19"/>
+            <run start="855" length="21" level="30"/>
+            <run start="856" length="19" level="23"/>
+            <run start="856" length="18" level="44"/>
+            <run start="857" length="15" level="53"/>
+            <run start="858" length="12" level="190"/>
+        </section>
+        <section id="1292" first-pos="898">
+            <run start="876" length="3" level="157"/>
+            <run start="875" length="4" level="91"/>
+            <run start="875" length="4" level="65"/>
+            <run start="875" length="4" level="101"/>
+            <run start="874" length="4" level="90"/>
+            <run start="873" length="5" level="71"/>
+        </section>
+</stick>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="222" interline="21" shape="CLUTTER">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-12.091954022988507</pitch-position>
+        <section id="2564" first-pos="2092">
+            <run start="222" length="9" level="152"/>
+        </section>
+        <section id="2567" first-pos="2093">
+            <run start="219" length="16" level="78"/>
+            <run start="217" length="20" level="41"/>
+        </section>
+        <section id="2575" first-pos="2095">
+            <run start="215" length="25" level="40"/>
+            <run start="214" length="27" level="21"/>
+            <run start="213" length="29" level="68"/>
+        </section>
+        <section id="2581" first-pos="2098">
+            <run start="211" length="10" level="102"/>
+            <run start="211" length="6" level="92"/>
+            <run start="210" length="5" level="132"/>
+            <run start="209" length="4" level="127"/>
+            <run start="209" length="3" level="139"/>
+            <run start="208" length="3" level="116"/>
+            <run start="208" length="3" level="140"/>
+            <run start="208" length="2" level="211"/>
+        </section>
+        <section id="2582" first-pos="2098">
+            <run start="232" length="11" level="91"/>
+        </section>
+        <section id="2585" first-pos="2099">
+            <run start="238" length="5" level="84"/>
+            <run start="240" length="4" level="130"/>
+            <run start="241" length="4" level="129"/>
+            <run start="242" length="4" level="130"/>
+            <run start="243" length="3" level="86"/>
+            <run start="243" length="4" level="129"/>
+            <run start="244" length="3" level="129"/>
+        </section>
+</stick>
