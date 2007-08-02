@@ -37,13 +37,6 @@
 	    </SCRIPT>
 	</ADDRESS>
 	
-	<DIV CLASS="warningmessage">
-	    <P CLASS="alert"><b>BEWARE:</b> This documentation is being updated
-		for Audiveris 3.0, some sections may not yet be in line with
-		Audiveris actual features.</P>
-	</DIV>
-
-	
 	<DIV id="includeone">
 	</DIV>
 	
@@ -639,8 +632,8 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	    <H2>Steps</H2>
 	</A>
 	
-	<P CLASS="alert"><b>BEWARE:</b> This section on steps needs to be
-	    updated for certain pictures, but the logic still apply.</P>
+	<P CLASS="alert"><b>NOTA:</b> This section on steps needs to be updated
+	    for certain pictures, however the logic still apply.</P>
 	
 	<P> To present the various operations, and the related user interface,
 	    we'll use a tour based on the usual sequence of processing steps,
@@ -653,42 +646,13 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	<P> The following image represents the main window of user interface,
 	    just after a picture has been loaded </P>
 	
-	<IMG SRC="../images/load-annotated.png" TITLE="General Window Structure"
-	     />
-	
-	<P> The window is organized as follows: </P>
-	<UL>
-	    <LI>The left hand part is dedicated to the sheet display.
-		<OL>
-		    <LI>The <B>Sheet Panel</B> takes the largest area. It
-			displays one view of the sheet, here this view is the
-			original picture.</LI>
-		    <LI>The <B>View Tabbed Pane</B> gathers all views on one
-			sheet, and the tabs allow navigation between views.</LI>
-		    <LI>The <B>Sheet Tabbed Pane</B> gathers all sheets
-			currently in memory, with one tab per sheet.</LI>
-		    <LI>All the different views of the same sheet share the same
-			vertical <B>Logarithmic Slider</B>, which allows to set
-			the display scale using a logarithmic scale (factors
-			ranging from 1/8 to 16).</LI>
-		</OL>
-	    </LI>
-	    <LI>The right hand part is the <B>Data Panel</B>, which provides
-		various data boards related to the current sheet. Its content
-		depends of the current view. For the view of the original
-		picture in this example, only informations of the <I>"Pixel"</I>
-		board are displayed: the x & y coordinate of the mouse
-		position, as highlighted by the crossing of vertical and
-		horizontal orange lines.</LI>
-	    <LI>At the bottom of the window, the <B>Log Panel</B> displays the
-		sequential log of messages.</LI>
-	</UL>
+	<IMG SRC="../images/load.png" TITLE="General Window Structure" />
 	
 	<P> In this example, we have a black and white image, so the grey level
 	    of the current pixel is either 0 (black foreground) or 255 (white
 	    background). The mouse is currently on a pixel of the C Clef, so the
-	    "Pixel" board of the data panel reports a 0 value for abscissa 236
-	    and ordinate 430.</P>
+	    "Pixel" board of the data panel reports a 0 level value for abscissa
+	    235 and ordinate 459.</P>
 	
 	<P> By dragging the mouse, while keeping the shift key pressed, we can
 	    define a rectangle. The x and y values are the coordinates of the
@@ -757,11 +721,11 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	<P> Notice that the Data Panel exhibits two additional boards:
 	    <OL>
 		<LI>The <I>"Run"</I> board displays information about the run
-		    designated by the mouse location. The run starts at abscissa
-		    223 (we have horizontal runs in this view) and is 506 pixel
-		    long. The average grey level along the run is 0, since here
-		    it is made of only forground pixels with 0 as grey
-		    level.</LI>
+		    designated by the mouse location. The selected run here
+		    starts at abscissa 200 (we have horizontal runs in this
+		    view) and is 312 pixel long. The average grey level along
+		    the run is 0, since here it is made of only foreground
+		    pixels with 0 as gray level.</LI>
 		<LI>The <I>"Section"</I> board displays data that pertains to
 		    the current section (a section is a set of contiguous
 		    runs). A section is given an <I>"Id"</I> to ease its future
@@ -835,15 +799,15 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	<IMG SRC="../images/lines-toggled.png" TITLE="Display of staff line
 						      pixels" />
 	
-	<P> Here are two zoomed view of details from the sheet, first the
+	<P> Here are two zoomed view of details from a similar sheet, first the
 	    original staff line pixels, then the resulting data, where line
 	    pixels have been removed, and crossing objects have been carefully
-	    extended (note the extension goes until the synthetic staff line)
-	    : </P>
+	    extended (note the extension goes until the synthetic staff
+	    line): </P>
 	
 	<IMG SRC="../images/lines-toggled-large.png" TITLE="Focus on staff line
 							    pixels" />
-	
+	<EM><B>Changed for:</B></EM>
 	<IMG SRC="../images/lines-large.png" TITLE="Focus on object extension"
 	     />
 	
@@ -873,6 +837,34 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	    recognized as bar lines (either thick or thin bar lines). Notice in
 	    the following figure that the glyph of the bar line is properly
 	    assigned the shape name "THIN_BAR_LINE".</P>
+
+	<P> Notice also that, by clicking with the mouse on the related barline
+	    glyph, a new boards gets visible in the boards pane, labelled "Bar
+	    check". It contains a table of all results for a suite of checks
+	    applied to the glyph at hand before accepting it as a barline
+	    glyph. Other tests are performed, using for example the location of
+	    the other barlines of the same system, but this one is focused on
+	    the characteristic of just the glyph at hand.</P>
+
+	<P> The table contains one row per check:
+	    <UL>
+		<LI>T/F is true/false boolean for covariance of the measured
+		    variable. Covariant means "<I>larger is better</I>".</LI>
+		<LI>The following number (here 1) is the relative weight of the
+		    check within the suite.</LI>
+		<LI>Then the name for the value checked. "Top" measures the
+		    ordinate difference between the top of the candidate barline
+		    glyph and the upper line of the staff. Values are stated in
+		    fractions of interline.</LI>
+		<LI>The the measure value is displayed with green, orange or red
+		    color, depending on how this value fits with respect to the
+		    defined range.</LI>
+	    </UL>
+	    And the final row gives the final result, positive in this case.
+
+	    <P> All fields in this table have tooltip text that is displayed
+		when simply moving the mouse over them.</P>
+	</P>
 	
 	<IMG SRC="../images/bars.png" TITLE="Extraction of bar lines" />
 	
@@ -889,20 +881,16 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	    following picture, it does not work for constructions like notes
 	    with stem, chords, etc...</P>
 	<P> For example, we have correctly recognized "BRACE", "G_CLEF",
-	    "G_CLEF_OTTAVA_BASSA", "TIME_TWO_FOUR" and "DOT". Note that we also
-	    have mistaken some capital letters (F and P) with PIANO signs. To
-	    improve this, we'll need to better train the evaluators and/or
-	    properly isolate lines of text (lyrics or others).</P>
+	    "FLAT", "TIME_TWO_FOUR", "DOT" and "STRUCTURE".</P>
 	
-	<P> The mouse is currently on the second clef, and notice that the two
-	    evaluators (called Neural and Regression) agree on acceptable
-	    interpretation (notified with green color) as a
-	    "G_CLEF_OTTAVA_BASSA".</P>
+	<P> The mouse is currently on what is called a structure, recognized as
+	    such by the evaluator, which is a structure of to-be-segmented
+	    smaller parts (note head, stem, flag).</P>
 	
 	<IMG SRC="../images/symbols.png" TITLE="Extraction of stand-alone
 						symbols" />
 	
-	<P> This step then focuses on non-recognized glyphs that may be the
+	<P> This step also focuses on non-recognized glyphs that may be the
 	    result of undesired segmentation. This frequently occurs because of
 	    staff line removal for symbols such as F clef or common time
 	    signature.</P>
@@ -913,7 +901,7 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	    combination leads to some recognized symbol, then we keep it as a
 	    (compound) glyph. Otherwise, we don't keep the compound.</P>
 	
-	<P> This cares for symbols that are typically segmentd by the removal of
+	<P> This cares for symbols that are typically segmented by the removal of
 	    staff lines, despite the efforts made to keep crossing objects
 	    connected. This happens frequently for bass clefs, or for common
 	    time signatures.</P>
@@ -928,22 +916,14 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	    the stems are extracted for the time being).</P>
 	
 	<P> The following image shows the various stems detected, displayed in
-	    yellow color, each stem with its bounding box, and main line.</P>
+	    yellow color, each stem with its main line.</P>
 	
-	<P> Notice also that right pointing on a retrieved stem (or on just a
-	    candidate stem, still displayed in red) displays a "Filter" board
-	    with the detailed result of stem tests.</P>
+	<P> Notice also that pointing on a retrieved stem (or on just a
+	    candidate stem) displays a "Stem check" board with the detailed result
+	    of stem tests.</P>
 	
 	<IMG SRC="../images/verticals.png" TITLE="Retrieval of vertical sticks"
 	     />
-	
-	<P> If you select again the "Glyphs" view, you'll notice that the former
-	    red glyphs now have stems in yellow. Handling the "leaves" is the
-	    purpose of the next step.</P>
-	
-	<IMG SRC="../images/verticals-glyphs.png" TITLE="Sticks on glyphs view"
-	     />
-	
 	
 	<BR/>
 	<A NAME="LEAVES">
@@ -960,37 +940,36 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	
 	<BR/>
 	
-	<P> Just like symbols, leaves may have been unduely segmented.</P>
+	<P> Just like symbols, leaves may have been unduely segmented. The
+	    difference between the two images below is the building of a
+	    compound, properly recognized as a void notehead.</P>
 	
 	<IMG SRC="../images/void_notehead-segmented.png" TITLE="Void notehead
-								unduely
-								segmented" />
-	
-	<P> The difference between the images above and below is the building of
-	    a compound, properly recognized as a void notehead.</P>
+	     unduely segmented" />
+	<EM><B>Changed for:</B></EM>
 	
 	<IMG SRC="../images/void_notehead-compound.png" TITLE="Void notehead
-							       properly
-							       recomposed" />
-	
+	     properly recomposed" />
+
 	
 	<BR/>
 	<A NAME="CLEANUP">
 	    <H3>Cleanup Step</H3>
 	</A>
 	
-	<P> This is a final cleaning up step, focused on wrong stems. For
-	    example, accidentals such as sharps, naturals or flats are symbols
-	    which actually contain one or two (small) stems. If these symbols
-	    are not recognized during the SYMBOLS step, then their stems are
-	    extracted and new leave glyphs are then tried, generally to no
-	    avail.</P>
+	<P> This is a final cleaning up step, focused on glyphs unduely
+	    segmented to stems. For example, accidentals such as sharps,
+	    naturals or flats are symbols which actually contain one or two
+	    (small) stems. If these symbols are not recognized during the
+	    SYMBOLS step, then their stems are extracted and new leave glyphs
+	    are then tried, generally to no avail.</P>
 	
 	<P> For the time being, we simply call these stems into questions. To do
 	    so, we try to cancel any stem which has no connected recognized
 	    leave. Then, we build new glyphs from these now unassigned
 	    sections. If we get to recognized glyphs, then we keep these glyphs,
 	    otherwise we "resurrect" the stems.</P>
+	
 	
 	<BR/>
 	<A NAME="SCORE">
@@ -1006,7 +985,14 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	    assigned to one key signature score entity.</P>
 	
 	<P> The result is a complete Score hierarchy, whose components are
-	    displayed in the Score view, ready to be exported to MusicXML.</P>
+	    displayed in the Score view. Here they will still need some manual
+	    adjustments, before being exported to MusicXML.</P>
+
+	<P> This closes the series of automated steps, since the adjustments are
+	    performed manually. They are described in detail in the <A
+	    href="#MANUALS">Manual Interactions</A> section.</P>
+
+	<IMG SRC="../images/score.png" TITLE="Score view" />
 	
 	<A NAME="TOOLS_SECTION">
 	    <H2>Tools</H2>
@@ -1031,14 +1017,14 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	    <H3>Training Material</H3>
 	</A>
 	
-	<P> The purpose of this item is to provide a user interface to review
-	    visually some or all of the various glyphs which are used for
-	    training the evaluators.</P>
+	<P> The purpose of this "Glyph Verifier" is to provide a user interface
+	    to review visually some or all of the various glyphs which are used
+	    for training the evaluators.</P>
 	<P> The main objective is thus to easily identify glyphs which have been
 	    assigned a wrong shape. Using them as part of the training base
-	    could bring serious damage in the performance of the
-	    evaluator(s). So the strategy, when such a wrong glyph has been
-	    identified, is simply to delete the glyph from the base.</P>
+	    could make serious damage in the performance of the evaluator. So
+	    the strategy, when such a wrong glyph has been identified, is simply
+	    to delete the glyph from the base.</P>
 	
 	<P> Here is an example of the glyph verifier:</P>
 	
@@ -1060,9 +1046,7 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 		    list. You can manually select the glyph instances you want
 		    to review.</LI>
 	    </OL>
-	    In the provided example, the user has selected all glyphs whose
-	    shape is either "BRACE" or "COMBINING_FLAG_1_UP" in the sheets named
-	    "hove" and "plaisir-1".</P>
+	</P>
 	
 	<P> The large panel, on the lower right side, is dedicated to the
 	    display of the selected glyphs, using their own coordinates. Notice
@@ -1250,15 +1234,15 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	<P>How do we define the current value of such logical constant ? The
 	    JavaDoc of class <A
 	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/constant/ConstantManager.html">ConstantManager</A>
-	    explains this mechanism in details. The sequence is defined as
-	    follows:
+	    explains this mechanism in details. The overriding sequence is
+	    defined as follows:
 	    <OL>
 		<LI>First the value as defined in the source code,</LI>
 		<LI>Then, if the constant name is found in the file
-		    named <U>/config/run.default.properties</U>, the related
+		    named <U>config/run.default.properties</U>, the related
 		    value is used.</LI>
 		<LI>Finally, the user home directory may contain a file
-		    named <U>audiveris.run.properties</U>. Is such file exists
+		    named <U>.audiveris/run.properties</U>. Is such file exists
 		    and contains the constant name, then its related value is
 		    taken for the constant. This last file is not meant to be
 		    manually edited by a user, it is automatically updated each
@@ -1267,6 +1251,11 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 		    persistent for the subsequent runs of the application.</LI>
 	    </OL>
 	</P>
+
+	<BR/>
+	<BR/>
+	<HR/> 
+	<I>End of Operation Manual</I>
 	
     </BODY>
 </HTML>
