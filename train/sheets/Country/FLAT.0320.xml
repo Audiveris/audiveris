@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="FLAT" interline="15" id="320">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>0.13333333333333333</pitch-position>
+    <section first-pos="216" id="340">
+        <run start="699" level="29" length="35"/>
+    </section>
+    <section first-pos="217" id="344">
+        <run start="683" level="28" length="50"/>
+        <run start="683" level="29" length="48"/>
+    </section>
+    <section first-pos="219" id="348">
+        <run start="682" level="30" length="33"/>
+    </section>
+    <section first-pos="219" id="349">
+        <run start="722" level="50" length="8"/>
+        <run start="721" level="50" length="8"/>
+        <run start="720" level="50" length="8"/>
+        <run start="719" level="50" length="8"/>
+        <run start="717" level="50" length="8"/>
+        <run start="715" level="25" length="8"/>
+    </section>
+    <section first-pos="220" id="355">
+        <run start="705" level="75" length="8"/>
+        <run start="704" level="86" length="7"/>
+        <run start="703" level="67" length="6"/>
+        <run start="703" level="67" length="6"/>
+        <run start="702" level="57" length="7"/>
+    </section>
+    <section first-pos="225" id="360">
+        <run start="702" level="30" length="20"/>
+        <run start="702" level="33" length="18"/>
+        <run start="702" level="38" length="16"/>
+        <run start="703" level="46" length="13"/>
+    </section>
+    <section first-pos="229" id="373">
+        <run start="705" level="86" length="7"/>
+    </section>
+    <section first-pos="230" id="376">
+        <run start="708" level="200" length="1"/>
+    </section>
+</stick>

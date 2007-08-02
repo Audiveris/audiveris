@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="SLUR" interline="15" id="419">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>3.5223880597014925</pitch-position>
+    <section first-pos="1218" id="1601">
+        <run start="1181" level="0" length="3"/>
+        <run start="1181" level="0" length="4"/>
+        <run start="1183" level="0" length="3"/>
+        <run start="1183" level="0" length="3"/>
+        <run start="1183" level="0" length="3"/>
+        <run start="1183" level="0" length="4"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="80" length="5"/>
+        <run start="1184" level="80" length="5"/>
+        <run start="1184" level="80" length="5"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1184" level="0" length="3"/>
+        <run start="1183" level="0" length="4"/>
+        <run start="1183" level="0" length="3"/>
+        <run start="1183" level="0" length="3"/>
+        <run start="1183" level="0" length="3"/>
+        <run start="1183" level="0" length="3"/>
+        <run start="1183" level="0" length="2"/>
+    </section>
+</stick>

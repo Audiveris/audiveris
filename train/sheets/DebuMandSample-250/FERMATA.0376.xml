@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="FERMATA" interline="18" id="376">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-6.918918918918919</pitch-position>
+    <section first-pos="612" id="1171">
+        <run start="634" level="141" length="6"/>
+        <run start="631" level="69" length="9"/>
+        <run start="628" level="74" length="9"/>
+        <run start="626" level="76" length="9"/>
+        <run start="625" level="58" length="8"/>
+        <run start="623" level="57" length="8"/>
+        <run start="622" level="54" length="8"/>
+        <run start="621" level="53" length="8"/>
+        <run start="620" level="48" length="8"/>
+        <run start="619" level="37" length="8"/>
+        <run start="618" level="33" length="8"/>
+        <run start="617" level="26" length="8"/>
+        <run start="616" level="39" length="9"/>
+        <run start="615" level="36" length="9"/>
+        <run start="615" level="28" length="9"/>
+        <run start="614" level="19" length="9"/>
+        <run start="614" level="19" length="9"/>
+        <run start="613" level="36" length="10"/>
+        <run start="613" level="6" length="9"/>
+        <run start="612" level="23" length="10"/>
+        <run start="612" level="28" length="10"/>
+        <run start="612" level="35" length="10"/>
+        <run start="612" level="18" length="10"/>
+        <run start="612" level="18" length="10"/>
+        <run start="612" level="18" length="10"/>
+        <run start="612" level="18" length="10"/>
+        <run start="612" level="18" length="10"/>
+        <run start="612" level="18" length="10"/>
+        <run start="612" level="35" length="10"/>
+        <run start="612" level="26" length="10"/>
+        <run start="612" level="23" length="10"/>
+        <run start="613" level="6" length="9"/>
+        <run start="613" level="36" length="10"/>
+        <run start="614" level="17" length="9"/>
+        <run start="614" level="19" length="9"/>
+        <run start="615" level="29" length="9"/>
+        <run start="615" level="33" length="9"/>
+        <run start="616" level="40" length="9"/>
+        <run start="617" level="22" length="8"/>
+        <run start="618" level="30" length="8"/>
+        <run start="619" level="36" length="8"/>
+        <run start="620" level="42" length="8"/>
+        <run start="621" level="46" length="8"/>
+        <run start="622" level="45" length="8"/>
+        <run start="623" level="59" length="8"/>
+        <run start="625" level="59" length="8"/>
+        <run start="627" level="54" length="8"/>
+        <run start="629" level="75" length="9"/>
+        <run start="631" level="72" length="9"/>
+        <run start="634" level="164" length="6"/>
+    </section>
+</stick>

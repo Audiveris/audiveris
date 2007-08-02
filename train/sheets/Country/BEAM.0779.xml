@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="15" id="779">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-6.507462686567164</pitch-position>
+    <section first-pos="1367" id="1763">
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+        <run start="1097" level="0" length="10"/>
+    </section>
+</stick>

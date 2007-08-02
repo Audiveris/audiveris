@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="937" interline="22" shape="COMBINING_FLAG_1_UP">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>5.023255813953488</pitch-position>
+        <section id="3679" first-pos="1941">
+            <run start="473" length="19" level="20"/>
+            <run start="472" length="17" level="24"/>
+            <run start="471" length="15" level="22"/>
+            <run start="470" length="14" level="17"/>
+            <run start="470" length="13" level="9"/>
+            <run start="470" length="12" level="11"/>
+            <run start="469" length="12" level="20"/>
+            <run start="467" length="13" level="27"/>
+            <run start="466" length="13" level="19"/>
+            <run start="465" length="13" level="19"/>
+            <run start="465" length="12" level="23"/>
+            <run start="464" length="11" level="23"/>
+            <run start="463" length="11" level="23"/>
+            <run start="461" length="12" level="29"/>
+            <run start="459" length="13" level="37"/>
+            <run start="457" length="13" level="37"/>
+            <run start="456" length="12" level="46"/>
+        </section>
+        <section id="3771" first-pos="1958">
+            <run start="438" length="28" level="69"/>
+            <run start="439" length="24" level="82"/>
+        </section>
+        <section id="3766" first-pos="1957">
+            <run start="438" length="7" level="68"/>
+        </section>
+        <section id="3744" first-pos="1956">
+            <run start="454" length="1" level="200"/>
+            <run start="451" length="4" level="173"/>
+        </section>
+        <section id="3777" first-pos="1960">
+            <run start="442" length="18" level="131"/>
+        </section>
+        <section id="3779" first-pos="1961">
+            <run start="447" length="10" level="197"/>
+        </section>
+        <section id="3780" first-pos="1962">
+            <run start="454" length="1" level="200"/>
+        </section>
+</stick>

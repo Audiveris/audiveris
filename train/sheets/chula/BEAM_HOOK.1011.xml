@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM_HOOK" interline="21" id="1011">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-4.2823529411764705</pitch-position>
+    <section first-pos="1983" id="3458">
+        <run start="1516" level="168" length="7"/>
+        <run start="1514" level="118" length="9"/>
+        <run start="1513" level="95" length="10"/>
+        <run start="1513" level="84" length="10"/>
+        <run start="1513" level="83" length="10"/>
+        <run start="1513" level="98" length="10"/>
+        <run start="1514" level="92" length="9"/>
+        <run start="1514" level="92" length="9"/>
+        <run start="1514" level="92" length="9"/>
+        <run start="1514" level="91" length="9"/>
+        <run start="1514" level="91" length="9"/>
+        <run start="1514" level="91" length="9"/>
+        <run start="1514" level="91" length="9"/>
+        <run start="1514" level="91" length="9"/>
+        <run start="1514" level="90" length="9"/>
+        <run start="1514" level="90" length="9"/>
+        <run start="1514" level="90" length="9"/>
+        <run start="1514" level="90" length="9"/>
+        <run start="1514" level="89" length="9"/>
+        <run start="1514" level="89" length="9"/>
+        <run start="1514" level="89" length="9"/>
+        <run start="1514" level="89" length="9"/>
+        <run start="1514" level="105" length="9"/>
+        <run start="1514" level="101" length="9"/>
+        <run start="1514" level="89" length="9"/>
+        <run start="1514" level="89" length="9"/>
+    </section>
+</stick>

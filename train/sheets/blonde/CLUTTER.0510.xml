@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="510" interline="22" shape="CLUTTER">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-7.954022988505747</pitch-position>
+        <section id="1854" first-pos="864">
+            <run start="1737" length="2" level="205"/>
+            <run start="1737" length="3" level="86"/>
+            <run start="1737" length="3" level="86"/>
+            <run start="1737" length="3" level="106"/>
+            <run start="1738" length="2" level="108"/>
+            <run start="1738" length="3" level="86"/>
+            <run start="1738" length="3" level="86"/>
+            <run start="1738" length="3" level="105"/>
+            <run start="1739" length="2" level="128"/>
+            <run start="1739" length="2" level="108"/>
+            <run start="1739" length="3" level="86"/>
+            <run start="1739" length="3" level="86"/>
+            <run start="1739" length="3" level="104"/>
+            <run start="1740" length="2" level="128"/>
+            <run start="1740" length="2" level="107"/>
+            <run start="1740" length="3" level="86"/>
+            <run start="1740" length="3" level="86"/>
+            <run start="1740" length="3" level="103"/>
+            <run start="1741" length="1" level="28"/>
+            <run start="1741" length="2" level="107"/>
+            <run start="1741" length="2" level="12"/>
+            <run start="1741" length="2" level="10"/>
+            <run start="1741" length="2" level="9"/>
+            <run start="1741" length="2" level="32"/>
+            <run start="1742" length="2" level="107"/>
+            <run start="1742" length="2" level="4"/>
+            <run start="1742" length="2" level="3"/>
+            <run start="1742" length="2" level="25"/>
+            <run start="1743" length="1" level="2"/>
+            <run start="1743" length="2" level="110"/>
+            <run start="1743" length="2" level="5"/>
+            <run start="1743" length="2" level="27"/>
+            <run start="1744" length="2" level="116"/>
+        </section>
+        <section id="1952" first-pos="897">
+            <run start="1744" length="4" level="60"/>
+            <run start="1744" length="4" level="6"/>
+            <run start="1744" length="4" level="7"/>
+            <run start="1744" length="4" level="24"/>
+            <run start="1745" length="2" level="15"/>
+            <run start="1744" length="3" level="86"/>
+            <run start="1744" length="3" level="97"/>
+            <run start="1744" length="2" level="147"/>
+        </section>
+        <section id="1857" first-pos="865">
+            <run start="1754" length="2" level="128"/>
+            <run start="1754" length="2" level="132"/>
+            <run start="1753" length="2" level="128"/>
+            <run start="1753" length="2" level="128"/>
+            <run start="1753" length="2" level="128"/>
+            <run start="1753" length="2" level="128"/>
+            <run start="1753" length="2" level="134"/>
+            <run start="1752" length="2" level="128"/>
+            <run start="1752" length="2" level="128"/>
+            <run start="1752" length="2" level="128"/>
+            <run start="1752" length="2" level="127"/>
+            <run start="1751" length="3" level="86"/>
+            <run start="1751" length="3" level="91"/>
+            <run start="1751" length="2" level="128"/>
+            <run start="1751" length="2" level="128"/>
+            <run start="1751" length="2" level="127"/>
+            <run start="1750" length="3" level="86"/>
+            <run start="1750" length="2" level="24"/>
+            <run start="1750" length="1" level="25"/>
+            <run start="1750" length="1" level="22"/>
+            <run start="1750" length="1" level="17"/>
+            <run start="1749" length="2" level="9"/>
+            <run start="1749" length="2" level="18"/>
+            <run start="1749" length="1" level="10"/>
+            <run start="1749" length="1" level="6"/>
+            <run start="1748" length="2" level="3"/>
+            <run start="1748" length="2" level="14"/>
+            <run start="1748" length="1" level="2"/>
+            <run start="1748" length="1" level="5"/>
+            <run start="1747" length="2" level="113"/>
+            <run start="1747" length="2" level="20"/>
+            <run start="1747" length="1" level="14"/>
+        </section>
+</stick>

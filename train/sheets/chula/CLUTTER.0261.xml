@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="CLUTTER" interline="21" id="261">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-14.91764705882353</pitch-position>
+    <section first-pos="409" id="923">
+        <run start="230" level="195" length="5"/>
+    </section>
+    <section first-pos="410" id="924">
+        <run start="228" level="99" length="10"/>
+        <run start="227" level="47" length="13"/>
+        <run start="226" level="40" length="15"/>
+    </section>
+    <section first-pos="413" id="928">
+        <run start="225" level="80" length="5"/>
+        <run start="224" level="87" length="3"/>
+        <run start="223" level="110" length="3"/>
+        <run start="223" level="128" length="2"/>
+        <run start="224" level="99" length="1"/>
+    </section>
+    <section first-pos="413" id="929">
+        <run start="233" level="38" length="8"/>
+        <run start="238" level="71" length="4"/>
+        <run start="239" level="24" length="3"/>
+        <run start="240" level="95" length="3"/>
+        <run start="240" level="86" length="3"/>
+        <run start="240" level="86" length="3"/>
+        <run start="240" level="86" length="3"/>
+        <run start="240" level="100" length="3"/>
+        <run start="240" level="109" length="2"/>
+        <run start="239" level="73" length="3"/>
+        <run start="236" level="111" length="6"/>
+    </section>
+    <section first-pos="419" id="949">
+        <run start="224" level="190" length="1"/>
+        <run start="223" level="145" length="3"/>
+        <run start="223" level="110" length="4"/>
+        <run start="223" level="104" length="5"/>
+        <run start="224" level="142" length="9"/>
+    </section>
+    <section first-pos="424" id="957">
+        <run start="225" level="57" length="16"/>
+        <run start="225" level="34" length="15"/>
+        <run start="227" level="46" length="11"/>
+        <run start="229" level="89" length="7"/>
+    </section>
+</stick>

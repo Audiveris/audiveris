@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM_HOOK" interline="21" id="861">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-5.223529411764706</pitch-position>
+    <section first-pos="506" id="1156">
+        <run start="918" level="60" length="4"/>
+    </section>
+    <section first-pos="507" id="1157">
+        <run start="915" level="24" length="11"/>
+        <run start="915" level="22" length="12"/>
+        <run start="915" level="21" length="13"/>
+        <run start="915" level="21" length="13"/>
+        <run start="915" level="21" length="13"/>
+        <run start="915" level="21" length="13"/>
+        <run start="915" level="21" length="13"/>
+        <run start="915" level="21" length="13"/>
+        <run start="915" level="21" length="13"/>
+        <run start="915" level="21" length="13"/>
+        <run start="915" level="20" length="13"/>
+        <run start="915" level="21" length="13"/>
+        <run start="915" level="21" length="13"/>
+        <run start="915" level="21" length="13"/>
+        <run start="915" level="3" length="12"/>
+        <run start="915" level="3" length="12"/>
+        <run start="915" level="3" length="12"/>
+        <run start="915" level="3" length="12"/>
+        <run start="915" level="3" length="12"/>
+        <run start="915" level="2" length="12"/>
+        <run start="915" level="2" length="12"/>
+        <run start="915" level="2" length="12"/>
+        <run start="915" level="2" length="12"/>
+    </section>
+</stick>

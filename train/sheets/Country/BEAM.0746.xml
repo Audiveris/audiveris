@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="15" id="746">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>5.442622950819672</pitch-position>
+    <section first-pos="434" id="594">
+        <run start="966" level="0" length="8"/>
+        <run start="966" level="0" length="9"/>
+        <run start="966" level="0" length="9"/>
+        <run start="966" level="0" length="9"/>
+        <run start="966" level="0" length="9"/>
+        <run start="966" level="0" length="9"/>
+        <run start="967" level="0" length="8"/>
+        <run start="967" level="0" length="8"/>
+        <run start="967" level="0" length="8"/>
+        <run start="967" level="0" length="9"/>
+        <run start="967" level="0" length="9"/>
+        <run start="967" level="0" length="9"/>
+        <run start="967" level="0" length="9"/>
+        <run start="967" level="0" length="9"/>
+        <run start="968" level="0" length="8"/>
+        <run start="968" level="0" length="8"/>
+        <run start="968" level="0" length="8"/>
+        <run start="968" level="0" length="9"/>
+        <run start="968" level="0" length="9"/>
+        <run start="968" level="0" length="9"/>
+        <run start="968" level="0" length="9"/>
+        <run start="968" level="0" length="9"/>
+        <run start="969" level="0" length="8"/>
+        <run start="969" level="0" length="8"/>
+        <run start="969" level="0" length="8"/>
+        <run start="969" level="0" length="9"/>
+        <run start="969" level="0" length="9"/>
+        <run start="969" level="0" length="9"/>
+        <run start="969" level="0" length="9"/>
+        <run start="969" level="0" length="9"/>
+        <run start="970" level="0" length="8"/>
+        <run start="970" level="0" length="8"/>
+        <run start="970" level="0" length="8"/>
+        <run start="970" level="0" length="9"/>
+    </section>
+</stick>

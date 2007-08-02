@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="SIXTEENTH_REST" interline="21" id="433">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-4.847058823529411</pitch-position>
+    <section first-pos="388" id="870">
+        <run start="1179" level="200" length="2"/>
+    </section>
+    <section first-pos="389" id="873">
+        <run start="1174" level="214" length="7"/>
+    </section>
+    <section first-pos="389" id="874">
+        <run start="1200" level="36" length="1"/>
+    </section>
+    <section first-pos="390" id="879">
+        <run start="1171" level="59" length="32"/>
+        <run start="1168" level="57" length="35"/>
+    </section>
+    <section first-pos="392" id="886">
+        <run start="1166" level="73" length="17"/>
+        <run start="1165" level="39" length="16"/>
+        <run start="1164" level="37" length="17"/>
+        <run start="1163" level="35" length="18"/>
+        <run start="1162" level="33" length="19"/>
+        <run start="1162" level="23" length="19"/>
+        <run start="1161" level="31" length="20"/>
+        <run start="1161" level="21" length="20"/>
+        <run start="1160" level="29" length="21"/>
+        <run start="1160" level="20" length="21"/>
+        <run start="1160" level="20" length="21"/>
+        <run start="1160" level="20" length="21"/>
+        <run start="1159" level="19" length="21"/>
+        <run start="1159" level="12" length="21"/>
+        <run start="1159" level="1" length="19"/>
+        <run start="1159" level="3" length="19"/>
+        <run start="1159" level="4" length="18"/>
+        <run start="1159" level="5" length="17"/>
+        <run start="1160" level="4" length="16"/>
+        <run start="1160" level="12" length="15"/>
+        <run start="1161" level="6" length="12"/>
+        <run start="1161" level="22" length="11"/>
+        <run start="1163" level="35" length="7"/>
+        <run start="1165" level="63" length="3"/>
+    </section>
+    <section first-pos="392" id="887">
+        <run start="1185" level="30" length="2"/>
+    </section>
+    <section first-pos="392" id="888">
+        <run start="1200" level="22" length="1"/>
+    </section>
+</stick>

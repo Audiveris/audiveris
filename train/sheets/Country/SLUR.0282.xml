@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="SLUR" interline="15" id="282">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-3.3442622950819674</pitch-position>
+    <section first-pos="1279" id="1629">
+        <run start="461" level="0" length="3"/>
+        <run start="460" level="0" length="3"/>
+        <run start="460" level="0" length="2"/>
+        <run start="459" level="0" length="3"/>
+        <run start="459" level="0" length="3"/>
+        <run start="459" level="0" length="3"/>
+        <run start="459" level="0" length="3"/>
+        <run start="458" level="0" length="4"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="3"/>
+        <run start="458" level="0" length="4"/>
+        <run start="458" level="0" length="4"/>
+        <run start="459" level="0" length="3"/>
+        <run start="459" level="0" length="3"/>
+        <run start="459" level="0" length="3"/>
+        <run start="459" level="0" length="3"/>
+        <run start="459" level="0" length="3"/>
+        <run start="460" level="0" length="2"/>
+        <run start="460" level="0" length="2"/>
+        <run start="461" level="0" length="1"/>
+    </section>
+</stick>

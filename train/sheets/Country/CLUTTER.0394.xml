@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="CLUTTER" interline="15" id="394">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>14.491803278688524</pitch-position>
+    <section first-pos="592" id="744">
+        <run start="1038" level="0" length="6"/>
+    </section>
+    <section first-pos="593" id="745">
+        <run start="1035" level="0" length="12"/>
+    </section>
+    <section first-pos="594" id="746">
+        <run start="1033" level="0" length="6"/>
+        <run start="1032" level="0" length="5"/>
+        <run start="1031" level="0" length="5"/>
+        <run start="1030" level="0" length="5"/>
+        <run start="1029" level="40" length="5"/>
+        <run start="1029" level="50" length="4"/>
+        <run start="1028" level="80" length="5"/>
+        <run start="1028" level="100" length="4"/>
+        <run start="1028" level="100" length="4"/>
+        <run start="1028" level="100" length="4"/>
+        <run start="1028" level="133" length="3"/>
+        <run start="1028" level="133" length="3"/>
+        <run start="1028" level="133" length="3"/>
+        <run start="1028" level="200" length="2"/>
+        <run start="1028" level="200" length="1"/>
+        <run start="1028" level="200" length="1"/>
+    </section>
+    <section first-pos="594" id="747">
+        <run start="1044" level="0" length="4"/>
+        <run start="1044" level="0" length="5"/>
+        <run start="1045" level="0" length="5"/>
+        <run start="1046" level="0" length="5"/>
+        <run start="1046" level="0" length="5"/>
+        <run start="1046" level="0" length="5"/>
+        <run start="1047" level="0" length="5"/>
+        <run start="1047" level="0" length="5"/>
+        <run start="1047" level="0" length="5"/>
+        <run start="1047" level="0" length="5"/>
+        <run start="1047" level="0" length="5"/>
+        <run start="1047" level="0" length="5"/>
+        <run start="1047" level="0" length="5"/>
+        <run start="1047" level="0" length="5"/>
+        <run start="1047" level="0" length="5"/>
+        <run start="1047" level="0" length="5"/>
+        <run start="1047" level="0" length="4"/>
+        <run start="1046" level="0" length="5"/>
+        <run start="1046" level="0" length="5"/>
+        <run start="1046" level="0" length="5"/>
+        <run start="1045" level="0" length="6"/>
+        <run start="1045" level="0" length="5"/>
+        <run start="1045" level="0" length="5"/>
+        <run start="1044" level="0" length="5"/>
+        <run start="1043" level="0" length="6"/>
+        <run start="1043" level="0" length="5"/>
+        <run start="1042" level="0" length="6"/>
+    </section>
+</stick>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="NOTEHEAD_BLACK" interline="21" id="720">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-1.0232558139534884</pitch-position>
+    <section first-pos="1913" id="3327">
+        <run start="377" level="54" length="14"/>
+        <run start="375" level="61" length="16"/>
+        <run start="374" level="44" length="17"/>
+        <run start="373" level="42" length="18"/>
+        <run start="372" level="40" length="19"/>
+        <run start="372" level="39" length="19"/>
+    </section>
+    <section first-pos="1918" id="3335">
+        <run start="370" level="104" length="1"/>
+    </section>
+    <section first-pos="1919" id="3338">
+        <run start="370" level="40" length="21"/>
+        <run start="370" level="29" length="21"/>
+        <run start="369" level="37" length="22"/>
+        <run start="368" level="44" length="23"/>
+        <run start="368" level="44" length="23"/>
+        <run start="368" level="44" length="23"/>
+        <run start="368" level="44" length="23"/>
+        <run start="368" level="44" length="23"/>
+        <run start="368" level="44" length="23"/>
+        <run start="368" level="37" length="22"/>
+        <run start="368" level="30" length="21"/>
+        <run start="368" level="28" length="20"/>
+        <run start="368" level="29" length="19"/>
+        <run start="368" level="31" length="18"/>
+        <run start="368" level="33" length="17"/>
+        <run start="369" level="27" length="15"/>
+        <run start="370" level="40" length="13"/>
+    </section>
+    <section first-pos="1936" id="3349">
+        <run start="370" level="139" length="1"/>
+        <run start="370" level="141" length="1"/>
+        <run start="370" level="160" length="1"/>
+    </section>
+    <section first-pos="1936" id="3350">
+        <run start="373" level="50" length="8"/>
+    </section>
+    <section first-pos="1937" id="3351">
+        <run start="375" level="105" length="3"/>
+    </section>
+</stick>

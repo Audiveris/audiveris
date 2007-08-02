@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="CLUTTER" interline="15" id="227">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-40.74576271186441</pitch-position>
+    <section first-pos="692" id="887">
+        <run start="197" level="0" length="1"/>
+        <run start="196" level="0" length="3"/>
+        <run start="195" level="0" length="3"/>
+        <run start="193" level="0" length="3"/>
+        <run start="192" level="0" length="3"/>
+        <run start="191" level="0" length="3"/>
+        <run start="190" level="0" length="3"/>
+        <run start="188" level="0" length="3"/>
+        <run start="187" level="0" length="5"/>
+        <run start="186" level="0" length="6"/>
+        <run start="185" level="0" length="7"/>
+        <run start="184" level="0" length="8"/>
+    </section>
+    <section first-pos="704" id="907">
+        <run start="182" level="0" length="3"/>
+        <run start="181" level="0" length="3"/>
+        <run start="180" level="0" length="3"/>
+        <run start="179" level="0" length="3"/>
+        <run start="177" level="0" length="3"/>
+        <run start="176" level="0" length="3"/>
+        <run start="175" level="0" length="3"/>
+        <run start="174" level="0" length="5"/>
+        <run start="173" level="0" length="8"/>
+    </section>
+    <section first-pos="704" id="908">
+        <run start="187" level="0" length="5"/>
+        <run start="187" level="0" length="5"/>
+        <run start="186" level="0" length="5"/>
+        <run start="186" level="0" length="5"/>
+        <run start="186" level="0" length="5"/>
+        <run start="186" level="0" length="5"/>
+        <run start="186" level="0" length="5"/>
+        <run start="186" level="0" length="5"/>
+        <run start="186" level="0" length="5"/>
+        <run start="186" level="0" length="5"/>
+        <run start="186" level="0" length="5"/>
+        <run start="186" level="0" length="4"/>
+    </section>
+    <section first-pos="713" id="922">
+        <run start="173" level="0" length="1"/>
+    </section>
+    <section first-pos="713" id="923">
+        <run start="176" level="0" length="6"/>
+        <run start="177" level="0" length="6"/>
+        <run start="178" level="0" length="6"/>
+    </section>
+    <section first-pos="716" id="929">
+        <run start="180" level="0" length="10"/>
+        <run start="181" level="0" length="9"/>
+        <run start="182" level="0" length="8"/>
+        <run start="183" level="0" length="7"/>
+        <run start="184" level="0" length="6"/>
+        <run start="185" level="0" length="6"/>
+        <run start="185" level="0" length="7"/>
+        <run start="185" level="0" length="9"/>
+        <run start="189" level="0" length="6"/>
+        <run start="190" level="0" length="6"/>
+        <run start="191" level="0" length="6"/>
+    </section>
+</stick>

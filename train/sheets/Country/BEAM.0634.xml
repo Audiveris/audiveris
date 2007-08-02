@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="15" id="634">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-2.2666666666666666</pitch-position>
+    <section first-pos="527" id="684">
+        <run start="687" level="100" length="8"/>
+        <run start="687" level="100" length="8"/>
+        <run start="687" level="100" length="8"/>
+        <run start="687" level="100" length="8"/>
+        <run start="687" level="100" length="8"/>
+        <run start="687" level="100" length="8"/>
+        <run start="687" level="89" length="9"/>
+        <run start="687" level="89" length="9"/>
+        <run start="687" level="89" length="9"/>
+        <run start="687" level="89" length="9"/>
+        <run start="687" level="89" length="9"/>
+        <run start="687" level="89" length="9"/>
+        <run start="687" level="89" length="9"/>
+        <run start="687" level="89" length="9"/>
+        <run start="687" level="89" length="9"/>
+        <run start="687" level="89" length="9"/>
+        <run start="688" level="100" length="8"/>
+        <run start="688" level="100" length="8"/>
+        <run start="688" level="100" length="8"/>
+        <run start="688" level="100" length="8"/>
+        <run start="688" level="100" length="8"/>
+        <run start="688" level="100" length="8"/>
+        <run start="688" level="100" length="8"/>
+        <run start="688" level="100" length="8"/>
+        <run start="688" level="89" length="9"/>
+        <run start="688" level="89" length="9"/>
+        <run start="688" level="89" length="9"/>
+        <run start="688" level="89" length="9"/>
+        <run start="688" level="89" length="9"/>
+        <run start="688" level="89" length="9"/>
+        <run start="688" level="89" length="9"/>
+        <run start="688" level="89" length="9"/>
+        <run start="688" level="89" length="9"/>
+        <run start="688" level="89" length="9"/>
+        <run start="688" level="89" length="9"/>
+        <run start="689" level="100" length="8"/>
+        <run start="689" level="100" length="8"/>
+        <run start="689" level="100" length="8"/>
+        <run start="689" level="100" length="8"/>
+        <run start="689" level="100" length="8"/>
+        <run start="689" level="100" length="8"/>
+    </section>
+</stick>

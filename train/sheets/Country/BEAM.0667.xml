@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="15" id="667">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>4.133333333333334</pitch-position>
+    <section first-pos="280" id="396">
+        <run start="738" level="75" length="8"/>
+        <run start="738" level="75" length="8"/>
+        <run start="738" level="75" length="8"/>
+        <run start="738" level="75" length="8"/>
+        <run start="738" level="75" length="8"/>
+        <run start="738" level="86" length="7"/>
+        <run start="738" level="86" length="7"/>
+        <run start="738" level="86" length="7"/>
+        <run start="738" level="86" length="7"/>
+        <run start="736" level="89" length="9"/>
+        <run start="736" level="89" length="9"/>
+        <run start="736" level="89" length="9"/>
+        <run start="736" level="89" length="9"/>
+        <run start="736" level="89" length="9"/>
+        <run start="736" level="89" length="9"/>
+        <run start="736" level="100" length="8"/>
+        <run start="736" level="100" length="8"/>
+        <run start="736" level="100" length="8"/>
+        <run start="736" level="100" length="8"/>
+        <run start="735" level="89" length="9"/>
+        <run start="735" level="89" length="9"/>
+        <run start="735" level="89" length="9"/>
+        <run start="735" level="89" length="9"/>
+        <run start="735" level="89" length="9"/>
+        <run start="735" level="89" length="9"/>
+        <run start="735" level="89" length="9"/>
+        <run start="735" level="100" length="8"/>
+        <run start="735" level="100" length="8"/>
+        <run start="735" level="100" length="8"/>
+        <run start="735" level="100" length="8"/>
+        <run start="734" level="89" length="9"/>
+        <run start="734" level="89" length="9"/>
+        <run start="734" level="89" length="9"/>
+        <run start="734" level="89" length="9"/>
+    </section>
+</stick>

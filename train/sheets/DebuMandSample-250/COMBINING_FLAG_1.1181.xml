@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="COMBINING_FLAG_1" interline="18" id="1181">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-2.4</pitch-position>
+    <section first-pos="1874" id="3371">
+        <run start="1563" level="66" length="14"/>
+        <run start="1565" level="68" length="12"/>
+        <run start="1567" level="50" length="10"/>
+        <run start="1568" level="58" length="10"/>
+        <run start="1569" level="38" length="9"/>
+        <run start="1571" level="38" length="8"/>
+        <run start="1572" level="58" length="8"/>
+        <run start="1574" level="47" length="7"/>
+        <run start="1575" level="63" length="7"/>
+        <run start="1577" level="51" length="6"/>
+        <run start="1578" level="78" length="7"/>
+        <run start="1580" level="60" length="6"/>
+        <run start="1582" level="120" length="7"/>
+        <run start="1584" level="171" length="8"/>
+        <run start="1586" level="132" length="11"/>
+    </section>
+    <section first-pos="1887" id="3409">
+        <run start="1613" level="166" length="2"/>
+    </section>
+    <section first-pos="1888" id="3410">
+        <run start="1606" level="200" length="1"/>
+    </section>
+    <section first-pos="1888" id="3411">
+        <run start="1608" level="161" length="7"/>
+    </section>
+    <section first-pos="1889" id="3412">
+        <run start="1587" level="200" length="2"/>
+    </section>
+    <section first-pos="1889" id="3413">
+        <run start="1590" level="112" length="22"/>
+    </section>
+    <section first-pos="1890" id="3415">
+        <run start="1597" level="198" length="10"/>
+    </section>
+</stick>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="FLAT" interline="15" id="414">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-0.6567164179104478</pitch-position>
+    <section first-pos="183" id="273">
+        <run start="1139" level="200" length="1"/>
+    </section>
+    <section first-pos="184" id="275">
+        <run start="1136" level="45" length="40"/>
+    </section>
+    <section first-pos="185" id="277">
+        <run start="1120" level="42" length="53"/>
+        <run start="1119" level="41" length="54"/>
+    </section>
+    <section first-pos="187" id="279">
+        <run start="1119" level="33" length="36"/>
+    </section>
+    <section first-pos="187" id="280">
+        <run start="1163" level="40" length="10"/>
+        <run start="1162" level="0" length="9"/>
+        <run start="1161" level="0" length="9"/>
+        <run start="1160" level="0" length="8"/>
+        <run start="1158" level="0" length="9"/>
+        <run start="1158" level="0" length="8"/>
+        <run start="1157" level="29" length="7"/>
+    </section>
+    <section first-pos="188" id="286">
+        <run start="1145" level="0" length="8"/>
+        <run start="1144" level="0" length="7"/>
+        <run start="1143" level="0" length="7"/>
+        <run start="1142" level="0" length="7"/>
+        <run start="1142" level="0" length="7"/>
+        <run start="1139" level="40" length="10"/>
+    </section>
+    <section first-pos="193" id="294">
+        <run start="1154" level="0" length="1"/>
+    </section>
+    <section first-pos="194" id="296">
+        <run start="1139" level="42" length="24"/>
+        <run start="1139" level="45" length="22"/>
+        <run start="1139" level="50" length="20"/>
+    </section>
+    <section first-pos="197" id="302">
+        <run start="1142" level="27" length="15"/>
+        <run start="1143" level="0" length="12"/>
+    </section>
+    <section first-pos="199" id="307">
+        <run start="1145" level="0" length="6"/>
+    </section>
+</stick>

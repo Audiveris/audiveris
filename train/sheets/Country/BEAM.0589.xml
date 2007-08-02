@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="15" id="589">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>5.049180327868853</pitch-position>
+    <section first-pos="1145" id="1556">
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+        <run start="520" level="0" length="8"/>
+    </section>
+</stick>

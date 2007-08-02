@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="EIGHTH_REST" interline="18" id="591">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-2.526315789473684</pitch-position>
+    <section first-pos="1782" id="3274">
+        <run start="2058" level="133" length="7"/>
+        <run start="2057" level="31" length="9"/>
+        <run start="2056" level="25" length="11"/>
+        <run start="2055" level="31" length="13"/>
+        <run start="2055" level="18" length="13"/>
+        <run start="2055" level="0" length="13"/>
+        <run start="2055" level="0" length="13"/>
+        <run start="2055" level="0" length="13"/>
+        <run start="2055" level="19" length="13"/>
+        <run start="2055" level="36" length="13"/>
+        <run start="2056" level="28" length="11"/>
+        <run start="2058" level="102" length="9"/>
+    </section>
+    <section first-pos="1791" id="3293">
+        <run start="2086" level="181" length="3"/>
+        <run start="2083" level="100" length="6"/>
+        <run start="2080" level="68" length="9"/>
+        <run start="2077" level="93" length="11"/>
+        <run start="2074" level="93" length="10"/>
+        <run start="2071" level="98" length="9"/>
+        <run start="2067" level="164" length="9"/>
+    </section>
+    <section first-pos="1794" id="3299">
+        <run start="2063" level="0" length="3"/>
+        <run start="2062" level="90" length="4"/>
+        <run start="2062" level="62" length="3"/>
+        <run start="2061" level="95" length="4"/>
+    </section>
+    <section first-pos="1798" id="3305">
+        <run start="2060" level="111" length="13"/>
+        <run start="2059" level="92" length="12"/>
+        <run start="2057" level="107" length="8"/>
+    </section>
+    <section first-pos="1801" id="3309">
+        <run start="2058" level="158" length="3"/>
+    </section>
+</stick>

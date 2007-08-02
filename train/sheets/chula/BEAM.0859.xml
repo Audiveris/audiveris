@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="21" id="859">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-5.5058823529411764</pitch-position>
+    <section first-pos="1621" id="2831">
+        <run start="913" level="16" length="17"/>
+        <run start="913" level="19" length="14"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="22" length="13"/>
+        <run start="914" level="22" length="12"/>
+        <run start="914" level="22" length="12"/>
+        <run start="914" level="22" length="12"/>
+        <run start="914" level="21" length="12"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="20" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="22" length="13"/>
+        <run start="914" level="21" length="12"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="20" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="21" length="13"/>
+        <run start="913" level="20" length="13"/>
+    </section>
+</stick>
