@@ -314,7 +314,9 @@ public class GlyphLagView
                             glyphSelection.setEntity(null, hint);
                         }
 
-                        glyphSetSelection.setEntity(glyphsFound, hint);
+                        if (glyphSetSelection != null) {
+                            glyphSetSelection.setEntity(glyphsFound, hint);
+                        }
                     }
                 }
             }
