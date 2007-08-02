@@ -8,14 +8,14 @@
 <!-- |                                                                     | -->
 <!-- +=====================================================================+ -->
 
-<project name="audiveris-3.0" basedir=".." default="run">
+<project name="audiveris" basedir=".." default="run">
 
     <description>
-        Build, test, and run the Audiveris project via Emacs
+        Build, test, and run the Audiveris project via Emacs or Ant
         $Id$
 
 	This 'build.xml' file is located in the 'src' subdirectory to be
-	automatically picked up by Emacs
+	automatically picked up by Emacs or Ant
 
 	Use 'ant -projecthelp' to list public defined targets.
 	Targets whose name begins with '-' are only internal targets.
@@ -82,20 +82,6 @@
 <!--         <path refid="run.classpath"/> -->
     </path>
     
-    <!-- Jmp classpath -->
-    <path id="jmp.classpath">
-        <path refid="run.classpath"/>
-        <pathelement path="c:/WINDOWS"/>
-    </path>
-    <property name="run.string" refid="run.classpath"/>
-    
-    <!-- Uml classpath -->
-    <path id="uml.classpath">
-	<pathelement path="${java.home}/../lib/tools.jar"/>
-        <path refid="build.classpath"/>
-    </path>
-    
-             
     <!-- ================================================================ -->
     <!-- ======================  Internal Targets  ====================== -->
     <!-- ================================================================ -->
@@ -132,6 +118,35 @@
     <!-- ================= -->
     <target name="-compile"
         depends="-do-compile, -post-compile"/>
+    
+    <!-- ===================== -->
+    <!--  - C O P Y - L I B S  -->
+    <!-- ===================== -->
+    <target name="-copy-libs">
+        <mkdir dir="${dist.dir}/lib"/>
+
+        <pathconvert pathsep=" " refid="run.classpath" property="jar.classpath">
+            <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*" to="lib/*"/>
+            </chainedmapper>
+        </pathconvert>
+	<echo message="jar.classpath=${jar.classpath}" /> 
+
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.buttons.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.music.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jama.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jcommon.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jfreechart.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.forms.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.looks.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${proxymusic.jar}"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_codec.jar"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_core.jar"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
+
+    </target>
+	     
     
     <!-- ======================= -->
     <!--  - D O - C O M P I L E  -->
@@ -181,91 +196,11 @@
             <compilerarg value="-Xlint:-path"/>
         </javac>
     </target>
-    
-    <!-- =========== -->
-    <!--  - I N I T  -->
-    <!-- =========== -->
-    <target name="-init">
-<!--         description="Initialize the environment." -->
-        
-        <!-- Create the time stamp -->
-        <tstamp/>
-	
-        <available
-            property="junit.jar.present"
-            file="${junit.jar}"
-        />
-        
-    </target>
 
     <!-- =========================== -->
     <!--  - P O S T - C O M P I L E  -->
     <!-- =========================== -->
     <target name="-post-compile" depends="-build-icons"/>        
-              
-    <!-- ========================= -->
-    <!--  - U M L - P A C K A G E  -->
-    <!-- ========================= -->
-    <target name="-uml-package">
-<!-- 	    description="Generate UML for one package." -->
-	
-	<echo message="Processing uml for ${package}..."/>
-
-	<!-- Symbolic names -->
-	<property name="uml.html" location="${dist.javadoc.dir}/${package}/package-uml.html"/>
-	<property name="uml.gif"  location="${dist.javadoc.dir}/${package}/package-uml.gif"/>
-	<property name="uml.dot"  location="${src.dir}/${package}/package-uml.dot"/>
-	
-	<!-- Generate the dot information -->
-        <javadoc classpathref="uml.classpath"
-		 sourcepath="${src.dir}"
-		 additionalparam="-output ${uml.dot} -all -nodefillcolor cornsilk -nodefontcolor blue">
-	    <doclet name="UmlGraph"
-		    path="${uml.jar}">
-	    </doclet>
-            <package name="${package}"/>
-        </javadoc>
-	
-	<!-- Generate the uml gif -->
-        <exec executable="${dot.exe}"
-	      output="${uml.gif}">
-	    <arg line="-Tgif"/>
-            <arg line="${uml.dot}"/>
-        </exec>
-	
-	<!-- Generate the uml html -->
-	<echo file="${uml.html}"
-	      message="&lt;head&gt;
-		       &lt;base href=&quot;file://${dist.javadoc.dir}/&quot; /&gt;
-		       &lt;/head&gt;
-		       &lt;body&gt;
-		       &lt;center&gt;
-		       &lt;h2&gt;Hierarchy for package ${package}&lt;/h2&gt;
-		       &lt;/center&gt;
-		       &lt;img src=&quot;file://${uml.gif}&quot; usemap=&quot;#mainmap&quot;/&gt;
-		       &lt;map name=&quot;mainmap&quot;&gt;"
-	      />
-
-	<!-- Generate and append the uml map -->
-        <exec executable="${dot.exe}"
-	       output="${uml.html}"
-	       append="true">
-            <arg line="-Tcmap"/>
-            <arg line="${uml.dot}"/>
-        </exec>
-	
-	<!-- Append the end of the uml html -->
-	<echo file="${uml.html}"
-	      append="true"
-	      message="&lt;/map&gt;
-		       &lt;/body&gt;"
-	      />
-	
-	<!-- Cleanup the temporary dot file -->
-	<!--         <delete file="${uml.dot}"/> -->
-	<echo message="Done with ${uml.html}"/>
-	
-    </target>
     
     <!-- ================================================================ -->
     <!-- =======================  Public Targets  ======================= -->
@@ -283,16 +218,16 @@
     <!--  D I S T  -->
     <!-- ========= -->
     <target name="dist"
- 	    depends="clean, jar, launcher, javadoc, -dist"
+ 	    depends="clean, jar, -launcher, javadoc, -dist"
             description="Rebuild and package the whole distribution.">
     </target>
 
-    <!-- ============= -->
-    <!--  E X P O R T  -->
-    <!-- ============= -->
-    <target name="export"
+    <!-- ================= -->
+    <!--  C H E C K O U T  -->
+    <!-- ================= -->
+    <target name="checkout"
             depends="-init"
-            description="Build from CVS.">
+            description="Export module audiveris from CVS.">
 
 	<delete verbose="${verbose}" dir="${export.dir}"/>
 
@@ -313,14 +248,27 @@
 	    </commandline>
 	</cvs>
 
-	<!-- Build from the fresh files -->
+    </target>
+
+    <!-- ============================= -->
+    <!--  B U I L D - C H E C K O U T  -->
+    <!-- ============================= -->
+    <target name="build-checkout"
+	    description="Build the checkout">
 	<ant
-	    dir="${export.dir}/audiveris"
+	    dir="${export.dir}/audiveris/src"
 	    inheritAll="false">
 	    <target name="dist"/>
 	</ant>
 
     </target>
+
+    <!-- ============================= -->
+    <!--  B U I L D - F R O M - C V S  -->
+    <!-- ============================= -->
+    <target name="build-from-CVS"
+	    depends="checkout, build-checkout"
+	    description="Build everything from CVS" />
 
     <!-- ============= -->
     <!--  F O R M A T  -->
@@ -328,35 +276,6 @@
     <target name="format"
             depends="-format"
             description="Format Java source with Jalopy."/>
-    
-    <!-- ===================== -->
-    <!--  - C O P Y - L I B S  -->
-    <!-- ===================== -->
-    <target name="-copy-libs">
-        <mkdir dir="${dist.dir}/lib"/>
-
-        <pathconvert pathsep=" " refid="run.classpath" property="jar.classpath">
-            <chainedmapper>
-                <flattenmapper/>
-                <globmapper from="*" to="lib/*"/>
-            </chainedmapper>
-        </pathconvert>
-	<echo message="jar.classpath=${jar.classpath}" /> 
-
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.buttons.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.music.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jama.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jcommon.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jfreechart.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.forms.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.looks.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${proxymusic.jar}"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_codec.jar"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_core.jar"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
-
-    </target>
-	     
     
     <!-- ======= -->
     <!--  J A R  -->
@@ -392,23 +311,6 @@
     <target name="javadoc"
 	    depends="-javadoc-build, -post-javadoc, -post-post-javadoc"
 	    description="Generate project documentation."/>
-    
-    <!-- ================= -->
-    <!--  L A U N C H E R  -->
-    <!-- ================= -->
-    <target name="launcher"
-	    depends="-init"
-	    description="Generate the launcher script.">
-
-        <mkdir dir="${bin.dir}"/>
-
-        <!-- .bat file for windows -->
-        <echo file="${bin.dir}/${name}.bat" append="false">@ECHO OFF
-REM ${name}.bat
-java -Xmx128M -jar ${full.name}.jar
-        </echo>
-        
-    </target>
     
     <!-- =========== -->
     <!--  R E J A R  -->
@@ -454,178 +356,6 @@ java -Xmx128M -jar ${full.name}.jar
 	    
             <arg line="-save ${save.dir}"/>
 <!--             <arg line="-write"/> -->
-        </java>
-    </target>
-    
-    <!-- =============== -->
-    <!--  R U N - J M P  -->
-    <!-- =============== -->
-    <target name="run-jmp"
-        depends="jar"
-        description="Run the application with Java Memory Profiler.">
-
-	<!-- Default values -->
-	<property name="run.batch" value=""/>
-	<property name="run.sheet" value=""/>
-	<property name="run.score" value=""/>
-	<property name="run.step"  value=""/>
-	
-        <java
-	    classname="${Name}"
-            classpathref="jmp.classpath"
-            failonerror="true"
-            fork="true"
-            maxmemory="128m">
-            
-            <!-- Specific JVM arguments, if any -->
-<!--  	    <jvmarg value="-verbose:class"/> -->
-<!--  	    <jvmarg value="-Dcom.sun.management.jmxremote"/> -->
- 	    <jvmarg value="-Xrunjmp:nomethods,nomonitors"/>
- 	    
-            <!-- Configuration file for logging -->
-            <sysproperty key="java.util.logging.config.file"
-                value="${config.dir}/logging.properties"/>
-            
-            <!-- Application arguments -->
- 	    <arg line="${run.batch}"/>
- 	    <arg line="${run.sheet}"/>
- 	    <arg line="${run.score}"/>
- 	    <arg line="${run.step}"/>
-	    
-            <arg line="-save ${save.dir}"/>
-            <arg line="-write"/>
-        </java>
-    </target>
-    
-    <!-- =================== -->
-    <!--  R U N - B A T C H  -->
-    <!-- =================== -->
-    <target name="run-batch"
-        description="Run the application in batch mode.">
-
-	<property name="run.batch" value="-batch"/>
-	<property name="run.sheet" value="-sheet ${basedir}/examples/Country.png"/>
-<!-- 	<property name="run.score" value="-score ${basedir}/save/batuque.xml"/> -->
-	<property name="run.step"  value="-step symbols"/>
-
-	<antcall target="run"/>
-    </target>
-    
-    <!-- ========================= -->
-    <!--  R U N - S P E C I F I C  -->
-    <!-- ========================= -->
-    <target name="run-specific"
-        description="Run the application with specific parameters.">
-
-	<property name="run.sheet" value="-sheet ${basedir}/examples/batuque.png"/>
-	<property name="run.step"  value="-step score"/>
-<!-- 	<property name="run.score" value="-score ${basedir}/save/Country.xml"/> -->
-
-	<antcall target="run"/>
-    </target>
-    
-    <!-- =================== -->
-    <!--  R U N - C L A S S  -->
-    <!-- =================== -->
-    <target name="run-class"
-        depends="jar"
-        description="Run any class.">
-        
-        <java classname="omr.jaxb.Main"
-            classpathref="run.test.classpath"
-            failonerror="true"
-            fork="true"
-            maxmemory="128m">
- 	    
-            <!-- Configuration file for logging -->
-            <sysproperty key="java.util.logging.config.file"
-                value="${config.dir}/logging.properties"/>
-        </java>
-
-    </target>
-
-    <!-- =============== -->
-    <!--  R U N - H A T  -->
-    <!-- =============== -->
-    <target name="run-hat"
-        depends="jar"
-        description="Run to prepare the Heap Analysis Tool.">
-        
-        <java
-	    classname="${Name}"
-            classpathref="run.classpath"
-            failonerror="true"
-            fork="true"
-            maxmemory="128m">
-            
-            <!-- Specific JVM arguments, if any -->
-	    <jvmarg value="-Xrunhprof:file=dump-horizontals.hprof,format=b"/>
- 	    
-            <!-- Configuration file for logging -->
-            <sysproperty key="java.util.logging.config.file"
-                value="${config.dir}/logging.properties"/>
-
-            <arg line="-step bars"/> 
-	    <arg line="-sheet ${basedir}/examples/Batuque.png"/>
-        </java>
-
-<!-- 	<exec -->
-<!-- 	    spawn="true" -->
-<!-- 	    executable="jhat.exe"> -->
-<!-- 	    <arg value="-J-mx256m"/> -->
-<!-- 	    <arg file="dump-horizontals.hprof"/> -->
-<!-- 	</exec> -->
-
-<!-- 	<echo message="Sleeping for a while ..."/> -->
-<!-- 	<sleep seconds="10"/> -->
-<!-- 	<echo message="Now, launching the browser..."/> -->
-<!-- 	<exec -->
-<!-- 	    spawn="true" -->
-<!-- 	    executable="${browser}"> -->
-<!-- 	    <arg value="http://localhost:7000/showInstanceCounts/"/> -->
-<!-- 	</exec> -->
-
-    </target>
-
-    <!-- ======================= -->
-    <!--  R U N - T R A I N E R  -->
-    <!-- ======================= -->
-    <target name="run-trainer"
-        depends="jar"
-        description="Run just the glyph trainer.">
-        
-        <java
-	    classname="omr.glyph.ui.GlyphTrainer"
-            classpathref="run.classpath"
-            failonerror="true"
-            fork="true"
-            maxmemory="128m">
- 	    
-            <!-- Configuration file for logging -->
-            <sysproperty key="java.util.logging.config.file"
-                value="${config.dir}/logging.properties"/>
-        </java>
-    </target>
-
-    <!-- ================= -->
-    <!--  R U N - T E S T  -->
-    <!-- ================= -->
-    <target name="run-test"
-        depends="jar"
-        description="Run test program w/o JUnit.">
-        
-        <java classname="omr.score.ScoreViewTest"
-            classpathref="run.test.classpath"
-            failonerror="true"
-            fork="true"
-            maxmemory="128m">
- 	    
-            <!-- Configuration file for logging -->
-            <sysproperty key="java.util.logging.config.file"
-                value="${config.dir}/logging.properties"/>
-
-            <arg line="/soft/audiveris/save/Country.xml"/> 
-	    
         </java>
     </target>
     
@@ -735,71 +465,6 @@ java -Xmx128M -jar ${full.name}.jar
 	
     </target>
     
-    <!-- ======= -->
-    <!--  U M L  -->
-    <!-- ======= -->
-    <target name="uml"
-            depends="-init"
-            description="Generate UML views with UMLGraph.">
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr"/>
- 	</antcall>
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr/check"/>
- 	</antcall>
-	
-	<antcall target="-uml-package">
-	    <param name="package" value="omr/constant"/>
-	</antcall>
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr/glyph"/>
- 	</antcall>
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr/glyph/ui"/>
- 	</antcall>
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr/graph"/>
- 	</antcall>
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr/lag"/>
- 	</antcall>
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr/math"/>
- 	</antcall>
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr/score"/>
- 	</antcall>
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr/sheet"/>
- 	</antcall>
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr/stick"/>
- 	</antcall>
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr/ui"/>
- 	</antcall>
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr/ui/treetable"/>
- 	</antcall>
-	
- 	<antcall target="-uml-package">
- 	    <param name="package" value="omr/util"/>
- 	</antcall>
-
-    </target>
-    
     <!-- ============= -->
     <!--  U P L O A D  -->
     <!-- ============= -->
@@ -815,17 +480,6 @@ java -Xmx128M -jar ${full.name}.jar
 		<include name="**/${DSTAMP}-${machine.name}-*.zip"/>
 	    </fileset>
 	</copy>
-    </target>
-
-    <target name="fix-ledger">
-        <!-- Make sure we use width-ledger rather than ledger -->
-        <echo message="Fixing ledger tags..." />
-        <replaceregexp replace="/with-ledger"
-                       match="/ledger" >
-            <fileset dir="${train.dir}" 
-                     includes="**/*.xml" 
-                     />
-        </replaceregexp>
     </target>
     
 </project>
