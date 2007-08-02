@@ -167,15 +167,15 @@ public class ScorePainter
     //-----------------//
     public static void insertMenuItems (JMenu menu)
     {
-        final JCheckBoxMenuItem voiceItem = new JCheckBoxMenuItem(
-            new VoiceAction());
-        voiceItem.setSelected(constants.voicePainting.getValue());
-        menu.add(voiceItem);
-
         final JCheckBoxMenuItem slotItem = new JCheckBoxMenuItem(
             new SlotAction());
         slotItem.setSelected(constants.slotPainting.getValue());
         menu.add(slotItem);
+
+        final JCheckBoxMenuItem voiceItem = new JCheckBoxMenuItem(
+            new VoiceAction());
+        voiceItem.setSelected(constants.voicePainting.getValue());
+        menu.add(voiceItem);
 
         final JCheckBoxMenuItem markItem = new JCheckBoxMenuItem(
             new MarkAction());
