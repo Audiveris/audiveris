@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="756" interline="22" shape="STRUCTURE">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-3.255813953488372</pitch-position>
+        <section id="3207" first-pos="1014">
+            <run start="1505" length="1" level="105"/>
+            <run start="1505" length="1" level="100"/>
+        </section>
+        <section id="3210" first-pos="1016">
+            <run start="1503" length="12" level="55"/>
+        </section>
+        <section id="3212" first-pos="1017">
+            <run start="1494" length="83" level="42"/>
+            <run start="1490" length="87" level="42"/>
+        </section>
+        <section id="3209" first-pos="1016">
+            <run start="1501" length="1" level="156"/>
+        </section>
+        <section id="3211" first-pos="1016">
+            <run start="1516" length="60" level="96"/>
+        </section>
+        <section id="3208" first-pos="1015">
+            <run start="1544" length="1" level="181"/>
+        </section>
+        <section id="3215" first-pos="1019">
+            <run start="1489" length="17" level="65"/>
+            <run start="1487" length="18" level="56"/>
+            <run start="1486" length="19" level="40"/>
+            <run start="1485" length="20" level="38"/>
+            <run start="1485" length="20" level="38"/>
+            <run start="1484" length="21" level="36"/>
+            <run start="1483" length="22" level="35"/>
+            <run start="1483" length="22" level="34"/>
+            <run start="1482" length="23" level="33"/>
+            <run start="1482" length="23" level="33"/>
+            <run start="1482" length="22" level="25"/>
+            <run start="1481" length="22" level="16"/>
+            <run start="1481" length="22" level="16"/>
+            <run start="1481" length="20" level="14"/>
+            <run start="1481" length="20" level="14"/>
+            <run start="1481" length="19" level="14"/>
+            <run start="1481" length="19" level="14"/>
+            <run start="1481" length="18" level="15"/>
+            <run start="1481" length="17" level="17"/>
+            <run start="1482" length="15" level="18"/>
+            <run start="1482" length="14" level="21"/>
+            <run start="1483" length="12" level="25"/>
+            <run start="1484" length="9" level="35"/>
+            <run start="1486" length="5" level="62"/>
+        </section>
+        <section id="3216" first-pos="1019">
+            <run start="1518" length="57" level="191"/>
+        </section>
+</stick>

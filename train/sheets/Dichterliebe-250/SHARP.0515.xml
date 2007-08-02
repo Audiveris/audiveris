@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="SHARP" interline="19" id="515">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-4.0</pitch-position>
+    <section first-pos="240" id="320">
+        <run start="1644" level="13" length="8"/>
+        <run start="1644" level="21" length="8"/>
+        <run start="1643" level="43" length="9"/>
+    </section>
+    <section first-pos="240" id="321">
+        <run start="1663" level="46" length="10"/>
+        <run start="1662" level="71" length="11"/>
+        <run start="1662" level="72" length="11"/>
+    </section>
+    <section first-pos="243" id="335">
+        <run start="1631" level="93" length="48"/>
+        <run start="1631" level="25" length="48"/>
+        <run start="1631" level="135" length="48"/>
+    </section>
+    <section first-pos="246" id="344">
+        <run start="1642" level="13" length="8"/>
+        <run start="1642" level="19" length="8"/>
+        <run start="1641" level="41" length="9"/>
+        <run start="1641" level="13" length="8"/>
+        <run start="1641" level="17" length="8"/>
+        <run start="1640" level="40" length="9"/>
+    </section>
+    <section first-pos="246" id="345">
+        <run start="1661" level="21" length="8"/>
+        <run start="1661" level="23" length="8"/>
+        <run start="1660" level="45" length="9"/>
+        <run start="1660" level="18" length="8"/>
+        <run start="1660" level="23" length="8"/>
+        <run start="1659" level="44" length="9"/>
+    </section>
+    <section first-pos="252" id="360">
+        <run start="1630" level="144" length="47"/>
+        <run start="1630" level="29" length="48"/>
+        <run start="1630" level="73" length="48"/>
+    </section>
+    <section first-pos="255" id="375">
+        <run start="1639" level="13" length="8"/>
+        <run start="1638" level="106" length="9"/>
+    </section>
+    <section first-pos="255" id="376">
+        <run start="1658" level="21" length="8"/>
+        <run start="1657" level="106" length="9"/>
+    </section>
+</stick>

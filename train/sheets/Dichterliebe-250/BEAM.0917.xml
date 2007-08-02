@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="19" id="917">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-6.63013698630137</pitch-position>
+    <section first-pos="654" id="1190">
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+        <run start="1627" level="0" length="9"/>
+    </section>
+</stick>

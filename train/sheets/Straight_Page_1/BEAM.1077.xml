@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="15" id="1077">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-4.133333333333334</pitch-position>
+    <section first-pos="704" id="1144">
+        <run start="1828" level="44" length="9"/>
+        <run start="1829" level="50" length="8"/>
+        <run start="1829" level="50" length="8"/>
+        <run start="1829" level="50" length="8"/>
+        <run start="1829" level="50" length="8"/>
+        <run start="1829" level="50" length="8"/>
+        <run start="1829" level="50" length="8"/>
+        <run start="1830" level="57" length="7"/>
+        <run start="1830" level="57" length="7"/>
+        <run start="1830" level="67" length="9"/>
+        <run start="1830" level="67" length="9"/>
+        <run start="1830" level="67" length="9"/>
+        <run start="1830" level="67" length="9"/>
+        <run start="1831" level="75" length="8"/>
+        <run start="1831" level="75" length="8"/>
+        <run start="1831" level="67" length="9"/>
+        <run start="1831" level="67" length="9"/>
+        <run start="1831" level="67" length="9"/>
+        <run start="1831" level="67" length="9"/>
+        <run start="1832" level="75" length="8"/>
+        <run start="1832" level="75" length="8"/>
+        <run start="1832" level="67" length="9"/>
+        <run start="1832" level="67" length="9"/>
+        <run start="1832" level="67" length="9"/>
+        <run start="1832" level="67" length="9"/>
+        <run start="1833" level="75" length="8"/>
+        <run start="1833" level="75" length="8"/>
+        <run start="1833" level="67" length="9"/>
+        <run start="1833" level="67" length="9"/>
+        <run start="1833" level="67" length="9"/>
+        <run start="1833" level="67" length="9"/>
+        <run start="1834" level="75" length="8"/>
+        <run start="1834" level="75" length="8"/>
+        <run start="1834" level="67" length="9"/>
+        <run start="1834" level="67" length="9"/>
+        <run start="1834" level="67" length="9"/>
+        <run start="1836" level="57" length="7"/>
+        <run start="1836" level="57" length="7"/>
+        <run start="1836" level="50" length="8"/>
+        <run start="1836" level="50" length="8"/>
+        <run start="1836" level="50" length="8"/>
+        <run start="1836" level="50" length="8"/>
+    </section>
+</stick>

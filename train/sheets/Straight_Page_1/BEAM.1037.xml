@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="15" id="1037">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-5.466666666666667</pitch-position>
+    <section first-pos="693" id="1124">
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+        <run start="1404" level="0" length="8"/>
+    </section>
+</stick>

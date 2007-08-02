@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="CLUTTER" interline="19" id="725">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>25.589041095890412</pitch-position>
+    <section first-pos="1226" id="1999">
+        <run start="3047" level="181" length="10"/>
+    </section>
+    <section first-pos="1227" id="2000">
+        <run start="3044" level="54" length="16"/>
+        <run start="3043" level="25" length="19"/>
+        <run start="3041" level="20" length="22"/>
+    </section>
+    <section first-pos="1230" id="2001">
+        <run start="3040" level="120" length="9"/>
+    </section>
+    <section first-pos="1230" id="2002">
+        <run start="3056" level="107" length="8"/>
+        <run start="3061" level="122" length="4"/>
+        <run start="3063" level="138" length="2"/>
+        <run start="3064" level="0" length="1"/>
+        <run start="3064" level="0" length="1"/>
+        <run start="3063" level="108" length="2"/>
+        <run start="3063" level="142" length="2"/>
+        <run start="3061" level="92" length="3"/>
+    </section>
+    <section first-pos="1231" id="2003">
+        <run start="3040" level="79" length="3"/>
+        <run start="3039" level="132" length="2"/>
+        <run start="3039" level="113" length="2"/>
+        <run start="3039" level="0" length="1"/>
+        <run start="3039" level="0" length="1"/>
+        <run start="3039" level="138" length="2"/>
+        <run start="3039" level="125" length="4"/>
+        <run start="3040" level="123" length="8"/>
+    </section>
+    <section first-pos="1238" id="2008">
+        <run start="3055" level="133" length="9"/>
+    </section>
+    <section first-pos="1239" id="2012">
+        <run start="3041" level="17" length="22"/>
+        <run start="3042" level="34" length="20"/>
+        <run start="3044" level="52" length="16"/>
+    </section>
+    <section first-pos="1242" id="2018">
+        <run start="3047" level="179" length="10"/>
+    </section>
+</stick>

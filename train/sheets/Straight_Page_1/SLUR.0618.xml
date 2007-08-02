@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="SLUR" interline="15" id="618">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>2.1333333333333333</pitch-position>
+    <section first-pos="202" id="470">
+        <run start="1668" level="0" length="2"/>
+        <run start="1668" level="0" length="3"/>
+        <run start="1669" level="50" length="4"/>
+        <run start="1670" level="100" length="4"/>
+        <run start="1671" level="100" length="4"/>
+        <run start="1672" level="100" length="4"/>
+        <run start="1672" level="100" length="4"/>
+        <run start="1672" level="80" length="5"/>
+        <run start="1672" level="80" length="5"/>
+        <run start="1674" level="0" length="4"/>
+        <run start="1674" level="0" length="4"/>
+        <run start="1674" level="0" length="4"/>
+        <run start="1674" level="0" length="4"/>
+        <run start="1672" level="80" length="5"/>
+        <run start="1672" level="80" length="5"/>
+        <run start="1672" level="80" length="5"/>
+        <run start="1672" level="100" length="4"/>
+        <run start="1671" level="100" length="4"/>
+        <run start="1670" level="100" length="4"/>
+        <run start="1669" level="50" length="4"/>
+        <run start="1668" level="40" length="5"/>
+        <run start="1668" level="0" length="2"/>
+    </section>
+</stick>

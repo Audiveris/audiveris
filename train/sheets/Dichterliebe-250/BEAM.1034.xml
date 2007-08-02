@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="19" id="1034">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-7.616438356164384</pitch-position>
+    <section first-pos="2190" id="3171">
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+        <run start="1837" level="0" length="10"/>
+    </section>
+</stick>

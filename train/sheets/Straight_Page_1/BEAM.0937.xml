@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="15" id="937">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-4.0</pitch-position>
+    <section first-pos="1400" id="1955">
+        <run start="794" level="50" length="8"/>
+        <run start="794" level="50" length="8"/>
+        <run start="794" level="50" length="8"/>
+        <run start="794" level="50" length="8"/>
+        <run start="794" level="50" length="8"/>
+        <run start="794" level="50" length="8"/>
+        <run start="794" level="57" length="7"/>
+        <run start="794" level="57" length="7"/>
+        <run start="794" level="57" length="7"/>
+        <run start="792" level="67" length="9"/>
+        <run start="792" level="67" length="9"/>
+        <run start="792" level="67" length="9"/>
+        <run start="792" level="67" length="9"/>
+        <run start="792" level="75" length="8"/>
+        <run start="792" level="75" length="8"/>
+        <run start="792" level="75" length="8"/>
+        <run start="791" level="67" length="9"/>
+        <run start="791" level="67" length="9"/>
+        <run start="791" level="67" length="9"/>
+        <run start="791" level="67" length="9"/>
+        <run start="791" level="67" length="9"/>
+        <run start="791" level="75" length="8"/>
+        <run start="791" level="75" length="8"/>
+        <run start="791" level="75" length="8"/>
+        <run start="790" level="67" length="9"/>
+        <run start="790" level="67" length="9"/>
+        <run start="790" level="67" length="9"/>
+        <run start="790" level="67" length="9"/>
+        <run start="790" level="75" length="8"/>
+        <run start="790" level="75" length="8"/>
+        <run start="790" level="75" length="8"/>
+        <run start="789" level="67" length="9"/>
+        <run start="789" level="67" length="9"/>
+        <run start="789" level="67" length="9"/>
+        <run start="789" level="67" length="9"/>
+        <run start="789" level="67" length="9"/>
+        <run start="789" level="75" length="8"/>
+        <run start="789" level="75" length="8"/>
+        <run start="788" level="67" length="9"/>
+        <run start="788" level="67" length="9"/>
+        <run start="788" level="67" length="9"/>
+        <run start="788" level="67" length="9"/>
+        <run start="788" level="67" length="9"/>
+        <run start="788" level="57" length="7"/>
+        <run start="788" level="57" length="7"/>
+        <run start="788" level="57" length="7"/>
+        <run start="787" level="50" length="8"/>
+        <run start="787" level="50" length="8"/>
+        <run start="787" level="50" length="8"/>
+        <run start="787" level="50" length="8"/>
+        <run start="787" level="50" length="8"/>
+        <run start="787" level="50" length="8"/>
+        <run start="787" level="50" length="8"/>
+    </section>
+</stick>

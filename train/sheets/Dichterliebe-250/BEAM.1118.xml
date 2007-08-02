@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="19" id="1118">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>10.91891891891892</pitch-position>
+    <section first-pos="1190" id="1931">
+        <run start="2676" level="20" length="11"/>
+        <run start="2676" level="19" length="11"/>
+        <run start="2676" level="26" length="11"/>
+        <run start="2676" level="26" length="11"/>
+        <run start="2676" level="25" length="11"/>
+        <run start="2676" level="26" length="11"/>
+        <run start="2676" level="23" length="11"/>
+        <run start="2676" level="20" length="11"/>
+        <run start="2676" level="21" length="11"/>
+        <run start="2675" level="20" length="11"/>
+        <run start="2675" level="18" length="11"/>
+        <run start="2675" level="26" length="11"/>
+        <run start="2675" level="25" length="11"/>
+        <run start="2675" level="26" length="11"/>
+        <run start="2675" level="26" length="11"/>
+        <run start="2675" level="19" length="11"/>
+        <run start="2675" level="20" length="11"/>
+        <run start="2674" level="21" length="11"/>
+        <run start="2674" level="20" length="11"/>
+        <run start="2674" level="23" length="11"/>
+        <run start="2674" level="26" length="11"/>
+        <run start="2674" level="24" length="11"/>
+        <run start="2674" level="26" length="11"/>
+        <run start="2674" level="25" length="11"/>
+        <run start="2674" level="20" length="11"/>
+        <run start="2674" level="20" length="11"/>
+        <run start="2673" level="20" length="11"/>
+        <run start="2673" level="20" length="11"/>
+        <run start="2673" level="24" length="11"/>
+        <run start="2673" level="26" length="11"/>
+        <run start="2673" level="25" length="11"/>
+        <run start="2673" level="26" length="11"/>
+        <run start="2673" level="23" length="11"/>
+        <run start="2673" level="20" length="11"/>
+    </section>
+</stick>

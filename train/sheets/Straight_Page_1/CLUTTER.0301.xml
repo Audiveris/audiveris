@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="CLUTTER" interline="15" id="301">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-11.733333333333333</pitch-position>
+    <section first-pos="596" id="984">
+        <run start="520" level="0" length="1"/>
+        <run start="520" level="0" length="1"/>
+        <run start="520" level="0" length="1"/>
+    </section>
+    <section first-pos="596" id="985">
+        <run start="540" level="0" length="1"/>
+        <run start="540" level="0" length="1"/>
+        <run start="540" level="0" length="1"/>
+    </section>
+    <section first-pos="599" id="987">
+        <run start="520" level="0" length="21"/>
+        <run start="520" level="0" length="21"/>
+        <run start="520" level="0" length="21"/>
+    </section>
+    <section first-pos="602" id="993">
+        <run start="520" level="0" length="1"/>
+        <run start="520" level="0" length="1"/>
+        <run start="520" level="0" length="1"/>
+        <run start="520" level="0" length="1"/>
+        <run start="520" level="0" length="1"/>
+        <run start="520" level="0" length="1"/>
+        <run start="520" level="0" length="1"/>
+        <run start="520" level="0" length="1"/>
+        <run start="520" level="0" length="4"/>
+    </section>
+    <section first-pos="602" id="994">
+        <run start="530" level="0" length="1"/>
+        <run start="530" level="0" length="1"/>
+        <run start="530" level="0" length="1"/>
+        <run start="530" level="0" length="1"/>
+        <run start="530" level="0" length="1"/>
+        <run start="530" level="0" length="1"/>
+        <run start="529" level="0" length="2"/>
+    </section>
+    <section first-pos="602" id="995">
+        <run start="540" level="0" length="1"/>
+        <run start="540" level="0" length="1"/>
+        <run start="540" level="0" length="1"/>
+    </section>
+    <section first-pos="609" id="1008">
+        <run start="527" level="0" length="7"/>
+    </section>
+</stick>

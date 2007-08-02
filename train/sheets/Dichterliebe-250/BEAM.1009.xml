@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="19" id="1009">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>11.561643835616438</pitch-position>
+    <section first-pos="1890" id="2865">
+        <run start="1795" level="20" length="11"/>
+        <run start="1795" level="24" length="11"/>
+        <run start="1795" level="26" length="11"/>
+        <run start="1795" level="25" length="11"/>
+        <run start="1795" level="26" length="11"/>
+        <run start="1795" level="24" length="11"/>
+        <run start="1795" level="20" length="11"/>
+        <run start="1795" level="20" length="11"/>
+        <run start="1795" level="0" length="10"/>
+        <run start="1795" level="0" length="10"/>
+        <run start="1795" level="12" length="10"/>
+        <run start="1795" level="12" length="10"/>
+        <run start="1795" level="16" length="10"/>
+        <run start="1795" level="17" length="10"/>
+        <run start="1795" level="21" length="10"/>
+        <run start="1795" level="22" length="10"/>
+        <run start="1794" level="23" length="10"/>
+        <run start="1794" level="22" length="10"/>
+        <run start="1794" level="26" length="10"/>
+        <run start="1794" level="29" length="10"/>
+        <run start="1794" level="28" length="10"/>
+        <run start="1794" level="29" length="10"/>
+        <run start="1794" level="25" length="10"/>
+        <run start="1794" level="22" length="10"/>
+        <run start="1794" level="22" length="10"/>
+        <run start="1793" level="22" length="10"/>
+        <run start="1793" level="21" length="10"/>
+        <run start="1793" level="27" length="10"/>
+        <run start="1793" level="28" length="10"/>
+        <run start="1793" level="29" length="10"/>
+        <run start="1793" level="20" length="10"/>
+        <run start="1793" level="22" length="10"/>
+        <run start="1792" level="23" length="10"/>
+        <run start="1792" level="22" length="10"/>
+        <run start="1792" level="24" length="10"/>
+        <run start="1792" level="29" length="10"/>
+        <run start="1792" level="28" length="10"/>
+        <run start="1792" level="29" length="10"/>
+        <run start="1792" level="25" length="10"/>
+        <run start="1792" level="22" length="10"/>
+        <run start="1792" level="22" length="10"/>
+        <run start="1791" level="22" length="10"/>
+        <run start="1791" level="21" length="10"/>
+        <run start="1791" level="27" length="10"/>
+        <run start="1791" level="29" length="10"/>
+        <run start="1791" level="28" length="10"/>
+        <run start="1791" level="29" length="10"/>
+        <run start="1791" level="20" length="10"/>
+        <run start="1791" level="22" length="10"/>
+        <run start="1790" level="23" length="10"/>
+        <run start="1790" level="22" length="10"/>
+        <run start="1790" level="24" length="10"/>
+        <run start="1790" level="29" length="10"/>
+        <run start="1790" level="28" length="10"/>
+        <run start="1790" level="29" length="10"/>
+        <run start="1790" level="25" length="10"/>
+        <run start="1790" level="22" length="10"/>
+    </section>
+</stick>

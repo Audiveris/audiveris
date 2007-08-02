@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="SHARP" interline="19" id="522">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-4.986301369863014</pitch-position>
+    <section first-pos="281" id="462">
+        <run start="1635" level="13" length="8"/>
+        <run start="1635" level="21" length="8"/>
+        <run start="1634" level="43" length="9"/>
+    </section>
+    <section first-pos="281" id="463">
+        <run start="1654" level="57" length="8"/>
+        <run start="1654" level="73" length="8"/>
+        <run start="1654" level="78" length="8"/>
+    </section>
+    <section first-pos="284" id="475">
+        <run start="1623" level="101" length="50"/>
+        <run start="1623" level="24" length="50"/>
+        <run start="1623" level="149" length="50"/>
+    </section>
+    <section first-pos="287" id="487">
+        <run start="1633" level="13" length="8"/>
+        <run start="1633" level="19" length="8"/>
+        <run start="1632" level="41" length="9"/>
+        <run start="1632" level="13" length="8"/>
+        <run start="1632" level="17" length="8"/>
+        <run start="1631" level="40" length="9"/>
+    </section>
+    <section first-pos="287" id="488">
+        <run start="1654" level="81" length="6"/>
+        <run start="1654" level="97" length="6"/>
+        <run start="1651" level="134" length="9"/>
+        <run start="1651" level="118" length="8"/>
+        <run start="1651" level="123" length="8"/>
+        <run start="1650" level="133" length="9"/>
+    </section>
+    <section first-pos="293" id="503">
+        <run start="1621" level="164" length="48"/>
+        <run start="1621" level="20" length="49"/>
+        <run start="1621" level="75" length="49"/>
+    </section>
+    <section first-pos="296" id="511">
+        <run start="1630" level="17" length="8"/>
+        <run start="1630" level="13" length="8"/>
+        <run start="1630" level="93" length="8"/>
+    </section>
+    <section first-pos="296" id="512">
+        <run start="1649" level="107" length="8"/>
+        <run start="1649" level="121" length="8"/>
+        <run start="1648" level="158" length="9"/>
+    </section>
+</stick>

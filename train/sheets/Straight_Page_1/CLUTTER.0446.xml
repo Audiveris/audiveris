@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="CLUTTER" interline="15" id="446">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-11.066666666666666</pitch-position>
+    <section first-pos="257" id="596">
+        <run start="956" level="0" length="1"/>
+        <run start="954" level="0" length="3"/>
+        <run start="952" level="0" length="5"/>
+        <run start="951" level="0" length="5"/>
+        <run start="949" level="0" length="4"/>
+        <run start="947" level="0" length="4"/>
+        <run start="945" level="0" length="4"/>
+        <run start="944" level="0" length="3"/>
+        <run start="942" level="0" length="3"/>
+        <run start="941" level="0" length="2"/>
+    </section>
+</stick>

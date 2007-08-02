@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="SLUR" interline="19" id="650">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-5.513513513513513</pitch-position>
+    <section first-pos="310" id="538">
+        <run start="2536" level="158" length="2"/>
+        <run start="2535" level="110" length="3"/>
+        <run start="2534" level="126" length="3"/>
+        <run start="2533" level="103" length="3"/>
+        <run start="2532" level="75" length="3"/>
+        <run start="2531" level="101" length="4"/>
+        <run start="2531" level="42" length="3"/>
+        <run start="2530" level="89" length="4"/>
+        <run start="2529" level="78" length="4"/>
+        <run start="2529" level="83" length="4"/>
+        <run start="2528" level="68" length="4"/>
+        <run start="2528" level="67" length="4"/>
+        <run start="2527" level="46" length="4"/>
+        <run start="2527" level="35" length="4"/>
+        <run start="2526" level="65" length="5"/>
+        <run start="2526" level="14" length="4"/>
+        <run start="2525" level="60" length="5"/>
+        <run start="2525" level="58" length="5"/>
+        <run start="2525" level="52" length="5"/>
+        <run start="2524" level="50" length="5"/>
+        <run start="2524" level="48" length="5"/>
+        <run start="2524" level="44" length="5"/>
+        <run start="2524" level="38" length="5"/>
+        <run start="2524" level="33" length="5"/>
+        <run start="2523" level="81" length="6"/>
+        <run start="2523" level="81" length="6"/>
+        <run start="2523" level="80" length="6"/>
+        <run start="2523" level="77" length="6"/>
+        <run start="2523" level="35" length="5"/>
+        <run start="2523" level="77" length="6"/>
+        <run start="2523" level="80" length="6"/>
+        <run start="2523" level="81" length="6"/>
+        <run start="2523" level="81" length="6"/>
+        <run start="2524" level="33" length="5"/>
+        <run start="2524" level="38" length="5"/>
+        <run start="2524" level="44" length="5"/>
+        <run start="2524" level="31" length="5"/>
+        <run start="2525" level="52" length="5"/>
+        <run start="2525" level="58" length="5"/>
+        <run start="2525" level="64" length="5"/>
+        <run start="2526" level="14" length="4"/>
+        <run start="2526" level="68" length="5"/>
+        <run start="2527" level="27" length="4"/>
+        <run start="2527" level="54" length="4"/>
+        <run start="2528" level="62" length="4"/>
+        <run start="2528" level="67" length="4"/>
+        <run start="2529" level="76" length="4"/>
+        <run start="2530" level="18" length="3"/>
+        <run start="2530" level="93" length="4"/>
+        <run start="2531" level="42" length="3"/>
+        <run start="2531" level="101" length="4"/>
+        <run start="2532" level="75" length="3"/>
+        <run start="2533" level="103" length="3"/>
+        <run start="2534" level="126" length="3"/>
+        <run start="2535" level="110" length="3"/>
+        <run start="2536" level="151" length="2"/>
+    </section>
+</stick>

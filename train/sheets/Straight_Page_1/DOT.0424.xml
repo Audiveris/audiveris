@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="DOT" interline="15" id="424">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>0.6666666666666666</pitch-position>
+    <section first-pos="955" id="1510">
+        <run start="829" level="0" length="3"/>
+        <run start="828" level="0" length="5"/>
+        <run start="828" level="0" length="5"/>
+        <run start="828" level="0" length="5"/>
+        <run start="829" level="0" length="3"/>
+    </section>
+</stick>

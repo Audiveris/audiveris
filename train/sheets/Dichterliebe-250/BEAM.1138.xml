@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="19" id="1138">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>12.324324324324325</pitch-position>
+    <section first-pos="1476" id="2442">
+        <run start="2691" level="24" length="11"/>
+        <run start="2691" level="25" length="11"/>
+        <run start="2691" level="24" length="11"/>
+        <run start="2690" level="38" length="12"/>
+        <run start="2690" level="23" length="11"/>
+        <run start="2690" level="24" length="11"/>
+        <run start="2690" level="22" length="11"/>
+        <run start="2689" level="38" length="12"/>
+        <run start="2689" level="23" length="11"/>
+        <run start="2689" level="24" length="11"/>
+        <run start="2689" level="22" length="11"/>
+        <run start="2688" level="38" length="12"/>
+        <run start="2688" level="25" length="11"/>
+        <run start="2688" level="25" length="11"/>
+        <run start="2688" level="23" length="11"/>
+        <run start="2687" level="21" length="11"/>
+        <run start="2687" level="25" length="11"/>
+        <run start="2687" level="25" length="11"/>
+        <run start="2687" level="23" length="11"/>
+        <run start="2686" level="21" length="11"/>
+        <run start="2686" level="25" length="11"/>
+        <run start="2686" level="25" length="11"/>
+        <run start="2686" level="23" length="11"/>
+        <run start="2685" level="21" length="11"/>
+        <run start="2685" level="25" length="11"/>
+        <run start="2685" level="12" length="11"/>
+        <run start="2684" level="21" length="11"/>
+    </section>
+</stick>

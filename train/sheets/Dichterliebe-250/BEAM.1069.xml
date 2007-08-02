@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="19" id="1069">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-8.821917808219178</pitch-position>
+    <section first-pos="474" id="856">
+        <run start="2734" level="20" length="11"/>
+        <run start="2733" level="20" length="11"/>
+        <run start="2733" level="19" length="11"/>
+        <run start="2733" level="26" length="11"/>
+        <run start="2733" level="25" length="11"/>
+        <run start="2733" level="26" length="11"/>
+        <run start="2733" level="23" length="11"/>
+        <run start="2733" level="20" length="11"/>
+        <run start="2732" level="20" length="11"/>
+        <run start="2732" level="19" length="11"/>
+        <run start="2732" level="26" length="11"/>
+        <run start="2732" level="14" length="11"/>
+        <run start="2732" level="23" length="11"/>
+        <run start="2732" level="20" length="11"/>
+        <run start="2731" level="20" length="11"/>
+        <run start="2731" level="19" length="11"/>
+        <run start="2731" level="26" length="11"/>
+        <run start="2731" level="25" length="11"/>
+        <run start="2731" level="26" length="11"/>
+        <run start="2731" level="23" length="11"/>
+        <run start="2731" level="20" length="11"/>
+        <run start="2730" level="20" length="11"/>
+        <run start="2730" level="19" length="11"/>
+        <run start="2730" level="26" length="11"/>
+        <run start="2730" level="25" length="11"/>
+    </section>
+</stick>

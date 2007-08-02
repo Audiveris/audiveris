@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="CLUTTER" interline="15" id="591">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-11.6</pitch-position>
+    <section first-pos="923" id="1465">
+        <run start="1561" level="0" length="1"/>
+        <run start="1561" level="0" length="1"/>
+        <run start="1561" level="0" length="1"/>
+    </section>
+    <section first-pos="923" id="1466">
+        <run start="1581" level="0" length="1"/>
+        <run start="1581" level="0" length="1"/>
+        <run start="1581" level="0" length="1"/>
+    </section>
+    <section first-pos="926" id="1472">
+        <run start="1561" level="0" length="21"/>
+        <run start="1561" level="0" length="21"/>
+        <run start="1561" level="0" length="21"/>
+    </section>
+    <section first-pos="929" id="1481">
+        <run start="1561" level="0" length="1"/>
+        <run start="1561" level="0" length="1"/>
+        <run start="1561" level="0" length="1"/>
+        <run start="1561" level="0" length="1"/>
+        <run start="1561" level="0" length="1"/>
+        <run start="1561" level="0" length="1"/>
+        <run start="1561" level="0" length="1"/>
+        <run start="1561" level="0" length="1"/>
+        <run start="1561" level="0" length="4"/>
+    </section>
+    <section first-pos="929" id="1482">
+        <run start="1571" level="0" length="1"/>
+        <run start="1571" level="0" length="1"/>
+        <run start="1571" level="0" length="1"/>
+        <run start="1571" level="0" length="1"/>
+        <run start="1571" level="0" length="1"/>
+        <run start="1571" level="0" length="1"/>
+        <run start="1570" level="0" length="2"/>
+    </section>
+    <section first-pos="929" id="1483">
+        <run start="1581" level="0" length="1"/>
+        <run start="1581" level="0" length="1"/>
+        <run start="1581" level="0" length="1"/>
+    </section>
+    <section first-pos="936" id="1492">
+        <run start="1568" level="0" length="7"/>
+    </section>
+</stick>

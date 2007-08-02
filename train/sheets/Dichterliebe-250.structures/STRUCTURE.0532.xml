@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="STRUCTURE" interline="19" id="532">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>2.7945205479452055</pitch-position>
+    <section first-pos="576" id="1073">
+        <run start="1711" level="15" length="54"/>
+        <run start="1708" level="24" length="57"/>
+    </section>
+    <section first-pos="578" id="1080">
+        <run start="1707" level="84" length="11"/>
+        <run start="1705" level="76" length="13"/>
+        <run start="1705" level="63" length="14"/>
+        <run start="1704" level="60" length="15"/>
+        <run start="1703" level="53" length="16"/>
+        <run start="1703" level="41" length="16"/>
+        <run start="1702" level="46" length="17"/>
+        <run start="1702" level="39" length="17"/>
+        <run start="1701" level="45" length="18"/>
+        <run start="1701" level="52" length="18"/>
+        <run start="1701" level="50" length="18"/>
+        <run start="1701" level="35" length="17"/>
+        <run start="1701" level="41" length="17"/>
+        <run start="1701" level="47" length="17"/>
+        <run start="1701" level="43" length="16"/>
+        <run start="1701" level="51" length="16"/>
+        <run start="1701" level="60" length="15"/>
+        <run start="1701" level="64" length="14"/>
+        <run start="1702" level="64" length="12"/>
+        <run start="1702" level="74" length="11"/>
+        <run start="1703" level="105" length="10"/>
+        <run start="1705" level="118" length="6"/>
+    </section>
+</stick>

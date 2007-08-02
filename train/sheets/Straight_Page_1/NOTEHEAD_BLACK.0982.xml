@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="NOTEHEAD_BLACK" interline="15" id="982">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>2.933333333333333</pitch-position>
+    <section first-pos="1186" id="1794">
+        <run start="1055" level="0" length="4"/>
+    </section>
+    <section first-pos="1187" id="1795">
+        <run start="1053" level="0" length="8"/>
+        <run start="1052" level="18" length="11"/>
+        <run start="1051" level="17" length="12"/>
+        <run start="1050" level="15" length="13"/>
+        <run start="1049" level="14" length="14"/>
+        <run start="1049" level="14" length="14"/>
+        <run start="1048" level="27" length="15"/>
+        <run start="1048" level="27" length="15"/>
+        <run start="1048" level="27" length="15"/>
+        <run start="1048" level="27" length="15"/>
+        <run start="1048" level="15" length="13"/>
+        <run start="1048" level="15" length="13"/>
+        <run start="1048" level="17" length="12"/>
+        <run start="1049" level="0" length="10"/>
+        <run start="1049" level="0" length="9"/>
+        <run start="1050" level="0" length="6"/>
+    </section>
+</stick>

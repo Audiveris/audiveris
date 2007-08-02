@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="SLUR" interline="19" id="630">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>7.287671232876712</pitch-position>
+    <section first-pos="2301" id="3319">
+        <run start="1751" level="170" length="2"/>
+        <run start="1751" level="82" length="3"/>
+        <run start="1752" level="50" length="2"/>
+        <run start="1753" level="74" length="2"/>
+        <run start="1753" level="65" length="3"/>
+        <run start="1753" level="94" length="4"/>
+        <run start="1754" level="33" length="3"/>
+        <run start="1754" level="81" length="4"/>
+        <run start="1755" level="0" length="3"/>
+        <run start="1755" level="73" length="4"/>
+        <run start="1755" level="62" length="4"/>
+        <run start="1756" level="49" length="4"/>
+        <run start="1756" level="47" length="4"/>
+        <run start="1756" level="29" length="4"/>
+        <run start="1756" level="76" length="5"/>
+        <run start="1756" level="74" length="5"/>
+        <run start="1756" level="78" length="5"/>
+        <run start="1757" level="29" length="4"/>
+        <run start="1757" level="20" length="4"/>
+        <run start="1757" level="29" length="4"/>
+        <run start="1757" level="69" length="5"/>
+        <run start="1757" level="67" length="5"/>
+        <run start="1757" level="67" length="5"/>
+        <run start="1757" level="67" length="5"/>
+        <run start="1757" level="29" length="4"/>
+        <run start="1757" level="27" length="4"/>
+        <run start="1757" level="29" length="4"/>
+        <run start="1756" level="76" length="5"/>
+        <run start="1756" level="76" length="5"/>
+        <run start="1756" level="78" length="5"/>
+        <run start="1756" level="29" length="4"/>
+        <run start="1756" level="8" length="4"/>
+        <run start="1755" level="49" length="4"/>
+        <run start="1755" level="70" length="4"/>
+        <run start="1755" level="57" length="4"/>
+        <run start="1754" level="71" length="4"/>
+        <run start="1754" level="35" length="3"/>
+        <run start="1753" level="92" length="4"/>
+        <run start="1753" level="72" length="3"/>
+        <run start="1753" level="50" length="2"/>
+        <run start="1752" level="81" length="2"/>
+        <run start="1751" level="83" length="3"/>
+        <run start="1751" level="132" length="2"/>
+    </section>
+</stick>

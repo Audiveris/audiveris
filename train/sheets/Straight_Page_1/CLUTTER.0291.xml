@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="CLUTTER" interline="15" id="291">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-44.13333333333333</pitch-position>
+    <section first-pos="979" id="1549">
+        <run start="283" level="0" length="7"/>
+    </section>
+    <section first-pos="980" id="1551">
+        <run start="280" level="0" length="13"/>
+    </section>
+    <section first-pos="981" id="1553">
+        <run start="278" level="0" length="17"/>
+    </section>
+    <section first-pos="982" id="1555">
+        <run start="276" level="0" length="21"/>
+    </section>
+    <section first-pos="983" id="1557">
+        <run start="275" level="0" length="6"/>
+        <run start="275" level="0" length="4"/>
+        <run start="274" level="0" length="3"/>
+        <run start="273" level="0" length="3"/>
+        <run start="273" level="0" length="3"/>
+        <run start="273" level="0" length="2"/>
+        <run start="273" level="0" length="2"/>
+        <run start="272" level="0" length="2"/>
+        <run start="272" level="0" length="2"/>
+        <run start="272" level="0" length="2"/>
+        <run start="272" level="0" length="2"/>
+        <run start="272" level="0" length="2"/>
+        <run start="272" level="0" length="3"/>
+        <run start="273" level="0" length="2"/>
+        <run start="273" level="0" length="3"/>
+        <run start="273" level="0" length="4"/>
+        <run start="274" level="0" length="4"/>
+        <run start="275" level="0" length="4"/>
+        <run start="276" level="0" length="6"/>
+    </section>
+    <section first-pos="983" id="1558">
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+        <run start="285" level="0" length="2"/>
+    </section>
+    <section first-pos="983" id="1559">
+        <run start="291" level="0" length="7"/>
+        <run start="294" level="0" length="4"/>
+        <run start="295" level="0" length="4"/>
+        <run start="297" level="0" length="3"/>
+        <run start="297" level="0" length="3"/>
+        <run start="298" level="0" length="2"/>
+        <run start="298" level="0" length="2"/>
+        <run start="299" level="0" length="2"/>
+        <run start="299" level="0" length="2"/>
+        <run start="299" level="0" length="2"/>
+        <run start="299" level="0" length="2"/>
+        <run start="299" level="0" length="2"/>
+        <run start="299" level="0" length="2"/>
+        <run start="298" level="0" length="2"/>
+        <run start="298" level="0" length="2"/>
+        <run start="297" level="0" length="3"/>
+        <run start="297" level="0" length="3"/>
+        <run start="296" level="0" length="3"/>
+        <run start="294" level="0" length="5"/>
+        <run start="293" level="0" length="5"/>
+        <run start="294" level="0" length="3"/>
+        <run start="294" level="0" length="2"/>
+        <run start="294" level="0" length="1"/>
+    </section>
+    <section first-pos="1002" id="1588">
+        <run start="277" level="0" length="10"/>
+        <run start="278" level="0" length="9"/>
+        <run start="280" level="0" length="7"/>
+        <run start="283" level="0" length="4"/>
+    </section>
+</stick>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="15" id="1114">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>5.333333333333333</pitch-position>
+    <section first-pos="1067" id="1670">
+        <run start="1896" level="22" length="9"/>
+        <run start="1896" level="22" length="9"/>
+        <run start="1897" level="0" length="9"/>
+        <run start="1897" level="0" length="9"/>
+        <run start="1897" level="0" length="9"/>
+        <run start="1898" level="0" length="9"/>
+        <run start="1898" level="0" length="9"/>
+        <run start="1898" level="0" length="9"/>
+        <run start="1899" level="0" length="9"/>
+        <run start="1899" level="0" length="9"/>
+        <run start="1899" level="0" length="9"/>
+        <run start="1900" level="0" length="9"/>
+        <run start="1900" level="0" length="9"/>
+        <run start="1900" level="0" length="9"/>
+        <run start="1901" level="0" length="9"/>
+        <run start="1901" level="0" length="9"/>
+        <run start="1901" level="0" length="9"/>
+        <run start="1902" level="0" length="9"/>
+        <run start="1902" level="0" length="9"/>
+        <run start="1902" level="0" length="9"/>
+        <run start="1903" level="0" length="9"/>
+        <run start="1903" level="0" length="9"/>
+        <run start="1903" level="0" length="9"/>
+        <run start="1904" level="0" length="9"/>
+        <run start="1904" level="0" length="9"/>
+        <run start="1904" level="0" length="9"/>
+        <run start="1905" level="0" length="9"/>
+        <run start="1905" level="0" length="9"/>
+        <run start="1905" level="0" length="9"/>
+        <run start="1906" level="0" length="9"/>
+        <run start="1906" level="0" length="9"/>
+        <run start="1906" level="0" length="9"/>
+        <run start="1907" level="0" length="9"/>
+        <run start="1907" level="0" length="9"/>
+        <run start="1907" level="0" length="9"/>
+        <run start="1908" level="0" length="9"/>
+        <run start="1908" level="0" length="9"/>
+        <run start="1908" level="0" length="9"/>
+        <run start="1909" level="0" length="9"/>
+        <run start="1909" level="0" length="9"/>
+        <run start="1909" level="0" length="9"/>
+        <run start="1910" level="0" length="9"/>
+        <run start="1910" level="0" length="9"/>
+    </section>
+</stick>

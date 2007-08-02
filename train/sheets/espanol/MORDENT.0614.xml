@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stick id="614" interline="22" shape="MORDENT">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>12.55813953488372</pitch-position>
+        <section id="2572" first-pos="747">
+            <run start="1078" length="3" level="196"/>
+            <run start="1076" length="5" level="79"/>
+            <run start="1075" length="6" level="43"/>
+            <run start="1073" length="7" level="72"/>
+            <run start="1072" length="6" level="53"/>
+            <run start="1070" length="6" level="84"/>
+            <run start="1068" length="6" level="72"/>
+            <run start="1067" length="6" level="54"/>
+            <run start="1065" length="6" level="84"/>
+            <run start="1063" length="6" level="71"/>
+            <run start="1061" length="8" level="66"/>
+            <run start="1059" length="11" level="48"/>
+            <run start="1059" length="13" level="30"/>
+            <run start="1059" length="15" level="32"/>
+            <run start="1060" length="16" level="36"/>
+            <run start="1062" length="16" level="36"/>
+            <run start="1064" length="15" level="25"/>
+            <run start="1066" length="15" level="38"/>
+            <run start="1068" length="13" level="13"/>
+            <run start="1070" length="11" level="9"/>
+            <run start="1071" length="10" level="16"/>
+            <run start="1073" length="9" level="39"/>
+            <run start="1075" length="7" level="22"/>
+            <run start="1077" length="5" level="17"/>
+            <run start="1075" length="6" level="65"/>
+            <run start="1074" length="7" level="37"/>
+            <run start="1072" length="8" level="63"/>
+            <run start="1071" length="7" level="46"/>
+            <run start="1069" length="7" level="73"/>
+            <run start="1067" length="7" level="63"/>
+            <run start="1066" length="7" level="48"/>
+            <run start="1064" length="7" level="73"/>
+            <run start="1062" length="7" level="62"/>
+            <run start="1060" length="9" level="60"/>
+            <run start="1059" length="12" level="46"/>
+            <run start="1058" length="15" level="43"/>
+            <run start="1059" length="16" level="31"/>
+            <run start="1060" length="17" level="35"/>
+            <run start="1061" length="17" level="32"/>
+            <run start="1062" length="19" level="54"/>
+            <run start="1064" length="17" level="25"/>
+            <run start="1066" length="15" level="28"/>
+            <run start="1068" length="13" level="32"/>
+            <run start="1070" length="11" level="37"/>
+            <run start="1072" length="9" level="44"/>
+            <run start="1074" length="7" level="56"/>
+            <run start="1076" length="5" level="52"/>
+            <run start="1076" length="5" level="42"/>
+            <run start="1074" length="7" level="65"/>
+            <run start="1072" length="8" level="65"/>
+            <run start="1070" length="8" level="65"/>
+            <run start="1069" length="7" level="56"/>
+            <run start="1069" length="5" level="79"/>
+            <run start="1069" length="3" level="133"/>
+        </section>
+</stick>
