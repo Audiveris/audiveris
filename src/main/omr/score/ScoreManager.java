@@ -117,11 +117,7 @@ public class ScoreManager
                 FileFilter filter = new FileFilter(
                     "XML files",
                     new String[] { SCORE_EXTENSION });
-                xmlFile = UIUtilities.fileChooser(
-                    true,
-                    null,
-                    xmlFile,
-                    filter);
+                xmlFile = UIUtilities.fileChooser(true, null, xmlFile, filter);
             }
         }
 
@@ -142,7 +138,12 @@ public class ScoreManager
                  .addTask(new ExportTask(xmlFile.getPath()));
 
             // Actually export the score material
-            new ScoreExporter(score, xmlFile);
+            try {
+                new ScoreExporter(score, xmlFile);
+                logger.info("Score exported to " + xmlFile);
+            } catch (Exception ex) {
+                logger.warning("Error storing score to " + xmlFile, ex);
+            }
         }
     }
 
