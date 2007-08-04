@@ -97,21 +97,38 @@ public class ScoreExporter
     // ScoreExporter //
     //---------------//
     /**
-     * Create a new ScoreExporter object, which triggers the export.
+     * Create a new ScoreExporter object, which handles the export to a file
      *
      * @param score the score to export (cannot be null)
      * @param xmlFile the xml file to write (cannot be null)
      */
     public ScoreExporter (Score score,
                           File  xmlFile)
+        throws Exception
+    {
+        this(score, new FileOutputStream(xmlFile));
+    }
+
+    //---------------//
+    // ScoreExporter //
+    //---------------//
+    /**
+     * Create a new ScoreExporter object, which handles the export to a stream
+     *
+     * @param score the score to export (cannot be null)
+     * @param os the output stream where XML data is written (cannot be null)
+     */
+    public ScoreExporter (Score        score,
+                          OutputStream os)
+        throws IOException, Exception
     {
         if (score == null) {
             throw new IllegalArgumentException("Trying to export a null score");
         }
 
-        if (xmlFile == null) {
+        if (os == null) {
             throw new IllegalArgumentException(
-                "Trying to export a score to a null file");
+                "Trying to export a score to a null output stream");
         }
 
         this.score = score;
@@ -120,18 +137,7 @@ public class ScoreExporter
         score.accept(this);
 
         //  Finally, marshal the proxy
-        try {
-            final OutputStream os = new FileOutputStream(xmlFile);
-            Marshalling.marshal(scorePartwise, os);
-            logger.info("Score exported to " + xmlFile);
-            os.close();
-        } catch (FileNotFoundException ex) {
-            logger.warning("Cannot find file " + xmlFile, ex);
-        } catch (IOException ex) {
-            logger.warning("IO error while writing score to " + xmlFile, ex);
-        } catch (Exception ex) {
-            logger.warning("Error while writing score to " + xmlFile, ex);
-        }
+        Marshalling.marshal(scorePartwise, os);
     }
 
     //~ Methods ----------------------------------------------------------------
