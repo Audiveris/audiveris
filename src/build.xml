@@ -69,6 +69,7 @@
     
     <!-- Run classpath -->
     <path id="run.classpath">
+        <pathelement path="${dist.jar}"/>
         <path refid="tools.classpath"/>
         <pathelement path="${icons.buttons.jar}"/>
         <pathelement path="${icons.music.jar}"/>
@@ -329,9 +330,9 @@
 
 	<!-- Default values -->
 	<property name="run.batch" value=""/>
-	<property name="run.sheet" value=""/>
-	<property name="run.score" value=""/>
 	<property name="run.step"  value=""/>
+	<property name="run.sheet" value=""/>
+	<property name="run.script" value=""/>
 	
         <java
 	    classname="${Name}"
@@ -350,12 +351,9 @@
             
             <!-- Application arguments -->
  	    <arg line="${run.batch}"/>
- 	    <arg line="${run.sheet}"/>
- 	    <arg line="${run.score}"/>
  	    <arg line="${run.step}"/>
-	    
-            <arg line="-save ${save.dir}"/>
-<!--             <arg line="-write"/> -->
+ 	    <arg line="${run.sheet}"/>
+ 	    <arg line="${run.script}"/>
         </java>
     </target>
     
