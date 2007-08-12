@@ -300,11 +300,18 @@ public class Rubber
 
         if (mouseMonitor != null) {
             if (isDragWanted(e)) {
-                // Nothing
+                e.getComponent().setCursor(
+                	Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
             } else if (isAdditionWanted(e)) {
                 mouseMonitor.pointAdded(e, getCenter());
             } else if (isContextWanted(e)) {
                 mouseMonitor.contextSelected(e, getCenter());
+            } else if (isRubberWanted(e)) {
+            	e.getComponent().setCursor(
+                	Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+            } else if (isRezoomWanted(e)) {
+            	e.getComponent().setCursor(
+                	Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
             } else {
                 mouseMonitor.pointSelected(e, getCenter());
             }
@@ -340,6 +347,7 @@ public class Rubber
                     0);
                 normalize();
             }
+            e.getComponent().setCursor(Cursor.getDefaultCursor());
         }
     }
 
@@ -439,8 +447,14 @@ public class Rubber
      */
     protected boolean isAdditionWanted (MouseEvent e)
     {
-        return !SwingUtilities.isRightMouseButton(e) &&
-               SwingUtilities.isLeftMouseButton(e) && e.isControlDown();
+        if (omr.Main.MAC_OS_X) {
+        	boolean command = e.isMetaDown();
+        	boolean left = SwingUtilities.isLeftMouseButton(e);
+        	return left && command && !e.isPopupTrigger();
+        } else {
+        	return !SwingUtilities.isRightMouseButton(e) &&
+        		SwingUtilities.isLeftMouseButton(e) && e.isControlDown();
+        }
     }
 
     //-----------------//
@@ -456,8 +470,12 @@ public class Rubber
      */
     protected boolean isContextWanted (MouseEvent e)
     {
-        return SwingUtilities.isRightMouseButton(e) &&
-               !SwingUtilities.isLeftMouseButton(e);
+        if (omr.Main.MAC_OS_X) {
+        	return e.isPopupTrigger();
+        } else {
+    		return SwingUtilities.isRightMouseButton(e) &&
+    		!SwingUtilities.isLeftMouseButton(e);
+    	}
     }
 
     //-- protected access -------------------------------------------------
@@ -476,10 +494,13 @@ public class Rubber
      */
     protected boolean isDragWanted (MouseEvent e)
     {
-        int onmask = BUTTON1_DOWN_MASK | BUTTON3_DOWN_MASK;
-        int offmask = 0;
-
-        return (e.getModifiersEx() & (onmask | offmask)) == onmask;
+		if (omr.Main.MAC_OS_X) {
+			return e.isAltDown();
+		} else {
+			int onmask = BUTTON1_DOWN_MASK | BUTTON3_DOWN_MASK;
+			int offmask = 0;
+			return (e.getModifiersEx() & (onmask | offmask)) == onmask;
+		}        
     }
 
     //----------------//
@@ -496,7 +517,11 @@ public class Rubber
      */
     protected boolean isRezoomWanted (MouseEvent e)
     {
-        return e.isControlDown() && e.isShiftDown();
+    	if (omr.Main.MAC_OS_X) {
+    		return e.isMetaDown() && e.isShiftDown();
+    	} else {
+    		return e.isControlDown() && e.isShiftDown();
+    	}
     }
 
     //----------------//
