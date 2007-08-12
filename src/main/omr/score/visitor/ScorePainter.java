@@ -877,11 +877,17 @@ public class ScorePainter
                             SystemPoint from,
                             SystemPoint to)
     {
-        g.drawLine(
-            zoom.scaled(displayOrigin.x + from.x),
-            zoom.scaled(displayOrigin.y + from.y),
-            zoom.scaled(displayOrigin.x + to.x),
-            zoom.scaled(displayOrigin.y + to.y));
+        if (g != null && zoom != null && 
+        	displayOrigin != null && from != null && to != null)
+        	
+        	g.drawLine(
+        		zoom.scaled(displayOrigin.x + from.x),
+        		zoom.scaled(displayOrigin.y + from.y),
+        		zoom.scaled(displayOrigin.x + to.x),
+        		zoom.scaled(displayOrigin.y + to.y));
+        
+        else 
+        	logger.warning("line not painted due to null reference");
     }
 
     //-------------//
