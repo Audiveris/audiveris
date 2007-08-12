@@ -1,22 +1,25 @@
 package omr.plugin.xenoage;
 
 import java.awt.event.ActionEvent;
-import java.io.*;
-import java.util.Arrays;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import javax.swing.AbstractAction;
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
 import omr.plugin.Plugin;
 import omr.plugin.PluginType;
 import omr.score.Score;
 import omr.score.visitor.ScoreExporter;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
-import omr.ui.SheetController;
 import omr.ui.icon.IconManager;
-import omr.ui.util.UIUtilities;
 import omr.util.Logger;
+import com.xenoage.player.ExternalPlayer;
 
+/**
+ * MIDI player plugin
+ * 
+ * @author Brenton Partridge
+ * @version $Id$
+ */
 @Plugin(type=PluginType.SCORE_EXPORT)
 public class XenoageAction extends AbstractAction
 {
