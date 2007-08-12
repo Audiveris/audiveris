@@ -148,14 +148,15 @@ public class UIUtilities
                 logger.warning("no ancestor is Frame");
             }
         } else {
-            final JFileChooser fc = new JFileChooser(startFile);
+            final JFileChooser fc = new JFileChooser();
 
             // Pre-select the directory, and potentially the file to save to
             if (startFile != null) {
-                fc.setCurrentDirectory(startFile);
-
-                if (save) {
-                    fc.setSelectedFile(startFile);
+                if (startFile.isDirectory()) {
+                	fc.setCurrentDirectory(startFile);
+                } else {
+                	fc.setCurrentDirectory(startFile.getParentFile());
+                	fc.setSelectedFile(startFile);
                 }
             }
 
