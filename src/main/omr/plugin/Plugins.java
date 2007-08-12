@@ -8,8 +8,8 @@
 
 package omr.plugin;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
-import java.net.URL;
 import java.util.*;
 import javax.swing.Action;
 import omr.util.Logger;
@@ -28,34 +28,31 @@ public class Plugins
     /** Class loader for plugin classes */
     private static ClassLoader classLoader = Plugins.class.getClassLoader();
     
+    /** Set of plugin classes */
     private static final Set<Class<? extends Action>> classes = 
     	new LinkedHashSet<Class<? extends Action>>();
     
-	private static final Collection<Action> actions = new LinkedList<Action>();
+    /** Instantiated plugins */
+	private static final Collection<Action> actions = new LinkedHashSet<Action>();
+	
+    
+	static
+	{
+		try
+		{
+			loadClassesFromScanner(new Scanner(new File(omr.Main.getConfigFolder(), "omr.plugins")));
+		}
+		catch (Exception e)
+		{
+			logger.warning("Unable to load plugins from config folder", e);
+		}
+	}
 	
 	private static void loadClassesFromScanner(Scanner scanner)
 	{
 		while (scanner.hasNext()) {
 			String clazzName = scanner.next();
 			loadClass(clazzName);
-		}
-	}
-	
-	private static void loadClassesFromServiceProviders()
-	{
-		try
-		{
-			Enumeration<URL> urls = classLoader.getResources("META-INF/omr.plugins");
-			while (urls.hasMoreElements())
-			{
-				URL url = urls.nextElement();
-				Scanner scanner = new Scanner(url.openStream());
-				loadClassesFromScanner(scanner);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.warning("Unable to load plugins from service providers", e);
 		}
 	}
 
@@ -94,11 +91,6 @@ public class Plugins
 	
 	public synchronized static Collection<Action> getActions()
 	{
-		if (classes.isEmpty())
-		{
-			loadClassesFromServiceProviders();
-		}
-		
 		if (actions.size() != classes.size())
 		{
 			actions.retainAll(Collections.<Action>emptySet());
@@ -120,7 +112,7 @@ public class Plugins
 	public static Collection<Action> getActions(PluginType type)
 	{
 		Collection<Action> actions = getActions();
-		Set<Action> typed = new LinkedHashSet<Action>();
+		Collection<Action> typed = new LinkedHashSet<Action>();
 		
 		for (Action plugin : actions)
         {
