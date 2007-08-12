@@ -406,7 +406,7 @@ public class ZoomedPanel
      *
      * @return the original size
      */
-    protected Dimension getModelSize ()
+    public Dimension getModelSize ()
     {
         if (modelSize != null) {
             return new Dimension(modelSize);
