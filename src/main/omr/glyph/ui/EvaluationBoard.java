@@ -9,6 +9,7 @@
 //
 package omr.glyph.ui;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
@@ -35,12 +36,13 @@ import omr.util.Implement;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
+import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -61,7 +63,7 @@ import javax.swing.*;
  * </ul>
  * </dl>
  *
- * @author Herv&eacute; Bitteur
+ * @author Herv&eacute; Bitteur and Brenton Partridge
  * @version $Id$
  */
 class EvaluationBoard
@@ -75,9 +77,6 @@ class EvaluationBoard
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         EvaluationBoard.class);
-
-    /** Max number of buttons in the shape selector */
-    private static final int EVAL_NB = 5;
 
     /** Color for well recognized glyphs */
     private static final Color EVAL_GOOD_COLOR = new Color(100, 150, 0);
@@ -229,9 +228,14 @@ class EvaluationBoard
             buttonWidth + "," + fieldInterval + "," + buttonWidth + "," +
             fieldInterval + "," + buttonWidth + "," + fieldInterval + "," +
             buttonWidth,
-            "pref," + fieldInterline + "," + "pref," + "pref," + "pref," +
-            "pref," + "pref");
-
+            "pref," + fieldInterline);
+        
+        int visibleButtons = Math.min(
+        	constants.visibleButtons.getValue(),
+        	selector.buttons.size());
+        for (int i = 0; i < visibleButtons; i++)
+            layout.appendRow(FormFactory.PREF_ROWSPEC);
+        
         // Uncomment following line to have fixed sized rows, whether
         // they are filled or not
         ///layout.setRowGroups(new int[][]{{1, 3, 4, 5 }});
@@ -250,15 +254,15 @@ class EvaluationBoard
         } else {
             builder.addSeparator(evaluator.getName(), cst.xyw(1, r, 7));
         }
-
-        for (int i = 0; i < EVAL_NB; i++) {
+        
+        for (int i = 0; i < visibleButtons; i++) {
             r = i + 3; // --------------------------------
-            builder.add(selector.buttons[i].grade, cst.xy(1, r));
+            builder.add(selector.buttons.get(i).grade, cst.xy(1, r));
 
             if (sheet != null) {
-                builder.add(selector.buttons[i].button, cst.xyw(3, r, 5));
+                builder.add(selector.buttons.get(i).button, cst.xyw(3, r, 5));
             } else {
-                builder.add(selector.buttons[i].field, cst.xyw(3, r, 5));
+                builder.add(selector.buttons.get(i).field, cst.xyw(3, r, 5));
             }
         }
     }
@@ -274,6 +278,9 @@ class EvaluationBoard
         Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
             100000.0,
             "Threshold on displayable doubt");
+        Constant.Integer visibleButtons = new Constant.Integer(
+        	"buttons", 5, 
+        	"Max number of buttons in the shape selector");
     }
 
     //------------//
@@ -379,14 +386,14 @@ class EvaluationBoard
     private class Selector
     {
         // A collection of EvalButton's
-        EvalButton[] buttons;
+        List<EvalButton> buttons;
 
         public Selector ()
         {
-            buttons = new EvalButton[EVAL_NB];
+        	buttons = new ArrayList<EvalButton>();
 
-            for (int i = 0; i < buttons.length; i++) {
-                buttons[i] = new EvalButton();
+            for (int i = 0; i < constants.visibleButtons.getValue(); i++) {
+                buttons.add(new EvalButton());
             }
 
             setEvals(null, null);
@@ -416,10 +423,11 @@ class EvaluationBoard
             }
 
             double maxDist = constants.maxDoubt.getValue();
-            int    iBound = Math.min(EVAL_NB, evals.length);
+            int    iBound = Math.min(buttons.size(), evals.length);
             int    i;
 
-            for (i = 0; i < iBound; i++) {
+            for (i = 0; i < iBound; i++) 
+            {
                 Evaluation eval = evals[i];
 
                 // Limitation on shape relevance
@@ -428,12 +436,12 @@ class EvaluationBoard
                 }
 
                 // Barred on non-barred button
-                buttons[i].setEval(eval, glyph.isShapeForbidden(eval.shape));
+                buttons.get(i).setEval(eval, glyph.isShapeForbidden(eval.shape));
             }
 
             // Zero the remaining buttons
-            for (; i < EVAL_NB; i++) {
-                buttons[i].setEval(null, false);
+            for (; i < buttons.size(); i++) {
+                buttons.get(i).setEval(null, false);
             }
         }
     }
@@ -468,7 +476,7 @@ class EvaluationBoard
 
                     Evaluation guess = evaluator.vote(glyph, maxDoubt);
 
-                    if (glyph.getShape() == guess.shape) {
+                    if (guess != null && glyph.getShape() == guess.shape) {
                         ok++;
                         view.colorizeGlyph(glyph, Shape.okColor);
                     } else {
