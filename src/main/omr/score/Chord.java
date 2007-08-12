@@ -1370,6 +1370,11 @@ public class Chord
                 tailLocation = headLocation;
             }
         }
+        else
+        {
+        	logger.warning("No notes in chord");
+        	
+        }
     }
 
     //-------//
