@@ -237,7 +237,7 @@
             <!-- Define a logical grouping of packages -->
              <group packages="omr:omr.sheet:omr.score:omr.score.visitor:omr.glyph:omr.step:omr.script"
                  title="Driving Packages"/>
-             <group packages="omr.ui:omr.ui.*:omr.glyph.ui"
+             <group packages="omr.ui:omr.ui.*:omr.glyph.ui:omr.plugin"
                  title="User interface Packages"/>
              <group packages="omr.graph:omr.lag*:omr.stick*"
                  title="Geometry Packages"/>
