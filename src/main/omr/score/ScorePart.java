@@ -45,6 +45,12 @@ public class ScorePart
     /** Name for this part */
     private String name;
 
+    /** Instrument MIDI program, if any */
+    private Integer midiProgram; // = 71;
+
+    /** Tempo information, if any */
+    private Integer tempo; // = 60;
+
     /** List of staff ids */
     private List<Integer> ids = new ArrayList<Integer>();
 
@@ -83,113 +89,6 @@ public class ScorePart
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------------------//
-    // getDurationDivisor //
-    //--------------------//
-    /**
-     * Report the duration divisor for this part
-     * @return the divisor for this part, or null if not computable
-     */
-    public Integer getDurationDivisor ()
-    {
-        if (durationDivisor == null) {
-            score.accept(new ScoreReductor());
-        }
-
-        return durationDivisor;
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Assign an id to this part
-     *
-     * @param id the assigned id
-     */
-    public void setId (int id)
-    {
-        this.id = id;
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the id of this part
-     *
-     * @return the part id
-     */
-    public int getId ()
-    {
-        return id;
-    }
-
-    //--------------//
-    // isMultiStaff //
-    //--------------//
-    /**
-     * Report whether there are more than a single staff in this part
-     *
-     * @return true if this part is multi-staff
-     */
-    public boolean isMultiStaff ()
-    {
-        return ids.size() > 1;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign a name to this part
-     *
-     * @param name the new part name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the assigned name
-     *
-     * @return the part name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //--------//
-    // getPid //
-    //--------//
-    /**
-     * Report a pid string, using format "Pn", where 'n' is the id
-     *
-     * @return the Pid
-     */
-    public String getPid ()
-    {
-        return "P" + id;
-    }
-
-    //-------------//
-    // getStaffIds //
-    //-------------//
-    /**
-     * Report the staff ids for this part
-     *
-     * @return the list of staff ids
-     */
-    public List<Integer> getStaffIds ()
-    {
-        return ids;
-    }
 
     //-------------//
     // addDuration //
@@ -247,6 +146,97 @@ public class ScorePart
         }
     }
 
+    //--------------------//
+    // getDurationDivisor //
+    //--------------------//
+    /**
+     * Report the duration divisor for this part
+     * @return the divisor for this part, or null if not computable
+     */
+    public Integer getDurationDivisor ()
+    {
+        if (durationDivisor == null) {
+            score.accept(new ScoreReductor());
+        }
+
+        return durationDivisor;
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the id of this part
+     *
+     * @return the part id
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
+    public Integer getMidiProgram ()
+    {
+        return midiProgram;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the assigned name
+     *
+     * @return the part name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //--------//
+    // getPid //
+    //--------//
+    /**
+     * Report a pid string, using format "Pn", where 'n' is the id
+     *
+     * @return the Pid
+     */
+    public String getPid ()
+    {
+        return "P" + id;
+    }
+
+    //-------------//
+    // getStaffIds //
+    //-------------//
+    /**
+     * Report the staff ids for this part
+     *
+     * @return the list of staff ids
+     */
+    public List<Integer> getStaffIds ()
+    {
+        return ids;
+    }
+
+    public Integer getTempo ()
+    {
+        return tempo;
+    }
+
+    //--------------//
+    // isMultiStaff //
+    //--------------//
+    /**
+     * Report whether there are more than a single staff in this part
+     *
+     * @return true if this part is multi-staff
+     */
+    public boolean isMultiStaff ()
+    {
+        return ids.size() > 1;
+    }
+
     //----------------//
     // resetDurations //
     //----------------//
@@ -254,6 +244,42 @@ public class ScorePart
     {
         durations.clear();
         durationDivisor = null;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Assign an id to this part
+     *
+     * @param id the assigned id
+     */
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
+    public void setMidiProgram (Integer midiProgram)
+    {
+        this.midiProgram = midiProgram;
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign a name to this part
+     *
+     * @param name the new part name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+    }
+
+    public void setTempo (Integer tempo)
+    {
+        this.tempo = tempo;
     }
 
     //------------------//

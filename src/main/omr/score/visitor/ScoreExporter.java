@@ -576,6 +576,13 @@ public class ScoreExporter
                     systemLayout.setTopSystemDistance(topSystemDistance);
                     topSystemDistance.setContent(
                         toTenths(current.system.getTopLeft().y));
+                    
+                    // Default tempo?
+                    if (current.part.getTempo() != null) {
+                        Sound sound = new Sound();
+                        current.pmMeasure.getNoteOrBackupOrForward().add(sound);
+                        sound.setTempo("" + current.part.getTempo() );
+                    }
                 } else {
                     // SystemDistance
                     SystemDistance systemDistance = new SystemDistance();
@@ -1046,6 +1053,27 @@ public class ScoreExporter
 
             scorePart.setPartName(partName);
             partName.setContent(current.part.getName());
+            
+            if (p.getMidiProgram() != null) {
+                // Score instrument
+                ScoreInstrument scoreInstrument = new ScoreInstrument();
+                scorePart.getScoreInstrument().add(scoreInstrument);
+                scoreInstrument.setId(scorePart.getId() + "-I1");
+                InstrumentName instrumentName = new InstrumentName();
+                scoreInstrument.setInstrumentName(instrumentName);
+                instrumentName.setContent(Midi.getProgramName(p.getMidiProgram()));
+                
+                // Midi instrument
+                MidiInstrument midiInstrument = new MidiInstrument();
+                scorePart.getMidiInstrument().add(midiInstrument);
+                midiInstrument.setId(scoreInstrument);
+                MidiChannel midiChannel = new MidiChannel();
+                midiInstrument.setMidiChannel(midiChannel);
+                midiChannel.setContent("" + p.getId());
+                MidiProgram midiProgram = new MidiProgram();
+                midiInstrument.setMidiProgram(midiProgram);
+                midiProgram.setContent("" + p.getMidiProgram());
+            }
 
             // ScorePart in scorePartwise
             current.pmPart = new proxymusic.Part();
