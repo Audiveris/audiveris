@@ -130,7 +130,7 @@ public class SheetController
             IconManager.getInstance().loadImageIcon("general/History"));
         menu.add(historyMenu);
 
-        // Various actions
+        // Import actions
         new SelectSheetAction();
 
         for (Action plugin : Plugins.getActions(PluginType.SHEET_IMPORT)) {
@@ -152,7 +152,7 @@ public class SheetController
         new ZoomHeightAction();
         new RecordAction();
 
-        // Tool actions
+        // Plot actions
         menu.addSeparator();
         toolBar.addSeparator();
 
@@ -163,6 +163,7 @@ public class SheetController
         menu.addSeparator();
         toolBar.addSeparator();
 
+        // Export actions
         for (Action plugin : Plugins.getActions(PluginType.SHEET_EXPORT)) {
             new SheetAction(plugin);
         }
@@ -516,7 +517,8 @@ public class SheetController
             super(
                 false,
                 "Close Sheet",
-                "Close the current sheet (W)",
+                "Close the current sheet",
+                "W",
                 IconManager.getInstance().loadImageIcon("general/Remove"),
                 true);
         }
@@ -588,7 +590,8 @@ public class SheetController
             super(
                 false,
                 "Record Glyphs",
-                "Record sheet glyph descriptions for training (R)",
+                "Record sheet glyph descriptions for training",
+                "R",
                 IconManager.getInstance().loadImageIcon("general/Bookmarks"),
                 false);
         }
@@ -670,7 +673,8 @@ public class SheetController
             super(
                 true,
                 "Open Sheet",
-                "Open a sheet file (O)",
+                "Open a sheet file",
+                "O",
                 IconManager.getInstance().loadImageIcon("general/Open"),
                 true);
         }
@@ -688,14 +692,35 @@ public class SheetController
     //-------------//
     /**
      * Class <code>SheetAction</code> is a template for any sheet-related action
-     * : it builds the action, registers it in the list of sheet-dependent
-     * actions if needed, inserts the action in the sheet menu, and inserts a
-     * button in the toolbar if an icon is provided.
      */
     private class SheetAction
-        extends AbstractAction
+        extends EntityAction
     {
-        private Action delegate = null;
+        public SheetAction (boolean enabled,
+                            String  label,
+                            String  tip,
+                            String  key,
+                            Icon    icon,
+                            boolean onToolBar)
+        {
+            super(
+                enabled ? null : sheetDependentActions,
+                menu,
+                onToolBar ? toolBar : null,
+                label,
+                tip,
+                key,
+                icon);
+        }
+
+        public SheetAction (Action delegate)
+        {
+            super(
+                delegate.isEnabled() ? null : sheetDependentActions,
+                menu,
+                toolBar,
+                delegate);
+        }
 
         public SheetAction (boolean enabled,
                             String  label,
@@ -703,50 +728,7 @@ public class SheetController
                             Icon    icon,
                             boolean onToolBar)
         {
-            super(label, icon);
-
-            // Sheet-dependent action ?
-            if (!enabled) {
-                sheetDependentActions.add(this);
-            }
-
-            // Menu item
-            JMenuItem item = menu.add(this);
-
-            if (tip.endsWith(")")) {
-                char c = tip.charAt(tip.length() - 2);
-                item.setAccelerator(
-                    KeyStroke.getKeyStroke(
-                        (int) c,
-                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-                tip = tip.substring(0, tip.lastIndexOf("("));
-            }
-
-            putValue(SHORT_DESCRIPTION, tip);
-
-            // Tool bar
-            if (onToolBar) {
-                final JButton button = toolBar.add(this);
-                button.setBorder(UIUtilities.getToolBorder());
-            }
-        }
-
-        public SheetAction (Action delegate)
-        {
-            this(
-                delegate.isEnabled(),
-                (String) delegate.getValue(Action.NAME),
-                (String) delegate.getValue(Action.SHORT_DESCRIPTION),
-                (Icon) delegate.getValue(Action.SMALL_ICON),
-                true);
-            this.delegate = delegate;
-        }
-
-        public void actionPerformed (ActionEvent e)
-        {
-            if (delegate != null) {
-                delegate.actionPerformed(e);
-            }
+            this(enabled, label, tip, null, icon, onToolBar);
         }
     }
 
