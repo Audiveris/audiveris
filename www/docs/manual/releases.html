@@ -37,8 +37,8 @@
 
             <!-- ====================================================== -->
             
-            <A NAME="3.0">
-                <H3>3.0 Release</H3>
+            <A NAME="3.2">
+                <H3>3.2 Release</H3>
             </A>
             
             <TABLE WIDTH=100% BORDER=1>
@@ -46,9 +46,169 @@
                     <TH>Introduction</TH>
                     <TD>
                         <UL>
-                            <LI>This 3.0 release is a major release which makes
-                                Audiveris a complete music scanner.
-                            </UL>
+                            <LI>Release 3.2 is just a TODO list for the time being</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Distribution Changes</TH>
+                    <TD>
+                        <UL>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>New Features</TH>
+                    <TD>
+                        <UL>
+			    <LI>Glyph: Ability to arbitrarily split a given
+				glyph, according to some user driving
+				instructions.</LI>
+			    <LI>Score: Ability to inject score entities directly
+				into the score view, providing a very basic
+				score editor.</LI>
+			    <LI>Shape: Use of a palette, instead of current
+				awkward menu hierarchy, to easily select a shape
+				for glyph shape assignment or score entity
+				injection.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Bug Fixes</TH>
+                    <TD>
+                        <UL>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Known Issues</TH>
+                    <TD>
+                        <UL>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Other Changes</TH>
+                    <TD>
+                        <UL>
+                        </UL>
+                    </TD>
+                </TR>
+            </TABLE>
+	    
+
+            <!-- ====================================================== -->
+            
+            <A NAME="3.1">
+                <H3>3.1 Release</H3>
+            </A>
+            
+            <TABLE WIDTH=100% BORDER=1>
+                <TR>
+                    <TH>Introduction</TH>
+                    <TD>
+                        <UL>
+                            <LI>Release 3.1 is a work in progress</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Distribution Changes</TH>
+                    <TD>
+                        <UL>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>New Features</TH>
+                    <TD>
+                        <UL>
+			    <LI>Plugins: A knowledgeable user will have the
+				ability to register additional user actions,
+				related to current Sheet or current Score. The
+				score Player is implemented like this. We are
+				considering retrofitting the existing actions to
+				benefit from the decoupling brought by this
+				plugin mechanism. </LI>
+			    <LI>Player: A tight connection with Xenoage Player
+				is in the works. Minimum feature is the ability
+				to play the whole score with default
+				parameters. We consider the ability to enter
+				MIDI parameters to the score, such as tempo and
+				instruments. One additional feature will allow
+				the selection of a (range of)
+				measures. Interface with Xenoage player should
+				be enhanced to allow callback from the player in
+				order to move the score view in sync.</LI>
+			    <LI>Translation: All notations such as legato,
+				staccato, accent, etc should be translated to
+				proper score entities and exported into the
+				MusicXML stream.</LI>
+			    <LI>MIDI export: Besides the score player, we'll
+				provide the ability to export the current score
+				to MIDI format, still using Xenoage
+				software.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Bug Fixes</TH>
+                    <TD>
+                        <UL>
+			    <LI>Image: Make sure binary images (black or white
+				pixels coded as 1 bit) are properly
+				handled. Also provide a rather comprehensive
+				documentation about all handled formats.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Known Issues</TH>
+                    <TD>
+                        <UL>
+                            <LI>OCR: We are still looking for an OCR...</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Other Changes</TH>
+                    <TD>
+                        <UL>
+			    <LI>MusicXML: We will update ProxyMusic to only
+				handle the latest version of MusicXML (2.0 as of
+				this writing). The user will have the ability to
+				transparently launch an XSLT transform should an
+				older MusicXML version be needed.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+            </TABLE>
+	    
+	    <!-- ====================================================== -->
+	    
+	    <A NAME="3.0">
+		<H3>3.0 Release</H3>
+	    </A>
+	    
+	    <TABLE WIDTH=100% BORDER=1>
+		<TR>
+		    <TH>Introduction</TH>
+		    <TD>
+			<UL>
+			    <LI>This 3.0 release is a major release which makes
+				Audiveris a complete music scanner.
+			    </UL>
                         </TD>
                     </TR>
                     
@@ -81,9 +241,9 @@
                                 <LI>GUI: New window dedicated to score view, to
                                     more easily check the translation
                                     results.</LI>
-				<LI>Script: A scripting feature allows to record
-				    every action made on a given sheet, and to
-				    replay and augment the script at will.
+                                <LI>Script: A scripting feature allows to record
+                                    every action made on a given sheet, and to
+                                    replay and augment the script at will.</LI>
                             </UL>
                         </TD>
                     </TR>
@@ -545,8 +705,8 @@
                             </TD>
                         </TR>
                     </TABLE>
-		</TABLE>
-	    </TABLE>
-	</DIV>
+                </TABLE>
+            </TABLE>
+        </DIV>
     </BODY>
 </HTML>
