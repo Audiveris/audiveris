@@ -225,7 +225,7 @@ public class StickUtil
         write(members, picture, Picture.BACKGROUND);
 
         // Write patches to the picture
-        write(patches, picture, constants.patchGrayLevel.getValue());
+        write(patches, picture, picture.getMaxForeground());
 
         // Get rid of cached data
         // TBD TBD TBD
@@ -573,15 +573,11 @@ public class StickUtil
     private static final class Constants
         extends ConstantSet
     {
-        Constant.Ratio   maxBorderAdjacency = new Constant.Ratio(
+        Constant.Ratio maxBorderAdjacency = new Constant.Ratio(
             0.7d,
             "Maximum adjacency for a section to be a border");
-        Constant.Angle   maxDeltaSlope = new Constant.Angle(
+        Constant.Angle maxDeltaSlope = new Constant.Angle(
             0.5d,
             "Maximum difference of side tangent slopes when patching TBD");
-        Constant.Integer patchGrayLevel = new Constant.Integer(
-            "ByteLevel",
-            200,
-            "Gray level to be used when patching crossing objects");
     }
 }

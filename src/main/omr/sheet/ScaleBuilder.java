@@ -194,6 +194,7 @@ public class ScaleBuilder
         private Sheet   sheet;
         private int[]   back;
         private int[]   fore;
+        private int     maxForeground;
 
         //---------//
         // Adapter //
@@ -203,6 +204,8 @@ public class ScaleBuilder
         {
             this.sheet = sheet;
             this.picture = sheet.getPicture();
+            
+            maxForeground = picture.getMaxForeground();
 
             // Allocate histogram counters
             fore = new int[hMax + 2];
@@ -254,7 +257,7 @@ public class ScaleBuilder
         public boolean isFore (int level)
         {
             // Assuming black=0, white=255
-            return level <= Picture.FOREGROUND;
+            return level <= maxForeground;
         }
 
         //-----------//

@@ -10,11 +10,15 @@
 //
 package omr.sheet;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.lag.PixelSource;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
+
 import omr.step.LogStepMonitorHandler;
 
 import omr.util.Implement;
@@ -79,6 +83,9 @@ public class Picture
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Picture.class);
 
@@ -86,13 +93,6 @@ public class Picture
      * Constant color of the picture background (generally white).
      */
     public static final int BACKGROUND = 255;
-
-    /**
-     * Constant color of the picture foreground (generally black), which means
-     * that any pixel whose level is higher than this value will be considered
-     * as background. [Should be an application constant? TBD]
-     */
-    public static final int FOREGROUND = 227;
 
     static {
         long startTime = System.currentTimeMillis();
@@ -363,136 +363,6 @@ public class Picture
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // loadFile //
-    //----------//
-    private static RenderedImage loadFile (File imgFile)
-        throws IOException
-    {
-        logger.info("Loading image from " + imgFile + " ...");
-
-        ImageInputStream stream = ImageIO.createImageInputStream(imgFile);
-
-        if (stream == null) {
-            throw new IOException("Cannot create image input stream");
-        }
-
-        Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
-
-        if (readers.hasNext()) {
-            ImageReader reader = readers.next();
-            reader.addIIOReadProgressListener(new Listener());
-            reader.setInput(stream, true);
-
-            return (reader.read(0));
-        } else {
-            logger.info("ImageIO cannot read file, using JAI");
-
-            return (JAI.create("fileload", imgFile.getPath()));
-        }
-    }
-
-    //--------------//
-    // getDimension //
-    //--------------//
-    /**
-     * Report the dimension in pixels of the current image
-     *
-     * @return the image dimension
-     */
-    public Dimension getDimension ()
-    {
-        return new Dimension(dimension);
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    /**
-     * Report the picture height in pixels.
-     *
-     * @return the height value
-     */
-    @Implement(PixelSource.class)
-    public int getHeight ()
-    {
-        return dimension.height;
-    }
-
-    //------------------//
-    // getMaxForeground //
-    //------------------//
-    @Implement(PixelSource.class)
-    public int getMaxForeground ()
-    {
-        return FOREGROUND;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name for this Observer
-     *
-     * @return Observer name
-     */
-    @Implement(SelectionObserver.class)
-    public String getName ()
-    {
-        return "Picture";
-    }
-
-    //---------------//
-    // getOrigHeight //
-    //---------------//
-    /**
-     * Report the original picture height, as read from the image file, before
-     * any potential rotation.
-     *
-     * @return the original height value, in pixels
-     */
-    public int getOrigHeight ()
-    {
-        return originalDimension.height;
-    }
-
-    //--------------//
-    // getOrigWidth //
-    //--------------//
-    /**
-     * Report the original picture width, as read from the image file, before
-     * any potential rotation.
-     *
-     * @return the original width value, in pixels
-     */
-    public int getOrigWidth ()
-    {
-        return originalDimension.width;
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    /**
-     * Report the pixel element, as read at location (x, y) in the picture.
-     *
-     * @param x abscissa value
-     * @param y ordinate value
-     *
-     * @return the pixel value
-     */
-    @Implement(PixelSource.class)
-    public final int getPixel (int x,
-                               int y)
-    {
-        int[] pixel = null;
-        pixel = raster.getPixel(x, y, pixel); // This allocates pixel!
-
-        return grayFactor * pixel[0];
-
-        ///            return dataBuffer.getElem(x + (y * dimensionWidth));
-    }
-
     //--------------------//
     // getAsBufferedImage //
     //--------------------//
@@ -504,73 +374,6 @@ public class Picture
     public final BufferedImage getAsBufferedImage ()
     {
         return image.getAsBufferedImage();
-    }
-
-    //-------------------//
-    // setLevelSelection //
-    //-------------------//
-    /**
-     * Inject the selection object where pixel gray level must be written to,
-     * when triggered through the update method.
-     *
-     * @param levelSelection the output selection object
-     */
-    public void setLevelSelection (Selection levelSelection)
-    {
-        this.levelSelection = levelSelection;
-    }
-
-    //----------//
-    // setPixel //
-    //----------//
-    /**
-     * Write a pixel at the provided location, in the currently writable data
-     * buffer
-     *
-     * @param pt  pixel coordinates
-     * @param val pixel value
-     */
-    public final void setPixel (Point pt,
-                                int   val)
-    {
-        ///        dataBuffer.setElem(pt.x + (pt.y * dimensionWidth), val);
-        int[] pixel = new int[1];
-
-        if (grayFactor == 1) {
-            pixel[0] = val;
-        } else {
-            pixel[0] = (val + (grayFactor - FOREGROUND - 1)) / grayFactor;
-        }
-
-        raster.setPixel(pt.x, pt.y, pixel);
-    }
-
-    //-----------//
-    // isRotated //
-    //-----------//
-    /**
-     * Predicate to report whether the picture has been rotated.
-     *
-     * @return true if rotated
-     */
-    public boolean isRotated ()
-    {
-        return rotated;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the current width of the picture image. Note that it may have been
-     * modified by a rotation.
-     *
-     * @return the current width value, in pixels.
-     */
-    @Implement(PixelSource.class)
-    public int getWidth ()
-    {
-        return dimension.width;
     }
 
     //-------//
@@ -648,6 +451,107 @@ public class Picture
         System.out.println();
     }
 
+    //--------------//
+    // getDimension //
+    //--------------//
+    /**
+     * Report the dimension in pixels of the current image
+     *
+     * @return the image dimension
+     */
+    public Dimension getDimension ()
+    {
+        return new Dimension(dimension);
+    }
+
+    //-----------//
+    // getHeight //
+    //-----------//
+    /**
+     * Report the picture height in pixels.
+     *
+     * @return the height value
+     */
+    @Implement(PixelSource.class)
+    public int getHeight ()
+    {
+        return dimension.height;
+    }
+
+    //------------------//
+    // getMaxForeground //
+    //------------------//
+    @Implement(PixelSource.class)
+    public int getMaxForeground ()
+    {
+        return constants.maxForegroundGrayLevel.getValue();
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name for this Observer
+     *
+     * @return Observer name
+     */
+    @Implement(SelectionObserver.class)
+    public String getName ()
+    {
+        return "Picture";
+    }
+
+    //---------------//
+    // getOrigHeight //
+    //---------------//
+    /**
+     * Report the original picture height, as read from the image file, before
+     * any potential rotation.
+     *
+     * @return the original height value, in pixels
+     */
+    public int getOrigHeight ()
+    {
+        return originalDimension.height;
+    }
+
+    //--------------//
+    // getOrigWidth //
+    //--------------//
+    /**
+     * Report the original picture width, as read from the image file, before
+     * any potential rotation.
+     *
+     * @return the original width value, in pixels
+     */
+    public int getOrigWidth ()
+    {
+        return originalDimension.width;
+    }
+
+    //----------//
+    // getPixel //
+    //----------//
+    /**
+     * Report the pixel element, as read at location (x, y) in the picture.
+     *
+     * @param x abscissa value
+     * @param y ordinate value
+     *
+     * @return the pixel value
+     */
+    @Implement(PixelSource.class)
+    public final int getPixel (int x,
+                               int y)
+    {
+        int[] pixel = null;
+        pixel = raster.getPixel(x, y, pixel); // This allocates pixel!
+
+        return grayFactor * pixel[0];
+
+        ///            return dataBuffer.getElem(x + (y * dimensionWidth));
+    }
+
     //--------//
     // render //
     //--------//
@@ -718,6 +622,73 @@ public class Picture
         updateParams();
 
         logger.info("Image rotated " + getWidth() + " x " + getHeight());
+    }
+
+    //-------------------//
+    // setLevelSelection //
+    //-------------------//
+    /**
+     * Inject the selection object where pixel gray level must be written to,
+     * when triggered through the update method.
+     *
+     * @param levelSelection the output selection object
+     */
+    public void setLevelSelection (Selection levelSelection)
+    {
+        this.levelSelection = levelSelection;
+    }
+
+    //----------//
+    // setPixel //
+    //----------//
+    /**
+     * Write a pixel at the provided location, in the currently writable data
+     * buffer
+     *
+     * @param pt  pixel coordinates
+     * @param val pixel value
+     */
+    public final void setPixel (Point pt,
+                                int   val)
+    {
+        ///        dataBuffer.setElem(pt.x + (pt.y * dimensionWidth), val);
+        int[] pixel = new int[1];
+
+        if (grayFactor == 1) {
+            pixel[0] = val;
+        } else {
+            pixel[0] = (val + (grayFactor - getMaxForeground() - 1)) / grayFactor;
+        }
+
+        raster.setPixel(pt.x, pt.y, pixel);
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the current width of the picture image. Note that it may have been
+     * modified by a rotation.
+     *
+     * @return the current width value, in pixels.
+     */
+    @Implement(PixelSource.class)
+    public int getWidth ()
+    {
+        return dimension.width;
+    }
+
+    //-----------//
+    // isRotated //
+    //-----------//
+    /**
+     * Predicate to report whether the picture has been rotated.
+     *
+     * @return true if rotated
+     */
+    public boolean isRotated ()
+    {
+        return rotated;
     }
 
     //-------//
@@ -815,6 +786,35 @@ public class Picture
             null);
     }
 
+    //----------//
+    // loadFile //
+    //----------//
+    private static RenderedImage loadFile (File imgFile)
+        throws IOException
+    {
+        logger.info("Loading image from " + imgFile + " ...");
+
+        ImageInputStream stream = ImageIO.createImageInputStream(imgFile);
+
+        if (stream == null) {
+            throw new IOException("Cannot create image input stream");
+        }
+
+        Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+
+        if (readers.hasNext()) {
+            ImageReader reader = readers.next();
+            reader.addIIOReadProgressListener(new Listener());
+            reader.setInput(stream, true);
+
+            return (reader.read(0));
+        } else {
+            logger.info("ImageIO cannot read file, using JAI");
+
+            return (JAI.create("fileload", imgFile.getPath()));
+        }
+    }
+
     //------------------//
     // checkImageFormat //
     //------------------//
@@ -882,6 +882,24 @@ public class Picture
             null);
     }
 
+    //------------//
+    // checkImage //
+    //------------//
+    private void checkImage ()
+        throws ImageFormatException
+    {
+        // Check that the whole image has been loaded
+        if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
+            throw new RuntimeException("Unusable image for Picture");
+        } else {
+            // Check & cache all parameters
+            updateParams();
+
+            // Remember original dimension
+            originalDimension = getDimension();
+        }
+    }
+
     //----------//
     // setImage //
     //----------//
@@ -924,24 +942,6 @@ public class Picture
         }
 
         checkImage();
-    }
-
-    //------------//
-    // checkImage //
-    //------------//
-    private void checkImage ()
-        throws ImageFormatException
-    {
-        // Check that the whole image has been loaded
-        if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
-            throw new RuntimeException("Unusable image for Picture");
-        } else {
-            // Check & cache all parameters
-            updateParams();
-
-            // Remember original dimension
-            originalDimension = getDimension();
-        }
     }
 
     //--------------//
@@ -994,6 +994,18 @@ public class Picture
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        Constant.Integer maxForegroundGrayLevel = new Constant.Integer(
+            "ByteLevel",
+            200,
+            "Maximum gray level for a pixel to be considered as foreground (black)");
+    }
+
     //----------//
     // Listener //
     //----------//
@@ -1014,15 +1026,37 @@ public class Picture
             lastProgress = 0;
         }
 
+        public void imageComplete (ImageWriter imagewriter)
+        {
+            if (logger.isFineEnabled()) {
+                logger.info("Image writing complete");
+            }
+
+            lastProgress = 0;
+        }
+
         public void imageProgress (ImageReader source,
                                    float       percentageDone)
         {
-        	if ((percentageDone - lastProgress) > 10) {
-        		lastProgress = percentageDone;
-        		if (logger.isFineEnabled()) {
+            if ((percentageDone - lastProgress) > 10) {
+                lastProgress = percentageDone;
+
+                if (logger.isFineEnabled()) {
                     logger.fine("Image loaded " + percentageDone + "%");
                 }
-        		logger.info(LogStepMonitorHandler.FORCE);
+
+                logger.info(LogStepMonitorHandler.FORCE);
+            }
+        }
+
+        public void imageProgress (ImageWriter imagewriter,
+                                   float       percentageDone)
+        {
+            if (logger.isFineEnabled()) {
+                if ((percentageDone - lastProgress) > 10) {
+                    lastProgress = percentageDone;
+                    logger.info("Image written " + percentageDone + "%");
+                }
             }
         }
 
@@ -1032,7 +1066,16 @@ public class Picture
             if (logger.isFineEnabled()) {
                 logger.fine("Image loading started");
             }
+
             logger.info(LogStepMonitorHandler.FORCE);
+        }
+
+        public void imageStarted (ImageWriter imagewriter,
+                                  int         i)
+        {
+            if (logger.isFineEnabled()) {
+                logger.info("Image writing started");
+            }
         }
 
         public void readAborted (ImageReader source)
@@ -1053,51 +1096,23 @@ public class Picture
         {
         }
 
+        public void thumbnailComplete (ImageWriter imagewriter)
+        {
+        }
+
         public void thumbnailProgress (ImageReader source,
                                        float       percentageDone)
+        {
+        }
+
+        public void thumbnailProgress (ImageWriter imagewriter,
+                                       float       f)
         {
         }
 
         public void thumbnailStarted (ImageReader source,
                                       int         imageIndex,
                                       int         thumbnailIndex)
-        {
-        }
-
-        public void imageComplete (ImageWriter imagewriter)
-        {
-            if (logger.isFineEnabled()) {
-                logger.info("Image writing complete");
-            }
-
-            lastProgress = 0;
-        }
-
-        public void imageProgress (ImageWriter imagewriter,
-                                   float       percentageDone)
-        {
-            if (logger.isFineEnabled()) {
-                if ((percentageDone - lastProgress) > 10) {
-                    lastProgress = percentageDone;
-                    logger.info("Image written " + percentageDone + "%");
-                }
-            }
-        }
-
-        public void imageStarted (ImageWriter imagewriter,
-                                  int         i)
-        {
-            if (logger.isFineEnabled()) {
-                logger.info("Image writing started");
-            }
-        }
-
-        public void thumbnailComplete (ImageWriter imagewriter)
-        {
-        }
-
-        public void thumbnailProgress (ImageWriter imagewriter,
-                                       float       f)
         {
         }
 
