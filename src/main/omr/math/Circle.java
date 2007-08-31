@@ -251,7 +251,10 @@ public class Circle
             angles.add(angle);
 
             int idx = (int) (angle / bucketSize);
-            buckets[idx] += 1;
+
+            if ((idx >= 0) && (idx < BUCKET_NB)) { 
+                buckets[idx] += 1;
+            }
         }
 
         // Find an empty bucket
