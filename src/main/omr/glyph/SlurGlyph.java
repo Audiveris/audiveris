@@ -451,9 +451,17 @@ public class SlurGlyph
             }
 
             if (glyph.getShape() == Shape.SLUR) {
-                Circle circle = SlurGlyph.computeCircle(glyph);
+                try {
+                    Circle circle = SlurGlyph.computeCircle(glyph);
 
-                return !circle.isValid(SlurGlyph.getMaxCircleDistance());
+                    return !circle.isValid(SlurGlyph.getMaxCircleDistance());
+                } catch (Exception ex) {
+                    logger.warning(
+                        "Cannot compute circle for slur #" + glyph.getId(),
+                        ex);
+
+                    return true; // Yeah, it is a candidate !!!
+                }
             }
 
             return (!glyph.isManualShape() &&
