@@ -577,7 +577,12 @@ public class KeySignature
                             logger.fine(
                                 ks.getContextString() +
                                 " Forcing key signature to " + keysig.getKey());
-                            ks.copyKey(keysig);
+
+                            try {
+                                ks.copyKey(keysig);
+                            } catch (Exception ex) {
+                                logger.warning("Cannot copy key", ex);
+                            }
 
                             // TBD deassign glyphs that do not contribute to the key ?
                         }
