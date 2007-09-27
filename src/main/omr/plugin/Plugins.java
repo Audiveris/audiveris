@@ -10,17 +10,18 @@ package omr.plugin;
 
 import omr.util.Logger;
 
-import java.io.File;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.swing.Action;
 
 /**
- * Class <code>Plugins</code> handles loading, sorting, and instantiating
- * Audiveris plugins.
+ * Class <code>Plugins</code> handles the loading and sorting of a stream of 
+ * plugin classes.
  *
  * @author Brenton Partridge
+ * @author Herv&eacute Bitteur
  * @version $Id$
  */
 public class Plugins
@@ -34,21 +35,7 @@ public class Plugins
     private static final ClassLoader classLoader = Plugins.class.getClassLoader();
 
     /** Set of plugin classes */
-    private static final Set<Class<?extends Action>> classes = new LinkedHashSet<Class<?extends Action>>();
-
-    /** Instantiated plugins */
-    private static final Collection<Action> actions = new LinkedHashSet<Action>();
-
-    static {
-        /** Pre-load all plugin classes, as specified in the user config file */
-        try {
-            loadClassesFromScanner(
-                new Scanner(
-                    new File(omr.Main.getConfigFolder(), "omr.plugins")));
-        } catch (Exception e) {
-            logger.warning("Unable to load plugins from config folder", e);
-        }
-    }
+    private static final Set<Class<?extends Action>> actions = new LinkedHashSet<Class<?extends Action>>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -68,45 +55,18 @@ public class Plugins
     // getActions //
     //------------//
     /**
-     * Report the whole collection of plugin actions instances, with no
-     * filtering
-     *
-     * @return all the action instances
-     */
-    public static synchronized Collection<Action> getActions ()
-    {
-        if (actions.size() != classes.size()) {
-            actions.clear();
-
-            for (Class<?extends Action> clazz : classes) {
-                try {
-                    actions.add(clazz.newInstance());
-                } catch (Exception e) {
-                    logger.warning(clazz + " not instantiable", e);
-                }
-            }
-        }
-
-        return actions;
-    }
-
-    //------------//
-    // getActions //
-    //------------//
-    /**
-     * Report only the plugin action instances that are annotated with the
+     * Report only the plugin action classes that are annotated with the
      * provided plugin type
      *
      * @param type the desired plugin type
-     * @return all actions instances for the provided type
+     * @return all actions classes for the provided type
      */
-    public static Collection<Action> getActions (PluginType type)
+    public static Collection<Class<?extends Action>> getActions (PluginType type)
     {
-        Collection<Action> typed = new LinkedHashSet<Action>();
+        Collection<Class<?extends Action>> typed = new LinkedHashSet<Class<?extends Action>>();
 
-        for (Action plugin : getActions()) {
-            Annotation ann = plugin.getClass()
-                                   .getAnnotation(Plugin.class);
+        for (Class<?extends Action> plugin : actions) {
+            Annotation ann = plugin.getAnnotation(Plugin.class);
 
             if ((ann != null) && ((Plugin) ann).type()
                                   .equals(type)) {
@@ -117,12 +77,41 @@ public class Plugins
         return typed;
     }
 
+    //-------------//
+    // loadClasses //
+    //-------------//
+    /**
+     * Load all classes whose names are listed in the provided input stream
+     *
+     * @param is the provided input stream
+     */
+    public static void loadClasses (InputStream is)
+    {
+        Scanner scanner = new Scanner(is);
+
+        // Skip comments (pattern TBI, since it delivers some empty tokens)
+        scanner.useDelimiter("\\s+|#.*");
+
+        while (scanner.hasNext()) {
+            String token = scanner.next();
+
+            if (token.length() > 0) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("token='" + token + "'");
+                }
+
+                loadClass(token);
+            }
+        }
+    }
+
     //-----------//
     // loadClass //
     //-----------//
     /**
-     * Add an instance of the desired class name to the 'classes' collection,
-     * provided that the class in properly annotated as a plugin
+     * Add the class of the desired name to the 'classes' collection, provided
+     * that the class implements the Action interface and is properly annotated
+     * as a plugin.
      *
      * @param clazzName the name of the desired class
      */
@@ -135,7 +124,7 @@ public class Plugins
 
             if (Action.class.isAssignableFrom(clazz)) {
                 if (clazz.isAnnotationPresent(Plugin.class)) {
-                    classes.add(clazz);
+                    actions.add(clazz);
 
                     if (logger.isFineEnabled()) {
                         logger.fine("Loaded plugin " + clazzName);
@@ -147,24 +136,7 @@ public class Plugins
                 logger.warning(clazzName + " not subclass of Action");
             }
         } catch (Exception e) {
-            logger.warning("Plugin " + clazzName + " not found", e);
-        }
-    }
-
-    //------------------------//
-    // loadClassesFromScanner //
-    //------------------------//
-    /**
-     * Load all classes as listed by the provided scanner tokens
-     *
-     * @param scanner a scanner that wraps the file that lists the various class
-     * names
-     */
-    private static void loadClassesFromScanner (Scanner scanner)
-    {
-        while (scanner.hasNext()) {
-            String clazzName = scanner.next();
-            loadClass(clazzName);
+            logger.warning("Plugin '" + clazzName + "' not found", e);
         }
     }
 }

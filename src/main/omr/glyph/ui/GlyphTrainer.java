@@ -14,9 +14,14 @@ import omr.constant.ConstantManager;
 import omr.glyph.GlyphNetwork;
 import static omr.glyph.Shape.*;
 
+import omr.plugin.Plugin;
+import omr.plugin.PluginType;
+
+import omr.ui.icon.IconManager;
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
@@ -225,6 +230,24 @@ public class GlyphTrainer
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //---------------//
+    // TrainerAction //
+    //---------------//
+    /**
+     * Class <code>TrainerAction</code> launches the window dedicated to the
+     * training of the neural network
+     */
+    @Plugin(type = PluginType.TRAINING)
+    public static class TrainerAction
+        extends AbstractAction
+    {
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            GlyphTrainer.launch();
+        }
+    }
+
     //------//
     // Task //
     //------//
@@ -243,13 +266,26 @@ public class GlyphTrainer
             /** No ongoing activity */
             INACTIVE,
             /** Selecting glyph to build a population for training */
-            SELECTING, 
+            SELECTING,
             /** Using the population to train the evaluator */
             TRAINING;
         }
 
         /** Current activity */
         private Activity activity = Activity.INACTIVE;
+
+        //-------------//
+        // getActivity //
+        //-------------//
+        /**
+         * Report the current training activity
+         *
+         * @return current activity
+         */
+        public Activity getActivity ()
+        {
+            return activity;
+        }
 
         //-------------//
         // setActivity //
@@ -264,19 +300,6 @@ public class GlyphTrainer
             this.activity = activity;
             setChanged();
             notifyObservers();
-        }
-
-        //-------------//
-        // getActivity //
-        //-------------//
-        /**
-         * Report the current training activity
-         *
-         * @return current activity
-         */
-        public Activity getActivity ()
-        {
-            return activity;
         }
     }
 }

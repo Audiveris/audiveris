@@ -21,6 +21,9 @@ import omr.math.Circle;
 import omr.math.Line;
 import omr.math.Line.UndefinedLineException;
 
+import omr.plugin.Plugin;
+import omr.plugin.PluginType;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
@@ -122,32 +125,6 @@ public class GlyphLagView
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // getGlyphById //
-    //--------------//
-    /**
-     * Give access to a glyph, knowing its id.
-     *
-     * @param id the glyph id
-     *
-     * @return the corresponding glyph, or null if none
-     */
-    public Glyph getGlyphById (int id)
-    {
-        // Look up in specific glyphs first
-        for (Glyph glyph : specificGlyphs) {
-            if (glyph.getId() == id) {
-                return glyph;
-            }
-        }
-
-        if (model != null) {
-            return model.getGlyphById(id);
-        } else {
-            return null;
-        }
-    }
-
     //-------------------//
     // colorizeAllGlyphs //
     //-------------------//
@@ -207,46 +184,46 @@ public class GlyphLagView
         }
     }
 
+    //--------------//
+    // getGlyphById //
+    //--------------//
+    /**
+     * Give access to a glyph, knowing its id.
+     *
+     * @param id the glyph id
+     *
+     * @return the corresponding glyph, or null if none
+     */
+    public Glyph getGlyphById (int id)
+    {
+        // Look up in specific glyphs first
+        for (Glyph glyph : specificGlyphs) {
+            if (glyph.getId() == id) {
+                return glyph;
+            }
+        }
+
+        if (model != null) {
+            return model.getGlyphById(id);
+        } else {
+            return null;
+        }
+    }
+
     //-----------------//
     // insertMenuItems //
     //-----------------//
     public static void insertMenuItems (JMenu menu)
     {
         final JCheckBoxMenuItem lineItem = new JCheckBoxMenuItem(
-            new LineAction());
+            new StickLineAction());
         lineItem.setSelected(constants.linePainting.getValue());
         menu.add(lineItem);
 
         final JCheckBoxMenuItem circleItem = new JCheckBoxMenuItem(
-            new CircleAction());
+            new SlurCircleAction());
         circleItem.setSelected(constants.circlePainting.getValue());
         menu.add(circleItem);
-    }
-
-    //-------------------//
-    // setGlyphSelection //
-    //-------------------//
-    /**
-     * Inject dependency on where we should write glyph information.
-     *
-     * @param glyphSelection the Glyph selection
-     */
-    public void setGlyphSelection (Selection glyphSelection)
-    {
-        this.glyphSelection = glyphSelection;
-    }
-
-    //----------------------//
-    // setGlyphSetSelection //
-    //----------------------//
-    /**
-     * Inject dependency on where we should write glyph set information.
-     *
-     * @param glyphSetSelection the Glyph Set selection
-     */
-    public void setGlyphSetSelection (Selection glyphSetSelection)
-    {
-        this.glyphSetSelection = glyphSetSelection;
     }
 
     //--------------//
@@ -273,6 +250,32 @@ public class GlyphLagView
         }
 
         return found;
+    }
+
+    //-------------------//
+    // setGlyphSelection //
+    //-------------------//
+    /**
+     * Inject dependency on where we should write glyph information.
+     *
+     * @param glyphSelection the Glyph selection
+     */
+    public void setGlyphSelection (Selection glyphSelection)
+    {
+        this.glyphSelection = glyphSelection;
+    }
+
+    //----------------------//
+    // setGlyphSetSelection //
+    //----------------------//
+    /**
+     * Inject dependency on where we should write glyph set information.
+     *
+     * @param glyphSetSelection the Glyph Set selection
+     */
+    public void setGlyphSetSelection (Selection glyphSetSelection)
+    {
+        this.glyphSetSelection = glyphSetSelection;
     }
 
     //--------//
@@ -510,18 +513,21 @@ public class GlyphLagView
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //--------------//
-    // CircleAction //
-    //--------------//
-    private static class CircleAction
+    //------------------//
+    // SlurCircleAction //
+    //------------------//
+    /**
+     * Class <code>SlurCircleAction</code> toggles the display of approximating
+     * circles in selected slur-shaped glyphs
+     *
+     */
+    @Plugin(type = PluginType.GLYPH_VIEW, item = JCheckBoxMenuItem.class)
+    public static class SlurCircleAction
         extends AbstractAction
     {
-        public CircleAction ()
+        public SlurCircleAction ()
         {
-            super("Show slur Circles");
-            putValue(
-                SHORT_DESCRIPTION,
-                "Show the circle of every selected slur");
+            putValue(SELECTED_KEY, constants.circlePainting.getValue());
         }
 
         @Implement(ActionListener.class)
@@ -529,6 +535,31 @@ public class GlyphLagView
         {
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
             constants.circlePainting.setValue(item.isSelected());
+        }
+    }
+
+    //-----------------//
+    // StickLineAction //
+    //-----------------//
+    /**
+     * Class <code>StickLineAction</code> toggles the display of mean line in
+     * selected sticks
+     *
+     */
+    @Plugin(type = PluginType.GLYPH_VIEW, item = JCheckBoxMenuItem.class)
+    public static class StickLineAction
+        extends AbstractAction
+    {
+        public StickLineAction ()
+        {
+            putValue(SELECTED_KEY, constants.linePainting.getValue());
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            constants.linePainting.setValue(item.isSelected());
         }
     }
 
@@ -553,27 +584,5 @@ public class GlyphLagView
             "Pixels",
             10,
             "Extension of line beyond the stick");
-    }
-
-    //------------//
-    // LineAction //
-    //------------//
-    private static class LineAction
-        extends AbstractAction
-    {
-        public LineAction ()
-        {
-            super("Show stick Lines");
-            putValue(
-                SHORT_DESCRIPTION,
-                "Show the line of every selected stick");
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.linePainting.setValue(item.isSelected());
-        }
     }
 }

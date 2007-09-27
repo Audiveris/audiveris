@@ -8,25 +8,123 @@
 //----------------------------------------------------------------------------//
 package omr.plugin;
 
+import java.util.*;
 
 /**
  * Used in the Plugin annotation to designate in which section of the GUI the
  * plugin should be shown.
  *
  * @author Brenton Partridge
+ * @author Herv&eacute Bitteur
  * @version $Id$
  */
 public enum PluginType {
     /** No specific section ??? */
     DEFAULT,
-    /** Score input */
-    SCORE_IMPORT, 
-    /** Score modification */
-    SCORE_EDIT, 
-    /** Score output */
-    SCORE_EXPORT, 
-    /** Sheet input */
-    SHEET_IMPORT, 
-    /** Sheet output */
-    SHEET_EXPORT;
+    // Score
+    SCORE_IMPORT, SCORE_EDIT, SCORE_EXPORT,
+
+    // Sheet
+    SHEET_IMPORT,SHEET_EDIT, SHEET_EXPORT,
+
+    // Script
+    SCRIPT,
+    // Final
+    GENERAL_END, 
+    // View
+    SCORE_VIEW, GLYPH_VIEW, LINE_VIEW,
+    LOG_VIEW,
+
+    // Tools
+    TRAINING,TOOL, TEST,
+
+    // Help
+    HELP;
+    //
+    //--------------------------------------------------------------------------
+    /** Range of types */
+    public static class Range
+    {
+        // Name of this range
+        private final String              name;
+
+        // Contained types
+        private final EnumSet<PluginType> types;
+
+        //-------//
+        // Range //
+        //-------//
+        /**
+         * Create a Range from an EnumSet of types
+         *
+         * @param types the contained types
+         */
+        public Range (String              name,
+                      EnumSet<PluginType> types)
+        {
+            this.name = name;
+            this.types = types;
+            rangeSet.add(this);
+        }
+
+        //----------//
+        // getTypes //
+        //----------//
+        /**
+         * Exports the set of types in the range
+         *
+         * @return the proper enum set
+         */
+        public EnumSet<PluginType> getTypes ()
+        {
+            return types;
+        }
+
+        //---------//
+        // getName //
+        //---------//
+        public String getName ()
+        {
+            return name;
+        }
+    }
+
+    // Set for all defined ranges
+    private static final Set<Range> rangeSet = new LinkedHashSet<Range>();
+
+    // Sheet
+    public static final Range SheetTypes = new Range(
+        "File",
+        EnumSet.of(SHEET_IMPORT, SCRIPT, SHEET_EDIT, SHEET_EXPORT, GENERAL_END));
+
+    // Step
+    public static final Range StepTypes = new Range(
+        "Step",
+        EnumSet.noneOf(PluginType.class));
+
+    // Score
+    public static final Range ScoreTypes = new Range(
+        "Score",
+        EnumSet.range(SCORE_IMPORT, SCORE_EXPORT));
+
+    // Views
+    public static final Range ViewTypes = new Range(
+        "Views",
+        EnumSet.range(SCORE_VIEW, LOG_VIEW));
+
+    // Tools
+    public static final Range ToolTypes = new Range(
+        "Tools",
+        EnumSet.range(TRAINING, TEST));
+
+    // Help
+    public static final Range HelpTypes = new Range("Help", EnumSet.of(HELP));
+
+    //-----------//
+    // getRanges //
+    //-----------//
+    public static Collection<Range> getRanges ()
+    {
+        return rangeSet;
+    }
 }

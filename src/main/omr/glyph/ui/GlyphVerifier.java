@@ -10,6 +10,9 @@
 package omr.glyph.ui;
 
 import omr.Main;
+
+import omr.plugin.Plugin;
+import omr.plugin.PluginType;
 import static omr.selection.SelectionHint.*;
 
 import omr.ui.util.UILookAndFeel;
@@ -127,19 +130,6 @@ public class GlyphVerifier
         return INSTANCE;
     }
 
-    //------------//
-    // setVisible //
-    //------------//
-    /**
-     * Make the UI frame visible or not
-     *
-     * @param bool true for visible, false for hidden
-     */
-    public void setVisible (boolean bool)
-    {
-        frame.setVisible(bool);
-    }
-
     //----------------//
     // dumpSelections //
     //----------------//
@@ -164,6 +154,19 @@ public class GlyphVerifier
         UILookAndFeel.setUI(null);
 
         new GlyphVerifier();
+    }
+
+    //------------//
+    // setVisible //
+    //------------//
+    /**
+     * Make the UI frame visible or not
+     *
+     * @param bool true for visible, false for hidden
+     */
+    public void setVisible (boolean bool)
+    {
+        frame.setVisible(bool);
     }
 
     //--------//
@@ -207,14 +210,6 @@ public class GlyphVerifier
         glyphBrowser.loadGlyphNames();
     }
 
-    //---------------//
-    // getGlyphNames //
-    //---------------//
-    String[] getGlyphNames ()
-    {
-        return glyphSelector.list.getSelectedItems();
-    }
-
     //-----------------//
     // deleteGlyphName //
     //-----------------//
@@ -222,6 +217,14 @@ public class GlyphVerifier
     {
         // Remove entry from list
         glyphSelector.list.remove(gName);
+    }
+
+    //---------------//
+    // getGlyphNames //
+    //---------------//
+    String[] getGlyphNames ()
+    {
+        return glyphSelector.list.getSelectedItems();
     }
 
     //--------------//
@@ -280,6 +283,26 @@ public class GlyphVerifier
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //----------------//
+    // MaterialAction //
+    //----------------//
+    /**
+     * Class <code>MaterialAction</code> opens a windows dedicated to the
+     * management of collections of glyphs used as training material for the
+     * neural network
+     */
+    @Plugin(type = PluginType.TRAINING)
+    public static class MaterialAction
+        extends AbstractAction
+    {
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            GlyphVerifier.getInstance()
+                         .setVisible(true);
+        }
+    }
 
     //----------//
     // Selector //

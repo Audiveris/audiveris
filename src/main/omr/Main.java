@@ -12,6 +12,8 @@ package omr;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.plugin.Plugins;
+
 import omr.score.visitor.ScoreExporter;
 
 import omr.script.Script;
@@ -20,6 +22,7 @@ import omr.script.ScriptManager;
 import omr.step.Step;
 
 import omr.ui.MainGui;
+import omr.ui.OmrUIDefaults;
 import omr.ui.util.UILookAndFeel;
 
 import omr.util.Clock;
@@ -338,63 +341,6 @@ public class Main
         return homeFolder;
     }
 
-    //----------//
-    // getTasks //
-    //----------//
-    private Collection getTasks ()
-    {
-        List<Callable> callables = new ArrayList<Callable>();
-
-        // Browse desired sheets in parallel
-        for (String name : sheetNames) {
-            final File file = new File(name);
-
-            // Perform desired step on each sheet in parallel
-            callables.add(
-                Executors.callable(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                targetStep.performSerial(null, file);
-                            }
-                        }));
-        }
-
-        // Browse desired scripts in parallel
-        for (String name : scriptNames) {
-            // Run each script in parallel
-            final String scriptName = name;
-            callables.add(
-                Executors.callable(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                long start = System.currentTimeMillis();
-                                File file = new File(scriptName);
-                                logger.info(
-                                    "Loading script file " + file + " ...");
-
-                                try {
-                                    final Script script = ScriptManager.getInstance()
-                                                                       .load(
-                                        new FileInputStream(file));
-                                    script.run();
-
-                                    long stop = System.currentTimeMillis();
-                                    logger.info(
-                                        "Script file " + file + " run in " +
-                                        (stop - start) + " ms");
-                                } catch (FileNotFoundException ex) {
-                                    logger.warning(
-                                        "Cannot find script file " + file);
-                                }
-                            }
-                        }));
-        }
-
-        return callables;
-    }
-
     //--------//
     // addRef //
     //--------//
@@ -450,6 +396,63 @@ public class Main
 
             logger.info("Cannot set locale country to " + country);
         }
+    }
+
+    //----------//
+    // getTasks //
+    //----------//
+    private Collection getTasks ()
+    {
+        List<Callable> callables = new ArrayList<Callable>();
+
+        // Browse desired sheets in parallel
+        for (String name : sheetNames) {
+            final File file = new File(name);
+
+            // Perform desired step on each sheet in parallel
+            callables.add(
+                Executors.callable(
+                    new Runnable() {
+                            public void run ()
+                            {
+                                targetStep.performSerial(null, file);
+                            }
+                        }));
+        }
+
+        // Browse desired scripts in parallel
+        for (String name : scriptNames) {
+            // Run each script in parallel
+            final String scriptName = name;
+            callables.add(
+                Executors.callable(
+                    new Runnable() {
+                            public void run ()
+                            {
+                                long start = System.currentTimeMillis();
+                                File file = new File(scriptName);
+                                logger.info(
+                                    "Loading script file " + file + " ...");
+
+                                try {
+                                    final Script script = ScriptManager.getInstance()
+                                                                       .load(
+                                        new FileInputStream(file));
+                                    script.run();
+
+                                    long stop = System.currentTimeMillis();
+                                    logger.info(
+                                        "Script file " + file + " run in " +
+                                        (stop - start) + " ms");
+                                } catch (FileNotFoundException ex) {
+                                    logger.warning(
+                                        "Cannot find script file " + file);
+                                }
+                            }
+                        }));
+        }
+
+        return callables;
     }
 
     //----------------//
@@ -589,6 +592,25 @@ public class Main
 
             // Make sure we have nice window decorations.
             JFrame.setDefaultLookAndFeelDecorated(true);
+
+            // Application UI defaults
+            OmrUIDefaults.getInstance()
+                         .addResourceBundle("config/ui");
+
+            // Load classes first for system plugins, then for user plugins
+            for (String name : new String[] { "system.plugins", "user.plugins" }) {
+                File file = new File(getConfigFolder(), name);
+
+                if (file.exists()) {
+                    try {
+                        Plugins.loadClasses(new FileInputStream(file));
+                    } catch (Exception ex) {
+                        logger.warning("Cannot load plugins from " + file, ex);
+                    }
+                } else if (logger.isFineEnabled()) {
+                    logger.fine("No " + file);
+                }
+            }
 
             // Launch the GUI
             gui = new MainGui();

@@ -10,28 +10,15 @@
 package omr.score;
 
 import omr.plugin.PluginType;
-import omr.plugin.Plugins;
-
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionObserver;
-import omr.selection.SelectionTag;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
-import omr.step.Step;
-
-import omr.ui.EntityAction;
-import omr.ui.icon.IconManager;
-import omr.ui.util.SeparableMenu;
-import omr.ui.util.SwingWorker;
+import omr.ui.ActionManager;
 import static omr.ui.util.UIUtilities.*;
 
-import omr.util.Implement;
 import omr.util.Logger;
 
-import java.awt.Toolkit;
 import java.awt.event.*;
 import java.util.*;
 
@@ -46,7 +33,6 @@ import javax.swing.*;
  * @version $Id$
  */
 public class ScoreController
-    implements SelectionObserver
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -57,16 +43,7 @@ public class ScoreController
     //~ Instance fields --------------------------------------------------------
 
     /** Menu for score actions */
-    private final JMenu scoreMenu = new SeparableMenu("Score");
-
-    /** Toolbar needed to add buttons in it */
-    private final JToolBar toolBar;
-
-    /** Collection of score-dependent actions, that are enabled only if there is
-       a current score. */
-
-    /////protected final List<Object> scoreDependentActions = new ArrayList<Object>();
-    private final Collection<Action> scoreDependentActions = new ArrayList<Action>();
+    private final JMenu scoreMenu;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -74,55 +51,16 @@ public class ScoreController
     // ScoreController //
     //-----------------//
     /**
-     * Create the Controller artifacts.
-     *
-     * @param toolBar the (global) tool bar to use
+     * Create the Controller instance
      */
-    public ScoreController (JToolBar toolBar)
+    public ScoreController ()
     {
-        this.toolBar = toolBar;
-        scoreMenu.setToolTipText("Select action for current score");
+        scoreMenu = ActionManager.getInstance()
+                                 .getMenu(PluginType.ScoreTypes.getName());
 
-        // Import actions
-        for (Action plugin : Plugins.getActions(PluginType.SCORE_IMPORT)) {
-            new ScoreAction(plugin);
+        if (scoreMenu == null) {
+            logger.severe("scoreMenu not allocated");
         }
-
-        scoreMenu.addSeparator();
-        toolBar.addSeparator();
-
-        // Edit actions
-        for (Action plugin : Plugins.getActions(PluginType.SCORE_EDIT)) {
-            new ScoreAction(plugin);
-        }
-
-        scoreMenu.addSeparator();
-        toolBar.addSeparator();
-
-        // Rebuild Action
-        new RebuildAction();
-        scoreMenu.addSeparator();
-
-        // Display Actions
-        new BrowseAction();
-        new DumpAction();
-        scoreMenu.addSeparator();
-        toolBar.addSeparator();
-
-        // Store Actions
-        new StoreAction();
-
-        // Export actions
-        for (Action plugin : Plugins.getActions(PluginType.SCORE_EXPORT)) {
-            new ScoreAction(plugin);
-        }
-
-        // Initially disabled actions
-        enableActions(scoreDependentActions, false);
-
-        // Stay informed on sheet selection
-        SheetManager.getSelection()
-                    .addObserver(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -131,10 +69,9 @@ public class ScoreController
     // getCurrentScore //
     //-----------------//
     /**
-     * Report the current selected Score (the score related to the currently
-     * selected sheet)
+     * Convenient method to get the current score instance
      *
-     * @return the current score, or null if none selected
+     * @return the current score instance, or null
      */
     public static Score getCurrentScore ()
     {
@@ -145,29 +82,6 @@ public class ScoreController
         }
 
         return null;
-    }
-
-    //---------//
-    // getMenu //
-    //---------//
-    /**
-     * This method is meant for access by MainGui (in the same package), to report
-     * the menu dedicated to score handling.
-     *
-     * @return the score menu
-     */
-    public JMenu getMenu ()
-    {
-        return scoreMenu;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    @Implement(SelectionObserver.class)
-    public String getName ()
-    {
-        return "ScoreController";
     }
 
     //------------//
@@ -193,6 +107,8 @@ public class ScoreController
      */
     public void setScoreView (Score score)
     {
+        Sheet sheet = null;
+
         if (score != null) {
             // Make sure we have a proper score view
             ScoreView view = score.getView();
@@ -206,220 +122,11 @@ public class ScoreController
             }
 
             // Make sure the view is part of the related sheet assembly
-            Sheet sheet = score.getSheet();
+            sheet = score.getSheet();
             sheet.getAssembly()
                  .setScoreView(view);
         }
 
-        enableActions(scoreDependentActions, score != null);
-    }
-
-    //--------//
-    // update //
-    //--------//
-    @Implement(SelectionObserver.class)
-    public void update (Selection     selection,
-                        SelectionHint hint)
-    {
-        if (selection.getTag() == SelectionTag.SHEET) {
-            Sheet sheet = (Sheet) selection.getEntity();
-            enableActions(
-                scoreDependentActions,
-                (sheet != null) && (sheet.getScore() != null));
-        }
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //--------------//
-    // BrowseAction //
-    //--------------//
-    /**
-     * Class <code>BrowseAction</code> launches the tree display of the current
-     * score.
-     */
-    private class BrowseAction
-        extends ScoreAction
-    {
-        public BrowseAction ()
-        {
-            super(
-                false,
-                "Browse Score",
-                "Browse through the score document",
-                IconManager.getInstance().loadImageIcon("general/Search"));
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            getCurrentScore()
-                .viewScore();
-        }
-    }
-
-    //------------//
-    // DumpAction //
-    //------------//
-    private class DumpAction
-        extends ScoreAction
-    {
-        public DumpAction ()
-        {
-            super(
-                false,
-                "Dump Score",
-                "Dump the current score",
-                IconManager.getInstance().loadImageIcon("general/PrintPreview"));
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            getCurrentScore()
-                .dump();
-        }
-    }
-
-    //---------------//
-    // RebuildAction //
-    //---------------//
-    /**
-     * Class <code>RebuildAction</code> re-translates all sheet glyphs to
-     * score entities.
-     */
-    private class RebuildAction
-        extends ScoreAction
-    {
-        public RebuildAction ()
-        {
-            super(
-                false,
-                "Refresh Score",
-                "Refresh the whole score view from sheet glyphs",
-                IconManager.getInstance().loadImageIcon("general/Refresh"));
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            final SwingWorker worker = new SwingWorker() {
-                public Object construct ()
-                {
-                    try {
-                        SheetManager.getSelectedSheet()
-                                    .getSheetSteps()
-                                    .doit(Step.SCORE);
-                    } catch (Exception ex) {
-                        logger.warning("Could not refresh score", ex);
-                    }
-
-                    return null;
-                }
-            };
-
-            worker.start();
-        }
-    }
-
-    //-------------//
-    // ScoreAction //
-    //-------------//
-    /**
-     * Class <code>ScoreAction</code> is a template for any score-related
-     * action: it builds the action, registers it in the list of score-dependent
-     * actions if needed, inserts the action in the score menu, and inserts a
-     * button in the toolbar if an icon is provided.
-     */
-    private class ScoreAction
-        extends EntityAction
-    {
-        /** Delegation to an existing action, if any */
-        private Action delegate;
-
-        /**
-         * Creates a score action, and registers the action in the score menu as
-         * well as in the toolbar (if a non-null icon is provided)
-         *
-         * @param enabled false if initially disabled, which flags an action
-         *                that needs a current score
-         * @param label label for the menu item
-         * @param tip tooltip text
-         * @param key accelerator key, or null
-         * @param icon icon for menu and toolbar, or null
-         */
-        public ScoreAction (boolean enabled,
-                            String  label,
-                            String  tip,
-                            String  key,
-                            Icon    icon)
-        {
-            super(
-                enabled ? null : scoreDependentActions,
-                scoreMenu,
-                (icon != null) ? toolBar : null,
-                label,
-                tip,
-                key,
-                icon);
-        }
-
-        public ScoreAction (Action delegate)
-        {
-            super(
-                delegate.isEnabled() ? null : scoreDependentActions,
-                scoreMenu,
-                toolBar,
-                delegate);
-        }
-
-        public ScoreAction (boolean enabled,
-                            String  label,
-                            String  tip,
-                            Icon    icon)
-        {
-            this(enabled, label, tip, null, icon);
-        }
-    }
-
-    //-------------//
-    // StoreAction //
-    //-------------//
-    /**
-     * Class <code>StoreAction</code> handles the saving of the currently
-     * selected score, using a binary or xml format.
-     */
-    private class StoreAction
-        extends ScoreAction
-    {
-        public StoreAction ()
-        {
-            super(
-                false,
-                "Store in XML",
-                "Store current score in MusicXML",
-                IconManager.getInstance().loadImageIcon("general/Export"));
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            final SwingWorker worker = new SwingWorker() {
-                public Object construct ()
-                {
-                    Score score = getCurrentScore();
-
-                    try {
-                        score.export();
-                    } catch (Exception ex) {
-                        logger.warning("Could not store " + score, ex);
-                    }
-
-                    return null;
-                }
-            };
-
-            worker.start();
-        }
+        SheetManager.setSelectedSheet(sheet);
     }
 }
