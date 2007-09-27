@@ -13,20 +13,12 @@ import omr.Main;
 
 import omr.constant.*;
 
-import omr.glyph.ui.GlyphLagView;
-import omr.glyph.ui.GlyphTrainer;
-import omr.glyph.ui.GlyphVerifier;
-import omr.glyph.ui.ShapeColorChooser;
-
 import omr.score.ScoreController;
-import omr.score.visitor.ScorePainter;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
 
-import omr.sheet.HorizontalsBuilder;
-import omr.sheet.LinesBuilder;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
@@ -34,18 +26,18 @@ import omr.step.Step;
 import omr.step.StepMenu;
 
 import omr.ui.icon.IconManager;
-import omr.ui.treetable.JTreeTable;
 import omr.ui.util.MemoryMeter;
 import omr.ui.util.Panel;
 import omr.ui.util.SeparableMenu;
+import omr.ui.util.UIUtilities;
 import static omr.ui.util.UIUtilities.*;
 
 import omr.util.Implement;
 import omr.util.Logger;
-import omr.util.Memory;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.lang.reflect.Constructor;
 
 import javax.swing.*;
@@ -73,40 +65,30 @@ public class MainGui
 
     //~ Instance fields --------------------------------------------------------
 
-    /**
-     * Log pane, which displays logging info
-     */
-    public final LogPane logPane;
+    /** Log pane, which displays logging info */
+    public LogPane logPane;
 
     /** User actions for scores */
     public final ScoreController scoreController;
 
-    /**
-     * Sheet tabbed pane, which may contain several views
-     */
-    public final SheetController sheetController;
+    /** Sheet tabbed pane, which may contain several views */
+    public final SheetController sheetController = new SheetController();
 
     /** The related concrete frame */
     private JFrame frame;
 
     // Menus & tools in the frame
-    private final JMenu      helpMenu = new SeparableMenu("Help");
-    private final JMenu      stepMenu = new StepMenu("Step").getMenu();
-    private final JMenu      viewMenu = new SeparableMenu("Views");
-    private final JMenu      toolMenu = new SeparableMenu("Tools");
-    private final JSplitPane bigSplitPane;
+    private final JMenu stepMenu = new StepMenu("Step").getMenu();
 
     /** The splitted panes */
-    private final JSplitPane splitPane;
+    private JSplitPane bigSplitPane;
+    private JSplitPane  splitPane;
 
     /** Bottom pane split betwen the logPane and the errorsPane */
-    private final BottomPane bottomPane;
+    private BottomPane bottomPane;
 
     /** The tool bar */
-    private final JToolBar toolBar;
-
-    /** Color chooser for shapes */
-    private JFrame shapeColorFrame;
+    private JToolBar toolBar;
 
     /** Used to remember the current user desired target */
     private Object target;
@@ -127,6 +109,19 @@ public class MainGui
     {
         frame = new JFrame();
 
+        defineMenus();
+        
+        scoreController = new ScoreController();
+
+        // Frame title
+        updateGui();
+
+        defineLayout();
+
+        // Stay informed on sheet selection
+        SheetManager.getSelection()
+                    .addObserver(this);
+
         frame.addWindowListener(
             new WindowAdapter() {
                     @Override
@@ -136,111 +131,287 @@ public class MainGui
                     }
                 });
 
-        // Build the UI part
-        //------------------
-        // Tools in the frame and set of actions
-        toolBar = new JToolBar(JToolBar.HORIZONTAL) {
-                @Override
-                public void addSeparator ()
-                {
-                    Component[] components = super.getComponents();
-                    int         count = components.length;
+        // Differ realization
+        EventQueue.invokeLater(new FrameShower(frame));
+    }
 
-                    if ((count > 0) &&
-                        !(components[count - 1] instanceof JSeparator)) {
-                        super.addSeparator();
+    //~ Methods ----------------------------------------------------------------
+
+    //--------------//
+    // addOnToolBar //
+    //--------------//
+    public JButton addOnToolBar (Action action)
+    {
+        JButton button = toolBar.add(action);
+        button.setBorder(UIUtilities.getToolBorder());
+
+        return button;
+    }
+
+    //----------//
+    // getFrame //
+    //----------//
+    /**
+     * Report the concrete frame
+     *
+     * @return the ui frame
+     */
+    public JFrame getFrame ()
+    {
+        return frame;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report an Observer name
+     *
+     * @return observer name
+     */
+    @Implement(SelectionObserver.class)
+    public String getName ()
+    {
+        return "MainGui";
+    }
+
+    //----------//
+    // isTarget //
+    //----------//
+    /**
+     * Check whether the provided sheet file name is consistent with the
+     * recorded user target.
+     *
+     * @param name the (canonical) sheet file name
+     *
+     * @return true if the name is consistent with user target
+     */
+    public boolean isTarget (String name)
+    {
+        boolean result = false;
+
+        if (target instanceof omr.score.Score) {
+            omr.score.Score targetScore = (omr.score.Score) target;
+            result = targetScore.getImagePath()
+                                .equals(name);
+        } else if (target instanceof Sheet) {
+            Sheet targetSheet = (Sheet) target;
+            result = targetSheet.getPath()
+                                .equals(name);
+        } else if (target instanceof String) {
+            String targetString = (String) target;
+            result = targetString.equals(name);
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "isTarget this=" + target + " test=" + name + " -> " + result);
+        }
+
+        return result;
+    }
+
+    //------------------//
+    // removeBoardsPane //
+    //------------------//
+    /**
+     * Remove the current boardsPane, if any
+     */
+    public void removeBoardsPane ()
+    {
+        boardsPane.removeBoards();
+    }
+
+    //------------------//
+    // removeErrorsPane //
+    //------------------//
+    /**
+     * Remove the current errors pane, if any
+     */
+    public void removeErrorsPane ()
+    {
+        bottomPane.removeErrors();
+    }
+
+    //---------------//
+    // setBoardsPane //
+    //---------------//
+    /**
+     * Set a new boardspane to the boards holder
+     *
+     * @param boards the boards pane to be shown
+     */
+    public void setBoardsPane (JComponent boards)
+    {
+        boardsPane.addBoards(boards);
+    }
+
+    //---------------//
+    // setErrorsPane //
+    //---------------//
+    /**
+     * Set/show a new errors pane
+     *
+     * @param errorsPane the errors pane to be shown
+     */
+    public void setErrorsPane (JComponent errorsPane)
+    {
+        bottomPane.addErrors(errorsPane);
+    }
+
+    //-----------//
+    // setTarget //
+    //-----------//
+    /**
+     * Specify what the current interest of the user is, by means of the current
+     * score. Thus, when for example a sheet image is loaded sometime later,
+     * this information will be used to trigger or not the actual display of the
+     * sheet view.
+     *
+     * @param score the contextual score
+     */
+    public void setTarget (omr.score.Score score)
+    {
+        setObjectTarget(score);
+    }
+
+    //-----------//
+    // setTarget //
+    //-----------//
+    /**
+     * Specify what the current interest of the user is, by means of the desired
+     * sheet file name.
+     *
+     * @param name the (canonical) sheet file name
+     */
+    public void setTarget (String name)
+    {
+        setObjectTarget(name);
+    }
+
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Notification of sheet selection, to update frame title
+     *
+     * @param selection the selection object (SHEET)
+     * @param hint processing hint (not used)
+     */
+    @Implement(SelectionObserver.class)
+    public void update (Selection     selection,
+                        SelectionHint hint)
+    {
+        switch (selection.getTag()) {
+        case SHEET :
+            updateGui();
+
+            break;
+
+        default :
+        }
+    }
+
+    //-----------//
+    // updateGui //
+    //-----------//
+    /**
+     * This method is called whenever a modification has occurred, either a
+     * score or sheet, so that the frame title and the pull-down menus are
+     * always consistent with the current context.
+     */
+    public void updateGui ()
+    {
+        final Sheet sheet = SheetManager.getSelectedSheet();
+
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    public void run ()
+                    {
+                        final StringBuilder sb = new StringBuilder();
+
+                        if (sheet != null) {
+                            // Menus
+                            stepMenu.setEnabled(true);
+                            scoreController.setEnabled(
+                                sheet.getScore() != null);
+
+                            // Frame title tells sheet name + step
+                            sb.append(sheet.getRadix())
+                              .append(" - ")
+                              .append(sheet.currentStep())
+                              .append(" - ");
+                        } else {
+                            // Menus
+                            stepMenu.setEnabled(false);
+                            scoreController.setEnabled(false);
+                        }
+
+                        // Update frame title
+                        sb.append(Main.getToolName())
+                          .append(" ")
+                          .append(Main.getToolVersion());
+                        frame.setTitle(sb.toString());
                     }
-                }
-            };
+                });
+    }
 
-        // Program actions
-        Action exitAction = new ExitAction(true);
-        toolBar.addSeparator();
+    //------//
+    // exit // 
+    //------//
+    /**
+     * Last wishes before application actually exits
+     */
+    void exit ()
+    {
+        // Save scripts for opened sheets?
+        SheetManager.getInstance()
+                    .closeAll();
 
-        // Sheet actions
-        sheetController = new SheetController(this, toolBar);
-        sheetController.getMenu()
-                       .addSeparator();
-        sheetController.getMenu()
-                       .add(exitAction);
+        // Remember latest gui frame parameters
+        final int state = frame.getExtendedState();
+        constants.frameState.setValue(state);
 
-        // Score actions
-        toolBar.addSeparator();
-        scoreController = new ScoreController(toolBar);
+        if (state == Frame.NORMAL) {
+            // Remember frame location?
+            Rectangle bounds = frame.getBounds();
+            constants.frameX.setValue(bounds.x);
+            constants.frameY.setValue(bounds.y);
+            constants.frameWidth.setValue(bounds.width);
+            constants.frameHeight.setValue(bounds.height);
 
-        // Test actions
-        toolBar.addSeparator();
+            // Remember internal split locations
+            constants.logDivider.setValue(splitPane.getDividerLocation());
+            constants.boardDivider.setValue(bigSplitPane.getDividerLocation());
+            SheetAssembly.storeScoreSheetDivider();
+        } else { // Maximized/Iconified window
 
-        if (constants.showTestAction.getValue()) {
-            new TestAction();
-        }
+            if (state == Frame.MAXIMIZED_BOTH) {
+                // Remember internal split locations
+                constants.logDivider.setValue(
+                    splitPane.getDividerLocation() - DELTA_DIVIDER);
 
-        if (constants.showFineAction.getValue()) {
-            new FineAction();
-        }
-
-        // Frame title
-        updateGui();
-
-        // Views
-        ScorePainter.insertMenuItems(viewMenu);
-        viewMenu.addSeparator();
-        GlyphLagView.insertMenuItems(viewMenu);
-        viewMenu.addSeparator();
-        viewMenu.add(new JCheckBoxMenuItem(new LineAction()))
-                .setSelected(LinesBuilder.getDisplayOriginalStaffLines());
-        viewMenu.add(new JCheckBoxMenuItem(new LedgerAction()))
-                .setSelected(HorizontalsBuilder.getDisplayLedgerLines());
-        viewMenu.addSeparator();
-        new ClearLogAction(viewMenu);
-
-        // Tools
-        new ShapeAction(toolMenu);
-        toolMenu.addSeparator();
-        new MaterialAction(toolMenu);
-        new TrainerAction(toolMenu);
-        toolMenu.addSeparator();
-        new MemoryAction(toolMenu);
-        toolMenu.addSeparator();
-        new OptionAction(toolMenu);
-
-        // Help
-        if (!omr.Main.MAC_OS_X) {
-            new AboutAction(helpMenu);
-        }
-
-        // Menus in the frame
-        JMenuBar menuBar = new JMenuBar();
-        frame.setJMenuBar(menuBar);
-
-        for (JMenu menu : new JMenu[] {
-                 sheetController.getMenu(), stepMenu, scoreController.getMenu(),
-                 viewMenu, toolMenu, helpMenu
-             }) {
-            if (menu.getItemCount() > 0) {
-                if (menu == helpMenu) {
-                    menuBar.add(Box.createHorizontalStrut(30));
-                }
-
-                menuBar.add(menu);
+                constants.boardDivider.setValue(
+                    bigSplitPane.getDividerLocation() - DELTA_DIVIDER);
+                SheetAssembly.storeScoreSheetDivider();
             }
         }
 
-        //Mac Application menu
-        if (omr.Main.MAC_OS_X) {
-            try {
-                Class       clazz = Class.forName("omr.ui.MacApplication");
-                Constructor constructor = clazz.getConstructor(
-                    new Class[] { Action.class, Action.class, Action.class });
-                constructor.newInstance(
-                    new AboutAction(null),
-                    new OptionAction(null),
-                    new ExitAction(false));
-            } catch (Exception e) {
-                logger.warning("Unable to load Mac OS X Application menu", e);
-            }
-        }
+        // Remember internal division of the bottom pane?
+        bottomPane.storeDivider();
 
+        // Store latest constant values on disk
+        ConstantManager.storeResource();
+
+        // That's all folks !
+        java.lang.System.exit(0);
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
+    {
         /*
            +============================================================+
            |toolKeyPanel                                                |
@@ -315,262 +486,60 @@ public class MainGui
         bigSplitPane.setResizeWeight(1d); // Give extra space to left part
 
         // Global layout
-        //        frame.getContentPane()
-        //             .add(toolKeyPanel, BorderLayout.NORTH);
         frame.getContentPane()
              .add(bigSplitPane, BorderLayout.CENTER);
-
-        // Stay informed on sheet selection
-        SheetManager.getSelection()
-                    .addObserver(this);
-
-        // Differ realization
-        EventQueue.invokeLater(new FrameShower(frame));
     }
 
-    //~ Methods ----------------------------------------------------------------
-
-    //---------------//
-    // setBoardsPane //
-    //---------------//
-    /**
-     * Set a new boardspane to the boards holder
-     *
-     * @param boards the boards pane to be shown
-     */
-    public void setBoardsPane (JComponent boards)
+    //-------------//
+    // defineMenus //
+    //-------------//
+    private void defineMenus ()
     {
-        boardsPane.addBoards(boards);
-    }
+        ActionManager mgr = ActionManager.getInstance();
 
-    //---------------//
-    // setErrorsPane //
-    //---------------//
-    /**
-     * Set/show a new errors pane
-     *
-     * @param errorsPane the errors pane to be shown
-     */
-    public void setErrorsPane (JComponent errorsPane)
-    {
-        bottomPane.addErrors(errorsPane);
-    }
+        // Specific sheet menu
+        JMenu sheetMenu = new SeparableMenu("File");
+        UIDressing.dressUp(sheetMenu, getClass().getName() + ".sheetMenu");
 
-    //----------//
-    // getFrame //
-    //----------//
-    /**
-     * Report the concrete frame
-     *
-     * @return the ui frame
-     */
-    public JFrame getFrame ()
-    {
-        return frame;
-    }
+        // Specific history submenu
+        JMenuItem historyMenu = SheetManager.getInstance()
+                                            .getHistory()
+                                            .menu(
+            "Sheet History",
+            new HistoryListener());
+        UIDressing.dressUp(historyMenu, getClass().getName() + ".historyMenu");
+        sheetMenu.add(historyMenu);
+        mgr.injectMenu("File", sheetMenu);
 
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report an Observer name
-     *
-     * @return observer name
-     */
-    @Implement(SelectionObserver.class)
-    public String getName ()
-    {
-        return "MainGui";
-    }
+        // Specific step menu
+        UIDressing.dressUp(stepMenu, getClass().getName() + ".stepMenu");
+        mgr.injectMenu("Step", stepMenu);
 
-    //-----------//
-    // setTarget //
-    //-----------//
-    /**
-     * Specify what the current interest of the user is, by means of the current
-     * score. Thus, when for example a sheet image is loaded sometime later,
-     * this information will be used to trigger or not the actual display of the
-     * sheet view.
-     *
-     * @param score the contextual score
-     */
-    public void setTarget (omr.score.Score score)
-    {
-        setObjectTarget(score);
-    }
+        // All other commands
+        mgr.registerAllActions();
 
-    //-----------//
-    // setTarget //
-    //-----------//
-    /**
-     * Specify what the current interest of the user is, by means of the desired
-     * sheet file name.
-     *
-     * @param name the (canonical) sheet file name
-     */
-    public void setTarget (String name)
-    {
-        setObjectTarget(name);
-    }
+        toolBar = mgr.getToolBar();
+        frame.setJMenuBar(mgr.getMenuBar());
 
-    //----------//
-    // isTarget //
-    //----------//
-    /**
-     * Check whether the provided sheet file name is consistent with the
-     * recorded user target.
-     *
-     * @param name the (canonical) sheet file name
-     *
-     * @return true if the name is consistent with user target
-     */
-    public boolean isTarget (String name)
-    {
-        boolean result = false;
+        //        // Help (TBC with Brenton!)
+        //        if (!omr.Main.MAC_OS_X) {
+        //            new AboutAction(helpMenu);
+        //        }
 
-        if (target instanceof omr.score.Score) {
-            omr.score.Score targetScore = (omr.score.Score) target;
-            result = targetScore.getImagePath()
-                                .equals(name);
-        } else if (target instanceof Sheet) {
-            Sheet targetSheet = (Sheet) target;
-            result = targetSheet.getPath()
-                                .equals(name);
-        } else if (target instanceof String) {
-            String targetString = (String) target;
-            result = targetString.equals(name);
+        //Mac Application menu
+        if (omr.Main.MAC_OS_X) {
+            try {
+                Class       clazz = Class.forName("omr.ui.MacApplication");
+                Constructor constructor = clazz.getConstructor(
+                    new Class[] { Action.class, Action.class, Action.class });
+                constructor.newInstance(
+                    new GuiActions.AboutAction(),
+                    new GuiActions.OptionsAction(),
+                    new GuiActions.ExitAction());
+            } catch (Exception e) {
+                logger.warning("Unable to load Mac OS X Application menu", e);
+            }
         }
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "isTarget this=" + target + " test=" + name + " -> " + result);
-        }
-
-        return result;
-    }
-
-    //----------------//
-    // displayMessage //
-    //----------------//
-    /**
-     * Allow to display a modal dialog with an html content
-     *
-     * @param htmlStr the HTML string
-     */
-    public void displayMessage (String htmlStr)
-    {
-        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
-        htmlPane.setEditable(false);
-        JOptionPane.showMessageDialog(frame, htmlPane);
-    }
-
-    //----------------//
-    // displayWarning //
-    //----------------//
-    /**
-     * Allow to display a modal dialog with an html content
-     *
-     * @param htmlStr the HTML string
-     */
-    public void displayWarning (String htmlStr)
-    {
-        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
-        htmlPane.setEditable(false);
-
-        JOptionPane.showMessageDialog(
-            frame,
-            htmlPane,
-            "Warning",
-            JOptionPane.WARNING_MESSAGE);
-    }
-
-    //------------------//
-    // removeBoardsPane //
-    //------------------//
-    /**
-     * Remove the current boardsPane, if any
-     */
-    public void removeBoardsPane ()
-    {
-        boardsPane.removeBoards();
-    }
-
-    //------------------//
-    // removeErrorsPane //
-    //------------------//
-    /**
-     * Remove the current errors pane, if any
-     */
-    public void removeErrorsPane ()
-    {
-        bottomPane.removeErrors();
-    }
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Notification of sheet selection, to update frame title
-     *
-     * @param selection the selection object (SHEET)
-     * @param hint processing hint (not used)
-     */
-    @Implement(SelectionObserver.class)
-    public void update (Selection     selection,
-                        SelectionHint hint)
-    {
-        switch (selection.getTag()) {
-        case SHEET :
-            updateGui();
-
-            break;
-
-        default :
-        }
-    }
-
-    //-----------//
-    // updateGui //
-    //-----------//
-    /**
-     * This method is called whenever a modification has occurred, either a
-     * score or sheet, so that the frame title and the pull-down menus are
-     * always consistent with the current context.
-     */
-    public void updateGui ()
-    {
-        final Sheet sheet = SheetManager.getSelectedSheet();
-
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                    public void run ()
-                    {
-                        final StringBuilder sb = new StringBuilder();
-
-                        if (sheet != null) {
-                            // Menus
-                            stepMenu.setEnabled(true);
-                            scoreController.setEnabled(
-                                sheet.getScore() != null);
-
-                            // Frame title tells sheet name + step
-                            sb.append(sheet.getRadix())
-                              .append(" - ")
-                              .append(sheet.currentStep())
-                              .append(" - ");
-                        } else {
-                            // Menus
-                            stepMenu.setEnabled(false);
-                            scoreController.setEnabled(false);
-                        }
-
-                        // Update frame title
-                        sb.append(Main.getToolName())
-                          .append(" ")
-                          .append(Main.getToolVersion());
-                        frame.setTitle(sb.toString());
-                    }
-                });
     }
 
     //-----------------//
@@ -585,319 +554,7 @@ public class MainGui
         this.target = target;
     }
 
-    //------//
-    // exit // Last wishes before application actually exit
-    //------//
-    private void exit ()
-    {
-        // Save scripts for opened sheets?
-        SheetManager.getInstance()
-                    .closeAll();
-
-        // Remember latest gui frame parameters
-        final int state = frame.getExtendedState();
-        constants.frameState.setValue(state);
-
-        if (state == Frame.NORMAL) {
-            // Remember frame location?
-            Rectangle bounds = frame.getBounds();
-            constants.frameX.setValue(bounds.x);
-            constants.frameY.setValue(bounds.y);
-            constants.frameWidth.setValue(bounds.width);
-            constants.frameHeight.setValue(bounds.height);
-
-            // Remember internal split locations
-            constants.logDivider.setValue(splitPane.getDividerLocation());
-            constants.boardDivider.setValue(bigSplitPane.getDividerLocation());
-            SheetAssembly.storeScoreSheetDivider();
-        } else { // Maximized/Iconified window
-
-            if (state == Frame.MAXIMIZED_BOTH) {
-                // Remember internal split locations
-                constants.logDivider.setValue(
-                    splitPane.getDividerLocation() - DELTA_DIVIDER);
-
-                constants.boardDivider.setValue(
-                    bigSplitPane.getDividerLocation() - DELTA_DIVIDER);
-                SheetAssembly.storeScoreSheetDivider();
-            }
-        }
-
-        // Remember internal division of the bottom pane?
-        bottomPane.storeDivider();
-
-        // Store latest constant values on disk
-        ConstantManager.storeResource();
-
-        // That's all folks !
-        java.lang.System.exit(0);
-    }
-
-    //-------------//
-    // addTableRow //
-    //-------------//
-    private void addTableRow (StringBuilder sb,
-                              String        name,
-                              Object        value)
-    {
-        sb.append("<TR><TH>")
-          .append(name)
-          .append("<TH><TD>")
-          .append(value)
-          .append("</TD></TR>");
-    }
-
     //~ Inner Classes ----------------------------------------------------------
-
-    //-------------//
-    // FrameShower //
-    //-------------//
-    private static class FrameShower
-        implements Runnable
-    {
-        final Frame frame;
-
-        public FrameShower (Frame frame)
-        {
-            this.frame = frame;
-        }
-
-        @Implement(Runnable.class)
-        public void run ()
-        {
-            frame.pack();
-            frame.setBounds(
-                constants.frameX.getValue(),
-                constants.frameY.getValue(),
-                constants.frameWidth.getValue(),
-                constants.frameHeight.getValue());
-            frame.setExtendedState(constants.frameState.getValue());
-            frame.setVisible(true);
-        }
-    }
-
-    //------------//
-    // ExitAction //
-    //------------//
-    private class ExitAction
-        extends AbstractAction
-    {
-        public ExitAction (boolean addToToolBar)
-        {
-            super(
-                "Exit",
-                IconManager.getInstance().loadImageIcon("general/Stop"));
-            putValue(SHORT_DESCRIPTION, "Exit the program");
-
-            if (addToToolBar) {
-                toolBar.add(this)
-                       .setBorder(getToolBorder());
-            }
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            exit();
-        }
-    }
-
-    //------------//
-    // FineAction //
-    //------------//
-    private class FineAction
-        extends AbstractAction
-    {
-        public FineAction ()
-        {
-            super(
-                "Fine",
-                IconManager.getInstance().loadImageIcon("general/Find"));
-            putValue(SHORT_DESCRIPTION, "Generic Fine Action");
-            toolBar.add(this)
-                   .setBorder(getToolBorder());
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            Logger.getLogger(omr.selection.Selection.class)
-                  .setLevel("FINE");
-        }
-    }
-
-    //--------------//
-    // MemoryAction //
-    //--------------//
-    private static class MemoryAction
-        extends AbstractAction
-    {
-        public MemoryAction (JMenu menu)
-        {
-            super(
-                "Memory",
-                IconManager.getInstance().loadImageIcon("general/Find"));
-            putValue(SHORT_DESCRIPTION, "Show occupied memory");
-            menu.add(this);
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            logger.info("Occupied memory is " + Memory.getValue() + " bytes");
-        }
-    }
-
-    //--------------//
-    // OptionAction //
-    //--------------//
-    private static class OptionAction
-        extends AbstractAction
-    {
-        public OptionAction (JMenu menu)
-        {
-            super(
-                "Options",
-                IconManager.getInstance().loadImageIcon("general/Properties"));
-            putValue(SHORT_DESCRIPTION, "Constants tree for all units");
-
-            if (menu != null) {
-                menu.add(this);
-            }
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            // Preload constant units
-            UnitManager.getInstance(Main.class.getName());
-
-            JFrame frame = new JFrame("Units Options");
-            frame.getContentPane()
-                 .setLayout(new BorderLayout());
-
-            JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
-            frame.getContentPane()
-                 .add(toolBar, BorderLayout.NORTH);
-
-            JButton button = new JButton(
-                new AbstractAction() {
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            UnitManager.getInstance()
-                                       .dumpAllUnits();
-                        }
-                    });
-            button.setText("Dump all Units");
-            toolBar.add(button);
-
-            UnitModel  cm = new UnitModel();
-            JTreeTable jtt = new UnitTreeTable(cm);
-            frame.getContentPane()
-                 .add(new JScrollPane(jtt));
-
-            frame.pack();
-            frame.setSize(
-                constants.paramWidth.getValue(),
-                constants.paramHeight.getValue());
-            frame.setVisible(true);
-        }
-    }
-
-    //----------------//
-    // ClearLogAction //
-    //----------------//
-    private class ClearLogAction
-        extends AbstractAction
-    {
-        public ClearLogAction (JMenu menu)
-        {
-            super(
-                "Clear Log",
-                IconManager.getInstance().loadImageIcon("general/Cut"));
-            putValue(SHORT_DESCRIPTION, "Clear the whole log display");
-            menu.add(this);
-            toolBar.add(this)
-                   .setBorder(getToolBorder());
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            logPane.clearLog();
-        }
-    }
-
-    //----------------//
-    // MaterialAction //
-    //----------------//
-    private static class MaterialAction
-        extends AbstractAction
-    {
-        public MaterialAction (JMenu menu)
-        {
-            super(
-                "Training Material",
-                IconManager.getInstance().loadImageIcon("media/Movie"));
-            putValue(SHORT_DESCRIPTION, "Verify training material");
-            menu.add(this);
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            GlyphVerifier.getInstance()
-                         .setVisible(true);
-        }
-    }
-
-    //-------------//
-    // AboutAction //
-    //-------------//
-    private class AboutAction
-        extends AbstractAction
-    {
-        public AboutAction (JMenu menu)
-        {
-            super(
-                "About",
-                IconManager.getInstance().loadImageIcon("general/About"));
-            putValue(SHORT_DESCRIPTION, "About " + Main.getToolName());
-
-            if (menu != null) {
-                menu.add(this);
-            }
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("<HTML><TABLE BORDER='0'>");
-
-            // Application information
-            addTableRow(sb, "Application", Main.getToolName());
-
-            // Version information
-            addTableRow(sb, "Version", Main.getToolVersion());
-
-            // Build information, if available
-            addTableRow(
-                sb,
-                "Build",
-                (Main.getToolBuild() != null) ? Main.getToolBuild() : "");
-
-            // Launch information
-            addTableRow(sb, "Classes", Main.getClassesContainer());
-
-            // Web site
-            addTableRow(sb, "WebSite", "https://audiveris.dev.java.net");
-
-            sb.append("</TABLE></HTML>");
-
-            displayMessage(sb.toString());
-        }
-    }
 
     //-----------//
     // Constants //
@@ -930,18 +587,6 @@ public class MainGui
         PixelCount       logDivider = new PixelCount(
             622,
             "Where the separation above log pane should be");
-        PixelCount       paramHeight = new PixelCount(
-            500,
-            "Height of the param frame");
-        PixelCount       paramWidth = new PixelCount(
-            900,
-            "Width of the param frame");
-        Constant.Boolean showTestAction = new Constant.Boolean(
-            false,
-            "DEBUG- Should we show the Test button ?");
-        Constant.Boolean showFineAction = new Constant.Boolean(
-            false,
-            "DEBUG- Should we show the Fine button ?");
     }
 
     //------------//
@@ -970,6 +615,33 @@ public class MainGui
             }
 
             repaint();
+        }
+    }
+
+    //-------------//
+    // FrameShower //
+    //-------------//
+    private static class FrameShower
+        implements Runnable
+    {
+        final Frame frame;
+
+        public FrameShower (Frame frame)
+        {
+            this.frame = frame;
+        }
+
+        @Implement(Runnable.class)
+        public void run ()
+        {
+            frame.pack();
+            frame.setBounds(
+                constants.frameX.getValue(),
+                constants.frameY.getValue(),
+                constants.frameWidth.getValue(),
+                constants.frameHeight.getValue());
+            frame.setExtendedState(constants.frameState.getValue());
+            frame.setVisible(true);
         }
     }
 
@@ -1030,123 +702,23 @@ public class MainGui
         }
     }
 
-    //-------------//
-    // ShapeAction //
-    //-------------//
-    private class ShapeAction
-        extends AbstractAction
+    //-----------------//
+    // HistoryListener //
+    //-----------------//
+    /**
+     * Class <code>HistoryListener</code> is used to reload a sheet file, when
+     * selected from the history of previous sheets.
+     */
+    private static class HistoryListener
+        implements ActionListener
     {
-        public ShapeAction (JMenu menu)
-        {
-            super(
-                "Shape Colors",
-                IconManager.getInstance().loadImageIcon("general/Properties"));
-            putValue(SHORT_DESCRIPTION, "Manage colors of all shapes");
-            menu.add(this);
-        }
-
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            if (shapeColorFrame == null) {
-                shapeColorFrame = new JFrame("ShapeColorChooser");
-
-                // Create and set up the content pane.
-                JComponent newContentPane = new ShapeColorChooser().getComponent();
-                newContentPane.setOpaque(true); //content panes must be opaque
-                shapeColorFrame.setContentPane(newContentPane);
-
-                // Realize the window.
-                shapeColorFrame.pack();
-            }
-
-            // Display the window.
-            shapeColorFrame.setVisible(true);
-        }
-    }
-
-    //------------//
-    // TestAction //
-    //------------//
-    private class TestAction
-        extends AbstractAction
-    {
-        public TestAction ()
-        {
-            super(
-                "Test",
-                IconManager.getInstance().loadImageIcon("general/TipOfTheDay"));
-            putValue(SHORT_DESCRIPTION, "Generic Test Action");
-            toolBar.add(this)
-                   .setBorder(getToolBorder());
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            UITest.test();
-        }
-    }
-
-    //---------------//
-    // TrainerAction //
-    //---------------//
-    private static class TrainerAction
-        extends AbstractAction
-    {
-        public TrainerAction (JMenu menu)
-        {
-            super(
-                "Trainer",
-                IconManager.getInstance().loadImageIcon("media/Play"));
-            putValue(SHORT_DESCRIPTION, "Launch trainer interface");
-            menu.add(this);
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            GlyphTrainer.launch();
-        }
-    }
-
-    //--------------//
-    // LedgerAction //
-    //--------------//
-    private class LedgerAction
-        extends AbstractAction
-    {
-        public LedgerAction ()
-        {
-            super("Show original ledger lines");
-            putValue(SHORT_DESCRIPTION, "Show the original ledger lines");
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            HorizontalsBuilder.setDisplayLedgerLines(item.isSelected());
-        }
-    }
-
-    //------------//
-    // LineAction //
-    //------------//
-    private class LineAction
-        extends AbstractAction
-    {
-        public LineAction ()
-        {
-            super("Show original staff lines");
-            putValue(SHORT_DESCRIPTION, "Show the original staff lines");
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            LinesBuilder.setDisplayOriginalStaffLines(item.isSelected());
+            String fileName = e.getActionCommand();
+            Main.getGui()
+                .setTarget(fileName);
+            Step.LOAD.performParallel(null, new File(fileName));
         }
     }
 }

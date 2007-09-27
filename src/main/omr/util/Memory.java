@@ -32,22 +32,6 @@ public class Memory
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // getValue //
-    //----------//
-    /**
-     * Return a well formatted string about the occupied memory
-     *
-     * @return the string ready to be printed
-     */
-    public static String getValue ()
-    {
-        gc();
-
-        // Format by slices of 3 digits
-        return String.format("%,d", occupied());
-    }
-
     //------//
     // free //
     //------//
@@ -72,6 +56,22 @@ public class Memory
     {
         rt.runFinalization();
         rt.gc();
+    }
+
+    //----------//
+    // getValue //
+    //----------//
+    /**
+     * Return a well formatted string about the occupied memory
+     *
+     * @return the string ready to be printed
+     */
+    public static String getValue ()
+    {
+        gc();
+
+        // Format by slices of 3 digits
+        return String.format("%,d", occupied());
     }
 
     //----------//

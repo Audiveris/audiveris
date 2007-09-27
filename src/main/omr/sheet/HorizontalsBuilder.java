@@ -31,6 +31,9 @@ import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 
+import omr.plugin.Plugin;
+import omr.plugin.PluginType;
+
 import omr.score.visitor.SheetPainter;
 
 import omr.selection.Selection;
@@ -47,11 +50,17 @@ import omr.ui.PixelBoard;
 import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.view.Zoom;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.JCheckBoxMenuItem;
 
 /**
  * Class <code>HorizontalsBuilder</code> is in charge of retrieving horizontal
@@ -144,33 +153,6 @@ public class HorizontalsBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------------------//
-    // getDisplayLedgerLines //
-    //-----------------------//
-    public static boolean getDisplayLedgerLines ()
-    {
-        return constants.displayLedgerLines.getValue();
-    }
-
-    //-----------------------//
-    // setDisplayLedgerLines //
-    //-----------------------//
-    public static void setDisplayLedgerLines (boolean displayLedgerLines)
-    {
-        constants.displayLedgerLines.setValue(displayLedgerLines);
-
-        // Trigger a repaint if needed
-        Sheet currentSheet = SheetManager.getSelectedSheet();
-
-        if (currentSheet != null) {
-            HorizontalsBuilder builder = currentSheet.getHorizontalsBuilder();
-
-            if ((builder != null) && (builder.lagView != null)) {
-                builder.lagView.repaint();
-            }
-        }
-    }
 
     //-----------//
     // buildInfo //
@@ -448,6 +430,41 @@ public class HorizontalsBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //--------------//
+    // LedgerAction //
+    //--------------//
+    /**
+     * Class <code>LedgerAction</code> toggles the display of original ledger 
+     * pixels
+     */
+    @Plugin(type = PluginType.LINE_VIEW, item = JCheckBoxMenuItem.class)
+    public static class LedgerAction
+        extends AbstractAction
+    {
+        public LedgerAction ()
+        {
+            putValue(SELECTED_KEY, constants.displayLedgerLines.getValue());
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            constants.displayLedgerLines.setValue(item.isSelected());
+
+            // Trigger a repaint if needed
+            Sheet currentSheet = SheetManager.getSelectedSheet();
+
+            if (currentSheet != null) {
+                HorizontalsBuilder builder = currentSheet.getHorizontalsBuilder();
+
+                if ((builder != null) && (builder.lagView != null)) {
+                    builder.lagView.repaint();
+                }
+            }
+        }
+    }
 
     //------------//
     // ChunkCheck //

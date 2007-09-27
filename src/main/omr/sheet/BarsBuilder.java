@@ -57,6 +57,7 @@ import omr.stick.Stick;
 import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
+import omr.ui.GuiActions;
 import omr.ui.PixelBoard;
 import static omr.ui.field.SpinnerUtilities.*;
 
@@ -425,8 +426,7 @@ public class BarsBuilder
                 logger.warning(msg);
 
                 if (Main.getGui() != null) {
-                    Main.getGui()
-                        .displayWarning(msg);
+                    GuiActions.displayWarning(msg);
                 }
 
                 throw new StepException(msg);

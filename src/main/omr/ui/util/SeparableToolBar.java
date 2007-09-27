@@ -1,8 +1,8 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         S e p a r a b l e M e n u                          //
+//                      S e p a r a b l e T o o l B a r                       //
 //                                                                            //
-//  Copyright (C) Brenton Partridge 2007. All rights reserved.                //
+//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
@@ -12,36 +12,36 @@ package omr.ui.util;
 import javax.swing.*;
 
 /**
- * Class <code>SeparableMenu</code> is a menu which is able to collapse unneeded
- * separators
+ * Class <code>SeparableToolBar</code> is a tool bar which is able to collapse
+ * unneeded separators
  *
  * @author Brenton Partridge
  * @version $Id$
  */
-public class SeparableMenu
-    extends JMenu
+public class SeparableToolBar
+    extends JToolBar
 {
     //~ Constructors -----------------------------------------------------------
 
-    public SeparableMenu ()
+    public SeparableToolBar ()
     {
         super();
     }
 
-    public SeparableMenu (Action action)
+    public SeparableToolBar (int orientation)
     {
-        super(action);
+        super(orientation);
     }
 
-    public SeparableMenu (String  s,
-                          boolean flag)
+    public SeparableToolBar (String name)
     {
-        super(s, flag);
+        super(name);
     }
 
-    public SeparableMenu (String s)
+    public SeparableToolBar (String name,
+                             int    orientation)
     {
-        super(s);
+        super(name, orientation);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -55,10 +55,10 @@ public class SeparableMenu
     @Override
     public void addSeparator ()
     {
-        int count = super.getMenuComponentCount();
+        int count = super.getComponentCount();
 
         if ((count > 0) &&
-            !(getMenuComponent(count - 1) instanceof JSeparator)) {
+            !(getComponent(count - 1) instanceof JSeparator)) {
             super.addSeparator();
         }
     }
@@ -67,14 +67,14 @@ public class SeparableMenu
     // purgeSeparator //
     //----------------//
     /**
-     * Remove any potential orphan separator at the end of the menu
+     * Remove any potential orphan separator at the end of the tool bar
      */
-    public static void purgeSeparator (JMenu menu)
+    public static void purgeSeparator (JToolBar toolBar)
     {
-        int count = menu.getMenuComponentCount();
+        int count = toolBar.getComponentCount();
 
-        if (menu.getMenuComponent(count - 1) instanceof JSeparator) {
-            menu.remove(count - 1);
+        if (toolBar.getComponent(count - 1) instanceof JSeparator) {
+            toolBar.remove(count - 1);
         }
     }
 }

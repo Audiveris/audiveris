@@ -18,6 +18,8 @@ import omr.lag.RunsBuilder;
 
 import omr.step.StepException;
 
+import omr.ui.GuiActions;
+
 import omr.util.Implement;
 import omr.util.Logger;
 
@@ -174,8 +176,7 @@ public class ScaleBuilder
             logger.warning(msg);
 
             if (Main.getGui() != null) {
-                Main.getGui()
-                    .displayWarning(msg);
+                GuiActions.displayWarning(msg);
             }
 
             throw new StepException(msg);
@@ -204,7 +205,7 @@ public class ScaleBuilder
         {
             this.sheet = sheet;
             this.picture = sheet.getPicture();
-            
+
             maxForeground = picture.getMaxForeground();
 
             // Allocate histogram counters

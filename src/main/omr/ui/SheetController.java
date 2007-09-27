@@ -13,15 +13,12 @@ import omr.Main;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-
-import omr.glyph.ui.GlyphRepository;
-
-import omr.plugin.PluginType;
-import omr.plugin.Plugins;
+import static omr.plugin.Dependency.*;
+import static omr.plugin.PluginType.*;
 
 import omr.score.Score;
 
-import omr.script.ScriptController;
+import omr.script.ScriptActions;
 
 import omr.selection.Selection;
 
@@ -29,16 +26,12 @@ import omr.sheet.*;
 
 import omr.step.Step;
 
-import omr.ui.icon.IconManager;
 import omr.ui.util.FileFilter;
-import omr.ui.util.SeparableMenu;
-import omr.ui.util.SwingWorker;
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
 import omr.util.Logger;
 
-import java.awt.Toolkit;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
@@ -81,23 +74,11 @@ public class SheetController
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The UI controller for scripts */
-    private final ScriptController scriptController;
-
     /** Ordered list of sheet assemblies */
     private final ArrayList<SheetAssembly> assemblies;
 
-    /** Collection of sheet-dependent actions */
-    private final Collection<Action> sheetDependentActions = new ArrayList<Action>();
-
-    /** Menu dedicated to sheet-related actions */
-    private final JMenu menu = new SeparableMenu("File");
-
     /** The concrete tabbed pane, one tab per sheet */
     private final JTabbedPane component;
-
-    /** Ref of toolbar where buttons are inserted */
-    private final JToolBar toolBar;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -106,72 +87,11 @@ public class SheetController
     //-----------------//
     /**
      * Create the SheetController, within the gui frame.
-     *
-     * @param gui     the enclosing gui entity
-     * @param toolBar the gui tool bar
      */
-    public SheetController (MainGui  gui,
-                            JToolBar toolBar)
+    public SheetController ()
     {
-        menu.setToolTipText("Sheet or script file selection");
         component = new JTabbedPane();
         assemblies = new ArrayList<SheetAssembly>();
-
-        this.toolBar = toolBar;
-
-        // History menu
-        JMenuItem historyMenu = SheetManager.getInstance()
-                                            .getHistory()
-                                            .menu(
-            "Sheet History",
-            new HistoryListener());
-        historyMenu.setToolTipText("List of previous sheet files");
-        historyMenu.setIcon(
-            IconManager.getInstance().loadImageIcon("general/History"));
-        menu.add(historyMenu);
-
-        // Import actions
-        new SelectSheetAction();
-
-        for (Action plugin : Plugins.getActions(PluginType.SHEET_IMPORT)) {
-            new SheetAction(plugin);
-        }
-
-        // Script actions
-        menu.addSeparator();
-        toolBar.addSeparator();
-
-        scriptController = new ScriptController();
-        menu.add(new JMenuItem(scriptController.getOpenAction()));
-        menu.add(new JMenuItem(scriptController.getStoreAction()));
-        sheetDependentActions.add(scriptController.getStoreAction());
-
-        toolBar.addSeparator();
-        menu.addSeparator();
-        new ZoomWidthAction();
-        new ZoomHeightAction();
-        new RecordAction();
-
-        // Plot actions
-        menu.addSeparator();
-        toolBar.addSeparator();
-
-        new ScalePlotAction();
-        new SkewPlotAction();
-        new LinePlotAction();
-
-        menu.addSeparator();
-        toolBar.addSeparator();
-
-        // Export actions
-        for (Action plugin : Plugins.getActions(PluginType.SHEET_EXPORT)) {
-            new SheetAction(plugin);
-        }
-
-        new CloseAction();
-
-        // Initially disabled actions
-        UIUtilities.enableActions(sheetDependentActions, false);
 
         // Listener on sheet tab operations
         component.addChangeListener(this);
@@ -195,10 +115,7 @@ public class SheetController
 
         // Check whether the script has been written correctly
         final Sheet sheet = assembly.getSheet();
-        scriptController.checkStored(sheet.getScript());
-
-        // Disable sheet-based menu actions
-        UIUtilities.enableActions(sheetDependentActions, false);
+        ScriptActions.checkStored(sheet.getScript());
 
         int sheetIndex = component.indexOfComponent(assembly.getComponent());
 
@@ -245,19 +162,6 @@ public class SheetController
         } else {
             return null;
         }
-    }
-
-    //---------//
-    // getMenu //
-    //---------//
-    /**
-     * Report the menu dedicated to sheet handling.
-     *
-     * @return the sheet menu
-     */
-    public JMenu getMenu ()
-    {
-        return menu;
     }
 
     //------------------//
@@ -444,9 +348,6 @@ public class SheetController
         Selection sheetSelection = SheetManager.getSelection();
         sheetSelection.setEntity(sheet, null);
 
-        // Enable sheet-based menu actions ?
-        UIUtilities.enableActions(sheetDependentActions, true);
-
         // Tell the selected assembly that it now has the focus...
         assembly.assemblySelected();
     }
@@ -468,367 +369,5 @@ public class SheetController
         Constant.Ratio initialZoomRatio = new Constant.Ratio(
             1d,
             "Initial zoom ratio for displayed sheet pictures");
-    }
-
-    //-----------------//
-    // HistoryListener //
-    //-----------------//
-    /**
-     * Class <code>HistoryListener</code> is used to reload a sheet file, when
-     * selected from the history of previous sheets.
-     */
-    private static class HistoryListener
-        implements ActionListener
-    {
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            String fileName = e.getActionCommand();
-
-            if (logger.isFineEnabled()) {
-                logger.fine("HistoryListener for " + fileName);
-            }
-
-            Main.getGui()
-                .setTarget(fileName);
-            Step.LOAD.performParallel(null, new File(fileName));
-
-            if (logger.isFineEnabled()) {
-                logger.fine("End of HistoryListener");
-            }
-
-            // Other UI actions will be triggered when the sheet has finished
-            // loading
-        }
-    }
-
-    //-------------//
-    // CloseAction //
-    //-------------//
-    /**
-     * Class <code>CloseAction</code> handles the closing of the currently
-     * selected sheet.
-     */
-    private class CloseAction
-        extends SheetAction
-    {
-        public CloseAction ()
-        {
-            super(
-                false,
-                "Close Sheet",
-                "Close the current sheet",
-                "W",
-                IconManager.getInstance().loadImageIcon("general/Remove"),
-                true);
-        }
-
-        @Override
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            Sheet sheet = getCurrentSheet();
-
-            if (sheet != null) {
-                Score score = sheet.getScore();
-
-                if (score != null) {
-                    score.close();
-                }
-
-                sheet.close();
-            }
-        }
-    }
-
-    //----------------//
-    // LinePlotAction //
-    //----------------//
-    /**
-     * Class <code>LinePlotAction</code> allows to display the plot of Line
-     * Builder.
-     */
-    private class LinePlotAction
-        extends SheetAction
-    {
-        public LinePlotAction ()
-        {
-            super(
-                false,
-                "Line Plot",
-                "Display chart from Line builder",
-                IconManager.getInstance().loadImageIcon("general/PrintPreview"),
-                false);
-        }
-
-        @Override
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            Sheet sheet = getCurrentSheet();
-
-            if (sheet != null) {
-                if (sheet.getLinesBuilder() != null) {
-                    sheet.getLinesBuilder()
-                         .displayChart();
-                } else {
-                    logger.warning(
-                        "Data from staff line builder" + " is not available");
-                }
-            }
-        }
-    }
-
-    //--------------//
-    // RecordAction //
-    //--------------//
-    private class RecordAction
-        extends SheetAction
-    {
-        public RecordAction ()
-        {
-            super(
-                false,
-                "Record Glyphs",
-                "Record sheet glyph descriptions for training",
-                "R",
-                IconManager.getInstance().loadImageIcon("general/Bookmarks"),
-                false);
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            int answer = JOptionPane.showConfirmDialog(
-                component,
-                "Are you sure of all the symbols of this sheet ?");
-
-            if (answer != JOptionPane.YES_OPTION) {
-                return;
-            }
-
-            final SwingWorker worker = new SwingWorker() {
-                @Override
-                public Object construct ()
-                {
-                    Sheet sheet = getCurrentSheet();
-                    GlyphRepository.getInstance()
-                                   .recordSheetGlyphs(
-                        sheet, /* emptyStructures => */
-                        sheet.isOnSymbols());
-
-                    return null;
-                }
-            };
-
-            worker.start();
-        }
-    }
-
-    //-----------------//
-    // ScalePlotAction //
-    //-----------------//
-    /**
-     * Class <code>ScalePlotAction</code> allows to display the plot of Scale
-     * Builder.
-     */
-    private class ScalePlotAction
-        extends SheetAction
-    {
-        public ScalePlotAction ()
-        {
-            super(
-                false,
-                "Scale Plot",
-                "Display chart from Scale builder",
-                IconManager.getInstance().loadImageIcon("general/PrintPreview"),
-                false);
-        }
-
-        @Override
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            Sheet sheet = getCurrentSheet();
-
-            if (sheet != null) {
-                sheet.getScale()
-                     .displayChart();
-            }
-        }
-    }
-
-    //-------------------//
-    // SelectSheetAction //
-    //-------------------//
-    /**
-     * Class <code>SelectSheetAction</code> let the user select a sheet file
-     * interactively.
-     */
-    private class SelectSheetAction
-        extends SheetAction
-    {
-        public SelectSheetAction ()
-        {
-            super(
-                true,
-                "Open Sheet",
-                "Open a sheet file",
-                "O",
-                IconManager.getInstance().loadImageIcon("general/Open"),
-                true);
-        }
-
-        @Override
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            selectSheet();
-        }
-    }
-
-    //-------------//
-    // SheetAction //
-    //-------------//
-    /**
-     * Class <code>SheetAction</code> is a template for any sheet-related action
-     */
-    private class SheetAction
-        extends EntityAction
-    {
-        public SheetAction (boolean enabled,
-                            String  label,
-                            String  tip,
-                            String  key,
-                            Icon    icon,
-                            boolean onToolBar)
-        {
-            super(
-                enabled ? null : sheetDependentActions,
-                menu,
-                onToolBar ? toolBar : null,
-                label,
-                tip,
-                key,
-                icon);
-        }
-
-        public SheetAction (Action delegate)
-        {
-            super(
-                delegate.isEnabled() ? null : sheetDependentActions,
-                menu,
-                toolBar,
-                delegate);
-        }
-
-        public SheetAction (boolean enabled,
-                            String  label,
-                            String  tip,
-                            Icon    icon,
-                            boolean onToolBar)
-        {
-            this(enabled, label, tip, null, icon, onToolBar);
-        }
-    }
-
-    //----------------//
-    // SkewPlotAction //
-    //----------------//
-    /**
-     * Class <code>SkewPlotAction</code> allows to display the plot of Skew
-     * Builder.
-     */
-    private class SkewPlotAction
-        extends SheetAction
-    {
-        public SkewPlotAction ()
-        {
-            super(
-                false,
-                "Skew Plot",
-                "Display chart from Skew builder",
-                IconManager.getInstance().loadImageIcon("general/PrintPreview"),
-                false);
-        }
-
-        @Override
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            Sheet sheet = getCurrentSheet();
-
-            if (sheet != null) {
-                if (sheet.getSkewBuilder() != null) {
-                    sheet.getSkewBuilder()
-                         .displayChart();
-                } else {
-                    logger.warning(
-                        "Data from skew builder" + " is not available");
-                }
-            }
-        }
-    }
-
-    //------------------//
-    // ZoomHeightAction //
-    //------------------//
-    /**
-     * Class <code>ZoomHeightAction</code> allows to adjust the display zoom, so
-     * that the full height is shown.
-     */
-    private class ZoomHeightAction
-        extends SheetAction
-    {
-        public ZoomHeightAction ()
-        {
-            super(
-                false,
-                "Height Fit",
-                "Fit image to window height",
-                IconManager.getInstance().loadImageIcon(
-                    "general/AlignJustifyVertical"),
-                true);
-        }
-
-        @Override
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            SheetAssembly assembly = getSelectedAssembly();
-            assembly.getSelectedView()
-                    .fitHeight();
-        }
-    }
-
-    //-----------------//
-    // ZoomWidthAction //
-    //-----------------//
-    /**
-     * Class <code>ZoomWidthAction</code> allows to adjust the display zoom, so
-     * that the full width is shown.
-     */
-    private class ZoomWidthAction
-        extends SheetAction
-    {
-        public ZoomWidthAction ()
-        {
-            super(
-                false,
-                "Width Fit",
-                "Fit image to window width",
-                IconManager.getInstance().loadImageIcon(
-                    "general/AlignJustifyHorizontal"),
-                true);
-        }
-
-        @Implement(ActionListener.class)
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            SheetAssembly assembly = getSelectedAssembly();
-            assembly.getSelectedView()
-                    .fitWidth();
-        }
     }
 }

@@ -29,6 +29,9 @@ import omr.lag.SectionBoard;
 import omr.lag.SectionsBuilder;
 
 import omr.math.Population;
+
+import omr.plugin.Plugin;
+import omr.plugin.PluginType;
 import static omr.selection.SelectionTag.*;
 
 import omr.step.StepException;
@@ -40,6 +43,7 @@ import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 import static omr.ui.field.SpinnerUtilities.*;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import org.jfree.chart.ChartFactory;
@@ -51,6 +55,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
@@ -151,33 +157,6 @@ public class LinesBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------------------------------//
-    // getDisplayOriginalStaffLines //
-    //------------------------------//
-    public static boolean getDisplayOriginalStaffLines ()
-    {
-        return constants.displayOriginalStaffLines.getValue();
-    }
-
-    //------------------------------//
-    // setDisplayOriginalStaffLines //
-    //------------------------------//
-    public static void setDisplayOriginalStaffLines (boolean displayOriginalStaffLines)
-    {
-        constants.displayOriginalStaffLines.setValue(displayOriginalStaffLines);
-
-        // Trigger a repaint if needed
-        Sheet currentSheet = SheetManager.getSelectedSheet();
-
-        if (currentSheet != null) {
-            LinesBuilder builder = currentSheet.getLinesBuilder();
-
-            if ((builder != null) && (builder.lagView != null)) {
-                builder.lagView.repaint();
-            }
-        }
-    }
 
     //--------------//
     // displayChart //
@@ -591,6 +570,43 @@ public class LinesBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //------------//
+    // LineAction //
+    //------------//
+    /**
+     * Class <code>LineAction</code> toggles the display of original pixels 
+     * for the staff lines
+     */
+    @Plugin(type = PluginType.LINE_VIEW, item = JCheckBoxMenuItem.class)
+    public static class LineAction
+        extends AbstractAction
+    {
+        public LineAction ()
+        {
+            putValue(
+                SELECTED_KEY,
+                constants.displayOriginalStaffLines.getValue());
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            constants.displayOriginalStaffLines.setValue(item.isSelected());
+
+            // Trigger a repaint if needed
+            Sheet currentSheet = SheetManager.getSelectedSheet();
+
+            if (currentSheet != null) {
+                LinesBuilder builder = currentSheet.getLinesBuilder();
+
+                if ((builder != null) && (builder.lagView != null)) {
+                    builder.lagView.repaint();
+                }
+            }
+        }
+    }
 
     //-----------//
     // Constants //

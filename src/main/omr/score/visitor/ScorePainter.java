@@ -16,6 +16,9 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
+import omr.plugin.Plugin;
+import omr.plugin.PluginType;
+
 import omr.score.Arpeggiate;
 import omr.score.Barline;
 import omr.score.Beam;
@@ -66,7 +69,6 @@ import java.awt.geom.CubicCurve2D;
 
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
 
 /**
  * Class <code>ScorePainter</code> defines for every node in Score hierarchy
@@ -161,27 +163,6 @@ public class ScorePainter
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------------//
-    // insertMenuItems //
-    //-----------------//
-    public static void insertMenuItems (JMenu menu)
-    {
-        final JCheckBoxMenuItem slotItem = new JCheckBoxMenuItem(
-            new SlotAction());
-        slotItem.setSelected(constants.slotPainting.getValue());
-        menu.add(slotItem);
-
-        final JCheckBoxMenuItem voiceItem = new JCheckBoxMenuItem(
-            new VoiceAction());
-        voiceItem.setSelected(constants.voicePainting.getValue());
-        menu.add(voiceItem);
-
-        final JCheckBoxMenuItem markItem = new JCheckBoxMenuItem(
-            new MarkAction());
-        markItem.setSelected(constants.markPainting.getValue());
-        menu.add(markItem);
-    }
 
     //------------------//
     // visit Arpeggiate //
@@ -877,17 +858,19 @@ public class ScorePainter
                             SystemPoint from,
                             SystemPoint to)
     {
-        if (g != null && zoom != null && 
-        	displayOrigin != null && from != null && to != null)
-        	
-        	g.drawLine(
-        		zoom.scaled(displayOrigin.x + from.x),
-        		zoom.scaled(displayOrigin.y + from.y),
-        		zoom.scaled(displayOrigin.x + to.x),
-        		zoom.scaled(displayOrigin.y + to.y));
-        
-        else 
-        	logger.warning("line not painted due to null reference");
+        if ((g != null) &&
+            (zoom != null) &&
+            (displayOrigin != null) &&
+            (from != null) &&
+            (to != null)) {
+            g.drawLine(
+                zoom.scaled(displayOrigin.x + from.x),
+                zoom.scaled(displayOrigin.y + from.y),
+                zoom.scaled(displayOrigin.x + to.x),
+                zoom.scaled(displayOrigin.y + to.y));
+        } else {
+            logger.warning("line not painted due to null reference");
+        }
     }
 
     //-------------//
@@ -1173,6 +1156,80 @@ public class ScorePainter
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //------------//
+    // MarkAction //
+    //------------//
+    /**
+     * Class <code>MarkAction</code> toggles the display of computed marks in
+     * the score
+     */
+    @Plugin(type = PluginType.SCORE_VIEW, item = JCheckBoxMenuItem.class)
+    public static class MarkAction
+        extends AbstractAction
+    {
+        public MarkAction ()
+        {
+            putValue(SELECTED_KEY, constants.markPainting.getValue());
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            constants.markPainting.setValue(item.isSelected());
+            repaintDisplay();
+        }
+    }
+
+    //------------//
+    // SlotAction //
+    //------------//
+    /**
+     * Class <code>SlotAction</code> toggles the display of vertical time slots
+     */
+    @Plugin(type = PluginType.SCORE_VIEW, item = JCheckBoxMenuItem.class)
+    public static class SlotAction
+        extends AbstractAction
+    {
+        public SlotAction ()
+        {
+            putValue(SELECTED_KEY, constants.slotPainting.getValue());
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            constants.slotPainting.setValue(item.isSelected());
+            repaintDisplay();
+        }
+    }
+
+    //-------------//
+    // VoiceAction //
+    //-------------//
+    /**
+     * Class <code>VoiceAction</code> toggles the display of voices with
+     * specific colors
+     */
+    @Plugin(type = PluginType.SCORE_VIEW, item = JCheckBoxMenuItem.class)
+    public static class VoiceAction
+        extends AbstractAction
+    {
+        public VoiceAction ()
+        {
+            putValue(SELECTED_KEY, constants.voicePainting.getValue());
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            constants.voicePainting.setValue(item.isSelected());
+            repaintDisplay();
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -1209,74 +1266,5 @@ public class ScorePainter
         final Scale.Fraction halfLedgerLength = new Scale.Fraction(
             1,
             "Half length of a ledger");
-    }
-
-    //------------//
-    // MarkAction //
-    //------------//
-    private static class MarkAction
-        extends AbstractAction
-    {
-        public MarkAction ()
-        {
-            super("Show score Marks");
-            putValue(
-                SHORT_DESCRIPTION,
-                "Show the different marks in every measure");
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.markPainting.setValue(item.isSelected());
-            repaintDisplay();
-        }
-    }
-
-    //------------//
-    // SlotAction //
-    //------------//
-    private static class SlotAction
-        extends AbstractAction
-    {
-        public SlotAction ()
-        {
-            super("Show score Slots");
-            putValue(
-                SHORT_DESCRIPTION,
-                "Show the different slots in every measure");
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.slotPainting.setValue(item.isSelected());
-            repaintDisplay();
-        }
-    }
-
-    //-------------//
-    // VoiceAction //
-    //-------------//
-    private static class VoiceAction
-        extends AbstractAction
-    {
-        public VoiceAction ()
-        {
-            super("Show score Voices");
-            putValue(
-                SHORT_DESCRIPTION,
-                "Show the different voices in every measure");
-        }
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.voicePainting.setValue(item.isSelected());
-            repaintDisplay();
-        }
     }
 }

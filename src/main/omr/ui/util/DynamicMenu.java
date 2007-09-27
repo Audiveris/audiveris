@@ -27,6 +27,25 @@ public abstract class DynamicMenu
 
     /** The concrete UI menu */
     private final JMenu menu;
+    private MenuListener listener = new MenuListener() {
+        public void menuCanceled (MenuEvent e)
+        {
+        }
+
+        public void menuDeselected (MenuEvent e)
+        {
+        }
+
+        public void menuSelected (MenuEvent e)
+        {
+            // Clean up the whole menu
+            menu.removeAll();
+
+            // Rebuild the whole list of menu items on the fly
+            buildItems();
+        }
+    };
+
 
     //~ Constructors -----------------------------------------------------------
 
@@ -43,25 +62,15 @@ public abstract class DynamicMenu
         menu = new JMenu(menuLabel);
 
         // Listener to menu selection, to modify content on-the-fly
-        menu.addMenuListener(
-            new MenuListener() {
-                    public void menuCanceled (MenuEvent e)
-                    {
-                    }
+        menu.addMenuListener(listener);
+    }
 
-                    public void menuDeselected (MenuEvent e)
-                    {
-                    }
+    public DynamicMenu (Action action)
+    {
+        menu = new JMenu(action);
 
-                    public void menuSelected (MenuEvent e)
-                    {
-                        // Clean up the whole menu
-                        menu.removeAll();
-
-                        // Rebuild the whole list of menu items on the fly
-                        buildItems();
-                    }
-                });
+        // Listener to menu selection, to modify content on-the-fly
+        menu.addMenuListener(listener);
     }
 
     //~ Methods ----------------------------------------------------------------
