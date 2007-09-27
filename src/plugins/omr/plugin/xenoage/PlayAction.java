@@ -8,8 +8,9 @@
 //----------------------------------------------------------------------------//
 package omr.plugin.xenoage;
 
+import static omr.plugin.Dependency.*;
 import omr.plugin.Plugin;
-import omr.plugin.PluginType;
+import static omr.plugin.PluginType.*;
 
 import omr.score.Score;
 import omr.score.visitor.ScoreExporter;
@@ -40,7 +41,7 @@ import javax.swing.*;
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-@Plugin(type = PluginType.SCORE_EXPORT)
+@Plugin(type = SCORE_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = true)
 public class PlayAction
     extends AbstractAction
 {
