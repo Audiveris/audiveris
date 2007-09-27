@@ -1,0 +1,63 @@
+# ---------------------------------------------------------------------------- #
+#                                                                              #
+#                          s y s t e m . p l u g i n s                         #
+#                                                                              #
+#   Copyright (C) Herve Bitteur 2000-2007. All rights reserved.                #
+#   This software is released under the GNU General Public License.            #
+#   Contact author at herve.bitteur@laposte.net to report bugs & suggestions.  #
+# ---------------------------------------------------------------------------- #
+
+# This file gathers the classes to be loaded as UI actions.
+# This class collection can be augmented by listing classes in user.plugins file
+#
+# Version $Id$
+
+# Sheet
+#------
+omr.ui.SheetActions$OpenAction
+omr.ui.SheetActions$ZoomWidthAction
+omr.ui.SheetActions$ZoomHeightAction
+omr.ui.SheetActions$ScalePlotAction
+omr.ui.SheetActions$SkewPlotAction
+omr.ui.SheetActions$LinePlotAction
+
+# Script
+#-------
+omr.script.ScriptActions$LoadAction
+omr.script.ScriptActions$StoreAction
+
+omr.ui.SheetActions$CloseAction
+omr.ui.GuiActions$ExitAction
+
+# Score
+#------
+omr.score.ScoreActions$RebuildAction
+omr.score.ScoreActions$BrowseAction
+omr.score.ScoreActions$DumpAction
+omr.score.ScoreActions$StoreAction
+
+# Views
+#------
+omr.score.visitor.ScorePainter$SlotAction
+omr.score.visitor.ScorePainter$VoiceAction
+omr.score.visitor.ScorePainter$MarkAction
+omr.glyph.ui.GlyphLagView$StickLineAction            
+omr.glyph.ui.GlyphLagView$SlurCircleAction
+omr.sheet.LinesBuilder$LineAction
+omr.sheet.HorizontalsBuilder$LedgerAction
+omr.ui.GuiActions$ClearLogAction
+
+# Tools
+#------
+omr.ui.GuiActions$ShapeColorAction
+omr.glyph.ui.GlyphVerifier$MaterialAction
+omr.glyph.ui.GlyphTrainer$TrainerAction
+omr.ui.GuiActions$MemoryAction
+omr.ui.GuiActions$OptionsAction
+
+#omr.ui.GuiActions$TestAction
+#omr.ui.GuiActions$FineAction
+
+# Help
+#-----
+omr.ui.GuiActions$AboutAction
