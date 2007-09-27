@@ -50,24 +50,6 @@ public class PlayAction
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(PlayAction.class);
 
-    //~ Constructors -----------------------------------------------------------
-
-    //------------//
-    // PlayAction //
-    //------------//
-    /**
-     * Create the Play action, as a score-dependent action
-     */
-    public PlayAction ()
-    {
-        super("Play");
-        putValue(
-            SMALL_ICON,
-            IconManager.getInstance().loadImageIcon("media/Play"));
-        putValue(SHORT_DESCRIPTION, "Play score as MIDI using Xenoage Player");
-        setEnabled(false); // It is a score-dependent action
-    }
-
     //~ Methods ----------------------------------------------------------------
 
     //-----------------//
