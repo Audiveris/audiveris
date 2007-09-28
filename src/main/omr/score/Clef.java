@@ -32,6 +32,9 @@ public class Clef
 
     //~ Instance fields --------------------------------------------------------
 
+    /** The underlying glyph */
+    private final Glyph glyph;
+
     /** Precise clef shape, from Clefs range in Shape class */
     private Shape shape;
 
@@ -54,12 +57,14 @@ public class Clef
      * @param shape precise clef shape
      * @param center center wrt system (in units)
      * @param pitchPosition pitch position
+     * @param underlying glyph, if any
      */
     public Clef (Measure     measure,
                  Staff       staff,
                  Shape       shape,
                  SystemPoint center,
-                 int         pitchPosition)
+                 int         pitchPosition,
+                 Glyph       glyph)
     {
         super(measure);
 
@@ -67,6 +72,7 @@ public class Clef
         this.shape = shape;
         setCenter(center);
         this.pitchPosition = pitchPosition;
+        this.glyph = glyph;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -176,6 +182,11 @@ public class Clef
         sb.append(" pp=")
           .append((int) Math.rint(pitchPosition));
 
+        if (glyph != null) {
+            sb.append(" glyph#")
+              .append(glyph.getId());
+        }
+
         sb.append("}");
 
         return sb.toString();
@@ -195,14 +206,16 @@ public class Clef
         case G_CLEF :
         case G_CLEF_OTTAVA_ALTA :
         case G_CLEF_OTTAVA_BASSA :
-            glyph.setTranslation(new Clef(measure, staff, shape, center, 2));
+            glyph.setTranslation(
+                new Clef(measure, staff, shape, center, 2, glyph));
 
             return true;
 
         case F_CLEF :
         case F_CLEF_OTTAVA_ALTA :
         case F_CLEF_OTTAVA_BASSA :
-            glyph.setTranslation(new Clef(measure, staff, shape, center, -2));
+            glyph.setTranslation(
+                new Clef(measure, staff, shape, center, -2, glyph));
 
             return true;
 

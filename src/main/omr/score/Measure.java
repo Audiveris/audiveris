@@ -485,7 +485,7 @@ public class Measure
     /**
      * Report the latest clef, if any, defined before this measure point
      * (looking in beginning of the measure, then in previous measures, then in
-     * previous systems)
+     * previous systems) while staying in the same logical staff
      *
      * @param point the point before which to look
      * @return the latest clef defined, or null

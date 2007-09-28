@@ -251,7 +251,8 @@ public class ScoreExporter
     @Override
     public boolean visit (Clef clef)
     {
-        ///logger.info("Visiting " + clef);
+        logger.info("Visiting " + clef);
+
         if (isNewClef(clef)) {
             proxymusic.Clef pmClef = new proxymusic.Clef();
             getMeasureAttributes()
@@ -462,15 +463,25 @@ public class ScoreExporter
     {
         ///logger.info("Visiting " + keySignature);
         if (isNewKeySignature(keySignature)) {
-            Key key = new Key();
-            getMeasureAttributes()
-                .setKey(key);
-
+            Key    key = new Key();
             Fifths fifths = new Fifths();
             key.setFifths(fifths);
             fifths.setContent("" + keySignature.getKey());
 
             // For 2.0 and on, add default-y
+
+            // Trick: add this key signature only if it does not already exist
+            // We don't have an equal method defined, so let's do it manually
+            List<Key> keys = getMeasureAttributes()
+                                 .getKey();
+
+            for (Key k : keys) {
+                if (areEqual(k, key)) {
+                    return true; // Already inserted, so give up
+                }
+            }
+
+            keys.add(key);
         }
 
         return true;
@@ -576,12 +587,13 @@ public class ScoreExporter
                     systemLayout.setTopSystemDistance(topSystemDistance);
                     topSystemDistance.setContent(
                         toTenths(current.system.getTopLeft().y));
-                    
+
                     // Default tempo?
                     if (current.part.getTempo() != null) {
                         Sound sound = new Sound();
-                        current.pmMeasure.getNoteOrBackupOrForward().add(sound);
-                        sound.setTempo("" + current.part.getTempo() );
+                        current.pmMeasure.getNoteOrBackupOrForward()
+                                         .add(sound);
+                        sound.setTempo("" + current.part.getTempo());
                     }
                 } else {
                     // SystemDistance
@@ -1028,11 +1040,13 @@ public class ScoreExporter
         defaults.setPageLayout(pageLayout);
 
         PageWidth pageWidth = new PageWidth();
-        pageLayout.setPageWidth(pageWidth);
+        pageLayout.getContent()
+                  .add(pageWidth);
         pageWidth.setContent(toTenths(score.getDimension().width));
 
         PageHeight pageHeight = new PageHeight();
-        pageLayout.setPageHeight(pageHeight);
+        pageLayout.getContent()
+                  .add(pageHeight);
         pageHeight.setContent(toTenths(score.getDimension().height));
 
         // PartList
@@ -1053,23 +1067,29 @@ public class ScoreExporter
 
             scorePart.setPartName(partName);
             partName.setContent(current.part.getName());
-            
+
             if (p.getMidiProgram() != null) {
                 // Score instrument
                 ScoreInstrument scoreInstrument = new ScoreInstrument();
-                scorePart.getScoreInstrument().add(scoreInstrument);
+                scorePart.getScoreInstrument()
+                         .add(scoreInstrument);
                 scoreInstrument.setId(scorePart.getId() + "-I1");
+
                 InstrumentName instrumentName = new InstrumentName();
                 scoreInstrument.setInstrumentName(instrumentName);
-                instrumentName.setContent(Midi.getProgramName(p.getMidiProgram()));
-                
+                instrumentName.setContent(
+                    Midi.getProgramName(p.getMidiProgram()));
+
                 // Midi instrument
                 MidiInstrument midiInstrument = new MidiInstrument();
-                scorePart.getMidiInstrument().add(midiInstrument);
+                scorePart.getMidiInstrument()
+                         .add(midiInstrument);
                 midiInstrument.setId(scoreInstrument);
+
                 MidiChannel midiChannel = new MidiChannel();
                 midiInstrument.setMidiChannel(midiChannel);
                 midiChannel.setContent("" + p.getId());
+
                 MidiProgram midiProgram = new MidiProgram();
                 midiInstrument.setMidiProgram(midiProgram);
                 midiProgram.setContent("" + p.getMidiProgram());
@@ -1326,8 +1346,18 @@ public class ScoreExporter
                 }
             }
 
-            getMeasureAttributes()
-                .setTime(time);
+            // Trick: add this time signature only if it does not already exist
+            // We don't have an equal method defined, so let's do it manually
+            List<Time> times = getMeasureAttributes()
+                                   .getTime();
+
+            for (Time t : times) {
+                if (areEqual(t, time)) {
+                    return true; // Already inserted, so give up
+                }
+            }
+
+            times.add(time);
         } catch (InvalidTimeSignature ex) {
         }
 
@@ -1337,6 +1367,7 @@ public class ScoreExporter
     //--------------//
     // visit Tuplet //
     //--------------//
+    @Override
     public boolean visit (Tuplet tuplet)
     {
         proxymusic.Tuplet pmTuplet = new proxymusic.Tuplet();
@@ -1433,6 +1464,59 @@ public class ScoreExporter
 
     //- Utility Methods --------------------------------------------------------
 
+    //----------//
+    // areEqual //
+    //----------//
+    private static boolean areEqual (Time left,
+                                     Time right)
+    {
+        return (getNum(left).equals(getNum(right))) &&
+               (getDen(left).equals(getDen(right)));
+    }
+
+    //----------//
+    // areEqual //
+    //----------//
+    private static boolean areEqual (Key left,
+                                     Key right)
+    {
+        return left.getFifths()
+                   .getContent()
+                   .equals(right.getFifths().getContent());
+    }
+
+    //--------//
+    // getDen //
+    //--------//
+    private static java.lang.String getDen (Time time)
+    {
+        for (Object obj : time.getBeatsAndBeatType()) {
+            if (obj instanceof BeatType) {
+                return ((BeatType) obj).getContent();
+            }
+        }
+
+        logger.severe("No denominator found in " + time);
+
+        return "";
+    }
+
+    //--------//
+    // getNum //
+    //--------//
+    private static java.lang.String getNum (Time time)
+    {
+        for (Object obj : time.getBeatsAndBeatType()) {
+            if (obj instanceof Beats) {
+                return ((Beats) obj).getContent();
+            }
+        }
+
+        logger.severe("No numerator found in " + time);
+
+        return "";
+    }
+
     //----------------------//
     // getMeasureAttributes //
     //----------------------//
@@ -1450,52 +1534,6 @@ public class ScoreExporter
         }
 
         return current.attributes;
-    }
-
-    //-----------//
-    // isNewClef //
-    //-----------//
-    /**
-     * Make sure we have a NEW clef, not already assigned. We have to go back
-     * in current measure, then in current staff, then in same staff in previous
-     * systems, until we find a previous clef. And we compare the two shapes.
-     * @param clef the potentially new clef
-     * @return true if this clef is really new
-     */
-    private boolean isNewClef (Clef clef)
-    {
-        // Perhaps another clef before this one ?
-        Clef previousClef = current.measure.getClefBefore(
-            new SystemPoint(clef.getCenter().x - 1, 0));
-
-        if (previousClef != null) {
-            return previousClef.getShape() != clef.getShape();
-        }
-
-        return true; // Since no previous clef found
-    }
-
-    //-------------------//
-    // isNewKeySignature //
-    //-------------------//
-    /**
-     * Make sure we have a NEW key, not already assigned. We have to go back
-     * in current measure, then in current staff, then in same staff in previous
-     * systems, until we find a previous key. And we compare the two shapes.
-     * @param key the potentially new key
-     * @return true if this key is really new
-     */
-    private boolean isNewKeySignature (KeySignature key)
-    {
-        // Perhaps another key before this one ?
-        KeySignature previousKey = current.measure.getKeyBefore(
-            key.getCenter());
-
-        if (previousKey != null) {
-            return previousKey.getKey() != key.getKey();
-        }
-
-        return true; // Since no previous key found
     }
 
     //--------------//
@@ -1621,6 +1659,53 @@ public class ScoreExporter
                 logger.severe("Could not setStaff for element " + classe);
             }
         }
+    }
+
+    //-----------//
+    // isNewClef //
+    //-----------//
+    /**
+     * Make sure we have a NEW clef, not already assigned. We have to go back
+     * (on the same staff) in current measure, then in previous measures,
+     * then in same staff in previous systems, until we find a previous clef.
+     * And we compare the two shapes.
+     * @param clef the potentially new clef
+     * @return true if this clef is really new
+     */
+    private boolean isNewClef (Clef clef)
+    {
+        // Perhaps another clef before this one ?
+        Clef previousClef = current.measure.getClefBefore(
+            new SystemPoint(clef.getCenter().x - 1, clef.getCenter().y));
+
+        if (previousClef != null) {
+            return previousClef.getShape() != clef.getShape();
+        }
+
+        return true; // Since no previous clef found
+    }
+
+    //-------------------//
+    // isNewKeySignature //
+    //-------------------//
+    /**
+     * Make sure we have a NEW key, not already assigned. We have to go back
+     * in current measure, then in current staff, then in same staff in previous
+     * systems, until we find a previous key. And we compare the two shapes.
+     * @param key the potentially new key
+     * @return true if this key is really new
+     */
+    private boolean isNewKeySignature (KeySignature key)
+    {
+        // Perhaps another key before this one ?
+        KeySignature previousKey = current.measure.getKeyBefore(
+            key.getCenter());
+
+        if (previousKey != null) {
+            return previousKey.getKey() != key.getKey();
+        }
+
+        return true; // Since no previous key found
     }
 
     //~ Inner Classes ----------------------------------------------------------

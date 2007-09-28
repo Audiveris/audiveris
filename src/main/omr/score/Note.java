@@ -762,6 +762,11 @@ public class Note
         sb.append(" pp=")
           .append((int) Math.rint(pitchPosition));
 
+        if (glyph != null) {
+            sb.append(" glyph#")
+              .append(glyph.getId());
+        }
+
         sb.append("}");
 
         return sb.toString();
