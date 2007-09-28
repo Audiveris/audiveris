@@ -199,14 +199,14 @@ public class GlyphLag
      *
      * @return the collection of glyphs for which at least a section is assigned
      */
-    public Collection<Glyph> getActiveGlyphs ()
+    public synchronized Collection<Glyph> getActiveGlyphs ()
     {
         if (activeGlyphs == null) {
-            synchronized (this) {
+            //synchronized (this) {
                 if (activeGlyphs == null) {
                     activeGlyphs = new TreeSet<Glyph>(glyphMap.values());
                 }
-            }
+            //}
         }
 
         return Collections.unmodifiableCollection(activeGlyphs);
