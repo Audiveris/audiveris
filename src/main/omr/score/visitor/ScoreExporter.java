@@ -468,10 +468,7 @@ public class ScoreExporter
             key.setFifths(fifths);
             fifths.setContent("" + keySignature.getKey());
 
-            // For 2.0 and on, add default-y
-
             // Trick: add this key signature only if it does not already exist
-            // We don't have an equal method defined, so let's do it manually
             List<Key> keys = getMeasureAttributes()
                                  .getKey();
 
@@ -1347,7 +1344,6 @@ public class ScoreExporter
             }
 
             // Trick: add this time signature only if it does not already exist
-            // We don't have an equal method defined, so let's do it manually
             List<Time> times = getMeasureAttributes()
                                    .getTime();
 
