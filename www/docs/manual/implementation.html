@@ -430,6 +430,99 @@
 	    
 	</DIV>
 	
+	<A NAME="PLUGINS">
+	    <H2>Plugins</H2>
+	</A>
+	
+	<A NAME="PLUGIN_MECHANISM">
+	    <H3>Plugin Mechanism</H3>
+	</A>
+
+	<P> On audiveris main frame, all user actions trigerred via pulldown
+	    menus or via tool bar buttons are now implemented as plugins.</P>
+
+	<P> These can be <I><B>system</B></I> plugins which are predefined in the
+	    Audiveris release, or can be <I><B>user</B></I> plugins supplied by
+	    the user himself as an added feature. The only difference between
+	    system and user plugins, besides their origin, is the fact they are
+	    referenced in <U>/config/system.plugins</U> for the former, and
+	    in <U>/config/user.plugins</U> for the latter.</P>
+
+	<P> Here are the various items needed to get a plugin up and running:</P>
+	<UL>
+	    <LI> A Java class to define the action. See examples in source
+		file <U>omr.ui.GuiActions.java</U></LI>
+	    <UL>
+		<LI> The class must implement
+		    the <code>javax.swing.Action</code> interface, typically it
+		    extends AbstractAction.</LI>
+		<LI> The class must be <B>static</B> and have a <B>noarg
+		    constructor</B> so that it is easily instantiable.</LI>
+		<LI> The class byte code must be available somewhere, either in
+		    the original Audiveris jar file (which is the case for
+		    system plugins) or in additional any jar file or class
+		    folder provided to the java command that launches
+		    Audiveris.</LI>
+		<LI> The class must be annotated with a <code>Plugin</code>
+		    annotation. The purpose of the annotation is to specify
+		    certain plugin characteristics (all characteristics have
+		    default value, but the Plugin annotation must be present,
+		    even if it is empty):
+		    <UL>
+			<LI><code>type</code> (default=DEFAULT): The section of
+			    UI this action relates to. This drives the part of
+			    the UI where the action will appear. By default the
+			    action actually appears nowhere.</LI>
+			<LI><code>dependency</code> (default=NONE): The action
+			    may be enabled only if there is a current sheet or
+			    if there is a current score. By default an action is
+			    always enabled.</LI>
+			<LI><code>item</code> (default=JMenuItem): The precise
+			    (sub)class of JMenuItem to host the action in proper
+			    menu. Typically this can be replaced by a
+			    JCheckboxMenuItem to get additional features.</LI>
+			<LI><code>onToolbar</code> (default=false): Specify
+			    whether a button should be created on the
+			    application tool bar.</LI>
+		    </UL>
+		</LI>
+	    </UL>
+	    <LI> The fully qualified name of the class must be listed in either
+		the <U>/config/system.plugins</U> or
+		the <U>/config/user.plugins</U> files. These files typically
+		contain one line per class name, commented lines begin with a
+		'#' character.</LI>
+	    <LI> Visual characteristics for this action must be specified in the
+		proper <U>/config/ui.properties</U> resource file. Depending on
+		your locale setting, you may have a specific additional
+		properties file, for example <U>/config/ui_fr.properties</U> for
+		the French locale, to override default characteristics. In these
+		properties files, keys are built by using the class fully
+		qualified name, appended with a '.' character, followed by the
+		Action characteristic identifier. The main characteristics
+		identifiers are the following (see
+		the <code>javax.swing.Action</code> class for a comprehensive
+		list):
+		<UL>
+		    <LI>"Name": for the menu item label</LI>
+		    <LI>"ShortDescription": for the tool tip text</LI>
+		    <LI>"SmallIcon": for the icon both in menu and on tool
+			bar</LI>
+		    <LI>"AcceleratorKey": for direct access</LI>
+		    <LI>"MnemonicKey": for access in menu</LI>
+		</UL>
+	    </LI>
+	    
+		
+
+	</UL>
+
+
+
+
+
+
+	    
 	<A NAME="SHEET_SCORE">
 	    <H2>Sheet / Score</H2>
 	</A>
@@ -630,13 +723,39 @@
 	    the Score hierarchy can be listed as follows :</P>
 	
 	<PRE>
-	    Score O | | System O | ___________________ {StaveList, SlurList}
-	    Dummy O O | | | | Stave Slur O |
-	    _____________________________________________ {LyricList, TextList,
-	    DynamicList, MeasureList} Dummy O O O O | | | | | | | | Lyric Text
-	    Dynamic Measure O O | | | _______________________________ Syllable
-	    {ClefList, KeysigList, ChordList} Dummy O O O | | | | | | Clef
-	    Keysig Chord O | | Note
+                               Score                                                      
+                                 O                                                        
+                                 |                                                        
+                                 |                                                        
+                               Page  (not yet implemented)                                
+                                 O                                                        
+                                 |                                                        
+                                 |                                                        
+                              System                                                      
+                                 O                                                        
+                                 |                                                        
+                                 |                                                        
+                            SystemPart                                                    
+                                 O                                                        
+                                 |                                                        
+          _________________________________________________                               
+         {startingBarline, StaffList, MeasureList, SlurList}                              
+                                O            O         O                                  
+                                |            |         |                                  
+                                |            |         |                                  
+                              Staff       Measure    Slur                                 
+                                             O                                            
+                                             |                                            
+ _______________________________________________________________________________________  
+{ClefList, KeyList, Time, ChordList, BeamList, LyricList, TextList, DynamicList, Barline} 
+     O        O       O        O         O          O         O            O              
+     |        |       |        |         |          |         |            |              
+     |        |       |        |         |          |         |            |              
+   Clef    KeySig. TimeSig.  Chord     Beam       Lyric     Text        Dynamic           
+                               O                    O                                     
+                               |                    |                                     
+                               |                    |                                     
+                             Note               Syllable                                  
 	</PRE>
 	
 	<P> The beginning of figure above can be read as follows : </P>
