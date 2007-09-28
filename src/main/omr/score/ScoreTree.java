@@ -162,16 +162,9 @@ public class ScoreTree
         final ScoreTree scoreTree = new ScoreTree(score);
         frame.getContentPane()
              .add("Center", scoreTree.component);
+        frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         frame.pack();
-
-        Dimension screenSize = Toolkit.getDefaultToolkit()
-                                      .getScreenSize();
-        int       w = WINDOW_WIDTH + 10;
-        int       h = WINDOW_HEIGHT + 10;
-        frame.setLocation(
-            (screenSize.width / 3) - (w / 2),
-            (screenSize.height / 2) - (h / 2));
-        frame.setSize(w, h);
+        frame.setLocation(100, 100);
         frame.setVisible(true);
 
         return frame;
