@@ -10,6 +10,7 @@ package omr.ui;
 
 import omr.Main;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.constant.UnitManager;
 import omr.constant.UnitModel;
@@ -27,8 +28,10 @@ import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Memory;
 
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.net.URI;
 
 import javax.swing.*;
 
@@ -106,6 +109,28 @@ public class GuiActions
           .append("</TD></TR>");
     }
 
+    //---------------//
+    // launchBrowser //
+    //---------------//
+    private static void launchBrowser (String urlString)
+    {
+        // Safer
+        if (!Desktop.isDesktopSupported()) {
+            logger.warning(
+                "Desktop features are not supported on this platform");
+
+            return;
+        }
+
+        try {
+            URI uri = URI.create(urlString);
+            Desktop.getDesktop()
+                   .browse(uri);
+        } catch (IOException ex) {
+            logger.warning("Could not launch the browser on " + urlString, ex);
+        }
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-------------//
@@ -116,7 +141,7 @@ public class GuiActions
      * information about the application.
      *
      */
-    @Plugin(type = PluginType.HELP, dependency = Dependency.NONE, onToolbar = true)
+    @Plugin(type = PluginType.HELP, dependency = Dependency.NONE)
     public static class AboutAction
         extends AbstractAction
     {
@@ -141,9 +166,6 @@ public class GuiActions
             // Launch information
             addTableRow(sb, "Classes", Main.getClassesContainer());
 
-            // Web site
-            addTableRow(sb, "WebSite", "https://audiveris.dev.java.net");
-
             sb.append("</TABLE></HTML>");
 
             displayMessage(sb.toString());
@@ -156,7 +178,6 @@ public class GuiActions
     /**
      * Class <code>ClearLogAction</code> erases the content of the log display
      * (but not the content of the log itself)
-     *
      */
     @Plugin(type = PluginType.LOG_VIEW, onToolbar = true)
     public static class ClearLogAction
@@ -224,6 +245,28 @@ public class GuiActions
         public void actionPerformed (ActionEvent e)
         {
             logger.info("Occupied memory is " + Memory.getValue() + " bytes");
+        }
+    }
+
+    //-----------------//
+    // OperationAction //
+    //-----------------//
+    /**
+     * Class <code>OperationAction</code> launches a browser on Audiveris Operation manual
+     */
+    @Plugin(type = PluginType.HELP, dependency = Dependency.NONE)
+    public static class OperationAction
+        extends AbstractAction
+    {
+        public OperationAction ()
+        {
+            setEnabled(Desktop.isDesktopSupported());
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            launchBrowser(constants.operationUrl.getValue());
         }
     }
 
@@ -329,15 +372,45 @@ public class GuiActions
         }
     }
 
+    //---------------//
+    // WebSiteAction //
+    //---------------//
+    /**
+     * Class <code>WebSiteAction</code> launches a browser on Audiveris website
+     */
+    @Plugin(type = PluginType.HELP, dependency = Dependency.NONE)
+    public static class WebSiteAction
+        extends AbstractAction
+    {
+        public WebSiteAction ()
+        {
+            setEnabled(Desktop.isDesktopSupported());
+        }
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            launchBrowser(constants.webSiteUrl.getValue());
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
         extends ConstantSet
     {
-        PixelCount paramHeight = new PixelCount(
+        PixelCount      paramHeight = new PixelCount(
             500,
-            "Height of the param frame");
-        PixelCount paramWidth = new PixelCount(900, "Width of the param frame");
+            "Height of the Options frame");
+        PixelCount      paramWidth = new PixelCount(
+            900,
+            "Width of the Options frame");
+        Constant.String webSiteUrl = new Constant.String(
+            "https://audiveris.dev.java.net",
+            "URL of Audiveris home page");
+        Constant.String operationUrl = new Constant.String(
+            "https://audiveris.dev.java.net/nonav/docs/manual/index.html?manual=operation",
+            "URL of Audiveris operation manual");
     }
 }

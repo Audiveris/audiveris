@@ -10,6 +10,9 @@
 # This file gathers the classes to be loaded as UI actions.
 # This class collection can be augmented by listing classes in user.plugins file
 #
+# The order of menus in the menu bar and the order of sections in each menu are
+# predefined, but the order of items within a section depends on this list.
+#
 # Version $Id$
 
 # Sheet
@@ -35,6 +38,7 @@ omr.score.ScoreActions$RebuildAction
 omr.score.ScoreActions$BrowseAction
 omr.score.ScoreActions$DumpAction
 omr.score.ScoreActions$StoreAction
+omr.plugin.xenoage.PlayAction
 
 # Views
 #------
@@ -60,4 +64,6 @@ omr.ui.GuiActions$OptionsAction
 
 # Help
 #-----
+omr.ui.GuiActions$OperationAction
+omr.ui.GuiActions$WebSiteAction
 omr.ui.GuiActions$AboutAction
