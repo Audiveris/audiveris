@@ -110,7 +110,7 @@ public class MainGui
         frame = new JFrame();
 
         defineMenus();
-        
+
         scoreController = new ScoreController();
 
         // Frame title
@@ -146,6 +146,41 @@ public class MainGui
         button.setBorder(UIUtilities.getToolBorder());
 
         return button;
+    }
+
+    //----------------//
+    // displayMessage //
+    //----------------//
+    /**
+     * Allow to display a modal dialog with an html content
+     *
+     * @param htmlStr the HTML string
+     */
+    public void displayMessage (String htmlStr)
+    {
+        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
+        htmlPane.setEditable(false);
+        JOptionPane.showMessageDialog(frame, htmlPane);
+    }
+
+    //----------------//
+    // displayWarning //
+    //----------------//
+    /**
+     * Allow to display a modal dialog with an html content
+     *
+     * @param htmlStr the HTML string
+     */
+    public void displayWarning (String htmlStr)
+    {
+        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
+        htmlPane.setEditable(false);
+
+        JOptionPane.showMessageDialog(
+            frame,
+            htmlPane,
+            "Warning",
+            JOptionPane.WARNING_MESSAGE);
     }
 
     //----------//

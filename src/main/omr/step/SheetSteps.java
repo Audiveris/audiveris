@@ -27,8 +27,6 @@ import omr.sheet.SkewBuilder;
 import omr.sheet.SystemInfo;
 import static omr.step.Step.*;
 
-import omr.ui.GuiActions;
-
 import omr.util.Logger;
 
 import java.io.File;
@@ -485,7 +483,8 @@ public class SheetSteps
                 logger.warning(ex.getMessage());
 
                 if (Main.getGui() != null) {
-                    GuiActions.displayWarning(
+                    Main.getGui()
+                        .displayWarning(
                         "<B>" + ex.getMessage() + "</B><BR>" +
                         "Please use grey scale with 256 values");
                 }

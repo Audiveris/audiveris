@@ -18,8 +18,6 @@ import omr.lag.RunsBuilder;
 
 import omr.step.StepException;
 
-import omr.ui.GuiActions;
-
 import omr.util.Implement;
 import omr.util.Logger;
 
@@ -176,7 +174,8 @@ public class ScaleBuilder
             logger.warning(msg);
 
             if (Main.getGui() != null) {
-                GuiActions.displayWarning(msg);
+                Main.getGui()
+                    .displayWarning(msg);
             }
 
             throw new StepException(msg);

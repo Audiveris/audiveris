@@ -60,55 +60,6 @@ public class GuiActions
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // displayMessage //
-    //----------------//
-    /**
-     * Allow to display a modal dialog with an html content
-     *
-     * @param htmlStr the HTML string
-     */
-    public static void displayMessage (String htmlStr)
-    {
-        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
-        htmlPane.setEditable(false);
-        JOptionPane.showMessageDialog(Main.getGui().getFrame(), htmlPane);
-    }
-
-    //----------------//
-    // displayWarning //
-    //----------------//
-    /**
-     * Allow to display a modal dialog with an html content
-     *
-     * @param htmlStr the HTML string
-     */
-    public static void displayWarning (String htmlStr)
-    {
-        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
-        htmlPane.setEditable(false);
-
-        JOptionPane.showMessageDialog(
-            Main.getGui().getFrame(),
-            htmlPane,
-            "Warning",
-            JOptionPane.WARNING_MESSAGE);
-    }
-
-    //-------------//
-    // addTableRow //
-    //-------------//
-    private static void addTableRow (StringBuilder sb,
-                                     String        name,
-                                     Object        value)
-    {
-        sb.append("<TR><TH>")
-          .append(name)
-          .append("<TH><TD>")
-          .append(value)
-          .append("</TD></TR>");
-    }
-
     //---------------//
     // launchBrowser //
     //---------------//
@@ -145,30 +96,45 @@ public class GuiActions
     public static class AboutAction
         extends AbstractAction
     {
+        private StringBuilder sb = null;
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.append("<HTML><TABLE BORDER='0'>");
+            if (sb == null) {
+                sb = new StringBuilder();
 
-            // Application information
-            addTableRow(sb, "Application", Main.getToolName());
+                sb.append("<HTML><TABLE BORDER='0'>");
 
-            // Version information
-            addTableRow(sb, "Version", Main.getToolVersion());
+                // Application information
+                addTableRow("Application", Main.getToolName());
 
-            // Build information, if available
-            addTableRow(
-                sb,
-                "Build",
-                (Main.getToolBuild() != null) ? Main.getToolBuild() : "");
+                // Version information
+                addTableRow("Version", Main.getToolVersion());
 
-            // Launch information
-            addTableRow(sb, "Classes", Main.getClassesContainer());
+                // Build information, if available
+                addTableRow(
+                    "Build",
+                    (Main.getToolBuild() != null) ? Main.getToolBuild() : "");
 
-            sb.append("</TABLE></HTML>");
+                // Launch information
+                addTableRow("Classes", Main.getClassesContainer());
 
-            displayMessage(sb.toString());
+                sb.append("</TABLE></HTML>");
+            }
+
+            Main.getGui()
+                .displayMessage(sb.toString());
+        }
+
+        private void addTableRow (String name,
+                                  Object value)
+        {
+            sb.append("<TR><TH>")
+              .append(name)
+              .append("<TH><TD>")
+              .append(value)
+              .append("</TD></TR>");
         }
     }
 
