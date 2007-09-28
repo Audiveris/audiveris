@@ -251,7 +251,7 @@ public class ScoreExporter
     @Override
     public boolean visit (Clef clef)
     {
-        logger.info("Visiting " + clef);
+        ///logger.info("Visiting " + clef);
 
         if (isNewClef(clef)) {
             proxymusic.Clef pmClef = new proxymusic.Clef();
