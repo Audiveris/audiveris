@@ -9,6 +9,7 @@
 //
 package omr.score;
 
+
 import omr.plugin.PluginType;
 
 import omr.sheet.Sheet;

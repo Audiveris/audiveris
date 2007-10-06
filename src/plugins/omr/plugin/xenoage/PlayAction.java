@@ -13,12 +13,11 @@ import omr.plugin.Plugin;
 import static omr.plugin.PluginType.*;
 
 import omr.score.Score;
+import omr.score.ScoreActions;
 import omr.score.visitor.ScoreExporter;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
-
-import omr.ui.icon.IconManager;
 
 import omr.util.Implement;
 import omr.util.Logger;
@@ -60,46 +59,52 @@ public class PlayAction
     {
         Sheet sheet = SheetManager.getSelectedSheet();
 
-        if (sheet != null) {
-            Score score = sheet.getScore();
+        if (sheet == null) {
+            return;
+        }
 
-            if (score != null) {
-                try {
-                    // A pair of connected piped streams
-                    final PipedInputStream pis = new PipedInputStream();
-                    PipedOutputStream      pos = new PipedOutputStream(pis);
+        Score score = sheet.getScore();
 
-                    // Launch the reading/playing asynchronously
-                    final Runnable runnable = new Runnable() {
-                        public void run ()
-                        {
-                            try {
-                                // Get access to a Xenoage player
-                                ExternalPlayer player = new ExternalPlayer(
-                                    null);
-                                // Read the piped input stream
-                                player.setMusicXMLData(pis);
-                                logger.info("Playing...");
-                                player.play();
-                            } catch (Exception ex) {
-                                logger.warning("Player error", ex);
-                            }
-                        }
-                    };
+        if (score == null) {
+            return;
+        }
 
-                    // Start the reader
-                    Thread t = new Thread(runnable);
-                    t.start();
+        // Check whether score parameters need to be set up */
+        ScoreActions.checkParameters(score);
 
-                    // Write the score XML data to the piped output stream
-                    new ScoreExporter(score, pos);
+        try {
+            // A pair of connected piped streams
+            final PipedInputStream pis = new PipedInputStream();
+            PipedOutputStream      pos = new PipedOutputStream(pis);
 
-                    // Close the stream, to notify the end to the reader
-                    pos.close();
-                } catch (Exception ex) {
-                    logger.warning("Player error", ex);
+            // Launch the reading/playing asynchronously
+            final Runnable runnable = new Runnable() {
+                public void run ()
+                {
+                    try {
+                        // Get access to a Xenoage player
+                        ExternalPlayer player = new ExternalPlayer(null);
+                        // Read the piped input stream
+                        player.setMusicXMLData(pis);
+                        logger.info("Playing...");
+                        player.play();
+                    } catch (Exception ex) {
+                        logger.warning("Player error", ex);
+                    }
                 }
-            }
+            };
+
+            // Start the reader
+            Thread t = new Thread(runnable);
+            t.start();
+
+            // Write the score XML data to the piped output stream
+            new ScoreExporter(score, pos);
+
+            // Close the stream, to notify the end to the reader
+            pos.close();
+        } catch (Exception ex) {
+            logger.warning("Player error", ex);
         }
     }
 }

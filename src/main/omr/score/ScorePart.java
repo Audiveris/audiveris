@@ -120,7 +120,6 @@ public class ScorePart
     /**
      * Check whether the list of ids are identical
      *
-     *
      * @param obj the object to compare to
      * @return true if equal
      */
@@ -175,6 +174,9 @@ public class ScorePart
         return id;
     }
 
+    //----------------//
+    // getMidiProgram //
+    //----------------//
     public Integer getMidiProgram ()
     {
         return midiProgram;
@@ -219,6 +221,9 @@ public class ScorePart
         return ids;
     }
 
+    //----------//
+    // getTempo //
+    //----------//
     public Integer getTempo ()
     {
         return tempo;
@@ -259,6 +264,9 @@ public class ScorePart
         this.id = id;
     }
 
+    //----------------//
+    // setMidiProgram //
+    //----------------//
     public void setMidiProgram (Integer midiProgram)
     {
         this.midiProgram = midiProgram;
@@ -277,6 +285,9 @@ public class ScorePart
         this.name = name;
     }
 
+    //----------//
+    // setTempo //
+    //----------//
     public void setTempo (Integer tempo)
     {
         this.tempo = tempo;

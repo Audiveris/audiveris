@@ -64,9 +64,7 @@ public class Score
     /** Sheet global scale */
     private Scale scale;
 
-    /**
-     * ScorePart list for the whole score
-     */
+    /** ScorePart list for the whole score */
     private List<ScorePart> partList;
 
     /** The most recent system pointed at */
@@ -74,6 +72,9 @@ public class Score
 
     /** The view on this score if any */
     private transient ScoreView view;
+
+    /** The specificed tempo, if any */
+    private transient Integer tempo;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -356,6 +357,22 @@ public class Score
     public List<TreeNode> getSystems ()
     {
         return getChildren();
+    }
+
+    //----------//
+    // setTempo //
+    //----------//
+    public void setTempo (Integer tempo)
+    {
+        this.tempo = tempo;
+    }
+
+    //----------//
+    // getTempo //
+    //----------//
+    public Integer getTempo ()
+    {
+        return tempo;
     }
 
     //---------//

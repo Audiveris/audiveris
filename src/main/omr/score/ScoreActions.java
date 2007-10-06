@@ -9,6 +9,7 @@
 //
 package omr.score;
 
+import omr.Main;
 import static omr.plugin.Dependency.*;
 import omr.plugin.Plugin;
 import static omr.plugin.PluginType.*;
@@ -17,15 +18,16 @@ import omr.sheet.SheetManager;
 
 import omr.step.Step;
 
+import omr.ui.ScoreBoard;
 import omr.ui.util.SwingWorker;
 
 import omr.util.Implement;
 import omr.util.Logger;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.beans.*;
 
-import javax.swing.AbstractAction;
+import javax.swing.*;
 
 /**
  * Class <code>ScoreActions</code> gathers actions related to scores
@@ -43,6 +45,60 @@ public class ScoreActions
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreActions.class);
 
+    //~ Methods ----------------------------------------------------------------
+
+    //-----------------//
+    // checkParameters //
+    //-----------------//
+    public static void checkParameters (Score score)
+    {
+        if (score.getTempo() == null) {
+            defineParameters(score);
+        }
+    }
+
+    //------------------//
+    // defineParameters //
+    //------------------//
+    public static void defineParameters (Score score)
+    {
+        final ScoreBoard  scoreBoard = new ScoreBoard("Parameters", score);
+        final JOptionPane optionPane = new JOptionPane(
+            scoreBoard.getComponent(),
+            JOptionPane.QUESTION_MESSAGE,
+            JOptionPane.OK_CANCEL_OPTION);
+
+        final JDialog     dialog = new JDialog(
+            Main.getGui().getFrame(),
+            score.getRadix() + " parameters",
+            true); // Modal flag
+        dialog.setContentPane(optionPane);
+
+        optionPane.addPropertyChangeListener(
+            new PropertyChangeListener() {
+                    public void propertyChange (PropertyChangeEvent e)
+                    {
+                        String prop = e.getPropertyName();
+
+                        if (dialog.isVisible() &&
+                            (e.getSource() == optionPane) &&
+                            (prop.equals(JOptionPane.VALUE_PROPERTY))) {
+                            Object obj = optionPane.getValue();
+                            int    value = ((Integer) obj).intValue();
+
+                            if (value == JOptionPane.OK_OPTION) {
+                                scoreBoard.commit();
+                            }
+
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                        }
+                    }
+                });
+        dialog.pack();
+        dialog.setVisible(true);
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //--------------//
@@ -56,6 +112,8 @@ public class ScoreActions
     public static class BrowseAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -76,11 +134,33 @@ public class ScoreActions
     public static class DumpAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Override
         public void actionPerformed (ActionEvent e)
         {
             ScoreController.getCurrentScore()
                            .dump();
+        }
+    }
+
+    //-------------//
+    // ParamAction //
+    //-------------//
+    /**
+     * Class <code>ParamAction</code> launches the dialog to set up score
+     * parameters.
+     */
+    @Plugin(type = SCORE_EDIT, dependency = SCORE_AVAILABLE, onToolbar = true)
+    public static class ParamAction
+        extends AbstractAction
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            defineParameters(ScoreController.getCurrentScore());
         }
     }
 
@@ -95,6 +175,8 @@ public class ScoreActions
     public static class RebuildAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -128,6 +210,8 @@ public class ScoreActions
     public static class StoreAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -135,6 +219,8 @@ public class ScoreActions
                 public Object construct ()
                 {
                     Score score = ScoreController.getCurrentScore();
+
+                    checkParameters(score);
 
                     try {
                         score.export();
