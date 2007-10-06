@@ -67,7 +67,10 @@ public abstract class Board
         /** Board for run info */
         RUN("Run"), 
         /** Board for section info */
-        SECTION("Section");
+        SECTION("Section"), 
+        /** Board for Score info */
+        SCORE("Score");
+        //
         // For description only
         private String label;
 
@@ -166,23 +169,6 @@ public abstract class Board
         }
     }
 
-    //------------//
-    // disconnect //
-    //------------//
-    /**
-     * Invoked when the board has been made invisible, to disconnect from input
-     * selections.
-     */
-    public void disconnect ()
-    {
-        ///logger.info("-Board " + tag + " Hidden");
-        if (inputSelectionList != null) {
-            for (Selection input : inputSelectionList) {
-                input.deleteObserver(this);
-            }
-        }
-    }
-
     //---------//
     // connect //
     //---------//
@@ -196,6 +182,23 @@ public abstract class Board
         if (inputSelectionList != null) {
             for (Selection input : inputSelectionList) {
                 input.addObserver(this);
+            }
+        }
+    }
+
+    //------------//
+    // disconnect //
+    //------------//
+    /**
+     * Invoked when the board has been made invisible, to disconnect from input
+     * selections.
+     */
+    public void disconnect ()
+    {
+        ///logger.info("-Board " + tag + " Hidden");
+        if (inputSelectionList != null) {
+            for (Selection input : inputSelectionList) {
+                input.deleteObserver(this);
             }
         }
     }

@@ -9,7 +9,13 @@
 //-----------------------------------------------------------------------//
 package omr.ui;
 
+import omr.score.Score;
+import omr.score.ScoreActions;
+import omr.score.ScoreController;
+
 import omr.util.Logger;
+
+import javax.swing.*;
 
 /**
  * A utility class, just used for small test action triggered from UI
@@ -34,6 +40,10 @@ public class UITest
 
     public static void test ()
     {
-        logger.info("Test method is void");
+        Score score = ScoreController.getCurrentScore();
+
+        if (score != null) {
+            ScoreActions.defineParameters(score);
+        }
     }
 }
