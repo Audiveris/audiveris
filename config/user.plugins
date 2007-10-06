@@ -8,7 +8,8 @@
 # ---------------------------------------------------------------------------- #
 
 # This file gathers classes to be loaded as UI actions, in addition to the
-# classes alreday listed in the system.plugins file
+# classes allready listed in the system.plugins file
 #
 # Version $Id$
 
+#omr.ui.GuiActions$TestAction

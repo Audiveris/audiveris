@@ -35,6 +35,7 @@ omr.ui.GuiActions$ExitAction
 # Score
 #------
 omr.score.ScoreActions$RebuildAction
+omr.score.ScoreActions$ParamAction
 omr.score.ScoreActions$BrowseAction
 omr.score.ScoreActions$DumpAction
 omr.score.ScoreActions$StoreAction
@@ -59,7 +60,6 @@ omr.glyph.ui.GlyphTrainer$TrainerAction
 omr.ui.GuiActions$MemoryAction
 omr.ui.GuiActions$OptionsAction
 
-#omr.ui.GuiActions$TestAction
 #omr.ui.GuiActions$FineAction
 
 # Help
