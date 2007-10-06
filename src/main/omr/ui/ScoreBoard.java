@@ -14,7 +14,7 @@ import omr.constant.ConstantSet;
 
 import omr.score.Score;
 import omr.score.ScorePart;
-import omr.score.visitor.Midi;
+import omr.score.Midi;
 
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;

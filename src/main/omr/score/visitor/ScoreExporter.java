@@ -9,6 +9,7 @@
 //
 package omr.score.visitor;
 
+import omr.score.Midi;
 import omr.Main;
 
 import omr.glyph.Glyph;
