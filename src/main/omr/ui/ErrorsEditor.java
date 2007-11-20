@@ -11,9 +11,9 @@ package omr.ui;
 
 import omr.glyph.Glyph;
 
-import omr.score.ScorePoint;
-import omr.score.System;
-import omr.score.SystemNode;
+import omr.score.common.ScorePoint;
+import omr.score.entity.System;
+import omr.score.entity.SystemNode;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
