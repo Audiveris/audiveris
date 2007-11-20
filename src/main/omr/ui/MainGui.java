@@ -13,7 +13,7 @@ import omr.Main;
 
 import omr.constant.*;
 
-import omr.score.ScoreController;
+import omr.score.ui.ScoreController;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -137,6 +137,125 @@ public class MainGui
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------------//
+    // setBoardsPane //
+    //---------------//
+    /**
+     * Set a new boardspane to the boards holder
+     *
+     * @param boards the boards pane to be shown
+     */
+    public void setBoardsPane (JComponent boards)
+    {
+        boardsPane.addBoards(boards);
+    }
+
+    //---------------//
+    // setErrorsPane //
+    //---------------//
+    /**
+     * Set/show a new errors pane
+     *
+     * @param errorsPane the errors pane to be shown
+     */
+    public void setErrorsPane (JComponent errorsPane)
+    {
+        bottomPane.addErrors(errorsPane);
+    }
+
+    //----------//
+    // getFrame //
+    //----------//
+    /**
+     * Report the concrete frame
+     *
+     * @return the ui frame
+     */
+    public JFrame getFrame ()
+    {
+        return frame;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report an Observer name
+     *
+     * @return observer name
+     */
+    @Implement(SelectionObserver.class)
+    public String getName ()
+    {
+        return "MainGui";
+    }
+
+    //-----------//
+    // setTarget //
+    //-----------//
+    /**
+     * Specify what the current interest of the user is, by means of the current
+     * score. Thus, when for example a sheet image is loaded sometime later,
+     * this information will be used to trigger or not the actual display of the
+     * sheet view.
+     *
+     * @param score the contextual score
+     */
+    public void setTarget (omr.score.Score score)
+    {
+        setObjectTarget(score);
+    }
+
+    //-----------//
+    // setTarget //
+    //-----------//
+    /**
+     * Specify what the current interest of the user is, by means of the desired
+     * sheet file name.
+     *
+     * @param name the (canonical) sheet file name
+     */
+    public void setTarget (String name)
+    {
+        setObjectTarget(name);
+    }
+
+    //----------//
+    // isTarget //
+    //----------//
+    /**
+     * Check whether the provided sheet file name is consistent with the
+     * recorded user target.
+     *
+     * @param name the (canonical) sheet file name
+     *
+     * @return true if the name is consistent with user target
+     */
+    public boolean isTarget (String name)
+    {
+        boolean result = false;
+
+        if (target instanceof omr.score.Score) {
+            omr.score.Score targetScore = (omr.score.Score) target;
+            result = targetScore.getImagePath()
+                                .equals(name);
+        } else if (target instanceof Sheet) {
+            Sheet targetSheet = (Sheet) target;
+            result = targetSheet.getPath()
+                                .equals(name);
+        } else if (target instanceof String) {
+            String targetString = (String) target;
+            result = targetString.equals(name);
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "isTarget this=" + target + " test=" + name + " -> " + result);
+        }
+
+        return result;
+    }
+
     //--------------//
     // addOnToolBar //
     //--------------//
@@ -183,69 +302,6 @@ public class MainGui
             JOptionPane.WARNING_MESSAGE);
     }
 
-    //----------//
-    // getFrame //
-    //----------//
-    /**
-     * Report the concrete frame
-     *
-     * @return the ui frame
-     */
-    public JFrame getFrame ()
-    {
-        return frame;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report an Observer name
-     *
-     * @return observer name
-     */
-    @Implement(SelectionObserver.class)
-    public String getName ()
-    {
-        return "MainGui";
-    }
-
-    //----------//
-    // isTarget //
-    //----------//
-    /**
-     * Check whether the provided sheet file name is consistent with the
-     * recorded user target.
-     *
-     * @param name the (canonical) sheet file name
-     *
-     * @return true if the name is consistent with user target
-     */
-    public boolean isTarget (String name)
-    {
-        boolean result = false;
-
-        if (target instanceof omr.score.Score) {
-            omr.score.Score targetScore = (omr.score.Score) target;
-            result = targetScore.getImagePath()
-                                .equals(name);
-        } else if (target instanceof Sheet) {
-            Sheet targetSheet = (Sheet) target;
-            result = targetSheet.getPath()
-                                .equals(name);
-        } else if (target instanceof String) {
-            String targetString = (String) target;
-            result = targetString.equals(name);
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "isTarget this=" + target + " test=" + name + " -> " + result);
-        }
-
-        return result;
-    }
-
     //------------------//
     // removeBoardsPane //
     //------------------//
@@ -266,62 +322,6 @@ public class MainGui
     public void removeErrorsPane ()
     {
         bottomPane.removeErrors();
-    }
-
-    //---------------//
-    // setBoardsPane //
-    //---------------//
-    /**
-     * Set a new boardspane to the boards holder
-     *
-     * @param boards the boards pane to be shown
-     */
-    public void setBoardsPane (JComponent boards)
-    {
-        boardsPane.addBoards(boards);
-    }
-
-    //---------------//
-    // setErrorsPane //
-    //---------------//
-    /**
-     * Set/show a new errors pane
-     *
-     * @param errorsPane the errors pane to be shown
-     */
-    public void setErrorsPane (JComponent errorsPane)
-    {
-        bottomPane.addErrors(errorsPane);
-    }
-
-    //-----------//
-    // setTarget //
-    //-----------//
-    /**
-     * Specify what the current interest of the user is, by means of the current
-     * score. Thus, when for example a sheet image is loaded sometime later,
-     * this information will be used to trigger or not the actual display of the
-     * sheet view.
-     *
-     * @param score the contextual score
-     */
-    public void setTarget (omr.score.Score score)
-    {
-        setObjectTarget(score);
-    }
-
-    //-----------//
-    // setTarget //
-    //-----------//
-    /**
-     * Specify what the current interest of the user is, by means of the desired
-     * sheet file name.
-     *
-     * @param name the (canonical) sheet file name
-     */
-    public void setTarget (String name)
-    {
-        setObjectTarget(name);
     }
 
     //--------//
@@ -418,17 +418,14 @@ public class MainGui
             // Remember internal split locations
             constants.logDivider.setValue(splitPane.getDividerLocation());
             constants.boardDivider.setValue(bigSplitPane.getDividerLocation());
-            SheetAssembly.storeScoreSheetDivider();
         } else { // Maximized/Iconified window
 
             if (state == Frame.MAXIMIZED_BOTH) {
                 // Remember internal split locations
                 constants.logDivider.setValue(
                     splitPane.getDividerLocation() - DELTA_DIVIDER);
-
                 constants.boardDivider.setValue(
                     bigSplitPane.getDividerLocation() - DELTA_DIVIDER);
-                SheetAssembly.storeScoreSheetDivider();
             }
         }
 
@@ -440,6 +437,18 @@ public class MainGui
 
         // That's all folks !
         java.lang.System.exit(0);
+    }
+
+    //-----------------//
+    // setObjectTarget //
+    //-----------------//
+    private synchronized void setObjectTarget (Object target)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("setObjectTarget " + target);
+        }
+
+        this.target = target;
     }
 
     //--------------//
@@ -577,18 +586,6 @@ public class MainGui
         }
     }
 
-    //-----------------//
-    // setObjectTarget //
-    //-----------------//
-    private synchronized void setObjectTarget (Object target)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setObjectTarget " + target);
-        }
-
-        this.target = target;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -597,6 +594,8 @@ public class MainGui
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         PixelCount       boardDivider = new PixelCount(
             200,
             "Where the separation on left of board pane should be");
@@ -630,10 +629,14 @@ public class MainGui
     private static class BoardsPane
         extends Panel
     {
+        //~ Constructors -------------------------------------------------------
+
         public BoardsPane ()
         {
             setNoInsets();
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public void addBoards (JComponent boards)
         {
@@ -659,12 +662,18 @@ public class MainGui
     private static class FrameShower
         implements Runnable
     {
+        //~ Instance fields ----------------------------------------------------
+
         final Frame frame;
+
+        //~ Constructors -------------------------------------------------------
 
         public FrameShower (Frame frame)
         {
             this.frame = frame;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(Runnable.class)
         public void run ()
@@ -691,7 +700,11 @@ public class MainGui
     private class BottomPane
         extends JSplitPane
     {
+        //~ Instance fields ----------------------------------------------------
+
         PixelCount divider = constants.bottomDivider;
+
+        //~ Constructors -------------------------------------------------------
 
         public BottomPane (JComponent left)
         {
@@ -699,6 +712,8 @@ public class MainGui
             setBorder(null);
             setDividerSize(2);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public void addErrors (JComponent errorsPane)
         {
@@ -721,18 +736,17 @@ public class MainGui
                 final int state = frame.getExtendedState();
 
                 if ((state == Frame.NORMAL) || (state == Frame.MAXIMIZED_BOTH)) {
-                    divider.setValue(getDividerLocation());
+                    int val = getDividerLocation();
 
-                    ///logger.info("Divider stored as " + divider.getValue());
-                } else {
-                    ///logger.info("Divider not stored");
+                    if (val > 0) {
+                        divider.setValue(val);
+                    }
                 }
             }
         }
 
         private void loadDivider ()
         {
-            ///logger.info("Divider loaded as " + divider.getValue());
             setDividerLocation(divider.getValue());
         }
     }
@@ -747,6 +761,8 @@ public class MainGui
     private static class HistoryListener
         implements ActionListener
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
