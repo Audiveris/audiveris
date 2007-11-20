@@ -57,8 +57,7 @@ public class SeparableToolBar
     {
         int count = super.getComponentCount();
 
-        if ((count > 0) &&
-            !(getComponent(count - 1) instanceof JSeparator)) {
+        if ((count > 0) && !(getComponent(count - 1) instanceof JSeparator)) {
             super.addSeparator();
         }
     }

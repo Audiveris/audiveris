@@ -153,10 +153,10 @@ public class UIUtilities
             // Pre-select the directory, and potentially the file to save to
             if (startFile != null) {
                 if (startFile.isDirectory()) {
-                	fc.setCurrentDirectory(startFile);
+                    fc.setCurrentDirectory(startFile);
                 } else {
-                	fc.setCurrentDirectory(startFile.getParentFile());
-                	fc.setSelectedFile(startFile);
+                    fc.setCurrentDirectory(startFile.getParentFile());
+                    fc.setSelectedFile(startFile);
                 }
             }
 
