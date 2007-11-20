@@ -34,12 +34,17 @@ omr.ui.GuiActions$ExitAction
 
 # Score
 #------
-omr.score.ScoreActions$RebuildAction
-omr.score.ScoreActions$ParamAction
-omr.score.ScoreActions$BrowseAction
-omr.score.ScoreActions$DumpAction
-omr.score.ScoreActions$StoreAction
-omr.plugin.xenoage.PlayAction
+omr.score.ui.ScoreActions$RebuildAction
+omr.score.ui.ScoreActions$ParamAction
+omr.score.ui.ScoreActions$BrowseAction
+omr.score.ui.ScoreActions$DumpAction
+omr.score.ui.ScoreActions$StoreAction
+
+# Midi
+#-----
+omr.score.midi.MidiActions$WriteAction
+omr.score.midi.MidiActions$PlayAction
+omr.score.midi.MidiActions$StopAction
 
 # Views
 #------
