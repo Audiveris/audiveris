@@ -10,8 +10,8 @@
 package omr.ui;
 
 import omr.score.Score;
-import omr.score.ScoreActions;
-import omr.score.ScoreController;
+import omr.score.ui.ScoreActions;
+import omr.score.ui.ScoreController;
 
 import omr.util.Logger;
 
