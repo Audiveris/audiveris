@@ -12,6 +12,31 @@ package omr.score;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import omr.score.common.SystemPoint;
+import omr.score.entity.Arpeggiate;
+import omr.score.entity.BeamGroup;
+import omr.score.entity.BeamItem;
+import omr.score.entity.Chord;
+import omr.score.entity.Clef;
+import omr.score.entity.Coda;
+import omr.score.entity.Dynamics;
+import omr.score.entity.Fermata;
+import omr.score.entity.KeySignature;
+import omr.score.entity.Measure;
+import omr.score.entity.MeasureNode;
+import omr.score.entity.Note;
+import omr.score.entity.Ornament;
+import omr.score.entity.Pedal;
+import omr.score.entity.Segno;
+import omr.score.entity.Slot;
+import omr.score.entity.Slur;
+import omr.score.entity.Staff;
+import omr.score.entity.System;
+import omr.score.entity.SystemPart;
+import omr.score.entity.TimeSignature;
+import omr.score.entity.Tuplet;
+import omr.score.entity.Wedge;
+import omr.score.midi.MidiAgent;
 import omr.score.visitor.ScoreCleaner;
 import omr.score.visitor.ScoreFixer;
 
@@ -27,6 +52,8 @@ import omr.util.TreeNode;
 
 import java.util.*;
 import java.util.concurrent.*;
+
+import javax.sound.midi.MidiUnavailableException;
 
 /**
  * Class <code>ScoreBuilder</code> is in charge of translating each relevant
@@ -76,6 +103,17 @@ public class ScoreBuilder
     {
         checkSlurConnections();
         score.accept(new ScoreFixer());
+
+        // Invalidate score data within MidiAgent, if needed
+        try {
+            if (MidiAgent.getInstance()
+                         .getScore() == score) {
+                MidiAgent.getInstance()
+                         .reset();
+            }
+        } catch (MidiUnavailableException ex) {
+            logger.warning("Cannot access Midi agent", ex);
+        }
 
         // Update score view if any
         if (score.getView() != null) {
@@ -198,6 +236,8 @@ public class ScoreBuilder
     public static class RebuildException
         extends RuntimeException
     {
+        //~ Constructors -------------------------------------------------------
+
         /**
          * Annotate the exception with a message
          * @param message a meaningful explanation
@@ -218,6 +258,8 @@ public class ScoreBuilder
      */
     private class SystemBuilder
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** The current system */
         private System system;
 
@@ -233,6 +275,8 @@ public class ScoreBuilder
         /** The current measure */
         private Measure currentMeasure;
 
+        //~ Constructors -------------------------------------------------------
+
         //---------------//
         // SystemBuilder //
         //---------------//
@@ -240,6 +284,8 @@ public class ScoreBuilder
         {
             this.system = system;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //-----------------//
         // translateSystem //
@@ -361,6 +407,8 @@ public class ScoreBuilder
             translator.completeSystem();
         }
 
+        //~ Inner Classes ------------------------------------------------------
+
         //------------//
         // Translator //
         //------------//
@@ -370,8 +418,12 @@ public class ScoreBuilder
          */
         private abstract class Translator
         {
+            //~ Instance fields ------------------------------------------------
+
             /** Name of this translator (for debugging) */
             protected final String name;
+
+            //~ Constructors ---------------------------------------------------
 
             public Translator (String name)
             {
@@ -382,11 +434,7 @@ public class ScoreBuilder
                 }
             }
 
-            @Override
-            public String toString ()
-            {
-                return "{Translator " + name + "}";
-            }
+            //~ Methods --------------------------------------------------------
 
             /**
              * Check if provided glyph is relevant
@@ -422,6 +470,12 @@ public class ScoreBuilder
                 currentStaff = system.getStaffAt(currentCenter);
                 currentPart = currentStaff.getPart();
                 currentMeasure = currentPart.getMeasureAt(currentCenter);
+            }
+
+            @Override
+            public String toString ()
+            {
+                return "{Translator " + name + "}";
             }
 
             /**
@@ -460,10 +514,14 @@ public class ScoreBuilder
         private class AccidentalTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public AccidentalTranslator ()
             {
                 super("Accidental");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -482,10 +540,14 @@ public class ScoreBuilder
         private class ArpeggiateTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public ArpeggiateTranslator ()
             {
                 super("Arpeggiate");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -504,10 +566,14 @@ public class ScoreBuilder
         private class BeamTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public BeamTranslator ()
             {
                 super("Beam");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -552,10 +618,14 @@ public class ScoreBuilder
         private class ChordTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public ChordTranslator ()
             {
                 super("Chord");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -601,10 +671,14 @@ public class ScoreBuilder
         private class ClefTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public ClefTranslator ()
             {
                 super("Clef");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -636,10 +710,14 @@ public class ScoreBuilder
         private class CodaTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public CodaTranslator ()
             {
                 super("Coda");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -660,10 +738,14 @@ public class ScoreBuilder
         private class DotTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public DotTranslator ()
             {
                 super("Dot");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -682,10 +764,14 @@ public class ScoreBuilder
         private class DynamicsTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public DynamicsTranslator ()
             {
                 super("Dynamics");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -708,10 +794,14 @@ public class ScoreBuilder
         private class FermataTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public FermataTranslator ()
             {
                 super("Fermata");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -731,10 +821,14 @@ public class ScoreBuilder
         private class FlagTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public FlagTranslator ()
             {
                 super("Flag");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -803,10 +897,14 @@ public class ScoreBuilder
         private class KeyTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public KeyTranslator ()
             {
                 super("Key");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -837,10 +935,14 @@ public class ScoreBuilder
         private class MeasureTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public MeasureTranslator ()
             {
                 super("Measure");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -869,10 +971,14 @@ public class ScoreBuilder
         private class OrnamentTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public OrnamentTranslator ()
             {
                 super("Ornament");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -895,10 +1001,14 @@ public class ScoreBuilder
         private class PedalTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public PedalTranslator ()
             {
                 super("Pedal");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -920,10 +1030,14 @@ public class ScoreBuilder
         private class SegnoTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public SegnoTranslator ()
             {
                 super("Segno");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -944,10 +1058,14 @@ public class ScoreBuilder
         private class SlurTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public SlurTranslator ()
             {
                 super("Slur");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -972,10 +1090,14 @@ public class ScoreBuilder
         private class TimeTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public TimeTranslator ()
             {
                 super("Time");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -998,10 +1120,14 @@ public class ScoreBuilder
         private class TupletTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public TupletTranslator ()
             {
                 super("Tuplet");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
@@ -1020,10 +1146,14 @@ public class ScoreBuilder
         private class WedgeTranslator
             extends Translator
         {
+            //~ Constructors ---------------------------------------------------
+
             public WedgeTranslator ()
             {
                 super("Wedge");
             }
+
+            //~ Methods --------------------------------------------------------
 
             public boolean isRelevant (Glyph glyph)
             {
