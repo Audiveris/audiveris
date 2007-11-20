@@ -13,8 +13,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.score.Score;
-import omr.score.ScorePart;
-import omr.score.Midi;
+import omr.score.entity.ScorePart;
+import omr.score.midi.MidiAbstractions;
 
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
@@ -43,9 +43,6 @@ public class ScoreBoard
     extends Board
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreBoard.class);
@@ -84,7 +81,7 @@ public class ScoreBoard
         // Initial setting for tempo
         tempo.setValue(
             (score.getTempo() != null) ? score.getTempo()
-                        : constants.defaultTempo.getValue());
+                        : score.getDefaultTempo());
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -157,46 +154,6 @@ public class ScoreBoard
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        // Default Tempo
-        Constant.Integer defaultTempo = new Constant.Integer(
-            "QuartersPerMn",
-            60,
-            "Default tempo, stated in number of quarters per minute");
-
-        // Default Part names
-        Constant.String  defaultSingleStaffPartName = new Constant.String(
-            "Voice",
-            "Default name for a part with one staff");
-        Constant.String  defaultDoubleStaffPartName = new Constant.String(
-            "Piano",
-            "Default name for a part with two staves");
-        Constant.String  defaultPartName = new Constant.String(
-            "NoName",
-            "Default name for a part with more than two staves");
-
-        // Default Midi program numbers
-        Constant.Integer defaultSingleStaffPartProgram = new Constant.Integer(
-            "MidiProgram",
-            54,
-            "Default program number for a part with one staff");
-        Constant.Integer defaultDoubleStaffPartProgram = new Constant.Integer(
-            "MidiProgram",
-            1,
-            "Default program number for a part with two staves");
-        Constant.Integer defaultPartProgram = new Constant.Integer(
-            "MidiProgram",
-            1,
-            "Default program number for a part with more than two staves");
-    }
-
     //----------//
     // PartPane //
     //----------//
@@ -218,7 +175,8 @@ public class ScoreBoard
         private LField name = new LField("Name", "Name for the score part");
 
         /** Midi Instrument */
-        private JComboBox midiBox = new JComboBox(Midi.getProgramNames());
+        private JComboBox midiBox = new JComboBox(
+            MidiAbstractions.getProgramNames());
 
         //~ Constructors -------------------------------------------------------
 
@@ -236,11 +194,13 @@ public class ScoreBoard
 
             // Initial setting for part name
             name.setText(
-                (scorePart.getName() != null) ? scorePart.getName() : guessName());
+                (scorePart.getName() != null) ? scorePart.getName()
+                                : scorePart.getDefaultName());
 
             // Initial setting for part midi program
             int prog = (scorePart.getMidiProgram() != null)
-                       ? scorePart.getMidiProgram() : guessProgram();
+                       ? scorePart.getMidiProgram()
+                       : scorePart.getDefaultProgram();
             midiBox.setSelectedIndex(prog - 1);
         }
 
@@ -288,48 +248,6 @@ public class ScoreBoard
 
             builder.add(new JLabel("Midi"), cst.xy(1, r));
             builder.add(midiBox, cst.xyw(3, r, 5));
-        }
-
-        //-----------//
-        // guessName //
-        //-----------//
-        private String guessName ()
-        {
-            switch (scorePart.getStaffIds()
-                             .size()) {
-            case 1 :
-                return constants.defaultSingleStaffPartName.getValue();
-
-            case 2 :
-                return constants.defaultDoubleStaffPartName.getValue();
-
-            default :
-                return constants.defaultPartName.getValue();
-            }
-        }
-
-        //--------------//
-        // guessProgram //
-        //--------------//
-        private Integer guessProgram ()
-        {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Part #" + scorePart.getId() + " size=" +
-                    scorePart.getStaffIds().size());
-            }
-
-            switch (scorePart.getStaffIds()
-                             .size()) {
-            case 1 :
-                return constants.defaultSingleStaffPartProgram.getValue();
-
-            case 2 :
-                return constants.defaultDoubleStaffPartProgram.getValue();
-
-            default :
-                return constants.defaultPartProgram.getValue();
-            }
         }
     }
 }
