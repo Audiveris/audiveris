@@ -20,7 +20,7 @@ import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 
-import omr.score.Note;
+import omr.score.entity.Note;
 import omr.score.visitor.SheetPainter;
 
 import omr.selection.Selection;
