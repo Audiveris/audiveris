@@ -60,11 +60,11 @@ public class MidiAgent
         //~ Enumeration constant initializers ----------------------------------
 
 
-        /** Playback is not started or stopped, position is irrelevant */
+        /** Playback is not started or paused, sequence position is irrelevant */
         STOPPED,
         /** Playback has started */
         PLAYING, 
-        /** Playback is paused, current position is kept */
+        /** Playback is paused, current sequence position is kept */
         PAUSED;
     }
 
