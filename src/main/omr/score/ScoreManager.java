@@ -14,9 +14,12 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.score.midi.MidiAgent;
+import omr.score.ui.ScoreActions;
 import omr.score.visitor.ScoreExporter;
 
 import omr.script.ExportTask;
+import omr.script.MidiWriteTask;
 
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
@@ -139,11 +142,61 @@ public class ScoreManager
 
             // Actually export the score material
             try {
-                new ScoreExporter(score, xmlFile);
+                new ScoreExporter(score).export(xmlFile);
                 logger.info("Score exported to " + xmlFile);
             } catch (Exception ex) {
                 logger.warning("Error storing score to " + xmlFile, ex);
             }
+        }
+    }
+
+    //-----------//
+    // midiWrite //
+    //-----------//
+    /**
+     * Write the Midi sequence of the score into the provided midi file.
+     *
+     * @param score the provided score
+     * @param midiFile the Midi file to write
+     * @throws Exception if the writing goes wrong
+     */
+    public void midiWrite (Score score,
+                           File  midiFile)
+        throws Exception
+    {
+        if (!ScoreActions.checkParameters(score)) {
+            return;
+        }
+
+        // Make sure the folder exists
+        File folder = new File(midiFile.getParent());
+
+        if (folder.mkdirs()) {
+            logger.info("Creating folder " + folder);
+        }
+
+        // Record this task in the sheet script
+        score.getSheet()
+             .getScript()
+             .addTask(new MidiWriteTask(midiFile.getPath()));
+
+        // Actually write the Midi file
+        try {
+            MidiAgent agent = MidiAgent.getInstance();
+
+            if (agent.getStatus() == MidiAgent.Status.STOPPED) {
+                agent.setScore(score);
+            }
+
+            if (agent.getScore() == score) {
+                agent.write(midiFile);
+                logger.info("Midi written to " + midiFile);
+            } else {
+                logger.warning("Midi Agent is busy with another score");
+            }
+        } catch (Exception ex) {
+            logger.warning("Cannot write Midi to " + midiFile, ex);
+            throw ex;
         }
     }
 
@@ -155,6 +208,8 @@ public class ScoreManager
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Default directory for saved scores */
         Constant.String defaultScoreDirectory = new Constant.String(
             "",
