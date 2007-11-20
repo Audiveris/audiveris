@@ -261,6 +261,10 @@ public class MidiActions
     //------------//
     // PlayAction //
     //------------//
+    /**
+     * Class <code>PlayAction</code> allows to start , pause or restart a Midi
+     * playback.
+     */
     @Plugin(type = SCORE_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = true)
     public static class PlayAction
         extends AbstractAction
@@ -288,6 +292,9 @@ public class MidiActions
     //------------//
     // StopAction //
     //------------//
+    /**
+     * Class <code>StopAction</code> allows to stop a Midi playback.
+     */
     @Plugin(type = SCORE_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = true)
     public static class StopAction
         extends AbstractAction
@@ -317,6 +324,9 @@ public class MidiActions
     //-------------//
     // WriteAction //
     //-------------//
+    /**
+     * Class <code>WriteAction</code> allows to write a Midi file.
+     */
     @Plugin(type = SCORE_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = false)
     public static class WriteAction
         extends AbstractAction
