@@ -112,8 +112,8 @@ public class MidiActions
     // play //
     //------//
     /**
-     * Launch the playback of Midi Agent on the provided score (if paused), or
-     * stop the playback if playing.
+     * Launch the playback of Midi Agent on the provided score (if paused or
+     * stopped), or stop the playback if playing.
      * @param score the provided score
      */
     public static void play (final Score score)
