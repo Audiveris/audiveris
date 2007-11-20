@@ -53,6 +53,8 @@ public class Script
         , @XmlElement(name = "deassign", type = DeassignTask.class)
         , @XmlElement(name = "segment", type = SegmentTask.class)
         , @XmlElement(name = "export", type = ExportTask.class)
+        , @XmlElement(name = "midi", type = MidiWriteTask.class)
+        , @XmlElement(name = "play", type = PlayTask.class)
     })
     private final List<Task> tasks = new ArrayList<Task>();
 

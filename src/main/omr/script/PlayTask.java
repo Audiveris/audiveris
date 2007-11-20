@@ -1,54 +1,39 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          D e a s s i g n T a s k                           //
+//                              P l a y T a s k                               //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
 package omr.script;
 
-import omr.glyph.Glyph;
+import omr.score.midi.MidiActions;
 
 import omr.sheet.Sheet;
 
 import omr.step.StepException;
 
-import java.util.Collection;
+import javax.xml.bind.annotation.*;
 
 /**
- * Class <code>DeassignTask</code> is a script task which deassigns a collection
- * of glyphs.
+ * Class <code>PlayTask</code> is a script task which plays the Midi sequence
+ * of a score
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class DeassignTask
-    extends GlyphTask
+@XmlAccessorType(XmlAccessType.NONE)
+public class PlayTask
+    extends Task
 {
     //~ Constructors -----------------------------------------------------------
 
-    //--------------//
-    // DeassignTask //
-    //--------------//
-    /**
-     * Create a task to deassign glyphs
-     *
-     * @param glyphs the glyphs to deassign
-     */
-    public DeassignTask (Collection<Glyph> glyphs)
-    {
-        super(glyphs);
-    }
-
-    //--------------//
-    // DeassignTask //
-    //--------------//
-    /**
-     * No-arg constructor needed for JAXB
-     */
-    private DeassignTask ()
+    //----------//
+    // PlayTask //
+    //----------//
+    /** No-arg constructor needed by JAXB */
+    private PlayTask ()
     {
     }
 
@@ -61,16 +46,15 @@ public class DeassignTask
     public void run (Sheet sheet)
         throws StepException
     {
-        super.run(sheet);
-        sheet.getSymbolsBuilder()
-             .deassignSetShape(glyphs, true);
+        MidiActions.play(sheet.getScore());
     }
 
     //-----------------//
     // internalsString //
     //-----------------//
+    @Override
     protected String internalsString ()
     {
-        return " deassign" + super.internalsString();
+        return " play";
     }
 }
