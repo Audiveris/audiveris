@@ -36,6 +36,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import javax.swing.*;
+import omr.score.midi.MidiAgent;
 
 /**
  * Class <code>Main</code> is the main class for OMR application. It deals with
@@ -623,6 +624,17 @@ public class Main
                         public void run ()
                         {
                             ScoreExporter.preloadJaxbContext();
+                        }
+                    });
+
+            // Background task : Midi Sequencer
+            OmrExecutors.getLowExecutor()
+                        .execute(
+                new Runnable() {
+                        @Implement(Runnable.class)
+                        public void run ()
+                        {
+                            MidiAgent.preloadAgent();
                         }
                     });
         }
