@@ -581,7 +581,7 @@ public class SheetSteps
                     "SCORE doSystem #" + system.getScoreSystem().getId());
             }
 
-            omr.score.System scoreSystem = system.getScoreSystem();
+            omr.score.entity.System scoreSystem = system.getScoreSystem();
             getSystemResult(CLEANUP, system);
             sheet.getScoreBuilder()
                  .buildSystem(scoreSystem);
