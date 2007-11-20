@@ -11,10 +11,10 @@ package omr.sheet;
 
 import omr.constant.Constant;
 
-import omr.score.PagePoint;
-import omr.score.PageRectangle;
-import static omr.score.ScoreConstants.*;
-import omr.score.UnitDimension;
+import omr.score.common.PagePoint;
+import omr.score.common.PageRectangle;
+import omr.score.common.UnitDimension;
+import static omr.score.ui.ScoreConstants.*;
 
 import omr.step.StepException;
 

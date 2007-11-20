@@ -22,13 +22,13 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
-import omr.score.Barline;
-import omr.score.Measure;
-import omr.score.PageRectangle;
 import omr.score.Score;
-import omr.score.Staff;
-import omr.score.System;
-import omr.score.SystemPart;
+import omr.score.common.PageRectangle;
+import omr.score.entity.Barline;
+import omr.score.entity.Measure;
+import omr.score.entity.Staff;
+import omr.score.entity.System;
+import omr.score.entity.SystemPart;
 
 import omr.step.StepException;
 
@@ -216,7 +216,7 @@ public class BarsChecker
 
         for (Iterator it = score.getSystems()
                                 .iterator(); it.hasNext();) {
-            System     system = (omr.score.System) it.next();
+            System     system = (omr.score.entity.System) it.next();
             SystemInfo systemInfo = system.getInfo();
 
             if ((systemInfo.getStartIdx() <= botIdx) &&
@@ -327,7 +327,7 @@ public class BarsChecker
                 continue;
             }
 
-            omr.score.System system = systemInfo.getScoreSystem();
+            omr.score.entity.System system = systemInfo.getScoreSystem();
 
             // We don't check that the bar does not start before first staff,
             // this is too restrictive because of alternate endings.  We however
@@ -386,7 +386,7 @@ public class BarsChecker
         // Systems
         for (SystemInfo info : systems) {
             // Allocate the system
-            omr.score.System system = new omr.score.System(
+            omr.score.entity.System system = new omr.score.entity.System(
                 info,
                 score,
                 scale.toPagePoint(

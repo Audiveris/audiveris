@@ -12,7 +12,7 @@ package omr.sheet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
 
-import omr.score.System;
+import omr.score.entity.System;
 
 import omr.util.Logger;
 

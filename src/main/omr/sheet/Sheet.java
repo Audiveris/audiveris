@@ -22,7 +22,7 @@ import omr.glyph.ui.SymbolsEditor;
 
 import omr.score.Score;
 import omr.score.ScoreBuilder;
-import omr.score.SystemNode;
+import omr.score.entity.SystemNode;
 import omr.score.visitor.ScoreColorizer;
 import omr.score.visitor.ScoreVisitor;
 import omr.score.visitor.SheetPainter;

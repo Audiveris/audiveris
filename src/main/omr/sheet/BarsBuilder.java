@@ -34,15 +34,15 @@ import omr.lag.SectionBoard;
 import omr.lag.SectionsBuilder;
 import omr.lag.VerticalOrientation;
 
-import omr.score.Barline;
-import omr.score.Measure;
 import omr.score.Score;
-import omr.score.ScoreConstants;
-import omr.score.ScorePart;
-import omr.score.Staff;
-import omr.score.System;
-import omr.score.SystemPart;
-import omr.score.UnitDimension;
+import omr.score.common.UnitDimension;
+import omr.score.entity.Barline;
+import omr.score.entity.Measure;
+import omr.score.entity.ScorePart;
+import omr.score.entity.Staff;
+import omr.score.entity.System;
+import omr.score.entity.SystemPart;
+import omr.score.ui.ScoreConstants;
 import omr.score.visitor.ScoreFixer;
 import omr.score.visitor.SheetPainter;
 
@@ -425,7 +425,8 @@ public class BarsBuilder
                 logger.warning(msg);
 
                 if (Main.getGui() != null) {
-                    Main.getGui().displayWarning(msg);
+                    Main.getGui()
+                        .displayWarning(msg);
                 }
 
                 throw new StepException(msg);
@@ -507,7 +508,7 @@ public class BarsBuilder
      *
      * @param system the system to check
      */
-    private void checkBarAlignments (omr.score.System system)
+    private void checkBarAlignments (omr.score.entity.System system)
     {
         if (system.getInfo()
                   .getStaves()
@@ -600,7 +601,7 @@ public class BarsBuilder
      *
      * @param system the system to check
      */
-    private void checkEndingBar (omr.score.System system)
+    private void checkEndingBar (omr.score.entity.System system)
     {
         try {
             SystemPart part = system.getFirstPart();
@@ -652,7 +653,7 @@ public class BarsBuilder
     {
         // Check are performed on a system basis
         for (TreeNode node : score.getSystems()) {
-            omr.score.System system = (omr.score.System) node;
+            omr.score.entity.System system = (omr.score.entity.System) node;
 
             // Check alignment of each measure of each staff with the other
             // staff measures, a test that needs several staves in the system
@@ -762,7 +763,7 @@ public class BarsBuilder
      *
      * @param system the system to check
      */
-    private void mergeBarlines (omr.score.System system)
+    private void mergeBarlines (omr.score.entity.System system)
     {
         int maxDoubleDx = scale.toPixels(constants.maxDoubleBarDx);
 
@@ -833,7 +834,7 @@ public class BarsBuilder
      *
      * @param system the system whose staves starting measure has to be checked
      */
-    private void removeStartingBar (omr.score.System system)
+    private void removeStartingBar (omr.score.entity.System system)
     {
         int     minWidth = scale.toPixels(constants.minMeasureWidth);
         Barline firstBarline = system.getFirstPart()
