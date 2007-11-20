@@ -9,6 +9,10 @@
 //
 package omr.score;
 
+import omr.score.common.PagePoint;
+import omr.score.common.ScorePoint;
+import omr.score.entity.System;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
