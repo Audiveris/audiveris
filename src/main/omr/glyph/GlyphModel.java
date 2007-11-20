@@ -125,9 +125,9 @@ public class GlyphModel
      * @param record true if this action is to be recorded in the script
      */
     public void assignSetShape (Collection<Glyph> glyphs,
-                                             Shape             shape,
-                                             boolean           compound,
-                                             boolean           record)
+                                Shape             shape,
+                                boolean           compound,
+                                boolean           record)
     {
         // Empty by default
         logger.warning("No assignSetShape in current model for " + shape);

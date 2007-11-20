@@ -203,9 +203,10 @@ public class GlyphLag
     {
         if (activeGlyphs == null) {
             //synchronized (this) {
-                if (activeGlyphs == null) {
-                    activeGlyphs = new TreeSet<Glyph>(glyphMap.values());
-                }
+            if (activeGlyphs == null) {
+                activeGlyphs = new TreeSet<Glyph>(glyphMap.values());
+            }
+
             //}
         }
 

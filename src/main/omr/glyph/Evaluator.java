@@ -387,8 +387,7 @@ public abstract class Evaluator
     private boolean validBeamSlope (Glyph glyph)
     {
         try {
-        	
-        	Stick stick = (Stick) glyph;
+            Stick          stick = (Stick) glyph;
             double         slope = stick.getLine()
                                         .getInvertedSlope(); // vertical lag!
             PixelRectangle box = glyph.getContourBox();
