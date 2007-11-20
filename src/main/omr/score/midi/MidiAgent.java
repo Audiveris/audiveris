@@ -150,7 +150,7 @@ public class MidiAgent
     //----------//
     /**
      * Report the score (if any) currently handled by the Midi Agent
-     * @param score the score currently handled, if any
+     * @return the score currently handled, if any
      */
     public Score getScore ()
     {

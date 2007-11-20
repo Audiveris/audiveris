@@ -546,8 +546,8 @@ public class Slot
      * Assign the time startTime, since the beginning of the measure, for all
      * chords in this time slot
      *
-     * @param startTime time startTime using {@link omr.score.Note#QUARTER_DURATION}
-     * value
+     * @param startTime time startTime using 
+     * {@link omr.score.entity.Note#QUARTER_DURATION} value
      */
     public void setStartTime (int startTime)
     {

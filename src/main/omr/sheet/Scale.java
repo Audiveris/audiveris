@@ -42,7 +42,7 @@ import java.awt.Rectangle;
  * the score display is built on this value. One unit is thus generally worth
  * something like 20/16 of pixels </dd> </dl>
  *
- * @see omr.score.ScoreConstants#BASE
+ * @see omr.score.ui.ScoreConstants#BASE
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$

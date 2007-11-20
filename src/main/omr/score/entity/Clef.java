@@ -58,7 +58,7 @@ public class Clef
      * @param shape precise clef shape
      * @param center center wrt system (in units)
      * @param pitchPosition pitch position
-     * @param underlying glyph, if any
+     * @param glyph underlying glyph, if any
      */
     public Clef (Measure     measure,
                  Staff       staff,

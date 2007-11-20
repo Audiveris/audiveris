@@ -137,8 +137,6 @@ public class SheetManager
     //------------------//
     /**
      * Convenient method to inform about the selected sheet if any
-     *
-     * @return the selected sheet, which may be null (if no sheet selected yet)
      */
     public static void setSelectedSheet (Sheet sheet)
     {

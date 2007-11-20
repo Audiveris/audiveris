@@ -168,7 +168,7 @@ public class MidiAbstractions
     /**
      * Report the instrument name for a given program id
      *
-     * @param val the given program id
+     * @param id the given program id
      * @return the corresponding instrument name
      */
     public static String getProgramName (int id)
