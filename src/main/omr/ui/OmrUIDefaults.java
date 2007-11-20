@@ -43,7 +43,7 @@ public class OmrUIDefaults
     // getKeyCode //
     //------------//
     /**
-     * Report the numeric key code for a given description string 
+     * Report the numeric key code for a given description string
      *
      * @param key the key description
      * @return the key code
