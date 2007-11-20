@@ -296,12 +296,11 @@ public class GlyphRepository
     List<String> getCoreBase (Monitor monitor)
     {
         if (coreBase == null) {
-            synchronized(this) {
+            synchronized (this) {
                 if (coreBase == null) {
                     coreBase = loadCoreBase(monitor);
                 }
             }
-
         }
 
         return coreBase;
@@ -428,10 +427,10 @@ public class GlyphRepository
      *
      * @return the whole collection of recorded glyphs
      */
-     List<String> getWholeBase (Monitor monitor)
+    List<String> getWholeBase (Monitor monitor)
     {
         if (wholeBase == null) {
-            synchronized(this) {
+            synchronized (this) {
                 if (wholeBase == null) {
                     wholeBase = loadWholeBase(monitor);
                 }

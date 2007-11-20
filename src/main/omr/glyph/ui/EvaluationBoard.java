@@ -229,13 +229,15 @@ class EvaluationBoard
             fieldInterval + "," + buttonWidth + "," + fieldInterval + "," +
             buttonWidth,
             "pref," + fieldInterline);
-        
-        int visibleButtons = Math.min(
-        	constants.visibleButtons.getValue(),
-        	selector.buttons.size());
-        for (int i = 0; i < visibleButtons; i++)
+
+        int          visibleButtons = Math.min(
+            constants.visibleButtons.getValue(),
+            selector.buttons.size());
+
+        for (int i = 0; i < visibleButtons; i++) {
             layout.appendRow(FormFactory.PREF_ROWSPEC);
-        
+        }
+
         // Uncomment following line to have fixed sized rows, whether
         // they are filled or not
         ///layout.setRowGroups(new int[][]{{1, 3, 4, 5 }});
@@ -254,7 +256,7 @@ class EvaluationBoard
         } else {
             builder.addSeparator(evaluator.getName(), cst.xyw(1, r, 7));
         }
-        
+
         for (int i = 0; i < visibleButtons; i++) {
             r = i + 3; // --------------------------------
             builder.add(selector.buttons.get(i).grade, cst.xy(1, r));
@@ -279,8 +281,9 @@ class EvaluationBoard
             100000.0,
             "Threshold on displayable doubt");
         Constant.Integer visibleButtons = new Constant.Integer(
-        	"buttons", 5, 
-        	"Max number of buttons in the shape selector");
+            "buttons",
+            5,
+            "Max number of buttons in the shape selector");
     }
 
     //------------//
@@ -321,10 +324,10 @@ class EvaluationBoard
         {
             // Assign current glyph with selected shape
             if (glyphModel != null) {
-                Selection         glyphSelection = sheet.getSelection(
+                Selection glyphSelection = sheet.getSelection(
                     SelectionTag.VERTICAL_GLYPH);
-                Glyph             glyph = (Glyph) glyphSelection.getEntity();
-                Shape             shape = Shape.valueOf(button.getText());
+                Glyph     glyph = (Glyph) glyphSelection.getEntity();
+                Shape     shape = Shape.valueOf(button.getText());
 
                 // Actually assign the shape
                 glyphModel.assignGlyphShape(glyph, shape, true);
@@ -390,7 +393,7 @@ class EvaluationBoard
 
         public Selector ()
         {
-        	buttons = new ArrayList<EvalButton>();
+            buttons = new ArrayList<EvalButton>();
 
             for (int i = 0; i < constants.visibleButtons.getValue(); i++) {
                 buttons.add(new EvalButton());
@@ -426,8 +429,7 @@ class EvaluationBoard
             int    iBound = Math.min(buttons.size(), evals.length);
             int    i;
 
-            for (i = 0; i < iBound; i++) 
-            {
+            for (i = 0; i < iBound; i++) {
                 Evaluation eval = evals[i];
 
                 // Limitation on shape relevance
@@ -436,12 +438,14 @@ class EvaluationBoard
                 }
 
                 // Barred on non-barred button
-                buttons.get(i).setEval(eval, glyph.isShapeForbidden(eval.shape));
+                buttons.get(i)
+                       .setEval(eval, glyph.isShapeForbidden(eval.shape));
             }
 
             // Zero the remaining buttons
             for (; i < buttons.size(); i++) {
-                buttons.get(i).setEval(null, false);
+                buttons.get(i)
+                       .setEval(null, false);
             }
         }
     }
@@ -476,7 +480,7 @@ class EvaluationBoard
 
                     Evaluation guess = evaluator.vote(glyph, maxDoubt);
 
-                    if (guess != null && glyph.getShape() == guess.shape) {
+                    if ((guess != null) && (glyph.getShape() == guess.shape)) {
                         ok++;
                         view.colorizeGlyph(glyph, Shape.okColor);
                     } else {

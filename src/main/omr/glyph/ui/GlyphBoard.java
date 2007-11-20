@@ -476,12 +476,10 @@ public class GlyphBoard
             if (glyphModel != null) {
                 if (inputSelectionList.size() > 1) {
                     // We have selections for glyph and for glyph set
-                    Selection         glyphSelection = inputSelectionList.get(
-                        0);
-                    Glyph             glyph = (Glyph) glyphSelection.getEntity();
-                    Selection         glyphSetSelection = inputSelectionList.get(
-                        1);
-                    List<Glyph>       glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+                    Selection   glyphSelection = inputSelectionList.get(0);
+                    Glyph       glyph = (Glyph) glyphSelection.getEntity();
+                    Selection   glyphSetSelection = inputSelectionList.get(1);
+                    List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
                     glyphModel.deassignSetShape(glyphs, true);
 
                     // Update focus on current glyph, even if reused in a compound
@@ -492,8 +490,8 @@ public class GlyphBoard
                         SelectionHint.GLYPH_INIT);
                 } else if (inputSelectionList.size() == 1) {
                     // We have selection for glyph only
-                    Glyph             glyph = (Glyph) inputSelectionList.get(0)
-                                                                        .getEntity();
+                    Glyph glyph = (Glyph) inputSelectionList.get(0)
+                                                            .getEntity();
                     glyphModel.deassignGlyphShape(glyph, true);
                 }
             }

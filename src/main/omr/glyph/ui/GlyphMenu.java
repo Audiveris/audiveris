@@ -333,10 +333,10 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             // Remember which is the current selected glyph
-            Glyph             glyph = getCurrentGlyph();
+            Glyph       glyph = getCurrentGlyph();
 
             // Actually deassign the whole set
-            List<Glyph>       glyphs = getCurrentGlyphs();
+            List<Glyph> glyphs = getCurrentGlyphs();
             symbolsBuilder.deassignSetShape(glyphs, true);
 
             // Update focus on current glyph, if reused in a compound
@@ -435,9 +435,9 @@ public class GlyphMenu
     {
         public void actionPerformed (ActionEvent e)
         {
-            JMenuItem         source = (JMenuItem) e.getSource();
-            Shape             shape = Shape.valueOf(source.getText());
-            Glyph             glyph = getCurrentGlyph();
+            JMenuItem source = (JMenuItem) e.getSource();
+            Shape     shape = Shape.valueOf(source.getText());
+            Glyph     glyph = getCurrentGlyph();
 
             if (glyph != null) {
                 symbolsBuilder.assignGlyphShape(glyph, shape, true);
@@ -472,7 +472,7 @@ public class GlyphMenu
     {
         public void actionPerformed (ActionEvent e)
         {
-            Glyph             glyph = getCurrentGlyph();
+            Glyph glyph = getCurrentGlyph();
 
             if ((glyph != null) && (glyph == proposedGlyph)) {
                 symbolsBuilder.assignGlyphShape(glyph, proposedShape, true);
