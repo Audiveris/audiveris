@@ -252,7 +252,7 @@ public class Circle
 
             int idx = (int) (angle / bucketSize);
 
-            if ((idx >= 0) && (idx < BUCKET_NB)) { 
+            if ((idx >= 0) && (idx < BUCKET_NB)) {
                 buckets[idx] += 1;
             }
         }

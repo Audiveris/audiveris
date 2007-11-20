@@ -436,7 +436,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      * @return the global bounding box of the lag
      */
     @Override
-	public Dimension getModelSize ()
+    public Dimension getModelSize ()
     {
         if (super.getModelSize() != null) {
             return super.getModelSize();
