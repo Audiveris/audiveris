@@ -442,9 +442,8 @@ public abstract class Constant
     java.lang.String getCurrentString ()
     {
         if (currentString == null) {
-            synchronized(this) {
+            synchronized (this) {
                 if (currentString == null) {
-
                     checkInitialized();
                     currentString = ConstantManager.getProperty(qualifiedName);
 
@@ -453,18 +452,19 @@ public abstract class Constant
                         if (defaultString != null) {
                             if (logger.isFineEnabled()) {
                                 logger.fine(
-                                            "Property " + qualifiedName + " = " +
-                                            currentString + " -> " + defaultString);
+                                    "Property " + qualifiedName + " = " +
+                                    currentString + " -> " + defaultString);
                             }
 
                             currentString = defaultString; // Use default
-                            // } else {
-                            //     logger.warning(
-                            //         "No value found for Property " + qualifiedName);
+                                                           // } else {
+                                                           //     logger.warning(
+                                                           //         "No value found for Property " + qualifiedName);
                         }
                     } else if (logger.isFineEnabled()) {
                         logger.fine(
-                                    "Property " + qualifiedName + " = " + currentString);
+                            "Property " + qualifiedName + " = " +
+                            currentString);
                     }
 
                     // Save this initial value string

@@ -124,9 +124,9 @@ public class ConstantManager
 
     /** User properties file name */
     private static String USER_FILE_NAME = System.getProperty("user.home") +
-    	(Main.MAC_OS_X ? 
-    	"/Library/Preferences/Audiveris/run.properties" : 
-    	"/.audiveris/run.properties");
+                                           (Main.MAC_OS_X
+                                            ? "/Library/Preferences/Audiveris/run.properties"
+                                            : "/.audiveris/run.properties");
 
     //~ Constructors -----------------------------------------------------------
 
