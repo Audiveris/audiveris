@@ -575,7 +575,7 @@ public class LinesBuilder
     // LineAction //
     //------------//
     /**
-     * Class <code>LineAction</code> toggles the display of original pixels 
+     * Class <code>LineAction</code> toggles the display of original pixels
      * for the staff lines
      */
     @Plugin(type = PluginType.LINE_VIEW, item = JCheckBoxMenuItem.class)

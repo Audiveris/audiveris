@@ -435,7 +435,7 @@ public class HorizontalsBuilder
     // LedgerAction //
     //--------------//
     /**
-     * Class <code>LedgerAction</code> toggles the display of original ledger 
+     * Class <code>LedgerAction</code> toggles the display of original ledger
      * pixels
      */
     @Plugin(type = PluginType.LINE_VIEW, item = JCheckBoxMenuItem.class)
