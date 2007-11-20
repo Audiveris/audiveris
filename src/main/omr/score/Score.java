@@ -9,6 +9,20 @@
 //
 package omr.score;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
+import omr.score.common.PagePoint;
+import omr.score.common.ScorePoint;
+import omr.score.common.UnitDimension;
+import omr.score.entity.ScoreNode;
+import omr.score.entity.ScorePart;
+import omr.score.entity.System;
+import omr.score.entity.SystemPart;
+import omr.score.midi.MidiAgent;
+import omr.score.ui.ScoreConstants;
+import omr.score.ui.ScoreTree;
+import omr.score.ui.ScoreView;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -40,6 +54,9 @@ public class Score
     extends ScoreNode
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Score.class);
@@ -123,6 +140,14 @@ public class Score
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------------//
+    // getDefaultTempo //
+    //-----------------//
+    public int getDefaultTempo ()
+    {
+        return constants.defaultTempo.getValue();
+    }
 
     //--------------//
     // getDimension //
@@ -289,6 +314,7 @@ public class Score
      *
      * @return the score scale (basically: number of pixels for main interline)
      */
+    @Override
     public Scale getScale ()
     {
         return scale;
@@ -473,16 +499,16 @@ public class Score
 
         logger.info("Linking " + this);
 
-        for (Sheet sheet : SheetManager.getInstance()
-                                       .getSheets()) {
-            if (sheet.getPath()
-                     .equals(getImagePath())) {
-                if (sheet != getSheet()) {
-                    this.setSheet(sheet);
-                    sheet.setScore(this);
+        for (Sheet sht : SheetManager.getInstance()
+                                     .getSheets()) {
+            if (sht.getPath()
+                   .equals(getImagePath())) {
+                if (sht != getSheet()) {
+                    this.setSheet(sht);
+                    sht.setScore(this);
 
                     if (logger.isFineEnabled()) {
-                        logger.fine(this + " linked to " + sheet);
+                        logger.fine(this + " linked to " + sht);
                     }
 
                     return;
@@ -694,5 +720,22 @@ public class Score
     {
         // Launch the ScoreTree application on the score
         ScoreTree.makeFrame(getRadix(), this);
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // Default Tempo
+        Constant.Integer defaultTempo = new Constant.Integer(
+            "QuartersPerMn",
+            60,
+            "Default tempo, stated in number of quarters per minute");
     }
 }
