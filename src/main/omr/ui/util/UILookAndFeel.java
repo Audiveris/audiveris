@@ -17,7 +17,6 @@ import omr.util.Logger;
 // import com.jgoodies.looks.windows.*;
 // import com.jgoodies.looks.plastic.*;
 // import com.jgoodies.looks.plastic.theme.*;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 /**
@@ -36,6 +35,16 @@ public class UILookAndFeel
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(UILookAndFeel.class);
+
+    static {
+        if (omr.Main.MAC_OS_X) {
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+            //    		System.setProperty("apple.awt.brushMetalLook", "true");
+            //    		System.setProperty("apple.awt.brushMetalRounded", "true");
+            constants.lookAndFeel.setValue(
+                UIManager.getSystemLookAndFeelClassName());
+        }
+    }
 
     //~ Constructors -----------------------------------------------------------
 
@@ -120,16 +129,5 @@ public class UILookAndFeel
         Constant.String lookAndFeel = new Constant.String(
             "com.jgoodies.looks.plastic.Plastic3DLookAndFeel",
             "Full class path to the desired UI Look & Feel");
-    }
-    
-	static
-    {
-    	if (omr.Main.MAC_OS_X)
-    	{
-    		System.setProperty("apple.laf.useScreenMenuBar", "true");
-//    		System.setProperty("apple.awt.brushMetalLook", "true");
-//    		System.setProperty("apple.awt.brushMetalRounded", "true");
-    		constants.lookAndFeel.setValue(UIManager.getSystemLookAndFeelClassName());
-    	}
     }
 }
