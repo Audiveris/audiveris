@@ -80,9 +80,10 @@ public class Stick
     /**
      * No-arg constructor to please JAXB
      */
-    private Stick()
+    private Stick ()
     {
     }
+
     //~ Methods ----------------------------------------------------------------
 
     //------------------//

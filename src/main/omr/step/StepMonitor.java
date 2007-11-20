@@ -12,8 +12,8 @@ package omr.step;
 import omr.Main;
 
 import omr.constant.Constant;
-import omr.constant.ConstantSet;
 import omr.constant.Constant.Ratio;
+import omr.constant.ConstantSet;
 
 import omr.sheet.Sheet;
 
@@ -64,8 +64,10 @@ public class StepMonitor
     public StepMonitor ()
     {
         // Progress Bar
-        if (!omr.Main.MAC_OS_X)
-                bar.setBorder(UIUtilities.getToolBorder());
+        if (!omr.Main.MAC_OS_X) {
+            bar.setBorder(UIUtilities.getToolBorder());
+        }
+
         bar.setToolTipText("On going Step activity");
         bar.setStringPainted(true);
         animate(false);
@@ -115,8 +117,8 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
             new Runnable() {
-                        @Implement(Runnable.class)
-                        public void run ()
+                    @Implement(Runnable.class)
+                    public void run ()
                     {
                         bar.setIndeterminate(false);
 
@@ -139,21 +141,21 @@ public class StepMonitor
     void animate ()
     {
         SwingUtilities.invokeLater(
-                                   new Runnable() {
-                                       @Implement(Runnable.class)
-                                           public void run ()
-                                       {
-                                           int old = bar.getValue();
-                                           if (old > bar.getMinimum())
-                                               {
-                                                   int diff = bar.getMaximum() - old;
-                                                   int increment = (int)Math.round(diff
-                                                                                   * constants.ratio.getValue());
-                                                   bar.setIndeterminate(false);
-                                                   bar.setValue(old + increment);
-                                               }
-                                       }
-                                   });
+            new Runnable() {
+                    @Implement(Runnable.class)
+                    public void run ()
+                    {
+                        int old = bar.getValue();
+
+                        if (old > bar.getMinimum()) {
+                            int diff = bar.getMaximum() - old;
+                            int increment = (int) Math.round(
+                                diff * constants.ratio.getValue());
+                            bar.setIndeterminate(false);
+                            bar.setValue(old + increment);
+                        }
+                    }
+                });
     }
 
     //-----------//
@@ -168,8 +170,8 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
             new Runnable() {
-                        @Implement(Runnable.class)
-                        public void run ()
+                    @Implement(Runnable.class)
+                    public void run ()
                     {
                         bar.setString(msg);
                     }
@@ -191,57 +193,56 @@ public class StepMonitor
                          final Sheet  sheet,
                          final Object param)
     {
-//        // Post the request
-//        executor.execute(
-//            new Runnable() {
-//                    public void run ()
-//                    {
-//                        // This is supposed to run in the background, so...
-//                        Thread.currentThread()
-//                              .setPriority(Thread.MIN_PRIORITY);
+        //        // Post the request
+        //        executor.execute(
+        //            new Runnable() {
+        //                    public void run ()
+        //                    {
+        //                        // This is supposed to run in the background, so...
+        //                        Thread.currentThread()
+        //                              .setPriority(Thread.MIN_PRIORITY);
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                step + " Executing sheet=" + sheet + " param=" + param +
+                " ...");
+        }
 
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                step + " Executing sheet=" + sheet + " param=" +
-                                param + " ...");
-                        }
+        try {
+            // "Activate" the progress bar
+            if (bar != null) {
+                animate(true);
+            }
 
-                        try {
-                            // "Activate" the progress bar
-                            if (bar != null) {
-                                animate(true);
-                            }
+            if (sheet != null) {
+                sheet.setBusy(true);
+            }
 
-                            if (sheet != null) {
-                                sheet.setBusy(true);
-                            }
+            step.doStep(sheet, param);
 
-                            step.doStep(sheet, param);
+            // Update title of the frame
+            Main.getGui()
+                .updateGui();
 
-                            // Update title of the frame
-                            Main.getGui()
-                                .updateGui();
+            if (sheet != null) {
+                sheet.setBusy(false);
+            }
+        } catch (Exception ex) {
+            logger.warning("Processing aborted", ex);
+        } finally {
+            // Reset the progress bar
+            if (bar != null) {
+                notifyMsg("");
+                animate(false);
+            }
 
-                            if (sheet != null) {
-                                sheet.setBusy(false);
-                            }
-                        } catch (Exception ex) {
-                            logger.warning("Processing aborted", ex);
-                        } finally {
-                            // Reset the progress bar
-                            if (bar != null) {
-                                notifyMsg("");
-                                animate(false);
-                            }
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    step + " Ending sheet=" + sheet + " param=" + param + ".");
+            }
+        }
 
-                            if (logger.isFineEnabled()) {
-                                logger.fine(
-                                    step + " Ending sheet=" + sheet +
-                                    " param=" + param + ".");
-                            }
-                        }
-//                    }
-//                });
+        //                    }
+        //                });
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -256,7 +257,7 @@ public class StepMonitor
             "divisions",
             1000,
             "Number of divisions (amount of precision) of step monitor, minimum 10");
-        Ratio ratio = new Ratio(
+        Ratio            ratio = new Ratio(
             1.0 / 10.0,
             "Amount by which to increase step monitor percentage per animation, between 0 and 1");
     }

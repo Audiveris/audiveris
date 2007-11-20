@@ -26,15 +26,17 @@ import java.util.logging.*;
 public class LogStepMonitorHandler
     extends Handler
 {
-	public static final String FORCE = "Force StepMonitor Increment";
-	
+    //~ Static fields/initializers ---------------------------------------------
+
+    public static final String FORCE = "Force StepMonitor Increment";
+
     //~ Methods ----------------------------------------------------------------
 
     //-------//
     // close //
     //-------//
     @Override
-	public void close ()
+    public void close ()
         throws SecurityException
     {
     }
@@ -43,7 +45,7 @@ public class LogStepMonitorHandler
     // flush //
     //-------//
     @Override
-	public void flush ()
+    public void flush ()
     {
     }
 
@@ -51,11 +53,14 @@ public class LogStepMonitorHandler
     // publish //
     //---------//
     @Override
-	public void publish (final LogRecord record)
+    public void publish (final LogRecord record)
     {
-        if (record.getLevel().equals(Level.INFO) ||
-        	record.getMessage().equals(FORCE)) {
+        if (record.getLevel()
+                  .equals(Level.INFO) ||
+            record.getMessage()
+                  .equals(FORCE)) {
             StepMonitor monitor = Step.getMonitor();
+
             if (monitor != null) {
                 monitor.animate();
             }

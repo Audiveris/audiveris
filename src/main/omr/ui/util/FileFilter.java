@@ -113,7 +113,7 @@ public class FileFilter
     //--------//
     /**
      * Tests if a specified file should be included in a file list.
-     * Directories are always accepted, and tests on file name extensions are 
+     * Directories are always accepted, and tests on file name extensions are
      * not case sensitive.
      *
      * @param f the candidate file entity
