@@ -55,6 +55,9 @@ public class ActionManager
     /** The map of all menus, so that we can directly provide some */
     private final Map<String, JMenu> menuMap = new HashMap<String, JMenu>();
 
+    /** The map of all handled actions */
+    private final Map<String, Action> actionMap = new HashMap<String, Action>();
+
     /** Collection of actions enabled only when a sheet is selected */
     private final Collection<Action> sheetDependentActions = new ArrayList<Action>();
 
@@ -84,6 +87,14 @@ public class ActionManager
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------------//
+    // getActionInstance //
+    //-------------------//
+    public Action getActionInstance (String actionName)
+    {
+        return actionMap.get(actionName);
+    }
 
     //-------------//
     // getInstance //
@@ -271,8 +282,13 @@ public class ActionManager
                               .getAnnotation(Plugin.class);
 
         if (plugin != null) {
+            final String actionName = action.getClass()
+                                            .getName();
+            // Remember the action instance
+            actionMap.put(actionName, action);
+
             // Dress the action according to local language
-            UIDressing.dressUp(action, action.getClass().getName());
+            UIDressing.dressUp(action, actionName);
 
             if (logger.isFineEnabled()) {
                 logger.fine(
