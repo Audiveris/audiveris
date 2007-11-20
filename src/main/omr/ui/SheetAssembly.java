@@ -13,7 +13,7 @@ import omr.Main;
 
 import omr.constant.ConstantSet;
 
-import omr.score.ScoreView;
+import omr.score.ui.ScoreView;
 
 import omr.selection.Selection;
 import omr.selection.SelectionTag;
@@ -161,25 +161,117 @@ public class SheetAssembly
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // selectTab //
-    //-----------//
-    public void selectTab (String title)
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent ()
     {
-        for (int i = 0, count = tabbedPane.getTabCount(); i < count; i++) {
-            if (tabbedPane.getTitleAt(i)
-                          .equals(title)) {
-                tabbedPane.setSelectedIndex(i);
+        return component;
+    }
 
-                if (logger.isFineEnabled()) {
-                    logger.fine("Selected view tab " + title);
-                }
+    //---------------//
+    // getErrorsPane //
+    //---------------//
+    /**
+     * Report the UI pane dedicated to the current errors
+     * @return the errors pane
+     */
+    public JComponent getErrorsPane ()
+    {
+        return sheet.getErrorsEditor()
+                    .getComponent();
+    }
 
-                return;
-            }
+    //--------------//
+    // setScoreView //
+    //--------------//
+    /**
+     * Assign the ScoreView part to the assembly
+     * @param scoreView the Score View
+     */
+    public void setScoreView (final ScoreView scoreView)
+    {
+        if (this.scoreView != null) {
+            closeScoreView();
         }
 
-        ///logger.warning("Cannot find view tab " + title);
+        // Position score view as the higher part of the splitPane
+        splitPane.setTopComponent(scoreView.getComponent());
+        splitPane.setDividerLocation(constants.scoreSheetDivider.getValue());
+
+        // Needed to make the scroll bars visible
+        scoreView.getScrollPane()
+                 .getView()
+                 .getZoom()
+                 .fireStateChanged();
+
+        component.invalidate();
+        component.validate();
+        component.repaint();
+
+        this.scoreView = scoreView;
+
+        // Pre-position vertical scroll bar to its middle (50 for 0 - 100)
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    public void run ()
+                    {
+                        scoreView.getScrollPane()
+                                 .getComponent()
+                                 .getVerticalScrollBar()
+                                 .setValue(50);
+                    }
+                });
+    }
+
+    //-----------------//
+    // getSelectedView //
+    //-----------------//
+    /**
+     * Report the tabbed view currently selected
+     *
+     * @return the current tabbed view
+     */
+    public ScrollView getSelectedView ()
+    {
+        int viewIndex = tabbedPane.getSelectedIndex();
+
+        if (viewIndex != -1) {
+            return viewTabs.get(viewIndex).scrollView;
+        } else {
+            return null;
+        }
+    }
+
+    //----------//
+    // getSheet //
+    //----------//
+    /**
+     * Report the sheet this assembly is related to
+     *
+     * @return the related sheet
+     */
+    public Sheet getSheet ()
+    {
+        return sheet;
+    }
+
+    //--------------//
+    // setZoomRatio //
+    //--------------//
+    /**
+     * Modify the ratio of the global zoom for all views of the sheet
+     *
+     * @param ratio the new display ratio
+     */
+    public void setZoomRatio (double ratio)
+    {
+        zoom.setRatio(ratio);
     }
 
     //------------//
@@ -278,6 +370,13 @@ public class SheetAssembly
      */
     public void close ()
     {
+        // Save current value for sheet divider (height of scoreview)
+        int divider = splitPane.getDividerLocation();
+
+        if (divider > 0) {
+            constants.scoreSheetDivider.setValue(divider);
+        }
+
         MainGui gui = Main.getGui();
         gui.removeBoardsPane(); // Disconnect boards pane
         gui.removeErrorsPane(); // Disconnect errors pane
@@ -316,117 +415,25 @@ public class SheetAssembly
         }
     }
 
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the UI component
-     *
-     * @return the concrete component
-     */
-    public JComponent getComponent ()
+    //-----------//
+    // selectTab //
+    //-----------//
+    public void selectTab (String title)
     {
-        return component;
-    }
+        for (int i = 0, count = tabbedPane.getTabCount(); i < count; i++) {
+            if (tabbedPane.getTitleAt(i)
+                          .equals(title)) {
+                tabbedPane.setSelectedIndex(i);
 
-    //---------------//
-    // getErrorsPane //
-    //---------------//
-    /**
-     * Report the UI pane dedicated to the current errors
-     * @return the errors pane
-     */
-    public JComponent getErrorsPane ()
-    {
-        return sheet.getErrorsEditor()
-                    .getComponent();
-    }
+                if (logger.isFineEnabled()) {
+                    logger.fine("Selected view tab " + title);
+                }
 
-    //-----------------//
-    // getSelectedView //
-    //-----------------//
-    /**
-     * Report the tabbed view currently selected
-     *
-     * @return the current tabbed view
-     */
-    public ScrollView getSelectedView ()
-    {
-        int viewIndex = tabbedPane.getSelectedIndex();
-
-        if (viewIndex != -1) {
-            return viewTabs.get(viewIndex).scrollView;
-        } else {
-            return null;
-        }
-    }
-
-    //----------//
-    // getSheet //
-    //----------//
-    /**
-     * Report the sheet this assembly is related to
-     *
-     * @return the related sheet
-     */
-    public Sheet getSheet ()
-    {
-        return sheet;
-    }
-
-    //--------------//
-    // setScoreView //
-    //--------------//
-    /**
-     * Assign the ScoreView part to the assembly
-     * @param scoreView the Score View
-     */
-    public void setScoreView (final ScoreView scoreView)
-    {
-        if (this.scoreView != null) {
-            closeScoreView();
+                return;
+            }
         }
 
-        // Position score view as the higher part of the splitPane
-        splitPane.setTopComponent(scoreView.getComponent());
-        splitPane.setDividerLocation(constants.scoreSheetDivider.getValue());
-
-        // Needed to make the scroll bars visible
-        scoreView.getScrollPane()
-                 .getView()
-                 .getZoom()
-                 .fireStateChanged();
-
-        component.invalidate();
-        component.validate();
-        component.repaint();
-
-        this.scoreView = scoreView;
-
-        // Pre-position vertical scroll bar to its middle (50 for 0 - 100)
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                    public void run ()
-                    {
-                        scoreView.getScrollPane()
-                                 .getComponent()
-                                 .getVerticalScrollBar()
-                                 .setValue(50);
-                    }
-                });
-    }
-
-    //--------------//
-    // setZoomRatio //
-    //--------------//
-    /**
-     * Modify the ratio of the global zoom for all views of the sheet
-     *
-     * @param ratio the new display ratio
-     */
-    public void setZoomRatio (double ratio)
-    {
-        zoom.setRatio(ratio);
+        ///logger.warning("Cannot find view tab " + title);
     }
 
     //--------------//
@@ -452,19 +459,6 @@ public class SheetAssembly
         }
 
         previousViewIndex = viewIndex;
-    }
-
-    //------------------------//
-    // storeScoreSheetDivider //
-    //------------------------//
-    static void storeScoreSheetDivider ()
-    {
-        Sheet sheet = SheetManager.getSelectedSheet();
-
-        if (sheet != null) {
-            constants.scoreSheetDivider.setValue(
-                sheet.getAssembly().splitPane.getDividerLocation());
-        }
     }
 
     //----------------//
@@ -564,6 +558,8 @@ public class SheetAssembly
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Where the separation between score and sheet views should be */
         PixelCount scoreSheetDivider = new PixelCount(
             200,
@@ -579,9 +575,13 @@ public class SheetAssembly
      */
     private static class ViewTab
     {
+        //~ Instance fields ----------------------------------------------------
+
         BoardsPane boardsPane; // Related boards pane
         ScrollView scrollView; // Component in the JTabbedPane
         String     title; // Title used for the tab
+
+        //~ Constructors -------------------------------------------------------
 
         public ViewTab (String     title,
                         BoardsPane boardsPane,

@@ -66,6 +66,114 @@ public class SheetActions
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //-------------//
+    // CloseAction //
+    //-------------//
+    /**
+     * Class <code>CloseAction</code> handles the closing of the currently
+     * selected sheet.
+     */
+    @Plugin(type = SHEET_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = true)
+    public static class CloseAction
+        extends AbstractAction
+    {
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            Sheet sheet = SheetManager.getSelectedSheet();
+
+            if (sheet != null) {
+                Score score = sheet.getScore();
+
+                if (score != null) {
+                    score.close();
+                }
+
+                sheet.close();
+            }
+        }
+    }
+
+    //----------------//
+    // LinePlotAction //
+    //----------------//
+    /**
+     * Class <code>LinePlotAction</code> allows to display the plot of Line
+     * Builder.
+     */
+    @Plugin(type = SHEET_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = false)
+    public static class LinePlotAction
+        extends AbstractAction
+    {
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            Sheet sheet = SheetManager.getSelectedSheet();
+
+            if (sheet != null) {
+                if (sheet.getLinesBuilder() != null) {
+                    sheet.getLinesBuilder()
+                         .displayChart();
+                } else {
+                    logger.warning(
+                        "Data from staff line builder" + " is not available");
+                }
+            }
+        }
+
+        @Override
+        public boolean isEnabled ()
+        {
+            Sheet sheet = SheetManager.getSelectedSheet();
+
+            return (sheet != null) && (sheet.getLinesBuilder() != null);
+        }
+    }
+
+    //------------//
+    // OpenAction //
+    //------------//
+    /**
+     * Class <code>OpenAction</code> let the user select a sheet file
+     * interactively.
+     */
+    @Plugin(type = SHEET_IMPORT, dependency = NONE, onToolbar = true)
+    public static class OpenAction
+        extends AbstractAction
+    {
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            File file = UIUtilities.fileChooser(
+                false,
+                Main.getGui().getFrame(),
+                new File(constants.defaultSheetDirectory.getValue()),
+                new FileFilter(
+                    "Major image files",
+                    new String[] { ".bmp", ".gif", ".jpg", ".png", ".tif" }));
+
+            if (file != null) {
+                if (file.exists()) {
+                    // Register that as a user target
+                    try {
+                        Main.getGui()
+                            .setTarget(file.getCanonicalPath());
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+
+                    // Actually load the sheet picture
+                    Step.LOAD.performParallel(null, file);
+
+                    // Remember (even across runs) the parent directory
+                    constants.defaultSheetDirectory.setValue(file.getParent());
+                } else {
+                    logger.warning("File not found " + file);
+                }
+            }
+        }
+    }
+
     //-----------------//
     // ScalePlotAction //
     //-----------------//
@@ -122,114 +230,6 @@ public class SheetActions
             Sheet sheet = SheetManager.getSelectedSheet();
 
             return (sheet != null) && (sheet.getSkewBuilder() != null);
-        }
-    }
-
-    //----------------//
-    // LinePlotAction //
-    //----------------//
-    /**
-     * Class <code>LinePlotAction</code> allows to display the plot of Line
-     * Builder.
-     */
-    @Plugin(type = SHEET_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = false)
-    public static class LinePlotAction
-        extends AbstractAction
-    {
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            Sheet sheet = SheetManager.getSelectedSheet();
-
-            if (sheet != null) {
-                if (sheet.getLinesBuilder() != null) {
-                    sheet.getLinesBuilder()
-                         .displayChart();
-                } else {
-                    logger.warning(
-                        "Data from staff line builder" + " is not available");
-                }
-            }
-        }
-
-        @Override
-        public boolean isEnabled ()
-        {
-            Sheet sheet = SheetManager.getSelectedSheet();
-
-            return (sheet != null) && (sheet.getLinesBuilder() != null);
-        }
-    }
-
-    //-------------//
-    // CloseAction //
-    //-------------//
-    /**
-     * Class <code>CloseAction</code> handles the closing of the currently
-     * selected sheet.
-     */
-    @Plugin(type = SHEET_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = true)
-    public static class CloseAction
-        extends AbstractAction
-    {
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            Sheet sheet = SheetManager.getSelectedSheet();
-
-            if (sheet != null) {
-                Score score = sheet.getScore();
-
-                if (score != null) {
-                    score.close();
-                }
-
-                sheet.close();
-            }
-        }
-    }
-
-    //------------//
-    // OpenAction //
-    //------------//
-    /**
-     * Class <code>OpenAction</code> let the user select a sheet file
-     * interactively.
-     */
-    @Plugin(type = SHEET_IMPORT, dependency = NONE, onToolbar = true)
-    public static class OpenAction
-        extends AbstractAction
-    {
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            File file = UIUtilities.fileChooser(
-                false,
-                Main.getGui().getFrame(),
-                new File(constants.defaultSheetDirectory.getValue()),
-                new FileFilter(
-                    "Major image files",
-                    new String[] { ".bmp", ".gif", ".jpg", ".png", ".tif" }));
-
-            if (file != null) {
-                if (file.exists()) {
-                    // Register that as a user target
-                    try {
-                        Main.getGui()
-                            .setTarget(file.getCanonicalPath());
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-
-                    // Actually load the sheet picture
-                    Step.LOAD.performParallel(null, file);
-
-                    // Remember (even across runs) the parent directory
-                    constants.defaultSheetDirectory.setValue(file.getParent());
-                } else {
-                    logger.warning("File not found " + file);
-                }
-            }
         }
     }
 

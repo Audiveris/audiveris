@@ -58,7 +58,7 @@ public class UIDressing
      * @see javax.swing.Action
      */
     public static void dressUp (Action action,
-                              String qualifiedName)
+                                String qualifiedName)
     {
         final OmrUIDefaults defaults = OmrUIDefaults.getInstance();
 
@@ -99,7 +99,7 @@ public class UIDressing
      * instance in the resource file
      */
     public static void dressUp (JMenuItem item,
-                              String    qualifiedName)
+                                String    qualifiedName)
     {
         final OmrUIDefaults defaults = OmrUIDefaults.getInstance();
 
