@@ -11,8 +11,8 @@ package omr.glyph;
 
 import omr.constant.ConstantSet;
 
-import omr.score.Staff;
-import omr.score.SystemPoint;
+import omr.score.common.SystemPoint;
+import omr.score.entity.Staff;
 
 import omr.sheet.Dash;
 import omr.sheet.Scale;
