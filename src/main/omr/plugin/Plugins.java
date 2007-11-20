@@ -17,7 +17,7 @@ import java.util.*;
 import javax.swing.Action;
 
 /**
- * Class <code>Plugins</code> handles the loading and sorting of a stream of 
+ * Class <code>Plugins</code> handles the loading and sorting of a stream of
  * plugin classes.
  *
  * @author Brenton Partridge

@@ -9,6 +9,7 @@
 //
 package omr.plugin;
 
+
 /**
  * Class <code>Dependency</code> defines predicates for enabling a command
  *
@@ -23,7 +24,7 @@ public enum Dependency {
     /**
      * Action is enabled only when a Sheet is selected
      */
-    SHEET_AVAILABLE,
+    SHEET_AVAILABLE, 
     /**
      * Action is enabled only when Score information is available
      * (which also requires that a Sheet is selected)

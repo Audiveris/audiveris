@@ -17,14 +17,14 @@ import javax.swing.JMenuItem;
  * Annotation <code>Plugin</code> designates that a class is a valid Audiveris
  * plugin.
  *
- * <p>The class must implement javax.swing.Action and have a no-argument 
- * constructor to be instantiatabled. 
+ * <p>The class must implement javax.swing.Action and have a no-argument
+ * constructor to be instantiatabled.
  *
- * <p>It will be represented in the UI as a menu item, and possibly as a tool 
+ * <p>It will be represented in the UI as a menu item, and possibly as a tool
  * bar button.
- * 
+ *
  * <p>The <code>Plugin</code> annotation allows to specify a UI section type,
- * a dependency to enable or disable the action, a specific class for the 
+ * a dependency to enable or disable the action, a specific class for the
  * hosting menu item, and whether a tool bar button must be generated.
  *
  * @author Brenton Partridge
