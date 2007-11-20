@@ -14,7 +14,7 @@ import omr.Main;
 
 import omr.glyph.ui.SymbolsEditor;
 
-import omr.score.Note;
+import omr.score.entity.Note;
 
 import omr.script.AssignTask;
 import omr.script.DeassignTask;

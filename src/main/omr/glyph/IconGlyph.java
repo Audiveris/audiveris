@@ -13,8 +13,8 @@ import omr.lag.JunctionAllPolicy;
 import omr.lag.SectionsBuilder;
 import omr.lag.VerticalOrientation;
 
-import omr.score.PagePoint;
-import omr.score.ScoreConstants;
+import omr.score.common.PagePoint;
+import omr.score.ui.ScoreConstants;
 
 import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
