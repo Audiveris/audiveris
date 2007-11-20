@@ -277,8 +277,8 @@ public class Selection
         }
 
         // Not found !
-        logger.warning(
-            this + " cannot delete " + observer.getName());
+        logger.warning(this + " cannot delete " + observer.getName());
+
         ///new Throwable("SelectionStack").printStackTrace();
     }
 
