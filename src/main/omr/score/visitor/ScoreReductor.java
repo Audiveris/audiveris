@@ -9,10 +9,10 @@
 //
 package omr.score.visitor;
 
-import omr.score.Chord;
 import omr.score.Score;
-import omr.score.ScorePart;
-import omr.score.TimeSignature.InvalidTimeSignature;
+import omr.score.entity.Chord;
+import omr.score.entity.ScorePart;
+import omr.score.entity.TimeSignature.InvalidTimeSignature;
 
 /**
  * Class <code>ScoreReductor</code> can visit the score hierarchy to simplify

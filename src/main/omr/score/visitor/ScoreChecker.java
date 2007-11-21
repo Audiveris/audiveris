@@ -12,8 +12,8 @@ package omr.score.visitor;
 import omr.glyph.Shape;
 
 import omr.score.Score;
-import omr.score.TimeSignature;
-import omr.score.TimeSignature.InvalidTimeSignature;
+import omr.score.entity.TimeSignature;
+import omr.score.entity.TimeSignature.InvalidTimeSignature;
 
 import omr.util.Logger;
 

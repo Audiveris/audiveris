@@ -9,12 +9,12 @@
 //
 package omr.score.visitor;
 
-import omr.score.Measure;
 import omr.score.Score;
-import static omr.score.ScoreConstants.*;
-import omr.score.ScorePoint;
-import omr.score.Staff;
-import omr.score.System;
+import omr.score.common.ScorePoint;
+import omr.score.entity.Measure;
+import omr.score.entity.Staff;
+import omr.score.entity.System;
+import static omr.score.ui.ScoreConstants.*;
 
 import omr.util.Dumper;
 import omr.util.Logger;

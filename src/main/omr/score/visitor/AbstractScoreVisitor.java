@@ -9,32 +9,32 @@
 //
 package omr.score.visitor;
 
-import omr.score.Arpeggiate;
-import omr.score.Barline;
-import omr.score.Beam;
-import omr.score.Chord;
-import omr.score.Clef;
-import omr.score.Coda;
-import omr.score.Dynamics;
-import omr.score.Fermata;
-import omr.score.KeySignature;
-import omr.score.Measure;
-import omr.score.MeasureElement;
-import omr.score.MeasureNode;
-import omr.score.Note;
-import omr.score.Ornament;
-import omr.score.PartNode;
-import omr.score.Pedal;
 import omr.score.Score;
-import omr.score.ScoreNode;
-import omr.score.Segno;
-import omr.score.Slur;
-import omr.score.Staff;
-import omr.score.System;
-import omr.score.SystemPart;
-import omr.score.TimeSignature;
-import omr.score.Tuplet;
-import omr.score.Wedge;
+import omr.score.entity.Arpeggiate;
+import omr.score.entity.Barline;
+import omr.score.entity.Beam;
+import omr.score.entity.Chord;
+import omr.score.entity.Clef;
+import omr.score.entity.Coda;
+import omr.score.entity.Dynamics;
+import omr.score.entity.Fermata;
+import omr.score.entity.KeySignature;
+import omr.score.entity.Measure;
+import omr.score.entity.MeasureElement;
+import omr.score.entity.MeasureNode;
+import omr.score.entity.Note;
+import omr.score.entity.Ornament;
+import omr.score.entity.PartNode;
+import omr.score.entity.Pedal;
+import omr.score.entity.ScoreNode;
+import omr.score.entity.Segno;
+import omr.score.entity.Slur;
+import omr.score.entity.Staff;
+import omr.score.entity.System;
+import omr.score.entity.SystemPart;
+import omr.score.entity.TimeSignature;
+import omr.score.entity.Tuplet;
+import omr.score.entity.Wedge;
 
 /**
  * Class <code>AbstractScoreVisitor</code> provides a default implementation of

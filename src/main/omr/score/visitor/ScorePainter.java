@@ -19,38 +19,38 @@ import static omr.glyph.Shape.*;
 import omr.plugin.Plugin;
 import omr.plugin.PluginType;
 
-import omr.score.Arpeggiate;
-import omr.score.Barline;
-import omr.score.Beam;
-import omr.score.Chord;
-import omr.score.Clef;
-import omr.score.Coda;
-import omr.score.Dynamics;
-import omr.score.Fermata;
-import omr.score.KeySignature;
-import omr.score.Mark;
-import omr.score.Measure;
-import omr.score.MeasureElement;
-import omr.score.Note;
-import omr.score.Ornament;
-import omr.score.Pedal;
 import omr.score.Score;
-import static omr.score.ScoreConstants.*;
-import omr.score.ScoreController;
-import omr.score.ScorePoint;
-import omr.score.Segno;
-import omr.score.Slot;
-import omr.score.Slur;
-import omr.score.Staff;
-import omr.score.System;
-import omr.score.SystemPart;
-import omr.score.SystemPoint;
-import omr.score.SystemRectangle;
-import omr.score.TimeSignature;
-import omr.score.TimeSignature.InvalidTimeSignature;
-import omr.score.Tuplet;
-import omr.score.UnitDimension;
-import omr.score.Wedge;
+import omr.score.common.ScorePoint;
+import omr.score.common.SystemPoint;
+import omr.score.common.SystemRectangle;
+import omr.score.common.UnitDimension;
+import omr.score.entity.Arpeggiate;
+import omr.score.entity.Barline;
+import omr.score.entity.Beam;
+import omr.score.entity.Chord;
+import omr.score.entity.Clef;
+import omr.score.entity.Coda;
+import omr.score.entity.Dynamics;
+import omr.score.entity.Fermata;
+import omr.score.entity.KeySignature;
+import omr.score.entity.Mark;
+import omr.score.entity.Measure;
+import omr.score.entity.MeasureElement;
+import omr.score.entity.Note;
+import omr.score.entity.Ornament;
+import omr.score.entity.Pedal;
+import omr.score.entity.Segno;
+import omr.score.entity.Slot;
+import omr.score.entity.Slur;
+import omr.score.entity.Staff;
+import omr.score.entity.System;
+import omr.score.entity.SystemPart;
+import omr.score.entity.TimeSignature;
+import omr.score.entity.TimeSignature.InvalidTimeSignature;
+import omr.score.entity.Tuplet;
+import omr.score.entity.Wedge;
+import static omr.score.ui.ScoreConstants.*;
+import omr.score.ui.ScoreController;
 
 import omr.sheet.Scale;
 
@@ -139,6 +139,13 @@ public class ScorePainter
         0,
         constants.slotAlpha.getValue());
 
+    /** Color for highlighted slot */
+    private final Color slotHighLightColor = new Color(
+        0,
+        0,
+        0,
+        constants.slotAlpha.getValue());
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -164,9 +171,35 @@ public class ScorePainter
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------//
+    // drawSlot //
+    //----------//
+    public void drawSlot (Measure measure,
+                          Slot    slot,
+                          Color   color)
+    {
+        Color oldColor = g.getColor();
+        g.setColor(color);
+
+        ScorePoint partOrigin = measure.getPart()
+                                       .getFirstStaff()
+                                       .getDisplayOrigin();
+        final int  x = zoom.scaled(partOrigin.x + slot.getX());
+        g.drawLine(
+            x,
+            zoom.scaled(partOrigin.y),
+            x,
+            zoom.scaled(
+                measure.getPart().getLastStaff().getDisplayOrigin().y +
+                STAFF_HEIGHT));
+
+        g.setColor(oldColor);
+    }
+
     //------------------//
     // visit Arpeggiate //
     //------------------//
+    @Override
     public boolean visit (Arpeggiate arpeggiate)
     {
         // Draw an arpeggiate symbol with proper height
@@ -179,9 +212,8 @@ public class ScorePainter
 
         if (icon != null) {
             // Vertical ratio to extend the icon */
-            final double     ratio = height / icon.getIconHeight();
+            final double ratio = height / icon.getIconHeight();
 
-            final Graphics2D g2 = (Graphics2D) g;
             g.setColor(Color.black);
             transform.setTransform(
                 1,
@@ -191,7 +223,7 @@ public class ScorePainter
                 zoom.scaled(
                     arpeggiate.getDisplayOrigin().x + arpeggiate.getPoint().x),
                 zoom.scaled(arpeggiate.getDisplayOrigin().y + top));
-            g2.drawRenderedImage(icon.getImage(), transform);
+            g.drawRenderedImage(icon.getImage(), transform);
         }
 
         return false;
@@ -375,6 +407,7 @@ public class ScorePainter
     //------------//
     // visit Coda //
     //------------//
+    @Override
     public boolean visit (Coda coda)
     {
         return visit((MeasureElement) coda);
@@ -383,6 +416,7 @@ public class ScorePainter
     //----------------//
     // visit Dynamics //
     //----------------//
+    @Override
     public boolean visit (Dynamics dynamics)
     {
         return visit((MeasureElement) dynamics);
@@ -391,6 +425,7 @@ public class ScorePainter
     //---------------//
     // visit Fermata //
     //---------------//
+    @Override
     public boolean visit (Fermata fermata)
     {
         return visit((MeasureElement) fermata);
@@ -438,21 +473,8 @@ public class ScorePainter
 
         // Draw slot vertical lines ?
         if (constants.slotPainting.getValue()) {
-            g.setColor(slotColor);
-
             for (Slot slot : measure.getSlots()) {
-                // Draw vertical line using slot abscissa
-                ScorePoint partOrigin = measure.getPart()
-                                               .getFirstStaff()
-                                               .getDisplayOrigin();
-                final int  x = zoom.scaled(partOrigin.x + slot.getX());
-                g.drawLine(
-                    x,
-                    zoom.scaled(partOrigin.y),
-                    x,
-                    zoom.scaled(
-                        measure.getPart().getLastStaff().getDisplayOrigin().y +
-                        STAFF_HEIGHT));
+                drawSlot(measure, slot, slotColor);
             }
         }
 
@@ -697,11 +719,10 @@ public class ScorePainter
             final SymbolIcon braceIcon = (SymbolIcon) Shape.BRACE.getIcon();
 
             if (braceIcon != null) {
-                final double     ratio = height / braceIcon.getIconHeight();
+                final double ratio = height / braceIcon.getIconHeight();
 
                 // Offset on left of system
-                final int        dx = 10;
-                final Graphics2D g2 = (Graphics2D) g;
+                final int dx = 10;
                 g.setColor(Color.black);
                 transform.setTransform(
                     1,
@@ -711,7 +732,7 @@ public class ScorePainter
                     zoom.scaled(part.getSystem()
                                     .getDisplayOrigin().x) - dx,
                     zoom.scaled(top));
-                g2.drawRenderedImage(braceIcon.getImage(), transform);
+                g.drawRenderedImage(braceIcon.getImage(), transform);
             }
         }
 
@@ -1022,7 +1043,7 @@ public class ScorePainter
 
         if (icon != null) {
             final ScorePoint displayOrigin = staff.getDisplayOrigin();
-            final int        dy = staff.pitchToUnit(pitchPosition);
+            final int        dy = Staff.pitchToUnit(pitchPosition);
 
             // Position of symbol wrt stem
             final int stemX = chord.getTailLocation().x;
@@ -1094,7 +1115,7 @@ public class ScorePainter
                 zoom.scaled(staff.getDisplayOrigin().x + center.x),
                 zoom.scaled(
                     staff.getDisplayOrigin().y +
-                    staff.pitchToUnit(pitchPosition)));
+                    Staff.pitchToUnit(pitchPosition)));
 
             // Horizontal alignment
             if (hAlign == HorizontalAlignment.CENTER) {

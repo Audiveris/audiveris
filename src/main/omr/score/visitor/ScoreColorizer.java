@@ -11,9 +11,9 @@ package omr.score.visitor;
 
 import omr.glyph.GlyphLag;
 
-import omr.score.Barline;
 import omr.score.Score;
-import omr.score.SystemPart;
+import omr.score.entity.Barline;
+import omr.score.entity.SystemPart;
 
 import omr.stick.Stick;
 

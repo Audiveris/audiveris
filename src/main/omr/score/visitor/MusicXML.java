@@ -13,9 +13,9 @@ package omr.score.visitor;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
-import omr.score.Note;
-import omr.score.Staff;
-import omr.score.SystemPoint;
+import omr.score.common.SystemPoint;
+import omr.score.entity.Note;
+import omr.score.entity.Staff;
 
 import omr.util.Logger;
 

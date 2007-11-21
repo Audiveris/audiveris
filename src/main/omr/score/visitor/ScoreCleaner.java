@@ -11,11 +11,11 @@ package omr.score.visitor;
 
 import omr.glyph.Glyph;
 
-import omr.score.Measure;
 import omr.score.Score;
-import omr.score.ScorePart;
-import omr.score.System;
-import omr.score.SystemPart;
+import omr.score.entity.Measure;
+import omr.score.entity.ScorePart;
+import omr.score.entity.System;
+import omr.score.entity.SystemPart;
 
 import omr.util.Logger;
 
