@@ -9,43 +9,45 @@
 //
 package omr.score.visitor;
 
-import omr.score.Midi;
 import omr.Main;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
-import omr.score.Arpeggiate;
-import omr.score.Barline;
-import omr.score.Beam;
-import omr.score.Chord;
-import omr.score.Clef;
-import omr.score.Coda;
-import omr.score.Dynamics;
-import omr.score.Fermata;
-import omr.score.KeySignature;
-import omr.score.Measure;
-import omr.score.Notation;
-import omr.score.Ornament;
-import omr.score.Pedal;
 import omr.score.Score;
-import omr.score.ScorePart;
-import omr.score.Segno;
-import omr.score.Slur;
-import omr.score.Staff;
-import omr.score.System;
-import omr.score.SystemPart;
-import omr.score.SystemPoint;
-import omr.score.SystemRectangle;
-import omr.score.TimeSignature;
-import omr.score.TimeSignature.InvalidTimeSignature;
-import omr.score.Tuplet;
-import omr.score.Wedge;
+import omr.score.common.SystemPoint;
+import omr.score.common.SystemRectangle;
+import omr.score.entity.Arpeggiate;
+import omr.score.entity.Barline;
+import omr.score.entity.Beam;
+import omr.score.entity.Chord;
+import omr.score.entity.Clef;
+import omr.score.entity.Coda;
+import omr.score.entity.Dynamics;
+import omr.score.entity.Fermata;
+import omr.score.entity.KeySignature;
+import omr.score.entity.Measure;
+import omr.score.entity.Notation;
+import omr.score.entity.Ornament;
+import omr.score.entity.Pedal;
+import omr.score.entity.ScorePart;
+import omr.score.entity.Segno;
+import omr.score.entity.Slur;
+import omr.score.entity.Staff;
+import omr.score.entity.System;
+import omr.score.entity.SystemPart;
+import omr.score.entity.TimeSignature;
+import omr.score.entity.TimeSignature.InvalidTimeSignature;
+import omr.score.entity.Tuplet;
+import omr.score.entity.Wedge;
+import omr.score.midi.MidiAbstractions;
 import static omr.score.visitor.MusicXML.*;
 
 import omr.util.Logger;
 import omr.util.TreeNode;
+
+import org.w3c.dom.Node;
 
 import proxymusic.*;
 
@@ -98,41 +100,51 @@ public class ScoreExporter
     // ScoreExporter //
     //---------------//
     /**
-     * Create a new ScoreExporter object, which handles the export to a file
+     * Create a new ScoreExporter object, on a related score instance
      *
      * @param score the score to export (cannot be null)
-     * @param xmlFile the xml file to write (cannot be null)
      */
-    public ScoreExporter (Score score,
-                          File  xmlFile)
-        throws Exception
-    {
-        this(score, new FileOutputStream(xmlFile));
-    }
-
-    //---------------//
-    // ScoreExporter //
-    //---------------//
-    /**
-     * Create a new ScoreExporter object, which handles the export to a stream
-     *
-     * @param score the score to export (cannot be null)
-     * @param os the output stream where XML data is written (cannot be null)
-     */
-    public ScoreExporter (Score        score,
-                          OutputStream os)
+    public ScoreExporter (Score score)
         throws IOException, Exception
     {
         if (score == null) {
             throw new IllegalArgumentException("Trying to export a null score");
         }
 
+        this.score = score;
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //--------//
+    // export //
+    //--------//
+    /**
+     * Export the score to a file
+     *
+     * @param xmlFile the xml file to write (cannot be null)
+     */
+    public void export (File xmlFile)
+        throws Exception
+    {
+        export(new FileOutputStream(xmlFile));
+    }
+
+    //--------//
+    // export //
+    //--------//
+    /**
+     * Export the score to an output stream
+     *
+     * @param os the output stream where XML data is written (cannot be null)
+     */
+    public void export (OutputStream os)
+        throws IOException, Exception
+    {
         if (os == null) {
             throw new IllegalArgumentException(
                 "Trying to export a score to a null output stream");
         }
-
-        this.score = score;
 
         // Let visited nodes fill the scorePartWise proxy
         score.accept(this);
@@ -141,7 +153,28 @@ public class ScoreExporter
         Marshalling.marshal(scorePartwise, os);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //--------//
+    // export //
+    //--------//
+    /**
+     * Export the score to DOM node
+     *
+     * @param node the DOM node to export to
+     */
+    public void export (Node node)
+        throws IOException, Exception
+    {
+        if (node == null) {
+            throw new IllegalArgumentException(
+                "Trying to export a score to a null Node");
+        }
+
+        // Let visited nodes fill the scorePartWise proxy
+        score.accept(this);
+
+        //  Finally, marshal the proxy
+        Marshalling.marshal(scorePartwise, node, true);
+    }
 
     //--------------------//
     // preloadJaxbContext //
@@ -193,42 +226,48 @@ public class ScoreExporter
         Shape shape = barline.getShape();
 
         if (shape != omr.glyph.Shape.SINGLE_BARLINE) {
-            proxymusic.Barline pmBarline = new proxymusic.Barline();
-            current.pmMeasure.getNoteOrBackupOrForward()
-                             .add(pmBarline);
+            try {
+                proxymusic.Barline pmBarline = new proxymusic.Barline();
 
-            BarStyle barStyle = new BarStyle();
-            pmBarline.setBarStyle(barStyle);
+                BarStyle           barStyle = new BarStyle();
+                pmBarline.setBarStyle(barStyle);
 
-            if (barline == current.measure.getBarline()) {
-                // The bar is on right side
-                pmBarline.setLocation(RIGHT);
+                if (barline == current.measure.getBarline()) {
+                    // The bar is on right side
+                    pmBarline.setLocation(RIGHT);
 
-                if ((shape == RIGHT_REPEAT_SIGN) ||
-                    (shape == BACK_TO_BACK_REPEAT_SIGN)) {
-                    barStyle.setContent("light-heavy");
+                    if ((shape == RIGHT_REPEAT_SIGN) ||
+                        (shape == BACK_TO_BACK_REPEAT_SIGN)) {
+                        barStyle.setContent("light-heavy");
 
-                    Repeat repeat = new Repeat();
-                    pmBarline.setRepeat(repeat);
-                    repeat.setDirection(BACKWARD);
+                        Repeat repeat = new Repeat();
+                        pmBarline.setRepeat(repeat);
+                        repeat.setDirection(BACKWARD);
+                    }
+                } else {
+                    // The bar is on left side
+                    pmBarline.setLocation(LEFT);
+
+                    if ((shape == LEFT_REPEAT_SIGN) ||
+                        (shape == BACK_TO_BACK_REPEAT_SIGN)) {
+                        barStyle.setContent("heavy-light");
+
+                        Repeat repeat = new Repeat();
+                        pmBarline.setRepeat(repeat);
+                        repeat.setDirection(MusicXML.FORWARD);
+                    }
                 }
-            } else {
-                // The bar is on left side
-                pmBarline.setLocation(LEFT);
 
-                if ((shape == LEFT_REPEAT_SIGN) ||
-                    (shape == BACK_TO_BACK_REPEAT_SIGN)) {
-                    barStyle.setContent("heavy-light");
-
-                    Repeat repeat = new Repeat();
-                    pmBarline.setRepeat(repeat);
-                    repeat.setDirection(MusicXML.FORWARD);
+                // Default: use style inferred from shape
+                if (barStyle.getContent() == null) {
+                    barStyle.setContent(barStyleOf(barline.getShape()));
                 }
-            }
 
-            // Default: use style inferred from shape
-            if (barStyle.getContent() == null) {
-                barStyle.setContent(barStyleOf(barline.getShape()));
+                // Everything is now OK
+                current.pmMeasure.getNoteOrBackupOrForward()
+                                 .add(pmBarline);
+            } catch (Exception ex) {
+                logger.warning("Cannot visit barline", ex);
             }
         }
 
@@ -253,7 +292,6 @@ public class ScoreExporter
     public boolean visit (Clef clef)
     {
         ///logger.info("Visiting " + clef);
-
         if (isNewClef(clef)) {
             proxymusic.Clef pmClef = new proxymusic.Clef();
             getMeasureAttributes()
@@ -370,7 +408,8 @@ public class ScoreExporter
         sound.setCoda("" + current.measure.getId());
         sound.setDivisions(
             "" +
-            current.part.simpleDurationOf(omr.score.Note.QUARTER_DURATION));
+            current.part.simpleDurationOf(
+                omr.score.entity.Note.QUARTER_DURATION));
 
         return true;
     }
@@ -532,7 +571,7 @@ public class ScoreExporter
                     divisions.setContent(
                         "" +
                         current.part.simpleDurationOf(
-                            omr.score.Note.QUARTER_DURATION));
+                            omr.score.entity.Note.QUARTER_DURATION));
                     getMeasureAttributes()
                         .setDivisions(divisions);
                 } catch (Exception ex) {
@@ -677,9 +716,12 @@ public class ScoreExporter
                         // Delegate to the chord children directly
                         chord.acceptChildren(this);
                         lastChord = chord;
-                        timeCounter += ((chord.getDuration() != null)
-                                        ? chord.getDuration()
-                                        : measure.getExpectedDuration());
+
+                        if (chord.getDuration() != null) {
+                            timeCounter += chord.getDuration();
+                        } else {
+                            timeCounter = measure.getExpectedDuration();
+                        }
                     }
                 }
 
@@ -691,7 +733,13 @@ public class ScoreExporter
                     insertForward(
                         measure.getExpectedDuration() - timeCounter,
                         lastChord);
+                    timeCounter = measure.getExpectedDuration();
                 }
+            }
+
+            if (timeCounter != 0) {
+                measure.getStartTime();
+                measure.setActualDuration(timeCounter);
             }
         } catch (InvalidTimeSignature ex) {
         }
@@ -707,7 +755,7 @@ public class ScoreExporter
     // visit Note //
     //------------//
     @Override
-    public boolean visit (omr.score.Note note)
+    public boolean visit (omr.score.entity.Note note)
     {
         ///logger.info(note.getContextString() + " Visiting " + note);
         current.note = note;
@@ -717,7 +765,7 @@ public class ScoreExporter
         // Chord direction  events for first note in chord
         if (chord.getNotes()
                  .indexOf(note) == 0) {
-            for (omr.score.Direction node : chord.getDirections()) {
+            for (omr.score.entity.Direction node : chord.getDirections()) {
                 node.accept(this);
             }
         }
@@ -1076,7 +1124,7 @@ public class ScoreExporter
                 InstrumentName instrumentName = new InstrumentName();
                 scoreInstrument.setInstrumentName(instrumentName);
                 instrumentName.setContent(
-                    Midi.getProgramName(p.getMidiProgram()));
+                    MidiAbstractions.getProgramName(p.getMidiProgram()));
 
                 // Midi instrument
                 MidiInstrument midiInstrument = new MidiInstrument();
@@ -1147,7 +1195,8 @@ public class ScoreExporter
         sound.setSegno("" + current.measure.getId());
         sound.setDivisions(
             "" +
-            current.part.simpleDurationOf(omr.score.Note.QUARTER_DURATION));
+            current.part.simpleDurationOf(
+                omr.score.entity.Note.QUARTER_DURATION));
 
         return true;
     }
@@ -1459,29 +1508,6 @@ public class ScoreExporter
         return true;
     }
 
-    //- Utility Methods --------------------------------------------------------
-
-    //----------//
-    // areEqual //
-    //----------//
-    private static boolean areEqual (Time left,
-                                     Time right)
-    {
-        return (getNum(left).equals(getNum(right))) &&
-               (getDen(left).equals(getDen(right)));
-    }
-
-    //----------//
-    // areEqual //
-    //----------//
-    private static boolean areEqual (Key left,
-                                     Key right)
-    {
-        return left.getFifths()
-                   .getContent()
-                   .equals(right.getFifths().getContent());
-    }
-
     //--------//
     // getDen //
     //--------//
@@ -1514,6 +1540,29 @@ public class ScoreExporter
         return "";
     }
 
+    //- Utility Methods --------------------------------------------------------
+
+    //----------//
+    // areEqual //
+    //----------//
+    private static boolean areEqual (Time left,
+                                     Time right)
+    {
+        return (getNum(left).equals(getNum(right))) &&
+               (getDen(left).equals(getDen(right)));
+    }
+
+    //----------//
+    // areEqual //
+    //----------//
+    private static boolean areEqual (Key left,
+                                     Key right)
+    {
+        return left.getFifths()
+                   .getContent()
+                   .equals(right.getFifths().getContent());
+    }
+
     //----------------------//
     // getMeasureAttributes //
     //----------------------//
@@ -1531,6 +1580,53 @@ public class ScoreExporter
         }
 
         return current.attributes;
+    }
+
+    //-----------//
+    // isNewClef //
+    //-----------//
+    /**
+     * Make sure we have a NEW clef, not already assigned. We have to go back
+     * (on the same staff) in current measure, then in previous measures,
+     * then in same staff in previous systems, until we find a previous clef.
+     * And we compare the two shapes.
+     * @param clef the potentially new clef
+     * @return true if this clef is really new
+     */
+    private boolean isNewClef (Clef clef)
+    {
+        // Perhaps another clef before this one ?
+        Clef previousClef = current.measure.getClefBefore(
+            new SystemPoint(clef.getCenter().x - 1, clef.getCenter().y));
+
+        if (previousClef != null) {
+            return previousClef.getShape() != clef.getShape();
+        }
+
+        return true; // Since no previous clef found
+    }
+
+    //-------------------//
+    // isNewKeySignature //
+    //-------------------//
+    /**
+     * Make sure we have a NEW key, not already assigned. We have to go back
+     * in current measure, then in current staff, then in same staff in previous
+     * systems, until we find a previous key. And we compare the two shapes.
+     * @param key the potentially new key
+     * @return true if this key is really new
+     */
+    private boolean isNewKeySignature (KeySignature key)
+    {
+        // Perhaps another key before this one ?
+        KeySignature previousKey = current.measure.getKeyBefore(
+            key.getCenter());
+
+        if (previousKey != null) {
+            return previousKey.getKey() != key.getKey();
+        }
+
+        return true; // Since no previous key found
     }
 
     //--------------//
@@ -1658,53 +1754,6 @@ public class ScoreExporter
         }
     }
 
-    //-----------//
-    // isNewClef //
-    //-----------//
-    /**
-     * Make sure we have a NEW clef, not already assigned. We have to go back
-     * (on the same staff) in current measure, then in previous measures,
-     * then in same staff in previous systems, until we find a previous clef.
-     * And we compare the two shapes.
-     * @param clef the potentially new clef
-     * @return true if this clef is really new
-     */
-    private boolean isNewClef (Clef clef)
-    {
-        // Perhaps another clef before this one ?
-        Clef previousClef = current.measure.getClefBefore(
-            new SystemPoint(clef.getCenter().x - 1, clef.getCenter().y));
-
-        if (previousClef != null) {
-            return previousClef.getShape() != clef.getShape();
-        }
-
-        return true; // Since no previous clef found
-    }
-
-    //-------------------//
-    // isNewKeySignature //
-    //-------------------//
-    /**
-     * Make sure we have a NEW key, not already assigned. We have to go back
-     * in current measure, then in current staff, then in same staff in previous
-     * systems, until we find a previous key. And we compare the two shapes.
-     * @param key the potentially new key
-     * @return true if this key is really new
-     */
-    private boolean isNewKeySignature (KeySignature key)
-    {
-        // Perhaps another key before this one ?
-        KeySignature previousKey = current.measure.getKeyBefore(
-            key.getCenter());
-
-        if (previousKey != null) {
-            return previousKey.getKey() != key.getKey();
-        }
-
-        return true; // Since no previous key found
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //---------//
@@ -1713,6 +1762,8 @@ public class ScoreExporter
     /** Keep references of all current entities */
     private static class Current
     {
+        //~ Instance fields ----------------------------------------------------
+
         // Part dependent
         ScorePart             part;
         proxymusic.Part       pmPart;
@@ -1726,11 +1777,13 @@ public class ScoreExporter
         Integer               voice;
 
         // Note dependent
-        omr.score.Note        note;
+        omr.score.entity.Note note;
         proxymusic.Note       pmNote;
         proxymusic.Notations  notations;
         proxymusic.Print      pmPrint;
         proxymusic.Attributes attributes;
+
+        //~ Methods ------------------------------------------------------------
 
         // Cleanup at end of measure
         void endMeasure ()
@@ -1759,6 +1812,8 @@ public class ScoreExporter
     /** Composite flag to help drive processing of any entity */
     private static class IsFirst
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** We are writing the first part of the score */
         boolean part;
 
@@ -1767,6 +1822,8 @@ public class ScoreExporter
 
         /** We are writing the first measure in current system (in current part) */
         boolean measure;
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public java.lang.String toString ()
