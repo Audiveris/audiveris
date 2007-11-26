@@ -135,151 +135,6 @@ public class Chord
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //---------//
-    // addBeam //
-    //---------//
-    /**
-     * Insert a beam as attached to this chord
-     *
-     * @param beam the attached beam
-     */
-    public void addBeam (Beam beam)
-    {
-        beams.add(beam);
-    }
-
-    //----------//
-    // addChild //
-    //----------//
-    /**
-     * Override normal behavior, so that adding a note resets chord internal
-     * parameters
-     *
-     * @param node the child to insert in the chord
-     */
-    @Override
-    public void addChild (TreeNode node)
-    {
-        super.addChild(node);
-
-        // Side effect for note, since the geometric parameters of the chord
-        // are modified
-        if (node instanceof Note) {
-            reset();
-        }
-    }
-
-    //---------//
-    // addMark //
-    //---------//
-    /**
-     * Add a UI mark to this chord
-     *
-     * @param mark the mark to add
-     */
-    public void addMark (Mark mark)
-    {
-        marks.add(mark);
-    }
-
-    //-------------//
-    // addNotation //
-    //-------------//
-    /**
-     * Add a notation element related to this chord note(s)
-     *
-     * @param notation the notation element to add
-     */
-    public void addNotation (Notation notation)
-    {
-        notations.add(notation);
-    }
-
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * Compare this chord with another chord, to implement order based first on
-     * head abscissa, then on head ordinate
-     *
-     * @param other the other chord
-     * @return -1, 0, +1 according to the comparison result
-     */
-    @Implement(Comparable.class)
-    public int compareTo (Chord other)
-    {
-        int dx = getHeadLocation().x - other.getHeadLocation().x;
-
-        if (dx != 0) {
-            return Integer.signum(dx);
-        } else {
-            return Integer.signum(
-                getHeadLocation().y - other.getHeadLocation().y);
-        }
-    }
-
-    //-----------//
-    // duplicate //
-    //-----------//
-    /**
-     * Make a clone of a chord (except for its beams). This duplication is
-     * needed in cases such as: a note head with stems on both sides, or a chord
-     * shared by two BeamGroups.
-     *
-     * @return a clone of this chord (including notes, but beams are not copied)
-     */
-    public Chord duplicate ()
-    {
-        // Beams are not copied
-        Chord clone = new Chord(getMeasure());
-
-        // Insert clone in proper slot
-        for (Slot slot : getMeasure()
-                             .getSlots()) {
-            if (slot.getChords()
-                    .contains(this)) {
-                slot.getChords()
-                    .add(clone);
-
-                break;
-            }
-        }
-
-        clone.stem = stem;
-
-        // Notes (we make a deep copy of each note)
-        List<TreeNode> notesCopy = new ArrayList<TreeNode>();
-        notesCopy.addAll(getNotes());
-
-        for (TreeNode node : notesCopy) {
-            Note note = (Note) node;
-            clone.addChild(new Note(note));
-        }
-
-        if (tupletFactor != null) {
-            clone.tupletFactor = new DurationFactor(
-                tupletFactor.getNumerator(),
-                tupletFactor.getDenominator());
-        }
-
-        clone.dotsNumber = dotsNumber;
-        clone.flagsNumber = flagsNumber; // Not sure TBD
-
-        // Insure correct ordering of chords within their container
-        Collections.sort(getParent().getChildren(), chordComparator);
-
-        return clone;
-    }
-
     //--------------//
     // getBeamGroup //
     //--------------//
@@ -356,6 +211,32 @@ public class Chord
         } else {
             return getRawDuration();
         }
+    }
+
+    //--------------//
+    // isEmbracedBy //
+    //--------------//
+    /**
+     * Check whether the notes of this chord stand within the given
+     * vertical range
+     *
+     * @param top top of vertical range
+     * @param bottom bottom of vertical range
+     * @return true if all notes are within the given range
+     */
+    public boolean isEmbracedBy (SystemPoint top,
+                                 SystemPoint bottom)
+    {
+        for (TreeNode node : getNotes()) {
+            Note        note = (Note) node;
+            SystemPoint center = note.getCenter();
+
+            if ((center.y >= top.y) && (center.y <= bottom.y)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //------------//
@@ -491,7 +372,7 @@ public class Chord
      * dots into account, but not the tuplet impact if any
      *
      * @return the intrinsic chord duration
-     * @see #getDuration
+     * @see #getActualDuration
      */
     public Integer getRawDuration ()
     {
@@ -550,6 +431,54 @@ public class Chord
         return super.getStaff();
     }
 
+    //--------------//
+    // setStartTime //
+    //--------------//
+    /**
+     * Remember the starting time for this chord
+     *
+     * @param startTime chord starting time (counted within the measure)
+     */
+    public void setStartTime (int startTime)
+    {
+        // Already done?
+        if (this.startTime == null) {
+            if (logger.isFineEnabled()) {
+                logger.info(
+                    "setStartTime " + startTime + " for chord #" + getId());
+            }
+
+            this.startTime = startTime;
+
+            // Set the same info in containing slot if any
+            Slot slot = getSlot();
+
+            if (slot != null) {
+                slot.setStartTime(startTime);
+            }
+        } else {
+            if (!this.startTime.equals(startTime)) {
+                addError(
+                    "Reassigning startTime from " +
+                    Note.quarterValueOf(this.startTime) + " to " +
+                    Note.quarterValueOf(startTime) + " in " + this);
+            }
+        }
+    }
+
+    //---------//
+    // setStem //
+    //---------//
+    /**
+     * Assign the proper stem to this chord
+     *
+     * @param stem the chord stem
+     */
+    public void setStem (Glyph stem)
+    {
+        this.stem = stem;
+    }
+
     //---------//
     // getStem //
     //---------//
@@ -594,20 +523,6 @@ public class Chord
         return chords;
     }
 
-    //--------------//
-    // addDirection //
-    //--------------//
-    /**
-     * Add a direction element that should appear right before the chord
-     * first note
-     *
-     * @param direction the direction element to add
-     */
-    public void addDirection (Direction direction)
-    {
-        directions.add(direction);
-    }
-
     //-----------------//
     // getTailLocation //
     //-----------------//
@@ -623,6 +538,57 @@ public class Chord
         }
 
         return tailLocation;
+    }
+
+    //-----------------//
+    // setTupletFactor //
+    //-----------------//
+    /**
+     * Assign a tuplet factor to this chord
+     *
+     * @param tupletFactor the factor to apply
+     */
+    public void setTupletFactor (DurationFactor tupletFactor)
+    {
+        this.tupletFactor = tupletFactor;
+    }
+
+    //----------//
+    // setVoice //
+    //----------//
+    /**
+     * Assign a voice id to this chord
+     *
+     * @param voice the voice id
+     */
+    public void setVoice (Integer voice)
+    {
+        // Already done?
+        if (this.voice == null) {
+            if (logger.isFineEnabled()) {
+                logger.fine("setVoice " + voice + " to " + this);
+            }
+
+            this.voice = voice;
+
+            // Extend this info to other beamed chords if any
+            BeamGroup group = getBeamGroup();
+
+            if (group != null) {
+                group.setVoice(voice);
+            }
+
+            // Extend to the tied chords as well, perhaps in other measures
+            for (Chord chord : getTiedChords()) {
+                chord.setVoice(voice);
+            }
+        } else {
+            if (!this.voice.equals(voice)) {
+                addError(
+                    "Reassigning voice from " + this.voice + " to " + voice +
+                    " in " + this);
+            }
+        }
     }
 
     //----------//
@@ -657,6 +623,165 @@ public class Chord
         }
 
         return false;
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //---------//
+    // addBeam //
+    //---------//
+    /**
+     * Insert a beam as attached to this chord
+     *
+     * @param beam the attached beam
+     */
+    public void addBeam (Beam beam)
+    {
+        beams.add(beam);
+    }
+
+    //----------//
+    // addChild //
+    //----------//
+    /**
+     * Override normal behavior, so that adding a note resets chord internal
+     * parameters
+     *
+     * @param node the child to insert in the chord
+     */
+    @Override
+    public void addChild (TreeNode node)
+    {
+        super.addChild(node);
+
+        // Side effect for note, since the geometric parameters of the chord
+        // are modified
+        if (node instanceof Note) {
+            reset();
+        }
+    }
+
+    //--------------//
+    // addDirection //
+    //--------------//
+    /**
+     * Add a direction element that should appear right before the chord
+     * first note
+     *
+     * @param direction the direction element to add
+     */
+    public void addDirection (Direction direction)
+    {
+        directions.add(direction);
+    }
+
+    //---------//
+    // addMark //
+    //---------//
+    /**
+     * Add a UI mark to this chord
+     *
+     * @param mark the mark to add
+     */
+    public void addMark (Mark mark)
+    {
+        marks.add(mark);
+    }
+
+    //-------------//
+    // addNotation //
+    //-------------//
+    /**
+     * Add a notation element related to this chord note(s)
+     *
+     * @param notation the notation element to add
+     */
+    public void addNotation (Notation notation)
+    {
+        notations.add(notation);
+    }
+
+    //-----------//
+    // compareTo //
+    //-----------//
+    /**
+     * Compare this chord with another chord, to implement order based first on
+     * head abscissa, then on head ordinate
+     *
+     * @param other the other chord
+     * @return -1, 0, +1 according to the comparison result
+     */
+    @Implement(Comparable.class)
+    public int compareTo (Chord other)
+    {
+        int dx = getHeadLocation().x - other.getHeadLocation().x;
+
+        if (dx != 0) {
+            return Integer.signum(dx);
+        } else {
+            return Integer.signum(
+                getHeadLocation().y - other.getHeadLocation().y);
+        }
+    }
+
+    //-----------//
+    // duplicate //
+    //-----------//
+    /**
+     * Make a clone of a chord (except for its beams). This duplication is
+     * needed in cases such as: a note head with stems on both sides, or a chord
+     * shared by two BeamGroups.
+     *
+     * @return a clone of this chord (including notes, but beams are not copied)
+     */
+    public Chord duplicate ()
+    {
+        // Beams are not copied
+        Chord clone = new Chord(getMeasure());
+
+        // Insert clone in proper slot
+        for (Slot slot : getMeasure()
+                             .getSlots()) {
+            if (slot.getChords()
+                    .contains(this)) {
+                slot.getChords()
+                    .add(clone);
+
+                break;
+            }
+        }
+
+        clone.stem = stem;
+
+        // Notes (we make a deep copy of each note)
+        List<TreeNode> notesCopy = new ArrayList<TreeNode>();
+        notesCopy.addAll(getNotes());
+
+        for (TreeNode node : notesCopy) {
+            Note note = (Note) node;
+            clone.addChild(new Note(note));
+        }
+
+        if (tupletFactor != null) {
+            clone.tupletFactor = new DurationFactor(
+                tupletFactor.getNumerator(),
+                tupletFactor.getDenominator());
+        }
+
+        clone.dotsNumber = dotsNumber;
+        clone.flagsNumber = flagsNumber; // Not sure TBD
+
+        // Insure correct ordering of chords within their container
+        Collections.sort(getParent().getChildren(), chordComparator);
+
+        return clone;
     }
 
     //------------//
@@ -871,131 +996,6 @@ public class Chord
     public DurationFactor getTupletFactor ()
     {
         return tupletFactor;
-    }
-
-    //--------------//
-    // isEmbracedBy //
-    //--------------//
-    /**
-     * Check whether the notes of this chord stand within the given
-     * vertical range
-     *
-     * @param top top of vertical range
-     * @param bottom bottom of vertical range
-     * @return true if all notes are within the given range
-     */
-    public boolean isEmbracedBy (SystemPoint top,
-                                 SystemPoint bottom)
-    {
-        for (TreeNode node : getNotes()) {
-            Note        note = (Note) node;
-            SystemPoint center = note.getCenter();
-
-            if ((center.y >= top.y) && (center.y <= bottom.y)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    //--------------//
-    // setStartTime //
-    //--------------//
-    /**
-     * Remember the starting time for this chord
-     *
-     * @param startTime chord starting time (counted within the measure)
-     */
-    public void setStartTime (int startTime)
-    {
-        // Already done?
-        if (this.startTime == null) {
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    "setStartTime " + startTime + " for chord #" + getId());
-            }
-
-            this.startTime = startTime;
-
-            // Set the same info in containing slot if any
-            Slot slot = getSlot();
-
-            if (slot != null) {
-                slot.setStartTime(startTime);
-            }
-        } else {
-            if (!this.startTime.equals(startTime)) {
-                addError(
-                    "Reassigning startTime from " +
-                    Note.quarterValueOf(this.startTime) + " to " +
-                    Note.quarterValueOf(startTime) + " in " + this);
-            }
-        }
-    }
-
-    //---------//
-    // setStem //
-    //---------//
-    /**
-     * Assign the proper stem to this chord
-     *
-     * @param stem the chord stem
-     */
-    public void setStem (Glyph stem)
-    {
-        this.stem = stem;
-    }
-
-    //-----------------//
-    // setTupletFactor //
-    //-----------------//
-    /**
-     * Assign a tuplet factor to this chord
-     *
-     * @param tupletFactor the factor to apply
-     */
-    public void setTupletFactor (DurationFactor tupletFactor)
-    {
-        this.tupletFactor = tupletFactor;
-    }
-
-    //----------//
-    // setVoice //
-    //----------//
-    /**
-     * Assign a voice id to this chord
-     *
-     * @param voice the voice id
-     */
-    public void setVoice (Integer voice)
-    {
-        // Already done?
-        if (this.voice == null) {
-            if (logger.isFineEnabled()) {
-                logger.fine("setVoice " + voice + " to " + this);
-            }
-
-            this.voice = voice;
-
-            // Extend this info to other beamed chords if any
-            BeamGroup group = getBeamGroup();
-
-            if (group != null) {
-                group.setVoice(voice);
-            }
-
-            // Extend to the tied chords as well, perhaps in other measures
-            for (Chord chord : getTiedChords()) {
-                chord.setVoice(voice);
-            }
-        } else {
-            if (!this.voice.equals(voice)) {
-                addError(
-                    "Reassigning voice from " + this.voice + " to " + voice +
-                    " in " + this);
-            }
-        }
     }
 
     //----------//
@@ -1400,6 +1400,8 @@ public class Chord
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /**
          * Maximum dx between note and augmentation dot
          */

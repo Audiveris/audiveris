@@ -61,6 +61,12 @@ public class System
     /** System dimensions, expressed in units */
     private UnitDimension dimension;
 
+    /** Start time of this system since beginning of the score */
+    private Integer startTime;
+
+    /** Duration of this system */
+    private Integer actualDuration;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------//
@@ -103,6 +109,32 @@ public class System
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------------//
+    // setActualDuration //
+    //-------------------//
+    public void setActualDuration (Integer actualDuration)
+    {
+        this.actualDuration = actualDuration;
+    }
+
+    //-------------------//
+    // getActualDuration //
+    //-------------------//
+    public int getActualDuration ()
+    {
+        if (actualDuration == null) {
+            SystemPart part = getFirstPart();
+            actualDuration = 0;
+
+            for (TreeNode m : part.getMeasures()) {
+                Measure measure = (Measure) m;
+                actualDuration += measure.getActualDuration();
+            }
+        }
+
+        return actualDuration;
+    }
 
     //------------------//
     // getContextString //
@@ -294,6 +326,30 @@ public class System
         }
 
         return best;
+    }
+
+    //--------------//
+    // getStartTime //
+    //--------------//
+    /**
+     * Report the start time of this system, with respect to the beginning of
+     * the score.
+     * @return the system start time
+     */
+    public int getStartTime ()
+    {
+        if (startTime == null) {
+            System prevSystem = (System) getPreviousSibling();
+
+            if (prevSystem == null) {
+                startTime = 0;
+            } else {
+                startTime = prevSystem.getStartTime() +
+                            prevSystem.getActualDuration();
+            }
+        }
+
+        return startTime;
     }
 
     //------------//
