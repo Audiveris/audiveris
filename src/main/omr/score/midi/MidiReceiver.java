@@ -169,6 +169,99 @@ public class MidiReceiver
         score = null;
     }
 
+    //-------------//
+    // getTickTime //
+    //-------------//
+    /**
+     * Compute in Midi ticks the current position (system + measure + slot)
+     * @return the computed tick position
+     */
+    private int getTickTime ()
+    {
+        if (slot != null) {
+            int totalTick = system.getStartTime() + measure.getStartTime() +
+                            slot.getStartTime();
+
+            int tick = totalTick / system.getFirstPart()
+                                         .getScorePart()
+                                         .getDurationDivisor();
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "system=" + system.getId() + " measure=" + measure.getId() +
+                    " slot=" + slot.getId() + " tick=" + tick);
+            }
+
+            return tick;
+        } else {
+            return -1;
+        }
+    }
+
+    //----------//
+    // nextSlot //
+    //----------//
+    /**
+     * Move to the next measure time Slot, across measures and systems if
+     * needed.
+     *
+     * @return the next slot, or null. Beware, besides 'slot', this may update
+     * the 'system' and 'measure' global variables.
+     */
+    private Slot nextSlot ()
+    {
+        if (measure == null) {
+            // We are just starting
+            system = (System) score.getSystems()
+                                   .get(0);
+
+            SystemPart part = system.getFirstPart();
+            measure = part.getFirstMeasure();
+            slot = measure.getSlots()
+                          .first();
+        } else if (slot == measure.getSlots()
+                                  .last()) {
+            // We have just finished a measure
+            Measure m = (Measure) measure.getNextSibling();
+
+            if (m != null) {
+                measure = m;
+                slot = measure.getSlots()
+                              .first();
+            } else {
+                // We have just finished a system
+                System s = (System) system.getNextSibling();
+
+                if (s == null) {
+                    // This is the end...
+                    slot = null;
+                } else {
+                    // Move to next system
+                    system = s;
+
+                    SystemPart part = system.getFirstPart();
+                    measure = part.getFirstMeasure();
+                    slot = measure.getSlots()
+                                  .first();
+                }
+            }
+        } else {
+            // Move to next slot within the current measure
+            for (Iterator<Slot> it = measure.getSlots()
+                                            .iterator(); it.hasNext();) {
+                Slot s = it.next();
+
+                if (s == slot) {
+                    slot = it.next();
+
+                    break;
+                }
+            }
+        }
+
+        return slot;
+    }
+
     //--------------//
     // retrieveSlot //
     //--------------//
@@ -185,47 +278,15 @@ public class MidiReceiver
     {
         if (score != null) {
             try {
-                if (measure == null) {
-                    system = (System) score.getSystems()
-                                           .get(0);
+                if (slot == null) {
+                    nextSlot();
+                }
 
-                    SystemPart part = system.getFirstPart();
-                    measure = part.getFirstMeasure();
-                    slot = measure.getSlots()
-                                  .first();
-                } else if (slot == measure.getSlots()
-                                          .last()) {
-                    Measure m = (Measure) measure.getNextSibling();
+                Integer tickTime = getTickTime();
 
-                    if (m != null) {
-                        measure = m;
-                        slot = measure.getSlots()
-                                      .first();
-                    } else {
-                        System s = (System) system.getNextSibling();
-
-                        if (s == null) {
-                            slot = null;
-                        } else {
-                            system = s;
-
-                            SystemPart part = system.getFirstPart();
-                            measure = part.getFirstMeasure();
-                            slot = measure.getSlots()
-                                          .first();
-                        }
-                    }
-                } else {
-                    for (Iterator<Slot> it = measure.getSlots()
-                                                    .iterator(); it.hasNext();) {
-                        Slot s = it.next();
-
-                        if (s == slot) {
-                            slot = it.next();
-
-                            break;
-                        }
-                    }
+                while ((tickTime != -1) && (tickTime < tick)) {
+                    nextSlot();
+                    tickTime = getTickTime();
                 }
             } catch (Exception ex) {
                 logger.warning("Cannot retrieve time slot", ex);

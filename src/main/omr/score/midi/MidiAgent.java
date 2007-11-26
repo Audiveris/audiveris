@@ -319,10 +319,7 @@ public class MidiAgent
      */
     void ending ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Ended.");
-        }
-
+        logger.info("Ended.");
         status = Status.STOPPED;
         MidiActions.updateActions();
     }
