@@ -739,7 +739,13 @@ public class ScoreExporter
 
             if (timeCounter != 0) {
                 measure.getStartTime();
-                measure.setActualDuration(timeCounter);
+
+                // Make sure the measure duration is not bigger than limit
+                if (timeCounter <= measure.getExpectedDuration()) {
+                    measure.setActualDuration(timeCounter);
+                } else {
+                    measure.setActualDuration(measure.getExpectedDuration());
+                }
             }
         } catch (InvalidTimeSignature ex) {
         }
