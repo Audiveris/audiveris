@@ -632,6 +632,14 @@ public class ScoreExporter
                                          .add(sound);
                         sound.setTempo("" + current.part.getTempo());
                     }
+                    
+                    // Default velocity?
+                    if (score.getVelocity() != null) {
+                        Sound sound = new Sound();
+                        current.pmMeasure.getNoteOrBackupOrForward()
+                                         .add(sound);
+                        sound.setDynamics("" + score.getVelocity());
+                    }
                 } else {
                     // SystemDistance
                     SystemDistance systemDistance = new SystemDistance();

@@ -151,6 +151,7 @@ public class ScoreActions
 
         // Score global data
         score.setTempo(score.getDefaultTempo());
+        score.setVelocity(score.getDefaultVelocity());
 
         return true;
     }

@@ -57,6 +57,11 @@ public class ScoreBoard
         "Tempo",
         "Tempo value in number of quarters per minute");
 
+    /** Velocity */
+    private final LIntegerField velocity = new LIntegerField(
+        "Velocity",
+        "Volume");
+
     /** Map of score part panes */
     private final Map<ScorePart, PartPane> panes = new HashMap<ScorePart, PartPane>();
 
@@ -82,6 +87,11 @@ public class ScoreBoard
         tempo.setValue(
             (score.getTempo() != null) ? score.getTempo()
                         : score.getDefaultTempo());
+
+        // Initial setting for velocity
+        velocity.setValue(
+            (score.getVelocity() != null) ? score.getVelocity()
+                        : score.getDefaultVelocity());
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -99,6 +109,7 @@ public class ScoreBoard
 
         // Score global data
         score.setTempo(tempo.getValue());
+        score.setVelocity(velocity.getValue());
     }
 
     //---------------//
@@ -117,6 +128,8 @@ public class ScoreBoard
         r += 2;
         builder.add(tempo.getLabel(), cst.xy(1, r));
         builder.add(tempo.getField(), cst.xy(3, r));
+        builder.add(velocity.getLabel(), cst.xy(5, r));
+        builder.add(velocity.getField(), cst.xy(7, r));
 
         return panel;
     }

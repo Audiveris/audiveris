@@ -90,8 +90,11 @@ public class Score
     /** The view on this score if any */
     private transient ScoreView view;
 
-    /** The specificed tempo, if any */
+    /** The specified tempo, if any */
     private transient Integer tempo;
+
+    /** The specified velocity, if any */
+    private transient Integer velocity;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -147,6 +150,14 @@ public class Score
     public int getDefaultTempo ()
     {
         return constants.defaultTempo.getValue();
+    }
+
+    //--------------------//
+    // getDefaultVelocity //
+    //--------------------//
+    public int getDefaultVelocity ()
+    {
+        return constants.defaultVelocity.getValue();
     }
 
     //--------------//
@@ -399,6 +410,22 @@ public class Score
     public Integer getTempo ()
     {
         return tempo;
+    }
+
+    //-------------//
+    // setVelocity //
+    //-------------//
+    public void setVelocity (Integer velocity)
+    {
+        this.velocity = velocity;
+    }
+
+    //-------------//
+    // getVelocity //
+    //-------------//
+    public Integer getVelocity ()
+    {
+        return velocity;
     }
 
     //---------//
@@ -737,5 +764,11 @@ public class Score
             "QuartersPerMn",
             60,
             "Default tempo, stated in number of quarters per minute");
+
+        // Default Velocity
+        Constant.Integer defaultVelocity = new Constant.Integer(
+            "Volume",
+            100,
+            "Default Velocity in 0..127 range");
     }
 }
