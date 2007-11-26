@@ -19,7 +19,6 @@ import omr.selection.Selection;
 import omr.selection.SelectionTag;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
 
 import omr.ui.util.Panel;
 import omr.ui.view.LogSlider;
@@ -41,7 +40,7 @@ import javax.swing.event.*;
  * Class <code>SheetAssembly</code> is a UI assembly dedicated to the display of
  * one sheet, gathering : <ul>
  *
- * <li>a single {@link omr.score.ScoreView}</li>
+ * <li>a single {@link omr.score.ui.ScoreView}</li>
  *
  * <li>a {@link Zoom} with its dedicated graphical {@link LogSlider}</li>
  *
