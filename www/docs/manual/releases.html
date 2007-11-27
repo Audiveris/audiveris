@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
     <HEAD>
-        <!--    $Id$     -->
+        <!-- $Id$ -->
         <META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252"/>
         <TITLE>Audiveris Releases</TITLE>
         <META NAME="AUTHOR" CONTENT="Herv&eacute; Bitteur"/>
@@ -35,7 +35,7 @@
         
         <DIV CLASS="axial">
 
-            <!-- ====================================================== -->
+            <!-- =========================================================== -->
             
             <A NAME="3.2">
                 <H3>3.2 Release</H3>
@@ -46,7 +46,7 @@
                     <TH>Introduction</TH>
                     <TD>
                         <UL>
-                            <LI>Release 3.2 is just a TODO list for the time being</LI>
+                            <LI>Release 3.2 is now a work in progress</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -63,16 +63,27 @@
                     <TH>New Features</TH>
                     <TD>
                         <UL>
-			    <LI>Glyph: Ability to arbitrarily split a given
-				glyph, according to some user driving
+			    <LI><u>Translation</u>: All notations such as
+				legato, staccato, accent, etc should be
+				translated to proper score entities and exported
+				into the MusicXML stream.</LI>
+			    <LI><u>Bars</u>: Redesign the implementation of
+                                systems and measures handling, so that a bar line
+                                can be easily corrected by a user action.</LI>
+			    <LI><u>Glyph</u>: Ability to arbitrarily split a
+				given glyph, according to some user driving
 				instructions.</LI>
-			    <LI>Score: Ability to inject score entities directly
-				into the score view, providing a very basic
-				score editor.</LI>
-			    <LI>Shape: Use of a palette, instead of current
-				awkward menu hierarchy, to easily select a shape
-				for glyph shape assignment or score entity
-				injection.</LI>
+			    <LI><u>Score</u>: Ability to inject score entities
+				directly into the score view, providing a very
+				basic score editor.</LI>
+			    <LI><u>Shape</u>: Use of a palette, instead of
+				current awkward menu hierarchy, to easily select
+				a shape for glyph shape assignment or score
+				entity injection.</LI>
+			    <LI><u>Midi</u>: Add the ability to select and
+				playback just a portion of the score, such as a
+				sequence of notes or a sequence of
+				measures.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -81,6 +92,10 @@
                     <TH>Bug Fixes</TH>
                     <TD>
                         <UL>
+			    <LI><u>Image</u>: Make sure binary images (black or
+				white pixels coded as 1 bit) are properly
+				handled. Also provide a rather comprehensive
+				documentation about all handled formats.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -103,7 +118,7 @@
             </TABLE>
 	    
 
-            <!-- ====================================================== -->
+            <!-- =========================================================== -->
             
             <A NAME="3.1">
                 <H3>3.1 Release</H3>
@@ -114,7 +129,8 @@
                     <TH>Introduction</TH>
                     <TD>
                         <UL>
-                            <LI>Release 3.1 is a work in progress</LI>
+                            <LI>Release 3.1 has focused on user interface and on
+				Midi playback</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -131,30 +147,24 @@
                     <TH>New Features</TH>
                     <TD>
                         <UL>
-			    <LI>Plugins: A knowledgeable user will have the
+			    <LI><u>Plugins</u>: A knowledgeable user has the
 				ability to register additional user actions,
 				related to current Sheet or current Score. The
-				score Player is implemented like this. We are
-				considering retrofitting the existing actions to
-				benefit from the decoupling brought by this
-				plugin mechanism. </LI>
-			    <LI>Player: A tight connection with Xenoage Player
-				is in the works. Minimum feature is the ability
-				to play the whole score with default
-				parameters. We consider the ability to enter
-				MIDI parameters to the score, such as tempo and
-				instruments. One additional feature will allow
-				the selection of a (range of)
-				measures. Interface with Xenoage player should
-				be enhanced to allow callback from the player in
-				order to move the score view in sync.</LI>
-			    <LI>Translation: All notations such as legato,
-				staccato, accent, etc should be translated to
-				proper score entities and exported into the
-				MusicXML stream.</LI>
-			    <LI>MIDI export: Besides the score player, we'll
-				provide the ability to export the current score
-				to MIDI format, still using Xenoage
+				initial version of score Player was implemented
+				like this. Since then, all existing actions have
+				been retrofitted to benefit from the decoupling
+				brought by this plugin mechanism. </LI>
+			    <LI><u>Player</u>: A tight integration with Xenoage
+				MIDI Player is provided. It enables to playback
+				the whole score with default or customized
+				parameters. The user can enter MIDI parameters
+				to the score, such as tempo, velocity and
+				instruments. Interface with Xenoage player has
+				been enhanced to allow callback from the player
+				in order to move the score view in sync.</LI>
+			    <LI><u>MIDI export</u>: Besides the score player, we
+				now provide the ability to export the current
+				score to MIDI format, still using Xenoage
 				software.</LI>
                         </UL>
                     </TD>
@@ -164,10 +174,12 @@
                     <TH>Bug Fixes</TH>
                     <TD>
                         <UL>
-			    <LI>Image: Make sure binary images (black or white
-				pixels coded as 1 bit) are properly
-				handled. Also provide a rather comprehensive
-				documentation about all handled formats.</LI>
+			    <LI><u>Image Format</u>: Not really a bug fix, but
+				Audiveris now simply rejects image formats for
+				which a pixel is not coded as one byte. This
+				should be a temporary workaround, until we find
+				a working implementation for one-bit
+				formats.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -176,7 +188,7 @@
                     <TH>Known Issues</TH>
                     <TD>
                         <UL>
-                            <LI>OCR: We are still looking for an OCR...</LI>
+                            <LI><u>OCR</u>: We are still looking for an OCR...</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -185,17 +197,18 @@
                     <TH>Other Changes</TH>
                     <TD>
                         <UL>
-			    <LI>MusicXML: We will update ProxyMusic to only
-				handle the latest version of MusicXML (2.0 as of
-				this writing). The user will have the ability to
-				transparently launch an XSLT transform should an
-				older MusicXML version be needed.</LI>
+			    <LI><u>MusicXML</u>: ProxyMusic now handles only the
+				 latest version of MusicXML (2.0 as of this
+				 writing). The user can still use an external
+				 XSLT transform (using 'to11.xsl' sheet for
+				 example) if he wishes an older MusicXML
+				 version.</LI>
                         </UL>
                     </TD>
                 </TR>
             </TABLE>
 	    
-	    <!-- ====================================================== -->
+	    <!-- =========================================================== -->
 	    
 	    <A NAME="3.0">
 		<H3>3.0 Release</H3>
@@ -282,7 +295,7 @@
                     </TR>
                 </TABLE>
                 
-                <!-- ====================================================== -->
+                <!-- ======================================================= -->
                 
                 <A NAME="2.4">
                     <H3>2.4 Release</H3>
@@ -374,7 +387,7 @@
                     </TR>
                 </TABLE>
                 
-                <!-- ====================================================== -->
+                <!-- ======================================================= -->
                 
                 <A NAME="2.3">
                     <H3>2.3 Release</H3>
@@ -481,8 +494,7 @@
                         </TR>
                     </TABLE>
                     
-                    <!--
-                         ====================================================== -->
+                    <!-- =================================================== -->
                     
                     <A NAME="2.2">
                         <H3>2.2 Release</H3>
@@ -596,8 +608,7 @@
                         </TR>
                     </TABLE>
                     
-                    <!--
-                         ====================================================== -->
+                    <!-- =================================================== -->
                     
                     <A NAME="2.1">
                         <H3>2.1 Release</H3>
@@ -673,8 +684,7 @@
                         </TR>
                     </TABLE>
                     
-                    <!--
-                         ====================================================== -->
+                    <!-- =================================================== -->
                     
                     <A NAME="2.0">
                         <H3>2.0 Release</H3>
