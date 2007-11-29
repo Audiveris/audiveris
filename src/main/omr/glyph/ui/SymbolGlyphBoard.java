@@ -75,7 +75,7 @@ class SymbolGlyphBoard
     private LField ledger = new LField(
         false,
         "Ledger",
-        "Does this glyph intersect a legder");
+        "Does this glyph intersect a ledger?");
 
     /** Glyph characteristics : how many stems */
     private LIntegerField stems = new LIntegerField(
