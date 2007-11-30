@@ -27,7 +27,6 @@ import omr.sheet.SheetManager;
 import omr.step.Step;
 
 import omr.ui.ScoreBoard;
-import omr.ui.util.SwingWorker;
 
 import omr.util.Implement;
 import omr.util.Logger;
@@ -250,8 +249,9 @@ public class ScoreActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            final SwingWorker worker = new SwingWorker() {
-                public Object construct ()
+            final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
+                @Override
+                protected Object doInBackground ()
                 {
                     try {
                         SheetManager.getSelectedSheet()
@@ -265,7 +265,7 @@ public class ScoreActions
                 }
             };
 
-            worker.start();
+            worker.execute();
         }
     }
 
@@ -285,8 +285,9 @@ public class ScoreActions
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            final SwingWorker worker = new SwingWorker() {
-                public Object construct ()
+            final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
+                @Override
+                protected Object doInBackground ()
                 {
                     Score score = ScoreController.getCurrentScore();
 
@@ -302,7 +303,7 @@ public class ScoreActions
                 }
             };
 
-            worker.start();
+            worker.execute();
         }
     }
 

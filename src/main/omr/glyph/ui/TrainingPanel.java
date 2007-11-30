@@ -19,7 +19,6 @@ import static omr.glyph.ui.GlyphTrainer.Task.Activity.*;
 import omr.math.NeuralNetwork;
 
 import omr.ui.util.Panel;
-import omr.ui.util.SwingWorker;
 
 import omr.util.Implement;
 import omr.util.Logger;
@@ -297,10 +296,14 @@ class TrainingPanel
     protected class DumpAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public DumpAction ()
         {
             super("Dump");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -315,14 +318,20 @@ class TrainingPanel
     protected class TrainAction
         extends AbstractAction
     {
+        //~ Instance fields ----------------------------------------------------
+
         // Specific training starting mode
         protected Evaluator.StartingMode mode = Evaluator.StartingMode.SCRATCH;
         protected boolean                confirmationRequired = true;
+
+        //~ Constructors -------------------------------------------------------
 
         public TrainAction (String title)
         {
             super(title);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -391,31 +400,42 @@ class TrainingPanel
     private class CoreAction
         extends AbstractAction
     {
-        final SwingWorker<Integer> worker = new SwingWorker<Integer>() {
-            // This runs on worker's thread
-            public Integer construct ()
+        //~ Instance fields ----------------------------------------------------
+
+        final SwingWorker<Integer, Object> worker = new SwingWorker<Integer, Object>() {
+            @Override
+            public void done ()
+            {
+                try {
+                    coreNumber.setText("" + get());
+                } catch (Exception ex) {
+                    logger.warning("Error while loading core base", ex);
+                }
+            }
+
+            @Override
+            protected Integer doInBackground ()
             {
                 return selectionPanel.getBase(false)
                                      .size();
             }
-
-            // This runs on the event-dispatching thread.
-            public void finished ()
-            {
-                coreNumber.setText("" + getValue());
-            }
         };
+
+
+        //~ Constructors -------------------------------------------------------
 
         public CoreAction ()
         {
             super("Core");
         }
 
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             useWhole = false;
-            worker.start();
+            worker.execute();
         }
     }
 
@@ -425,31 +445,42 @@ class TrainingPanel
     private class WholeAction
         extends AbstractAction
     {
-        final SwingWorker<Integer> worker = new SwingWorker<Integer>() {
-            // This runs on worker's thread
-            public Integer construct ()
+        //~ Instance fields ----------------------------------------------------
+
+        final SwingWorker<Integer, Object> worker = new SwingWorker<Integer, Object>() {
+            @Override
+            public void done ()
+            {
+                try {
+                    wholeNumber.setText("" + get());
+                } catch (Exception ex) {
+                    logger.warning("Error while loading whole base", ex);
+                }
+            }
+
+            @Override
+            protected Integer doInBackground ()
             {
                 return selectionPanel.getBase(true)
                                      .size();
             }
-
-            // This runs on the event-dispatching thread.
-            public void finished ()
-            {
-                wholeNumber.setText("" + getValue());
-            }
         };
+
+
+        //~ Constructors -------------------------------------------------------
 
         public WholeAction ()
         {
             super("Whole");
         }
 
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             useWhole = true;
-            worker.start();
+            worker.execute();
         }
     }
 }

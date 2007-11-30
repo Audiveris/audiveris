@@ -27,7 +27,6 @@ import omr.sheet.SheetManager;
 import omr.step.Step;
 
 import omr.ui.util.FileFilter;
-import omr.ui.util.SwingWorker;
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
@@ -40,6 +39,7 @@ import java.io.IOException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 
 /**
  * Class <code>SheetActions</code> simply gathers UI actions related to sheet
@@ -196,9 +196,9 @@ public class SheetActions
                 return;
             }
 
-            final SwingWorker worker = new SwingWorker() {
+            final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
                 @Override
-                public Object construct ()
+                protected Object doInBackground ()
                 {
                     Sheet sheet = SheetManager.getSelectedSheet();
                     GlyphRepository.getInstance()
@@ -210,7 +210,7 @@ public class SheetActions
                 }
             };
 
-            worker.start();
+            worker.execute();
         }
     }
 

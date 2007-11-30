@@ -21,7 +21,6 @@ import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
 import omr.ui.util.FileFilter;
-import omr.ui.util.SwingWorker;
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
@@ -35,6 +34,7 @@ import java.io.FileNotFoundException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 
 /**
  * Class <code>ScriptActions</code> gathers UI actions related to script
@@ -110,10 +110,10 @@ public class ScriptActions
         }
 
         if (xmlFile != null) {
-            final File        file = xmlFile;
-            final SwingWorker worker = new SwingWorker() {
+            final File                        file = xmlFile;
+            final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
                 @Override
-                public Object construct ()
+                protected Object doInBackground ()
                 {
                     try {
                         java.io.File folder = new java.io.File(
@@ -136,7 +136,7 @@ public class ScriptActions
                 }
             };
 
-            worker.start();
+            worker.execute();
         }
     }
 
@@ -152,10 +152,12 @@ public class ScriptActions
     public static class LoadAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            final File              file = UIUtilities.fileChooser(
+            final File                        file = UIUtilities.fileChooser(
                 false,
                 Main.getGui().getFrame(),
                 new File(constants.defaultScriptDirectory.getValue()),
@@ -163,11 +165,9 @@ public class ScriptActions
                     "Score script files",
                     new String[] { ScriptManager.SCRIPT_EXTENSION }));
 
-            final SwingWorker<Void> worker = new SwingWorker<Void>() {
-                // This runs on worker's thread
-                @Implement(SwingWorker.class)
+            final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
                 @Override
-                public Void construct ()
+                protected Object doInBackground ()
                 {
                     // Actually load the script
                     logger.info("Loading script file " + file + " ...");
@@ -193,7 +193,7 @@ public class ScriptActions
                 }
             };
 
-            worker.start();
+            worker.execute();
         }
     }
 
@@ -208,6 +208,8 @@ public class ScriptActions
     public static class StoreAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -233,6 +235,8 @@ public class ScriptActions
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Default directory for saved scripts */
         Constant.String defaultScriptDirectory = new Constant.String(
             "",
