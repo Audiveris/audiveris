@@ -17,7 +17,6 @@ import omr.glyph.IconGlyph;
 import omr.glyph.Shape;
 
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 
 import omr.stick.Stick;
 
@@ -286,6 +285,19 @@ public class GlyphRepository
     }
 
     //-------------//
+    // setCoreBase //
+    //-------------//
+    /**
+     * Define the provided collection as the core training material
+     *
+     * @param base the provided collection
+     */
+    synchronized void setCoreBase (List<String> base)
+    {
+        coreBase = base;
+    }
+
+    //-------------//
     // getCoreBase //
     //-------------//
     /**
@@ -383,6 +395,22 @@ public class GlyphRepository
         }
     }
 
+    //---------------//
+    // isIconsFolder //
+    //---------------//
+    boolean isIconsFolder (String folder)
+    {
+        return folder.equals(Main.ICONS_NAME);
+    }
+
+    //----------//
+    // isLoaded //
+    //----------//
+    boolean isLoaded (String gName)
+    {
+        return glyphsMap.get(gName) != null;
+    }
+
     //---------------------//
     // getSheetDirectories //
     //---------------------//
@@ -438,35 +466,6 @@ public class GlyphRepository
         }
 
         return wholeBase;
-    }
-
-    //---------------//
-    // isIconsFolder //
-    //---------------//
-    boolean isIconsFolder (String folder)
-    {
-        return folder.equals(Main.ICONS_NAME);
-    }
-
-    //----------//
-    // isLoaded //
-    //----------//
-    boolean isLoaded (String gName)
-    {
-        return glyphsMap.get(gName) != null;
-    }
-
-    //-------------//
-    // setCoreBase //
-    //-------------//
-    /**
-     * Define the provided collection as the core training material
-     *
-     * @param base the provided collection
-     */
-    synchronized void setCoreBase (List<String> base)
-    {
-        coreBase = base;
     }
 
     //-------------//
@@ -608,6 +607,31 @@ public class GlyphRepository
         }
     }
 
+    //--------//
+    // isIcon //
+    //--------//
+    private boolean isIcon (File file)
+    {
+        String folder = file.getParentFile()
+                            .getName();
+
+        return isIconsFolder(folder);
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private JAXBContext getJaxbContext ()
+        throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(Glyph.class, Stick.class);
+        }
+
+        return jaxbContext;
+    }
+
     //------------//
     // buildGlyph //
     //------------//
@@ -667,20 +691,6 @@ public class GlyphRepository
         }
     }
 
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private JAXBContext getJaxbContext ()
-        throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(Glyph.class, Stick.class);
-        }
-
-        return jaxbContext;
-    }
-
     //-------------//
     // glyphNameOf //
     //-------------//
@@ -695,17 +705,6 @@ public class GlyphRepository
     {
         return file.getParentFile()
                    .getName() + "/" + file.getName();
-    }
-
-    //--------//
-    // isIcon //
-    //--------//
-    private boolean isIcon (File file)
-    {
-        String folder = file.getParentFile()
-                            .getName();
-
-        return isIconsFolder(folder);
     }
 
     //-------------//
@@ -883,12 +882,7 @@ public class GlyphRepository
      */
     static interface Monitor
     {
-        /**
-         * Called whenever a new glyph has been loaded
-         *
-         * @param gName the normalized glyph name
-         */
-        void loadedGlyph (String gName);
+        //~ Methods ------------------------------------------------------------
 
         /**
          * Called to pass the number of selected glyphs, which will be later
@@ -905,5 +899,12 @@ public class GlyphRepository
          * @param total the size of the training material
          */
         void setTotalGlyphs (int total);
+
+        /**
+         * Called whenever a new glyph has been loaded
+         *
+         * @param gName the normalized glyph name
+         */
+        void loadedGlyph (String gName);
     }
 }
