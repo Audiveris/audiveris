@@ -13,6 +13,8 @@ import omr.Main;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
+import omr.glyph.ui.GlyphRepository;
 import static omr.plugin.Dependency.*;
 import omr.plugin.Plugin;
 import static omr.plugin.PluginType.*;
@@ -25,6 +27,7 @@ import omr.sheet.SheetManager;
 import omr.step.Step;
 
 import omr.ui.util.FileFilter;
+import omr.ui.util.SwingWorker;
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
@@ -36,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 
 /**
  * Class <code>SheetActions</code> simply gathers UI actions related to sheet
@@ -77,6 +81,8 @@ public class SheetActions
     public static class CloseAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -105,6 +111,8 @@ public class SheetActions
     public static class LinePlotAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -120,14 +128,6 @@ public class SheetActions
                 }
             }
         }
-
-        @Override
-        public boolean isEnabled ()
-        {
-            Sheet sheet = SheetManager.getSelectedSheet();
-
-            return (sheet != null) && (sheet.getLinesBuilder() != null);
-        }
     }
 
     //------------//
@@ -141,6 +141,8 @@ public class SheetActions
     public static class OpenAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -174,6 +176,44 @@ public class SheetActions
         }
     }
 
+    //--------------//
+    // RecordAction //
+    //--------------//
+    @Plugin(type = SHEET_EXPORT, dependency = SHEET_AVAILABLE)
+    public static class RecordAction
+        extends AbstractAction
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            int answer = JOptionPane.showConfirmDialog(
+                null,
+                "Are you sure of all the symbols of this sheet ?");
+
+            if (answer != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            final SwingWorker worker = new SwingWorker() {
+                @Override
+                public Object construct ()
+                {
+                    Sheet sheet = SheetManager.getSelectedSheet();
+                    GlyphRepository.getInstance()
+                                   .recordSheetGlyphs(
+                        sheet, /* emptyStructures => */
+                        sheet.isOnSymbols());
+
+                    return null;
+                }
+            };
+
+            worker.start();
+        }
+    }
+
     //-----------------//
     // ScalePlotAction //
     //-----------------//
@@ -185,6 +225,8 @@ public class SheetActions
     public static class ScalePlotAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -208,6 +250,8 @@ public class SheetActions
     public static class SkewPlotAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -223,14 +267,6 @@ public class SheetActions
                 }
             }
         }
-
-        @Override
-        public boolean isEnabled ()
-        {
-            Sheet sheet = SheetManager.getSelectedSheet();
-
-            return (sheet != null) && (sheet.getSkewBuilder() != null);
-        }
     }
 
     //------------------//
@@ -244,6 +280,8 @@ public class SheetActions
     public static class ZoomHeightAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -275,6 +313,8 @@ public class SheetActions
     public static class ZoomWidthAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -301,6 +341,8 @@ public class SheetActions
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Default directory for selection of sheet image files */
         Constant.String defaultSheetDirectory = new Constant.String(
             "",
