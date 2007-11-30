@@ -23,6 +23,7 @@ omr.ui.SheetActions$ZoomHeightAction
 omr.ui.SheetActions$ScalePlotAction
 omr.ui.SheetActions$SkewPlotAction
 omr.ui.SheetActions$LinePlotAction
+omr.ui.SheetActions$RecordAction
 
 # Script
 #-------
