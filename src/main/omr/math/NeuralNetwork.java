@@ -421,8 +421,6 @@ public class NeuralNetwork
                          double[] hiddens,
                          double[] outputs)
     {
-        double sum;
-
         // Check size consistencies.
         if (inputs == null) {
             logger.severe("run method. inputs array is null");
@@ -776,18 +774,19 @@ public class NeuralNetwork
                           double[][] weights,
                           double[]   outs)
     {
-        //System.out.println("ins=" + Arrays.toString(ins));
+        double   sum;
+        double[] ws;
+
         for (int o = outs.length - 1; o >= 0; o--) {
-            double sum = 0;
+            sum = 0;
+            ws = weights[o];
 
             for (int i = ins.length - 1; i >= 0; i--) {
-                sum += (weights[o][i + 1] * ins[i]);
-
-                //System.out.println("o=" + o + " sum=" + sum);
+                sum += (ws[i + 1] * ins[i]);
             }
 
             // Bias
-            sum += weights[o][0];
+            sum += ws[0];
 
             outs[o] = sigmoid(sum);
         }
@@ -820,6 +819,8 @@ public class NeuralNetwork
      */
     public static interface Monitor
     {
+        //~ Methods ------------------------------------------------------------
+
         /**
          * Entry called at end of each epoch during the training phase
          *
@@ -854,8 +855,12 @@ public class NeuralNetwork
      */
     public static class Backup
     {
+        //~ Instance fields ----------------------------------------------------
+
         private double[][] hiddenWeights;
         private double[][] outputWeights;
+
+        //~ Constructors -------------------------------------------------------
 
         // Private constructor
         private Backup (double[][] hiddenWeights,

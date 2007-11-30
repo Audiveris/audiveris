@@ -223,9 +223,13 @@ class NetworkPanel
             bestMse = mse;
 
             // Take a snap
-            NeuralNetwork network = ((GlyphNetwork) evaluator).getNetwork();
+            GlyphNetwork  glyphNetwork = (GlyphNetwork) evaluator;
+            NeuralNetwork network = glyphNetwork.getNetwork();
             bestSnap = network.backup();
             snap = true;
+            
+            // Belt & suspenders: make a copy on disk!
+            glyphNetwork.marshal();            
         }
 
         final boolean snapTaken = snap;

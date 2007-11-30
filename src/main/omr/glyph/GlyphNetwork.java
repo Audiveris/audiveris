@@ -444,8 +444,10 @@ public class GlyphNetwork
             }
         }
 
+        // Shuffle the final collection of glyphs
         Collections.shuffle(newGlyphs);
 
+        // Build the collection of patterns from the glyph data
         double[][] inputs = new double[newGlyphs.size()][];
         double[][] desiredOutputs = new double[newGlyphs.size()][];
 
@@ -471,7 +473,7 @@ public class GlyphNetwork
             network = createNetwork();
         }
 
-        // Train
+        // Train on the patterns
         network.train(inputs, desiredOutputs, monitor);
     }
 
