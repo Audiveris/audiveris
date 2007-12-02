@@ -30,7 +30,6 @@ import omr.ui.util.MemoryMeter;
 import omr.ui.util.Panel;
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtilities;
-import static omr.ui.util.UIUtilities.*;
 
 import omr.util.Implement;
 import omr.util.Logger;
@@ -38,7 +37,6 @@ import omr.util.Logger;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.lang.reflect.Constructor;
 
 import javax.swing.*;
 
@@ -565,25 +563,8 @@ public class MainGui
         toolBar = mgr.getToolBar();
         frame.setJMenuBar(mgr.getMenuBar());
 
-        //        // Help (TBC with Brenton!)
-        //        if (!omr.Main.MAC_OS_X) {
-        //            new AboutAction(helpMenu);
-        //        }
-
         //Mac Application menu
-        if (omr.Main.MAC_OS_X) {
-            try {
-                Class       clazz = Class.forName("omr.ui.MacApplication");
-                Constructor constructor = clazz.getConstructor(
-                    new Class[] { Action.class, Action.class, Action.class });
-                constructor.newInstance(
-                    new GuiActions.AboutAction(),
-                    new GuiActions.OptionsAction(),
-                    new GuiActions.ExitAction());
-            } catch (Exception e) {
-                logger.warning("Unable to load Mac OS X Application menu", e);
-            }
-        }
+        MacApplication.setupMacMenus();
     }
 
     //~ Inner Classes ----------------------------------------------------------
