@@ -30,7 +30,7 @@ import omr.util.Memory;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 
 import javax.swing.*;
@@ -39,7 +39,7 @@ import javax.swing.*;
  * Class <code>GuiActions</code> gathers individual actions trigerred from the
  * main Gui interface.
  *
- * @author Herv&eacute Bitteur
+ * @author Herv&eacute Bitteur and Brenton Partridge
  * @version $Id$
  */
 public class GuiActions
@@ -57,28 +57,64 @@ public class GuiActions
 
     /** Options UI */
     private static JFrame optionsFrame;
+    
+    /** Class for reflected access of java.awt.Desktop */
+    private static Class desktopClass;
+    static
+    {
+        try {
+            desktopClass = Class.forName("java.awt.Desktop");
+        }
+        catch (Exception e) {
+            logger.warning("Desktop loading failed", e);
+        }
+    }
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------------------//
+    // isDesktopSupported //
+    //--------------------//
+    /**
+     * Returns if <code>java.awt.Desktop</code> is present and 
+     * its static method <code>isDesktopSupported()</code> returns true.
+     */
+    private static boolean isDesktopSupported ()
+    {
+        if (desktopClass == null) return false;
+        try {
+            return (Boolean)desktopClass.getMethod("isDesktopSupported").invoke(null);
+        }
+        catch (Exception e) {
+            logger.fine(e.toString());
+            return false;
+        }
+    }
+    
     //---------------//
     // launchBrowser //
     //---------------//
     private static void launchBrowser (String urlString)
     {
-        // Safer
-        if (!Desktop.isDesktopSupported()) {
-            logger.warning(
-                "Desktop features are not supported on this platform");
-
-            return;
-        }
-
         try {
-            URI uri = URI.create(urlString);
-            Desktop.getDesktop()
-                   .browse(uri);
-        } catch (IOException ex) {
-            logger.warning("Could not launch the browser on " + urlString, ex);
+            // Safer
+            if (!isDesktopSupported()) {
+                logger.warning("Desktop features are not supported on this platform");
+                return;
+            }
+            else {
+                try {
+                    URI uri = URI.create(urlString);
+                    Object desktop = desktopClass.getMethod("getDesktop").invoke(null);
+                    desktopClass.getMethod("browse", URI.class).invoke(desktop, uri);
+                } catch (InvocationTargetException ex) {
+                    logger.warning("Could not launch the browser on " + urlString, ex.getCause());
+                }
+            }
+            
+        }
+        catch (Exception e) {
+            logger.warning("Desktop access failed", e);
         }
     }
 
@@ -226,7 +262,7 @@ public class GuiActions
     {
         public OperationAction ()
         {
-            setEnabled(Desktop.isDesktopSupported());
+            setEnabled(isDesktopSupported());
         }
 
         @Implement(ActionListener.class)
@@ -350,7 +386,7 @@ public class GuiActions
     {
         public WebSiteAction ()
         {
-            setEnabled(Desktop.isDesktopSupported());
+            setEnabled(isDesktopSupported());
         }
 
         @Implement(ActionListener.class)
