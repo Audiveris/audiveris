@@ -579,9 +579,6 @@ public class Main
         // First parse the provided arguments if any
         parseArguments(args);
 
-        // Then, preload the JAI class so image operations are ready
-        JaiLoader.preload();
-
         // Interactive or Batch mode ?
         if (batchMode) {
             logger.info("Running in batch mode");
@@ -595,8 +592,16 @@ public class Main
             JFrame.setDefaultLookAndFeelDecorated(true);
 
             // Application UI defaults
-            OmrUIDefaults.getInstance()
-                         .addResourceBundle("config/ui");
+            OmrUIDefaults defaults = OmrUIDefaults.getInstance();
+            defaults.addResourceBundle("config/ui");
+            if (defaults.isEmpty()) {
+                logger.fine("No UI defaults as resource bundle, loading from config folder");
+                try {
+                    defaults.loadFrom(new File(getConfigFolder(), "ui"));
+                } catch (Exception ex) {
+                    logger.warning("Unable to load resources from config folder", ex);
+                }
+            }
 
             // Load classes first for system plugins, then for user plugins
             for (String name : new String[] { "system.plugins", "user.plugins" }) {
@@ -615,7 +620,10 @@ public class Main
 
             // Launch the GUI
             gui = new MainGui();
-
+            
+            // Background task : Preload JAI
+            JaiLoader.preload();
+            
             // Background task : JaxbContext
             OmrExecutors.getLowExecutor()
                         .execute(
