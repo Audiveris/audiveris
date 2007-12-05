@@ -84,14 +84,10 @@ public class OmrUIDefaults
     {
         String path = file.getPath();
         StringBuffer b = new StringBuffer(path);
-        Locale locale = getDefaultLocale();
+        Locale locale = Locale.getDefault();
         String language = locale.getLanguage(); 
         if (language != null && language.length() > 0) {
             b.append('_').append(language);
-            String country = locale.getCountry();
-            if (country != null && country.length() > 0) {
-                b.append('_').append(country);
-            }
         }
         b.append(".properties");
         file = new File(b.toString());
