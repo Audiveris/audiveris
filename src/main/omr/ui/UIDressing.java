@@ -82,7 +82,10 @@ public class UIDressing
                         IconManager.getInstance().loadImageIcon(iconName));
                 }
             } else {
-                action.putValue(k, defaults.get(mk));
+                Object v = defaults.get(mk);
+                if (v != null) {
+                    action.putValue(k, v);
+                }
             }
         }
     }
