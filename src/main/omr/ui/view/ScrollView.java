@@ -27,6 +27,7 @@ import javax.swing.*;
  * when the component is rendered </dd>
  *
  * @author Herv&eacute; Bitteur
+ * @author Brenton Partridge
  * @version $Id$
  */
 public class ScrollView
@@ -93,7 +94,7 @@ public class ScrollView
      * Retrieve the coordinates of what is currently the focus point of the
      * display.  Typically, this is the center of the rubber rectangle.
      *
-     * @return the focus point
+     * @return the focus point, or null if the view is null
      */
     public Point getRubberFocus ()
     {
@@ -117,6 +118,33 @@ public class ScrollView
 
             return null;
         }
+    }
+    
+    //--------------------//
+    // getRubberSelection //
+    //--------------------//
+    /**
+     * Retrieve a copy of the rubber rectangle, or
+     * a zero-height, zero-width rectangle at 
+     * <code>getRubberFocus()</code> if the rubber
+     * rectangle does not exist.
+     *
+     * @return the dezoomed rubber selection, or null
+     * if the view is null
+     */
+    public Rectangle getRubberSelection ()
+    {
+        Rectangle rect = view.rubber.getRectangle();
+        if (rect != null) {
+            return new Rectangle(rect);
+        } else {
+            Point focus = getRubberFocus();
+            if (focus != null) {
+                return new Rectangle(focus);
+            }
+        }
+        
+        return null;
     }
 
     //---------//
