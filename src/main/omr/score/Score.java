@@ -19,7 +19,6 @@ import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
-import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreConstants;
 import omr.score.ui.ScoreTree;
 import omr.score.ui.ScoreView;
@@ -147,6 +146,11 @@ public class Score
     //-----------------//
     // getDefaultTempo //
     //-----------------//
+    /**
+     * Report default value for Midi tempo
+     *
+     * @return the default tempo value
+     */
     public int getDefaultTempo ()
     {
         return constants.defaultTempo.getValue();
@@ -155,6 +159,11 @@ public class Score
     //--------------------//
     // getDefaultVelocity //
     //--------------------//
+    /**
+     * Report default value for Midi velocity (volume)
+     *
+     * @return the default velocity value
+     */
     public int getDefaultVelocity ()
     {
         return constants.defaultVelocity.getValue();
@@ -399,6 +408,11 @@ public class Score
     //----------//
     // setTempo //
     //----------//
+    /**
+     * Assign a tempo value
+     *
+     * @param tempo the tempo value to be assigned
+     */
     public void setTempo (Integer tempo)
     {
         this.tempo = tempo;
@@ -407,6 +421,11 @@ public class Score
     //----------//
     // getTempo //
     //----------//
+    /**
+     * Report the assigned tempo, if any
+     *
+     * @return the assigned tempo, or null
+     */
     public Integer getTempo ()
     {
         return tempo;
@@ -415,6 +434,11 @@ public class Score
     //-------------//
     // setVelocity //
     //-------------//
+    /**
+     * Assign a velocity value
+     *
+     * @param velocity the velocity value to be assigned
+     */
     public void setVelocity (Integer velocity)
     {
         this.velocity = velocity;
@@ -423,6 +447,11 @@ public class Score
     //-------------//
     // getVelocity //
     //-------------//
+    /**
+     * Report the assigned velocity, if any
+     *
+     * @return the assigned velocity, or null
+     */
     public Integer getVelocity ()
     {
         return velocity;
@@ -490,14 +519,14 @@ public class Score
     public void dump ()
     {
         java.lang.System.out.println(
-            "-----------------------------------------------------------------------");
+            "----------------------------------------------------------------");
 
         if (dumpNode()) {
             dumpChildren(1);
         }
 
         java.lang.System.out.println(
-            "-----------------------------------------------------------------------");
+            "----------------------------------------------------------------");
     }
 
     //--------//
