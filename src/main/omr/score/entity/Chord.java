@@ -372,7 +372,7 @@ public class Chord
      * dots into account, but not the tuplet impact if any
      *
      * @return the intrinsic chord duration
-     * @see #getActualDuration
+     * @see #getDuration
      */
     public Integer getRawDuration ()
     {
@@ -383,8 +383,7 @@ public class Chord
                 Note note = (Note) getNotes()
                                        .get(0);
 
-                if ((note.getShape() != Shape.WHOLE_REST) &&
-                    (note.getShape() != Shape.MULTI_REST)) {
+                if (!note.getShape().isWholeRest()) {
                     duration = Note.getTypeDuration(note.getShape());
 
                     // Apply fraction
@@ -619,7 +618,7 @@ public class Chord
             Note note = (Note) getNotes()
                                    .get(0);
 
-            return note.getShape() == Shape.WHOLE_REST;
+            return note.getShape().isWholeRest();
         }
 
         return false;
@@ -1190,7 +1189,7 @@ public class Chord
             for (TreeNode n : chord.getNotes()) {
                 Note note = (Note) n;
 
-                if (note.getShape() != Shape.WHOLE_REST) {
+                if (!note.getShape().isWholeRest()) {
                     SystemPoint noteRef = note.getCenterRight();
                     SystemPoint toDot = new SystemPoint(
                         dotCenter.x - noteRef.x,
