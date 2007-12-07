@@ -1149,7 +1149,6 @@ public class Measure
         }
 
         // Invalidate data
-        slots = null;
         startTime = null;
         expectedDuration = null;
         excess = null;
@@ -1200,6 +1199,19 @@ public class Measure
         } else {
             return null;
         }
+    }
+
+    //----------//
+    // hasSlots //
+    //----------//
+    /**
+     * Checks whether there are slots in this measure
+     *
+     * @return true if there is at least one slot
+     */
+    public boolean hasSlots ()
+    {
+        return (slots != null) & (slots.size() > 0);
     }
 
     //----------------//
