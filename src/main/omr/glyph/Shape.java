@@ -548,6 +548,20 @@ public enum Shape
                                                    .contains(this);
     }
 
+    //-------------//
+    // isWholeRest //
+    //-------------//
+    /**
+     * Check whether the shape is a whole (or multi) rest, for which no duration
+     * can be specified
+     * 
+     * @return true if whole or multi rest
+     */
+    public boolean isWholeRest()
+    {
+        return this == WHOLE_REST || this == MULTI_REST;
+    }
+    
     //----------------//
     // getDescription //
     //----------------//
