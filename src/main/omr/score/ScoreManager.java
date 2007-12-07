@@ -68,7 +68,7 @@ public class ScoreManager
     // getInstance //
     //-------------//
     /**
-     * Report the single instance of this class,
+     * Report the single instance of this class
      *
      * @return the single instance
      */
@@ -85,8 +85,8 @@ public class ScoreManager
     // export //
     //--------//
     /**
-     * Export a score using the partwise structure of MusicXML, using the
-     * default file for the provided score
+     * Export a score using the partwise structure of MusicXML to the default
+     * file for the provided score
      *
      * @param score the score to export
      */
