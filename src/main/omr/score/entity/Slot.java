@@ -18,8 +18,6 @@ import omr.math.InjectionSolver;
 import omr.math.Population;
 
 import omr.score.common.SystemPoint;
-import omr.score.entity.BeamGroup;
-import omr.score.entity.Chord;
 import omr.score.ui.ScoreConstants;
 
 import omr.sheet.Scale;
@@ -122,6 +120,134 @@ public class Slot
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------------//
+    // isAlignedWith //
+    //---------------//
+    /**
+     * Check whether a system point is roughly aligned with this slot instance.
+     *
+     * @param sysPt the system point to check
+     * @return true if aligned
+     */
+    public boolean isAlignedWith (SystemPoint sysPt)
+    {
+        return Math.abs(sysPt.x - getX()) <= measure.getScale()
+                                                    .toUnits(constants.maxDx);
+    }
+
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
+    //---------------------//
+    // getShortestDuration //
+    //---------------------//
+    /**
+     * Since there may be several chords aligned (starting) in this slot, this
+     * method reports the shortest duration among all chords of this slot. This
+     * in turn defines the time offset of the following slot.
+     *
+     * @return the duration of the chord with shortest duration
+     */
+    public int getShortestDuration ()
+    {
+        int best = Integer.MAX_VALUE;
+
+        for (Chord chord : getChords()) {
+            if (best > chord.getDuration()) {
+                best = chord.getDuration();
+            }
+        }
+
+        return best;
+    }
+
+    //--------------//
+    // setStartTime //
+    //--------------//
+    /**
+     * Assign the time startTime, since the beginning of the measure, for all
+     * chords in this time slot
+     *
+     * @param startTime time startTime using
+     * {@link omr.score.entity.Note#QUARTER_DURATION} value
+     */
+    public void setStartTime (int startTime)
+    {
+        if (this.startTime == null) {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "setStartTime " + startTime + " for Slot #" + getId());
+            }
+
+            this.startTime = startTime;
+
+            // Assign to all chords of this slot first
+            for (Chord chord : getChords()) {
+                chord.setStartTime(startTime);
+            }
+
+            // Then, extend this information through the beamed chords if any
+            for (Chord chord : getChords()) {
+                BeamGroup group = chord.getBeamGroup();
+
+                if (group != null) {
+                    group.computeStartTimes();
+                }
+            }
+        } else {
+            if (!this.startTime.equals(startTime)) {
+                getChords()
+                    .get(0)
+                    .addError(
+                    "Reassigning startTime from " +
+                    Note.quarterValueOf(this.startTime) + " to " +
+                    Note.quarterValueOf(startTime) + " in " + this);
+            }
+        }
+    }
+
+    //--------------//
+    // getStartTime //
+    //--------------//
+    /**
+     * Report the time offset of this time slot since beginning of the measure
+     *
+     * @return the time offset of this time slot.
+     */
+    public Integer getStartTime ()
+    {
+        return startTime;
+    }
+
+    //------//
+    // getX //
+    //------//
+    /**
+     * Report the abscissa of this slot
+     *
+     * @return the slot abscissa, wrt the containing system (and not measure)
+     */
+    public int getX ()
+    {
+        if (x == null) {
+            Population population = new Population();
+
+            for (Glyph glyph : glyphs) {
+                population.includeValue(
+                    measure.getSystem()
+                           .toSystemPoint(glyph.getCenter()).x);
+            }
+
+            if (population.getCardinality() > 0) {
+                x = (int) Math.rint(population.getMeanValue());
+            }
+        }
+
+        return x;
+    }
 
     //----------//
     // addGlyph //
@@ -456,131 +582,43 @@ public class Slot
         return id;
     }
 
-    //---------------------//
-    // getShortestDuration //
-    //---------------------//
+    //----------//
+    // populate //
+    //----------//
     /**
-     * Since there may be several chords aligned (starting) in this slot, this
-     * method reports the shortest duration among all chords of this slot. This
-     * in turn defines the time offset of the following slot.
+     * Populate a slot with this note glyph
      *
-     * @return the duration of the chord with shortest duration
+     * @param glyph a chord-relevant glyph (rest, note or notehead)
+     * @param measure the containing measure
+     * @param sysPt the system-based coordinates of the provided note
      */
-    public int getShortestDuration ()
+    public static void populate (Glyph       glyph,
+                                 Measure     measure,
+                                 SystemPoint sysPt)
     {
-        int best = Integer.MAX_VALUE;
+        //        if (logger.isFineEnabled()) {
+        //            logger.fine("Populating slot with " + glyph);
+        //        }
 
-        for (Chord chord : getChords()) {
-            if (best > chord.getDuration()) {
-                best = chord.getDuration();
-            }
-        }
+        // Special case for whole rests: they don't belong to any time slot,
+        // and their duration is the measure duration
+        if (glyph.getShape().isWholeRest()) {
+            measure.addWholeChord(glyph);
+        } else {
+            // First look for a suitable slot
+            for (Slot slot : measure.getSlots()) {
+                if (slot.isAlignedWith(sysPt)) {
+                    slot.addGlyph(glyph);
 
-        return best;
-    }
-
-    //--------------//
-    // getStartTime //
-    //--------------//
-    /**
-     * Report the time offset of this time slot since beginning of the measure
-     *
-     * @return the time offset of this time slot.
-     */
-    public Integer getStartTime ()
-    {
-        return startTime;
-    }
-
-    //------//
-    // getX //
-    //------//
-    /**
-     * Report the abscissa of this slot
-     *
-     * @return the slot abscissa, wrt the containing system (and not measure)
-     */
-    public int getX ()
-    {
-        if (x == null) {
-            Population population = new Population();
-
-            for (Glyph glyph : glyphs) {
-                population.includeValue(
-                    measure.getSystem()
-                           .toSystemPoint(glyph.getCenter()).x);
-            }
-
-            if (population.getCardinality() > 0) {
-                x = (int) Math.rint(population.getMeanValue());
-            }
-        }
-
-        return x;
-    }
-
-    //---------------//
-    // isAlignedWith //
-    //---------------//
-    /**
-     * Check whether a system point is roughly aligned with this slot instance.
-     *
-     * @param sysPt the system point to check
-     * @return true if aligned
-     */
-    public boolean isAlignedWith (SystemPoint sysPt)
-    {
-        return Math.abs(sysPt.x - getX()) <= measure.getScale()
-                                                    .toUnits(constants.maxDx);
-    }
-
-    public void setId (int id)
-    {
-        this.id = id;
-    }
-
-    //--------------//
-    // setStartTime //
-    //--------------//
-    /**
-     * Assign the time startTime, since the beginning of the measure, for all
-     * chords in this time slot
-     *
-     * @param startTime time startTime using 
-     * {@link omr.score.entity.Note#QUARTER_DURATION} value
-     */
-    public void setStartTime (int startTime)
-    {
-        if (this.startTime == null) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "setStartTime " + startTime + " for Slot #" + getId());
-            }
-
-            this.startTime = startTime;
-
-            // Assign to all chords of this slot first
-            for (Chord chord : getChords()) {
-                chord.setStartTime(startTime);
-            }
-
-            // Then, extend this information through the beamed chords if any
-            for (Chord chord : getChords()) {
-                BeamGroup group = chord.getBeamGroup();
-
-                if (group != null) {
-                    group.computeStartTimes();
+                    return;
                 }
             }
-        } else {
-            if (!this.startTime.equals(startTime)) {
-                getChords()
-                    .get(0)
-                    .addError(
-                    "Reassigning startTime from " +
-                    Note.quarterValueOf(this.startTime) + " to " +
-                    Note.quarterValueOf(startTime) + " in " + this);
-            }
+
+            // No compatible slot, create a brand new one
+            Slot slot = new Slot(measure);
+            slot.addGlyph(glyph);
+            measure.getSlots()
+                   .add(slot);
         }
     }
 
@@ -616,45 +654,6 @@ public class Slot
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Populate a slot with this note glyph
-     *
-     * @param glyph a chord-relevant glyph (rest, note or notehead)
-     * @param measure the containing measure
-     */
-    public static void populate (Glyph       glyph,
-                                 Measure     measure,
-                                 SystemPoint sysPt)
-    {
-        //        if (logger.isFineEnabled()) {
-        //            logger.fine("Populating slot with " + glyph);
-        //        }
-
-        // Special case for whole rests: they don't belong to any time slot,
-        // and they duration is the measure duration
-        if (glyph.getShape() == Shape.WHOLE_REST) {
-            measure.addWholeChord(glyph);
-        } else {
-            // First look for a suitable slot
-            for (Slot slot : measure.getSlots()) {
-                if (slot.isAlignedWith(sysPt)) {
-                    slot.addGlyph(glyph);
-
-                    return;
-                }
-            }
-
-            // No compatible slot, create a brand new one
-            Slot slot = new Slot(measure);
-            slot.addGlyph(glyph);
-            measure.getSlots()
-                   .add(slot);
-        }
     }
 
     /**
@@ -700,6 +699,34 @@ public class Slot
         }
     }
 
+    //--------------//
+    // getStemChord //
+    //--------------//
+    /**
+     * Given a stem, look up for a slot that already contains it, otherwise
+     * create a brand new slot to host the stem.
+     *
+     * @param stem the stem to look up
+     * @return the existing/created slot that contains the stem
+     */
+    private Chord getStemChord (Glyph stem)
+    {
+        // Check we don't already have this stem in a chord
+        for (Chord chord : chords) {
+            if (chord.getStem() == stem) {
+                return chord;
+            }
+        }
+
+        // Not found, let's create it
+        Chord chord = new Chord(measure);
+        chords.add(chord);
+        chord.setStem(stem);
+        stem.setTranslation(chord);
+
+        return chord;
+    }
+
     //------------------//
     // computeStartTime //
     //------------------//
@@ -729,34 +756,6 @@ public class Slot
         setStartTime(slotTime);
     }
 
-    //--------------//
-    // getStemChord //
-    //--------------//
-    /**
-     * Given a stem, look up for a slot that already contains it, otherwise
-     * create a brand new slot to host the stem.
-     *
-     * @param stem the stem to look up
-     * @return the existing/created slot that contains the stem
-     */
-    private Chord getStemChord (Glyph stem)
-    {
-        // Check we don't already have this stem in a chord
-        for (Chord chord : chords) {
-            if (chord.getStem() == stem) {
-                return chord;
-            }
-        }
-
-        // Not found, let's create it
-        Chord chord = new Chord(measure);
-        chords.add(chord);
-        chord.setStem(stem);
-        stem.setTranslation(chord);
-
-        return chord;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -765,6 +764,8 @@ public class Slot
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /**
          * Maximum horizontal distance between a slot and a glyph candidate
          */
@@ -779,10 +780,17 @@ public class Slot
     private static final class MyDistance
         implements InjectionSolver.Distance
     {
+        //~ Static fields/initializers -----------------------------------------
+
         private static final int  NO_LINK = 20;
         private static final int  STAFF_DIFF = 40;
+
+        //~ Instance fields ----------------------------------------------------
+
         private final List<Chord> news;
         private final List<Chord> olds;
+
+        //~ Constructors -------------------------------------------------------
 
         public MyDistance (List<Chord> news,
                            List<Chord> olds)
@@ -790,6 +798,8 @@ public class Slot
             this.news = news;
             this.olds = olds;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public int getDistance (int in,
                                 int ip)
