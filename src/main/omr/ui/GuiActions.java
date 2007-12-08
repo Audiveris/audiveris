@@ -57,9 +57,6 @@ public class GuiActions
     /** Options UI */
     private static JFrame optionsFrame;
 
-    /** Web browser implementation */
-    private static final WebBrowser browser = WebBrowser.getBrowser();
-
     //~ Inner Classes ----------------------------------------------------------
 
     //-------------//
@@ -204,13 +201,14 @@ public class GuiActions
     {
         public OperationAction ()
         {
-            setEnabled(browser.isSupported());
+            setEnabled(WebBrowser.getBrowser().isSupported());
         }
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            browser.launch(constants.operationUrl.getValue());
+            WebBrowser.getBrowser()
+                      .launch(constants.operationUrl.getValue());
         }
     }
 
@@ -328,13 +326,14 @@ public class GuiActions
     {
         public WebSiteAction ()
         {
-            setEnabled(browser.isSupported());
+            setEnabled(WebBrowser.getBrowser().isSupported());
         }
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            browser.launch(constants.webSiteUrl.getValue());
+            WebBrowser.getBrowser()
+                      .launch(constants.webSiteUrl.getValue());
         }
     }
 
