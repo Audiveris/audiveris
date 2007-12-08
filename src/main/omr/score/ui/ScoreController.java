@@ -18,12 +18,8 @@ import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
 import omr.ui.ActionManager;
-import static omr.ui.util.UIUtilities.*;
 
 import omr.util.Logger;
-
-import java.awt.event.*;
-import java.util.*;
 
 import javax.swing.*;
 

@@ -12,7 +12,6 @@ package omr.glyph;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Evaluator.StartingMode;
 import omr.glyph.ui.GlyphRepository;
 
 import omr.math.Population;

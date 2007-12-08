@@ -19,15 +19,12 @@ import omr.score.entity.Note;
 import omr.script.AssignTask;
 import omr.script.DeassignTask;
 import omr.script.SegmentTask;
-import static omr.selection.SelectionTag.*;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 

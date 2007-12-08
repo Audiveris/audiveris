@@ -9,8 +9,6 @@
 //
 package omr.glyph;
 
-import omr.check.SuccessResult;
-
 import omr.lag.Section;
 
 import omr.util.Implement;

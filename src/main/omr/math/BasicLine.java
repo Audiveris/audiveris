@@ -9,8 +9,6 @@
 //
 package omr.math;
 
-import omr.math.Line.UndefinedLineException;
-
 import omr.util.Implement;
 import omr.util.Logger;
 import static java.lang.Math.*;

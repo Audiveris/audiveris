@@ -9,8 +9,6 @@
 //
 package omr.glyph;
 
-import omr.Main;
-
 import omr.constant.ConstantSet;
 
 import omr.math.Moments;
@@ -23,7 +21,6 @@ import omr.stick.Stick;
 
 import omr.util.Logger;
 
-import java.io.File;
 import java.util.Comparator;
 import java.util.List;
 
