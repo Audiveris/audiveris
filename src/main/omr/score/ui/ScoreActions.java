@@ -170,7 +170,7 @@ public class ScoreActions
     {
         //~ Methods ------------------------------------------------------------
 
-        @Override
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             ScoreController.getCurrentScore()
@@ -192,7 +192,7 @@ public class ScoreActions
     {
         //~ Methods ------------------------------------------------------------
 
-        @Override
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             ScoreController.getCurrentScore()
@@ -213,7 +213,7 @@ public class ScoreActions
     {
         //~ Methods ------------------------------------------------------------
 
-        @Override
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             Score score = ScoreController.getCurrentScore();
@@ -282,7 +282,7 @@ public class ScoreActions
     {
         //~ Methods ------------------------------------------------------------
 
-        @Override
+        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
