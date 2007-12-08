@@ -11,24 +11,31 @@ package omr.util;
 
 import omr.Main;
 
-import omr.step.LogStepMonitorHandler;
 import omr.ui.MainGui;
 
 import java.util.logging.*;
 
 /**
- * Class <code>LogGuiAppender</code> is a specific Log Appender, to be used with
- * logging utility, and which logs directly into the GUI log pane.
+ * <p>Class <code>LogGuiAppender</code> is a specific Log Appender, to be used with
+ * logging utility, and which logs directly into the GUI log pane.</p>
  *
- * <p/> To be activated, this class must be explicitly listed as a handler in
- * the logging configuration file.
+ * <p>As a <code>Handler</code>, it should be added to the highest-level
+ * logger instance, either programmatically or in a properties file.</p>
  *
  * @author Herv&eacute; Bitteur
+ * @author Brenton Partridge
  * @version $Id$
  */
 public class LogGuiHandler
     extends java.util.logging.Handler
 {
+    //~ Constructors -----------------------------------------------------------
+
+    public LogGuiHandler ()
+    {
+        setFilter(new LogEmptyMessageFilter());
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     //-------//
@@ -39,7 +46,7 @@ public class LogGuiHandler
      * being.
      */
     @Override
-	public void close ()
+    public void close ()
     {
     }
 
@@ -50,7 +57,7 @@ public class LogGuiHandler
      * Flush any buffered output. It's a void routine for the time being.
      */
     @Override
-	public void flush ()
+    public void flush ()
     {
     }
 
@@ -63,16 +70,12 @@ public class LogGuiHandler
      * @param record the record to be logged
      */
     @Override
-	public void publish (LogRecord record)
+    public void publish (LogRecord record)
     {
         MainGui gui = Main.getGui();
 
-        if (gui != null) {
-        	String message = record.getMessage();
-            if (!message.equals("") &&
-            	!message.equals(LogStepMonitorHandler.FORCE)) {
-                gui.logPane.log(record);
-            }
+        if ((gui != null) && isLoggable(record)) {
+            gui.logPane.log(record);
         }
     }
 }

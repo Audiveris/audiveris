@@ -19,8 +19,6 @@ import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
 
-import omr.step.LogStepMonitorHandler;
-
 import omr.util.Implement;
 import omr.util.JaiLoader;
 import omr.util.Logger;
@@ -1015,22 +1013,22 @@ public class Picture
     private static class Listener
         implements IIOReadProgressListener, IIOWriteProgressListener
     {
-        private volatile float lastProgress = 0;
+        /** Logging utility specifically for listener */
+        private static final Logger logger = Logger.getLogger(Listener.class);
+        
+        /** Previous progress state */
+        private volatile float      lastProgress = 0;
 
         public void imageComplete (ImageReader source)
         {
-            if (logger.isFineEnabled()) {
-                logger.fine("Image loading complete");
-            }
+            logger.info("Image loading complete");
 
             lastProgress = 0;
         }
 
         public void imageComplete (ImageWriter imagewriter)
         {
-            if (logger.isFineEnabled()) {
-                logger.info("Image writing complete");
-            }
+            logger.info("Image writing complete");
 
             lastProgress = 0;
         }
@@ -1045,18 +1043,21 @@ public class Picture
                     logger.fine("Image loaded " + percentageDone + "%");
                 }
 
-                logger.info(LogStepMonitorHandler.FORCE);
+                logger.info("");
             }
         }
 
         public void imageProgress (ImageWriter imagewriter,
                                    float       percentageDone)
         {
-            if (logger.isFineEnabled()) {
-                if ((percentageDone - lastProgress) > 10) {
-                    lastProgress = percentageDone;
-                    logger.info("Image written " + percentageDone + "%");
+            if ((percentageDone - lastProgress) > 10) {
+                lastProgress = percentageDone;
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("Image written " + percentageDone + "%");
                 }
+
+                logger.info("");
             }
         }
 
@@ -1067,20 +1068,25 @@ public class Picture
                 logger.fine("Image loading started");
             }
 
-            logger.info(LogStepMonitorHandler.FORCE);
+            logger.info("");
         }
 
         public void imageStarted (ImageWriter imagewriter,
                                   int         i)
         {
             if (logger.isFineEnabled()) {
-                logger.info("Image writing started");
+                logger.fine("Image writing started");
             }
         }
 
         public void readAborted (ImageReader source)
         {
             logger.warning("Image loading aborted");
+        }
+
+        public void writeAborted (ImageWriter imagewriter)
+        {
+            logger.warning("Image writing aborted");
         }
 
         public void sequenceComplete (ImageReader source)
@@ -1119,10 +1125,6 @@ public class Picture
         public void thumbnailStarted (ImageWriter imagewriter,
                                       int         i,
                                       int         j)
-        {
-        }
-
-        public void writeAborted (ImageWriter imagewriter)
         {
         }
     }

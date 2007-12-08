@@ -19,7 +19,6 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
-import java.util.logging.SimpleFormatter;
 
 /**
  * Class <code>Logger</code> is a specific subclass of standard java Logger,
@@ -188,6 +187,7 @@ public class Logger
      *
      * @param msg the (severe) message
      */
+    @Override
     public void severe (String msg)
     {
         super.severe(msg);
@@ -265,6 +265,7 @@ public class Logger
         ///        consoleHandler.setFormatter(new SimpleFormatter());
         ///        consoleHandler.setFormatter(new LogBasicFormatter());
         consoleHandler.setLevel(java.util.logging.Level.FINE);
+        consoleHandler.setFilter(new LogEmptyMessageFilter());
 
         // Handler for GUI log pane
         topLogger.addHandler(new LogGuiHandler());
