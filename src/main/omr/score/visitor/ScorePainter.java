@@ -1190,7 +1190,7 @@ public class ScorePainter
     {
         public MarkAction ()
         {
-            putValue(SELECTED_KEY, constants.markPainting.getValue());
+            putValue("SwingSelectedKey", constants.markPainting.getValue());
         }
 
         @Implement(ActionListener.class)
@@ -1214,7 +1214,7 @@ public class ScorePainter
     {
         public SlotAction ()
         {
-            putValue(SELECTED_KEY, constants.slotPainting.getValue());
+            putValue("SwingSelectedKey", constants.slotPainting.getValue());
         }
 
         @Implement(ActionListener.class)
@@ -1239,7 +1239,7 @@ public class ScorePainter
     {
         public VoiceAction ()
         {
-            putValue(SELECTED_KEY, constants.voicePainting.getValue());
+            putValue("SwingSelectedKey", constants.voicePainting.getValue());
         }
 
         @Implement(ActionListener.class)

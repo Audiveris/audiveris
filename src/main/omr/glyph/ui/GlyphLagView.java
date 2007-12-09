@@ -527,7 +527,7 @@ public class GlyphLagView
     {
         public SlurCircleAction ()
         {
-            putValue(SELECTED_KEY, constants.circlePainting.getValue());
+            putValue("SwingSelectedKey", constants.circlePainting.getValue());
         }
 
         @Implement(ActionListener.class)
@@ -552,7 +552,7 @@ public class GlyphLagView
     {
         public StickLineAction ()
         {
-            putValue(SELECTED_KEY, constants.linePainting.getValue());
+            putValue("SwingSelectedKey", constants.linePainting.getValue());
         }
 
         @Implement(ActionListener.class)

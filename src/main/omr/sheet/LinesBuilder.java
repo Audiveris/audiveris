@@ -585,7 +585,7 @@ public class LinesBuilder
         public LineAction ()
         {
             putValue(
-                SELECTED_KEY,
+                "SwingSelectedKey",
                 constants.displayOriginalStaffLines.getValue());
         }
 
