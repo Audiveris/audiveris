@@ -243,6 +243,8 @@ public class GlyphMenu
     private abstract class DynAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public DynAction ()
         {
             // Record the instance
@@ -251,6 +253,8 @@ public class GlyphMenu
             // Initially updateMenu the action items
             update();
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public abstract void update ();
     }
@@ -264,6 +268,8 @@ public class GlyphMenu
     private class AssignAction
         extends DynAction
     {
+        //~ Methods ------------------------------------------------------------
+
         public void actionPerformed (ActionEvent e)
         {
             // Default action is to open the menu
@@ -300,6 +306,8 @@ public class GlyphMenu
     private class CompoundAction
         extends DynAction
     {
+        //~ Methods ------------------------------------------------------------
+
         public void actionPerformed (ActionEvent e)
         {
             // Default action is to open the menu
@@ -330,6 +338,8 @@ public class GlyphMenu
     private class DeassignAction
         extends DynAction
     {
+        //~ Methods ------------------------------------------------------------
+
         public void actionPerformed (ActionEvent e)
         {
             // Remember which is the current selected glyph
@@ -392,6 +402,8 @@ public class GlyphMenu
     private class DumpAction
         extends DynAction
     {
+        //~ Methods ------------------------------------------------------------
+
         public void actionPerformed (ActionEvent e)
         {
             for (Glyph glyph : (List<Glyph>) glyphSetSelection.getEntity()) { // Compiler warning
@@ -433,6 +445,8 @@ public class GlyphMenu
     private class IdemAction
         extends DynAction
     {
+        //~ Methods ------------------------------------------------------------
+
         public void actionPerformed (ActionEvent e)
         {
             JMenuItem source = (JMenuItem) e.getSource();
@@ -470,6 +484,8 @@ public class GlyphMenu
     private class ProposedAction
         extends DynAction
     {
+        //~ Methods ------------------------------------------------------------
+
         public void actionPerformed (ActionEvent e)
         {
             Glyph glyph = getCurrentGlyph();
@@ -519,6 +535,8 @@ public class GlyphMenu
     private class ShortStemSegmentAction
         extends DynAction
     {
+        //~ Methods ------------------------------------------------------------
+
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
@@ -549,6 +567,8 @@ public class GlyphMenu
     private class SimilarAction
         extends DynAction
     {
+        //~ Methods ------------------------------------------------------------
+
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = getCurrentGlyphs();
@@ -587,6 +607,8 @@ public class GlyphMenu
     private class StemSegmentAction
         extends DynAction
     {
+        //~ Methods ------------------------------------------------------------
+
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
@@ -616,6 +638,8 @@ public class GlyphMenu
     private class TranslationAction
         extends DynAction
     {
+        //~ Methods ------------------------------------------------------------
+
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning

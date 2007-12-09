@@ -131,6 +131,8 @@ public class Arpeggiate
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Abscissa shift when looking for embraced notes */
         Scale.Fraction areaDx = new Scale.Fraction(
             1.5,

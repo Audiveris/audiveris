@@ -83,6 +83,7 @@ public class UIDressing
                 }
             } else {
                 Object v = defaults.get(mk);
+
                 if (v != null) {
                     action.putValue(k, v);
                 }

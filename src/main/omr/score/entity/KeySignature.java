@@ -1074,6 +1074,8 @@ public class KeySignature
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /**
          * Abscissa margin when looking up for glyph neighbors
          */

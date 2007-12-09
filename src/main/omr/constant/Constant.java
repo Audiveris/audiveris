@@ -543,6 +543,8 @@ public abstract class Constant
     public static class Angle
         extends Constant.Double
     {
+        //~ Constructors -------------------------------------------------------
+
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -565,6 +567,8 @@ public abstract class Constant
     public static class Boolean
         extends Constant
     {
+        //~ Constructors -------------------------------------------------------
+
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -576,6 +580,8 @@ public abstract class Constant
         {
             super(null, java.lang.Boolean.toString(defaultValue), description);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         /**
          * Retrieve the current constant value
@@ -618,6 +624,8 @@ public abstract class Constant
     public static class Color
         extends Constant
     {
+        //~ Constructors -------------------------------------------------------
+
         /**
          * Normal constructor, with a String type for default value
          *
@@ -659,6 +667,8 @@ public abstract class Constant
         {
             this(java.lang.Integer.toString(defaultValue), description);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         /**
          * Retrieve the current constant value
@@ -703,6 +713,8 @@ public abstract class Constant
     public static class Double
         extends Constant
     {
+        //~ Constructors -------------------------------------------------------
+
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -719,6 +731,8 @@ public abstract class Constant
                 java.lang.Double.toString(defaultValue),
                 description);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         /**
          * Retrieve the current constant value
@@ -761,6 +775,8 @@ public abstract class Constant
     public static class Integer
         extends Constant
     {
+        //~ Constructors -------------------------------------------------------
+
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -777,6 +793,8 @@ public abstract class Constant
                 java.lang.Integer.toString(defaultValue),
                 description);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         /**
          * Retrieve the current constant value
@@ -819,6 +837,8 @@ public abstract class Constant
     public static class Ratio
         extends Constant.Double
     {
+        //~ Constructors -------------------------------------------------------
+
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -841,6 +861,8 @@ public abstract class Constant
     public static class String
         extends Constant
     {
+        //~ Constructors -------------------------------------------------------
+
         /**
          * Normal constructor, with a string type for default value
          *
@@ -870,6 +892,8 @@ public abstract class Constant
         {
             super(null, defaultValue, description);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         /**
          * Retrieve the current constant value. Actually this is synonymous with

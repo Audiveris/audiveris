@@ -800,6 +800,8 @@ public class SticksBuilder
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Ratio   minSectionAspect = new Constant.Ratio(
             5.0d,
             "Minimum value for section aspect (length / thickness)");

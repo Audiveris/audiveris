@@ -231,7 +231,11 @@ public class NameSet
     private class MyMenu
         extends DynamicMenu
     {
+        //~ Instance fields ----------------------------------------------------
+
         private ActionListener listener;
+
+        //~ Constructors -------------------------------------------------------
 
         public MyMenu (String         label,
                        ActionListener listener)
@@ -239,6 +243,8 @@ public class NameSet
             super(label);
             this.listener = listener;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         protected void buildItems ()
         {

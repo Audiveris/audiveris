@@ -284,11 +284,15 @@ public class SheetSteps
     private class BarsTask
         extends SheetTask
     {
+        //~ Constructors -------------------------------------------------------
+
         BarsTask (Sheet sheet,
                   Step  step)
         {
             super(sheet, step);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void doit ()
@@ -314,11 +318,15 @@ public class SheetSteps
     private class CleanupTask
         extends SystemTask
     {
+        //~ Constructors -------------------------------------------------------
+
         CleanupTask (Sheet sheet,
                      Step  step)
         {
             super(sheet, step);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void displayUI ()
@@ -362,11 +370,15 @@ public class SheetSteps
     private class HorizontalsTask
         extends SheetTask
     {
+        //~ Constructors -------------------------------------------------------
+
         HorizontalsTask (Sheet sheet,
                          Step  step)
         {
             super(sheet, step);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void doit ()
@@ -388,11 +400,15 @@ public class SheetSteps
     private class LeavesTask
         extends SystemTask
     {
+        //~ Constructors -------------------------------------------------------
+
         LeavesTask (Sheet sheet,
                     Step  step)
         {
             super(sheet, step);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void displayUI ()
@@ -430,11 +446,15 @@ public class SheetSteps
     private class LinesTask
         extends SheetTask
     {
+        //~ Constructors -------------------------------------------------------
+
         LinesTask (Sheet sheet,
                    Step  step)
         {
             super(sheet, step);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void doit ()
@@ -456,11 +476,15 @@ public class SheetSteps
     private class LoadTask
         extends SheetTask
     {
+        //~ Constructors -------------------------------------------------------
+
         LoadTask (Sheet sheet,
                   Step  step)
         {
             super(sheet, step);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void doit ()
@@ -510,11 +534,15 @@ public class SheetSteps
     private class ScaleTask
         extends SheetTask
     {
+        //~ Constructors -------------------------------------------------------
+
         ScaleTask (Sheet sheet,
                    Step  step)
         {
             super(sheet, step);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void doit ()
@@ -535,11 +563,15 @@ public class SheetSteps
     private class ScoreTask
         extends SystemTask
     {
+        //~ Constructors -------------------------------------------------------
+
         ScoreTask (Sheet sheet,
                    Step  step)
         {
             super(sheet, step);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void displayUI ()
@@ -603,11 +635,15 @@ public class SheetSteps
     private class SkewTask
         extends SheetTask
     {
+        //~ Constructors -------------------------------------------------------
+
         SkewTask (Sheet sheet,
                   Step  step)
         {
             super(sheet, step);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void doit ()
@@ -629,11 +665,15 @@ public class SheetSteps
     private class SymbolsTask
         extends SystemTask
     {
+        //~ Constructors -------------------------------------------------------
+
         SymbolsTask (Sheet sheet,
                      Step  step)
         {
             super(sheet, step);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void displayUI ()
@@ -671,11 +711,15 @@ public class SheetSteps
     private class VerticalsTask
         extends SystemTask
     {
+        //~ Constructors -------------------------------------------------------
+
         VerticalsTask (Sheet sheet,
                        Step  step)
         {
             super(sheet, step);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void displayUI ()

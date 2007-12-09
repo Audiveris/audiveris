@@ -281,6 +281,8 @@ public abstract class MeasureElement
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Abscissa shift when looking for time slot (half a note head) */
         Scale.Fraction slotShift = new Scale.Fraction(
             0.5,

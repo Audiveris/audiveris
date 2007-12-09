@@ -538,6 +538,8 @@ public class TimeSignature
     public static class InvalidTimeSignature
         extends Exception
     {
+        //~ Constructors -------------------------------------------------------
+
         public InvalidTimeSignature ()
         {
             super("Time signature is invalid");
@@ -550,6 +552,8 @@ public class TimeSignature
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /**
          * Maximum euclidian distance between two parts
          * of a time signature

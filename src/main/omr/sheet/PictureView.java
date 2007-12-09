@@ -64,6 +64,8 @@ public class PictureView
     private class MyView
         extends RubberZoomedPanel
     {
+        //~ Methods ------------------------------------------------------------
+
         //--------//
         // render //
         //--------//

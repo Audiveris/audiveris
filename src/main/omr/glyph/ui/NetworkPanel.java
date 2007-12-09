@@ -227,9 +227,9 @@ class NetworkPanel
             NeuralNetwork network = glyphNetwork.getNetwork();
             bestSnap = network.backup();
             snap = true;
-            
+
             // Belt & suspenders: make a copy on disk!
-            glyphNetwork.marshal();            
+            glyphNetwork.marshal();
         }
 
         final boolean snapTaken = snap;
@@ -449,10 +449,14 @@ class NetworkPanel
     private class BestAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public BestAction ()
         {
             super("Use Best");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -475,10 +479,14 @@ class NetworkPanel
     private class LastAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public LastAction ()
         {
             super("Use Last");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -512,6 +520,8 @@ class NetworkPanel
     private class NetworkTrainAction
         extends TrainingPanel.TrainAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public NetworkTrainAction (String                 title,
                                    Evaluator.StartingMode mode,
                                    boolean                confirmationRequired)
@@ -520,6 +530,8 @@ class NetworkPanel
             this.mode = mode;
             this.confirmationRequired = confirmationRequired;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //-------//
         // train //
@@ -547,6 +559,8 @@ class NetworkPanel
     private class ParamAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         // Purpose is just to read and remember the data from the various
         // input fields. Triggered when user presses Enter in one of these
         // fields.
@@ -564,10 +578,14 @@ class NetworkPanel
     private class StopAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public StopAction ()
         {
             super("Stop");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)

@@ -360,6 +360,8 @@ public class SheetController
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Default directory for selection of sheet image files */
         Constant.String defaultSheetDirectory = new Constant.String(
             "",

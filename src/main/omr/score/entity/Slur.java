@@ -727,6 +727,8 @@ public class Slur
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Abscissa extension when looking for embraced notes */
         Scale.Fraction areaDx = new Scale.Fraction(
             2,
@@ -759,13 +761,19 @@ public class Slur
     private static final class NodeComparator
         implements Comparator<MeasureNode>
     {
+        //~ Instance fields ----------------------------------------------------
+
         final SystemPoint ref;
+
+        //~ Constructors -------------------------------------------------------
 
         public NodeComparator (double x,
                                double y)
         {
             ref = new SystemPoint(x, y);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public int compare (MeasureNode n1,
                             MeasureNode n2)

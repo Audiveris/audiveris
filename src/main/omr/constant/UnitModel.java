@@ -55,6 +55,9 @@ public class UnitModel
      * Enumeration type to describe each column of the JTreeTable
      */
     public static enum Column {
+        //~ Enumeration constant initializers ----------------------------------
+
+
         /**
          * The left column, assigned to tree structure, allows expansion and
          * collapsing of sub-tree portions
@@ -98,6 +101,8 @@ public class UnitModel
          * constant to its original value
          */
         MODIF("Modif", false, 20, Boolean.class);
+        //~ Instance fields ----------------------------------------------------
+
         /**
          * Java class to handle column content
          */
@@ -117,6 +122,8 @@ public class UnitModel
          * Width for column display
          */
         final int width;
+
+        //~ Constructors -------------------------------------------------------
 
         //--------//
         // Column //

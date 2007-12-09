@@ -209,6 +209,8 @@ public class SymbolsEditor
     private class MyView
         extends GlyphLagView
     {
+        //~ Constructors -------------------------------------------------------
+
         private MyView (GlyphLag lag)
         {
             super(lag, null, null, symbolsBuilder, null);
@@ -225,6 +227,8 @@ public class SymbolsEditor
             // Use light gray color for past successful entities
             sheet.colorize(lag, viewIndex, Color.lightGray);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //-------------------//
         // colorizeAllGlyphs //

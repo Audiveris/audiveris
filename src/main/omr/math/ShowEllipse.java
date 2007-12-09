@@ -185,6 +185,8 @@ public class ShowEllipse
     class MyPanel
         extends JPanel
     {
+        //~ Methods ------------------------------------------------------------
+
         @Override
         protected void paintComponent (Graphics graphics)
         {

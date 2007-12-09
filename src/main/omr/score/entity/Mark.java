@@ -27,6 +27,9 @@ public class Mark
 
     /** Position relative to an entity */
     public static enum Position {
+        //~ Enumeration constant initializers ----------------------------------
+
+
         /** Mark should be horizontally located <b>before</b> the entity */
         BEFORE,
         /** Mark should be horizontally located <b>after</b> the entity */

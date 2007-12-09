@@ -602,7 +602,8 @@ public class Slot
 
         // Special case for whole rests: they don't belong to any time slot,
         // and their duration is the measure duration
-        if (glyph.getShape().isWholeRest()) {
+        if (glyph.getShape()
+                 .isWholeRest()) {
             measure.addWholeChord(glyph);
         } else {
             // First look for a suitable slot

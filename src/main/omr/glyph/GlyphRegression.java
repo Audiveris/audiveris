@@ -246,6 +246,8 @@ public class GlyphRegression
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Ratio weightMax = new Constant.Ratio(5e3, "Maximum weight");
     }
 
@@ -259,6 +261,8 @@ public class GlyphRegression
     private static class ShapeDesc
         implements java.io.Serializable
     {
+        //~ Instance fields ----------------------------------------------------
+
         // The related shape
         final Shape        shape;
 
@@ -270,6 +274,8 @@ public class GlyphRegression
 
         // Weight for each criteria
         final double[] weights = new double[inSize];
+
+        //~ Constructors -------------------------------------------------------
 
         //-----------//
         // ShapeDesc //
@@ -286,6 +292,8 @@ public class GlyphRegression
             Arrays.fill(means, 0);
             Arrays.fill(weights, 0);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //---------//
         // compute //

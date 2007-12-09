@@ -65,6 +65,11 @@ public abstract class DynamicMenu
         menu.addMenuListener(listener);
     }
 
+    /**
+     * Creates a new DynamicMenu object.
+     *
+     * @param action DOCUMENT ME!
+     */
     public DynamicMenu (Action action)
     {
         menu = new JMenu(action);

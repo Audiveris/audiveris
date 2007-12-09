@@ -277,6 +277,8 @@ class EvaluationBoard
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
             100000.0,
             "Threshold on displayable doubt");
@@ -292,12 +294,16 @@ class EvaluationBoard
     private class EvalButton
         implements ActionListener
     {
+        //~ Instance fields ----------------------------------------------------
+
         // Shape button or text field. Only one of them will be created and used
         final JButton button;
         final JLabel  field;
 
         // The related doubt
         JLabel grade = new JLabel("", SwingConstants.RIGHT);
+
+        //~ Constructors -------------------------------------------------------
 
         public EvalButton ()
         {
@@ -317,6 +323,8 @@ class EvaluationBoard
                 button = null;
             }
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Triggered by button
         @Implement(ActionListener.class)
@@ -388,8 +396,12 @@ class EvaluationBoard
     //----------//
     private class Selector
     {
+        //~ Instance fields ----------------------------------------------------
+
         // A collection of EvalButton's
         List<EvalButton> buttons;
+
+        //~ Constructors -------------------------------------------------------
 
         public Selector ()
         {
@@ -401,6 +413,8 @@ class EvaluationBoard
 
             setEvals(null, null);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //----------//
         // setEvals //
@@ -461,10 +475,14 @@ class EvaluationBoard
     private class TestAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public TestAction ()
         {
             super("Global");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)

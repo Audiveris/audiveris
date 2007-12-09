@@ -549,6 +549,8 @@ public class BeamGroup
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /**
          * Maximum number of loops allowed for splitting beam groups
          */
@@ -567,10 +569,14 @@ public class BeamGroup
      */
     private static class Split
     {
+        //~ Instance fields ----------------------------------------------------
+
         final BeamGroup group;
         final Beam      alienBeam;
         final Chord     firstChord;
         final Chord     alienChord;
+
+        //~ Constructors -------------------------------------------------------
 
         public Split (BeamGroup group,
                       Beam      alienBeam,
@@ -582,6 +588,8 @@ public class BeamGroup
             this.firstChord = firstChord;
             this.alienChord = alienChord;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public String toString ()

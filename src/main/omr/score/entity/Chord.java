@@ -383,7 +383,8 @@ public class Chord
                 Note note = (Note) getNotes()
                                        .get(0);
 
-                if (!note.getShape().isWholeRest()) {
+                if (!note.getShape()
+                         .isWholeRest()) {
                     duration = Note.getTypeDuration(note.getShape());
 
                     // Apply fraction
@@ -618,7 +619,8 @@ public class Chord
             Note note = (Note) getNotes()
                                    .get(0);
 
-            return note.getShape().isWholeRest();
+            return note.getShape()
+                       .isWholeRest();
         }
 
         return false;
@@ -1189,7 +1191,8 @@ public class Chord
             for (TreeNode n : chord.getNotes()) {
                 Note note = (Note) n;
 
-                if (!note.getShape().isWholeRest()) {
+                if (!note.getShape()
+                         .isWholeRest()) {
                     SystemPoint noteRef = note.getCenterRight();
                     SystemPoint toDot = new SystemPoint(
                         dotCenter.x - noteRef.x,

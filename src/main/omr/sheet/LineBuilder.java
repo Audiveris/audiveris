@@ -610,6 +610,8 @@ public class LineBuilder
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Scale.Fraction coreSectionLength = new Scale.Fraction(
             10d,
             "Minimum section length to be considered a staff line core section");
@@ -645,10 +647,14 @@ public class LineBuilder
     private static class LineSource
         extends SticksSource
     {
+        //~ Instance fields ----------------------------------------------------
+
         // My private list of sections in related area
         private final List<GlyphSection> sections = new ArrayList<GlyphSection>();
         private final int                yMax;
         private final int                yMin;
+
+        //~ Constructors -------------------------------------------------------
 
         //------------//
         // LineSource //
@@ -694,6 +700,8 @@ public class LineBuilder
             // Define an iterator
             reset();
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //--------//
         // backup //
@@ -748,6 +756,8 @@ public class LineBuilder
     private static class StickStartComparator
         implements Comparator<Stick>
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(Comparator.class)
         public int compare (Stick s1,
                             Stick s2)
@@ -762,6 +772,8 @@ public class LineBuilder
     private static class StickWeightComparator
         implements Comparator<Stick>
     {
+        //~ Methods ------------------------------------------------------------
+
         // Sort by DECREASING weight
         @Implement(Comparator.class)
         public int compare (Stick s1,

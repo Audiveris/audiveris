@@ -285,6 +285,8 @@ public class Logger
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Boolean printStackOnWarning = new Constant.Boolean(
             false,
             "Should we print out the stack of any warning logged with exception?");

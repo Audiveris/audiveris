@@ -483,6 +483,8 @@ public class GlyphInspector
      */
     public static interface CompoundAdapter
     {
+        //~ Methods ------------------------------------------------------------
+
         /** Extension in abscissa to look for neighbors
          * @return the extension on left and right
          */
@@ -521,6 +523,8 @@ public class GlyphInspector
     private class BasicAdapter
         implements CompoundAdapter
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Maximum doubt for a compound */
         private final double maxDoubt;
 
@@ -530,10 +534,14 @@ public class GlyphInspector
         /** The result of compound evaluation */
         private Evaluation vote;
 
+        //~ Constructors -------------------------------------------------------
+
         public BasicAdapter (double maxDoubt)
         {
             this.maxDoubt = maxDoubt;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(CompoundAdapter.class)
         public int getBoxDx ()
@@ -593,6 +601,8 @@ public class GlyphInspector
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Scale.Fraction   boxWiden = new Scale.Fraction(
             0.15,
             "Box widening to check intersection with compound");

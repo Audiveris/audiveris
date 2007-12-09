@@ -182,6 +182,8 @@ public abstract class PartNode
      */
     public static interface SequenceAdapter
     {
+        //~ Methods ------------------------------------------------------------
+
         /** Check whether this glyph completes the sequence */
         boolean isFinal (Glyph glyph);
 

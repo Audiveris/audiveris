@@ -296,6 +296,8 @@ public class GlyphVerifier
     public static class MaterialAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -316,6 +318,8 @@ public class GlyphVerifier
         extends TitledPanel
         implements ActionListener, ChangeListener
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Other entity interested in items selected by this selector */
         private ChangeListener listener;
 
@@ -336,6 +340,8 @@ public class GlyphVerifier
         protected List list = new List(
             5, // nb of rows
             true); // multipleMode allowed ?
+
+        //~ Constructors -------------------------------------------------------
 
         /**
          * Create a selector
@@ -401,6 +407,8 @@ public class GlyphVerifier
             add(list, BorderLayout.CENTER);
             add(cardinal, BorderLayout.SOUTH);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //--------------//
         // populateWith //
@@ -472,6 +480,8 @@ public class GlyphVerifier
     private static class TitledPanel
         extends JPanel
     {
+        //~ Constructors -------------------------------------------------------
+
         public TitledPanel (String title)
         {
             setBorder(
@@ -491,11 +501,15 @@ public class GlyphVerifier
     private class FolderSelector
         extends Selector
     {
+        //~ Constructors -------------------------------------------------------
+
         public FolderSelector (ChangeListener listener)
         {
             super("Folder Selector", listener);
             load.setEnabled(true);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Triggered by load button
         @Implement(ActionListener.class)
@@ -529,6 +543,8 @@ public class GlyphVerifier
     private class GlyphSelector
         extends Selector
     {
+        //~ Constructors -------------------------------------------------------
+
         //---------------//
         // GlyphSelector //
         //---------------//
@@ -536,6 +552,8 @@ public class GlyphVerifier
         {
             super("Glyph Selector", listener);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //-----------------//
         // actionPerformed // Triggered by the load button
@@ -608,10 +626,14 @@ public class GlyphVerifier
     private class ShapeSelector
         extends Selector
     {
+        //~ Constructors -------------------------------------------------------
+
         public ShapeSelector (ChangeListener listener)
         {
             super("Shape Selector", listener);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Triggered by load button
         @Implement(ActionListener.class)

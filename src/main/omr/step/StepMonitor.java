@@ -253,6 +253,8 @@ public class StepMonitor
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Integer divisions = new Constant.Integer(
             "divisions",
             1000,
@@ -268,6 +270,8 @@ public class StepMonitor
     private static class MyJProgressBar
         extends JProgressBar
     {
+        //~ Methods ------------------------------------------------------------
+
         @Override
         public void paintComponent (Graphics g)
         {

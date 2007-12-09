@@ -391,6 +391,8 @@ public class SectionBoard
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Boolean hideRelationFields = new Constant.Boolean(
             false,
             "Should we hide section relation fields when empty?");

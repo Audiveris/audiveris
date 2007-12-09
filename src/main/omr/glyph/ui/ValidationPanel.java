@@ -306,6 +306,8 @@ class ValidationPanel
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
             1.2,
             "Maximum acceptance doubt");
@@ -317,10 +319,14 @@ class ValidationPanel
     private class FalsePositiveAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public FalsePositiveAction ()
         {
             super("Verify");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -338,10 +344,14 @@ class ValidationPanel
     private class NegativeAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public NegativeAction ()
         {
             super("Verify");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -359,10 +369,14 @@ class ValidationPanel
     private class ValidateAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public ValidateAction ()
         {
             super("Validate");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)

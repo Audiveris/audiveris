@@ -447,6 +447,8 @@ public class GlyphBoard
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Exact pixel height for the shape icon field */
         PixelCount shapeIconHeight = new PixelCount(
             70,
@@ -464,11 +466,15 @@ public class GlyphBoard
     private class DeassignAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public DeassignAction ()
         {
             super("Deassign");
             this.putValue(Action.SHORT_DESCRIPTION, "Deassign shape");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ChangeListener.class)
         public void actionPerformed (ActionEvent e)
@@ -504,11 +510,15 @@ public class GlyphBoard
     private class DumpAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public DumpAction ()
         {
             super("Dump");
             this.putValue(Action.SHORT_DESCRIPTION, "Dump this glyph");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ChangeListener.class)
         public void actionPerformed (ActionEvent e)

@@ -572,6 +572,8 @@ public class GlyphNetwork
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Ratio   amplitude = new Constant.Ratio(
             0.5,
             "Initial weight amplitude");

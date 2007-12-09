@@ -74,37 +74,45 @@ public class OmrUIDefaults
 
     /**
      * Load UI strings from a properties file (.properties).
-     * @param file properties file path 
+     * @param file properties file path
      * without locale or country information
      * or .properties extension
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public void loadFrom (File file) throws FileNotFoundException, IOException
+    public void loadFrom (File file)
+        throws FileNotFoundException, IOException
     {
-        String path = file.getPath();
+        String       path = file.getPath();
         StringBuffer b = new StringBuffer(path);
-        Locale locale = Locale.getDefault();
-        String language = locale.getLanguage(); 
-        if (language != null && language.length() > 0) {
-            b.append('_').append(language);
+        Locale       locale = Locale.getDefault();
+        String       language = locale.getLanguage();
+
+        if ((language != null) && (language.length() > 0)) {
+            b.append('_')
+             .append(language);
         }
+
         b.append(".properties");
         file = new File(b.toString());
-        if (!file.exists())
+
+        if (!file.exists()) {
             file = new File(path + ".properties");
+        }
+
         Properties p = new Properties();
         p.load(new FileInputStream(file));
         loadFrom(p);
     }
-    
+
     /**
      * Load UI strings from a Properties object.
      * @param properties properties
      */
     public void loadFrom (Properties properties)
     {
-        for (Map.Entry<Object, Object> e : properties.entrySet())
+        for (Map.Entry<Object, Object> e : properties.entrySet()) {
             this.put(e.getKey(), e.getValue());
+        }
     }
 }

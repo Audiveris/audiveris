@@ -376,6 +376,8 @@ public class VerticalsBuilder
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Boolean displayFrame = new Constant.Boolean(
             true,
             "Should we display a frame on the stem sticks");
@@ -426,6 +428,8 @@ public class VerticalsBuilder
     private static class FirstAdjacencyCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected FirstAdjacencyCheck ()
         {
             super(
@@ -436,6 +440,8 @@ public class VerticalsBuilder
                 false,
                 TOO_HIGH_ADJACENCY);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the adjacency value
         @Implement(Check.class)
@@ -451,6 +457,8 @@ public class VerticalsBuilder
     private static class LastAdjacencyCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected LastAdjacencyCheck ()
         {
             super(
@@ -461,6 +469,8 @@ public class VerticalsBuilder
                 false,
                 TOO_HIGH_ADJACENCY);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the adjacency value
         @Implement(Check.class)
@@ -476,6 +486,8 @@ public class VerticalsBuilder
     private static class MinAspectCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected MinAspectCheck ()
         {
             super(
@@ -486,6 +498,8 @@ public class VerticalsBuilder
                 true,
                 TOO_FAT);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the ratio length / thickness
         @Implement(Check.class)
@@ -501,7 +515,11 @@ public class VerticalsBuilder
     private class LeftCheck
         extends Check<Stick>
     {
+        //~ Instance fields ----------------------------------------------------
+
         private final SystemInfo system;
+
+        //~ Constructors -------------------------------------------------------
 
         protected LeftCheck (SystemInfo system)
             throws StepException
@@ -515,6 +533,8 @@ public class VerticalsBuilder
                 OUTSIDE_SYSTEM);
             this.system = system;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the stick abscissa
         @Implement(Check.class)
@@ -533,6 +553,8 @@ public class VerticalsBuilder
     private static class MinDensityCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected MinDensityCheck ()
         {
             super(
@@ -543,6 +565,8 @@ public class VerticalsBuilder
                 true,
                 TOO_HOLLOW);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the density
         @Implement(Check.class)
@@ -561,6 +585,8 @@ public class VerticalsBuilder
     private class MinLengthCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected MinLengthCheck (boolean isShort)
             throws StepException
         {
@@ -573,6 +599,8 @@ public class VerticalsBuilder
                 true,
                 TOO_SHORT);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the length data
         @Implement(Check.class)
@@ -589,11 +617,15 @@ public class VerticalsBuilder
     private class MyCheckBoard
         extends CheckBoard<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         public MyCheckBoard (String    unit,
                              Selection inputSelection)
         {
             super(unit, null, inputSelection);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void update (Selection     selection,
@@ -624,6 +656,8 @@ public class VerticalsBuilder
     private class MyGlyphLagView
         extends GlyphLagView
     {
+        //~ Constructors -------------------------------------------------------
+
         public MyGlyphLagView (GlyphLag lag)
         {
             super(lag, null, null, VerticalsBuilder.this, null);
@@ -641,6 +675,8 @@ public class VerticalsBuilder
             glyphSetSelection = sheet.getSelection(SelectionTag.GLYPH_SET);
             glyphSetSelection.addObserver(this);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //----------//
         // colorize //
@@ -681,6 +717,8 @@ public class VerticalsBuilder
     private static class MySectionPredicate
         implements Predicate<GlyphSection>
     {
+        //~ Methods ------------------------------------------------------------
+
         public boolean check (GlyphSection section)
         {
             // We process section for which glyph is null, NOISE, STRUCTURE
@@ -698,7 +736,11 @@ public class VerticalsBuilder
     private class RightCheck
         extends Check<Stick>
     {
+        //~ Instance fields ----------------------------------------------------
+
         private final SystemInfo system;
+
+        //~ Constructors -------------------------------------------------------
 
         protected RightCheck (SystemInfo system)
             throws StepException
@@ -712,6 +754,8 @@ public class VerticalsBuilder
                 OUTSIDE_SYSTEM);
             this.system = system;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the stick abscissa
         @Implement(Check.class)
@@ -729,7 +773,11 @@ public class VerticalsBuilder
     private class StemCheckSuite
         extends CheckSuite<Stick>
     {
+        //~ Instance fields ----------------------------------------------------
+
         private final SystemInfo system;
+
+        //~ Constructors -------------------------------------------------------
 
         public StemCheckSuite (SystemInfo system,
                                boolean    isShort)
@@ -750,6 +798,8 @@ public class VerticalsBuilder
                 dump();
             }
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         protected void dumpSpecific ()

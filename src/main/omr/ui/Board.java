@@ -56,6 +56,9 @@ public abstract class Board
      * Enum <code>Tag</code> is used to refer to the various user boards.
      */
     public enum Tag {
+        //~ Enumeration constant initializers ----------------------------------
+
+
         /** Board for check results */
         CHECK("Check"),
         /** Custom board */
@@ -70,9 +73,13 @@ public abstract class Board
         SECTION("Section"), 
         /** Board for Score info */
         SCORE("Score");
+        //~ Instance fields ----------------------------------------------------
+
         //
         // For description only
         private String label;
+
+        //~ Constructors -------------------------------------------------------
 
         //-----//
         // Tag //
@@ -86,6 +93,8 @@ public abstract class Board
         {
             this.label = label;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //----------//
         // toString //

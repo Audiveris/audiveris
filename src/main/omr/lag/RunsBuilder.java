@@ -206,6 +206,8 @@ public class RunsBuilder
      */
     public static interface Reader
     {
+        //~ Methods ------------------------------------------------------------
+
         //---------//
         // backRun //
         //---------//

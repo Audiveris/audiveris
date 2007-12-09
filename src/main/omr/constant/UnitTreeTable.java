@@ -196,6 +196,8 @@ public class UnitTreeTable
     private static class LoggerRenderer
         extends DefaultTableCellRenderer
     {
+        //~ Methods ------------------------------------------------------------
+
         //-------------------------------//
         // getTableCellRendererComponent //
         //-------------------------------//
@@ -238,6 +240,8 @@ public class UnitTreeTable
     private class ValueRenderer
         extends DefaultTableCellRenderer
     {
+        //~ Methods ------------------------------------------------------------
+
         //-------------------------------//
         // getTableCellRendererComponent //
         //-------------------------------//

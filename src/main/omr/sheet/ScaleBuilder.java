@@ -190,11 +190,15 @@ public class ScaleBuilder
     private class Adapter
         implements RunsBuilder.Reader
     {
+        //~ Instance fields ----------------------------------------------------
+
         private Picture picture;
         private Sheet   sheet;
         private int[]   back;
         private int[]   fore;
         private int     maxForeground;
+
+        //~ Constructors -------------------------------------------------------
 
         //---------//
         // Adapter //
@@ -216,6 +220,8 @@ public class ScaleBuilder
                 back[i] = 0;
             }
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //---------//
         // backRun //
@@ -348,6 +354,8 @@ public class ScaleBuilder
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Should we produce a chart on computed scale data ? */
         Constant.Boolean plotting = new Constant.Boolean(
             false,

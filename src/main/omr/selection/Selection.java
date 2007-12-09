@@ -529,6 +529,8 @@ public class Selection
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Integer maxNotificationLevel = new Constant.Integer(
             "Notifs",
             10,
@@ -544,8 +546,12 @@ public class Selection
      */
     private static class NamedObserver
     {
+        //~ Instance fields ----------------------------------------------------
+
         private SelectionObserver observer;
         private String            name;
+
+        //~ Constructors -------------------------------------------------------
 
         public NamedObserver (SelectionObserver observer,
                               String            name)

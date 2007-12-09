@@ -212,6 +212,8 @@ public class PixelBoard
     private class ParamAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         // Method run whenever user presses Return/Enter in one of the parameter
         // fields
         public void actionPerformed (ActionEvent e)

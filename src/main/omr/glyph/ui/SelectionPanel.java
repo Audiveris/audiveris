@@ -435,6 +435,8 @@ class SelectionPanel
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Integer maxSimilar = new Constant.Integer(
             "Glyphs",
             20,
@@ -448,6 +450,8 @@ class SelectionPanel
     private class DumpAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public DumpAction ()
         {
             super("Dump");
@@ -455,6 +459,8 @@ class SelectionPanel
                 Action.SHORT_DESCRIPTION,
                 "Dump the current glyph selection");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -504,6 +510,8 @@ class SelectionPanel
     private class ParamAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         // Purpose is just to read and remember the data from the various
         // input fields. Triggered when user presses Enter in one of these
         // fields.
@@ -521,6 +529,8 @@ class SelectionPanel
     private class RefreshAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public RefreshAction ()
         {
             super("Disk Refresh");
@@ -528,6 +538,8 @@ class SelectionPanel
                 Action.SHORT_DESCRIPTION,
                 "Refresh trainer with disk information");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -542,6 +554,8 @@ class SelectionPanel
     private class SelectAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public SelectAction ()
         {
             super("Select Core");
@@ -549,6 +563,8 @@ class SelectionPanel
                 Action.SHORT_DESCRIPTION,
                 "Build core selection out of whole glyph base");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)

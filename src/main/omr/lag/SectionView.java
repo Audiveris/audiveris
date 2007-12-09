@@ -332,6 +332,8 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Boolean displayDensity = new Constant.Boolean(
             false,
             "Should we render the section foreground density");

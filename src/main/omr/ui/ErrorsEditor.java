@@ -215,9 +215,13 @@ public class ErrorsEditor
     private static class Record
         implements Comparable<Record>
     {
+        //~ Instance fields ----------------------------------------------------
+
         SystemNode node;
         Glyph      glyph;
         String     text;
+
+        //~ Constructors -------------------------------------------------------
 
         public Record (SystemNode node,
                        Glyph      glyph,
@@ -227,6 +231,8 @@ public class ErrorsEditor
             this.glyph = glyph;
             this.text = text;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public int compareTo (Record other)
         {
@@ -261,6 +267,8 @@ public class ErrorsEditor
     private class MyListener
         implements ListSelectionListener
     {
+        //~ Methods ------------------------------------------------------------
+
         public void valueChanged (ListSelectionEvent e)
         {
             if ((e.getSource() == list) && !e.getValueIsAdjusting()) {

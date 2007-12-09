@@ -234,6 +234,8 @@ public class MemoryMeter
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Display period */
         Constant.Integer displayPeriod = new Constant.Integer(
             "MilliSeconds",

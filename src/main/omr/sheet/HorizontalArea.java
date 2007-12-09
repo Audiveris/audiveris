@@ -114,6 +114,8 @@ public class HorizontalArea
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Scale.Fraction coreSectionLength = new Scale.Fraction(
             2.0,
             "Minimum length of a section to be processed");

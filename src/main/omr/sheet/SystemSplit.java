@@ -281,6 +281,8 @@ public class SystemSplit
      */
     private abstract static class Adapter<T>
     {
+        //~ Methods ------------------------------------------------------------
+
         /**
          * Report the target collection within each system info structure for
          * each SystemInfo

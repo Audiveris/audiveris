@@ -230,6 +230,8 @@ public class Dynamics
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Maximum abscissa difference */
         Scale.Fraction maxDx = new Scale.Fraction(
             1,

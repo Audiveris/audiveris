@@ -582,12 +582,16 @@ public class LinesBuilder
     public static class LineAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public LineAction ()
         {
             putValue(
                 "SwingSelectedKey",
                 constants.displayOriginalStaffLines.getValue());
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -614,6 +618,8 @@ public class LinesBuilder
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Should we display a frame on Lags ? */
         Constant.Boolean displayFrame = new Constant.Boolean(
             false,
@@ -656,6 +662,8 @@ public class LinesBuilder
     private class MyLagView
         extends GlyphLagView
     {
+        //~ Constructors -------------------------------------------------------
+
         //-----------//
         // MyLagView //
         //-----------//
@@ -680,6 +688,8 @@ public class LinesBuilder
             sheet.getSelection(HORIZONTAL_SECTION_ID)
                  .addObserver(this);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //-------------//
         // renderItems //

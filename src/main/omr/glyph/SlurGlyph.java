@@ -383,6 +383,8 @@ public class SlurGlyph
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Maximum distance to approximating circle for a slur */
         Scale.Fraction maxCircleDistance = new Scale.Fraction(
             0.12,
@@ -420,16 +422,22 @@ public class SlurGlyph
     private static class SlurCompoundAdapter
         implements GlyphInspector.CompoundAdapter
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** The scale around the slur */
         private final Scale scale;
 
         /** The seed being considered */
         private Glyph seed;
 
+        //~ Constructors -------------------------------------------------------
+
         public SlurCompoundAdapter (Scale scale)
         {
             this.scale = scale;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(GlyphInspector.CompoundAdapter.class)
         public int getBoxDx ()

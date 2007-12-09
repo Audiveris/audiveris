@@ -31,6 +31,12 @@ public class LogGuiHandler
 {
     //~ Constructors -----------------------------------------------------------
 
+    //---------------//
+    // LogGuiHandler //
+    //---------------//
+    /**
+     * Creates a new LogGuiHandler object.
+     */
     public LogGuiHandler ()
     {
         setFilter(new LogEmptyMessageFilter());

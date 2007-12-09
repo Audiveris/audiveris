@@ -88,11 +88,12 @@ public class Plugins
     public static void loadClasses (InputStream is)
     {
         Scanner scanner = new Scanner(is);
-        
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine().trim();
 
-            if (line.length() > 0 && !line.startsWith("#")) {
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine()
+                                 .trim();
+
+            if ((line.length() > 0) && !line.startsWith("#")) {
                 loadClass(line);
             }
         }

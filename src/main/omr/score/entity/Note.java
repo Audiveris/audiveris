@@ -61,9 +61,11 @@ public class Note
 
     /** Names of the various note steps */
     public static enum Step {
-        /** La */ A,
+        //~ Enumeration constant initializers ----------------------------------
 
-        /** Si */ B,
+
+        /** La */ A,
+        /** Si */ B, 
         /** Do */ C, 
         /** Re */ D, 
         /** Mi */ E, 
@@ -931,6 +933,8 @@ public class Note
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /**
          * Minimum dx between accidental and note
          */

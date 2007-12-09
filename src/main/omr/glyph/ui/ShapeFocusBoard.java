@@ -69,6 +69,9 @@ class ShapeFocusBoard
 
     /** Filter on which symbols should be displayed */
     public static enum Filter {
+        //~ Enumeration constant initializers ----------------------------------
+
+
         /** Display all symbols */
         ALL,
         /** Display only known symbols */
@@ -322,12 +325,16 @@ class ShapeFocusBoard
     private class Counter
         implements ChangeListener
     {
+        //~ Instance fields ----------------------------------------------------
+
         // Spinner on these glyphs
         ArrayList<Integer> ids = new ArrayList<Integer>();
 
         // Number of glyphs
         JLabel   val = new JLabel("", SwingConstants.RIGHT);
         JSpinner spinner = new JSpinner(new SpinnerListModel());
+
+        //~ Constructors -------------------------------------------------------
 
         //---------//
         // Counter //
@@ -339,6 +346,8 @@ class ShapeFocusBoard
             SpinnerUtilities.setList(spinner, ids);
             refresh();
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //-------//
         // addId //

@@ -179,8 +179,12 @@ public class ScoreTree
     private static class Adapter
         implements TreeModel
     {
+        //~ Instance fields ----------------------------------------------------
+
         private List<TreeModelListener> listeners = new ArrayList<TreeModelListener>();
         private Score                   score;
+
+        //~ Constructors -------------------------------------------------------
 
         //---------//
         // Adapter //
@@ -189,6 +193,8 @@ public class ScoreTree
         {
             this.score = score;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //----------//
         // getChild //
@@ -324,6 +330,8 @@ public class ScoreTree
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Should we hide empty dummy containers */
         Constant.Boolean hideEmptyDummies = new Constant.Boolean(
             true,

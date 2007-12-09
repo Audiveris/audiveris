@@ -241,6 +241,8 @@ public class GlyphTrainer
     public static class TrainerAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -258,11 +260,16 @@ public class GlyphTrainer
     static class Task
         extends Observable
     {
+        //~ Enumerations -------------------------------------------------------
+
         /**
          * Enum <code>Activity</code> defines the possible activities in
          * training.
          */
         static enum Activity {
+            //~ Enumeration constant initializers ------------------------------
+
+
             /** No ongoing activity */
             INACTIVE,
             /** Selecting glyph to build a population for training */
@@ -271,8 +278,12 @@ public class GlyphTrainer
             TRAINING;
         }
 
+        //~ Instance fields ----------------------------------------------------
+
         /** Current activity */
         private Activity activity = Activity.INACTIVE;
+
+        //~ Methods ------------------------------------------------------------
 
         //-------------//
         // getActivity //

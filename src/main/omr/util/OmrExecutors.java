@@ -182,7 +182,11 @@ public class OmrExecutors
     private abstract static class Factory
         implements ThreadFactory
     {
+        //~ Instance fields ----------------------------------------------------
+
         protected final ThreadGroup group;
+
+        //~ Constructors -------------------------------------------------------
 
         Factory ()
         {
@@ -191,6 +195,8 @@ public class OmrExecutors
                     : Thread.currentThread()
                             .getThreadGroup();
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ThreadFactory.class)
         public Thread newThread (Runnable r)
@@ -213,6 +219,8 @@ public class OmrExecutors
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Boolean useParallelism = new Constant.Boolean(
             true,
             "Should we use parallelism when we have several processors?");
@@ -230,7 +238,11 @@ public class OmrExecutors
     private static class HighFactory
         extends Factory
     {
+        //~ Instance fields ----------------------------------------------------
+
         private final AtomicInteger highThreadNumber = new AtomicInteger(1);
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public Thread newThread (Runnable r)
@@ -257,7 +269,11 @@ public class OmrExecutors
     private static class LowFactory
         extends Factory
     {
+        //~ Instance fields ----------------------------------------------------
+
         private final AtomicInteger lowThreadNumber = new AtomicInteger(1);
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public Thread newThread (Runnable r)

@@ -99,8 +99,12 @@ public class StepMenu
     private static class StepAction
         extends AbstractAction
     {
+        //~ Instance fields ----------------------------------------------------
+
         // The related step
         final Step step;
+
+        //~ Constructors -------------------------------------------------------
 
         public StepAction (Step step)
         {
@@ -108,6 +112,8 @@ public class StepMenu
             this.step = step;
             putValue(SHORT_DESCRIPTION, step.getDescription());
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(AbstractAction.class)
         public void actionPerformed (ActionEvent e)
@@ -128,6 +134,8 @@ public class StepMenu
     private static class StepItem
         extends JCheckBoxMenuItem
     {
+        //~ Constructors -------------------------------------------------------
+
         //----------//
         // StepItem //
         //----------//
@@ -135,6 +143,8 @@ public class StepMenu
         {
             super(new StepAction(step));
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //--------------//
         // displayState //
@@ -171,6 +181,8 @@ public class StepMenu
     private class MyMenuListener
         implements MenuListener
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(MenuListener.class)
         public void menuCanceled (MenuEvent e)
         {

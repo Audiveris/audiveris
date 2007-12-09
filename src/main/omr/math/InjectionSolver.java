@@ -137,6 +137,8 @@ public class InjectionSolver
      */
     public static interface Distance
     {
+        //~ Methods ------------------------------------------------------------
+
         /**
          * Report the distance when mapping element id of domain to element
          * ir of range

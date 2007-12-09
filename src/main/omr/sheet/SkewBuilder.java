@@ -431,6 +431,8 @@ public class SkewBuilder
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Boolean displayFrame = new Constant.Boolean(
             false,
             "Should we display a frame on Lags found ?");
@@ -463,6 +465,8 @@ public class SkewBuilder
     private class SkewLagView
         extends LagView<GlyphLag, GlyphSection>
     {
+        //~ Constructors -------------------------------------------------------
+
         //-------------//
         // SkewLagView //
         //-------------//
@@ -489,6 +493,8 @@ public class SkewBuilder
             sheet.getSelection(SKEW_SECTION_ID)
                  .addObserver(sLag);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //----------//
         // colorize //

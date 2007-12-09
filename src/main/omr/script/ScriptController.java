@@ -74,6 +74,8 @@ public class ScriptController
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Default directory for saved scripts */
         Constant.String defaultScriptDirectory = new Constant.String(
             "",

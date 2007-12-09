@@ -525,10 +525,14 @@ public class GlyphLagView
     public static class SlurCircleAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public SlurCircleAction ()
         {
             putValue("SwingSelectedKey", constants.circlePainting.getValue());
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -550,10 +554,14 @@ public class GlyphLagView
     public static class StickLineAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public StickLineAction ()
         {
             putValue("SwingSelectedKey", constants.linePainting.getValue());
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -569,6 +577,8 @@ public class GlyphLagView
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Should the lines be painted */
         final Constant.Boolean linePainting = new Constant.Boolean(
             false,

@@ -71,7 +71,11 @@ public class GuiActions
     public static class AboutAction
         extends AbstractAction
     {
+        //~ Instance fields ----------------------------------------------------
+
         private StringBuilder sb = null;
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -124,6 +128,8 @@ public class GuiActions
     public static class ClearLogAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -142,6 +148,8 @@ public class GuiActions
     public static class ExitAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -162,6 +170,8 @@ public class GuiActions
     public static class FineAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -182,6 +192,8 @@ public class GuiActions
     public static class MemoryAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -199,10 +211,14 @@ public class GuiActions
     public static class OperationAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public OperationAction ()
         {
             setEnabled(WebBrowser.getBrowser().isSupported());
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -224,6 +240,8 @@ public class GuiActions
     public static class OptionsAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -277,6 +295,8 @@ public class GuiActions
     public static class ShapeColorAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -307,6 +327,8 @@ public class GuiActions
     public static class TestAction
         extends AbstractAction
     {
+        //~ Methods ------------------------------------------------------------
+
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
@@ -324,10 +346,14 @@ public class GuiActions
     public static class WebSiteAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public WebSiteAction ()
         {
             setEnabled(WebBrowser.getBrowser().isSupported());
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -343,6 +369,8 @@ public class GuiActions
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         PixelCount      paramHeight = new PixelCount(
             500,
             "Height of the Options frame");

@@ -617,6 +617,8 @@ public class Scale
     public static class AreaFraction
         extends Constant.Double
     {
+        //~ Constructors -------------------------------------------------------
+
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -640,6 +642,8 @@ public class Scale
     public static class Fraction
         extends Constant.Double
     {
+        //~ Constructors -------------------------------------------------------
+
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *

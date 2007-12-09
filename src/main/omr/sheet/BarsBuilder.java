@@ -971,6 +971,8 @@ public class BarsBuilder
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Should we display a frame on the vertical sticks */
         Constant.Boolean displayFrame = new Constant.Boolean(
             false,
@@ -1008,12 +1010,16 @@ public class BarsBuilder
     private class MyCheckBoard
         extends CheckBoard<BarsChecker.Context>
     {
+        //~ Constructors -------------------------------------------------------
+
         public MyCheckBoard (String                          unit,
                              CheckSuite<BarsChecker.Context> suite,
                              Selection                       inputSelection)
         {
             super(unit, suite, inputSelection);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public void update (Selection     selection,
                             SelectionHint hint)
@@ -1039,6 +1045,8 @@ public class BarsBuilder
     private class MyLagView
         extends GlyphLagView
     {
+        //~ Constructors -------------------------------------------------------
+
         private MyLagView (GlyphLag lag)
         {
             super(lag, null, null, BarsBuilder.this, clutter);
@@ -1058,6 +1066,8 @@ public class BarsBuilder
             sheet.getSelection(SelectionTag.VERTICAL_GLYPH_ID)
                  .addObserver(this);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //----------//
         // colorize //

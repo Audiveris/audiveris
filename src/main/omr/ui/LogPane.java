@@ -187,6 +187,8 @@ public class LogPane
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Integer msgQueueSize = new Constant.Integer(
             "Messages",
             1000,

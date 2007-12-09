@@ -225,6 +225,8 @@ public interface Line
     static class UndefinedLineException
         extends RuntimeException
     {
+        //~ Constructors -------------------------------------------------------
+
         UndefinedLineException (String message)
         {
             super(message);

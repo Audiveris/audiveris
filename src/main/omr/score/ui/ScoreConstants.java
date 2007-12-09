@@ -77,6 +77,8 @@ public class ScoreConstants
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Integer lineNb = new Constant.Integer(
             "Lines",
             5,

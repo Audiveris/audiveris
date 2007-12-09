@@ -109,16 +109,16 @@ public class ScorePainter
 
     /** How a symbol should be horizontally aligned wrt a given point */
     private static enum HorizontalAlignment {
-        LEFT,
-        CENTER,
-        RIGHT;
+        //~ Enumeration constant initializers ----------------------------------
+
+        LEFT,CENTER, RIGHT;
     }
 
     /** How a symbol should be vertically aligned wrt a given point */
     private static enum VerticalAlignment {
-        TOP,
-        CENTER,
-        BOTTOM;
+        //~ Enumeration constant initializers ----------------------------------
+
+        TOP,CENTER, BOTTOM;
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -1188,10 +1188,14 @@ public class ScorePainter
     public static class MarkAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public MarkAction ()
         {
             putValue("SwingSelectedKey", constants.markPainting.getValue());
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -1212,10 +1216,14 @@ public class ScorePainter
     public static class SlotAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public SlotAction ()
         {
             putValue("SwingSelectedKey", constants.slotPainting.getValue());
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -1237,10 +1245,14 @@ public class ScorePainter
     public static class VoiceAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public VoiceAction ()
         {
             putValue("SwingSelectedKey", constants.voicePainting.getValue());
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -1257,6 +1269,8 @@ public class ScorePainter
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Alpha parameter for slot axis transparency (0 .. 255) */
         final Constant.Integer slotAlpha = new Constant.Integer(
             "ByteLevel",

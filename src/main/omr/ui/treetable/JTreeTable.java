@@ -174,6 +174,8 @@ public class JTreeTable
         extends AbstractCellEditor
         implements TableCellEditor
     {
+        //~ Methods ------------------------------------------------------------
+
         /**
          * Overridden to return false, and if the event is a mouse event it is
          * forwarded to the tree.
@@ -242,15 +244,21 @@ public class JTreeTable
         extends JTree
         implements TableCellRenderer
     {
+        //~ Instance fields ----------------------------------------------------
+
         /**
          * Last table/tree row asked to renderer.
          */
         protected int visibleRow;
 
+        //~ Constructors -------------------------------------------------------
+
         public TreeTableCellRenderer (TreeModel model)
         {
             super(model);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         /**
          * This is overridden to set the height to match that of the JTable.
@@ -353,10 +361,14 @@ public class JTreeTable
     protected class ListToTreeSelectionModelWrapper
         extends DefaultTreeSelectionModel
     {
+        //~ Instance fields ----------------------------------------------------
+
         /**
          * Set to true when we are updating the ListSelectionModel.
          */
         protected boolean updatingListSelectionModel;
+
+        //~ Constructors -------------------------------------------------------
 
         public ListToTreeSelectionModelWrapper ()
         {
@@ -364,6 +376,8 @@ public class JTreeTable
             getListSelectionModel()
                 .addListSelectionListener(createListSelectionListener());
         }
+
+        //~ Methods ------------------------------------------------------------
 
         /**
          * Returns the list selection model. ListToTreeSelectionModelWrapper
@@ -443,6 +457,8 @@ public class JTreeTable
             }
         }
 
+        //~ Inner Classes ------------------------------------------------------
+
         /**
          * Class responsible for calling updateSelectedPathsFromSelectedRows
          * when the selection of the list changse.
@@ -450,6 +466,8 @@ public class JTreeTable
         class ListSelectionHandler
             implements ListSelectionListener
         {
+            //~ Methods --------------------------------------------------------
+
             public void valueChanged (ListSelectionEvent e)
             {
                 updateSelectedPathsFromSelectedRows();

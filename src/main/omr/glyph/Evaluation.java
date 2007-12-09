@@ -86,6 +86,8 @@ public class Evaluation
     public static class Doubt
         extends Constant.Double
     {
+        //~ Constructors -------------------------------------------------------
+
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *

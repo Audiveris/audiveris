@@ -469,6 +469,8 @@ public class SymbolRipper
     private class Drawing
         extends Panel
     {
+        //~ Methods ------------------------------------------------------------
+
         @Override
         public void paintComponent (Graphics g)
         {
@@ -497,10 +499,14 @@ public class SymbolRipper
     private class ReloadAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public ReloadAction ()
         {
             super("Reload");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public void actionPerformed (ActionEvent e)
         {
@@ -522,10 +528,14 @@ public class SymbolRipper
     private class ShapeAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public ShapeAction ()
         {
             super("Shape");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public void actionPerformed (ActionEvent e)
         {
@@ -540,10 +550,14 @@ public class SymbolRipper
     private class StoreAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public StoreAction ()
         {
             super("Store");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public void actionPerformed (ActionEvent e)
         {

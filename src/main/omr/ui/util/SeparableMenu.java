@@ -23,22 +23,41 @@ public class SeparableMenu
 {
     //~ Constructors -----------------------------------------------------------
 
+    /**
+     * Creates a new SeparableMenu object.
+     */
     public SeparableMenu ()
     {
         super();
     }
 
+    /**
+     * Creates a new SeparableMenu object.
+     *
+     * @param action DOCUMENT ME!
+     */
     public SeparableMenu (Action action)
     {
         super(action);
     }
 
+    /**
+     * Creates a new SeparableMenu object.
+     *
+     * @param s DOCUMENT ME!
+     * @param flag DOCUMENT ME!
+     */
     public SeparableMenu (String  s,
                           boolean flag)
     {
         super(s, flag);
     }
 
+    /**
+     * Creates a new SeparableMenu object.
+     *
+     * @param s DOCUMENT ME!
+     */
     public SeparableMenu (String s)
     {
         super(s);

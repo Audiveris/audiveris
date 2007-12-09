@@ -374,81 +374,6 @@ public class Picture
         return image.getAsBufferedImage();
     }
 
-    //-------//
-    // close //
-    //-------//
-    /**
-     * Release the resources linked to the picture image
-     */
-    public void close ()
-    {
-        if (image != null) {
-            image.dispose();
-        }
-    }
-
-    //---------------//
-    // dumpRectangle //
-    //---------------//
-    /**
-     * Debugging routine, that prints a basic representation of a rectangular
-     * portion of the picture.
-     *
-     * @param title an optional title for this image dump
-     * @param xMin  x first coord
-     * @param xMax  x last coord
-     * @param yMin  y first coord
-     * @param yMax  y last coord
-     */
-    public void dumpRectangle (String title,
-                               int    xMin,
-                               int    xMax,
-                               int    yMin,
-                               int    yMax)
-    {
-        System.out.println();
-
-        if (title != null) {
-            System.out.println(title);
-        }
-
-        // Abscissae
-        System.out.print("     ");
-
-        for (int x = xMin; x <= xMax; x++) {
-            System.out.printf("%4d", x);
-        }
-
-        System.out.println();
-        System.out.print("    +");
-
-        for (int x = xMin; x <= xMax; x++) {
-            System.out.print(" ---");
-        }
-
-        System.out.println();
-
-        // Pixels
-        for (int y = yMin; y <= yMax; y++) {
-            System.out.printf("%4d", y);
-            System.out.print("|");
-
-            for (int x = xMin; x <= xMax; x++) {
-                int pix = getPixel(x, y);
-
-                if (pix == 255) {
-                    System.out.print("   .");
-                } else {
-                    System.out.printf("%4d", pix);
-                }
-            }
-
-            System.out.println();
-        }
-
-        System.out.println();
-    }
-
     //--------------//
     // getDimension //
     //--------------//
@@ -528,6 +453,31 @@ public class Picture
     }
 
     //----------//
+    // setPixel //
+    //----------//
+    /**
+     * Write a pixel at the provided location, in the currently writable data
+     * buffer
+     *
+     * @param pt  pixel coordinates
+     * @param val pixel value
+     */
+    public final void setPixel (Point pt,
+                                int   val)
+    {
+        ///        dataBuffer.setElem(pt.x + (pt.y * dimensionWidth), val);
+        int[] pixel = new int[1];
+
+        if (grayFactor == 1) {
+            pixel[0] = val;
+        } else {
+            pixel[0] = (val + (grayFactor - getMaxForeground() - 1)) / grayFactor;
+        }
+
+        raster.setPixel(pt.x, pt.y, pixel);
+    }
+
+    //----------//
     // getPixel //
     //----------//
     /**
@@ -548,6 +498,123 @@ public class Picture
         return grayFactor * pixel[0];
 
         ///            return dataBuffer.getElem(x + (y * dimensionWidth));
+    }
+
+    //-------------------//
+    // setLevelSelection //
+    //-------------------//
+    /**
+     * Inject the selection object where pixel gray level must be written to,
+     * when triggered through the update method.
+     *
+     * @param levelSelection the output selection object
+     */
+    public void setLevelSelection (Selection levelSelection)
+    {
+        this.levelSelection = levelSelection;
+    }
+
+    //-----------//
+    // isRotated //
+    //-----------//
+    /**
+     * Predicate to report whether the picture has been rotated.
+     *
+     * @return true if rotated
+     */
+    public boolean isRotated ()
+    {
+        return rotated;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the current width of the picture image. Note that it may have been
+     * modified by a rotation.
+     *
+     * @return the current width value, in pixels.
+     */
+    @Implement(PixelSource.class)
+    public int getWidth ()
+    {
+        return dimension.width;
+    }
+
+    //-------//
+    // close //
+    //-------//
+    /**
+     * Release the resources linked to the picture image
+     */
+    public void close ()
+    {
+        if (image != null) {
+            image.dispose();
+        }
+    }
+
+    //---------------//
+    // dumpRectangle //
+    //---------------//
+    /**
+     * Debugging routine, that prints a basic representation of a rectangular
+     * portion of the picture.
+     *
+     * @param title an optional title for this image dump
+     * @param xMin  x first coord
+     * @param xMax  x last coord
+     * @param yMin  y first coord
+     * @param yMax  y last coord
+     */
+    public void dumpRectangle (String title,
+                               int    xMin,
+                               int    xMax,
+                               int    yMin,
+                               int    yMax)
+    {
+        System.out.println();
+
+        if (title != null) {
+            System.out.println(title);
+        }
+
+        // Abscissae
+        System.out.print("     ");
+
+        for (int x = xMin; x <= xMax; x++) {
+            System.out.printf("%4d", x);
+        }
+
+        System.out.println();
+        System.out.print("    +");
+
+        for (int x = xMin; x <= xMax; x++) {
+            System.out.print(" ---");
+        }
+
+        System.out.println();
+
+        // Pixels
+        for (int y = yMin; y <= yMax; y++) {
+            System.out.printf("%4d", y);
+            System.out.print("|");
+
+            for (int x = xMin; x <= xMax; x++) {
+                int pix = getPixel(x, y);
+
+                if (pix == 255) {
+                    System.out.print("   .");
+                } else {
+                    System.out.printf("%4d", pix);
+                }
+            }
+
+            System.out.println();
+        }
+
+        System.out.println();
     }
 
     //--------//
@@ -620,73 +687,6 @@ public class Picture
         updateParams();
 
         logger.info("Image rotated " + getWidth() + " x " + getHeight());
-    }
-
-    //-------------------//
-    // setLevelSelection //
-    //-------------------//
-    /**
-     * Inject the selection object where pixel gray level must be written to,
-     * when triggered through the update method.
-     *
-     * @param levelSelection the output selection object
-     */
-    public void setLevelSelection (Selection levelSelection)
-    {
-        this.levelSelection = levelSelection;
-    }
-
-    //----------//
-    // setPixel //
-    //----------//
-    /**
-     * Write a pixel at the provided location, in the currently writable data
-     * buffer
-     *
-     * @param pt  pixel coordinates
-     * @param val pixel value
-     */
-    public final void setPixel (Point pt,
-                                int   val)
-    {
-        ///        dataBuffer.setElem(pt.x + (pt.y * dimensionWidth), val);
-        int[] pixel = new int[1];
-
-        if (grayFactor == 1) {
-            pixel[0] = val;
-        } else {
-            pixel[0] = (val + (grayFactor - getMaxForeground() - 1)) / grayFactor;
-        }
-
-        raster.setPixel(pt.x, pt.y, pixel);
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the current width of the picture image. Note that it may have been
-     * modified by a rotation.
-     *
-     * @return the current width value, in pixels.
-     */
-    @Implement(PixelSource.class)
-    public int getWidth ()
-    {
-        return dimension.width;
-    }
-
-    //-----------//
-    // isRotated //
-    //-----------//
-    /**
-     * Predicate to report whether the picture has been rotated.
-     *
-     * @return true if rotated
-     */
-    public boolean isRotated ()
-    {
-        return rotated;
     }
 
     //-------//
@@ -880,24 +880,6 @@ public class Picture
             null);
     }
 
-    //------------//
-    // checkImage //
-    //------------//
-    private void checkImage ()
-        throws ImageFormatException
-    {
-        // Check that the whole image has been loaded
-        if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
-            throw new RuntimeException("Unusable image for Picture");
-        } else {
-            // Check & cache all parameters
-            updateParams();
-
-            // Remember original dimension
-            originalDimension = getDimension();
-        }
-    }
-
     //----------//
     // setImage //
     //----------//
@@ -940,6 +922,24 @@ public class Picture
         }
 
         checkImage();
+    }
+
+    //------------//
+    // checkImage //
+    //------------//
+    private void checkImage ()
+        throws ImageFormatException
+    {
+        // Check that the whole image has been loaded
+        if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
+            throw new RuntimeException("Unusable image for Picture");
+        } else {
+            // Check & cache all parameters
+            updateParams();
+
+            // Remember original dimension
+            originalDimension = getDimension();
+        }
     }
 
     //--------------//
@@ -998,6 +998,8 @@ public class Picture
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Integer maxForegroundGrayLevel = new Constant.Integer(
             "ByteLevel",
             200,
@@ -1013,11 +1015,17 @@ public class Picture
     private static class Listener
         implements IIOReadProgressListener, IIOWriteProgressListener
     {
+        //~ Static fields/initializers -----------------------------------------
+
         /** Logging utility specifically for listener */
         private static final Logger logger = Logger.getLogger(Listener.class);
-        
+
+        //~ Instance fields ----------------------------------------------------
+
         /** Previous progress state */
-        private volatile float      lastProgress = 0;
+        private volatile float lastProgress = 0;
+
+        //~ Methods ------------------------------------------------------------
 
         public void imageComplete (ImageReader source)
         {
@@ -1084,11 +1092,6 @@ public class Picture
             logger.warning("Image loading aborted");
         }
 
-        public void writeAborted (ImageWriter imagewriter)
-        {
-            logger.warning("Image writing aborted");
-        }
-
         public void sequenceComplete (ImageReader source)
         {
         }
@@ -1126,6 +1129,11 @@ public class Picture
                                       int         i,
                                       int         j)
         {
+        }
+
+        public void writeAborted (ImageWriter imagewriter)
+        {
+            logger.warning("Image writing aborted");
         }
     }
 }

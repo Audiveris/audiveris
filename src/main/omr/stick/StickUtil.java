@@ -573,6 +573,8 @@ public class StickUtil
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Ratio maxBorderAdjacency = new Constant.Ratio(
             0.7d,
             "Maximum adjacency for a section to be a border");

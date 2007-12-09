@@ -335,6 +335,8 @@ public abstract class Check<C extends Checkable>
     public static class Grade
         extends Constant.Double
     {
+        //~ Constructors -------------------------------------------------------
+
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *

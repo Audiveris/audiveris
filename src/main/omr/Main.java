@@ -14,6 +14,7 @@ import omr.constant.ConstantSet;
 
 import omr.plugin.Plugins;
 
+import omr.score.midi.MidiAgent;
 import omr.score.visitor.ScoreExporter;
 
 import omr.script.Script;
@@ -36,7 +37,6 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import javax.swing.*;
-import omr.score.midi.MidiAgent;
 
 /**
  * Class <code>Main</code> is the main class for OMR application. It deals with
@@ -594,12 +594,17 @@ public class Main
             // Application UI defaults
             OmrUIDefaults defaults = OmrUIDefaults.getInstance();
             defaults.addResourceBundle("config/ui");
+
             if (defaults.isEmpty()) {
-                logger.fine("No UI defaults as resource bundle, loading from config folder");
+                logger.fine(
+                    "No UI defaults as resource bundle, loading from config folder");
+
                 try {
                     defaults.loadFrom(new File(getConfigFolder(), "ui"));
                 } catch (Exception ex) {
-                    logger.warning("Unable to load resources from config folder", ex);
+                    logger.warning(
+                        "Unable to load resources from config folder",
+                        ex);
                 }
             }
 
@@ -620,10 +625,10 @@ public class Main
 
             // Launch the GUI
             gui = new MainGui();
-            
+
             // Background task : Preload JAI
             JaiLoader.preload();
-            
+
             // Background task : JaxbContext
             OmrExecutors.getLowExecutor()
                         .execute(
@@ -711,6 +716,8 @@ public class Main
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Selection of locale country code (2 letters), or empty */
         Constant.String localeCountry = new Constant.String(
             "",

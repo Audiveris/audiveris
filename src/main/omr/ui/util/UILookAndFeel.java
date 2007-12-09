@@ -126,6 +126,8 @@ public class UILookAndFeel
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.String lookAndFeel = new Constant.String(
             "com.jgoodies.looks.plastic.Plastic3DLookAndFeel",
             "Full class path to the desired UI Look & Feel");

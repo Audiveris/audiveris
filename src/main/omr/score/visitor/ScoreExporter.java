@@ -632,7 +632,7 @@ public class ScoreExporter
                                          .add(sound);
                         sound.setTempo("" + current.part.getTempo());
                     }
-                    
+
                     // Default velocity?
                     if (score.getVelocity() != null) {
                         Sound sound = new Sound();

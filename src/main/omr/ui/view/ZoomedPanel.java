@@ -432,6 +432,8 @@ public class ZoomedPanel
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         PixelCount focusMargin = new PixelCount(
             20,
             "Margin visible around a focus");

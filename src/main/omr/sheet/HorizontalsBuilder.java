@@ -442,10 +442,14 @@ public class HorizontalsBuilder
     public static class LedgerAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public LedgerAction ()
         {
             putValue("SwingSelectedKey", constants.displayLedgerLines.getValue());
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -476,6 +480,8 @@ public class HorizontalsBuilder
     private class ChunkCheck
         extends Check<Stick>
     {
+        //~ Instance fields ----------------------------------------------------
+
         // Half width for chunk window at top and bottom
         private final int    nWidth;
 
@@ -484,6 +490,8 @@ public class HorizontalsBuilder
 
         // Total area for chunk window
         private final double area;
+
+        //~ Constructors -------------------------------------------------------
 
         protected ChunkCheck ()
         {
@@ -508,6 +516,8 @@ public class HorizontalsBuilder
             }
         }
 
+        //~ Methods ------------------------------------------------------------
+
         protected double getValue (Stick stick)
         {
             // Retrieve the smallest stick chunk either at top or bottom
@@ -530,6 +540,8 @@ public class HorizontalsBuilder
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Should we display original ledger lines */
         Constant.Boolean displayLedgerLines = new Constant.Boolean(
             false,
@@ -618,6 +630,8 @@ public class HorizontalsBuilder
     private static class FirstAdjacencyCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected FirstAdjacencyCheck ()
         {
             super(
@@ -628,6 +642,8 @@ public class HorizontalsBuilder
                 false,
                 TOO_ADJA);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the adjacency value
         protected double getValue (Stick stick)
@@ -644,6 +660,8 @@ public class HorizontalsBuilder
     private static class LastAdjacencyCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected LastAdjacencyCheck ()
         {
             super(
@@ -654,6 +672,8 @@ public class HorizontalsBuilder
                 false,
                 TOO_ADJA);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the adjacency value
         protected double getValue (Stick stick)
@@ -670,6 +690,8 @@ public class HorizontalsBuilder
     private class MaxDistCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected MaxDistCheck ()
         {
             super(
@@ -680,6 +702,8 @@ public class HorizontalsBuilder
                 false,
                 TOO_FAR);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the position with respect to the various staves of the
         // system being checked.
@@ -695,6 +719,8 @@ public class HorizontalsBuilder
     private class MaxLengthCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected MaxLengthCheck ()
         {
             super(
@@ -705,6 +731,8 @@ public class HorizontalsBuilder
                 false,
                 TOO_LONG);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the length data
         protected double getValue (Stick stick)
@@ -720,6 +748,8 @@ public class HorizontalsBuilder
     private class MaxThicknessCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected MaxThicknessCheck ()
         {
             super(
@@ -730,6 +760,8 @@ public class HorizontalsBuilder
                 false,
                 TOO_THICK);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the thickness data
         protected double getValue (Stick stick)
@@ -745,6 +777,8 @@ public class HorizontalsBuilder
     private static class MinDensityCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected MinDensityCheck ()
         {
             super(
@@ -755,6 +789,8 @@ public class HorizontalsBuilder
                 true,
                 TOO_HOLLOW);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the density
         protected double getValue (Stick stick)
@@ -772,6 +808,8 @@ public class HorizontalsBuilder
     private class MinDistCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected MinDistCheck ()
         {
             super(
@@ -782,6 +820,8 @@ public class HorizontalsBuilder
                 true,
                 IN_STAFF);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the position with respect to the various staves of the
         // system being checked.
@@ -797,6 +837,8 @@ public class HorizontalsBuilder
     private class MinLengthCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected MinLengthCheck (Constant.Double low,
                                   Constant.Double high)
         {
@@ -808,6 +850,8 @@ public class HorizontalsBuilder
                 true,
                 TOO_SHORT);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the length data
         protected double getValue (Stick stick)
@@ -823,6 +867,8 @@ public class HorizontalsBuilder
     private class MinThicknessCheck
         extends Check<Stick>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected MinThicknessCheck ()
         {
             super(
@@ -833,6 +879,8 @@ public class HorizontalsBuilder
                 true,
                 TOO_THIN);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the thickness data
         protected double getValue (Stick stick)
@@ -848,6 +896,8 @@ public class HorizontalsBuilder
     private class MyView
         extends GlyphLagView
     {
+        //~ Constructors -------------------------------------------------------
+
         public MyView (GlyphLag           lag,
                        List<GlyphSection> members)
         {
@@ -871,6 +921,8 @@ public class HorizontalsBuilder
             setGlyphSelection(glyphSelection);
             glyphSelection.addObserver(this);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //----------//
         // colorize //

@@ -377,10 +377,17 @@ public abstract class Dumper
     public static class Column
         extends Dumper
     {
+        //~ Static fields/initializers -----------------------------------------
+
         private static final String MEMBER_GAP = "   ";
         private static final String INDENT_GAP = ".  ";
-        private final String        title;
-        private final StringBuffer  prefix;
+
+        //~ Instance fields ----------------------------------------------------
+
+        private final String       title;
+        private final StringBuffer prefix;
+
+        //~ Constructors -------------------------------------------------------
 
         public Column (Object obj,
                        String title,
@@ -402,6 +409,8 @@ public abstract class Dumper
                 prefix.append(INDENT_GAP);
             }
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         protected void printClassProlog ()
@@ -441,10 +450,14 @@ public abstract class Dumper
     public static class Html
         extends Dumper
     {
+        //~ Constructors -------------------------------------------------------
+
         protected Html (Object obj)
         {
             super(obj);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         protected void printClassEpilog ()
@@ -495,10 +508,14 @@ public abstract class Dumper
     public static class Row
         extends Dumper
     {
+        //~ Constructors -------------------------------------------------------
+
         protected Row (Object obj)
         {
             super(obj);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         protected void printClassEpilog ()
         {

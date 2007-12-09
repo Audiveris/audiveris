@@ -405,6 +405,8 @@ public class SystemPart
     private static class MeasureList
         extends ScoreNode
     {
+        //~ Constructors -------------------------------------------------------
+
         MeasureList (SystemPart container)
         {
             super(container);
@@ -417,6 +419,8 @@ public class SystemPart
     private static class SlurList
         extends ScoreNode
     {
+        //~ Constructors -------------------------------------------------------
+
         SlurList (SystemPart container)
         {
             super(container);
@@ -429,6 +433,8 @@ public class SystemPart
     private static class StaffList
         extends ScoreNode
     {
+        //~ Constructors -------------------------------------------------------
+
         StaffList (SystemPart container)
         {
             super(container);

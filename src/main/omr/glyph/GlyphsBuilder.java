@@ -585,6 +585,8 @@ public class GlyphsBuilder
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Box heightening to check intersection with ledger */
         Scale.Fraction ledgerHeighten = new Scale.Fraction(
             0.1,

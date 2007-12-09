@@ -551,6 +551,8 @@ public class IconManager
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         PixelCount buttonIconSize = new PixelCount(
             16,
             "Size of toolbar icons (16 or 24)");

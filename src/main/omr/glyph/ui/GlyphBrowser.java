@@ -330,6 +330,8 @@ class GlyphBrowser
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Boolean confirmDeletions = new Constant.Boolean(
             true,
             "Should user confirm each glyph deletion" +
@@ -342,10 +344,14 @@ class GlyphBrowser
     private class BasicGlyphModel
         extends GlyphModel
     {
+        //~ Constructors -------------------------------------------------------
+
         public BasicGlyphModel ()
         {
             super(null, vLag);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public void deassignGlyphShape (Glyph   glyph,
@@ -361,10 +367,14 @@ class GlyphBrowser
     private class Display
         extends JPanel
     {
+        //~ Instance fields ----------------------------------------------------
+
         LogSlider     slider;
         Rubber        rubber;
         ScrollLagView slv;
         Zoom          zoom;
+
+        //~ Constructors -------------------------------------------------------
 
         Display ()
         {
@@ -398,6 +408,8 @@ class GlyphBrowser
     private class MyView
         extends GlyphLagView
     {
+        //~ Constructors -------------------------------------------------------
+
         public MyView ()
         {
             super(vLag, null, null, null, null);
@@ -406,6 +418,8 @@ class GlyphBrowser
             localPixelSelection.addObserver(this);
             localGlyphSelection.addObserver(this);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //---------------//
         // colorizeGlyph //
@@ -542,6 +556,8 @@ class GlyphBrowser
     private final class Navigator
         extends Board
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** Current index in names collection (NO_INDEX if none) */
         private int nameIndex = NO_INDEX;
 
@@ -554,6 +570,8 @@ class GlyphBrowser
         JTextField nameField = new SField(
             false, // editable
             "File where glyph is stored");
+
+        //~ Constructors -------------------------------------------------------
 
         //-----------//
         // Navigator //
@@ -610,6 +628,8 @@ class GlyphBrowser
             prev.setEnabled(false);
             next.setEnabled(false);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         //----------//
         // getIndex //
@@ -729,16 +749,22 @@ class GlyphBrowser
             builder.add(nameField, cst.xyw(3, r, 9));
         }
 
+        //~ Inner Classes ------------------------------------------------------
+
         //------------//
         // LoadAction //
         //------------//
         private class LoadAction
             extends AbstractAction
         {
+            //~ Constructors ---------------------------------------------------
+
             public LoadAction ()
             {
                 super("Load");
             }
+
+            //~ Methods --------------------------------------------------------
 
             @Implement(ActionListener.class)
             public void actionPerformed (ActionEvent e)

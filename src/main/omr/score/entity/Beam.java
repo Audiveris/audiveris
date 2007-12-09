@@ -653,6 +653,8 @@ public class Beam
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         /**
          * Maximum euclidian distance between glyph center and beam line
          */

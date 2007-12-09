@@ -537,6 +537,8 @@ public class SymbolIcon
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Constant.Boolean useConstantWidth = new Constant.Boolean(
             false,
             "Should all music icons use the same width in menus ?");

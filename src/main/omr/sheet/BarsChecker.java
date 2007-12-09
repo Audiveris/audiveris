@@ -645,6 +645,8 @@ public class BarsChecker
     static class Context
         implements Checkable
     {
+        //~ Instance fields ----------------------------------------------------
+
         /** The stick being checked */
         Stick stick;
 
@@ -663,10 +665,14 @@ public class BarsChecker
         /** Precise staff index for bottom of bar stick, assigned when OK */
         int botIdx = -1;
 
+        //~ Constructors -------------------------------------------------------
+
         public Context (Stick stick)
         {
             this.stick = stick;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(Checkable.class)
         public void setResult (Result result)
@@ -681,6 +687,8 @@ public class BarsChecker
     class BarCheckSuite
         extends CheckSuite<Context>
     {
+        //~ Constructors -------------------------------------------------------
+
         public BarCheckSuite ()
         {
             super("Bar", constants.minCheckResult.getValue());
@@ -709,6 +717,8 @@ public class BarsChecker
     private class AnchorCheck
         extends Check<Context>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected AnchorCheck ()
         {
             super(
@@ -719,6 +729,8 @@ public class BarsChecker
                 true,
                 NOT_STAFF_ANCHORED);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Make sure that at least top or bottom are staff anchors, and that
         // both are staff anchors in the case of thick bars.
@@ -748,6 +760,8 @@ public class BarsChecker
     private class BottomCheck
         extends Check<Context>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected BottomCheck ()
         {
             super(
@@ -758,6 +772,8 @@ public class BarsChecker
                 false,
                 null);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the distance with proper staff border
         @Implement(Check.class)
@@ -798,6 +814,8 @@ public class BarsChecker
     private class BottomChunkCheck
         extends Check<Context>
     {
+        //~ Instance fields ----------------------------------------------------
+
         // Half width for chunk window at bottom
         private final int    nWidth;
 
@@ -806,6 +824,8 @@ public class BarsChecker
 
         // Total area for chunk window
         private final double area;
+
+        //~ Constructors -------------------------------------------------------
 
         protected BottomChunkCheck ()
         {
@@ -825,6 +845,8 @@ public class BarsChecker
             area = 4 * nWidth * nHeight;
         }
 
+        //~ Methods ------------------------------------------------------------
+
         @Implement(Check.class)
         protected double getValue (Context context)
         {
@@ -841,6 +863,8 @@ public class BarsChecker
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Scale.Fraction chunkHeight = new Scale.Fraction(
             0.33,
             "Height of half area to look for chunks");
@@ -897,6 +921,8 @@ public class BarsChecker
     private static class LeftAdjacencyCheck
         extends Check<Context>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected LeftAdjacencyCheck ()
         {
             super(
@@ -907,6 +933,8 @@ public class BarsChecker
                 false,
                 TOO_HIGH_ADJACENCY);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the adjacency value
         @Implement(Check.class)
@@ -925,6 +953,8 @@ public class BarsChecker
     private class HeightDiffCheck
         extends Check<Context>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected HeightDiffCheck ()
         {
             super(
@@ -935,6 +965,8 @@ public class BarsChecker
                 false,
                 TOO_SHORT_BAR);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the length data
         @Implement(Check.class)
@@ -962,6 +994,8 @@ public class BarsChecker
     private class LeftCheck
         extends Check<Context>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected LeftCheck ()
         {
             super(
@@ -972,6 +1006,8 @@ public class BarsChecker
                 true,
                 OUTSIDE_STAFF_WIDTH);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the stick abscissa
         @Implement(Check.class)
@@ -999,6 +1035,8 @@ public class BarsChecker
     private static class RightAdjacencyCheck
         extends Check<Context>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected RightAdjacencyCheck ()
         {
             super(
@@ -1009,6 +1047,8 @@ public class BarsChecker
                 false,
                 TOO_HIGH_ADJACENCY);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the adjacency value
         @Implement(Check.class)
@@ -1027,6 +1067,8 @@ public class BarsChecker
     private class RightCheck
         extends Check<Context>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected RightCheck ()
         {
             super(
@@ -1037,6 +1079,8 @@ public class BarsChecker
                 true,
                 OUTSIDE_STAFF_WIDTH);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the stick abscissa
         @Implement(Check.class)
@@ -1064,6 +1108,8 @@ public class BarsChecker
     private class TopCheck
         extends Check<Context>
     {
+        //~ Constructors -------------------------------------------------------
+
         protected TopCheck ()
         {
             super(
@@ -1074,6 +1120,8 @@ public class BarsChecker
                 false,
                 null);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         // Retrieve the distance with proper staff border
         @Implement(Check.class)
@@ -1114,6 +1162,8 @@ public class BarsChecker
     private class TopChunkCheck
         extends Check<Context>
     {
+        //~ Instance fields ----------------------------------------------------
+
         // Half width for chunk window at top
         private final int    nWidth;
 
@@ -1122,6 +1172,8 @@ public class BarsChecker
 
         // Total area for chunk window
         private final double area;
+
+        //~ Constructors -------------------------------------------------------
 
         protected TopChunkCheck ()
         {
@@ -1140,6 +1192,8 @@ public class BarsChecker
             nHeight = scale.toPixels(constants.chunkHeight);
             area = 4 * nWidth * nHeight;
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Implement(Check.class)
         protected double getValue (Context context)

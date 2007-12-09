@@ -119,13 +119,13 @@ public class ScrollView
             return null;
         }
     }
-    
+
     //--------------------//
     // getRubberSelection //
     //--------------------//
     /**
      * Retrieve a copy of the rubber rectangle, or
-     * a zero-height, zero-width rectangle at 
+     * a zero-height, zero-width rectangle at
      * <code>getRubberFocus()</code> if the rubber
      * rectangle does not exist.
      *
@@ -135,15 +135,17 @@ public class ScrollView
     public Rectangle getRubberSelection ()
     {
         Rectangle rect = view.rubber.getRectangle();
+
         if (rect != null) {
             return new Rectangle(rect);
         } else {
             Point focus = getRubberFocus();
+
             if (focus != null) {
                 return new Rectangle(focus);
             }
         }
-        
+
         return null;
     }
 

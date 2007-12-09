@@ -23,21 +23,40 @@ public class SeparableToolBar
 {
     //~ Constructors -----------------------------------------------------------
 
+    /**
+     * Creates a new SeparableToolBar object.
+     */
     public SeparableToolBar ()
     {
         super();
     }
 
+    /**
+     * Creates a new SeparableToolBar object.
+     *
+     * @param orientation DOCUMENT ME!
+     */
     public SeparableToolBar (int orientation)
     {
         super(orientation);
     }
 
+    /**
+     * Creates a new SeparableToolBar object.
+     *
+     * @param name DOCUMENT ME!
+     */
     public SeparableToolBar (String name)
     {
         super(name);
     }
 
+    /**
+     * Creates a new SeparableToolBar object.
+     *
+     * @param name DOCUMENT ME!
+     * @param orientation DOCUMENT ME!
+     */
     public SeparableToolBar (String name,
                              int    orientation)
     {

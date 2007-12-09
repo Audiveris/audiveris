@@ -88,6 +88,9 @@ public abstract class Evaluator
 
     /** Describes the various modes for starting the training of an evaluator */
     public static enum StartingMode {
+        //~ Enumeration constant initializers ----------------------------------
+
+
         /** Start with the current values */
         INCREMENTAL,
         /** Start from scratch, with new initial values */
@@ -408,9 +411,11 @@ public abstract class Evaluator
     public static interface Monitor
         extends NeuralNetwork.Monitor
     {
+        //~ Methods ------------------------------------------------------------
+
         /**
          * Entry called when a glyph is processed
-         * @param glyph 
+         * @param glyph
          */
         void glyphProcessed (Glyph glyph);
     }
@@ -423,6 +428,8 @@ public abstract class Evaluator
     private static final class Constants
         extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
+
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
             0.19,
             "Minimum normalized weight to be considered not a noise");
