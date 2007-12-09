@@ -177,7 +177,7 @@
 <fieldsShort>true</fieldsShort>
 <generate>
 <class>5</class>
-<constructor>0</constructor>
+<constructor>5</constructor>
 <field>0</field>
 <method>0</method>
 </generate>
@@ -191,14 +191,14 @@
 <standard/>
 </tags>
 <templates>
-<class>/**| * DOCUMENT ME!| *| * @author Herv&amp;eacute; Bitteur| * @version $Id$| */</class>
+<class>/**| * DOCUMENT ME!| *| * @author TBD| * @version TBD| */</class>
 <constructor>
 <bottom> */</bottom>
 <exception> * @throws $exceptionType$ DOCUMENT ME!</exception>
 <param> * @param $paramType$ DOCUMENT ME!</param>
 <top>/**| * Creates a new $objectType$ object.</top>
 </constructor>
-<interface>/**| * DOCUMENT ME!| *| * @author Herv&amp;eacute; Bitteur| * @version $Id$| */</interface>
+<interface>/**| * DOCUMENT ME!| *| * @author TBD| * @version TBD| */</interface>
 <method>
 <bottom> */</bottom>
 <exception> * @throws $exceptionType$ DOCUMENT ME!</exception>
@@ -217,7 +217,7 @@
 <separator>
 <fillCharacter>-</fillCharacter>
 <insert>true</insert>
-<insertRecursive>false</insertRecursive>
+<insertRecursive>true</insertRecursive>
 <text>
 <annotation>Annotations</annotation>
 <class>Inner Classes</class>
@@ -306,7 +306,7 @@
 <enable>true</enable>
 <enum>false</enum>
 <interface>true</interface>
-<method>true<bean>false</bean>
+<method>true<bean>true</bean>
 </method>
 <order>static|enum|field|initializer|constructor|method|interface|class|annotation</order>
 <variable>false</variable>
