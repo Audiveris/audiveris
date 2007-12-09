@@ -26,6 +26,8 @@ import omr.ui.util.UIUtilities;
 import omr.util.Implement;
 import omr.util.Logger;
 
+import org.jdesktop.swingworker.SwingWorker;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -34,7 +36,6 @@ import java.io.FileNotFoundException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
-import javax.swing.SwingWorker;
 
 /**
  * Class <code>ScriptActions</code> gathers UI actions related to script
