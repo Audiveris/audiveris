@@ -26,10 +26,18 @@ import omr.util.Logger;
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
+import org.jdesktop.swingworker.SwingWorker;
+
 import java.awt.event.*;
 import java.util.*;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
 
 /**
  * Class <code>TrainingPanel</code> is a panel dedicated to the training of an
@@ -350,6 +358,7 @@ class TrainingPanel
             class Worker
                 extends Thread
             {
+                @Override
                 public void run ()
                 {
                     train();
