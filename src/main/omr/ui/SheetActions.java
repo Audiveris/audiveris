@@ -32,6 +32,8 @@ import omr.ui.util.UIUtilities;
 import omr.util.Implement;
 import omr.util.Logger;
 
+import org.jdesktop.swingworker.SwingWorker;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -39,7 +41,6 @@ import java.io.IOException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
-import javax.swing.SwingWorker;
 
 /**
  * Class <code>SheetActions</code> simply gathers UI actions related to sheet

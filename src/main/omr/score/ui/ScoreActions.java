@@ -31,10 +31,14 @@ import omr.ui.ScoreBoard;
 import omr.util.Implement;
 import omr.util.Logger;
 
+import org.jdesktop.swingworker.SwingWorker;
+
 import java.awt.event.*;
 import java.beans.*;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 
 /**
  * Class <code>ScoreActions</code> gathers actions related to scores
