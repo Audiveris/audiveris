@@ -809,7 +809,9 @@ public class Picture
                 logger.warning("Using only first image in multi-image file");
             }
 
-            return (reader.read(0));
+            BufferedImage image = reader.read(0);
+            reader.dispose();
+            return image;
         } else {
             logger.info("ImageIO cannot read file, using JAI");
 
