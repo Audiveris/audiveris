@@ -803,7 +803,11 @@ public class Picture
         if (readers.hasNext()) {
             ImageReader reader = readers.next();
             reader.addIIOReadProgressListener(new Listener());
-            reader.setInput(stream, true);
+            reader.setInput(stream, false);
+
+            if (reader.getNumImages(false) > 1) {
+                logger.warning("Using only first image in multi-image file");
+            }
 
             return (reader.read(0));
         } else {
