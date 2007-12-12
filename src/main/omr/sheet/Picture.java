@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import javax.imageio.*;
 import javax.imageio.event.*;
@@ -784,39 +785,82 @@ public class Picture
             null);
     }
 
+    //-------------//
+    // loadFileIIO //
+    //-------------//
+    private static BufferedImage loadImageIO (File imgFile)
+    {
+        ImageInputStream stream = null;
+
+        try {
+            try {
+                stream = ImageIO.createImageInputStream(imgFile);
+
+                if (stream == null) {
+                    logger.warning("No ImageIO input stream provider");
+                }
+            } catch (IOException e) {
+                stream = null;
+                logger.warning("Unable to make ImageIO stream", e);
+
+                return null;
+            }
+
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+
+            if (!readers.hasNext()) {
+                logger.warning("No ImageIO reader");
+
+                return null;
+            }
+
+            ImageReader reader = readers.next();
+
+            if (reader == null) {
+                throw new NoSuchElementException();
+            }
+
+            try {
+                reader.addIIOReadProgressListener(new Listener());
+                reader.setInput(stream, false);
+
+                if (reader.getNumImages(false) > 1) {
+                    logger.info("Using only first image in multi-image file");
+                }
+
+                return reader.read(0);
+            } catch (Exception ex) {
+                logger.warning("ImageIO failed", ex);
+
+                return null;
+            } finally {
+                reader.dispose();
+            }
+        } finally {
+            try {
+                if (stream != null) {
+                    stream.close();
+                }
+            } catch (IOException e) {
+            }
+        }
+    }
+
     //----------//
     // loadFile //
     //----------//
     private static RenderedImage loadFile (File imgFile)
-        throws IOException
     {
         logger.info("Loading image from " + imgFile + " ...");
 
-        ImageInputStream stream = ImageIO.createImageInputStream(imgFile);
+        RenderedImage image = loadImageIO(imgFile);
 
-        if (stream == null) {
-            throw new IOException("Cannot create image input stream");
+        if (image == null) {
+            logger.fine("Using JAI");
+            image = (JAI.create("fileload", imgFile.getPath()));
         }
 
-        Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
-
-        if (readers.hasNext()) {
-            ImageReader reader = readers.next();
-            reader.addIIOReadProgressListener(new Listener());
-            reader.setInput(stream, false);
-
-            if (reader.getNumImages(false) > 1) {
-                logger.warning("Using only first image in multi-image file");
-            }
-
-            BufferedImage image = reader.read(0);
-            reader.dispose();
-            return image;
-        } else {
-            logger.info("ImageIO cannot read file, using JAI");
-
-            return (JAI.create("fileload", imgFile.getPath()));
-        }
+        return image;
     }
 
     //------------------//
