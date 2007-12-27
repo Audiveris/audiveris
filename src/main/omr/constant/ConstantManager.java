@@ -296,25 +296,22 @@ public class ConstantManager
     private static void purgeUserProperties ()
     {
         // Browse the content of userProperties
-        for (Enumeration keys = userProperties.propertyNames();
-             keys.hasMoreElements();) {
-            java.lang.String key = (java.lang.String) keys.nextElement();
-            java.lang.String value = userProperties.getProperty(key);
+        for (Iterator it = userProperties.keySet()
+                                         .iterator(); it.hasNext();) {
+            java.lang.String key = (java.lang.String) it.next();
 
-            // Does this key exist and with same value in the DEFAULT part
+            // Does this key exist and with same value in USER & DEFAULT parts
+            java.lang.String value = userProperties.getProperty(key);
             java.lang.String defaultValue = defaultProperties.getProperty(key);
 
-            if (defaultValue != null) {
-                if (value.equals(defaultValue)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "Removing identical User" +
-                            " and Default value for key : " + key + " = " +
-                            value);
-                    }
-
-                    userProperties.remove(key);
+            if ((defaultValue != null) && value.equals(defaultValue)) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Removing identical User" +
+                        " and Default value for key : " + key + " = " + value);
                 }
+
+                it.remove();
             }
         }
     }
