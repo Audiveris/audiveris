@@ -109,16 +109,16 @@ public class ScorePainter
 
     /** How a symbol should be horizontally aligned wrt a given point */
     private static enum HorizontalAlignment {
-        //~ Enumeration constant initializers ----------------------------------
-
-        LEFT,CENTER, RIGHT;
+        LEFT,
+        CENTER,
+        RIGHT;
     }
 
     /** How a symbol should be vertically aligned wrt a given point */
     private static enum VerticalAlignment {
-        //~ Enumeration constant initializers ----------------------------------
-
-        TOP,CENTER, BOTTOM;
+        TOP,
+        CENTER,
+        BOTTOM;
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -178,20 +178,18 @@ public class ScorePainter
                           Slot    slot,
                           Color   color)
     {
-        Color oldColor = g.getColor();
+        final Color oldColor = g.getColor();
         g.setColor(color);
 
-        ScorePoint partOrigin = measure.getPart()
-                                       .getFirstStaff()
-                                       .getDisplayOrigin();
-        final int  x = zoom.scaled(partOrigin.x + slot.getX());
+        final ScorePoint    origin = measure.getDisplayOrigin();
+        final int           x = zoom.scaled(origin.x + slot.getX());
+        final UnitDimension systemDimension = measure.getSystem()
+                                                     .getDimension();
         g.drawLine(
             x,
-            zoom.scaled(partOrigin.y),
+            zoom.scaled(origin.y),
             x,
-            zoom.scaled(
-                measure.getPart().getLastStaff().getDisplayOrigin().y +
-                STAFF_HEIGHT));
+            zoom.scaled(origin.y + systemDimension.height + STAFF_HEIGHT));
 
         g.setColor(oldColor);
     }
@@ -1188,14 +1186,10 @@ public class ScorePainter
     public static class MarkAction
         extends AbstractAction
     {
-        //~ Constructors -------------------------------------------------------
-
         public MarkAction ()
         {
             putValue("SwingSelectedKey", constants.markPainting.getValue());
         }
-
-        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -1216,14 +1210,10 @@ public class ScorePainter
     public static class SlotAction
         extends AbstractAction
     {
-        //~ Constructors -------------------------------------------------------
-
         public SlotAction ()
         {
             putValue("SwingSelectedKey", constants.slotPainting.getValue());
         }
-
-        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -1245,14 +1235,10 @@ public class ScorePainter
     public static class VoiceAction
         extends AbstractAction
     {
-        //~ Constructors -------------------------------------------------------
-
         public VoiceAction ()
         {
             putValue("SwingSelectedKey", constants.voicePainting.getValue());
         }
-
-        //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
@@ -1269,8 +1255,6 @@ public class ScorePainter
     private static final class Constants
         extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
-
         /** Alpha parameter for slot axis transparency (0 .. 255) */
         final Constant.Integer slotAlpha = new Constant.Integer(
             "ByteLevel",
