@@ -37,7 +37,6 @@ import javax.xml.parsers.*;
  * @version $Id$
  */
 public class MidiAgent
-    extends ExternalPlayer
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -70,6 +69,9 @@ public class MidiAgent
 
     //~ Instance fields --------------------------------------------------------
 
+    /** The underlying XenoPlay external player */
+    private final ExternalPlayer player;
+
     /** (Current) related score. Beware of memory leak! */
     private Score score;
 
@@ -96,12 +98,38 @@ public class MidiAgent
     private MidiAgent ()
         throws MidiUnavailableException
     {
-        super(null);
+        player = new ExternalPlayer(null);
         receiver = new MidiReceiver(this);
-        connectReceiver(receiver);
+        player.connectReceiver(receiver);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------------//
+    // getLengthInTicks //
+    //------------------//
+    /**
+     * Report the length of the current sequence
+     *
+     * @return the sequence length in Midi ticks
+     */
+    long getLengthInTicks ()
+    {
+        return player.getLengthInTicks();
+    }
+
+    //--------------------//
+    // getPositionInTicks //
+    //--------------------//
+    /**
+     * Report the current position within the current sequence
+     *
+     * @return the current position in Midi ticks
+     */
+    long getPositionInTicks ()
+    {
+        return player.getPositionInTicks();
+    }
 
     //-------------//
     // getInstance //
@@ -135,6 +163,7 @@ public class MidiAgent
     //----------//
     /**
      * Assign a score to the Midi Agent
+     *
      * @param score the new current score (perhaps null)
      */
     public void setScore (Score score)
@@ -150,6 +179,7 @@ public class MidiAgent
     //----------//
     /**
      * Report the score (if any) currently handled by the Midi Agent
+     *
      * @return the score currently handled, if any
      */
     public Score getScore ()
@@ -176,13 +206,12 @@ public class MidiAgent
     /**
      * Pause the playback, keeping the current position in the Midi sequence
      */
-    @Override
     public void pause ()
     {
         logger.info("Paused " + score.getRadix() + "...");
         status = Status.PAUSED;
         MidiActions.updateActions();
-        super.pause();
+        player.pause();
     }
 
     //------//
@@ -191,7 +220,6 @@ public class MidiAgent
     /**
      * Start the playback from start (or continue if just paused)
      */
-    @Override
     public void play ()
     {
         if (ScoreActions.checkParameters(score)) {
@@ -200,21 +228,25 @@ public class MidiAgent
             MidiActions.updateActions();
 
             // Make sure the document (and the Midi sequence) is available
-            getDocument();
-
-            //                connectSequencer();
-            //                sequencer.setSequence(sequence);
+            retrieveDocument();
 
             // We could adjust the tempo here
             ///sequencer.setTempoFactor(2.0f);
+
+            // Infos
             if (logger.isFineEnabled()) {
                 logger.fine(
-                    "Midi sequence length is " + getLengthInMs() + " ms");
-                logger.fine("Midi tick length is " + getLengthInTicks());
+                    "Midi sequence length is " + player.getLengthInMs() +
+                    " ms");
+                logger.fine("Midi tick length is " + player.getLengthInTicks());
+                logger.fine(
+                    "Score tick length is " +
+                    (score.getActualDuration() / score.getDurationDivisor()));
             }
 
+            // Hand it over to the player and the receiver
             receiver.setScore(score);
-            super.play();
+            player.play();
         }
     }
 
@@ -263,19 +295,10 @@ public class MidiAgent
     /**
      * Stop the playback, discarding current position in the sequence
      */
-    @Override
     public void stop ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Stopping...");
-        }
-
         status = Status.STOPPED;
-        super.stop();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("super Stopped.");
-        }
+        player.stop();
 
         receiver.reset();
         MidiActions.updateActions();
@@ -291,7 +314,7 @@ public class MidiAgent
      */
     public void write (OutputStream os)
     {
-        saveSequence(os);
+        player.saveSequence(os);
     }
 
     //-------//
@@ -299,6 +322,7 @@ public class MidiAgent
     //-------//
     /**
      * Write the Midi sequence to an output file
+     *
      * @param file the output file
      * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
@@ -324,13 +348,13 @@ public class MidiAgent
         MidiActions.updateActions();
     }
 
-    //-------------//
-    // getDocument //
-    //-------------//
+    //------------------//
+    // retrieveDocument //
+    //------------------//
     /**
      * Make sure the MusicXML document (and its Midi counterpart) is available
      */
-    private void getDocument ()
+    private void retrieveDocument ()
     {
         if (document == null) {
             try {
@@ -341,7 +365,7 @@ public class MidiAgent
                 new ScoreExporter(score).export(document);
 
                 // Hand it over directly to MusicXML reader
-                setMusicXMLData(document);
+                player.setMusicXMLData(document);
             } catch (Exception ex) {
                 logger.warning("Midi Agent error", ex);
                 document = null; // Safer

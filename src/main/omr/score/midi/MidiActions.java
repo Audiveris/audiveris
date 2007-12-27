@@ -44,7 +44,8 @@ import javax.swing.*;
 
 /**
  * Class <code>MidiActions</code> is merely a collection of UI actions that
- * drive the MidiAgent activity (Play, Pause, Stop)
+ * drive the MidiAgent activity for Midi playback (Play/Pause, Stop) and for
+ * writing Midi files.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -239,6 +240,7 @@ public class MidiActions
     /**
      * Decorate the Play action for a real play (if boolean play is true) or
      * for a pause (if boolean play is false)
+     *
      * @param play true for a true play
      */
     private static void setPlay (boolean play)
@@ -262,7 +264,7 @@ public class MidiActions
     // PlayAction //
     //------------//
     /**
-     * Class <code>PlayAction</code> allows to start , pause or restart a Midi
+     * Class <code>PlayAction</code> allows to start, pause or restart a Midi
      * playback.
      */
     @Plugin(type = SCORE_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = true)
@@ -276,16 +278,9 @@ public class MidiActions
         {
             Score score = getCurrentScore();
 
-            if (score == null) {
-                return;
+            if ((score != null) && ScoreActions.checkParameters(score)) {
+                play(score);
             }
-
-            // Make sure score parameters are set up
-            if (!ScoreActions.checkParameters(score)) {
-                return;
-            }
-
-            play(score);
         }
     }
 
@@ -382,12 +377,17 @@ public class MidiActions
 
         Constant.String defaultMidiDirectory = new Constant.String(
             "",
-            "Default directory for Midi files");
+            "Default directory for writing Midi files");
     }
 
     //-------------//
     // PauseAction //
     //-------------//
+    /**
+     * Just a placeholder for related icon and description. The real behavior
+     * is implemented in agent.play() method.
+     */
+
     //@Plugin(type = SCORE_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = false)
     private static class PauseAction
         extends AbstractAction
@@ -397,12 +397,7 @@ public class MidiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            try {
-                MidiAgent.getInstance()
-                         .pause();
-            } catch (UnavailableException ex) {
-                logger.warning("Cannot pause", ex);
-            }
+            logger.severe("Should not be called");
         }
     }
 }

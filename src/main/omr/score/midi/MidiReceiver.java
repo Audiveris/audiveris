@@ -17,8 +17,7 @@ import omr.score.ui.ScoreView;
 
 import omr.util.Implement;
 import omr.util.Logger;
-
-import java.util.Iterator;
+import omr.util.TreeNode;
 
 import javax.sound.midi.*;
 import javax.swing.*;
@@ -26,8 +25,15 @@ import javax.swing.*;
 /**
  * Class <code>MidiReceiver</code> receives Midi events from the Midi sequencer
  * and uses them to update the current Audiveris score display accordingly.
- * For the time being, the current position in the score is handled in a rather
- * simplistic way, to be improved.
+ *
+ * <p>We use the Midi midiTick as forwarded by the Midi sequencer, and whenever
+ * a new midiTick value is received by the {@link #send} method, we retrieve the
+ * corresponding time slot in our score and then move the display to focus on
+ * that slot.
+ *
+ * <p>We forward the related slot information directly to the score display.
+ * Perhaps we should keep the sheet display in sync too, in that case, we could
+ * use some new "Slot Selection" mechanism. TBD.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -48,20 +54,35 @@ public class MidiReceiver
     /** The score being played */
     private Score score;
 
-    /** The length of the current sequence, in ticks */
-    private long sequenceLength = 0;
+    /** The length of the current sequence, in Midi ticks */
+    private long midiLength;
 
-    /** The last tick value received for the current score */
-    private long lastTick = -1;
+    /** The maximum measure id, for the current score */
+    private int maxMeasureId;
+
+    /** The last midiTick value received for the current score */
+    private long currentMidiTick;
+
+    /** The id for last measure of the current system */
+    private Integer lastSystemMeasureId;
 
     /** The current system */
-    private System system = null;
+    private System currentSystem;
+
+    /** The current measure id */
+    private int currentMeasureId;
 
     /** The current measure */
-    private Measure measure = null;
+    private Measure currentMeasure;
 
     /** The current time slot */
-    private Slot slot = null;
+    private Slot currentSlot;
+
+    /**
+     * A trick to correct tick information between Score and Midi.
+     * This correction is needed when time errors are left in the score.
+     */
+    private Double tickRatio;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -78,6 +99,7 @@ public class MidiReceiver
     public MidiReceiver (MidiAgent agent)
     {
         this.agent = agent;
+        reset();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -86,7 +108,10 @@ public class MidiReceiver
     // setScore //
     //----------//
     /**
-     * Assign the score whose display is to be kept in sync
+     * Assign to this receiver the score whose display is to be kept in sync.
+     * This method is needed since the Receiver instance is reused from one
+     * score to the other.
+     *
      * @param score the (new) current score
      */
     public void setScore (Score score)
@@ -94,6 +119,19 @@ public class MidiReceiver
         if (this.score != score) {
             reset();
             this.score = score;
+
+            if (score != null) {
+                // Remember global score information
+                maxMeasureId = score.getLastSystem()
+                                    .getLastPart()
+                                    .getLastMeasure()
+                                    .getId();
+                currentSystem = score.getFirstSystem();
+                lastSystemMeasureId = currentSystem.getLastPart()
+                                                   .getLastMeasure()
+                                                   .getId();
+                currentMeasureId = 1;
+            }
         }
     }
 
@@ -101,7 +139,8 @@ public class MidiReceiver
     // close //
     //-------//
     /**
-     * Not implemented, but needed to be compliant with the Receiver interface
+     * This method is not implemented, but is needed to be compliant with the
+     * Receiver interface.
      */
     @Implement(value = Receiver.class)
     public void close ()
@@ -113,10 +152,12 @@ public class MidiReceiver
     // send //
     //------//
     /**
-     * Method called by the player with the Midi message and time stamp
+     * Method called by the Midi sequencer with the Midi message and time stamp
+     * for each new Midi event.
      *
-     * @param message the Midi event
-     * @param timeStamp the time stamp (always -1 in fact)
+     * @param message the Midi event (unused)
+     * @param timeStamp the time stamp (always -1 in fact, therefore unused),
+     * we get the tick information directly by polling the Midi agent
      */
     @Implement(value = Receiver.class)
     public void send (MidiMessage message,
@@ -125,22 +166,39 @@ public class MidiReceiver
         if (score != null) {
             // Make sure we are still playing ...
             if (agent.getStatus() == MidiAgent.Status.PLAYING) {
-                long tick = agent.getPositionInTicks();
+                // Get the current midi tick value
+                long midiTick = agent.getPositionInTicks();
 
-                if (tick != lastTick) {
-                    lastTick = tick;
+                // Have we moved since last call?
+                if (midiTick != currentMidiTick) {
+                    currentMidiTick = midiTick;
 
                     if (logger.isFineEnabled()) {
-                        java.lang.System.out.println("t-" + tick);
+                        logger.fine("t-" + midiTick);
                     }
 
-                    showPosition(tick);
-
-                    if (sequenceLength == 0) {
-                        sequenceLength = agent.getLengthInTicks();
+                    // First time we get the sequence Midi length in ticks?
+                    if (midiLength == -1) {
+                        midiLength = agent.getLengthInTicks();
+                        tickRatio = getTickRatio();
                     }
 
-                    if (tick >= sequenceLength) {
+                    // Try to retrieve a related time slot in the score
+                    long scoreTick = midiTick;
+
+                    if ((tickRatio != null) && (tickRatio != 1)) {
+                        scoreTick = (long) Math.rint(midiTick / tickRatio);
+                    }
+
+                    boolean slotFound = false;
+
+                    if (retrieveSlot(scoreTick)) {
+                        slotFound = true;
+                        showSlot(); // Update the score display accordingly
+                    }
+
+                    // Are we through?
+                    if (!slotFound || (midiTick >= midiLength)) {
                         reset();
                         agent.ending();
                     }
@@ -153,7 +211,8 @@ public class MidiReceiver
     // reset //
     //-------//
     /**
-     * Reinitialize the cached data of this entity
+     * Reinitialize the cached data of this entity (mainly the current position
+     * within the score sequence)
      */
     void reset ()
     {
@@ -161,36 +220,59 @@ public class MidiReceiver
             logger.fine("MidiReceiver reset");
         }
 
-        lastTick = -1;
-        system = null;
-        measure = null;
-        slot = null;
+        // Set to default values
+        midiLength = -1;
+        maxMeasureId = -1;
+        currentMidiTick = -1;
+        lastSystemMeasureId = null;
+        currentSystem = null;
+        currentMeasureId = -1;
+        currentMeasure = null;
+        currentSlot = null;
+        tickRatio = null;
+
+        // Erase current slot position in the score display
         showSlot();
+
         score = null;
+    }
+
+    //--------------//
+    // getTickRatio //
+    //--------------//
+    private Double getTickRatio ()
+    {
+        long midiTicks = agent.getLengthInTicks();
+        long scoreTicks = score.getActualDuration() / score.getDurationDivisor();
+
+        if (midiTicks != scoreTicks) {
+            logger.warning(
+                "Midi & score ticks don't agree (" + midiTicks + "/" +
+                scoreTicks + ")");
+
+            return new Double((double) midiTicks / (double) scoreTicks);
+        } else {
+            return new Double(1d);
+        }
     }
 
     //-------------//
     // getTickTime //
     //-------------//
     /**
-     * Compute in Midi ticks the current position (system + measure + slot)
-     * @return the computed tick position
+     * Compute in normalized score ticks the current position
+     * (system + measure + slot)
+     *
+     * @return the computed midiTick position
      */
-    private int getTickTime ()
+    private int getTickTime (Measure measure,
+                             Slot    slot)
     {
         if (slot != null) {
-            int totalTick = system.getStartTime() + measure.getStartTime() +
-                            slot.getStartTime();
+            int rawTick = currentSystem.getStartTime() +
+                          measure.getStartTime() + slot.getStartTime();
 
-            int tick = totalTick / system.getFirstPart()
-                                         .getScorePart()
-                                         .getDurationDivisor();
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "system=" + system.getId() + " measure=" + measure.getId() +
-                    " slot=" + slot.getId() + " tick=" + tick);
-            }
+            int tick = rawTick / score.getDurationDivisor();
 
             return tick;
         } else {
@@ -198,115 +280,82 @@ public class MidiReceiver
         }
     }
 
-    //----------//
-    // nextSlot //
-    //----------//
-    /**
-     * Move to the next measure time Slot, across measures and systems if
-     * needed.
-     *
-     * @return the next slot, or null. Beware, besides 'slot', this may update
-     * the 'system' and 'measure' global variables.
-     */
-    private Slot nextSlot ()
-    {
-        if (measure == null) {
-            // We are just starting
-            system = (System) score.getSystems()
-                                   .get(0);
-
-            SystemPart part = system.getFirstPart();
-            measure = part.getFirstMeasure();
-            slot = measure.getSlots()
-                          .first();
-        } else if (slot == measure.getSlots()
-                                  .last()) {
-            // We have just finished a measure
-            Measure m = (Measure) measure.getNextSibling();
-
-            if (m != null) {
-                measure = m;
-                slot = measure.getSlots()
-                              .first();
-            } else {
-                // We have just finished a system
-                System s = (System) system.getNextSibling();
-
-                if (s == null) {
-                    // This is the end...
-                    slot = null;
-                } else {
-                    // Move to next system
-                    system = s;
-
-                    SystemPart part = system.getFirstPart();
-                    measure = part.getFirstMeasure();
-                    slot = measure.getSlots()
-                                  .first();
-                }
-            }
-        } else {
-            // Move to next slot within the current measure
-            for (Iterator<Slot> it = measure.getSlots()
-                                            .iterator(); it.hasNext();) {
-                Slot s = it.next();
-
-                if (s == slot) {
-                    slot = it.next();
-
-                    break;
-                }
-            }
-        }
-
-        return slot;
-    }
-
     //--------------//
     // retrieveSlot //
     //--------------//
     /**
-     * Given the position within the sequence, find out the related time
-     * slot (as well as the containing measure and system).
+     * Given the midiTick position within the sequence, find out the related
+     * time slot (as well as the containing measure and system).
+     * We have to cope with measures without any time slots.
      *
-     * For the time being, the logic is very simple, we don't care about the
-     * tick value, we just move to the next slot!
-     *
-     * @param tick the position in ticks within the sequence
+     * @param scoreTick the position in ticks within the score
+     * @return true if a suitable slot has been found, false otherwise
      */
-    private void retrieveSlot (long tick)
+    private boolean retrieveSlot (long scoreTick)
     {
-        if (score != null) {
-            try {
-                if (slot == null) {
-                    nextSlot();
+        if (logger.isFineEnabled()) {
+            logger.fine("retrieveSlot for score tick " + scoreTick);
+        }
+
+        int newTick = -1;
+
+        for (int mid = currentMeasureId; mid <= maxMeasureId; mid++) {
+            ///logger.fine("mid=" + mid);
+
+            // Should we move to next system?
+            while (mid > lastSystemMeasureId) {
+                ///logger.fine("Moving to next system");
+                currentSystem = (System) currentSystem.getNextSibling();
+                lastSystemMeasureId = currentSystem.getFirstPart()
+                                                   .getLastMeasure()
+                                                   .getId();
+            }
+
+            // Check all measures with the same id, whatever the part
+            for (TreeNode partNode : currentSystem.getParts()) {
+                SystemPart part = (SystemPart) partNode;
+
+                ///logger.fine("part=" + part.getId());
+                Measure measure = (Measure) part.getMeasures()
+                                                .get(
+                    mid - part.getFirstMeasure().getId());
+
+                ///logger.fine("Slots nb=" + measure.getSlots().size());
+                slotLoop: 
+                for (Slot slot : measure.getSlots()) {
+                    int slotTick = getTickTime(measure, slot);
+
+                    ///logger.fine("Slot#" + slot.getId() + " time=" + slotTick);
+                    if ((slotTick >= scoreTick) &&
+                        ((newTick == -1) || (slotTick < newTick))) {
+                        // Let's remember this slot & midiTick
+                        currentMeasure = measure;
+                        currentSlot = slot;
+                        newTick = slotTick;
+
+                        break slotLoop;
+                    }
+                }
+            }
+
+            // Found a suitable slot?
+            if (newTick != -1) {
+                currentMeasureId = mid;
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("Slot retrieved " + currentSlot);
                 }
 
-                Integer tickTime = getTickTime();
-
-                while ((tickTime != -1) && (tickTime < tick)) {
-                    nextSlot();
-                    tickTime = getTickTime();
-                }
-            } catch (Exception ex) {
-                logger.warning("Cannot retrieve time slot", ex);
+                return true;
             }
         }
-    }
 
-    //--------------//
-    // showPosition //
-    //--------------//
-    /**
-     * Highlight the corresponding location within the score display of a given
-     * position within the Midi sequence
-     *
-     * @param tick the position in ticks
-     */
-    private void showPosition (final long tick)
-    {
-        retrieveSlot(tick);
-        showSlot();
+        // Not found
+        if (logger.isFineEnabled()) {
+            logger.fine("No slot retrieved");
+        }
+
+        return false;
     }
 
     //----------//
@@ -326,7 +375,7 @@ public class MidiReceiver
                 new Runnable() {
                         public void run ()
                         {
-                            view.highLight(measure, slot);
+                            view.highLight(currentMeasure, currentSlot);
                         }
                     });
         }

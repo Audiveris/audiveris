@@ -160,6 +160,18 @@ public class MidiAbstractions
     /** 128 */ "Gunshot"
                                                     };
 
+    //~ Constructors -----------------------------------------------------------
+
+    //------------------//
+    // MidiAbstractions //
+    //------------------//
+    /**
+     * Not meant to be instantiated
+     */
+    private MidiAbstractions ()
+    {
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     //----------------//
@@ -185,6 +197,11 @@ public class MidiAbstractions
     //-----------------//
     // getProgramNames //
     //-----------------//
+    /**
+     * Report the ordered table of midi instruments
+     *
+     * @return the table of Midi instruments
+     */
     public static String[] getProgramNames ()
     {
         return instrumentNames;

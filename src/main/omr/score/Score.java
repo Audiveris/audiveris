@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.UnitDimension;
+import omr.score.entity.Measure;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
 import omr.score.entity.System;
@@ -776,6 +777,41 @@ public class Score
     {
         // Launch the ScoreTree application on the score
         ScoreTree.makeFrame(getRadix(), this);
+    }
+
+    //-------------------//
+    // getActualDuration //
+    //-------------------//
+    /**
+     * Report the total score duration
+     *
+     * @return the number of divisions in the score
+     */
+    public int getActualDuration ()
+    {
+        System  lastSystem = getLastSystem();
+        Measure lastMeasure = lastSystem.getFirstPart()
+                                        .getLastMeasure();
+
+        return lastSystem.getStartTime() + lastMeasure.getStartTime() +
+               lastMeasure.getActualDuration();
+    }
+
+    //--------------------//
+    // getDurationDivisor //
+    //--------------------//
+    /**
+     * Report the common divisor used for this score when simplifying the
+     * durations
+     *
+     * @return the computed divisor (GCD)
+     */
+    public int getDurationDivisor ()
+    {
+        return getFirstSystem()
+                   .getFirstPart()
+                   .getScorePart()
+                   .getDurationDivisor();
     }
 
     //~ Inner Classes ----------------------------------------------------------
