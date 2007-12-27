@@ -164,11 +164,17 @@ public class Measure
      * Report the duration of this measure, as computed from its contained
      * voices
      *
-     * @return the (actual) measure duration
+     * @return the (actual) measure duration, or 0 if no rest / note exist in
+     * this measure
      */
     public int getActualDuration ()
     {
-        return actualDuration;
+        if (actualDuration != null) {
+            return actualDuration;
+        } else {
+            ///logger.warning(getContextString() + " no actual duration");
+            return 0;
+        }
     }
 
     //------------//
