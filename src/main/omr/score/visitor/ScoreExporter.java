@@ -61,7 +61,7 @@ import javax.xml.bind.JAXBException;
 
 /**
  * Class <code>ScoreExporter</code> can visit the score hierarchy to export
- * the score to a MusicXML file
+ * the score to a MusicXML file, stream or DOM.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -159,7 +159,7 @@ public class ScoreExporter
     /**
      * Export the score to DOM node
      *
-     * @param node the DOM node to export to
+     * @param node the DOM node to export to (cannot be null)
      */
     public void export (Node node)
         throws IOException, Exception
@@ -173,7 +173,8 @@ public class ScoreExporter
         score.accept(this);
 
         //  Finally, marshal the proxy
-        Marshalling.marshal(scorePartwise, node, true);
+        Marshalling.marshal(scorePartwise, node, /* Signature => */
+                            true);
     }
 
     //--------------------//
@@ -530,7 +531,10 @@ public class ScoreExporter
     public boolean visit (Measure measure)
     {
         ///logger.info("Visiting " + measure);
-        logger.fine(measure + " : " + isFirst);
+        if (logger.isFineEnabled()) {
+            logger.fine(measure + " : " + isFirst);
+        }
+
         current.measure = measure;
         tupletNumbers.clear();
 
@@ -760,6 +764,7 @@ public class ScoreExporter
         // Safer...
         current.endMeasure();
         tupletNumbers.clear();
+        isFirst.measure = false;
 
         return true;
     }
@@ -1096,15 +1101,15 @@ public class ScoreExporter
         PageLayout pageLayout = new PageLayout();
         defaults.setPageLayout(pageLayout);
 
-        PageWidth pageWidth = new PageWidth();
-        pageLayout.getContent()
-                  .add(pageWidth);
-        pageWidth.setContent(toTenths(score.getDimension().width));
-
         PageHeight pageHeight = new PageHeight();
         pageLayout.getContent()
                   .add(pageHeight);
         pageHeight.setContent(toTenths(score.getDimension().height));
+
+        PageWidth pageWidth = new PageWidth();
+        pageLayout.getContent()
+                  .add(pageWidth);
+        pageWidth.setContent(toTenths(score.getDimension().width));
 
         // PartList
         PartList partList = new PartList();
@@ -1121,7 +1126,6 @@ public class ScoreExporter
             scorePart.setId(current.part.getPid());
 
             PartName partName = new PartName();
-
             scorePart.setPartName(partName);
             partName.setContent(current.part.getName());
 
@@ -1159,7 +1163,10 @@ public class ScoreExporter
             current.pmPart.setId(scorePart);
 
             // Delegate to children the filling of measures
-            logger.fine("Populating " + current.part);
+            if (logger.isFineEnabled()) {
+                logger.fine("Populating " + current.part);
+            }
+
             isFirst.system = true; // TBD: to be reviewed when adding pages
             slurNumbers.clear(); // Reset slur numbers
             score.acceptChildren(this);
@@ -1358,7 +1365,6 @@ public class ScoreExporter
         for (TreeNode node : systemPart.getMeasures()) {
             // Delegate to measure
             ((Measure) node).accept(this);
-            isFirst.measure = false;
         }
 
         isFirst.system = false;
