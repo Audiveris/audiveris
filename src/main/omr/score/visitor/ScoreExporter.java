@@ -408,8 +408,7 @@ public class ScoreExporter
         sound.setCoda("" + current.measure.getId());
         sound.setDivisions(
             "" +
-            current.part.simpleDurationOf(
-                omr.score.entity.Note.QUARTER_DURATION));
+            score.simpleDurationOf(omr.score.entity.Note.QUARTER_DURATION));
 
         return true;
     }
@@ -570,12 +569,12 @@ public class ScoreExporter
                     Divisions divisions = new Divisions();
                     divisions.setContent(
                         "" +
-                        current.part.simpleDurationOf(
+                        score.simpleDurationOf(
                             omr.score.entity.Note.QUARTER_DURATION));
                     getMeasureAttributes()
                         .setDivisions(divisions);
                 } catch (Exception ex) {
-                    if (current.part.getDurationDivisor() == 0) {
+                    if (score.getDurationDivisor() == null) {
                         logger.warning(
                             "Not able to infer division value for part " +
                             current.part.getPid());
@@ -863,10 +862,10 @@ public class ScoreExporter
                            .getExpectedDuration();
             }
 
-            duration.setContent("" + current.part.simpleDurationOf(dur));
+            duration.setContent("" + score.simpleDurationOf(dur));
             current.pmNote.setDuration(duration);
         } catch (Exception ex) {
-            if (current.part.getDurationDivisor() != 0) {
+            if (score.getDurationDivisor() != null) {
                 logger.warning("Not able to get duration of note", ex);
             }
         }
@@ -1040,10 +1039,8 @@ public class ScoreExporter
     {
         ///logger.info("Visiting " + score);
 
-        // Reset durations for each part
-        for (ScorePart scorePart : score.getPartList()) {
-            scorePart.resetDurations();
-        }
+        // Reset durations for the score
+        score.setDurationDivisor(null);
 
         // No version inserted
         // Let the marshalling class handle it
@@ -1209,8 +1206,7 @@ public class ScoreExporter
         sound.setSegno("" + current.measure.getId());
         sound.setDivisions(
             "" +
-            current.part.simpleDurationOf(
-                omr.score.entity.Note.QUARTER_DURATION));
+            score.simpleDurationOf(omr.score.entity.Note.QUARTER_DURATION));
 
         return true;
     }
@@ -1701,11 +1697,11 @@ public class ScoreExporter
 
             Duration duration = new Duration();
             backup.setDuration(duration);
-            duration.setContent("" + current.part.simpleDurationOf(delta));
+            duration.setContent("" + score.simpleDurationOf(delta));
             current.pmMeasure.getNoteOrBackupOrForward()
                              .add(backup);
         } catch (Exception ex) {
-            if (current.part.getDurationDivisor() != 0) {
+            if (score.getDurationDivisor() != null) {
                 logger.warning("Not able to insert backup", ex);
             }
         }
@@ -1721,7 +1717,7 @@ public class ScoreExporter
             Forward  forward = new Forward();
             Duration duration = new Duration();
             forward.setDuration(duration);
-            duration.setContent("" + current.part.simpleDurationOf(delta));
+            duration.setContent("" + score.simpleDurationOf(delta));
 
             Voice voice = new Voice();
             forward.setVoice(voice);
@@ -1732,7 +1728,7 @@ public class ScoreExporter
             // Staff ? (only if more than one staff in part)
             insertStaffId(forward, chord.getStaff());
         } catch (Exception ex) {
-            if (current.part.getDurationDivisor() != 0) {
+            if (score.getDurationDivisor() != null) {
                 logger.warning("Not able to insert forward", ex);
             }
         }

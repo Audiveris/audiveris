@@ -12,10 +12,7 @@ package omr.score.entity;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.math.GCD;
-
 import omr.score.Score;
-import omr.score.visitor.ScoreReductor;
 
 import omr.util.Logger;
 import omr.util.TreeNode;
@@ -61,12 +58,6 @@ public class ScorePart
 
     /** List of staff ids */
     private List<Integer> ids = new ArrayList<Integer>();
-
-    /** Set of all different duration values in this part */
-    private final SortedSet<Integer> durations = new TreeSet<Integer>();
-
-    /** Greatest duration divisor */
-    private Integer durationDivisor;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -136,22 +127,6 @@ public class ScorePart
         default :
             return constants.defaultPartProgram.getValue();
         }
-    }
-
-    //--------------------//
-    // getDurationDivisor //
-    //--------------------//
-    /**
-     * Report the duration divisor for this part
-     * @return the divisor for this part, or null if not computable
-     */
-    public Integer getDurationDivisor ()
-    {
-        if (durationDivisor == null) {
-            score.accept(new ScoreReductor());
-        }
-
-        return durationDivisor;
     }
 
     //-------//
@@ -277,30 +252,6 @@ public class ScorePart
         return tempo;
     }
 
-    //-------------//
-    // addDuration //
-    //-------------//
-    public void addDuration (int duration)
-    {
-        durations.add(duration);
-    }
-
-    //------------------------//
-    // computeDurationDivisor //
-    //------------------------//
-    public void computeDurationDivisor ()
-    {
-        Integer[] durationArray = durations.toArray(
-            new Integer[durations.size()]);
-        durationDivisor = GCD.gcd(durationArray);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                this + " durations=" + Arrays.deepToString(durationArray) +
-                " divisor=" + durationDivisor);
-        }
-    }
-
     //--------//
     // equals //
     //--------//
@@ -330,35 +281,6 @@ public class ScorePart
         } else {
             return false;
         }
-    }
-
-    //----------------//
-    // resetDurations //
-    //----------------//
-    public void resetDurations ()
-    {
-        durations.clear();
-        durationDivisor = null;
-    }
-
-    //------------------//
-    // simpleDurationOf //
-    //------------------//
-    /**
-     * Export a duration to its simplest form, based on the greatest duration
-     * divisor of the part
-     *
-     * @param value the raw duration
-     * @return the simple duration expression, in the context of proper
-     * divisions
-     */
-    public int simpleDurationOf (int value)
-    {
-        if (durationDivisor == null) {
-            score.accept(new ScoreReductor());
-        }
-
-        return value / durationDivisor;
     }
 
     //----------//

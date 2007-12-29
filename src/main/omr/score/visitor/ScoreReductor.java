@@ -9,10 +9,17 @@
 //
 package omr.score.visitor;
 
+import omr.math.GCD;
+
 import omr.score.Score;
 import omr.score.entity.Chord;
-import omr.score.entity.ScorePart;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
+
+import omr.util.Logger;
+
+import java.util.Arrays;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>ScoreReductor</code> can visit the score hierarchy to simplify
@@ -24,6 +31,16 @@ import omr.score.entity.TimeSignature.InvalidTimeSignature;
 public class ScoreReductor
     extends AbstractScoreVisitor
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ScoreReductor.class);
+
+    //~ Instance fields --------------------------------------------------------
+
+    /** Set of all different duration values */
+    private final SortedSet<Integer> durations = new TreeSet<Integer>();
+
     //~ Constructors -----------------------------------------------------------
 
     //---------------//
@@ -53,9 +70,9 @@ public class ScoreReductor
                                 .getExpectedDuration();
             }
 
-            chord.getPart()
-                 .getScorePart()
-                 .addDuration(duration);
+            if (duration != null) {
+                durations.add(duration);
+            }
         } catch (InvalidTimeSignature ex) {
         }
 
@@ -71,11 +88,27 @@ public class ScoreReductor
         // Collect duration values for each part
         score.acceptChildren(this);
 
-        // Compute and remember greatest duration divisor for each part
-        for (ScorePart part : score.getPartList()) {
-            part.computeDurationDivisor();
-        }
+        // Compute and remember greatest duration divisor for the score
+        score.setDurationDivisor(computeDurationDivisor());
 
         return false;
+    }
+
+    //------------------------//
+    // computeDurationDivisor //
+    //------------------------//
+    private int computeDurationDivisor ()
+    {
+        Integer[] durationArray = durations.toArray(
+            new Integer[durations.size()]);
+        int       divisor = GCD.gcd(durationArray);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "durations=" + Arrays.deepToString(durationArray) +
+                " divisor=" + divisor);
+        }
+
+        return divisor;
     }
 }

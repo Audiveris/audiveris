@@ -23,6 +23,7 @@ import omr.score.entity.SystemPart;
 import omr.score.ui.ScoreConstants;
 import omr.score.ui.ScoreTree;
 import omr.score.ui.ScoreView;
+import omr.score.visitor.ScoreReductor;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -80,6 +81,9 @@ public class Score
 
     /** Sheet global scale */
     private Scale scale;
+
+    /** Greatest duration divisor */
+    private Integer durationDivisor;
 
     /** ScorePart list for the whole score */
     private List<ScorePart> partList;
@@ -144,6 +148,24 @@ public class Score
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------------//
+    // getActualDuration //
+    //-------------------//
+    /**
+     * Report the total score duration
+     *
+     * @return the number of divisions in the score
+     */
+    public int getActualDuration ()
+    {
+        System  lastSystem = getLastSystem();
+        Measure lastMeasure = lastSystem.getFirstPart()
+                                        .getLastMeasure();
+
+        return lastSystem.getStartTime() + lastMeasure.getStartTime() +
+               lastMeasure.getActualDuration();
+    }
+
     //-----------------//
     // getDefaultTempo //
     //-----------------//
@@ -181,6 +203,38 @@ public class Score
     public UnitDimension getDimension ()
     {
         return dimension;
+    }
+
+    //--------------------//
+    // setDurationDivisor //
+    //--------------------//
+    /**
+     * Remember the common divisor used for this score when simplifying the
+     * durations
+     *
+     * @durationDivisor the computed divisor (GCD), or null
+     */
+    public void setDurationDivisor (Integer durationDivisor)
+    {
+        this.durationDivisor = durationDivisor;
+    }
+
+    //--------------------//
+    // getDurationDivisor //
+    //--------------------//
+    /**
+     * Report the common divisor used for this score when simplifying the
+     * durations
+     *
+     * @return the computed divisor (GCD), or null if not computable
+     */
+    public Integer getDurationDivisor ()
+    {
+        if (durationDivisor == null) {
+            accept(new ScoreReductor());
+        }
+
+        return durationDivisor;
     }
 
     //----------------//
@@ -748,6 +802,22 @@ public class Score
         return recentSystem = system;
     }
 
+    //------------------//
+    // simpleDurationOf //
+    //------------------//
+    /**
+     * Export a duration to its simplest form, based on the greatest duration
+     * divisor of the score
+     *
+     * @param value the raw duration
+     * @return the simple duration expression, in the context of proper
+     * divisions
+     */
+    public int simpleDurationOf (int value)
+    {
+        return value / getDurationDivisor();
+    }
+
     //----------//
     // toString //
     //----------//
@@ -777,41 +847,6 @@ public class Score
     {
         // Launch the ScoreTree application on the score
         ScoreTree.makeFrame(getRadix(), this);
-    }
-
-    //-------------------//
-    // getActualDuration //
-    //-------------------//
-    /**
-     * Report the total score duration
-     *
-     * @return the number of divisions in the score
-     */
-    public int getActualDuration ()
-    {
-        System  lastSystem = getLastSystem();
-        Measure lastMeasure = lastSystem.getFirstPart()
-                                        .getLastMeasure();
-
-        return lastSystem.getStartTime() + lastMeasure.getStartTime() +
-               lastMeasure.getActualDuration();
-    }
-
-    //--------------------//
-    // getDurationDivisor //
-    //--------------------//
-    /**
-     * Report the common divisor used for this score when simplifying the
-     * durations
-     *
-     * @return the computed divisor (GCD)
-     */
-    public int getDurationDivisor ()
-    {
-        return getFirstSystem()
-                   .getFirstPart()
-                   .getScorePart()
-                   .getDurationDivisor();
     }
 
     //~ Inner Classes ----------------------------------------------------------
