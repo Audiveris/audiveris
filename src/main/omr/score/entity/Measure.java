@@ -152,6 +152,11 @@ public class Measure
     //-------------------//
     // setActualDuration //
     //-------------------//
+    /**
+     * Register in this measure its actual duration
+     *
+     * @param actualDuration the duration value
+     */
     public void setActualDuration (int actualDuration)
     {
         this.actualDuration = actualDuration;
@@ -232,6 +237,12 @@ public class Measure
     //----------------//
     // getChordsAbove //
     //----------------//
+    /**
+     * Report the collection of chords whose head is located above the provided
+     * point
+     * @param point the provided point
+     * @return the (perhaps empty) collection of chords
+     */
     public Collection<Chord> getChordsAbove (SystemPoint point)
     {
         Collection<Chord> found = new ArrayList<Chord>();
@@ -250,6 +261,12 @@ public class Measure
     //----------------//
     // getChordsBelow //
     //----------------//
+    /**
+     * Report the collection of chords whose head is located below the provided
+     * point
+     * @param point the provided point
+     * @return the (perhaps empty) collection of chords
+     */
     public Collection<Chord> getChordsBelow (SystemPoint point)
     {
         Collection<Chord> found = new ArrayList<Chord>();
@@ -365,6 +382,14 @@ public class Measure
     //-----------------//
     // getClosestChord //
     //-----------------//
+    /**
+     * From a provided Chord collection, report the chord which has the closest
+     * abscissa to a provided point
+     *
+     * @param chords the collection of chords to browse
+     * @param point the reference point
+     * @return the abscissa-wise closest chord
+     */
     public Chord getClosestChord (Collection<Chord> chords,
                                   SystemPoint       point)
     {
@@ -386,6 +411,12 @@ public class Measure
     //----------------//
     // getClosestSlot //
     //----------------//
+    /**
+     * Report the time slot which has the closest abscissa to a provided point
+     *
+     * @param point the reference point
+     * @return the abscissa-wise closest slot
+     */
     public Slot getClosestSlot (SystemPoint point)
     {
         Slot bestSlot = null;
@@ -649,6 +680,11 @@ public class Measure
     //---------------//
     // getKeySigList //
     //---------------//
+    /**
+     * Report the list that collects the KeySignature instances
+     *
+     * @return the single instance of KeySigList
+     */
     public KeySigList getKeySigList ()
     {
         return keysigs;
@@ -866,6 +902,11 @@ public class Measure
     //----------------//
     // getTimeSigList //
     //----------------//
+    /**
+     * Report the node that collects the TimeSignature instances
+     *
+     * @return the node of TimeSignature instances
+     */
     public TimeSigList getTimeSigList ()
     {
         return timesigs;
@@ -939,6 +980,11 @@ public class Measure
     //----------------//
     // getWholeChords //
     //----------------//
+    /**
+     * Report the collection of whole chords
+     *
+     * @return the whole chords of this measure
+     */
     public Collection<Chord> getWholeChords ()
     {
         return wholeChords;
@@ -1258,12 +1304,17 @@ public class Measure
     //---------------//
     // addWholeChord //
     //---------------//
+    /**
+     * Insert a note as a whole (or multi) rest
+     *
+     * @param glyph the underlying glyph
+     */
     void addWholeChord (Glyph glyph)
     {
         Chord chord = new Chord(this);
 
         // No slot for this chord, but a whole rest
-        Note note = new Note(chord, glyph);
+        Note note = new Note(chord, glyph); // Records note in chord 
         wholeChords.add(chord);
     }
 
@@ -1299,6 +1350,9 @@ public class Measure
     //----------//
     // ClefList //
     //----------//
+    /**
+     * A dummy MeasureNode to hook all Clef instances to the containing Measure
+     */
     public static class ClefList
         extends MeasureNode
     {
@@ -1313,6 +1367,10 @@ public class Measure
     //------------//
     // KeySigList //
     //------------//
+    /**
+     * A dummy MeasureNode to hook all KeySignature instances to the containing
+     * Measure
+     */
     public static class KeySigList
         extends MeasureNode
     {
@@ -1352,6 +1410,10 @@ public class Measure
     //-------------//
     // TimeSigList //
     //-------------//
+    /**
+     * A dummy MeasureNode to hook all TimeSignature instances to the containing
+     * Measure
+     */
     public static class TimeSigList
         extends MeasureNode
     {
@@ -1366,6 +1428,9 @@ public class Measure
     //----------//
     // BeamList //
     //----------//
+    /**
+     * A dummy MeasureNode to hook all Beam instances to the containing Measure
+     */
     private static class BeamList
         extends MeasureNode
     {
@@ -1380,6 +1445,9 @@ public class Measure
     //-----------//
     // ChordList //
     //-----------//
+    /**
+     * A dummy MeasureNode to hook all Chord instances to the containing Measure
+     */
     private static class ChordList
         extends MeasureNode
     {
