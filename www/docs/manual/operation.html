@@ -397,16 +397,22 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	<A NAME="EXPORT">
 	    <H3>Score Export</H3>
 	</A>
-	<P> A score can be exported to a file, using MusicXML format (V1.1 for
-	    the time being, as this is the most common version).</P>
-	<P> Here is the export of the 'chula.png' sheet, processed through the quick start example:</P>
-	<B><I>chula.xml</I></B>
-	<BR/>
+	<P> A score can be exported to a file, using MusicXML format (V2 for the
+	    time being, as this is the most common version).</P>
+	<P> Here is the export of the 'chula.png' sheet, processed through the
+	    quick start example:</P>
+	<B><I>chula.xml</I></B> <BR/>
 	<iframe src="chula.xml.html" width="100%" height="300" frameborder="1">
-	    <a href="chula.xml.html">You are using a very old browser.
-		Click here to go directly to included content.</a>
-	</iframe>		    
+	    <a href="chula.xml.html">You are using a very old browser.  Click
+		here to go directly to included content.</a>
+	</iframe>
 	
+	<A NAME="MIDI">
+	    <H3>Midi Export</H3>
+	</A>
+	<P> A score can also be exported to a file, using MIDI format 1.</P>
+	<P> A direct MIDI playback can also be launched, please refer to the
+	    Example documentation.</P>
 	
 	<A NAME="MENUS">
 	    <H3>Menu description</H3>
@@ -424,73 +430,94 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 		
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
-			<TH WIDTH="120px">Sheet History</TH>
-			<TD>List the more recent sheet files you've loaded</TD>
-		    </TR>
-		    <TR>
-			<TH>Open Sheet</TH>
-			<TD>Select a file that contains a printed sheet of
-			    music. Most graphic file formats should be
-			    usable, <EM>provided the pixel info uses a grey
-			    scale of 256 values</EM>. </TD>
-		    </TR>
-		    <TR>
-			<TH>Open Script</TH>
-			<TD>Select and run a script file</TD>
-		    </TR>
-		    <TR>
-			<TH>Store Script</TH>
-			<TD>Save the current script of the sheet</TD>
-		    </TR>
-		    <TR>
-			<TH>Width Fit</TH>
-			<TD>Adjust the zoom ratio so that the sheet WIDTH is
-			    fully displayed in the window</TD>
-		    </TR>
-		    <TR>
-			<TH>Height Fit</TH>
-			<TD>Adjust the zoom ratio so that the sheet HEIGHT is
-			    fully displayed in the window</TD>
-		    </TR>
-		    <TR>
-			<TH>Record Glyphs</TH>
-			<TD>Save on disk the definition of recognized glyphs as
-			    material for future training of the evaluator</TD>
-		    </TR>
-		    <TR>
-			<TH>Scale Plot</TH>
-			<TD>Display histogram of run lengths for foreground
-			    (black) and background (white) pixels. This gives
-			    the general scale (interline value) of the sheet.
-			    Here is <A HREF="#SCALE_PLOT">a scale plot example
-			    produced by the SCALE step</A>.
+			<TD WIDTH="200px">
+			    <IMG SRC="../images/File-menu.png" TITLE="File menu"
+				 />
 			</TD>
-		    </TR>
-		    <TR>
-			<TH>Skew Plot</TH>
-			<TD>Display histogram of measured slopes of longest
-			    horizontal sticks. This gives the angle to de-skew
-			    the image.  Here is <A HREF="#SKEW_PLOT">a skew plot
-			    example produced by the SKEW step</A>.
+			<TD>
+			    <TABLE>
+				<TR>
+				    <TH WIDTH="200px">Sheet History</TH>
+				    <TD>List the more recent sheet files you've
+					loaded</TD>
+				</TR>
+				<TR>
+				    <TH>Open</TH>
+				    <TD>Select a file that contains a printed
+					sheet of music. Most graphic file
+					formats should be usable, <EM>provided
+					the pixel info uses a grey scale of 256
+					values</EM>. </TD>
+				</TR>
+				<TR>
+				    <TH>Width Fit</TH>
+				    <TD>Adjust the zoom ratio so that the sheet
+					WIDTH is fully displayed in the
+					window</TD>
+				</TR>
+				<TR>
+				    <TH>Height Fit</TH>
+				    <TD>Adjust the zoom ratio so that the sheet
+					HEIGHT is fully displayed in the
+					window</TD>
+				</TR>
+				<TR>
+				    <TH>Display Scale Plot</TH>
+				    <TD>Display histogram of run lengths for
+					foreground (black) and background
+					(white) pixels. This gives the general
+					scale (interline value) of the sheet.
+					Here is <A HREF="#SCALE_PLOT">a scale
+					plot example produced by the SCALE
+					step</A>.
+				    </TD>
+				</TR>
+				<TR>
+				    <TH>Display Skew Plot</TH>
+				    <TD>Display histogram of measured slopes of
+					longest horizontal sticks. This gives
+					the angle to de-skew the image.  Here
+					is <A HREF="#SKEW_PLOT">a skew plot
+					example produced by the SKEW step</A>.
+				    </TD>
+				</TR>
+				<TR>
+				    <TH>Display Line Plot</TH>
+				    <TD>Display histogram of horizontal
+					projections of black pixels. This
+					indicates area for each staff line.
+					Here is <A HREF="#LINE_PLOT">a line plot
+					example produced by the LINES step</A>.
+				    </TD>
+				</TR>
+				<TR>
+				    <TH>Record Glyphs</TH>
+				    <TD>Save on disk the definition of
+					recognized glyphs as material for future
+					training of the evaluator</TD>
+				</TR>
+				<TR>
+				    <TH>Close Sheet</TH>
+				    <TD>Close the current sheet, and release all
+					resources linked to it.</TD>
+				</TR>
+				<TR>
+				    <TH>Load Script</TH>
+				    <TD>Select and run a script file</TD>
+				</TR>
+				<TR>
+				    <TH>Store Script</TH>
+				    <TD>Save the current script of the
+					sheet</TD>
+				</TR>
+				<TR>
+				    <TH>Exit</TH>
+				    <TD>Exit the application. If you have
+					pending unsaved scripts, you'll be
+					prompted to save them.</TD>
+				</TR>
+			    </TABLE>
 			</TD>
-		    </TR>
-		    <TR>
-			<TH>Line Plot</TH>
-			<TD>Display histogram of horizontal projections of black
-			    pixels. This indicates area for each staff line.
-			    Here is <A HREF="#LINE_PLOT">a line plot example
-			    produced by the LINES step</A>.
-			</TD>
-		    </TR>
-		    <TR>
-			<TH>Close Sheet</TH>
-			<TD>Close the current sheet, and release all resources
-			    linked to it.</TD>
-		    </TR>
-		    <TR>
-			<TH WIDTH="120px">Exit</TH>
-			<TD>Exit the application. If you have pending unsaved
-			    scripts, you'll be prompted to save them.</TD>
 		    </TR>
 		</TABLE>
 		
@@ -500,16 +527,28 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 		
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
-			<TH WIDTH="120px"><A HREF="#STEPS">&lt;Any
-			    Step&gt;</A></TH>
-			<TD>Select the target in this menu which lists in order
-			    the defined processing steps, as described in <A
-			    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/step/Step.html">Step</A>
-			    class documentation. Note that you can only move
-			    forward.
-			    
-			    <P> Direct access to any step is available from the
-				navigation frame on the left of the window</P>
+			<TD WIDTH="200px">
+			    <IMG SRC="../images/Step-menu.png" TITLE="Step menu"
+				 />
+			</TD>
+			<TD>
+			    <TABLE>
+				<TR>
+				    <TH WIDTH="200px"><A HREF="#STEPS">&lt;Any
+					Step&gt;</A></TH>
+				    <TD>Select the target in this menu which
+					lists in order the defined processing
+					steps, as described in <A
+					HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/step/Step.html">Step</A>
+					class documentation. Note that you can
+					only move forward.
+					
+					<P> Direct access to any step is
+					    available from the navigation frame
+					    on the left of the window</P>
+				    </TD>
+				</TR>
+			    </TABLE>
 			</TD>
 		    </TR>
 		</TABLE>
@@ -521,18 +560,52 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 		
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
-			<TH>Browse Score</TH>
-			<TD>Display and browse the hierarchical information
-			    about the current score</TD>
-		    </TR>
-		    <TR>
-			<TH>Dump Score</TH>
-			<TD>Print main score information on the output
-			    console</TD>
-		    </TR>
-		    <TR>
-			<TH>Store in XML</TH>
-			<TD>Save the current score,, using MusicXML format.</TD>
+			<TD WIDTH="200px">
+			    <IMG SRC="../images/Score-menu.png" TITLE="Score
+			    menu" />
+			</TD>
+			<TD>
+			    <TABLE>
+				<TR>
+				    <TH>Rebuild Score</TH>
+				    <TD>Clean up the score, then rtranslate the
+					glyph shapes into score entities</TD>
+				</TR>
+				<TR>
+				    <TH>Set Parameters</TH>
+				    <TD>Assign values to global score
+					parameters</TD>
+				</TR>
+				<TR>
+				    <TH>Browse Score</TH>
+				    <TD>Display and browse the hierarchical
+					information about the current score</TD>
+				</TR>
+				<TR>
+				    <TH>Dump Score</TH>
+				    <TD>Print main score information on the
+					output console</TD>
+				</TR>
+				<TR>
+				    <TH>Store in XML</TH>
+				    <TD>Save the current score, using MusicXML
+					format</TD>
+				</TR>
+				<TR>
+				    <TH>Store in Midi</TH>
+				    <TD>Save the current score, using MIDI
+					format</TD>
+				</TR>
+				<TR>
+				    <TH>Play</TH>
+				    <TD>Start (or pause) the Midi playback</TD>
+				</TR>
+				<TR>
+				    <TH>Stop</TH>
+				    <TD>Stop the Midi playback</TD>
+				</TR>
+			    </TABLE>
+			</TD>
 		    </TR>
 		</TABLE>
 		
@@ -543,86 +616,132 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 		
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
-			<TH>Show score Voices</TH>
-			<TD>In the score view, display the different voices
-			    found, as colored lines between the participating
-			    notes</TD>
-		    </TR>
-		    <TR>
-			<TH>Show score Slots</TH>
-			<TD>In the score view, display the vertical blue lines
-			    that indicate time slots</TD>
-		    </TR>
-		    <TR>
-			<TH>Show score Marks</TH>
-			<TD>In the score view, display the marks that indicate
-			    insertion of forwards</TD>
-		    </TR>
-		    <TR>
-			<TH>Show stick Lines</TH>
-			<TD>In the sheet symbol view, display the mean line of
-			    every selected stick.</TD>
-		    </TR>
-		    <TR>
-			<TH>Show slur Circles</TH>
-			<TD>In the sheet symbol view, display the approximating
-			    circle arc of any selected slur.</TD>
-		    </TR>
-		    <TR>
-			<TH>Show original staff lines</TH>
-			<TD>In the sheet LINES view, display in yellow the
-			    original staff lines that have been removed</TD>
-		    </TR>
-		    <TR>
-			<TH>Show original ledger lines</TH>
-			<TD>In the sheet HORIZONTALS view, display in yellow the
-			    original ledger lines that have been removed</TD>
-		    </TR>
-		    <TR>
-			<TH>Clear log</TH>
-			<TD>Erase all lines in the log pane</TD>
+			<TD WIDTH="200px">
+			    <IMG SRC="../images/Views-menu.png" TITLE="Views
+								       menu" />
+			</TD>
+			<TD>
+			    <TABLE>
+				<TR>
+				    <TH>Show score Slots</TH>
+				    <TD>In the score view, display the vertical
+					blue lines that indicate time slots</TD>
+				</TR>
+				<TR>
+				    <TH>Show score Voices</TH>
+				    <TD>In the score view, display the different
+					voices found, as colored lines between
+					the participating notes</TD>
+				</TR>
+				<TR>
+				    <TH>Show score Marks</TH>
+				    <TD>In the score view, display the marks
+					that indicate insertion of forwards</TD>
+				</TR>
+				<TR>
+				    <TH>Show stick Lines</TH>
+				    <TD>In the sheet symbol view, display the
+					mean line of every selected stick.</TD>
+				</TR>
+				<TR>
+				    <TH>Show slur Circles</TH>
+				    <TD>In the sheet symbol view, display the
+					approximating circle arc of any selected
+					slur.</TD>
+				</TR>
+				<TR>
+				    <TH>Show original staff lines</TH>
+				    <TD>In the sheet LINES view, display in
+					yellow the original staff lines that
+					have been removed</TD>
+				</TR>
+				<TR>
+				    <TH>Show original ledger lines</TH>
+				    <TD>In the sheet HORIZONTALS view, display
+					in yellow the original ledger lines that
+					have been removed</TD>
+				</TR>
+				<TR>
+				    <TH>Clear log</TH>
+				    <TD>Erase all messages in the log pane</TD>
+				</TR>
+			    </TABLE>
+			</TD>
 		    </TR>
 		</TABLE>
-	    
+		
 		<DT><B>Tools</B></DT>
-
 		
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
-			<TH WIDTH="120px"><A HREF="#SHAPE_COLORS">Shape
-			    Colors</A></TH>
-			<TD>Select the color display for each recognized
-			    shape</TD>
-		    </TR>
-		    <TR>
-			<TH><A HREF="#TRAINING_MATERIAL">Training
-			    Material</A></TH>
-			<TD>Verify and potentially discard glyph material used
-			    to train the evaluators</TD>
-		    </TR>
-		    <TR>
-			<TH><A HREF="#TRAINERS">Trainers</A></TH>
-			<TD>Launch and monitor the training phases of the
-			    evaluators</TD>
-		    </TR>
-		    <TR>
-			<TH>Memory</TH>
-			<TD>Display the current memory occupancy</TD>
-		    </TR>
-		    <TR>
-			<TH><A HREF="#OPTIONS">Options</A></TH>
-			<TD>Set the various parameters used by Audiveris
-			    software</TD>
+			<TD WIDTH="200px">
+			    <IMG SRC="../images/Tools-menu.png" TITLE="Tools
+								       menu" />
+			</TD>
+			<TD>
+			    <TABLE>
+				<TR>
+				    <TH><A HREF="#TRAINING_MATERIAL">Training
+					Material</A></TH>
+				    <TD>Verify and potentially discard glyph
+					material used to train the
+					evaluator</TD>
+				</TR>
+				<TR>
+				    <TH><A HREF="#TRAINERS">Network
+					Trainer</A></TH>
+				    <TD>Launch and monitor the training phases
+					of the evaluator</TD>
+				</TR>
+				<TR>
+				    <TH WIDTH="200px"><A
+							  HREF="#SHAPE_COLORS">Shape
+							  Colors</A></TH>
+				    <TD>Select the color display for each
+					recognized shape</TD>
+				</TR>
+				<TR>
+				    <TH>Memory</TH>
+				    <TD>Display the current memory
+					occupancy</TD>
+				</TR>
+				<TR>
+				    <TH><A HREF="#OPTIONS">Options</A></TH>
+				    <TD>Set the various constants used by
+					Audiveris software</TD>
+				</TR>
+			    </TABLE>
+			</TD>
 		    </TR>
 		</TABLE>
-	    
+		
 		<DT><B>Help</B></DT>
 		
 		<TABLE WIDTH=100% BORDER=1>
 		    <TR>
-			<TH WIDTH="120px">About</TH>
-			<TD>Display information about Audiveris version, build,
-			    launch mode and related web-site</TD>
+			<TD WIDTH="200px">
+			    <IMG SRC="../images/Help-menu.png" TITLE="Help menu"
+				 />
+			</TD>
+			<TD>
+			    <TABLE>
+				<TR>
+				    <TH WIDTH="200px">Operation Manual</TH>
+				    <TD>A direct link to this documentation</TD>
+				</TR>
+				<TR>
+				    <TH>Web Site</TH>
+				    <TD>Launch a browser to Audiveris web
+					site</TD>
+				</TR>
+				<TR>
+				    <TH>About</TH>
+				    <TD>Display information about Audiveris
+					version, build, launch mode and related
+					web-site</TD>
+				</TR>
+			    </TABLE>
+			</TD>
 		    </TR>
 		</TABLE>
 	    </DL>
@@ -1019,7 +1138,7 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 	
 	<P> The purpose of this "Glyph Verifier" is to provide a user interface
 	    to review visually some or all of the various glyphs which are used
-	    for training the evaluators.</P>
+	    for training the evaluator.</P>
 	<P> The main objective is thus to easily identify glyphs which have been
 	    assigned a wrong shape. Using them as part of the training base
 	    could make serious damage in the performance of the evaluator. So
@@ -1123,10 +1242,11 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 			    glyphs in the whole training base, training the
 			    Neural evaluator along 2500 iterations takes a
 			    <FONT COLOR="red">whole night</FONT>... So be aware
-			    of this, and back-up the evaluator binary file
-			    before playing with the trainer.</LI>
+			    of this, and back-up the evaluator file
+			    (<u>/config/neural-network.xml</u>) before playing
+			    with the trainer.</LI>
 			<LI>Several key parameters for training a Neural network
-			   : the <B>momentum</B> and <B>learning rate</B> allow
+			    : the <B>momentum</B> and <B>learning rate</B> allow
 			    to influence the convergence of the training,
 			    although they should be kept close to their default
 			    values. <B>Max error</B> (residual error)
@@ -1134,8 +1254,9 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 			    different ways to stop the training, since the
 			    processing stops when either of these is
 			    reached.</LI>
-			<LI>The trainer makes memory <B>snapshots</B> of every
-			    best configuration. This slightly slows down the
+			<LI>The trainer always stores on disk
+			    the <B>snapshots</B> of the latest best
+			    configuration. This slightly slows down the
 			    training, but guarantees to keep the really best
 			    configuration found so far. This is the default
 			    behavior, but we can force the trainer to select

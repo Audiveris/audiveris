@@ -37,31 +37,23 @@
             </SCRIPT>
         </ADDRESS>
         
-        <DIV CLASS="warningmessage">
-            <P CLASS="alert"><b>BEWARE:</b> This documentation has not yet been
-                updated for Audiveris 3.0, please consider this file as
-                obsolete.</P>
-        </DIV>
         
         <P> Purpose of this implementation manual is to help any programmer's
             task : understanding the source code, modifying existing functions,
             adding new features, etc...</P>
+	<P><b>Note:</b> This documentation has been updated for Audiveris 3.1,
+	    but still lacks important sections</P>
         
         <A NAME="HIERARCHY">
             <H2>Folders Hierarchy</H2>
         </A>
         
-        <P>Once expanded, the Audiveris archives create the structure described
-            in this section :</P>
+        <P>Once expanded, the Audiveris archive creates the structure described
+            in this section:</P>
+        
         
         <DIV  CLASS="filebrowse" >
             <UL>
-                <LI CLASS="leaf">
-                    <CODE><B>audiveris-M.m.jar</B></CODE> is the application jar
-                    file, with "M" and "m" for release numbers.</LI>
-                <LI CLASS="leaf">
-                    <CODE><B>build.xml</B></CODE> is a build file, from which
-                    the application can be (re)built and launched via Ant </LI>
                 
                 <LI CLASS="leafnode">
                     <u>bin</u>/
@@ -74,213 +66,329 @@
                 </LI>
                 
                 <LI CLASS="leafnode">
-                    <u>lib</u>/
-                    <UL>All the companion components have their jar file located
-                        in this folder.
-                        <P><I>Nota : The versions for jar files are the ones
-                            used at the time of this writing, but higher
-                            versions should be usable as well (though not yet
-                            tested)</I></P>
-                        
-                        <TABLE WIDTH=100% BORDER=1>
-                            <TR>
-                                <TH>Component</TH>
-                                <TH>Purpose</TH>
-                                <TH>Jar File(s)</TH>
-                                <TH>Provider URL</TH>
-                            </TR>
-                            <TR CLASS="a">
-                                <TD><B>ProxyMusic</B></TD>
-                                <TD>[un]marshalling Java from/to MusicXML</TD>
-                                <TD>proxymusic-1.1.jar</TD>
-                                <TD><A HREF="https://proxymusic.dev.java.net/">
-                                    https://proxymusic.dev.java.net/
-                                    </A></TD>
-                            </TR>
-                            <TR CLASS="b">
-                                <TD><B>JGoodies/looks</B></TD>
-                                <TD>Improvement of appearance of Swing</TD>
-                                <TD>looks-2.0.1.jar</TD>
-                                <TD><A HREF="https://looks.dev.java.net/">
-                                    https://looks.dev.java.net/
-                                    </A></TD>
-                            </TR>
-                            <TR CLASS="a">
-                                <TD><B>JGoodies/forms</B></TD>
-                                <TD>Forms layout system for Swing</TD>
-                                <TD>forms-1.0.6.jar</TD>
-                                <TD><A HREF="https://forms.dev.java.net/">
-                                    https://forms.dev.java.net/
-                                    </A></TD>
-                            </TR>
-                            <TR CLASS="b">
-                                <TD><B>JFreeChart</B></TD>
-                                <TD>Chart generation, with common utilities</TD>
-                                <TD>jfreechart-1.0.1.jar <BR/>
-                                    jcommon-1.0.0.jar</TD>
-                                <TD><A HREF="http://www.jfree.org/jfreechart/">
-                                    http://www.jfree.org/jfreechart/
-                                    </A></TD>
-                            </TR>
-                            <TR CLASS="a">
-                                <TD><B>Java L&amp;F Graphics Repository</B></TD>
-                                <TD>Collection of toolbar button graphics</TD>
-                                <TD>jlfgr-1_0.jar</TD>
-                                <TD><A
-                                        HREF="http://java.sun.com/developer/techDocs/hi/repository/">
-                                        http://java.sun.com/developer/techDocs/hi/repository/
-                                    </A></TD>
-                            </TR>
-                            <TR CLASS="b">
-                                <TD><B>Jama</B></TD>
-                                <TD>Matrix package for linear algebra</TD>
-                                <TD>Jama-1.0.2.jar</TD>
-                                <TD><A
-                                        HREF="http://math.nist.gov/javanumerics/jama/">
-                                        http://math.nist.gov/javanumerics/jama/
-                                    </A></TD>
-			    </TR>
-			</TABLE>
-			
-		    </UL>
-		</LI>
-		
-		<LI CLASS="leafnode">
-		    <u>config</u>/
-		    <UL>
-			<LI CLASS="leaf">
-			    <CODE><B>neural-network.xml</B></CODE> is a optional
-			    custom definition of the glyph neural network
-			    evaluator, which is created only when you retrain
-			    the network. The default definition is provided in
-			    the Audiveris jar resource.</LI>
-			<LI CLASS="leaf">
-			    <CODE><B>logging.properties</B></CODE> is an
-			    optional file which allows to set the logging level
-			    of some units.</LI>
-		    </UL>
-		</LI>
-		
-		<LI CLASS="leafnode">
-		    <u>examples</u>/
-		    <UL>
-			<LI CLASS="leaf">
-			    A set of image files that can be used as input
-			    examples</LI>
-		    </UL>
-		</LI>
-		
-		<LI CLASS="leafnode">
-		    <u>train</u>/
-		    <UL>
-			<LI CLASS="leafnode">
-			    core/
-			    <UL>
-				<LI CLASS="leaf">
-				    A selected subset of the glyph material,
-				    representing the "core" of the training
-				    material, to be used as an efficient
-				    training input for a first re-training from
-				    scratch.</LI>
-			    </UL>
-			</LI>
-			<LI CLASS="leafnode">
-			    sheets/
-			    <UL>
-				<LI CLASS="leaf">
-				    The whole base of glyph material composed by
-				    all recognized glyphs stored so far. Using
-				    this whole base gives the best final
-				    results, but is fairly expensive in terms of
-				    computing time. It is meant to be used for
-				    incremental training, after the core
-				    material has been used.</LI>
-			    </UL>
-			</LI>
-		    </UL>
-		</LI>
-		
-		<LI CLASS="leafnode">
-		    <A HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=0&expandFolder=0&folderID=3258" title="view contents">
-			www/
-		    </A>
-		    This folder directly mirrors the Audiveris web-site on
-		    java.net
-		    <UL>
-			<LI CLASS="leaf">
-			    <A HREF="../../index.html" TARGET="_top" TITLE="view
-									    file"><CODE><B>index.html</B></CODE></A>
-									    is
-									    the
-									    web-site
-									    home
-									    page</LI>
-			<LI CLASS="leafnode">
-			    <A HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3258&expandFolder=3258&folderID=3259" title="view contents">
-				<u>docs</u>/
-			    </A>
-			    <UL>
-				<LI CLASS="leafnode">
-				    <A HREF="https://audiveris.dev.java.net/nonav/docs/api/index.html" TARGET="_top" TITLE="view contents">
-					<u>api</u>/
-				    </A>
-				    <UL>
-					<LI CLASS="leaf">
-					    The whole hierarchy of JavaDoc
-					    files</LI>
-				    </UL>
-				</LI>
-				<LI CLASS="leafnode">
-				    <A HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3259&expandFolder=3259&folderID=3259" title="view contents">
-					<u>manual</u>/
-				    </A>
-				    The directory contains several html files,
-				    used to handle a frame layout. But the main
-				    content is stored in the following files:
-				    <UL>
-					<LI CLASS="leaf">
-					    <CODE><B>example.html</B></CODE> is
-					    a quick start guide built around a
-					    small example.
-					</LI>
-					<LI CLASS="leaf">
-					    <CODE><B>installation.html</B></CODE>
-					    is the installation manual you are
-					    currently looking at
-					</LI>
-					<LI CLASS="leaf">
-					    <CODE><B>operation.html</B></CODE>
-					    describes how to operate the
-					    application
-					</LI>
-					<LI CLASS="leaf">
-					    <CODE><B>design.html</B></CODE>
-					    presents the rationale behind
-					    several Audiveris constructions (doc
-					    not yet available).
-					</LI>
-					<LI CLASS="leaf">
-					    <CODE><B>implementation.html</B></CODE>
-					    details a few techniques used
-					    throughout Audiveris, such as Lags,
-					    GlyphLags and Sticks.
-					</LI>
-				    </UL>
-				</LI>
-				<LI CLASS="leafnode">
-				    <u>wiki</u>/
-				    <UL>
-					<LI CLASS="leaf">
-					    <CODE><B>notebook.html</B></CODE> is
-					    a tiddly wiki to handle various
-					    notes on Audiveris development.</LI>
-				    </UL>
-				</LI>
-			    </UL>
-			</LI>
-		    </UL>
-		</LI>
-	    </UL>
+                    <U>config</U>/ <BR/>All files in this folder have their
+                    default definition in the <U>/config</U> part of the
+                    Audiveris archive. Their presence in this folder is thus
+                    optional, and supersedes the default definition.
+                </LI>
+                <UL>
+                    <LI CLASS="leaf">
+                        <CODE><B>logging.properties</B></CODE> allows to set the
+                        logging level of some units.</LI>
+                    <LI CLASS="leaf">
+                        <CODE><B>neural-network.xml</B></CODE> defines the
+                        internal data of the glyph neural network
+                        evaluator. This file is created in this folder only when
+                        you retrain the network.</LI>
+                    <LI CLASS="leaf">
+                        <CODE><B>run.default.properties</B></CODE> defines
+                        default values for Audiveris run time. In turn, they can
+                        be overridden by definition in user home folder.</LI>
+                    <LI CLASS="leaf"> <CODE><B>system.plugins</B></CODE> defines
+                        the ordered list of predefined system actions.</LI>
+                    <LI CLASS="leaf"> <CODE><B>user.plugins</B></CODE> allows to
+                        add custom actions.</LI>
+                    <LI CLASS="leaf"> <CODE><B>ui.properties</B></CODE> defines
+                        the label, description, and icons of all user actions
+                        for the base language (english).</LI>
+                    <LI CLASS="leaf"> <CODE><B>ui_fr.properties</B></CODE>
+                        defines label and description of all user actions for
+                        the French language.</LI>
+                </UL>
+            </LI>
+            
+            <LI CLASS="leafnode">
+                <U>dist</U>/
+                <UL>
+                    <LI CLASS="leaf">
+                        <CODE><B>audiveris-M.m.jar</B></CODE> is the application
+                        jar file, with "M" and "m" for release numbers.</LI>
+                    
+                    <LI CLASS="leafnode">
+                        <u>lib</u>/
+                        <UL>All the companion components (except JAI) have their
+                            jar file located in this folder, to be easily picked
+                            up by the Audiveris application.
+                            <P><I>Nota : The versions for jar files are the ones
+                                used at the time of this writing, but higher
+                                versions should be usable as well (though not
+                                yet tested)</I></P>
+                            
+                            <TABLE WIDTH=100% BORDER=1>
+                                <TR>
+                                    <TH>Component</TH>
+                                    <TH>Purpose</TH>
+                                    <TH>Jar File(s)</TH>
+                                    <TH>Provider URL</TH>
+                                </TR>
+                                <TR CLASS="a">
+                                    <TD><B>ProxyMusic</B></TD>
+                                    <TD>[un]marshalling Java from/to
+                                        MusicXML</TD>
+                                    <TD>proxymusic-1.1.jar</TD>
+                                    <TD><A
+                                            HREF="https://proxymusic.dev.java.net/">
+                                            https://proxymusic.dev.java.net/
+                                        </A></TD>
+                                </TR>
+                                <TR CLASS="b">
+                                    <TD><B>JGoodies/looks</B></TD>
+                                    <TD>Improvement of appearance of Swing</TD>
+                                    <TD>looks-2.0.1.jar</TD>
+                                    <TD><A HREF="https://looks.dev.java.net/">
+                                        https://looks.dev.java.net/
+                                        </A></TD>
+                                </TR>
+                                <TR CLASS="a">
+                                    <TD><B>JGoodies/forms</B></TD>
+                                    <TD>Forms layout system for Swing</TD>
+                                    <TD>forms-1.0.6.jar</TD>
+                                    <TD><A HREF="https://forms.dev.java.net/">
+                                        https://forms.dev.java.net/
+                                        </A></TD>
+                                </TR>
+                                <TR CLASS="b">
+                                    <TD><B>JFreeChart</B></TD>
+                                    <TD>Chart generation, with common
+                                        utilities</TD>
+                                    <TD>jfreechart-1.0.1.jar <BR/>
+                                        jcommon-1.0.0.jar</TD>
+                                    <TD><A
+                                            HREF="http://www.jfree.org/jfreechart/">
+                                            http://www.jfree.org/jfreechart/
+                                        </A></TD>
+                                </TR>
+                                <TR CLASS="a">
+                                    <TD><B>Java L&amp;F Graphics
+                                        Repository</B></TD>
+                                    <TD>Collection of toolbar button
+                                        graphics</TD>
+                                    <TD>jlfgr-1_0.jar</TD>
+                                    <TD><A
+                                            HREF="http://java.sun.com/developer/techDocs/hi/repository/">
+                                            http://java.sun.com/developer/techDocs/hi/repository/
+                                        </A></TD>
+                                </TR>
+                                <TR CLASS="b">
+                                    <TD><B>Jama</B></TD>
+                                    <TD>Matrix package for linear algebra</TD>
+                                    <TD>Jama-1.0.2.jar</TD>
+                                    <TD><A
+                                            HREF="http://math.nist.gov/javanumerics/jama/">
+                                            http://math.nist.gov/javanumerics/jama/
+                                        </A></TD>
+                                </TR>
+                                <TR CLASS="a">
+                                    <TD><B>XenoPlay</B></TD>
+                                    <TD>Implementation of a Midi interface for
+                                        playback and Midi files </TD>
+                                    <TD>xenoplay.jar</TD>
+                                    <TD><A
+                                            HREF="http://www.xenoage.com/player/">
+                                            http://www.xenoage.com/player/
+                                        </A> <p>Make sure you take at least
+                                                 version 0.4b, which provides
+                                                 additional features in two
+                                                 classes (ExternalPlayer and
+                                                 Player)</p>. </TD>
+                                </TR>
+                                <TR CLASS="b">
+                                    <TD><B>SwingWorker</B></TD>
+                                    <TD>A stand-alone implementation of Java 6
+                                        SwingWorker class</TD>
+                                    <TD>swing-worker-1.1.jar</TD>
+                                    <TD><A
+                                            HREF="https://swingworker.dev.java.net/">
+                                            https://swingworker.dev.java.net/
+                                        </A></TD>
+                                </TR>
+                                <TR CLASS="a">
+                                    <TD><B>Music Icons</B></TD>
+                                    <TD>Icons to display music symbols</TD>
+                                    <TD>music_icons.jar</TD>
+                                    <TD>This archive is created during the build
+                                        process of Audiveris, from the
+                                        definition of icons located in
+                                        the <u>/icons</u> folder.</TD>
+                                </TR>
+                            </TABLE>
+                            
+                        </UL>
+                    </LI>
+                    
+                </UL>
+            </LI>
+            
+            <LI CLASS="leafnode">
+                <u>examples</u>/
+                <UL>
+                    <LI CLASS="leaf">
+                        A set of image files that can be used as input
+                        examples</LI>
+                </UL>
+            </LI>
+            
+            <LI CLASS="leafnode">
+                <u>icons</u>/
+                <UL>
+                    <LI CLASS="leaf">
+                        A comprehensive set of xml definitions for music symbols
+                        that serve two different purposes:
+                        <UL>
+                            <LI>The display of music symbols in the score
+                                display and in various user interface items such
+                                as menu items or buttons.</LI>
+                            <LI>The computation of moments of symbols for which
+                                we don't have (yet) real glyphs to train the
+                                Neural Network.</LI>
+                        </UL>
+                    </LI>
+                </UL>
+            </LI>
+            
+            
+            <LI CLASS="leafnode">
+                <u>src</u>/
+                <UL>
+                    <LI CLASS="leaf">
+                        <B>build-targets.xml</B> defines the Ant targets usable
+                        both from the <B>build.xml</B> local to this folder and
+                        from the <B>build-for-netbeans.xml</B> file in the
+                        parent folder.
+                    </LI>
+                    <LI CLASS="leaf">
+                        <B>build.xml</B> is the local build file, to be used
+                        when building the application manually through Ant.
+                    </LI>
+                    <LI CLASS="leaf">
+                        <B>build.default.properties</B> defines default values
+                        for the build process
+                    </LI>
+                    <LI CLASS="leaf">
+                        <B>build.properties</B> provides overriding values for
+                        the build process
+                    </LI>
+                    <LI CLASS="leaf">
+                        <B>java-convention.xml</B> defines the convention used
+                        by the Jalopy utility to pretty format the Java sources
+                    </LI>
+                    <LI CLASS="leafnode">
+                        <U>main/</U>
+                        <P>The hierarchy of java sources for Audiveris
+                            application</P>
+                    </LI>
+                    <LI CLASS="leafnode">
+                        <U>test/</U>
+                        <P>A hierarchy of java sources for unitary tests of
+                            Audiveris.</P>  </LI>
+                </UL>
+            </LI>
+            
+            
+            <LI CLASS="leafnode">
+                <u>train</u>/
+                <UL>
+                    <LI CLASS="leafnode">
+                        core/
+                        <UL>
+                            <LI CLASS="leaf">
+                                A selected subset of the glyph material,
+                                representing the "core" of the training
+                                material, to be used as an efficient training
+                                input for a first re-training from scratch.</LI>
+                        </UL>
+                    </LI>
+                    <LI CLASS="leafnode">
+                        sheets/
+                        <UL>
+                            <LI CLASS="leaf">
+                                The whole base of glyph material composed by all
+                                recognized glyphs stored so far. Using this
+                                whole base gives the best final results, but is
+                                fairly expensive in terms of computing time. It
+                                is meant to be used for incremental training,
+                                after the core material has been used.</LI>
+                        </UL>
+                    </LI>
+                </UL>
+            </LI>
+            
+            <LI CLASS="leafnode">
+                <A HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=0&expandFolder=0&folderID=3258" title="view contents">
+                    www/
+                </A>
+                This folder directly mirrors the Audiveris web-site on java.net
+                <UL>
+                    <LI CLASS="leaf">
+                        <A HREF="../../index.html" TARGET="_top" TITLE="view
+                                                                        file"><CODE><B>index.html</B></CODE></A>
+                                                                        is the
+                                                                        web-site
+                                                                        home
+                                                                        page</LI>
+                    <LI CLASS="leafnode">
+                        <A HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3258&expandFolder=3258&folderID=3259" title="view contents">
+                            <u>docs</u>/
+                        </A>
+                        <UL>
+                            <LI CLASS="leafnode">
+                                <A HREF="https://audiveris.dev.java.net/nonav/docs/api/index.html" TARGET="_top" TITLE="view contents">
+                                    <u>api</u>/
+                                </A>
+                                <UL>
+                                    <LI CLASS="leaf">
+                                        The whole hierarchy of JavaDoc
+                                        files</LI>
+                                </UL>
+                            </LI>
+                            <LI CLASS="leafnode">
+                                <A HREF="https://audiveris.dev.java.net/servlets/ProjectDocumentList?folderID=3259&expandFolder=3259&folderID=3259" title="view contents">
+                                    <u>manual</u>/
+                                </A>
+                                The directory contains several html files, used
+                                to handle a frame layout. But the main content
+                                is stored in the following files:
+                                <UL>
+                                    <LI CLASS="leaf">
+                                        <CODE><B>example.html</B></CODE> is a
+                                        quick start guide built around a small
+                                        example.
+                                    </LI>
+                                    <LI CLASS="leaf">
+                                        <CODE><B>installation.html</B></CODE> is
+                                        the installation manual you are
+                                        currently looking at
+                                    </LI>
+                                    <LI CLASS="leaf">
+                                        <CODE><B>operation.html</B></CODE>
+                                        describes how to operate the application
+                                    </LI>
+                                    <LI CLASS="leaf">
+                                        <CODE><B>design.html</B></CODE> presents
+                                        the rationale behind several Audiveris
+                                        constructions (doc not yet available).
+                                    </LI>
+                                    <LI CLASS="leaf">
+                                        <CODE><B>implementation.html</B></CODE>
+                                        details a few techniques used throughout
+                                        Audiveris, such as Lags, GlyphLags and
+                                        Sticks.
+                                    </LI>
+                                </UL>
+                            </LI>
+                            <LI CLASS="leafnode">
+                                <u>wiki</u>/
+                                <UL>
+                                    <LI CLASS="leaf">
+                                        <CODE><B>notebook.html</B></CODE> is a
+                                        tiddly wiki to handle various notes on
+                                        Audiveris development.</LI>
+                                </UL>
+			    </LI>
+			</UL>
+		    </LI>
+		</UL>
+	    </LI>
 	</DIV>
 	
 	<A NAME="PACKAGES">
@@ -321,11 +429,28 @@
 		<TR>
 		    <TH>omr.score</TH>
 		    <TD>
-			The score package handles the logical music information
+			The score package, with its subpackages such as
+			omr.score.midi, handles the logical music information
 			inferred from recognized glyphs extracted from the
 			physical sheet. The internal representation of such
 			score can be stored on an external support using various
-			data formats, such as binary or XML.
+			data formats, such as Midi or MusicXML.
+		    </TD>
+		</TR>
+		<TR>
+		    <TH>omr.selection</TH>
+		    <TD>
+			Here we define key selections for user interactions,
+			such as current sheet, current pixel location, current
+			glyph, etc and update accordingly all registered
+			observers.
+		    </TD>
+		</TR>
+		<TR>
+		    <TH>omr.step</TH>
+		    <TD>
+			This package handles the sequential steps needed in the
+			processing of a sheet to a score.
 		    </TD>
 		</TR>
 		<TR>
@@ -411,6 +536,13 @@
 		    </TD>
 		</TR>
 		<TR>
+		    <TH>omr.plugin</TH>
+		    <TD>
+			This is the plugin mechanism used to define all user
+			actions, both system (predefined) or user (custom) actions.
+		    </TD>
+		</TR>
+		<TR>
 		    <TH>omr.ui.treetable</TH>
 		    <TD>
 			Stolen from some Sun documentation, this implements a
@@ -437,18 +569,19 @@
 	<A NAME="PLUGIN_MECHANISM">
 	    <H3>Plugin Mechanism</H3>
 	</A>
-
+	
 	<P> On audiveris main frame, all user actions trigerred via pulldown
 	    menus or via tool bar buttons are now implemented as plugins.</P>
-
-	<P> These can be <I><B>system</B></I> plugins which are predefined in the
-	    Audiveris release, or can be <I><B>user</B></I> plugins supplied by
-	    the user himself as an added feature. The only difference between
+	
+	<P> These can be <I><B>system</B></I> plugins which are predefined in
+	    the Audiveris release, or can be <I><B>user</B></I> plugins supplied
+	    by the user himself as an added feature. The only difference between
 	    system and user plugins, besides their origin, is the fact they are
 	    referenced in <U>/config/system.plugins</U> for the former, and
 	    in <U>/config/user.plugins</U> for the latter.</P>
-
-	<P> Here are the various items needed to get a plugin up and running:</P>
+	
+	<P> Here are the various items needed to get a plugin up and
+	    running:</P>
 	<UL>
 	    <LI> A Java class to define the action. See examples in source
 		file <U>omr.ui.GuiActions.java</U></LI>
@@ -513,16 +646,16 @@
 		</UL>
 	    </LI>
 	    
-		
-
-	</UL>
-
-
-
-
-
-
 	    
+	    
+	</UL>
+	
+	
+	
+	
+	
+	
+	
 	<A NAME="SHEET_SCORE">
 	    <H2>Sheet / Score</H2>
 	</A>
@@ -698,8 +831,11 @@
 	    usually similar to the following piece of code :</P>
 	
 	<PRE>
-	    for (SystemInfo system : sheet.getSystems()) { for (Glyph glyph :
-	    system.getGlyphs()) { // Do the glyph-based processing here } }
+	    for (SystemInfo system : sheet.getSystems()) {
+	        for (Glyph glyph : system.getGlyphs()) {
+	           // Do the glyph-based processing here
+	        }
+	    }
 	</PRE>
 	
 	<P> All the entities that result from the phase called <B>Music
@@ -721,8 +857,8 @@
 	    children. To ease the traversal of the tree, every list of children,
 	    wherever found in the tree, is a list of homogeneous entities. So
 	    the Score hierarchy can be listed as follows :</P>
-	
-	<PRE>
+    
+        <PRE>
                                Score                                                      
                                  O                                                        
                                  |                                                        
@@ -756,29 +892,34 @@
                                |                    |                                     
                                |                    |                                     
                              Note               Syllable                                  
-	</PRE>
+        </PRE>
 	
 	<P> The beginning of figure above can be read as follows : </P>
 	<UL>
 	    <LI>A <B>Score</B> has no container, and contains instances of
 		class <B>System</B> as children.</LI>
 	    <UL>
-		<LI>A <B>System</B> has <B>Score</B> as container and exactly
-		    two children : one <B>StaveList</B> and
-		    one <B>SlurList</B>.</LI>
-		<OL>
-		    <LI>A <B>StaveList</B> has <B>System</B> as container and
-			instances of <B>Stave</B>s as children.</LI>
-		    <UL>
-			<LI>A <B>Stave</B> has <B>StaveList</B> as container,
-			    and exactly four children : one <B>LyricList</B>,
-			    one <B>TextList</B>, one <B>DynamicList</B> and
-			    one <B>MeasureList</B>.</LI>
-			<LI>Etc...</LI>
-		    </UL>
-		    <LI>A <B>SlurList</B> has <B>System</B> as container and
-			instances of <B>Slur</B>s as children.</LI>
-		</OL>
+		<LI>A <B>System</B> has <B>Score</B> as container, and contains
+		    instances of class <B>SystemPart</B> as children.</LI>
+		<UL>
+		    <LI>A <B>SystemPart</B> has <B>System</B> as container and
+			exactly 4 children : one <B>BarLine</B>,
+			one <B>StaffList</B>, one <B>MeasureList</B> and
+			one <B>SlurList</B>.</LI>
+		    <OL>
+			<LI>This (starting) <B>Barline</B> has <B>SystemPart</B>
+			    as container and no children.</LI>
+			<LI>A <B>StaffList</B> has <B>SystemPart</B> as
+			    container and instances of <B>Staff</B>s as
+			    children.</LI>
+			<LI>A <B>MeasureList</B> has <B>SystemPart</B> as
+			    container and instances of <B>Measure</B>s as
+			    children.</LI>
+			<LI>A <B>SlurList</B> has <B>SystemPart</B> as container
+			    and instances of <B>Slur</B>s as children.</LI>
+		    </OL>
+		    <LI>Etc...</LI>
+		</UL>
 	    </UL>
 	</UL>
 	
@@ -789,21 +930,16 @@
 	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/score/MusicNode.html#renderNode(java.awt.Graphics,
 	    omr.ui.Zoom)"> renderNode()</A>).</P>
 	
-	<P> Though it's currently disabled, but the source code is still
-	    available, a <B>ScoreView</B> window was dedicated to the painting
-	    of Score entities, using method <A
+	<P> Similarly, a <B>ScoreView</B> window handles the painting of Score
+	    entities, using method <A
 	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/score/MusicNode.html#paintNode(java.awt.Graphics)">
 	    paintNode()</A>.</P>
 	
-	<P> A similar construction could be used, probably coupled with Castor,
-	    to store the content of a Score using the MusicXML format.</P>
+	<P> A similar construction, coupled with JAXB, is used to store the
+	    content of a Score to the MusicXML format.</P>
 	
 	
-	
-	
-	<BR/>
-	<BR/>
-	<HR/> 
+	<BR/> <BR/> <HR/>
 	<I>End of Implementation Manual</I>
 	
     </BODY>
