@@ -603,16 +603,18 @@ public class Sheet
 
         SortedSet<SystemInfo> impacted = new TreeSet<SystemInfo>();
 
-        for (Glyph glyph : glyphs) {
-            SystemInfo system = getSystemOf(glyph);
-            impacted.add(system);
+        if (glyphs != null) {
+            for (Glyph glyph : glyphs) {
+                SystemInfo system = getSystemOf(glyph);
+                impacted.add(system);
 
-            Shape shape = glyph.getShape();
+                Shape shape = glyph.getShape();
 
-            if (persistent || ((shape != null) && shape.isPersistent())) {
-                // Add the following systems
-                int index = systems.indexOf(system);
-                impacted.addAll(systems.subList(index + 1, systems.size()));
+                if (persistent || ((shape != null) && shape.isPersistent())) {
+                    // Add the following systems
+                    int index = systems.indexOf(system);
+                    impacted.addAll(systems.subList(index + 1, systems.size()));
+                }
             }
         }
 

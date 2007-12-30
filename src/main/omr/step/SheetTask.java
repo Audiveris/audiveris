@@ -11,8 +11,6 @@ package omr.step;
 
 import omr.sheet.Sheet;
 
-import omr.step.StepException;
-
 import omr.util.Logger;
 
 /**
@@ -81,19 +79,16 @@ public abstract class SheetTask
     public abstract void doit ()
         throws StepException;
 
-    //------//
-    // done //
-    //------//
+    //--------//
+    // isDone //
+    //--------//
     /**
-     * Flag this step as done
+     * Check whether this task has been done
+     * @return true if started/done, false otherwise
      */
-    public void done ()
+    public boolean isDone ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(step + " done");
-        }
-
-        stepDone = true;
+        return stepDone;
     }
 
     //-----------//
@@ -119,15 +114,18 @@ public abstract class SheetTask
         }
     }
 
-    //--------//
-    // isDone //
-    //--------//
+    //------//
+    // done //
+    //------//
     /**
-     * Check whether this task has been done
-     * @return true if started/done, false otherwise
+     * Flag this step as done
      */
-    public boolean isDone ()
+    public void done ()
     {
-        return stepDone;
+        if (logger.isFineEnabled()) {
+            logger.fine(step + " done");
+        }
+
+        stepDone = true;
     }
 }

@@ -254,6 +254,32 @@ public class System
                                 .get(getParts().size() - 1);
     }
 
+    //------------------//
+    // getLastSoundTime //
+    //------------------//
+    /**
+     * Report the time, counted from beginning of this system, when sound stops,
+     * which means that ending rests are not counted.
+     *
+     * @return the relative time of last Midi "note off" in this system
+     */
+    public int getLastSoundTime ()
+    {
+        int lastTime = 0;
+
+        // Take the latest sound among all parts
+        for (TreeNode node : getParts()) {
+            SystemPart part = (SystemPart) node;
+            int        time = part.getLastSoundTime();
+
+            if (time > lastTime) {
+                lastTime = time;
+            }
+        }
+
+        return lastTime;
+    }
+
     //-----------//
     // getPartAt //
     //-----------//

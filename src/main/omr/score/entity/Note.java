@@ -545,17 +545,17 @@ public class Note
         }
     }
 
-    //---------//
-    // addSlur //
-    //---------//
+    //--------//
+    // isRest //
+    //--------//
     /**
-     * Add a slur in the collection of slurs connected to this note
+     * Check whether this note is a rest (or a 'real' note)
      *
-     * @param slur the slur to connect
+     * @return true if a rest, false otherwise
      */
-    public void addSlur (Slur slur)
+    public boolean isRest ()
     {
-        slurs.add(slur);
+        return isRest;
     }
 
     //---------//
@@ -578,17 +578,17 @@ public class Note
         return step;
     }
 
-    //--------//
-    // isRest //
-    //--------//
+    //---------//
+    // addSlur //
+    //---------//
     /**
-     * Check whether this note is a rest (or a 'real' note)
+     * Add a slur in the collection of slurs connected to this note
      *
-     * @return true if a rest, false otherwise
+     * @param slur the slur to connect
      */
-    public boolean isRest ()
+    public void addSlur (Slur slur)
     {
-        return isRest;
+        slurs.add(slur);
     }
 
     //--------------------//
@@ -695,11 +695,16 @@ public class Note
      */
     public static String quarterValueOf (int val)
     {
-        final int     gcd = GCD.gcd(val, QUARTER_DURATION);
-        final int     num = val / gcd;
-        final int     den = QUARTER_DURATION / gcd;
+        final StringBuilder sb = new StringBuilder();
 
-        StringBuilder sb = new StringBuilder();
+        if (val < 0) {
+            sb.append("-");
+            val = -val;
+        }
+
+        final int gcd = GCD.gcd(val, QUARTER_DURATION);
+        final int num = val / gcd;
+        final int den = QUARTER_DURATION / gcd;
 
         if (num == 0) {
             return "0";
@@ -778,6 +783,67 @@ public class Note
         return sb.toString();
     }
 
+    //---------------//
+    // getHeadCenter //
+    //---------------//
+    /**
+     * Compute the area center of item with rank 'index' in the provided note
+     * pack glyph
+     */
+    private static PixelPoint getHeadCenter (Glyph glyph,
+                                             int   index)
+    {
+        final int      card = packCardOf(glyph.getShape());
+        final int      maxDy = (int) Math.rint(
+            constants.maxCenterDy.getValue() * glyph.getInterline());
+        PixelRectangle box = glyph.getContourBox();
+        int            centerY = box.y + (box.height / 2);
+        PixelPoint     centroid = glyph.getCentroid();
+
+        // Make sure centroid and box center are close to each other,
+        // otherwise force ordinate using the interline value.
+        // This trick applies for heads, not for rests
+        if (!Shape.Rests.contains(glyph.getShape())) {
+            if (centerY > (centroid.y + maxDy)) {
+                // Force heads at top
+                return new PixelPoint(
+                    box.x + (box.width / 2),
+                    box.y + ((((2 * index) + 1) * glyph.getInterline()) / 2));
+            } else if (centerY < (centroid.y - maxDy)) {
+                // Force heads at bottom
+                return new PixelPoint(
+                    box.x + (box.width / 2),
+                    (box.y + box.height) -
+                    ((((2 * (card - index - 1)) + 1) * glyph.getInterline()) / 2));
+            }
+        }
+
+        // Use normal area location for all other cases
+        return new PixelPoint(
+            box.x + (box.width / 2),
+            box.y + ((box.height * ((2 * index) + 1)) / (2 * card)));
+    }
+
+    //------------//
+    // getItemBox //
+    //------------//
+    /**
+     * Compute the bounding box of item with rank 'index' in the provided note
+     * pack glyph
+     */
+    private static PixelRectangle getItemBox (Glyph glyph,
+                                              int   index)
+    {
+        final int      card = packCardOf(glyph.getShape());
+        PixelRectangle box = glyph.getContourBox();
+
+        return new PixelRectangle(
+            box.x,
+            box.y + ((box.height * index) / card),
+            box.width,
+            box.height / card);
+    }
+
     //---------//
     // alterOf //
     //---------//
@@ -841,67 +907,6 @@ public class Note
         default :
             return shape;
         }
-    }
-
-    //---------------//
-    // getHeadCenter //
-    //---------------//
-    /**
-     * Compute the area center of item with rank 'index' in the provided note
-     * pack glyph
-     */
-    private static PixelPoint getHeadCenter (Glyph glyph,
-                                             int   index)
-    {
-        final int      card = packCardOf(glyph.getShape());
-        final int      maxDy = (int) Math.rint(
-            constants.maxCenterDy.getValue() * glyph.getInterline());
-        PixelRectangle box = glyph.getContourBox();
-        int            centerY = box.y + (box.height / 2);
-        PixelPoint     centroid = glyph.getCentroid();
-
-        // Make sure centroid and box center are close to each other,
-        // otherwise force ordinate using the interline value.
-        // This trick applies for heads, not for rests
-        if (!Shape.Rests.contains(glyph.getShape())) {
-            if (centerY > (centroid.y + maxDy)) {
-                // Force heads at top
-                return new PixelPoint(
-                    box.x + (box.width / 2),
-                    box.y + ((((2 * index) + 1) * glyph.getInterline()) / 2));
-            } else if (centerY < (centroid.y - maxDy)) {
-                // Force heads at bottom
-                return new PixelPoint(
-                    box.x + (box.width / 2),
-                    (box.y + box.height) -
-                    ((((2 * (card - index - 1)) + 1) * glyph.getInterline()) / 2));
-            }
-        }
-
-        // Use normal area location for all other cases
-        return new PixelPoint(
-            box.x + (box.width / 2),
-            box.y + ((box.height * ((2 * index) + 1)) / (2 * card)));
-    }
-
-    //------------//
-    // getItemBox //
-    //------------//
-    /**
-     * Compute the bounding box of item with rank 'index' in the provided note
-     * pack glyph
-     */
-    private static PixelRectangle getItemBox (Glyph glyph,
-                                              int   index)
-    {
-        final int      card = packCardOf(glyph.getShape());
-        PixelRectangle box = glyph.getContourBox();
-
-        return new PixelRectangle(
-            box.x,
-            box.y + ((box.height * index) / card),
-            box.width,
-            box.height / card);
     }
 
     //------------//

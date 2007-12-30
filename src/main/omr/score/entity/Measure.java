@@ -108,7 +108,7 @@ public class Measure
 
     /**
      * Final duration per voice:
-     * 0=perfect, -n=too_short, +n=overlast, null=whole_rest
+     * 0=perfect, -n=too_short, +n=overlast, null=whole_rest/multi_rest
      */
     private Map<Integer, Integer> finalDurations = new HashMap<Integer, Integer>();
 
@@ -755,6 +755,34 @@ public class Measure
         }
 
         return null;
+    }
+
+    //------------------//
+    // getLastSoundTime //
+    //------------------//
+    /**
+     * Report the time, counted from beginning of this measure, when sound stops
+     * which means that ending rests are not counted.
+     *
+     * @return the relative time of last Midi "note off" in this measure
+     */
+    public int getLastSoundTime ()
+    {
+        int lastTime = 0;
+
+        for (TreeNode chordNode : getChords()) {
+            Chord chord = (Chord) chordNode;
+
+            if (!chord.isAllRests()) {
+                int time = chord.getStartTime() + chord.getDuration();
+
+                if (time > lastTime) {
+                    lastTime = time;
+                }
+            }
+        }
+
+        return lastTime;
     }
 
     //----------//

@@ -135,6 +135,27 @@ public class Chord
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // isAllRests //
+    //------------//
+    /**
+     * Checks whether this chord contains only rests (and no standard note)
+     *
+     * @return true is made of rests only
+     */
+    public boolean isAllRests ()
+    {
+        for (TreeNode node : getNotes()) {
+            Note note = (Note) node;
+
+            if (!note.isRest()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     //--------------//
     // getBeamGroup //
     //--------------//
@@ -348,7 +369,6 @@ public class Chord
      */
     public Chord getPreviousChordInVoice ()
     {
-        int   voice = getVoice();
         Chord prev = (Chord) getPreviousSibling();
 
         try {

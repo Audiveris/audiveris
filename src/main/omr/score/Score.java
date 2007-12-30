@@ -37,6 +37,7 @@ import omr.util.TreeNode;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Class <code>Score</code> handles a score hierarchy, composed of one or
@@ -158,12 +159,9 @@ public class Score
      */
     public int getActualDuration ()
     {
-        System  lastSystem = getLastSystem();
-        Measure lastMeasure = lastSystem.getFirstPart()
-                                        .getLastMeasure();
+        System lastSystem = getLastSystem();
 
-        return lastSystem.getStartTime() + lastMeasure.getStartTime() +
-               lastMeasure.getActualDuration();
+        return lastSystem.getStartTime() + lastSystem.getActualDuration();
     }
 
     //-----------------//
@@ -278,6 +276,32 @@ public class Score
     public String getImagePath ()
     {
         return imageFile.getPath();
+    }
+
+    //------------------//
+    // getLastSoundTime //
+    //------------------//
+    /**
+     * Report the time, counted from beginning of the score, when sound stops,
+     * which means that ending rests are not counted.
+     *
+     * @return the time of last Midi "note off"
+     */
+    public int getLastSoundTime ()
+    {
+        // Browse systems backwards
+        for (ListIterator it = getSystems()
+                                   .listIterator(getSystems().size());
+             it.hasPrevious();) {
+            System system = (System) it.previous();
+            int    time = system.getLastSoundTime();
+
+            if (time > 0) {
+                return system.getStartTime() + time;
+            }
+        }
+
+        return 0;
     }
 
     //---------------//
@@ -563,6 +587,10 @@ public class Score
         if (view != null) {
             view.close();
         }
+
+        // Close Midi interface if needed
+        ScoreManager.getInstance()
+                    .midiClose(this);
     }
 
     //------//

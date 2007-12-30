@@ -28,6 +28,9 @@ import omr.selection.SelectionTag;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
+import omr.step.Step;
+import omr.step.StepException;
+
 import omr.ui.ActionManager;
 import omr.ui.UIDressing;
 import omr.ui.util.FileFilter;
@@ -38,6 +41,7 @@ import omr.util.Logger;
 
 import java.awt.event.*;
 import java.io.*;
+import java.util.logging.Level;
 
 import javax.sound.midi.*;
 import javax.swing.*;
@@ -173,7 +177,8 @@ public class MidiActions
         try {
             Sheet sheet = SheetManager.getSelectedSheet();
 
-            if (sheet == null) {
+            if ((sheet == null) ||
+                (sheet.getScore() == null) ) {
                 setPlay(true);
                 playAction.setEnabled(false);
                 stopAction.setEnabled(false);
@@ -267,7 +272,7 @@ public class MidiActions
      * Class <code>PlayAction</code> allows to start, pause or restart a Midi
      * playback.
      */
-    @Plugin(type = SCORE_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = true)
+    @Plugin(type = SCORE_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = true)
     public static class PlayAction
         extends AbstractAction
     {
@@ -276,10 +281,22 @@ public class MidiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            Score score = getCurrentScore();
+            Sheet sheet = SheetManager.getSelectedSheet();
 
-            if ((score != null) && ScoreActions.checkParameters(score)) {
-                play(score);
+            if (sheet != null) {
+                //                try {
+                //                    sheet.getSheetSteps()
+                //                         .getResult(Step.SCORE);
+                //                    sheet.updateLastSteps(null, null);
+                Score score = sheet.getScore();
+
+                if ((score != null) && ScoreActions.checkParameters(score)) {
+                    play(score);
+                }
+
+                //                } catch (StepException ex) {
+                //                    logger.warning("Cannot get Score", ex);
+                //                }
             }
         }
     }
@@ -290,7 +307,7 @@ public class MidiActions
     /**
      * Class <code>StopAction</code> allows to stop a Midi playback.
      */
-    @Plugin(type = SCORE_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = true)
+    @Plugin(type = SCORE_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = true)
     public static class StopAction
         extends AbstractAction
     {
@@ -322,7 +339,7 @@ public class MidiActions
     /**
      * Class <code>WriteAction</code> allows to write a Midi file.
      */
-    @Plugin(type = SCORE_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = false)
+    @Plugin(type = SCORE_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = false)
     public static class WriteAction
         extends AbstractAction
     {

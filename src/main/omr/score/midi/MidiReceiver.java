@@ -10,6 +10,7 @@ package omr.score.midi;
 
 import omr.score.Score;
 import omr.score.entity.Measure;
+import omr.score.entity.Note;
 import omr.score.entity.Slot;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
@@ -242,13 +243,16 @@ public class MidiReceiver
     //--------------//
     private Double getTickRatio ()
     {
+        int  divisor = score.getDurationDivisor();
         long midiTicks = agent.getLengthInTicks();
-        long scoreTicks = score.getActualDuration() / score.getDurationDivisor();
+        long scoreTicks = score.getLastSoundTime() / divisor;
 
         if (midiTicks != scoreTicks) {
             logger.warning(
-                "Midi & score ticks don't agree (" + midiTicks + "/" +
-                scoreTicks + ")");
+                "Midi & score ticks don't match (" + midiTicks + "-" +
+                scoreTicks + "=" +
+                Note.quarterValueOf((int) (midiTicks - scoreTicks) * divisor) +
+                ")");
 
             return new Double((double) midiTicks / (double) scoreTicks);
         } else {

@@ -11,7 +11,6 @@ package omr.score.entity;
 
 import omr.score.common.PagePoint;
 import omr.score.common.SystemPoint;
-import omr.score.entity.Barline;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Logger;
@@ -19,6 +18,7 @@ import omr.util.TreeNode;
 
 import java.awt.*;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Class <code>SystemPart</code> handles the various parts found in one system,
@@ -80,64 +80,6 @@ public class SystemPart
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //----------//
-    // addChild //
-    //----------//
-    /**
-     * Overrides normal behavior, to deal with the separation of specific children
-     *
-     * @param node the node to insert
-     */
-    @Override
-    public void addChild (TreeNode node)
-    {
-        // Specific children lists
-        if (node instanceof Staff) {
-            staves.addChild(node);
-        } else if (node instanceof Measure) {
-            measures.addChild(node);
-        } else if (node instanceof Slur) {
-            slurs.addChild(node);
-        } else {
-            super.addChild(node);
-        }
-    }
-
-    //---------------//
-    // barlineExists //
-    //---------------//
-    public boolean barlineExists (int x,
-                                  int maxShiftDx)
-    {
-        for (TreeNode node : getMeasures()) {
-            Measure measure = (Measure) node;
-
-            if (Math.abs(measure.getBarline().getCenter().x - x) <= maxShiftDx) {
-                return true;
-            }
-        }
-
-        return false; // Not found
-    }
-
-    //-------------//
-    // cleanupNode //
-    //-------------//
-    public void cleanupNode ()
-    {
-        getSlurs()
-            .clear();
-    }
-
     //-----------------//
     // getFirstMeasure //
     //-----------------//
@@ -193,6 +135,32 @@ public class SystemPart
                              .get(getMeasures().size() - 1);
     }
 
+    //------------------//
+    // getLastSoundTime //
+    //------------------//
+    /**
+     * Report the time, counted from beginning of this part, when sound stops,
+     * which means that ending rests are not counted.
+     *
+     * @return the relative time of last Midi "note off" in this part
+     */
+    public int getLastSoundTime ()
+    {
+        // Browse measures backwards
+        for (ListIterator it = getMeasures()
+                                   .listIterator(getMeasures().size());
+             it.hasPrevious();) {
+            Measure measure = (Measure) it.previous();
+            int     time = measure.getLastSoundTime();
+
+            if (time > 0) {
+                return measure.getStartTime() + time;
+            }
+        }
+
+        return 0;
+    }
+
     //--------------//
     // getLastStaff //
     //--------------//
@@ -244,6 +212,14 @@ public class SystemPart
     public List<TreeNode> getMeasures ()
     {
         return measures.getChildren();
+    }
+
+    //--------------//
+    // setScorePart //
+    //--------------//
+    public void setScorePart (ScorePart scorePart)
+    {
+        this.scorePart = scorePart;
     }
 
     //--------------//
@@ -312,6 +288,19 @@ public class SystemPart
     }
 
     //--------------------//
+    // setStartingBarline //
+    //--------------------//
+    /**
+     * Set the barline that starts the part
+     *
+     * @param startingBarline the starting barline
+     */
+    public void setStartingBarline (Barline startingBarline)
+    {
+        this.startingBarline = startingBarline;
+    }
+
+    //--------------------//
     // getStartingBarline //
     //--------------------//
     /**
@@ -351,25 +340,62 @@ public class SystemPart
         return (System) getParent();
     }
 
-    //--------------//
-    // setScorePart //
-    //--------------//
-    public void setScorePart (ScorePart scorePart)
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
     {
-        this.scorePart = scorePart;
+        return visitor.visit(this);
     }
 
-    //--------------------//
-    // setStartingBarline //
-    //--------------------//
+    //----------//
+    // addChild //
+    //----------//
     /**
-     * Set the barline that starts the part
+     * Overrides normal behavior, to deal with the separation of specific children
      *
-     * @param startingBarline the starting barline
+     * @param node the node to insert
      */
-    public void setStartingBarline (Barline startingBarline)
+    @Override
+    public void addChild (TreeNode node)
     {
-        this.startingBarline = startingBarline;
+        // Specific children lists
+        if (node instanceof Staff) {
+            staves.addChild(node);
+        } else if (node instanceof Measure) {
+            measures.addChild(node);
+        } else if (node instanceof Slur) {
+            slurs.addChild(node);
+        } else {
+            super.addChild(node);
+        }
+    }
+
+    //---------------//
+    // barlineExists //
+    //---------------//
+    public boolean barlineExists (int x,
+                                  int maxShiftDx)
+    {
+        for (TreeNode node : getMeasures()) {
+            Measure measure = (Measure) node;
+
+            if (Math.abs(measure.getBarline().getCenter().x - x) <= maxShiftDx) {
+                return true;
+            }
+        }
+
+        return false; // Not found
+    }
+
+    //-------------//
+    // cleanupNode //
+    //-------------//
+    public void cleanupNode ()
+    {
+        getSlurs()
+            .clear();
     }
 
     //----------//

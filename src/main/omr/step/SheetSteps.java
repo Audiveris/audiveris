@@ -89,6 +89,55 @@ public class SheetSteps
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // isDone //
+    //--------//
+    /**
+     * Convenient method to check whether a given step has been done (or simply
+     * started)
+     * @param step the provided step
+     * @return true if step has been done / started
+     */
+    public boolean isDone (Step step)
+    {
+        return getTask(step)
+                   .isDone();
+    }
+
+    //-----------//
+    // getResult //
+    //-----------//
+    /**
+     * Convenient method to make sure the result of a given step is
+     * available
+     * @param step the provided step
+     * @exception StepException if processing goes wrong
+     */
+    public void getResult (Step step)
+        throws StepException
+    {
+        getTask(step)
+            .getResult();
+    }
+
+    //-----------------//
+    // getSystemResult //
+    //-----------------//
+    /**
+     * Convenient method to make sure the result of a given step on a given
+     * system is available
+     * @param step the provided step
+     * @param system the provided system
+     * @exception StepException if processing goes wrong
+     */
+    public void getSystemResult (Step       step,
+                                 SystemInfo system)
+        throws StepException
+    {
+        SystemTask systemTask = (SystemTask) getTask(step);
+        systemTask.getResult(system);
+    }
+
     //-----------//
     // displayUI //
     //-----------//
@@ -139,55 +188,6 @@ public class SheetSteps
     {
         getTask(step)
             .doit();
-    }
-
-    //-----------//
-    // getResult //
-    //-----------//
-    /**
-     * Convenient method to make sure the result of a given step is
-     * available
-     * @param step the provided step
-     * @exception StepException if processing goes wrong
-     */
-    public void getResult (Step step)
-        throws StepException
-    {
-        getTask(step)
-            .getResult();
-    }
-
-    //-----------------//
-    // getSystemResult //
-    //-----------------//
-    /**
-     * Convenient method to make sure the result of a given step on a given
-     * system is available
-     * @param step the provided step
-     * @param system the provided system
-     * @exception StepException if processing goes wrong
-     */
-    public void getSystemResult (Step       step,
-                                 SystemInfo system)
-        throws StepException
-    {
-        SystemTask systemTask = (SystemTask) getTask(step);
-        systemTask.getResult(system);
-    }
-
-    //--------//
-    // isDone //
-    //--------//
-    /**
-     * Convenient method to check whether a given step has been done (or simply
-     * started)
-     * @param step the provided step
-     * @return true if step has been done / started
-     */
-    public boolean isDone (Step step)
-    {
-        return getTask(step)
-                   .isDone();
     }
 
     //-----------------//
@@ -246,15 +246,19 @@ public class SheetSteps
                 new Runnable() {
                         public void run ()
                         {
+                            if (isDone(VERTICALS)) {
+                                getTask(VERTICALS)
+                                    .displayUI();
+                            }
+
                             if (isDone(SYMBOLS)) {
                                 getTask(SYMBOLS)
                                     .displayUI();
                             }
 
-                            if (isDone(VERTICALS)) {
-                                getTask(VERTICALS)
-                                    .displayUI();
-                            }
+                            // Kludge, to put the Glyphs tab on top of all others.
+                            sheet.getAssembly()
+                                 .selectTab("Glyphs");
                         }
                     });
         }

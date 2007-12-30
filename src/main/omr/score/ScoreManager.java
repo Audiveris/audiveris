@@ -151,6 +151,28 @@ public class ScoreManager
     }
 
     //-----------//
+    // midiClose //
+    //-----------//
+    /**
+     * Cut any relationship between the provided score and the Midi interface
+     * (MidiAgent & MidiReceiver) if any
+     *
+     * @param score the score being closed
+     */
+    public void midiClose (Score score)
+    {
+        try {
+            MidiAgent agent = MidiAgent.getInstance();
+
+            if (agent.getScore() == score) {
+                agent.setScore(null);
+            }
+        } catch (Exception ex) {
+            logger.warning("Error closing Midi interface ", ex);
+        }
+    }
+
+    //-----------//
     // midiWrite //
     //-----------//
     /**

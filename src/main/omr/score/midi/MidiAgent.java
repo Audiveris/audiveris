@@ -105,32 +105,6 @@ public class MidiAgent
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------------//
-    // getLengthInTicks //
-    //------------------//
-    /**
-     * Report the length of the current sequence
-     *
-     * @return the sequence length in Midi ticks
-     */
-    long getLengthInTicks ()
-    {
-        return player.getLengthInTicks();
-    }
-
-    //--------------------//
-    // getPositionInTicks //
-    //--------------------//
-    /**
-     * Report the current position within the current sequence
-     *
-     * @return the current position in Midi ticks
-     */
-    long getPositionInTicks ()
-    {
-        return player.getPositionInTicks();
-    }
-
     //-------------//
     // getInstance //
     //-------------//
@@ -171,6 +145,18 @@ public class MidiAgent
         if (this.score != score) {
             reset();
             this.score = score;
+
+            switch (status) {
+            case PLAYING :
+                stop();
+
+                break;
+
+            case PAUSED :
+                status = Status.STOPPED;
+                MidiActions.updateActions();
+                logger.info("Stopped.");
+            }
         }
     }
 
@@ -333,6 +319,32 @@ public class MidiAgent
         OutputStream os = new FileOutputStream(file);
         write(os);
         os.close();
+    }
+
+    //------------------//
+    // getLengthInTicks //
+    //------------------//
+    /**
+     * Report the length of the current sequence
+     *
+     * @return the sequence length in Midi ticks
+     */
+    long getLengthInTicks ()
+    {
+        return player.getLengthInTicks();
+    }
+
+    //--------------------//
+    // getPositionInTicks //
+    //--------------------//
+    /**
+     * Report the current position within the current sequence
+     *
+     * @return the current position in Midi ticks
+     */
+    long getPositionInTicks ()
+    {
+        return player.getPositionInTicks();
     }
 
     //--------//
