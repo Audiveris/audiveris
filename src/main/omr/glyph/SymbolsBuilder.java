@@ -19,6 +19,7 @@ import omr.score.entity.Note;
 import omr.script.AssignTask;
 import omr.script.DeassignTask;
 import omr.script.SegmentTask;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 

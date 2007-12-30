@@ -1,3 +1,4 @@
+
 package omr.util;
 
 import java.util.logging.LogRecord;
@@ -10,12 +11,22 @@ import java.util.logging.LogRecord;
 public class LogLevelsFilter
     implements java.util.logging.Filter
 {
+    //~ Instance fields --------------------------------------------------------
+
     private final java.util.logging.Level[] levels;
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new LogLevelsFilter object.
+     *
+     */
     public LogLevelsFilter (java.util.logging.Level... levels)
     {
         this.levels = levels;
     }
+
+    //~ Methods ----------------------------------------------------------------
 
     /**
      * Checks if the record is loggable.

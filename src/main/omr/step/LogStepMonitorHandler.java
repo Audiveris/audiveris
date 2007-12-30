@@ -9,9 +9,9 @@
 //
 package omr.step;
 
-import java.util.logging.*;
-
 import omr.util.LogLevelsFilter;
+
+import java.util.logging.*;
 
 /**
  * <p>Class <code>LogStepMonitorHandler</code> provides a connection between
@@ -35,6 +35,9 @@ public class LogStepMonitorHandler
 {
     //~ Constructors -----------------------------------------------------------
 
+    /**
+     * Creates a new LogStepMonitorHandler object.
+     */
     public LogStepMonitorHandler ()
     {
         setFilter(new LogLevelsFilter(Level.INFO));

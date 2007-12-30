@@ -177,8 +177,7 @@ public class MidiActions
         try {
             Sheet sheet = SheetManager.getSelectedSheet();
 
-            if ((sheet == null) ||
-                (sheet.getScore() == null) ) {
+            if ((sheet == null) || (sheet.getScore() == null)) {
                 setPlay(true);
                 playAction.setEnabled(false);
                 stopAction.setEnabled(false);

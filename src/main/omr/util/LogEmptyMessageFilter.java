@@ -1,3 +1,4 @@
+
 package omr.util;
 
 import java.util.logging.LogRecord;
@@ -12,6 +13,8 @@ import java.util.logging.LogRecord;
 public class LogEmptyMessageFilter
     implements java.util.logging.Filter
 {
+    //~ Methods ----------------------------------------------------------------
+
     /**
      * Checks if the record is loggable.
      * In this implementation, returns true

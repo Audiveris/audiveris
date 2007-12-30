@@ -446,7 +446,9 @@ public class HorizontalsBuilder
 
         public LedgerAction ()
         {
-            putValue("SwingSelectedKey", constants.displayLedgerLines.getValue());
+            putValue(
+                "SwingSelectedKey",
+                constants.displayLedgerLines.getValue());
         }
 
         //~ Methods ------------------------------------------------------------
