@@ -1,291 +1,400 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html><head><!-- $Id$ -->
+<html>
+    <head>
+	
+	<!-- $Id$ -->
+	
+	<meta http-equiv="CONTENT-TYPE" content="text/html;
+						 charset=windows-1252"/>
+	<title>Audiveris Example</title>
+	
+	<meta name="AUTHOR" content="Hervé Bitteur"/>
+	
+	<meta name="CLASSIFICATION" content="Quick example for Audiveris
+					     operation"/>
+	
+	<meta name="DESCRIPTION" content="Using Audiveris on a short example"/>
+	<!-- The following links are meant to be solved on my local PC -->
+	<!-- The java.net site uses its own style sheets -->
+	
+	<link rel="stylesheet" type="text/css"
+	      href="../../branding/css/tigris.css"/>
+	
+	<link rel="stylesheet" type="text/css"
+	      href="../../branding/css/inst.css"/>
+    </head>
+    <body class="app" style="text-align: justify;" marginheight="0" marginwidth="0">
+	<h1 align="center">Audiveris Quick Example</h1>
+	<address> Author: <a href="mailto:herve.bitteur@laposte.net">Hervé
+	    Bitteur</a> </address>
+	<address> Updated:
+	    <script type="text/javascript">
+		document.write(parent.parent.getCVSDate("$Id$"));
+	    </script>
+	</address>
+	<p>Purpose of this document&nbsp;is to describe a very simple yet
+	    realistic use of Audiveris, so that you can get acquainted with some
+	    of its major features.</p>
+	<p><b>Nota</b>: Your own experience on the same music sheet may vary
+	    because some parameters may have evolved, for example you may be
+	    using a different Neural Network and therefore the glyph recognition
+	    may produce different results. </p>
+	<a name="INITIAL">
+	    <h2>Initial actions</h2>
+	</a> <a name="LAUNCHING">
+		 <h3>Launch Audiveris</h3>
+	     </a>
+	<ul>
+	    <li>First, navigate to the directory where you have extracted the
+		Audiveris distribution archive.</li>
+	    <li>Then the easiest way is to double-click on the jar file
+		named <u><b>audiveris-3.1.jar</b></u> located in
+		the <u><b>dist</b></u> subfolder.</li>
+	    <li>You can also use the following command:
+		<p><code>$&gt; java -jar dist/audiveris-3.1.jar</code></p>
+		<p>or if for example you need more memory:</p>
+		<p><code>$&gt; java -Xms128m -Xmx256m -jar
+		    dist/audiveris-3.1.jar</code></p>
+	    </li>
+	</ul>
+	<a name="LOAD">
+	    <h3>Load an image</h3>
+	</a>
+	<p>From the <u><i>File</i></u> menu, select the <u><i>Open Sheet</i></u>
+	    item and in the dialog box which appears, select
+	    the <b>chula.png</b> file located in the <b>/examples</b>
+	    folder.</p>
+	<p>This loads the image out of the selected file, and the application
+	    window now looks like the following. Note that&nbsp;the image width
+	    (2450 pixels) and height (1954 pixels) are listed in the
+	    log&nbsp;panel.</p>
+	<p> <img src="../images/chula-load.png" alt="Chula after load"
+		 title="Windows just after loading the Chula image file"/>
+	</p>
+	<a name="AUTOMATIC">
+	    <h2>Let Audiveris work</h2>
+	</a>
+	<p>From the <u><i>Step</i></u> menu, directly select
+	    the <u><i>SCORE</i></u> step, as indicated below
+	    (the <u><i>LOAD</i></u> step has already been done as indicated by
+	    the check mark, we want to go through all steps, down to
+	    the <u><i>SCORE</i></u> step):</p>
+	<p><img src="../images/chula-score-step.png" alt="" title="Selecting the
+								   SCORE
+								   step"/></p>
+	<p>Audiveris will execute all the steps until the selected one.  The
+	    user interface will evolve in parallel to the final view as in
+	    following picture.</p>
+	<p>Notice that:</p>
+	<ul>
+	    <li> The staff lines have been erased and replaced by straight
+		lines</li>
+	    <li>The barlines and the braces are displayed in light gray</li>
+	    <li>The stems are in green with a straight vertical segment
+		line</li>
+	    <li>The other symbols are displayed in specific colors, which is a
+		visual help to detect no recognition (red color) or wrong
+		recognition (the color is not the one expected).</li>
+	</ul>
+	You can have a look at the other tabs:
+	<ul>
+	    <li>Picture: the original image</li>
+	    <li>Lines: focus on staff lines</li>
+	    <li>Horizontals: focus on horizontal segments, such as ledgers</li>
+	    <li>Bars: the barlines</li>
+	    <li>Verticals: the stems</li>
+	    <li>Glyphs: the result of glyph extraction</li>
+	</ul>
+	<p>The upper part of the window displays a synthetic view of the
+	    resulting score, on an ivory background, as translated from the
+	    extracted glyphs. If you can't see this view, make sure it is not
+	    collapsed, by dragging down the split line located just above the
+	    tabs.</p>
+	<p> <img src="../images/chula-score.png" alt="Image after processing"
+		 title="The display when all steps have been run"/> </p>
 
-<meta http-equiv="CONTENT-TYPE" content="text/html; charset=windows-1252"><title>Audiveris Example</title>
 
-<meta name="AUTHOR" content="Hervé Bitteur">
-<meta name="CLASSIFICATION" content="Quick example for Audiveris operation">
-<meta name="DESCRIPTION" content="Using Audiveris on a short example"><!-- The following links are meant to be solved on my local PC --><!-- The java.net site uses its own style sheets -->
+	<a name="MANUAL">
+	    <h2>Manual Corrections</h2>
+	</a>
+	<div class="warningmessage"> <b>Nota</b>: Your actual results may vary
+	    according to the environment, notably the value of the various
+	    application parameters (which can be viewed and modified in the
+	    Options window) or even the training of the neural network. </div>
+	
+	<a name="SHARPS">
+	    <h3>Segmented Sharp Sign</h3>
+	</a>
+	<p>We can first use the "Error pane", which is located in the middle at
+	    the bottom of the screen.</p>
+	<ul>
+	    <li>It displays the set of errors found, sorted by their location
+		within the score:
+		<p>
+		    <img src="../images/chula-errors.png" title="Sorted set of
+								 errors found"
+								 alt="Chula
+								 errors pane"/>
+		</p>
+	    </li>
+	    <li>The location of the first message is here coded as
+		"<i>S2P1M18</i>" (System 2, Part 1, Measure 18) for the first
+		error. The message "<span style="font-style: italic;">Voice #1
+		too long for Q</span>" indicates that in the specified measure,
+		the voice #1 is too long, it ends exactly one quarter (Q) after
+		the normal duration of the measure. The following message says
+		the same thing for voice #2 in the same measure.</li>
+	    <li>For any error listed in this error pane, simply clicking on a
+		message will move the current focus to where the program thinks
+		the error is located. Here it will point to the center of
+		specified measure, with the focus point being indicated by
+		crossing bars (of brown color by default). The score display and
+		the sheet display are kept in sync. <br/> <img
+		src="../images/chula-sharp.png" alt="" title="Sharp not
+		recognized"/></li>
+	    <li>We can notice that a sharp sign has not been recognized, and has
+		been further segmented into spurious stems and small leaves,
+		some of them being assigned a note head shape as visible in the
+		score display. And these false void note heads, with their
+		duration, are responsible for the wrong measure duration.</li>
+	    <li>To fix this, the easiest way is to select the sharp glyph as a
+		whole. To define a "lasso" , simply keep the Shift key pressed
+		while clicking and dragging the left mouse button, as in this
+		picture:<br/> &nbsp;<img src="../images/chula-lasso.png" alt=""
+		title="Lasso on several glyphs"/></li>
+	    <li>Then a right click opens a popup menu related to the object(s)
+		at hand. Select the "<i>Deassign 3 glyphs w/ 2 stems</i>" menu
+		item
+		
+		<br/> <img src="../images/chula-deassign.png" alt=""
+			   title="Deassign the glyphs"/></li>
+	    <li>And you now get a deassigned glyph, colored in red, since the
+		program has not been able to assign a shape to it. You may think
+		that the glyph is obviously a sharp sign, but there is a stem
+		very close to it and generally a sharp is not that close to a
+		stem, like a black note head would be. So the Neural Network
+		decided this was not a sharp.<br/>  <img
+		src="../images/chula-deassigned-sharp.png" alt=""
+		title="Deassigned glyph"/></li>
+	    <li>You are now left with manually forcing the shape. Simply select
+		the glyph with a right click, and use &nbsp;the menu item
+		"Assign glyph as ...", then "Accidentals", then
+		"SHARP". Granted, this is not a very convenient
+		interface...<br/>  <br/> <img
+		src="../images/chula-assigning-sharp.png" alt="" title="Assigned
+		sharp shape"/></li>
+	    <li>And the final result is:
 
-<link rel="stylesheet" type="text/css" href="../../branding/css/tigris.css">
-<link rel="stylesheet" type="text/css" href="../../branding/css/inst.css"></head>
-<body class="app" style="text-align: justify;" marginheight="0" marginwidth="0">
-<h1 align="center">Audiveris Quick Example</h1>
-<address> Author: <a href="mailto:herve.bitteur@laposte.net">Hervé
-Bitteur</a> </address>
-<address> Updated:
-<script type="text/javascript">
-document.write(parent.parent.getCVSDate("$Id$"));
-</script></address>
-<p>Purpose of this document&nbsp;is to describe a very simple
-yet realistic use of Audiveris, so that you can get acquainted with
-some of its major features.</p>
-<p><b>Nota</b>: Your own experience on the same music
-sheet may vary because some parameters may have evolved, for example
-you may be using a different Neural Network and therefore the glyph
-recognition may produce different results. </p>
-<a name="INITIAL">
-<h2>Initial actions</h2>
-</a> <a name="LAUNCHING">
-<h3>Launch Audiveris</h3>
-</a>
-<ul>
-<li>First, navigate to the directory where you have extracted
-the Audiveris distribution archive.</li>
-<li>Then the easiest way is to double-click on the jar file
-named <u><b>audiveris-3.1.jar</b></u> located
-in the <u><b>dist</b></u> subfolder.</li>
-<li>You can also use the following command:
-<p><code>$&gt; java -jar dist/audiveris-3.1.jar</code></p>
-<p>or if for example you need more memory:</p>
-<p><code>$&gt; java -Xms128m -Xmx256m -jar
-dist/audiveris-3.1.jar</code></p>
-</li>
-</ul>
-<a name="LOAD">
-<h3>Load an image</h3>
-</a>
-<p>From the <u><i>File</i></u> menu,
-select the <u><i>Open Sheet</i></u> item and
-in the dialog box which appears, select the <b>chula.png</b>
-file located in the <b>/examples</b> folder.</p>
-<p>This loads the image out of the selected file, and the
-application window now looks like the following. Note that&nbsp;the
-image width (2450 pixels) and height (1954 pixels) are listed in the
-log&nbsp;panel.</p>
-<p></p>
-<p> <img src="../images/chula-load.png" alt="Chula after load" title="Windows just after loading the Chula image file"> </p>
-<a name="AUTOMATIC">
-<h2>Let Audiveris work</h2>
-</a>
-<p>From the <u><i>Step</i></u> menu,
-directly select the <u><i>SCORE</i></u> step,
-as indicated below (the <u><i>LOAD</i></u>
-step has already been done as indicated by the check mark, we want to
-go through all steps, down to the <u><i>SCORE</i></u>
-step):</p>
-<p><img src="../images/chula-score-step.png" style="width: 294px; height: 308px;" alt="" title="Selecting the SCORE step"></p>
-<p>Audiveris will execute all the steps until the selected one.
-The user interface will evolve in parallel to the final view as in
-following picture.</p>
-<p>Notice that:</p>
-<ul>
-<li> The staff lines have been erased and replaced by straight
-lines</li>
-<li>The barlines and the braces are displayed in light gray</li>
-<li>The stems are in green with a straight vertical segment line</li>
-<li>The other symbols are displayed in specific colors, which
-is a visual help to detect no recognition (red color) or wrong
-recognition (the color is not the one expected).</li>
-</ul>
-You can have a look at the other tabs:
-<ul>
-<li>Picture: the original image</li>
-<li>Lines: focus on staff lines</li>
-<li>Horizontals: focus on horizontal segments, such as ledgers</li>
-<li>Bars: the barlines</li>
-<li>Verticals: the stems</li>
-<li>Glyphs: the result of glyph extraction</li>
-</ul>
-<p>The upper part of the window displays a synthetic view of the
-resulting score, on an ivory background, as translated from the
-extracted glyphs. If you can't see this view, make sure it is not
-collapsed, by dragging down the split line located just above the tabs.</p>
-<p> <img src="../images/chula-score.png" alt="Image after processing" title="The display when all steps have been run"> </p>
-<a name="MANUAL">
-<h2>Manual Corrections</h2>
-</a>
-<div class="warningmessage"> <b>Nota</b>:
-Your actual results may vary according to the environment, notably the
-value of the various application parameters (which can be viewed and
-modified in the Options window) or even the training of the neural
-network. </div>
-<a name="SHARPS">
-<h3>Segmented Sharp Sign</h3>
-</a>
-<p>We can first use the "Error pane", which is located in the
-middle at the bottom of the screen.</p>
-<ul>
-<li>It displays the set of errors found, sorted by their
-location within the score:
-<p> <img src="../images/chula-errors.png" alt="Chula errors pane" title="Sorted set of errors found"></p>
-</li>
-<li>The location of the first message is here coded as "<span style="font-style: italic;">S2P1M18</span>" (System 2,
-Part 1, Measure 18)
-for the first error. The message "<span style="font-style: italic;">Voice
-#1 too long for Q</span>" indicates
-that in the specified measure, the voice #1 is too long, it ends
-exactly one quarter (Q) after the normal duration of the measure. The
-following message says the same thing for voice #2 in the same measure.</li>
-<li>For any error listed in this error pane, simply clicking on
-a message will move the current focus to where the program thinks the
-error is located. Here it will point to the center of specified
-measure, with the focus point being indicated by crossing bars (of
-brown color by default). The score display and the sheet display are
-kept in sync. <br>
-<img src="../images/chula-sharp.png" style="width: 422px; height: 539px;" alt="" title="Sharp not recognized"></li>
-<li>We can notice that a sharp sign has not been recognized,
-and has been further segmented into spurious stems and small leaves,
-some of them being assigned a note head shape as visible in the score
-display. And these false void note heads, with their duration, are
-responsible for the wrong measure duration.</li>
-<li>To fix this, the easiest way is to select the sharp glyph
-as a whole. To define a "lasso" , simply keep the Shift key pressed
-while clicking and dragging the left mouse button, as in this picture:<br>
-&nbsp;<img src="../images/chula-lasso.png" style="width: 93px; height: 140px;" alt="" title="Lasso on several glyphs"></li>
-<li>Then a right click opens a popup menu related to the
-object(s) at hand. Select the "<span style="font-style: italic;">Deassign
-3 glyphs w/ 2 stems</span>" menu item<br>
-<img src="../images/chula-deassign.png" style="width: 326px; height: 258px;" alt="" title="Deassign the glyphs"></li>
-<li>And you now get a deassigned glyph, colored in red, since
-the program has not been able to assign a shape to it. You may think
-that the glyph is obviously a sharp sign, but there is a stem very
-close to it and generally a sharp is not that close to a stem, like a
-black note head would be. So the Neural Network decided this was not a
-sharp.<br>
-<img src="../images/chula-deassigned-sharp.png" style="width: 84px; height: 117px;" alt="" title="Deassigned glyph"></li>
-<li>You are now left with manually forcing the shape. Simply
-select the glyph with a right click, and use &nbsp;the menu item
-"Assign glyph as ...", then "Accidentals", then "SHARP". Granted, this
-is not a very convenient interface...<br>
-<br>
-<img src="../images/chula-assigning-sharp.png" style="width: 489px; height: 457px;" alt="" title="Assigned sharp shape"></li>
-<li>And the final result is:<br>
-<img src="../images/chula-assigned-sharp.png" style="width: 79px; height: 102px;" alt="" title="Assigned sharp"></li>
-</ul>
-<a name="STEMS">
-<h3>Stems</h3>
-</a>
-<p>The errors pane is now empty. This does not mean there is no
-error left, but rather than the program has not detected any other
-error!</p>
-<ul>
-<li> Browsing through the sheet view, you can notice the
-strange looking glyph:
-<p> <img src="../images/chula-grace.png" alt="glyph mistaken for a grace note" title="Strange looking grace note"><em><b>Fixed
-As:</b></em> <img src="../images/chula-grace-fixed.png" alt="fixed grace note" title="Fixed grace note"> </p>
-</li>
-<li>The glyph has been mistaken for a grace note, due the fact
-that the stem had been cut by the staff line removal. </li>
-<li>To correct this, we select the glyph, and in the popup menu
-got through a right click, we select the item "<u><i>Look
-for verticals</i></u>"
-<p> <img src="../images/chula-verticals.png" alt="Chula verticals" title="Look for verticals"> </p>
-</li>
-<li>It immediately segments this glyph into one stem, one beam
-hook and one black hote head.</li>
-</ul>
-<a name="DEASSIGN">
-<h3>Deassign glyph</h3>
-</a>
-<ul>
-<li> Browsing till the end of the score, you may notice the
-flag shape of one of the last notes, in measure 19:
-<p> <img src="../images/chula-flags.png" alt="Chula flags" title="Strange-looking flag"> <em><b>Fixed
-As:</b></em> <img src="../images/chula-flags-fixed.png" alt="Chula flags fixed" title="Fixed flag"> </p>
-</li>
-<li>This time, we have the merge of two glyphs (a flag and a
-quarter rest) resulting into something that we cannot split. [For the
-time being, only stems and slurs can be handled this way by Audiveris].</li>
-<li>The simplest action is to deassign the glyph, by selecting
-it, and clicking the "<u><i>Deassign</i></u>"
-button in the Glyph board.</li>
-</ul>
-<a name="FINAL">
-<h2>Final</h2>
-</a> <a name="WRITING">
-<h3>Score writing</h3>
-</a>
-<table border="0">
-<tbody>
-<tr>
-<td width="50%">
-<p>Now that we are rather satisfied with the final
-translation, we can write the result into a MusicXML file.</p>
-<p>In the <u><i>Score</i></u>
-menu, we select the <u><i>Store in Xml</i></u>
-item which presents a dialog box to choose a target file.</p>
-<p>We finally click on the <u><i>Record</i></u>
-button, et voila!</p>
-</td>
-<td>
-<p>Here is the content of <b>chula.xml</b>:</p>
-<script type="text/javascript">
-document.write("<iframe src='chula.xml.html' width='100%' height='200' frameborder='1'></iframe>");
-</script>
-</td>
-</tr>
-</tbody>
-</table>
-<a name="SCRIPT">
-<h3>Script writing</h3>
-</a>
-<table border="0">
-<tbody>
-<tr>
-<td width="50%">
-<p>You can decide to store the script of your actions
-related to 'chula' sheet, by selecting the <u><i>Store
-script</i></u> item in the <u><i>File</i></u>
-menu.</p>
-<p>Select the location, and your script is written by
-default as <b>chula.script</b> file.</p>
-<p>If you close the current sheet without saving your
-script first you will be asked for saving the related script of your
-actions:</p>
-<p> <img src="../images/chula-script.png" alt="Script prompt" title="Script prompt"> </p>
-</td>
-<td>
-<p>Here is the content of <b>chula.script</b>:</p>
-<script type="text/javascript">
-document.write("<iframe src='chula.script.html' width='100%' height='200' frameborder='1'></iframe>");
-</script>
-</td>
-</tr>
-</tbody>
-</table>
-<a name="SCRIPT_REPLAY">
-<h3>Script replay</h3>
-</a>
-<p>You can replay any script, by simply selecting the <u><i>Open
-script</i></u> item in the <u><i>File</i></u>
-menu, and choosing a script file.</p>
-<p>For example, just choose the script you've just stored, and
-watch 'chula' image be reloaded, the various steps performed, and the
-series of your manual actions done again. From that point on, you can
-make additional actions through the user interface, these actions will
-be added at the end of the sheet script. It's a convenient way to work
-again on a previous session for example. If you are curious, have a
-look at the 'chula.script' file, which is a simple xml file where all
-your actions are easily recognized.</p>
-<a name="MIDI">
-<h2>Midi</h2>
-</a>
-<a name="PLAY">
-<h3>Direct Playback</h3>
-</a>
-<p>There is now a simple MusicXML/Midi interface, a Java open source
-program named XenoPlay (see the <a href="http://www.xenoage.com/player/">XenoPlay website</a>), embedded within Audiveris. It allows a simple
-playback of the score through the platform Midi engine, as well as the
-writing of Midi files.</p><p>These Midi features are available in the Score menu, and some of them are directly callable from the tool bar:<br><img title="Icond for Play/Pause &amp; Stop" style="width: 183px; height: 89px;" alt="" src="../images/chula-midi-play.png"></p>There are two icons, the left one for starting/pausing/restarting the playback, and the right one for stopping the playback.<br>During the playback, the Score display is kept in sync, using a (violet) vertical bar on the current time slot:<br><img style="width: 191px; height: 268px;" alt="" title="Time slot highlighted while playing" src="../images/chula-midi-playing.png"><br><br>For
-the time being, you can only play the whole score (though you can
-pause/restart or stop at any time). You cannot play just a selected
-measure for example.<br>Other limitations are due to the embedded
-MusicXML/Midi software which does not yet handle repeat signs or
-similar coda information.<a name="EXTERNAL"><h2>External</h2>
-</a>
-<a name="WRITE_MIDI">
-<h3>Writing Midi</h3>
-</a>
-<p>Writing MIDI information into a Midi file is available through the Score menu, using the "<span style="text-decoration: underline; font-style: italic;">Store in Midi</span>" menu item. You are prompted for selecting an output file, and the Midi information is written using Midi format 1.</p>
-<a name="FINALE">
-<h3>Connecting Finale</h3>
-</a>
-<p>We can simply connect another tool, thanks to the emerging MusicXML standard. For example you can
-download a free demo version of Finale 2007, which for example&nbsp;correctly handles the repeat signs, and more.</p>
-<p> Within Finale application, in the <u><i>File</i></u>
-menu, use its <u><i>Music XML</i></u> | <u><i>Import</i></u>
-item, and get a display of our score. Then, press <u><i>Play</i></u>
-button, and listen! </p>
-<p> <img src="../images/chula-finale.png" alt="Finale window" title="Finale on Chula"> </p>
-</body></html>
+		<br/> <img src="../images/chula-assigned-sharp.png" alt=""
+			   title="Assigned sharp"/></li>
+	</ul>
+	
+	<a name="STEMS">
+	    <h3>Stems</h3>
+	</a>
+	<p>The errors pane is now empty. This does not mean there is no error
+	    left, but rather than the program has not detected any other
+	    error!</p>
+	<ul>
+	    <li> Browsing through the sheet view, you can notice the strange
+		looking glyph:
+		<p> <img src="../images/chula-grace.png" alt="glyph mistaken for
+							      a grace note"
+							      title="Strange
+							      looking grace
+							      note"/>
+		    
+		    <em><b>Fixed As:</b></em> <img
+						  src="../images/chula-grace-fixed.png"
+						  alt="fixed grace note"
+						  title="Fixed grace
+						  note"/> </p>
+	    </li>
+	    <li>The glyph has been mistaken for a grace note, due the fact that
+		the stem had been cut by the staff line removal. </li>
+	    <li>To correct this, we select the glyph, and in the popup menu got
+		through a right click, we select the item "<u><i>Look for
+		verticals</i></u>"
+		<p> <img src="../images/chula-verticals.png" alt="Chula
+								  verticals"
+								  title="Look
+								  for
+								  verticals"/> </p>
+	    </li>
+	    <li>It immediately segments this glyph into one stem, one beam hook
+		and one black hote head.</li>
+	</ul>
+	
+	<a name="DEASSIGN">
+	    <h3>Deassign glyph</h3>
+	</a>
+	<ul>
+	    <li> Browsing till the end of the score, you may notice the flag
+		shape of one of the last notes, in measure 19:
+		<p> <img src="../images/chula-flags.png" alt="Chula flags"
+			 title="Strange-looking flag"/> <em><b>Fixed
+			 As:</b></em> <img src="../images/chula-flags-fixed.png"
+			 alt="Chula flags fixed" title="Fixed flag"/> </p>
+	    </li>
+	    <li>This time, we have the merge of two glyphs (a flag and a quarter
+		rest) resulting into something that we cannot split. [For the
+		time being, only stems and slurs can be handled this way by
+		Audiveris].</li>
+	    <li>The simplest action is to deassign the glyph, by selecting it,
+		and clicking the "<u><i>Deassign</i></u>" button in the Glyph
+		board.</li>
+	</ul>
+
+	<a name="SCRIPT">
+	    <h2>Script</h2>
+	</a>
+	
+	<a name="SCRIPT_WRITING">
+	    <h3>Script writing</h3>
+	</a>
+	<table border="0">
+	    <tbody>
+		<tr>
+		    <td width="50%">
+			<p>You can decide to store the script of your actions
+			    related to 'chula' sheet, by selecting
+			    the <u><i>Store script</i></u> item in
+			    the <u><i>File</i></u> menu.</p>
+			<p>Select the location, and your script is written by
+			    default as <b>chula.script</b> file.</p>
+			<p>If you close the current sheet without saving your
+			    script first you will be asked for saving the
+			    related script of your actions:</p>
+			<p> <img src="../images/chula-script.png" alt="Script
+								       prompt"
+								       title="Script
+								       prompt"/> </p>
+		    </td>
+		    <td>
+			<p>Here is the content of <b>chula.script</b>:</p>
+			<script type="text/javascript">
+			    document.write("<iframe src='chula.script.html'
+						    width='100%' height='200'
+						    frameborder='1'></iframe>");
+			</script>
+		    </td>
+		</tr>
+	    </tbody>
+	</table>
+	
+	<a name="SCRIPT_REPLAY">
+	    <h3>Script replay</h3>
+	</a>
+	<p>You can replay any script, by simply selecting the <u><i>Open
+	    script</i></u> item in the <u><i>File</i></u> menu, and choosing a
+	    script file.</p>
+	<p>For example, just choose the script you've just stored, and watch
+	    'chula' image be reloaded, the various steps performed, and the
+	    series of your manual actions done again. From that point on, you
+	    can make additional actions through the user interface, these
+	    actions will be added at the end of the sheet script. It's a
+	    convenient way to work again on a previous session for example. If
+	    you are curious, have a look at the 'chula.script' file, which is a
+	    simple xml file where all your actions are easily recognized.</p>
+	
+	<a name="OUTPUT">
+	    <h2>Output</h2>
+	</a>
+	
+	<a name="PARAMETERS">
+	    <h3>Score Parameters</h3>
+	</a>
+	<p>In order to write down the score using MusicXML format, or to play or
+	    write Midi information, the score needs some global information to be
+	    assigned beforehand. The user is prompted for these parameters
+	    through the following dialog window:</p><p><img alt="" title="Score
+	    parameters" src="../images/chula-parameters.png"/></p><ul><li>First
+	    some global data, to specify the tempo in quarters per minute, then
+	    the velocity (volume) in the range 0..127</li><li>Then, part by
+	    part, you can assign part parameters: the part Id, a part name and a
+	    Midi instrument</li></ul>Note that there are generally acceptable
+	    values for all the fields.<br/>This dialog is shown only the first
+	    time the score is used for some output, unless the constant
+	    "<i>promptParameters</i>" in unit "<i>score/ui/ScoreActions</i>" is
+	    set to false. It can always be explicitly opened from
+	    the <u><i>Score</i></u> menu by selecting the <u><i>Set
+	    parameters</i></u> menu item.
+	
+	
+	<a name="WRITING">
+	    <h3>Score writing</h3>
+	</a>
+	<table border="0">
+	    <tbody>
+		<tr>
+		    <td width="50%">
+			<p>If we are rather satisfied with the final
+			    translation, we can write the result into a MusicXML
+			    file.</p>
+			<p>In the <u><i>Score</i></u> menu, we select
+			    the <u><i>Store in Xml</i></u> item which presents a
+			    dialog box to choose a target file.</p>
+			<p>We finally click on the <u><i>Record</i></u> button,
+			    et voila!</p>
+		    </td>
+		    <td>
+			<p>Here is the content of <b>chula.xml</b>:</p>
+			document.write("<iframe src='chula.xml.html'
+			width='100%' height='200' frameborder='1'></iframe>");
+		    </td>
+		</tr>
+	    </tbody>
+	</table>
+	
+	<a name="PLAY">
+	    <h3>Midi Playback</h3>
+	</a>
+	<p> There is now a simple MusicXML/Midi interface, a Java open source
+	    program named XenoPlay (see the <a
+	    href="http://www.xenoage.com/player/">XenoPlay website</a>),
+	    embedded within Audiveris. It allows a simple playback of the score
+	    through the platform Midi engine, as well as the writing of Midi
+	    files.</p>
+	
+	<p>All Midi features are available in the Score menu, and some of them
+	    are directly callable from the tool bar:<br/><img title="Icons for
+	    Play/Pause &amp; Stop" alt=""
+	    src="../images/chula-midi-play.png"/></p>There are two icons, the
+	    left one for starting/pausing/restarting the playback, and the right
+	    one for stopping the playback.<br/>During the playback, the Score
+	    display is kept in sync, using a (violet) vertical bar on the
+	    current time slot:<br/><img alt="" title="Time slot highlighted
+	    while playing" src="../images/chula-midi-playing.png"/><br/><br/>For
+	    the time being, you can only play the whole score (though you can
+	    pause/restart or stop at any time). You cannot play just a selected
+	    measure for example.<br/>Other limitations are due to the embedded
+	    MusicXML/Midi software which is more like a demo and does not yet
+	    handle repeat signs or similar coda information.
+
+	<a name="WRITE_MIDI">
+	    <h3>Writing Midi</h3>
+	</a>
+	<p>Writing MIDI information into a Midi file is available through the
+	    Score menu, using the "<span style="text-decoration: underline;
+	    font-style: italic;">Store in Midi</span>" menu item. You are
+	    prompted for selecting an output file, and the Midi information is
+	    written using Midi format 1.</p>
+	
+	<a name="EXTERNAL">
+	    <h2>External</h2>
+	</a>
+	<a name="FINALE">
+	    <h3>Connecting Finale</h3>
+	</a>
+	<p>We can simply connect another tool, thanks to the emerging MusicXML
+	    standard. For example you can download a free demo version of Finale
+	    2007, which for among other features correctly handles the repeat
+	    signs, and more.</p>
+	<p> Within Finale application, in the <u><i>File</i></u> menu, use
+	    its <u><i>Music XML</i></u> | <u><i>Import</i></u> item, and get a
+	    display of our score. Then, press <u><i>Play</i></u> button, and
+	    listen! </p>
+	<p> <img src="../images/chula-finale.png" alt="Finale window"
+		 title="Finale on Chula"/> </p>
+    </body>
+</html>
