@@ -227,7 +227,7 @@ public class MidiAgent
                 logger.fine("Midi tick length is " + player.getLengthInTicks());
                 logger.fine(
                     "Score tick length is " +
-                    (score.getActualDuration() / score.getDurationDivisor()));
+                    (score.getLastSoundTime() / score.getDurationDivisor()));
             }
 
             // Hand it over to the player and the receiver
