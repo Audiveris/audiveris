@@ -58,11 +58,12 @@ public class WebBrowser
         if (logger.isFineEnabled()) {
             logger.fine("Browsing " + urlString + " using " + toString());
         }
+    }
 
-        if (getClass()
-                .equals(WebBrowser.class)) {
-            logger.warning("Default implementation of WebBrowser used");
-        }
+    @Override
+    public String toString ()
+    {
+        return "WebBrowser(unimplemented fallback)";
     }
 
     /**
@@ -87,12 +88,6 @@ public class WebBrowser
 
             return new WebBrowser() {
                     @Override
-                    public String toString ()
-                    {
-                        return "WebBrowser(java.awt.Desktop)";
-                    }
-
-                    @Override
                     public boolean isSupported ()
                     {
                         try {
@@ -112,9 +107,9 @@ public class WebBrowser
 
                         try {
                             URI    uri = URI.create(urlString);
-                            Object desktop = desktopClass.getMethod(
-                                "getDesktop")
-                                                         .invoke(null);
+                            Method getDesktop = desktopClass.getMethod(
+                                "getDesktop");
+                            Object desktop = getDesktop.invoke(null);
                             desktopClass.getMethod("browse", URI.class)
                                         .invoke(desktop, uri);
                         } catch (Exception ex) {
@@ -124,6 +119,12 @@ public class WebBrowser
                                                                 ? ex.getCause()
                                                                 : ex);
                         }
+                    }
+
+                    @Override
+                    public String toString ()
+                    {
+                        return "WebBrowser(java.awt.Desktop)";
                     }
                 };
         } catch (Exception e) {
@@ -137,12 +138,6 @@ public class WebBrowser
                     "com.apple.eio.FileManager");
 
                 return new WebBrowser() {
-                        @Override
-                        public String toString ()
-                        {
-                            return "WebBrowser(com.apple.eio.FileManager)";
-                        }
-
                         @Override
                         public boolean isSupported ()
                         {
@@ -167,6 +162,12 @@ public class WebBrowser
                                                                         ? ex.getCause()
                                                                         : ex);
                             }
+                        }
+
+                        @Override
+                        public String toString ()
+                        {
+                            return "WebBrowser(com.apple.eio.FileManager)";
                         }
                     };
             } catch (Exception e) {
