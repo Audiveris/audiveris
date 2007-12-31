@@ -153,7 +153,7 @@ public class SheetActions
                 new File(constants.defaultSheetDirectory.getValue()),
                 new FileFilter(
                     "Major image files",
-                    new String[] { ".bmp", ".gif", ".jpg", ".png", ".tif" }));
+                    constants.validImageFiles.getValue().split("\\s")));
 
             if (file != null) {
                 if (file.exists()) {
@@ -353,5 +353,10 @@ public class SheetActions
         Constant.Ratio initialZoomRatio = new Constant.Ratio(
             1d,
             "Initial zoom ratio for displayed sheet pictures");
+
+        /** Valid extensions for image files */
+        Constant.String validImageFiles = new Constant.String(
+            ".bmp .gif .jpg .png .tif",
+            "Valid image file extensions, whitespace-separated");
     }
 }
