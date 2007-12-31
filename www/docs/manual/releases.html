@@ -37,6 +37,45 @@
 
             <!-- =========================================================== -->
             
+            <A NAME="PENDING">
+                <H3>Pending Features</H3>
+            </A>
+            
+            <TABLE WIDTH=100% BORDER=1>
+                <TR>
+                    <TH>Features</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Translation</u>: All notations such as
+                                legato, staccato, accent, etc should be
+                                translated to proper score entities and exported
+                                into the MusicXML stream.</LI>
+                            <LI><u>Bars</u>: Redesign the implementation of
+                                systems and measures handling, so that a bar
+                                line can be easily corrected by a user
+                                action.</LI>
+                            <LI><u>Glyph</u>: Ability to arbitrarily split a
+                                given glyph, according to some user driving
+                                instructions.</LI>
+                            <LI><u>Score</u>: Ability to inject score entities
+                                directly into the score view, providing a very
+                                basic score editor.</LI>
+                            <LI><u>Shape</u>: Use of a palette, instead of
+                                current awkward menu hierarchy, to easily select
+                                a shape for glyph shape assignment or score
+                                entity injection.</LI>
+                            <LI><u>Midi</u>: Add the ability to select and
+                                playback just a portion of the score, such as a
+                                sequence of notes or a sequence of
+                                measures.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+            </TABLE>
+            
+
+            <!-- =========================================================== -->
+            
             <A NAME="3.2">
                 <H3>3.2 Release</H3>
             </A>
@@ -46,7 +85,10 @@
                     <TH>Introduction</TH>
                     <TD>
                         <UL>
-                            <LI>Release 3.2 is now a work in progress</LI>
+                            <LI>Release 3.2 is now a work in progress, with a
+                                special focus on the integration of the
+                                Tesseract public OCR to handle the lyrics and
+                                other textual informations</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -63,27 +105,6 @@
                     <TH>New Features</TH>
                     <TD>
                         <UL>
-			    <LI><u>Translation</u>: All notations such as
-				legato, staccato, accent, etc should be
-				translated to proper score entities and exported
-				into the MusicXML stream.</LI>
-			    <LI><u>Bars</u>: Redesign the implementation of
-                                systems and measures handling, so that a bar line
-                                can be easily corrected by a user action.</LI>
-			    <LI><u>Glyph</u>: Ability to arbitrarily split a
-				given glyph, according to some user driving
-				instructions.</LI>
-			    <LI><u>Score</u>: Ability to inject score entities
-				directly into the score view, providing a very
-				basic score editor.</LI>
-			    <LI><u>Shape</u>: Use of a palette, instead of
-				current awkward menu hierarchy, to easily select
-				a shape for glyph shape assignment or score
-				entity injection.</LI>
-			    <LI><u>Midi</u>: Add the ability to select and
-				playback just a portion of the score, such as a
-				sequence of notes or a sequence of
-				measures.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -92,10 +113,6 @@
                     <TH>Bug Fixes</TH>
                     <TD>
                         <UL>
-			    <LI><u>Image</u>: Make sure binary images (black or
-				white pixels coded as 1 bit) are properly
-				handled. Also provide a rather comprehensive
-				documentation about all handled formats.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -116,7 +133,7 @@
                     </TD>
                 </TR>
             </TABLE>
-	    
+            
 
             <!-- =========================================================== -->
             
@@ -130,7 +147,7 @@
                     <TD>
                         <UL>
                             <LI>Release 3.1 has focused on user interface and on
-				Midi playback</LI>
+                                Midi playback</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -139,6 +156,18 @@
                     <TH>Distribution Changes</TH>
                     <TD>
                         <UL>
+                            <LI><u>Midi</u>: The Midi features are provided via
+                                an external component, a Java application named
+                                <A
+                                href="http://www.xenoage.com/player">XenoPlay</A>
+                                from Andreas Wenger. The corresponding jar file
+                                is packaged with the other companions
+                                tools.</LI>
+                            <LI><u>SwingWorker</u>: To properly support the Mac
+                                platform, for which no Java 6 is available yet,
+                                we use the standard implementation of
+                                SwingWorker but provided as a stand-alone
+                                component.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -147,25 +176,25 @@
                     <TH>New Features</TH>
                     <TD>
                         <UL>
-			    <LI><u>Plugins</u>: A knowledgeable user has the
-				ability to register additional user actions,
-				related to current Sheet or current Score. The
-				initial version of score Player was implemented
-				like this. Since then, all existing actions have
-				been retrofitted to benefit from the decoupling
-				brought by this plugin mechanism. </LI>
-			    <LI><u>Player</u>: A tight integration with Xenoage
-				MIDI Player is provided. It enables to playback
-				the whole score with default or customized
-				parameters. The user can enter MIDI parameters
-				to the score, such as tempo, velocity and
-				instruments. Interface with Xenoage player has
-				been enhanced to allow callback from the player
-				in order to move the score view in sync.</LI>
-			    <LI><u>MIDI export</u>: Besides the score player, we
-				now provide the ability to export the current
-				score to MIDI format, still using Xenoage
-				software.</LI>
+                            <LI><u>Plugins</u>: A knowledgeable user has the
+                                ability to register additional user actions,
+                                related to current Sheet or current Score. The
+                                initial version of score Player was implemented
+                                like this. Since then, all existing actions have
+                                been retrofitted to benefit from the decoupling
+                                brought by this plugin mechanism. </LI>
+                            <LI><u>Player</u>: A tight integration with Xenoage
+                                MIDI Player is provided. It enables to playback
+                                the whole score with default or customized
+                                parameters. The user can enter MIDI parameters
+                                to the score, such as tempo, velocity and
+                                instruments. Interface with Xenoage player has
+                                been enhanced to allow callback from the player
+                                in order to move the score view in sync.</LI>
+                            <LI><u>MIDI export</u>: Besides the score player, we
+                                now provide the ability to export the current
+                                score to a MIDI file, still using Xenoage
+                                software.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -174,12 +203,12 @@
                     <TH>Bug Fixes</TH>
                     <TD>
                         <UL>
-			    <LI><u>Image Format</u>: Not really a bug fix, but
-				Audiveris now simply rejects image formats for
-				which a pixel is not coded as one byte. This
-				should be a temporary workaround, until we find
-				a working implementation for one-bit
-				formats.</LI>
+                            <LI><u>Image Format</u>: Not really a bug fix, but
+                                Audiveris now simply rejects image formats for
+                                which a pixel is not coded as one byte. This
+                                should be a temporary workaround, until we find
+                                a working implementation for one-bit
+                                formats.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -188,7 +217,8 @@
                     <TH>Known Issues</TH>
                     <TD>
                         <UL>
-                            <LI><u>OCR</u>: We are still looking for an OCR...</LI>
+                            <LI><u>OCR</u>: We are still looking for an
+                            OCR...</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -197,525 +227,507 @@
                     <TH>Other Changes</TH>
                     <TD>
                         <UL>
-			    <LI><u>MusicXML</u>: ProxyMusic now handles only the
-				 latest version of MusicXML (2.0 as of this
-				 writing). The user can still use an external
-				 XSLT transform (using 'to11.xsl' sheet for
-				 example) if he wishes an older MusicXML
-				 version.</LI>
+                            <LI><u>MusicXML</u>: ProxyMusic now handles only the
+                                 latest version of MusicXML (2.0 as of this
+                                 writing). The user can still use an external
+                                 XSLT transform (using 'to11.xsl' sheet for
+                                 example) if he wishes an older MusicXML
+                                 version.</LI>
                         </UL>
                     </TD>
                 </TR>
             </TABLE>
-	    
-	    <!-- =========================================================== -->
-	    
-	    <A NAME="3.0">
-		<H3>3.0 Release</H3>
-	    </A>
-	    
-	    <TABLE WIDTH=100% BORDER=1>
-		<TR>
-		    <TH>Introduction</TH>
-		    <TD>
-			<UL>
-			    <LI>This 3.0 release is a major release which makes
-				Audiveris a complete music scanner.
-			    </UL>
-                        </TD>
-                    </TR>
-                    
-                    <TR>
-                        <TH>Distribution Changes</TH>
-                        <TD>
-                            <UL>
-                                <LI>XML binding: No more JiBX or Castor, we now
-                                    use the standard JAXB 2 for all
-                                    [un]marshalling tasks, including the score
-                                    writing delegated to ProxyMusic.</LI>
-                                <LI>Installation: To simplify installation, all
-                                    companion jar files are stored in the /lib
-                                    subfolder, with audiveris jar file refering
-                                    them in its manifest. The only exception is
-                                    JAI which needs to be specifically installed
-                                    in JRE or JDK.</LI>
-                            </UL>
-                        </TD>
-                    </TR>
-                    
-                    <TR>
-                        <TH>New Features</TH>
-                        <TD>
-                            <UL>
-                                <LI>Translation: Implementation of translation
-                                    on the base of extracted symbols.</LI>
-                                <LI>Translation: Storing of the translation
-                                    result in MusicXML format.</LI>
-                                <LI>GUI: New window dedicated to score view, to
-                                    more easily check the translation
-                                    results.</LI>
-                                <LI>Script: A scripting feature allows to record
-                                    every action made on a given sheet, and to
-                                    replay and augment the script at will.</LI>
-                            </UL>
-                        </TD>
-                    </TR>
-                    
-                    <TR>
-                        <TH>Bug Fixes</TH>
-                        <TD>
-                            <UL>
-                                A lot!
-                            </UL>
-                        </TD>
-                    </TR>
-                    
-                    <TR>
-                        <TH>Known Issues</TH>
-                        <TD>
-                            <UL>
-                                <LI>OCR: We are still looking for an OCR to
-                                    handle lyrics and other written
-                                    informations.</LI>
-                            </UL>
-                        </TD>
-                    </TR>
-                    
-                    <TR>
-                        <TH>Other Changes</TH>
-                        <TD>
-                            <UL>
-                                A lot!
-                                <LI>Parallelism: we now take advantage of
-                                    multi-processors when available, in the
-                                    building of lag runs, and in the processing
-                                    of system symbols.</LI>
-                            </UL>
-                        </TD>
-                    </TR>
-                </TABLE>
+            
+            <!-- =========================================================== -->
+            
+            <A NAME="3.0">
+                <H3>3.0 Release</H3>
+            </A>
+            
+            <TABLE WIDTH=100% BORDER=1>
+                <TR>
+                    <TH>Introduction</TH>
+                    <TD>
+                        <UL>
+                            <LI>This 3.0 release is a major release which makes
+                                Audiveris a complete music scanner.</LI>
+                        </UL>
+                    </TD>
+                </TR>
                 
-                <!-- ======================================================= -->
+                <TR>
+                    <TH>Distribution Changes</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>XML binding</u>: No more JiBX or Castor, we
+                                now use the standard JAXB 2 for all
+                                [un]marshalling tasks, including the score
+                                writing delegated to ProxyMusic.</LI>
+                            <LI><u>Installation</u>: To simplify installation,
+                                all companion jar files are stored in the /lib
+                                subfolder, with audiveris jar file refering them
+                                in its manifest. The only exception is JAI which
+                                needs to be specifically installed in JRE or
+                                JDK.</LI>
+                        </UL>
+                    </TD>
+                </TR>
                 
-                <A NAME="2.4">
-                    <H3>2.4 Release</H3>
-                </A>
+                <TR>
+                    <TH>New Features</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Translation</u>: Implementation of
+                                translation on the base of extracted
+                                symbols.</LI>
+                            <LI><u>Translation</u>: Storing of the translation
+                                result in MusicXML format.</LI>
+                            <LI><u>GUI</u>: New window dedicated to score view,
+                                to more easily check the translation
+                                results.</LI>
+                            <LI><u>Script</u>: A scripting feature allows to
+                                record every action made on a given sheet, and
+                                to replay and augment the script at will.</LI>
+                        </UL>
+                    </TD>
+                </TR>
                 
-                <TABLE WIDTH=100% BORDER=1>
-                    <TR>
-                        <TH>Introduction</TH>
-                        <TD>
-                            <UL>
-                                <LI>This is a release intended to cleanup major
-                                    deficiencies before switching to the
-                                    development of release 3.0 with brand new
-                                    features.</LI>
-                            </UL>
-                        </TD>
-                    </TR>
-                    
-                    <TR>
-                        <TH>Distribution Changes</TH>
-                        <TD>
-                            <UL>
-                                <LI>XML Mapping: We've dropped Castor for
-                                    JiBX. JiBX is reported more performant,
-                                    especially at startup, since the binding is
-                                    pre-compiled directly in the class byte
-                                    code. Moreover, JiBX is the XML mapper used
-                                    by MusicXMLrep which we'll use to handle the
-                                    mapping to MusicXML format. So instead of
-                                    the Castor environment, the JiBX one must
-                                    now be installed (see the <A
-                                    HREF="installation.html#OTHER_COMPONENTS">
-                                    Installation Manual</A> for details). </LI>
-                                <LI>Tests: The distribution archive now
-                                    comprises the source code for unit tests,
-                                    based on the JUnit framework.</LI>
-                            </UL>
-                        </TD>
-                    </TR>
-                    
-                    <TR>
-                        <TH>New Features</TH>
-                        <TD>
-                            <UL>
-                            </UL>
-                        </TD>
-                    </TR>
-                    
-                    <TR>
-                        <TH>Bug Fixes</TH>
-                        <TD>
-                            <UL>
-                                <LI>Memory: At last, the origin of memory leak
-                                    was discovered: it originated in Swing
-                                    component handling an HTML text. So the
-                                    workaround has been to simply drop HTML used
-                                    by FilterBoard in favor of standard JGoodies
-                                    form fields of CheckBoard.</LI>
-                            </UL>
-                        </TD>
-                    </TR>
-                    
-                    <TR>
-                        <TH>Known Issues</TH>
-                        <TD>
-                            <UL>
-                                <LI>Java: There are 4 compiler warnings related
-                                    to generics.</LI>
-                            </UL>
-                        </TD>
-                    </TR>
-                    
-                    <TR>
-                        <TH>Other Changes</TH>
-                        <TD>
-                            <UL>
-                                <LI>Math: The Line class is now better defined
-                                    as an interface with a BasicLine
-                                    implementation which can be used whatever
-                                    the orientation of the Line.</LI>
-                                <LI>Java: Consistent application of an inner
-                                    Swing component rather than direct
-                                    derivation from Swing, except in obvious
-                                    specializations. Main improvement is visible
-                                    in Javadocs that used to be filled with
-                                    Swing inherited members.</LI>
-                            </UL>
-                        </TD>
-                    </TR>
-                </TABLE>
+                <TR>
+                    <TH>Bug Fixes</TH>
+                    <TD>
+                        <UL>
+                            A lot!
+                        </UL>
+                    </TD>
+                </TR>
                 
-                <!-- ======================================================= -->
+                <TR>
+                    <TH>Known Issues</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>OCR</u>: We are still looking for an OCR to
+                                handle lyrics and other written
+                                informations.</LI>
+                        </UL>
+                    </TD>
+                </TR>
                 
-                <A NAME="2.3">
-                    <H3>2.3 Release</H3>
-                </A>
+                <TR>
+                    <TH>Other Changes</TH>
+                    <TD>
+                        <UL>
+                            A lot!
+                            <LI><u>Parallelism</u>: we now take advantage of
+                                multi-processors when available, in the building
+                                of lag runs, and in the processing of system
+                                symbols.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+            </TABLE>
+            
+            <!-- ======================================================= -->
+            
+            <A NAME="2.4">
+                <H3>2.4 Release</H3>
+            </A>
+            
+            <TABLE WIDTH=100% BORDER=1>
+                <TR>
+                    <TH>Introduction</TH>
+                    <TD>
+                        <UL>
+                            <LI>This is a release intended to cleanup major
+                                deficiencies before switching to the development
+                                of release 3.0 with brand new features.</LI>
+                        </UL>
+                    </TD>
+                </TR>
                 
-                <TABLE WIDTH=100% BORDER=1>
-                    <TR>
-                        <TH>Introduction</TH>
-                        <TD>
-                            <UL>
-                                <LI>This release is rather consistent in terms
-                                    of extraction ratio, thanks to the adoption
-                                    of CLUTTER and STRUCTURE shapes, and the
-                                    focus on a single evaluator. Unless a major
-                                    bug needs to be fixed, this release should
-                                    conclude the 2.x series focused on symbol
-                                    extraction.</LI>
-                            </UL>
-                        </TD>
-                    </TR>
-                    
-                    <TR>
-                        <TH>Distribution Changes</TH>
-                        <TD>
-                            <UL>
-                                <LI>Properties: the user property files, used
-                                    respectively for build and run phases, are
-                                    now located within a ".audiveris" folder in
-                                    ${user.home} directory.</LI>
-                                <LI>Icons: The "Musette" font is no longer
-                                    used, since it lacked too many
-                                    symbols. Instead, we now use our own drawing
-                                    of icons for all shape symbols, using a
-                                    simple text format for storing icon
-                                    definitions.</LI>
-                                <LI>Training: A set of representative glyphs is
-                                    provided as a "core", should the user need
-                                    to retrain the glyph evaluator. This core is
-                                    a carefully selected subset of the whole
-                                    base of glyphs.</LI>
-                            </UL>
-                        </TD>
-                    </TR>
-                    
-                    <TR>
-                        <TH>New Features</TH>
-                        <TD>
-                            <UL>
-                                <LI>Extraction: Added two specific Shapes,
-                                    known as CLUTTER and STRUCTURE, so that
-                                    evaluator can differentiate between a valid
-                                    symbol and symbols that either should be
-                                    discarded (Clutter) or kept for later leaves
-                                    retrievals (Structure).</LI>
-                                <LI>Extraction: Got rid of the Regression
-                                    evaluator, and organized all recognition
-                                    steps on the sole use of Neural Network
-                                    evaluator.
-                                    <LI>GUI: Simplified and rationalized the
-                                        mouse events related to selection,
-                                        lasso, etc... It is now possible to
-                                        incrementally select several glyphs and
-                                        process them globally. This eases the
-                                        user actions when manual assignment is
-                                        needed.</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                        
-                        <TR>
-                            <TH>Bug Fixes</TH>
-                            <TD>
-                                <UL>
-                                    <LI>GUI: Removed duplications of mouse
-                                        events.</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                        
-                        <TR>
-                            <TH>Known Issues</TH>
-                            <TD>
-                                <UL>
-                                    <LI>Memory: The memory leak (see previous
-                                        version) is still to be fixed.</LI>
-                                    <LI>Java: There are still 5 compiler
-                                        warnings related to generics, no harm,
-                                        but they should be sorted out.</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                        
-                        <TR>
-                            <TH>Other Changes</TH>
-                            <TD>
-                                <UL>
-                                    <LI>Icons: To define custom icons, there is
-                                        a new stand-alone tool (SymbolRipper)
-                                        which allows to store a symbol
-                                        representation drawn with help of any
-                                        suitable installed font.</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                    </TABLE>
-                    
-                    <!-- =================================================== -->
-                    
-                    <A NAME="2.2">
-                        <H3>2.2 Release</H3>
-                    </A>
-                    
-                    <TABLE WIDTH=100% BORDER=1>
-                        <TR>
-                            <TH>Introduction</TH>
-                            <TD>
-                                <UL>
-                                    <LI>This is a release still focused on
-                                        improvement of existing features rather
-                                        than functional extension.</LI>
-                                    <LI>In particular, the attempt to handle
-                                        clutter as a recognized glyph shape in
-                                        the neural network (to avoid false
-                                        positives) has been postponed to next
-                                        release.</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                        
-                        <TR>
-                            <TH>Distribution Changes</TH>
-                            <TD>
-                                <UL>
-                                    <LI>Tools: All the companion tools have
-                                        been upgraded to their latest version,
-                                        and the Installation manual updated
-                                        accordingly. </LI>
-                                    <LI>Documentation: The whole set of
-                                        documentations, including the JavaDoc
-                                        API, has been organized under the same
-                                        umbrella to allow convenient access to
-                                        any piece from the documentation
-                                        banner.</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                        
-                        <TR>
-                            <TH>New Features</TH>
-                            <TD>
-                                <UL>
-                                    <LI>Image: Added the conversion from color
-                                        image to gray-scale image. This
-                                        operation is launched automatically when
-                                        a color image is detected at load
-                                        time.</LI>
-                                    <LI>Glyphs: Added a Deassign button in the
-                                        Glyph board, with action depending upon
-                                        the glyph at hand (for example
-                                        deassigning a stem has important
-                                        consequences, more than for a standalone
-                                        symbol).</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                        
-                        <TR>
-                            <TH>Bug Fixes</TH>
-                            <TD>
-                                <UL>
-                                    <LI>GUI: No more toggle button is active
-                                        for the Bars step, since there were no
-                                        specific Sections to handle.</LI>
-                                    <LI>Documentation: Fixed the use of CVS
-                                        tags in java files (for version
-                                        information) which were mistaken with
-                                        real CVS tags in related javadoc HTML
-                                        files</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                        
-                        <TR>
-                            <TH>Known Issues</TH>
-                            <TD>
-                                <UL>
-                                    <LI>Memory: There is still a memory leak,
-                                        since even after current Sheet has been
-                                        closed, there is still a Sheet instance
-                                        referenced with Score, related views,
-                                        etc... Workaround if several Sheets have
-                                        to be processed interactively is to exit
-                                        the application after each
-                                        processing.</LI>
-                                    <LI>Documentation: Because of JavaScript
-                                        building of doc frames, the "Back" and
-                                        "Forward" commands trigger duplicate
-                                        frame loads. Function is OK, but this
-                                        flickering should be avoided.</LI>
-                                    <LI>Java: There is still half a dozen of
-                                        compiler warnings related to unchecked
-                                        generics assignments, to be cleaned in a
-                                        next release.</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                        
-                        <TR>
-                            <TH>Other Changes</TH>
-                            <TD>
-                                <UL>
-                                    <LI>Verticals: Managing of stems is done as
-                                        much as possible like other glyphs,
-                                        since managing separate lists in synch
-                                        was too much error-prone.</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                    </TABLE>
-                    
-                    <!-- =================================================== -->
-                    
-                    <A NAME="2.1">
-                        <H3>2.1 Release</H3>
-                    </A>
-                    
-                    <TABLE WIDTH=100% BORDER=1>
-                        <TR>
-                            <TH>Introduction</TH>
-                            <TD>
-                                <UL>
-                                    <LI>This release is a small improvement on
-                                        the initial 2.0 release, with major
-                                        focus on user documentation, especially
-                                        the Operation manual.</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                        
-                        <TR>
-                            <TH>Distribution Changes</TH>
-                        </TR>
-                        
-                        <TR>
-                            <TH>New Features</TH>
-                            <TD>
-                                <UL>
-                                    <LI>Added documentation environment
-                                        (installation, operation, design,
-                                        implementation).</LI>
-                                    <LI>Added a nearly complete Operation
-                                        manual.</LI>
-                                    <LI>Added the handling of a Core base,
-                                        besides the Whole glyph base, to
-                                        speed-up the training of the neural
-                                        network.</LI>
-                                    <LI>Added the use of manifest parameters to
-                                        automate the handling of tool name,
-                                        version and build reference.</LI>
-                                    <LI>Added in the Regression evaluator the
-                                        ability to measure distance to a given
-                                        shape, as a way to select members for
-                                        the Core base.</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                        
-                        <TR>
-                            <TH>Bug Fixes</TH>
-                            <TD>
-                                <UL>
-                                    <LI>Fixed a bug in resource names due to
-                                        improper use of backslashes.</LI>
-                                    <LI>Fixed the loading of unsupported image
-                                        formats, by simply detecting the event
-                                        and notifying it to the user.</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                        
-                        <TR>
-                            <TH>Known Issues</TH>
-                            <TD>
-                                <UL>
-                                    <LI>Audiveris should be able to convert an
-                                        unsupported image format to the desired
-                                        one (grey scale of 256 values).</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                        
-                        <TR>
-                            <TH>Other Changes</TH>
-                        </TR>
-                    </TABLE>
-                    
-                    <!-- =================================================== -->
-                    
-                    <A NAME="2.0">
-                        <H3>2.0 Release</H3>
-                    </A>
-                    
-                    <TABLE WIDTH=100% BORDER=1>
-                        <TR>
-                            <TH VALIGN="MIDDLE" WIDTH="120px">Introduction</TH>
-                            <TD>
-                                <UL>
-                                    <LI>This release is the result of the strong
-                                        need to formally publish the Audiveris
-                                        software, even though there are still
-                                        many areas with lots of room for
-                                        improvement. Publishing the software,
-                                        with source code and a minimal
-                                        documentation, was necessary to let
-                                        other potential developers contribute to
-                                        this project.</LI>  <BR/>
-                                    
-                                    <LI> The 2.0 number for what appears as a
-                                        first version stems from the fact that,
-                                        prior to Audiveris, the author had built
-                                        an OMR Ada prototype called
-                                        OptiMusic. So, Audiveris is kind of
-                                        version 2.</LI>
-                                </UL>
-                            </TD>
-                        </TR>
-                    </TABLE>
-                </TABLE>
+                <TR>
+                    <TH>Distribution Changes</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>XML Mapping</u>: We've dropped Castor for
+                                JiBX. JiBX is reported more performant,
+                                especially at startup, since the binding is
+                                pre-compiled directly in the class byte
+                                code. Moreover, JiBX is the XML mapper used by
+                                MusicXMLrep which we'll use to handle the
+                                mapping to MusicXML format. So instead of the
+                                Castor environment, the JiBX one must now be
+                                installed (see the <A
+                                HREF="installation.html#OTHER_COMPONENTS">
+                                Installation Manual</A> for details). </LI>
+                            <LI><u>Tests</u>: The distribution archive now
+                                comprises the source code for unit tests, based
+                                on the JUnit framework.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>New Features</TH>
+                    <TD>
+                        <UL>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Bug Fixes</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Memory</u>: At last, the origin of memory
+                                leak was discovered: it originated in Swing
+                                component handling an HTML text. So the
+                                workaround has been to simply drop HTML used by
+                                FilterBoard in favor of standard JGoodies form
+                                fields of CheckBoard.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Known Issues</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Java</u>: There are 4 compiler warnings
+                                related to generics.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Other Changes</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Math</u>: The Line class is now better
+                                defined as an interface with a BasicLine
+                                implementation which can be used whatever the
+                                orientation of the Line.</LI>
+                            <LI><u>Java</u>: Consistent application of an inner
+                                Swing component rather than direct derivation
+                                from Swing, except in obvious
+                                specializations. Main improvement is visible in
+                                Javadocs that used to be filled with Swing
+                                inherited members.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+            </TABLE>
+            
+            <!-- ======================================================= -->
+            
+            <A NAME="2.3">
+                <H3>2.3 Release</H3>
+            </A>
+            
+            <TABLE WIDTH=100% BORDER=1>
+                <TR>
+                    <TH>Introduction</TH>
+                    <TD>
+                        <UL>
+                            <LI>This release is rather consistent in terms of
+                                extraction ratio, thanks to the adoption of
+                                CLUTTER and STRUCTURE shapes, and the focus on a
+                                single evaluator. Unless a major bug needs to be
+                                fixed, this release should conclude the 2.x
+                                series focused on symbol extraction.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Distribution Changes</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Properties</u>: the user property files, used
+                                respectively for build and run phases, are now
+                                located within a ".audiveris" folder in
+                                ${user.home} directory.</LI>
+                            <LI><u>Icons</u>: The "Musette" font is no longer
+                                used, since it lacked too many symbols. Instead,
+                                we now use our own drawing of icons for all
+                                shape symbols, using a simple text format for
+                                storing icon definitions.</LI>
+                            <LI><u>Training</u>: A set of representative glyphs
+                                is provided as a "core", should the user need to
+                                retrain the glyph evaluator. This core is a
+                                carefully selected subset of the whole base of
+                                glyphs.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>New Features</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Extraction</u>: Added two specific Shapes,
+                                known as CLUTTER and STRUCTURE, so that
+                                evaluator can differentiate between a valid
+                                symbol and symbols that either should be
+                                discarded (Clutter) or kept for later leaves
+                                retrievals (Structure).</LI>
+                            <LI><u>Extraction</u>: Got rid of the Regression
+                                evaluator, and organized all recognition steps
+                                on the sole use of Neural Network
+                                evaluator.</LI>
+                            <LI><u>GUI</u>: Simplified and rationalized the
+                                mouse events related to selection, lasso,
+                                etc... It is now possible to incrementally
+                                select several glyphs and process them
+                                globally. This eases the user actions when
+                                manual assignment is needed.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Bug Fixes</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>GUI</u>: Removed duplications of mouse
+                                events.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Known Issues</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Memory</u>: The memory leak (see previous
+                                version) is still to be fixed.</LI>
+                            <LI><u>Java</u>: There are still 5 compiler warnings
+                                related to generics, no harm, but they should be
+                                sorted out.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Other Changes</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Icons</u>: To define custom icons, there is a
+                                new stand-alone tool (SymbolRipper) which allows
+                                to store a symbol representation drawn with help
+                                of any suitable installed font.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+            </TABLE>
+            
+            <!-- =================================================== -->
+            
+            <A NAME="2.2">
+                <H3>2.2 Release</H3>
+            </A>
+            
+            <TABLE WIDTH=100% BORDER=1>
+                <TR>
+                    <TH>Introduction</TH>
+                    <TD>
+                        <UL>
+                            <LI>This is a release still focused on improvement
+                                of existing features rather than functional
+                                extension.</LI>
+                            <LI>In particular, the attempt to handle clutter as
+                                a recognized glyph shape in the neural network
+                                (to avoid false positives) has been postponed to
+                                next release.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Distribution Changes</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Tools</u>: All the companion tools have been
+                                upgraded to their latest version, and the
+                                Installation manual updated accordingly. </LI>
+                            <LI><u>Documentation</u>: The whole set of
+                                documentations, including the JavaDoc API, has
+                                been organized under the same umbrella to allow
+                                convenient access to any piece from the
+                                documentation banner.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>New Features</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Image</u>: Added the conversion from color
+                                image to gray-scale image. This operation is
+                                launched automatically when a color image is
+                                detected at load time.</LI>
+                            <LI><u>Glyphs</u>: Added a Deassign button in the
+                                Glyph board, with action depending upon the
+                                glyph at hand (for example deassigning a stem
+                                has important consequences, more than for a
+                                standalone symbol).</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Bug Fixes</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>GUI</u>: No more toggle button is active for
+                                the Bars step, since there were no specific
+                                Sections to handle.</LI>
+                            <LI><u>Documentation</u>: Fixed the use of CVS tags
+                                in java files (for version information) which
+                                were mistaken with real CVS tags in related
+                                javadoc HTML files</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Known Issues</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Memory</u>: There is still a memory leak,
+                                since even after current Sheet has been closed,
+                                there is still a Sheet instance referenced with
+                                Score, related views, etc... Workaround if
+                                several Sheets have to be processed
+                                interactively is to exit the application after
+                                each processing.</LI>
+                            <LI><u>Documentation</u>: Because of JavaScript
+                                building of doc frames, the "Back" and "Forward"
+                                commands trigger duplicate frame loads. Function
+                                is OK, but this flickering should be
+                                avoided.</LI>
+                            <LI><u>Java</u>: There is still half a dozen of
+                                compiler warnings related to unchecked generics
+                                assignments, to be cleaned in a next
+                                release.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Other Changes</TH>
+                    <TD>
+                        <UL>
+                            <LI><u>Verticals</u>: Managing of stems is done as
+                                much as possible like other glyphs, since
+                                managing separate lists in synch was too much
+                                error-prone.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+            </TABLE>
+            
+            <!-- =================================================== -->
+            
+            <A NAME="2.1">
+                <H3>2.1 Release</H3>
+            </A>
+            
+            <TABLE WIDTH=100% BORDER=1>
+                <TR>
+                    <TH>Introduction</TH>
+                    <TD>
+                        <UL>
+                            <LI>This release is a small improvement on the
+                                initial 2.0 release, with major focus on user
+                                documentation, especially the Operation
+                                manual.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Distribution Changes</TH>
+                </TR>
+                
+                <TR>
+                    <TH>New Features</TH>
+                    <TD>
+                        <UL>
+                            <LI>Added documentation environment (installation,
+                                operation, design, implementation).</LI>
+                            <LI>Added a nearly complete Operation manual.</LI>
+                            <LI>Added the handling of a Core base, besides the
+                                Whole glyph base, to speed-up the training of
+                                the neural network.</LI>
+                            <LI>Added the use of manifest parameters to automate
+                                the handling of tool name, version and build
+                                reference.</LI>
+                            <LI>Added in the Regression evaluator the ability to
+                                measure distance to a given shape, as a way to
+                                select members for the Core base.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Bug Fixes</TH>
+                    <TD>
+                        <UL>
+                            <LI>Fixed a bug in resource names due to improper
+                                use of backslashes.</LI>
+                            <LI>Fixed the loading of unsupported image formats,
+                                by simply detecting the event and notifying it
+                                to the user.</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Known Issues</TH>
+                    <TD>
+                        <UL>
+                            <LI>Audiveris should be able to convert an
+                                unsupported image format to the desired one
+                                (grey scale of 256 values).</LI>
+                        </UL>
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TH>Other Changes</TH>
+                </TR>
+            </TABLE>
+            
+            <!-- =================================================== -->
+            
+            <A NAME="2.0">
+                <H3>2.0 Release</H3>
+            </A>
+            
+            <TABLE WIDTH=100% BORDER=1>
+                <TR>
+                    <TH VALIGN="MIDDLE" WIDTH="120px">Introduction</TH>
+                    <TD>
+                        <UL>
+                            <LI>This release is the result of the strong need to
+                                formally publish the Audiveris software, even
+                                though there are still many areas with lots of
+                                room for
+                                
+                                improvement. Publishing the software, with
+                                source code and a minimal documentation, was
+                                necessary to let other potential developers
+                                contribute to this project.</LI>  <BR/>
+                            
+                            <LI> The 2.0 number for what appears as a first
+                                version stems from the fact that, prior to
+                                Audiveris, the author had built an OMR Ada
+                                prototype called OptiMusic. So, Audiveris is
+                                kind of version 2.</LI>
+                        </UL>
+                    </TD>
+                </TR>
             </TABLE>
         </DIV>
     </BODY>
