@@ -3,23 +3,49 @@
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-9.552941176470588</pitch-position>
-    <section first-pos="536" id="1209">
-        <run start="298" level="72" length="1"/>
-        <run start="298" level="8" length="1"/>
-        <run start="298" level="10" length="1"/>
+    <section first-pos="403" id="926">
+        <run start="287" level="51" length="6"/>
     </section>
-    <section first-pos="538" id="1210">
-        <run start="282" level="45" length="1"/>
+    <section first-pos="404" id="928">
+        <run start="285" level="25" length="11"/>
+        <run start="283" level="11" length="14"/>
     </section>
-    <section first-pos="539" id="1212">
-        <run start="282" level="46" length="17"/>
-        <run start="281" level="3" length="18"/>
-        <run start="281" level="2" length="18"/>
-        <run start="281" level="174" length="18"/>
+    <section first-pos="406" id="929">
+        <run start="282" level="22" length="2"/>
+        <run start="281" level="22" length="2"/>
+        <run start="281" level="14" length="1"/>
+        <run start="280" level="23" length="2"/>
+        <run start="280" level="10" length="2"/>
+        <run start="280" level="11" length="2"/>
+        <run start="280" level="19" length="3"/>
     </section>
-    <section first-pos="543" id="1214">
-        <run start="296" level="130" length="3"/>
-        <run start="298" level="22" length="1"/>
-        <run start="298" level="195" length="1"/>
+    <section first-pos="406" id="930">
+        <run start="287" level="10" length="1"/>
+        <run start="287" level="14" length="1"/>
+        <run start="287" level="16" length="1"/>
+        <run start="287" level="17" length="1"/>
+        <run start="287" level="19" length="1"/>
+        <run start="287" level="21" length="1"/>
+        <run start="287" level="23" length="1"/>
+    </section>
+    <section first-pos="406" id="931">
+        <run start="291" level="39" length="7"/>
+        <run start="293" level="78" length="6"/>
+        <run start="295" level="51" length="4"/>
+        <run start="296" level="6" length="3"/>
+        <run start="296" level="67" length="3"/>
+        <run start="297" level="11" length="2"/>
+        <run start="296" level="27" length="3"/>
+        <run start="296" level="9" length="3"/>
+        <run start="295" level="68" length="4"/>
+        <run start="294" level="117" length="4"/>
+        <run start="293" level="37" length="2"/>
+        <run start="293" level="200" length="1"/>
+    </section>
+    <section first-pos="413" id="943">
+        <run start="281" level="27" length="7"/>
+        <run start="281" level="33" length="7"/>
+        <run start="282" level="38" length="6"/>
+        <run start="284" level="56" length="4"/>
     </section>
 </stick>

@@ -3,31 +3,25 @@
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-13.395348837209303</pitch-position>
-    <section first-pos="2192" id="3774">
-        <run start="238" level="218" length="1"/>
-        <run start="237" level="86" length="3"/>
-        <run start="237" level="80" length="3"/>
-        <run start="237" level="112" length="6"/>
+    <section first-pos="2026" id="3573">
+        <run start="238" level="128" length="2"/>
+        <run start="238" level="110" length="2"/>
+        <run start="237" level="63" length="4"/>
     </section>
-    <section first-pos="2192" id="3775">
-        <run start="256" level="129" length="2"/>
+    <section first-pos="2026" id="3574">
         <run start="256" level="128" length="2"/>
-        <run start="255" level="85" length="3"/>
-        <run start="254" level="64" length="4"/>
+        <run start="256" level="85" length="3"/>
+        <run start="255" level="84" length="3"/>
     </section>
-    <section first-pos="2196" id="3777">
-        <run start="236" level="13" length="22"/>
-        <run start="236" level="13" length="22"/>
-        <run start="236" level="26" length="22"/>
+    <section first-pos="2029" id="3575">
+        <run start="237" level="13" length="21"/>
+        <run start="237" level="12" length="21"/>
+        <run start="237" level="21" length="21"/>
     </section>
-    <section first-pos="2199" id="3778">
-        <run start="236" level="112" length="3"/>
+    <section first-pos="2032" id="3576">
+        <run start="241" level="106" length="3"/>
     </section>
-    <section first-pos="2199" id="3779">
-        <run start="246" level="139" length="2"/>
-    </section>
-    <section first-pos="2199" id="3780">
-        <run start="251" level="42" length="7"/>
+    <section first-pos="2032" id="3577">
         <run start="255" level="87" length="3"/>
         <run start="256" level="129" length="2"/>
     </section>

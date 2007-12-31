@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="COMBINING_FLAG_1_UP" interline="21" id="500">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>4.837209302325581</pitch-position>
+    <section first-pos="1026" id="1933">
+        <run start="450" level="23" length="18"/>
+        <run start="449" level="33" length="16"/>
+        <run start="448" level="20" length="14"/>
+        <run start="448" level="24" length="13"/>
+        <run start="447" level="23" length="12"/>
+        <run start="446" level="23" length="12"/>
+        <run start="446" level="16" length="11"/>
+        <run start="445" level="25" length="11"/>
+        <run start="444" level="25" length="11"/>
+        <run start="442" level="30" length="12"/>
+        <run start="441" level="22" length="12"/>
+        <run start="440" level="35" length="12"/>
+        <run start="439" level="24" length="11"/>
+        <run start="437" level="42" length="12"/>
+        <run start="436" level="20" length="11"/>
+        <run start="431" level="72" length="15"/>
+    </section>
+    <section first-pos="1042" id="1967">
+        <run start="416" level="64" length="28"/>
+        <run start="418" level="47" length="24"/>
+    </section>
+    <section first-pos="1044" id="1968">
+        <run start="422" level="67" length="17"/>
+    </section>
+    <section first-pos="1045" id="1969">
+        <run start="424" level="194" length="12"/>
+    </section>
+</stick>

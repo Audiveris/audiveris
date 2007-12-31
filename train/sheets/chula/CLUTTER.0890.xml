@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="CLUTTER" interline="21" id="890">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-13.488372093023257</pitch-position>
+    <section first-pos="1564" id="2753">
+        <run start="1425" level="195" length="2"/>
+        <run start="1424" level="60" length="4"/>
+        <run start="1423" level="48" length="5"/>
+        <run start="1422" level="31" length="5"/>
+        <run start="1421" level="24" length="4"/>
+        <run start="1419" level="59" length="5"/>
+        <run start="1418" level="59" length="5"/>
+        <run start="1417" level="59" length="5"/>
+        <run start="1417" level="29" length="4"/>
+        <run start="1416" level="58" length="4"/>
+        <run start="1416" level="29" length="4"/>
+        <run start="1415" level="57" length="4"/>
+        <run start="1415" level="28" length="4"/>
+        <run start="1414" level="72" length="4"/>
+        <run start="1414" level="16" length="3"/>
+        <run start="1414" level="15" length="3"/>
+        <run start="1413" level="54" length="4"/>
+        <run start="1413" level="11" length="4"/>
+        <run start="1413" level="27" length="4"/>
+        <run start="1413" level="13" length="3"/>
+        <run start="1413" level="12" length="3"/>
+        <run start="1413" level="11" length="3"/>
+        <run start="1413" level="11" length="3"/>
+        <run start="1413" level="47" length="4"/>
+        <run start="1413" level="7" length="4"/>
+        <run start="1413" level="28" length="4"/>
+        <run start="1414" level="8" length="3"/>
+        <run start="1414" level="47" length="4"/>
+        <run start="1414" level="26" length="4"/>
+        <run start="1415" level="47" length="4"/>
+        <run start="1415" level="25" length="4"/>
+        <run start="1416" level="47" length="4"/>
+        <run start="1416" level="54" length="5"/>
+        <run start="1417" level="54" length="5"/>
+        <run start="1418" level="39" length="5"/>
+        <run start="1418" level="57" length="6"/>
+        <run start="1420" level="53" length="5"/>
+        <run start="1421" level="40" length="5"/>
+        <run start="1421" level="45" length="6"/>
+        <run start="1422" level="15" length="5"/>
+        <run start="1423" level="64" length="4"/>
+    </section>
+</stick>

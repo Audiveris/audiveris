@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="21" id="1208">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>2.3255813953488373</pitch-position>
+    <section first-pos="707" id="1508">
+        <run start="1828" level="67" length="10"/>
+        <run start="1828" level="68" length="10"/>
+        <run start="1828" level="68" length="10"/>
+        <run start="1828" level="68" length="10"/>
+        <run start="1828" level="68" length="10"/>
+        <run start="1828" level="67" length="10"/>
+        <run start="1828" level="66" length="11"/>
+        <run start="1828" level="67" length="10"/>
+        <run start="1828" level="67" length="11"/>
+        <run start="1828" level="69" length="10"/>
+        <run start="1828" level="69" length="10"/>
+        <run start="1828" level="68" length="10"/>
+        <run start="1828" level="67" length="11"/>
+        <run start="1828" level="68" length="10"/>
+        <run start="1828" level="68" length="11"/>
+        <run start="1828" level="70" length="10"/>
+        <run start="1828" level="71" length="10"/>
+        <run start="1828" level="71" length="10"/>
+        <run start="1828" level="69" length="10"/>
+        <run start="1828" level="65" length="11"/>
+        <run start="1828" level="69" length="11"/>
+        <run start="1828" level="71" length="10"/>
+        <run start="1828" level="70" length="10"/>
+        <run start="1828" level="65" length="11"/>
+        <run start="1828" level="66" length="11"/>
+        <run start="1828" level="66" length="11"/>
+        <run start="1828" level="66" length="11"/>
+        <run start="1828" level="66" length="11"/>
+        <run start="1828" level="66" length="11"/>
+        <run start="1828" level="66" length="11"/>
+        <run start="1828" level="67" length="11"/>
+        <run start="1828" level="67" length="11"/>
+        <run start="1828" level="67" length="11"/>
+        <run start="1828" level="67" length="11"/>
+        <run start="1828" level="67" length="11"/>
+        <run start="1828" level="67" length="11"/>
+        <run start="1828" level="68" length="11"/>
+        <run start="1828" level="68" length="11"/>
+        <run start="1828" level="68" length="11"/>
+        <run start="1828" level="68" length="11"/>
+        <run start="1828" level="68" length="11"/>
+        <run start="1828" level="68" length="11"/>
+        <run start="1828" level="69" length="11"/>
+        <run start="1828" level="69" length="11"/>
+        <run start="1828" level="69" length="11"/>
+        <run start="1828" level="69" length="11"/>
+        <run start="1828" level="69" length="11"/>
+        <run start="1828" level="69" length="11"/>
+        <run start="1828" level="70" length="11"/>
+        <run start="1828" level="70" length="11"/>
+        <run start="1828" level="70" length="11"/>
+        <run start="1828" level="70" length="11"/>
+        <run start="1828" level="70" length="11"/>
+        <run start="1828" level="71" length="11"/>
+        <run start="1828" level="71" length="11"/>
+        <run start="1828" level="71" length="11"/>
+        <run start="1828" level="71" length="11"/>
+        <run start="1828" level="71" length="11"/>
+        <run start="1828" level="71" length="11"/>
+        <run start="1828" level="72" length="11"/>
+        <run start="1828" level="72" length="11"/>
+        <run start="1828" level="72" length="11"/>
+        <run start="1828" level="72" length="11"/>
+        <run start="1824" level="105" length="15"/>
+    </section>
+</stick>
