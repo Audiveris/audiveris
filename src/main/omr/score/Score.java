@@ -15,7 +15,6 @@ import omr.constant.ConstantSet;
 import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.UnitDimension;
-import omr.score.entity.Measure;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
 import omr.score.entity.System;
@@ -210,7 +209,7 @@ public class Score
      * Remember the common divisor used for this score when simplifying the
      * durations
      *
-     * @durationDivisor the computed divisor (GCD), or null
+     * @param durationDivisor the computed divisor (GCD), or null
      */
     public void setDurationDivisor (Integer durationDivisor)
     {
