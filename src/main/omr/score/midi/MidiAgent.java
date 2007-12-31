@@ -90,7 +90,7 @@ public class MidiAgent
     // MidiAgent //
     //-----------//
     /**
-     * Create a Midi AGent
+     * Create a Midi Agent
      *
      * @param score the related score
      * @exception MidiUnavailableException if Midi resources can't be found
