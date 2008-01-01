@@ -14,13 +14,15 @@ import omr.score.visitor.ScoreExporter;
 
 import omr.util.Logger;
 
-import com.xenoage.player.ExternalPlayer;
+import com.xenoage.player.Player;
+import com.xenoage.player.musicxml.MusicXMLDocument;
 
 import org.w3c.dom.Document;
 
 import java.io.*;
 
 import javax.sound.midi.*;
+import javax.swing.JOptionPane;
 import javax.xml.parsers.*;
 
 /**
@@ -69,8 +71,8 @@ public class MidiAgent
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The underlying XenoPlay external player */
-    private final ExternalPlayer player;
+    /** The underlying XenoPlay player */
+    private final Player player;
 
     /** (Current) related score. Beware of memory leak! */
     private Score score;
@@ -98,7 +100,7 @@ public class MidiAgent
     private MidiAgent ()
         throws MidiUnavailableException
     {
-        player = new ExternalPlayer(null);
+        player = new OmrPlayer();
         receiver = new MidiReceiver(this);
         player.connectReceiver(receiver);
     }
@@ -221,13 +223,20 @@ public class MidiAgent
 
             // Infos
             if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Midi sequence length is " + player.getLengthInMs() +
-                    " ms");
-                logger.fine("Midi tick length is " + player.getLengthInTicks());
-                logger.fine(
-                    "Score tick length is " +
-                    (score.getLastSoundTime() / score.getDurationDivisor()));
+                try {
+                    long ms = player.getSequencer()
+                                    .getSequence()
+                                    .getMicrosecondLength() / 1000;
+                    long ticks = player.getSequencer()
+                                       .getSequence()
+                                       .getTickLength();
+                    logger.fine("Midi sequence length is " + ms + " ms");
+                    logger.fine("Midi tick length is " + ticks);
+                    logger.fine(
+                        "Score tick length is " +
+                        (score.getLastSoundTime() / score.getDurationDivisor()));
+                } catch (Exception e) {
+                }
             }
 
             // Hand it over to the player and the receiver
@@ -331,7 +340,13 @@ public class MidiAgent
      */
     long getLengthInTicks ()
     {
-        return player.getLengthInTicks();
+        try {
+            return player.getSequencer()
+                         .getSequence()
+                         .getTickLength();
+        } catch (Exception ex) {
+            return 0;
+        }
     }
 
     //--------------------//
@@ -344,7 +359,12 @@ public class MidiAgent
      */
     long getPositionInTicks ()
     {
-        return player.getPositionInTicks();
+        try {
+            return player.getSequencer()
+                         .getTickPosition();
+        } catch (Exception ex) {
+            return 0;
+        }
     }
 
     //--------//
@@ -377,7 +397,7 @@ public class MidiAgent
                 new ScoreExporter(score).export(document);
 
                 // Hand it over directly to MusicXML reader
-                player.setMusicXMLData(document);
+                player.openDocument(new MusicXMLDocument(document));
             } catch (Exception ex) {
                 logger.warning("Midi Agent error", ex);
                 document = null; // Safer
@@ -402,6 +422,41 @@ public class MidiAgent
         public UnavailableException (String message)
         {
             super(message);
+        }
+    }
+
+    //-----------//
+    // OmrPlayer //
+    //-----------//
+    /**
+     * Subclass of Player to redirect logging messages
+     */
+    private static class OmrPlayer
+        extends Player
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public OmrPlayer ()
+        {
+            super(null, false);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void MsgBox (String Msg,
+                            int    MsgType)
+        {
+            switch (MsgType) {
+            case JOptionPane.WARNING_MESSAGE :
+            case JOptionPane.ERROR_MESSAGE :
+                logger.warning(Msg);
+
+                break;
+
+            default :
+                logger.info(Msg);
+            }
         }
     }
 }
