@@ -27,7 +27,6 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
 
 import omr.util.Dumper;
 import omr.util.Logger;
@@ -621,64 +620,6 @@ public class Score
     {
         ScoreManager.getInstance()
                     .export(this);
-    }
-
-    //---------------//
-    // linkWithSheet //
-    //---------------//
-    /**
-     * Try to link this score with one of the sheets currently handled
-     */
-    public void linkWithSheet ()
-    {
-        if (getSheet() != null) {
-            return;
-        }
-
-        logger.info("Linking " + this);
-
-        for (Sheet sht : SheetManager.getInstance()
-                                     .getSheets()) {
-            if (sht.getPath()
-                   .equals(getImagePath())) {
-                if (sht != getSheet()) {
-                    this.setSheet(sht);
-                    sht.setScore(this);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(this + " linked to " + sht);
-                    }
-
-                    return;
-                }
-            }
-        }
-
-        // No related sheet found in sheet manager. If we've deserialized
-        // this score with some sheet info, let's use it
-        if (getSheet() != null) {
-            SheetManager.getInstance()
-                        .insertInstance(getSheet());
-
-            if (logger.isFineEnabled()) {
-                logger.fine(this + " linked to newly inserted " + getSheet());
-            }
-
-            // Make the sheet assembly visible
-            getSheet()
-                .displayAssembly();
-        } else {
-            if (logger.isFineEnabled()) {
-                logger.fine(this + " not linked");
-            }
-
-            // Create a void related sheet
-            try {
-                new Sheet(this);
-            } catch (Exception ex) {
-                logger.warning(ex.toString());
-            }
-        }
     }
 
     //------------------//
