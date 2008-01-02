@@ -460,21 +460,28 @@ public abstract class Dumper
         //~ Methods ------------------------------------------------------------
 
         @Override
-        protected void printClassEpilog ()
+        public String toString ()
         {
-            // End table of fields
+            sb.append("<style> ")
+              .append("td {font-family: Lucida Console, Verdana, sans-serif;")
+              .append(" font-size: 9px;")
+              .append(" font-style: normal;")
+              .append("} </style>");
+            sb.append("<table border=0 cellpadding=3>");
+            super.processObject();
             sb.append("</table>");
+
+            // Return the final content of string buffer
+            return sb.toString();
         }
 
         @Override
         protected void printClassProlog ()
         {
             // Class name
-            sb.append("<H3>Attributes of this " + cl.getName() + "</H3>");
-
-            // Start table of fields
-            sb.append("<table border=1>");
-            sb.append("<tr><th>Name</th><th>Value</th></tr>");
+            sb.append("<tr><td colspan=2><font color='BLUE'>")
+              .append(cl.getName())
+              .append("</font></td></tr>");
         }
 
         @Override
@@ -485,16 +492,16 @@ public abstract class Dumper
             sb.append("<tr>");
 
             // First the field name
-            sb.append("<td>")
+            sb.append("<td align='right'><font color='RED'>")
               .append(name)
-              .append("</td>");
+              .append("</font></td>");
 
             // Then the field value
             sb.append("<td>");
             super.printField(name, value);
 
-            sb.append("</td>");
-            sb.append("</tr>");
+            sb.append("</td>")
+              .append("</tr>");
         }
     }
 
@@ -517,11 +524,13 @@ public abstract class Dumper
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         protected void printClassEpilog ()
         {
             sb.append("}");
         }
 
+        @Override
         protected void printClassProlog ()
         {
             // Class name
@@ -536,6 +545,7 @@ public abstract class Dumper
               .append(":");
         }
 
+        @Override
         protected void printField (String name,
                                    Object value)
         {
