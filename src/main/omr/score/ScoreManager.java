@@ -142,7 +142,8 @@ public class ScoreManager
 
             // Actually export the score material
             try {
-                new ScoreExporter(score).export(xmlFile);
+                ScoreExporter exporter = new ScoreExporter(score);
+                exporter.export(xmlFile);
                 logger.info("Score exported to " + xmlFile);
             } catch (Exception ex) {
                 logger.warning("Error storing score to " + xmlFile, ex);

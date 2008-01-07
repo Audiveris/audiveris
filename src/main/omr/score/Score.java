@@ -99,6 +99,9 @@ public class Score
     /** The specified velocity, if any */
     private transient Integer velocity;
 
+    /** Potential measure range, if not all score is to be exported */
+    private transient MeasureRange measureRange;
+
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -283,16 +286,18 @@ public class Score
      * Report the time, counted from beginning of the score, when sound stops,
      * which means that ending rests are not counted.
      *
+     * @param measureId a potential constraint on id of final measure, 
+     * null for no constraint
      * @return the time of last Midi "note off"
      */
-    public int getLastSoundTime ()
+    public int getLastSoundTime (Integer measureId)
     {
         // Browse systems backwards
         for (ListIterator it = getSystems()
                                    .listIterator(getSystems().size());
              it.hasPrevious();) {
             System system = (System) it.previous();
-            int    time = system.getLastSoundTime();
+            int    time = system.getLastSoundTime(measureId);
 
             if (time > 0) {
                 return system.getStartTime() + time;
@@ -341,6 +346,32 @@ public class Score
         }
 
         return nb;
+    }
+
+    //-----------------//
+    // setMeasureRange //
+    //-----------------//
+    /**
+     * Remember a range of measure for this score
+     *
+     * @param measureRange the range of selected measures
+     */
+    public void setMeasureRange (MeasureRange measureRange)
+    {
+        this.measureRange = measureRange;
+    }
+
+    //-----------------//
+    // getMeasureRange //
+    //-----------------//
+    /**
+     * Report the potential range of selected measures
+     *
+     * @return the selected measure range, perhaps null
+     */
+    public MeasureRange getMeasureRange ()
+    {
+        return measureRange;
     }
 
     //-------------//

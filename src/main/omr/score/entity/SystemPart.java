@@ -142,19 +142,24 @@ public class SystemPart
      * Report the time, counted from beginning of this part, when sound stops,
      * which means that ending rests are not counted.
      *
+     * @param measureId potential constraint on measure id, 
+     * null for no constraint
      * @return the relative time of last Midi "note off" in this part
      */
-    public int getLastSoundTime ()
+    public int getLastSoundTime (Integer measureId)
     {
         // Browse measures backwards
         for (ListIterator it = getMeasures()
                                    .listIterator(getMeasures().size());
              it.hasPrevious();) {
             Measure measure = (Measure) it.previous();
-            int     time = measure.getLastSoundTime();
 
-            if (time > 0) {
-                return measure.getStartTime() + time;
+            if ((measureId == null) || (measure.getId() == measureId)) {
+                int time = measure.getLastSoundTime();
+
+                if (time > 0) {
+                    return measure.getStartTime() + time;
+                }
             }
         }
 

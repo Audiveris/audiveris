@@ -92,7 +92,13 @@ public class ScorePainter
     private static final Stroke beamStroke = new BasicStroke(4f);
 
     /** Stroke to draw voices */
-    private static final Stroke voiceStroke = new BasicStroke(1.5f);
+    private static final Stroke voiceStroke = new BasicStroke(
+        3f,
+        BasicStroke.CAP_BUTT,
+        BasicStroke.JOIN_BEVEL,
+        0f,
+        new float[] { 10, 5 },
+        0);
 
     /** Stroke to draw stems */
     private static final Stroke stemStroke = new BasicStroke(1f);
@@ -174,7 +180,17 @@ public class ScorePainter
     //----------//
     // drawSlot //
     //----------//
-    public void drawSlot (Measure measure,
+    /**
+     *
+     *
+     * @param wholeSystem if true, the slot will embrace the whole system,
+     * otherwise only the part is embraced
+     * @param measure the containing measure
+     * @param slot the slot to draw
+     * @param color the color to use in drawing
+     */
+    public void drawSlot (boolean wholeSystem,
+                          Measure measure,
                           Slot    slot,
                           Color   color)
     {
@@ -185,11 +201,25 @@ public class ScorePainter
         final int           x = zoom.scaled(origin.x + slot.getX());
         final UnitDimension systemDimension = measure.getSystem()
                                                      .getDimension();
-        g.drawLine(
-            x,
-            zoom.scaled(origin.y),
-            x,
-            zoom.scaled(origin.y + systemDimension.height + STAFF_HEIGHT));
+
+        if (wholeSystem) {
+            g.drawLine(
+                x,
+                zoom.scaled(origin.y),
+                x,
+                zoom.scaled(origin.y + systemDimension.height + STAFF_HEIGHT));
+        } else {
+            g.drawLine(
+                x,
+                zoom.scaled(
+                    measure.getPart()
+                           .getFirstStaff()
+                           .getDisplayOrigin().y),
+                x,
+                zoom.scaled(
+                    measure.getPart().getLastStaff().getDisplayOrigin().y +
+                    STAFF_HEIGHT));
+        }
 
         g.setColor(oldColor);
     }
@@ -472,7 +502,7 @@ public class ScorePainter
         // Draw slot vertical lines ?
         if (constants.slotPainting.getValue()) {
             for (Slot slot : measure.getSlots()) {
-                drawSlot(measure, slot, slotColor);
+                drawSlot(false, measure, slot, slotColor);
             }
         }
 
@@ -799,6 +829,7 @@ public class ScorePainter
     //-------------//
     // visit Pedal //
     //-------------//
+    @Override
     public boolean visit (Pedal pedal)
     {
         return visit((MeasureElement) pedal);
@@ -807,6 +838,7 @@ public class ScorePainter
     //-------------//
     // visit Segno //
     //-------------//
+    @Override
     public boolean visit (Segno segno)
     {
         return visit((MeasureElement) segno);
@@ -815,6 +847,7 @@ public class ScorePainter
     //----------------//
     // visit Ornament //
     //----------------//
+    @Override
     public boolean visit (Ornament ornament)
     {
         return visit((MeasureElement) ornament);
@@ -823,6 +856,7 @@ public class ScorePainter
     //--------------//
     // visit Tuplet //
     //--------------//
+    @Override
     public boolean visit (Tuplet tuplet)
     {
         return visit((MeasureElement) tuplet);

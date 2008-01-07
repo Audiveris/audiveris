@@ -15,6 +15,7 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
+import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
@@ -94,6 +95,9 @@ public class ScoreExporter
     /** Map of Tuplet numbers, reset for every measure */
     private Map<Tuplet, Integer> tupletNumbers = new HashMap<Tuplet, Integer>();
 
+    /** Potential range of selected measures */
+    private MeasureRange measureRange;
+
     //~ Constructors -----------------------------------------------------------
 
     //---------------//
@@ -115,6 +119,19 @@ public class ScoreExporter
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------------//
+    // setMeasureRange //
+    //-----------------//
+    /**
+     * Set a specific range of measures to export
+     *
+     * @param measureRange the range of desired measures
+     */
+    public void setMeasureRange (MeasureRange measureRange)
+    {
+        this.measureRange = measureRange;
+    }
 
     //--------//
     // export //
@@ -196,6 +213,8 @@ public class ScoreExporter
             logger.warning("Error preloading JaxbContext", ex);
         }
     }
+
+    //- All Visiting Methods ---------------------------------------------------
 
     //------------------//
     // visit Arpeggiate //
@@ -531,6 +550,23 @@ public class ScoreExporter
     public boolean visit (Measure measure)
     {
         ///logger.info("Visiting " + measure);
+
+        // Make sure this measure is to be exported
+        if (!isDesired(measure)) {
+            if (logger.isFineEnabled()) {
+                logger.fine(measure + " skipped.");
+            }
+
+            return false;
+        }
+
+        // Do we need to create & export a dummy initial measure?
+        if (((measureRange != null) && !measure.isDummy() &&
+            (measure.getId() > 1)) &&
+            (measure.getId() == measureRange.getFirstId())) {
+            visit(measure.createDummyBefore());
+        }
+
         if (logger.isFineEnabled()) {
             logger.fine(measure + " : " + isFirst);
         }
@@ -550,7 +586,9 @@ public class ScoreExporter
         }
 
         // Right Barline
-        visit(measure.getBarline());
+        if (!measure.isDummy()) {
+            visit(measure.getBarline());
+        }
 
         // Left barline ?
         Measure prevMeasure = (Measure) measure.getPreviousSibling();
@@ -592,8 +630,7 @@ public class ScoreExporter
                     Staves staves = new Staves();
                     getMeasureAttributes()
                         .setStaves(staves);
-                    staves.setContent(
-                        "" + measure.getPart().getStaves().size());
+                    staves.setContent("" + current.part.getStaffIds().size());
                 }
             } else {
                 // New system
@@ -659,31 +696,34 @@ public class ScoreExporter
             }
 
             // StaffLayout for all staves in this part, except 1st system staff
-            for (TreeNode sNode : measure.getPart()
-                                         .getStaves()) {
-                Staff staff = (Staff) sNode;
+            if (!measure.isDummy()) {
+                for (TreeNode sNode : measure.getPart()
+                                             .getStaves()) {
+                    Staff staff = (Staff) sNode;
 
-                if (!isFirst.part || (staff.getId() > 1)) {
-                    StaffLayout staffLayout = new StaffLayout();
-                    current.pmPrint.getStaffLayout()
-                                   .add(staffLayout);
-                    staffLayout.setNumber("" + staff.getId());
+                    if (!isFirst.part || (staff.getId() > 1)) {
+                        StaffLayout staffLayout = new StaffLayout();
+                        current.pmPrint.getStaffLayout()
+                                       .add(staffLayout);
+                        staffLayout.setNumber("" + staff.getId());
 
-                    StaffDistance staffDistance = new StaffDistance();
-                    staffLayout.setStaffDistance(staffDistance);
+                        StaffDistance staffDistance = new StaffDistance();
+                        staffLayout.setStaffDistance(staffDistance);
 
-                    Staff prevStaff = (Staff) staff.getPreviousSibling();
+                        Staff prevStaff = (Staff) staff.getPreviousSibling();
 
-                    if (prevStaff == null) {
-                        SystemPart prevPart = (SystemPart) measure.getPart()
-                                                                  .getPreviousSibling();
-                        prevStaff = prevPart.getLastStaff();
+                        if (prevStaff == null) {
+                            SystemPart prevPart = (SystemPart) measure.getPart()
+                                                                      .getPreviousSibling();
+                            prevStaff = prevPart.getLastStaff();
+                        }
+
+                        staffDistance.setContent(
+                            toTenths(
+                                staff.getTopLeft().y -
+                                prevStaff.getTopLeft().y -
+                                prevStaff.getHeight()));
                     }
-
-                    staffDistance.setContent(
-                        toTenths(
-                            staff.getTopLeft().y - prevStaff.getTopLeft().y -
-                            prevStaff.getHeight()));
                 }
             }
         }
@@ -728,10 +768,13 @@ public class ScoreExporter
                         chord.acceptChildren(this);
                         lastChord = chord;
 
-                        if (chord.getDuration() != null) {
-                            timeCounter += chord.getDuration();
-                        } else {
+                        Integer chordDur = chord.getDuration();
+
+                        if ((chordDur == null) ||
+                            (chordDur == Chord.WHOLE_DURATION)) {
                             timeCounter = measure.getExpectedDuration();
+                        } else {
+                            timeCounter += chord.getDuration();
                         }
                     }
                 }
@@ -745,17 +788,6 @@ public class ScoreExporter
                         measure.getExpectedDuration() - timeCounter,
                         lastChord);
                     timeCounter = measure.getExpectedDuration();
-                }
-            }
-
-            if (timeCounter != 0) {
-                measure.getStartTime();
-
-                // Make sure the measure duration is not bigger than limit
-                if (timeCounter <= measure.getExpectedDuration()) {
-                    measure.setActualDuration(timeCounter);
-                } else {
-                    measure.setActualDuration(measure.getExpectedDuration());
                 }
             }
         } catch (InvalidTimeSignature ex) {
@@ -862,7 +894,7 @@ public class ScoreExporter
 
             Integer  dur = chord.getDuration();
 
-            if (dur == null) { // Case of whole rests
+            if ((dur == null) || (dur == Chord.WHOLE_DURATION)) { // Case of whole rests
                 dur = chord.getMeasure()
                            .getExpectedDuration();
             }
@@ -1367,7 +1399,10 @@ public class ScoreExporter
             ((Measure) node).accept(this);
         }
 
-        isFirst.system = false;
+        // If we have exported a measure, we are no longer in the first system
+        if (!isFirst.measure) {
+            isFirst.system = false;
+        }
 
         return false; // No default browsing this way
     }
@@ -1558,6 +1593,22 @@ public class ScoreExporter
 
     //- Utility Methods --------------------------------------------------------
 
+    //-----------//
+    // isDesired //
+    //-----------//
+    /**
+     * Check whether the provided measure is to be exported
+     *
+     * @param measure the measure to check
+     * @return true is desired
+     */
+    private boolean isDesired (Measure measure)
+    {
+        return (measureRange == null) || // No range : take all of them
+               (measure.isDummy()) || // A dummy measure for export
+               measureRange.contains(measure.getId()); // Part of the range
+    }
+
     //----------//
     // areEqual //
     //----------//
@@ -1611,6 +1662,10 @@ public class ScoreExporter
      */
     private boolean isNewClef (Clef clef)
     {
+        if (current.measure.isDummy()) {
+            return true;
+        }
+
         // Perhaps another clef before this one ?
         Clef previousClef = current.measure.getClefBefore(
             new SystemPoint(clef.getCenter().x - 1, clef.getCenter().y));
@@ -1634,6 +1689,10 @@ public class ScoreExporter
      */
     private boolean isNewKeySignature (KeySignature key)
     {
+        if (current.measure.isDummy()) {
+            return true;
+        }
+
         // Perhaps another key before this one ?
         KeySignature previousKey = current.measure.getKeyBefore(
             key.getCenter());

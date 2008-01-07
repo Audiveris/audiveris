@@ -39,6 +39,7 @@ import omr.score.entity.Wedge;
 import omr.score.midi.MidiAgent;
 import omr.score.visitor.ScoreCleaner;
 import omr.score.visitor.ScoreFixer;
+import omr.score.visitor.ScoreTimeFixer;
 
 import omr.sheet.PixelPoint;
 import omr.sheet.PixelRectangle;
@@ -103,6 +104,7 @@ public class ScoreBuilder
     {
         checkSlurConnections();
         score.accept(new ScoreFixer());
+        score.accept(new ScoreTimeFixer());
 
         // Invalidate score data within MidiAgent, if needed
         try {

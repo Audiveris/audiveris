@@ -179,6 +179,7 @@ public class Staff
      *
      * @return the system entity
      */
+    @Override
     public System getSystem ()
     {
         // Beware, staff is not a direct child of System, there is an

@@ -16,7 +16,6 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
 import omr.score.common.SystemPoint;
-import omr.score.entity.Clef;
 import static omr.score.entity.Note.Step.*;
 import omr.score.visitor.ScoreVisitor;
 
@@ -129,15 +128,6 @@ public class KeySignature
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
     //-------------//
     // getAlterFor //
     //-------------//
@@ -161,24 +151,6 @@ public class KeySignature
 
         return 0;
     }
-
-    //
-    //    //--------------//
-    //    // KeySignature //
-    //    //--------------//
-    //    /**
-    //     * Entry for generating a dummy keysig, please ignore.
-    //     */
-    //    public KeySignature (Measure measure,
-    //                         int     key)
-    //    {
-    //        super(measure);
-    //
-    //        this.key = key;
-    //        center = new SystemPoint(
-    //            measure.getLeftX() + (measure.getWidth() / 2),
-    //            0);
-    //    }
 
     //--------//
     // getKey //
@@ -243,6 +215,29 @@ public class KeySignature
         return shape;
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //-----------------//
+    // createDummyCopy //
+    //-----------------//
+    public KeySignature createDummyCopy (Measure     measure,
+                                         SystemPoint center)
+    {
+        KeySignature dummy = new KeySignature(measure, null);
+
+        dummy.key = this.key;
+        dummy.setCenter(center);
+
+        return dummy;
+    }
+
     //----------//
     // populate //
     //----------//
@@ -299,9 +294,6 @@ public class KeySignature
                     logger.fine("Cannot accept " + shape + " as neighbor");
                 }
 
-                //                java.lang.System.out.println(
-                //                    Thread.currentThread().getName() +
-                //                    " Populate STOP1 glyph#" + glyph.getId());
                 return false;
             }
         }
@@ -605,33 +597,6 @@ public class KeySignature
     }
 
     //-------------//
-    // clefToDelta //
-    //-------------//
-    /**
-     * Report the delta in pitch position (wrt standard G_CLEF positions)
-     * according to a given clef
-     *
-     * @param clefKind the kind of clef
-     * @return the delta in pitch position
-     */
-    private static int clefToDelta (Shape clefKind)
-    {
-        switch (clefKind) {
-        case G_CLEF :
-            return 0;
-
-        case F_CLEF :
-            return 2;
-
-        case C_CLEF :
-            return 1;
-
-        default :
-            return 0; // Not correct TBD
-        }
-    }
-
-    //-------------//
     // getClefKind //
     //-------------//
     /**
@@ -700,6 +665,33 @@ public class KeySignature
         return null;
     }
 
+    //-------------//
+    // clefToDelta //
+    //-------------//
+    /**
+     * Report the delta in pitch position (wrt standard G_CLEF positions)
+     * according to a given clef
+     *
+     * @param clefKind the kind of clef
+     * @return the delta in pitch position
+     */
+    private static int clefToDelta (Shape clefKind)
+    {
+        switch (clefKind) {
+        case G_CLEF :
+            return 0;
+
+        case F_CLEF :
+            return 2;
+
+        case C_CLEF :
+            return 1;
+
+        default :
+            return 0; // Not correct TBD
+        }
+    }
+
     //---------//
     // staffOf //
     //---------//
@@ -724,6 +716,90 @@ public class KeySignature
         logger.severe("Illegal systemStaffIndex: " + systemStaffIndex);
 
         return null;
+    }
+
+    //-------------//
+    // getCentroid //
+    //-------------//
+    /**
+     * Report the actual center of mass of the glyphs that compose the signature
+     *
+     * @return the PixelPoint that represent the center of mass
+     */
+    private PixelPoint getCentroid ()
+    {
+        if (centroid == null) {
+            centroid = new PixelPoint();
+
+            double totalWeight = 0;
+
+            for (Glyph glyph : glyphs) {
+                PixelPoint c = glyph.getCentroid();
+                double     w = glyph.getWeight();
+                centroid.x += (c.x * w);
+                centroid.y += (c.y * w);
+                totalWeight += w;
+            }
+
+            centroid.x /= totalWeight;
+            centroid.y /= totalWeight;
+        }
+
+        return centroid;
+    }
+
+    //------------//
+    // getContour //
+    //------------//
+    /**
+     * Report the actual contour of the global key signature, which is the union
+     * of all member glyphs
+     *
+     * @return the global contour box, as a PixelRectangle
+     */
+    private PixelRectangle getContour ()
+    {
+        if (contour == null) {
+            for (Glyph glyph : glyphs) {
+                if (contour == null) {
+                    contour = new PixelRectangle(glyph.getContourBox());
+                } else {
+                    contour = contour.union(glyph.getContourBox());
+                }
+            }
+        }
+
+        return contour;
+    }
+
+    //------------------------//
+    // getTheoreticalPosition //
+    //------------------------//
+    /**
+     * Compute the theoretical mean pitch position, based on key value
+     *
+     * @return the mean pitch position (for the signature symbol, for example)
+     */
+    private double getTheoreticalPosition ()
+    {
+        double sum = 0;
+        getKey();
+
+        if (key == null) {
+            return 0;
+        }
+
+        if (key > 0) {
+            for (int k = 0; k < key; k++) {
+                sum += sharpPositions[k];
+            }
+        } else {
+            for (int k = 0; k > key; k--) {
+                sum -= flatPositions[-k];
+            }
+        }
+
+        return sum / key;
     }
 
     //----------//
@@ -853,7 +929,7 @@ public class KeySignature
         setCenter(
             new SystemPoint(
                 ks.getCenter().x,
-                ks.getCenter().y + getStaff().pitchToUnit(delta)));
+                ks.getCenter().y + Staff.pitchToUnit(delta)));
 
         // pitchPosition
         pitchPosition = new Double(ks.getPitchPosition() + delta);
@@ -884,90 +960,6 @@ public class KeySignature
         default :
             return null;
         }
-    }
-
-    //-------------//
-    // getCentroid //
-    //-------------//
-    /**
-     * Report the actual center of mass of the glyphs that compose the signature
-     *
-     * @return the PixelPoint that represent the center of mass
-     */
-    private PixelPoint getCentroid ()
-    {
-        if (centroid == null) {
-            centroid = new PixelPoint();
-
-            double totalWeight = 0;
-
-            for (Glyph glyph : glyphs) {
-                PixelPoint c = glyph.getCentroid();
-                double     w = glyph.getWeight();
-                centroid.x += (c.x * w);
-                centroid.y += (c.y * w);
-                totalWeight += w;
-            }
-
-            centroid.x /= totalWeight;
-            centroid.y /= totalWeight;
-        }
-
-        return centroid;
-    }
-
-    //------------//
-    // getContour //
-    //------------//
-    /**
-     * Report the actual contour of the global key signature, which is the union
-     * of all member glyphs
-     *
-     * @return the global contour box, as a PixelRectangle
-     */
-    private PixelRectangle getContour ()
-    {
-        if (contour == null) {
-            for (Glyph glyph : glyphs) {
-                if (contour == null) {
-                    contour = new PixelRectangle(glyph.getContourBox());
-                } else {
-                    contour = contour.union(glyph.getContourBox());
-                }
-            }
-        }
-
-        return contour;
-    }
-
-    //------------------------//
-    // getTheoreticalPosition //
-    //------------------------//
-    /**
-     * Compute the theoretical mean pitch position, based on key value
-     *
-     * @return the mean pitch position (for the signature symbol, for example)
-     */
-    private double getTheoreticalPosition ()
-    {
-        double sum = 0;
-        getKey();
-
-        if (key == null) {
-            return 0;
-        }
-
-        if (key > 0) {
-            for (int k = 0; k < key; k++) {
-                sum += sharpPositions[k];
-            }
-        } else {
-            for (int k = 0; k > key; k--) {
-                sum -= flatPositions[-k];
-            }
-        }
-
-        return sum / key;
     }
 
     //---------------//
@@ -1096,12 +1088,5 @@ public class KeySignature
         Scale.Fraction keyYMargin = new Scale.Fraction(
             0.25d,
             "Margin when checking vertical position of single-glyph key");
-
-        //
-        //        public Constants ()
-        //        {
-        //            java.lang.System.out.println(
-        //                Thread.currentThread().getName() + " Creation...");
-        //        }
     }
 }

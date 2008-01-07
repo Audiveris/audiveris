@@ -343,7 +343,7 @@ public class Beam
                     if (this.chords.contains(chord)) {
                         // We have a chord in common with this beam, so we are
                         // part of the same group
-                        setGroup(group);
+                        switchGroup(group);
 
                         if (logger.isFineEnabled()) {
                             logger.fine(
@@ -358,7 +358,7 @@ public class Beam
         }
 
         // No compatible group found, let's build a new one
-        setGroup(new BeamGroup(getMeasure()));
+        switchGroup(new BeamGroup(getMeasure()));
 
         if (logger.isFineEnabled()) {
             logger.fine(
@@ -436,20 +436,33 @@ public class Beam
         }
     }
 
-    //----------//
-    // setGroup //
-    //----------//
+    //-------------//
+    // removeChord //
+    //-------------//
     /**
-     * Assign this beam to a BeamGroup, by setting the link both ways between
+     * Remove a chord from this beam
+     *
+     * @param chord the chord to remove
+     */
+    public void removeChord (Chord chord)
+    {
+        chords.remove(chord);
+    }
+
+    //-------------//
+    // switchGroup //
+    //-------------//
+    /**
+     * Switch this beam to a BeamGroup, by setting the link both ways between
      * this beam and the containing group.
      *
      * @param group the (new) containing beam group
      */
-    public void setGroup (BeamGroup group)
+    public void switchGroup (BeamGroup group)
     {
         if (logger.isFineEnabled()) {
             logger.fine(
-                "Assigning " + this + " from " + this.group + " to " + group);
+                "Switching " + this + " from " + this.group + " to " + group);
         }
 
         // Trivial noop case

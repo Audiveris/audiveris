@@ -27,6 +27,7 @@ import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Class <code>System</code> encapsulates a system in a score.
@@ -261,16 +262,18 @@ public class System
      * Report the time, counted from beginning of this system, when sound stops,
      * which means that ending rests are not counted.
      *
-     * @return the relative time of last Midi "note off" in this system
+     * @param measureId potential constraint on measure id, 
+     * null for no constraint
+     * @return the relative time of last Midi "note off" in this part
      */
-    public int getLastSoundTime ()
+    public int getLastSoundTime (Integer measureId)
     {
         int lastTime = 0;
 
         // Take the latest sound among all parts
         for (TreeNode node : getParts()) {
             SystemPart part = (SystemPart) node;
-            int        time = part.getLastSoundTime();
+            int        time = part.getLastSoundTime(measureId);
 
             if (time > lastTime) {
                 lastTime = time;

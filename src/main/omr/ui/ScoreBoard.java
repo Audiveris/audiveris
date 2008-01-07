@@ -9,9 +9,7 @@
 //
 package omr.ui;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
+import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAbstractions;
@@ -62,6 +60,16 @@ public class ScoreBoard
         "Velocity",
         "Volume");
 
+    /** First measure Id */
+    private final LIntegerField firstId = new LIntegerField(
+        "first Id",
+        "First measure id of measure range");
+
+    /** Last measure Id */
+    private final LIntegerField lastId = new LIntegerField(
+        "last Id",
+        "Last measure id of measure range");
+
     /** Map of score part panes */
     private final Map<ScorePart, PartPane> panes = new HashMap<ScorePart, PartPane>();
 
@@ -92,24 +100,52 @@ public class ScoreBoard
         velocity.setValue(
             (score.getVelocity() != null) ? score.getVelocity()
                         : score.getDefaultVelocity());
+
+        // Default measure range bounds
+        MeasureRange range = score.getMeasureRange();
+
+        if (range != null) {
+            firstId.setValue(range.getFirstId());
+            lastId.setValue(range.getLastId());
+        } else {
+            firstId.setValue(
+                score.getFirstSystem().getFirstPart().getFirstMeasure().getId());
+            lastId.setValue(
+                score.getLastSystem().getLastPart().getLastMeasure().getId());
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
 
     //--------//
-    // commit //
+    // commitPart //
     //--------//
-    public void commit ()
+    /**
+     * Checks the values and commitPart them if they are OK
+     *
+     * @return true if committed, false otherwise
+     */
+    public boolean commit ()
     {
-        // Each score part
-        for (ScorePart scorePart : score.getPartList()) {
-            panes.get(scorePart)
-                 .commit();
-        }
+        if (checkData()) {
+            // Each score part
+            for (ScorePart scorePart : score.getPartList()) {
+                panes.get(scorePart)
+                     .commitPart();
+            }
 
-        // Score global data
-        score.setTempo(tempo.getValue());
-        score.setVelocity(velocity.getValue());
+            // Score global data
+            score.setTempo(tempo.getValue());
+            score.setVelocity(velocity.getValue());
+
+            // Measure range
+            score.setMeasureRange(
+                new MeasureRange(score, firstId.getValue(), lastId.getValue()));
+
+            return true;
+        } else {
+            return false;
+        }
     }
 
     //---------------//
@@ -135,6 +171,80 @@ public class ScoreBoard
     }
 
     //--------------//
+    // getRangePane //
+    //--------------//
+    private Panel getRangePane ()
+    {
+        Panel        panel = new Panel();
+        FormLayout   layout = Panel.makeFormLayout(2, 2);
+        PanelBuilder builder = new PanelBuilder(layout, panel);
+        builder.setDefaultDialogBorder();
+
+        CellConstraints cst = new CellConstraints();
+        int             r = 1;
+        builder.addSeparator("Measure range");
+        r += 2;
+        builder.add(firstId.getLabel(), cst.xy(1, r));
+        builder.add(firstId.getField(), cst.xy(3, r));
+        builder.add(lastId.getLabel(), cst.xy(5, r));
+        builder.add(lastId.getField(), cst.xy(7, r));
+
+        return panel;
+    }
+
+    //-----------//
+    // checkData //
+    //-----------//
+    private boolean checkData ()
+    {
+        // Tempo
+        if ((tempo.getValue() < 0) || (tempo.getValue() > 1000)) {
+            logger.warning("Illegal tempo value");
+
+            return false;
+        }
+
+        // Velocity
+        if ((velocity.getValue() < 0) || (velocity.getValue() > 127)) {
+            logger.warning("Illegal velocity value");
+
+            return false;
+        }
+
+        // First Measure
+        if ((firstId.getValue() < 1) ||
+            (firstId.getValue() > score.getLastSystem()
+                                       .getLastPart()
+                                       .getLastMeasure()
+                                       .getId())) {
+            logger.warning("Illegal first measure Id");
+
+            return false;
+        }
+
+        // Last Measure
+        if ((lastId.getValue() < 0) ||
+            (lastId.getValue() > score.getLastSystem()
+                                      .getLastPart()
+                                      .getLastMeasure()
+                                      .getId())) {
+            logger.warning("Illegal last measure Id");
+
+            return false;
+        }
+
+        // Each score part
+        for (ScorePart scorePart : score.getPartList()) {
+            if (!panes.get(scorePart)
+                      .checkPart()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    //--------------//
     // defineLayout //
     //--------------//
     private void defineLayout ()
@@ -145,7 +255,7 @@ public class ScoreBoard
 
         for (int i = 0; i < score.getPartList()
                                  .size(); i++) {
-            sb.append(",1dlu,pref");
+            sb.append(",1dlu,pref,1dlu,pref");
         }
 
         FormLayout   layout = new FormLayout("pref", sb.toString());
@@ -163,6 +273,9 @@ public class ScoreBoard
             panes.put(scorePart, partPane);
             builder.add(partPane, cst.xy(1, r));
         }
+
+        r += 2;
+        builder.add(getRangePane(), cst.xy(1, r));
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -219,10 +332,27 @@ public class ScoreBoard
 
         //~ Methods ------------------------------------------------------------
 
-        //--------//
-        // commit //
-        //--------//
-        public void commit ()
+        //-----------//
+        // checkPart //
+        //-----------//
+        public boolean checkPart ()
+        {
+            // Part name
+            if (name.getText()
+                    .trim()
+                    .isEmpty()) {
+                logger.warning("Please supply a non empty part name");
+
+                return false;
+            }
+
+            return true;
+        }
+
+        //------------//
+        // commitPart //
+        //------------//
+        public void commitPart ()
         {
             // Part name
             scorePart.setName(name.getText());

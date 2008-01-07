@@ -8,6 +8,7 @@
 //----------------------------------------------------------------------------//
 package omr.score.midi;
 
+import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.ui.ScoreActions;
 import omr.score.visitor.ScoreExporter;
@@ -232,9 +233,15 @@ public class MidiAgent
                                        .getTickLength();
                     logger.fine("Midi sequence length is " + ms + " ms");
                     logger.fine("Midi tick length is " + ticks);
+
+                    MeasureRange measureRange = score.getMeasureRange();
+                    int          lastTime = score.getLastSoundTime(
+                        (measureRange != null) ? measureRange.getLastId() : null);
+                    lastTime /= score.getDurationDivisor();
                     logger.fine(
-                        "Score tick length is " +
-                        (score.getLastSoundTime() / score.getDurationDivisor()));
+                        "Score tick " +
+                        ((measureRange != null) ? "selection" : "length") +
+                        " is " + lastTime);
                 } catch (Exception e) {
                 }
             }
@@ -394,7 +401,10 @@ public class MidiAgent
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder        builder = factory.newDocumentBuilder();
                 document = builder.newDocument();
-                new ScoreExporter(score).export(document);
+
+                ScoreExporter exporter = new ScoreExporter(score);
+                exporter.setMeasureRange(score.getMeasureRange());
+                exporter.export(document);
 
                 // Hand it over directly to MusicXML reader
                 player.openDocument(new MusicXMLDocument(document));

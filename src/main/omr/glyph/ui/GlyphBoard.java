@@ -16,12 +16,8 @@ import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.Shape;
 
-import omr.script.DeassignTask;
-
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
-
-import omr.sheet.Sheet;
 
 import omr.ui.Board;
 import omr.ui.PixelCount;
@@ -41,7 +37,6 @@ import java.awt.Dimension;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.*;

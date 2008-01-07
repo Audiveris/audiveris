@@ -136,21 +136,31 @@ public class LogPane
 
                             if (record != null) {
                                 // Message text
-                                StringBuffer sbuf = new StringBuffer(128);
-                                sbuf.append(record.getLevel().toString());
-                                sbuf.append(" - ");
-                                sbuf.append(record.getMessage());
-                                sbuf.append("\n");
+                                StringBuilder sb = new StringBuilder(256);
+                                sb.append(record.getLevel().toString());
+                                sb.append(" - ");
+                                sb.append(record.getMessage());
+                                sb.append("\n");
 
                                 // Color
                                 StyleConstants.setForeground(
                                     attributes,
                                     getLevelColor(record.getLevel()));
 
+                                // Font name
+                                StyleConstants.setFontFamily(
+                                    attributes,
+                                    constants.fontName.getValue());
+
+                                // Font size
+                                StyleConstants.setFontSize(
+                                    attributes,
+                                    constants.fontSize.getValue());
+
                                 try {
                                     document.insertString(
                                         document.getLength(),
-                                        sbuf.toString(),
+                                        sb.toString(),
                                         attributes);
                                 } catch (BadLocationException ex) {
                                     ex.printStackTrace();
@@ -193,5 +203,12 @@ public class LogPane
             "Messages",
             1000,
             "Size of message queue");
+        Constant.Integer fontSize = new Constant.Integer(
+            "Points",
+            10,
+            "Font size for log pane");
+        Constant.String  fontName = new Constant.String(
+            "Lucida Console",
+            "Font name for log pane");
     }
 }

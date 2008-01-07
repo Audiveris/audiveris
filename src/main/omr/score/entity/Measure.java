@@ -43,6 +43,9 @@ public class Measure
 
     //~ Instance fields --------------------------------------------------------
 
+    /** To flag dummy barline instances */
+    private boolean isDummy;
+
     /** Child: Ending bar line */
     private Barline barline;
 
@@ -494,6 +497,14 @@ public class Measure
         return null; // Not found !!!
     }
 
+    //---------//
+    // isDummy //
+    //---------//
+    public boolean isDummy ()
+    {
+        return isDummy;
+    }
+
     //-----------//
     // getExcess //
     //-----------//
@@ -550,7 +561,8 @@ public class Measure
      * Report how a given voice terminates in this measure
      *
      * @param voice the given voice
-     * @return the duration delta at end of the measure (or null for whole rest)
+     * @return the duration delta at end of the measure
+     * (or null for whole/multi rest)
      */
     public Integer getFinalDuration (int voice)
     {
@@ -616,7 +628,7 @@ public class Measure
      * key signature was found in a previous measure, for the same staff.
      *
      * @param point the point before which to look
-     * @return the current time signature, or null if not found
+     * @return the current key signature, or null if not found
      */
     public KeySignature getKeyBefore (SystemPoint point)
     {
@@ -1028,8 +1040,12 @@ public class Measure
      */
     public int getWidth ()
     {
-        return getBarline()
-                   .getCenter().x - getLeftX();
+        if (isDummy()) {
+            return 50;
+        } else {
+            return getBarline()
+                       .getCenter().x - getLeftX();
+        }
     }
 
     //--------//
@@ -1115,7 +1131,14 @@ public class Measure
                             }
 
                             lastChord = chord;
-                            timeCounter += chord.getDuration();
+
+                            Integer chordDur = chord.getDuration();
+
+                            if (chordDur == Chord.WHOLE_DURATION) {
+                                timeCounter = getExpectedDuration();
+                            } else {
+                                timeCounter += chordDur;
+                            }
                         }
                     }
                 }
@@ -1250,6 +1273,66 @@ public class Measure
         slots = new TreeSet<Slot>();
         beamGroups = new ArrayList<BeamGroup>();
         wholeChords = new ArrayList<Chord>();
+    }
+
+    //-------------------//
+    // createDummyBefore //
+    //-------------------//
+    /**
+     * Create a temporary initial measure to be exported right before this
+     * measure, just to set up global parameters (clef, time, key)
+     *
+     * @return the created dummy measure
+     */
+    public Measure createDummyBefore ()
+    {
+        Measure dummyMeasure = new Measure();
+        dummyMeasure.isDummy = true; // Flag it explicitly as dummy
+
+        // Populate the dummy measure, staff per staff
+        SystemPart part = this.getPart();
+
+        for (TreeNode sn : part.getStaves()) {
+            Staff       staff = (Staff) sn;
+            int         right = getLeftX();
+            int         midY = (staff.getTopLeft().y + (staff.getHeight() / 2)) -
+                               getSystem()
+                                   .getTopLeft().y;
+            SystemPoint staffPoint = new SystemPoint(right, midY);
+
+            // Clef?
+            Clef clef = getClefBefore(staffPoint);
+
+            if (clef != null) {
+                new Clef(
+                    dummyMeasure,
+                    staff,
+                    clef.getShape(),
+                    new SystemPoint(right - 40, midY),
+                    clef.getPitchPosition(),
+                    null); // No glyph
+            }
+
+            // Key?
+            KeySignature key = getKeyBefore(staffPoint);
+
+            if (key != null) {
+                key.createDummyCopy(
+                    dummyMeasure,
+                    new SystemPoint(right - 30, midY));
+            }
+
+            // Time?
+            TimeSignature time = getCurrentTimeSignature();
+
+            if (time != null) {
+                time.createDummyCopy(
+                    dummyMeasure,
+                    new SystemPoint(right - 20, midY));
+            }
+        }
+
+        return dummyMeasure;
     }
 
     //----------------//

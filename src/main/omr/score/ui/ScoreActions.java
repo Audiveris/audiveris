@@ -93,7 +93,7 @@ public class ScoreActions
      */
     public static boolean defineParameters (Score score)
     {
-        final boolean[]   result = new boolean[1];
+        final boolean[]   apply = new boolean[1];
         final ScoreBoard  scoreBoard = new ScoreBoard("Parameters", score);
         final JOptionPane optionPane = new JOptionPane(
             scoreBoard.getComponent(),
@@ -118,22 +118,33 @@ public class ScoreActions
                             Object obj = optionPane.getValue();
                             int    value = ((Integer) obj).intValue();
 
-                            if (value == JOptionPane.OK_OPTION) {
-                                scoreBoard.commit();
-                                result[0] = true;
-                            } else {
-                                result[0] = false;
-                            }
+                            apply[0] = value == JOptionPane.OK_OPTION;
 
-                            dialog.setVisible(false);
-                            dialog.dispose();
+                            // Exit only if user gives up or enters correct data
+                            if (!apply[0]) {
+                                dialog.setVisible(false);
+                                dialog.dispose();
+                            } else {
+                                if (scoreBoard.commit()) {
+                                    dialog.setVisible(false);
+                                    dialog.dispose();
+                                } else {
+                                    // I'm ashamed! TBI
+                                    try {
+                                        optionPane.setValue(
+                                            JOptionPane.UNINITIALIZED_VALUE);
+                                    } catch (Exception ignored) {
+                                    }
+                                }
+                            }
                         }
                     }
                 });
+
         dialog.pack();
         dialog.setVisible(true);
 
-        return result[0];
+        return apply[0];
     }
 
     //----------------------//

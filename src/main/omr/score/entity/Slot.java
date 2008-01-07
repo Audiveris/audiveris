@@ -12,12 +12,12 @@ package omr.score.entity;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
-import omr.glyph.Shape;
 
 import omr.math.InjectionSolver;
 import omr.math.Population;
 
 import omr.score.common.SystemPoint;
+import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.ui.ScoreConstants;
 
 import omr.sheet.Scale;
@@ -156,8 +156,18 @@ public class Slot
         int best = Integer.MAX_VALUE;
 
         for (Chord chord : getChords()) {
-            if (best > chord.getDuration()) {
-                best = chord.getDuration();
+            try {
+                Integer chordDur = chord.getDuration();
+
+                if (chordDur == Chord.WHOLE_DURATION) {
+                    chordDur = measure.getExpectedDuration();
+                }
+
+                if (chordDur < best) {
+                    best = chordDur;
+                }
+            } catch (InvalidTimeSignature ex) {
+                // Ignore
             }
         }
 
@@ -566,17 +576,25 @@ public class Slot
     public List<Chord> getEmbracedChords (SystemPoint top,
                                           SystemPoint bottom)
     {
-        List<Chord> chords = new ArrayList<Chord>();
+        List<Chord> embracedChords = new ArrayList<Chord>();
 
         for (Chord chord : getChords()) {
             if (chord.isEmbracedBy(top, bottom)) {
-                chords.add(chord);
+                embracedChords.add(chord);
             }
         }
 
-        return chords;
+        return embracedChords;
     }
 
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the slot Id
+     *
+     * @return the slot id (for debug)
+     */
     public int getId ()
     {
         return id;
@@ -738,10 +756,10 @@ public class Slot
         int slotTime = Integer.MAX_VALUE;
 
         for (Chord chord : activeChords) {
-            // Skip the "whole" chords which return a null duration
+            // Skip the "whole" chords which return a specific duration
             Integer endTime = chord.getEndTime();
 
-            if ((endTime != null) && (endTime < slotTime)) {
+            if ((endTime != Chord.WHOLE_DURATION) && (endTime < slotTime)) {
                 slotTime = endTime;
             }
         }

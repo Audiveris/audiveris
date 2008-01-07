@@ -191,10 +191,6 @@ public class BeamGroup
                 } catch (Exception ex) {
                     chord.addError(
                         "Cannot compute chord time based on previous chord");
-
-                    //                    logger.warning(
-                    //                        "Cannot compute chord time based on previous chord",
-                    //                        ex);
                 }
             } else {
                 if (chord.getStartTime() == null) {
@@ -230,9 +226,9 @@ public class BeamGroup
         }
 
         // Separate illegal beam groups
-        BeamGroup.Split split;
+        BeamGroup.SplitOrder split;
 
-        int             loopNb = constants.maxSplitLoops.getValue();
+        int                  loopNb = constants.maxSplitLoops.getValue();
 
         while ((split = checkBeamGroups(measure)) != null) {
             if (--loopNb < 0) {
@@ -242,7 +238,7 @@ public class BeamGroup
             }
 
             ///  java.lang.System.out.println("populate. processSplit " + split);
-            split.group.processSplit(split);
+            split.group.splitGroup(split);
         }
 
         // Dump results
@@ -300,11 +296,11 @@ public class BeamGroup
             }
         } else {
             if (!this.voice.equals(voice)) {
-                getChords()
-                    .first()
-                    .addError(
-                    "Reassigning voice from " + this.voice + " to " + voice +
-                    " in " + this);
+//                getChords()
+//                    .first()
+//                    .addError(
+//                    "Group. Reassigning voice from " + this.voice + " to " +
+//                    voice + " in " + this);
             }
         }
     }
@@ -353,7 +349,8 @@ public class BeamGroup
     // align //
     //-------//
     /**
-     * Force all beams (and beam items) to use the same slop within that beam group
+     * Force all beams (and beam items) to use the same slope within that beam
+     * group
      */
     private void align ()
     {
@@ -381,16 +378,39 @@ public class BeamGroup
         }
     }
 
-    //-------//
-    // check //
-    //-------//
+    //-----------------//
+    // checkBeamGroups //
+    //-----------------//
+    /**
+     * Check all the BeamGroup instances of the given measure, to find the first
+     * split if any to perform
+     *
+     * @param measure the given measure
+     * @return the first split parameters, or null if everything is OK
+     */
+    private static SplitOrder checkBeamGroups (Measure measure)
+    {
+        for (BeamGroup group : measure.getBeamGroups()) {
+            SplitOrder split = group.checkGroup();
+
+            if (split != null) {
+                return split;
+            }
+        }
+
+        return null;
+    }
+
+    //------------//
+    // checkGroup //
+    //------------//
     /**
      * Run a consistency check on the group, and detect when a group has to be
      * split
      *
-     * @return the split parameters, or null if no split is needed
+     * @return the split order parameters, or null if no split is needed
      */
-    private Split check ()
+    private SplitOrder checkGroup ()
     {
         // Make sure all chords are part of the same group
         // We use the fact that for any given slot, there must be at most one
@@ -412,7 +432,7 @@ public class BeamGroup
                             }
 
                             // Split the beam group here
-                            return new Split(this, beam, prevChord, chord);
+                            return new SplitOrder(this, beam, prevChord, chord);
                         }
                     }
                 }
@@ -422,89 +442,19 @@ public class BeamGroup
         return null; // everything is OK
     }
 
-    //-----------------//
-    // checkBeamGroups //
-    //-----------------//
-    /**
-     * Check all the BeamGroup instances of the given measure, to find the first
-     * split if any to perform
-     *
-     * @param measure the given measure
-     * @return the first split parameters, or null if everything is OK
-     */
-    private static Split checkBeamGroups (Measure measure)
-    {
-        for (BeamGroup group : measure.getBeamGroups()) {
-            //             java.lang.System.out.println(
-            //                 measure.getContextString() + " checkBeamGroups group=" + group);
-            Split split = group.check();
-
-            if (split != null) {
-                return split;
-            }
-        }
-
-        return null;
-    }
-
-    //--------------//
-    // processSplit //
-    //--------------//
-    /**
-     * Actually split a group in two, according to the split parameters
-     *
-     * @param split the split parameters
-     */
-    private void processSplit (Split split)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("processing " + split);
-        }
-
-        BeamGroup  alienGroup = new BeamGroup(measure);
-
-        // Check all former beams: any beam linked to the alienChord should be
-        // moved to the alienGroup as well.
-        List<Beam> aliens = new ArrayList<Beam>(); // To avoid concurrent modifs
-
-        for (Iterator<Beam> bit = this.beams.iterator(); bit.hasNext();) {
-            Beam beam = bit.next();
-
-            if (beam.getChords()
-                    .contains(split.alienChord)) {
-                aliens.add(beam);
-            }
-        }
-
-        // Now make the switch
-        for (Beam beam : aliens) {
-            beam.setGroup(alienGroup);
-        }
-
-        // Detect the chord which is shared by the two groups
-        // And duplicate this chord for both groups
-        for (Beam aBeam : alienGroup.beams) {
-            for (Chord aChord : aBeam.getChords()) {
-                for (Beam beam : this.beams) {
-                    for (Chord chord : beam.getChords()) {
-                        // Is this (alien) chord also part of the old Group ?
-                        if (chord == aChord) {
-                            splitChord(chord, split, alienGroup);
-
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     //------------//
     // splitChord //
     //------------//
-    private void splitChord (Chord     chord,
-                             Split     split,
-                             BeamGroup alienGroup)
+    /**
+     * We actually split a chord which embraces the two beam groups
+     *
+     * @param chord the chord to split
+     * @param split the split parameters
+     * @param alienGroup the alien beam group
+     */
+    private void splitChord (Chord      chord,
+                             SplitOrder split,
+                             BeamGroup  alienGroup)
     {
         if (logger.isFineEnabled()) {
             logger.fine("Shared : " + chord);
@@ -528,15 +478,73 @@ public class BeamGroup
                     logger.fine("Beam to switch: " + beam.toLongString());
                 }
 
-                // Remove beam from chord
+                // Cut the link chord -> beam
                 bit.remove();
+
+                // Cut the link chord <- beam
+                beam.removeChord(chord);
 
                 // Link beam to alienChord
                 alienChord.addBeam(beam);
                 beam.addChord(alienChord);
 
                 // Switch beam group
-                beam.setGroup(alienGroup);
+                beam.switchGroup(alienGroup);
+            }
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Remaining : " + chord);
+            logger.fine("Alien : " + alienChord);
+        }
+    }
+
+    //------------//
+    // splitGroup //
+    //------------//
+    /**
+     * Actually split a group in two, according to the split parameters
+     *
+     * @param split the split parameters
+     */
+    private void splitGroup (SplitOrder split)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("processing " + split);
+        }
+
+        BeamGroup  alienGroup = new BeamGroup(measure);
+
+        // Check all former beams: any beam linked to the alienChord should be
+        // moved to the alienGroup as well.
+        List<Beam> alienBeams = new ArrayList<Beam>(); // To avoid concurrent modifs
+
+        for (Beam beam : beams) {
+            if (beam.getChords()
+                    .contains(split.alienChord)) {
+                alienBeams.add(beam);
+            }
+        }
+
+        // Now make the switch
+        for (Beam beam : alienBeams) {
+            beam.switchGroup(alienGroup);
+        }
+
+        // Detect the chord which is shared by the two groups
+        // And duplicate this chord for both groups
+        for (Beam aBeam : alienGroup.beams) {
+            for (Chord aChord : aBeam.getChords()) {
+                for (Beam beam : this.beams) {
+                    for (Chord chord : beam.getChords()) {
+                        // Is this (alien) chord also part of the old Group ?
+                        if (chord == aChord) {
+                            splitChord(chord, split, alienGroup);
+
+                            return;
+                        }
+                    }
+                }
             }
         }
     }
@@ -564,24 +572,31 @@ public class BeamGroup
     // Split //
     //-------//
     /**
-     * Class <code>Split</code> records a split order. Splitting must be
+     * Class <code>SplitOrder</code> records a split order. Splitting must be
      * separate from browsing to avoid concurrent modification of collections
      */
-    private static class Split
+    private static class SplitOrder
     {
         //~ Instance fields ----------------------------------------------------
 
+        /** The beam group to be split */
         final BeamGroup group;
-        final Beam      alienBeam;
-        final Chord     firstChord;
-        final Chord     alienChord;
+
+        /** The beam of this group to feed an alien group */
+        final Beam alienBeam;
+
+        /** The first chord in the slot */
+        final Chord firstChord;
+
+        /** The second chord in the same slot, meant for the alien group */
+        final Chord alienChord;
 
         //~ Constructors -------------------------------------------------------
 
-        public Split (BeamGroup group,
-                      Beam      alienBeam,
-                      Chord     firstChord,
-                      Chord     alienChord)
+        public SplitOrder (BeamGroup group,
+                           Beam      alienBeam,
+                           Chord     firstChord,
+                           Chord     alienChord)
         {
             this.group = group;
             this.alienBeam = alienBeam;

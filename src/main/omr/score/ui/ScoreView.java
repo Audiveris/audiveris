@@ -9,6 +9,7 @@
 //
 package omr.score.ui;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.score.Score;
@@ -17,9 +18,12 @@ import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
 import omr.score.common.UnitDimension;
+import omr.score.entity.Chord;
 import omr.score.entity.Measure;
+import omr.score.entity.Note;
 import omr.score.entity.Slot;
 import omr.score.entity.System;
+import omr.score.entity.SystemPart;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScorePainter;
 
@@ -41,6 +45,7 @@ import omr.ui.view.ZoomedPanel;
 import omr.util.Logger;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.util.*;
 
 import javax.swing.*;
@@ -302,9 +307,13 @@ public class ScoreView
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Currently highlighted slot */
-        private Slot slot;
-        private Measure measure;
+        // Currently highlighted slot & measure
+        private Slot    highlightedSlot;
+        private Measure highlightedMeasure;
+
+        // Selected slot & measure
+        private Slot    selectedSlot;
+        private Measure selectedMeasure;
 
         //~ Constructors -------------------------------------------------------
 
@@ -325,14 +334,45 @@ public class ScoreView
 
         //~ Methods ------------------------------------------------------------
 
+        //-----------------//
+        // contextSelected //
+        //-----------------//
+        @Override
+        public void contextSelected (MouseEvent e,
+                                     Point      pt)
+        {
+            // This is more like a debug feature, so disable it by default
+            if (!constants.contextEnabled.getValue()) {
+                return;
+            }
+
+            // Find the nearest slot
+            ScorePoint  scrPt = new ScorePoint(pt.x, pt.y);
+            System      system = score.scoreLocateSystem(scrPt);
+            PagePoint   pagPt = system.toPagePoint(scrPt);
+            SystemPoint sysPt = system.toSystemPoint(pagPt);
+            SystemPart  part = system.getPartAt(sysPt);
+            Measure     measure = part.getMeasureAt(sysPt);
+            Slot        slot = measure.getClosestSlot(sysPt);
+
+            if ((measure != selectedMeasure) || (slot != selectedSlot)) {
+                selectedMeasure = measure;
+                selectedSlot = slot;
+
+                logger.info(
+                    "M" + measure.getId() + " " +
+                    ((slot != null) ? printSlot(measure, slot) : ""));
+            }
+        }
+
         //-----------//
         // highLight //
         //-----------//
         public void highLight (Measure measure,
                                Slot    slot)
         {
-            this.measure = measure;
-            this.slot = slot;
+            this.highlightedMeasure = measure;
+            this.highlightedSlot = slot;
 
             int margin = constants.measureMargin.getValue();
 
@@ -377,8 +417,16 @@ public class ScoreView
             ScorePainter painter = new ScorePainter(g, zoom);
             score.accept(painter);
 
-            if (slot != null) {
-                painter.drawSlot(measure, slot, Color.MAGENTA);
+            if (highlightedSlot != null) {
+                painter.drawSlot(
+                    true,
+                    highlightedMeasure,
+                    highlightedSlot,
+                    Color.MAGENTA);
+
+                //                logger.info(
+                //                    "M" + highlightedMeasure.getId() + " " +
+                //                    printSlot(highlightedMeasure, highlightedSlot));
             }
         }
 
@@ -418,6 +466,60 @@ public class ScoreView
                 }
             }
         }
+
+        //-----------//
+        // printSlot //
+        //-----------//
+        private String printSlot (Measure measure,
+                                  Slot    slot)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("slot#")
+              .append(slot.getId())
+              .append(" start=")
+              .append(
+                String.format("%5s", Note.quarterValueOf(slot.getStartTime())))
+              .append(" [");
+
+            SortedMap<Integer, Chord> chords = new TreeMap<Integer, Chord>();
+
+            for (Chord chord : slot.getChords()) {
+                chords.put(chord.getVoice(), chord);
+            }
+
+            boolean started = false;
+            int     voiceMax = measure.getVoicesNumber();
+
+            for (int iv = 1; iv <= voiceMax; iv++) {
+                if (started) {
+                    sb.append(", ");
+                } else {
+                    started = true;
+                }
+
+                Chord chord = chords.get(iv);
+
+                if (chord != null) {
+                    sb.append("V")
+                      .append(chord.getVoice());
+                    sb.append(" Ch#")
+                      .append(String.format("%02d", chord.getId()));
+                    sb.append(" St")
+                      .append(chord.getStaff().getId());
+                    sb.append(" Dur=")
+                      .append(
+                        String.format(
+                            "%5s",
+                            Note.quarterValueOf(chord.getDuration())));
+                } else {
+                    sb.append("----------------------");
+                }
+            }
+
+            sb.append("]");
+
+            return sb.toString();
+        }
     }
 
     //-----------//
@@ -428,8 +530,11 @@ public class ScoreView
     {
         //~ Instance fields ----------------------------------------------------
 
-        PixelCount measureMargin = new PixelCount(
+        PixelCount       measureMargin = new PixelCount(
             10,
             "Number of pixels as margin when highlighting a measure");
+        Constant.Boolean contextEnabled = new Constant.Boolean(
+            false,
+            "Should we handle right-click selection in score view?");
     }
 }

@@ -65,7 +65,7 @@ public class ScoreReductor
 
         try {
             // Special case for whole chords
-            if (duration == null) {
+            if (duration == Chord.WHOLE_DURATION) {
                 duration = chord.getMeasure()
                                 .getExpectedDuration();
             }

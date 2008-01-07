@@ -88,29 +88,6 @@ public class TimeSignature
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //----------//
-    // addGlyph //
-    //----------//
-    /**
-     * Add a new glyph as part of this time signature
-     *
-     * @param glyph the new component glyph
-     */
-    public void addGlyph (Glyph glyph)
-    {
-        glyphs.add(glyph);
-        reset();
-    }
-
     //----------------//
     // getDenominator //
     //----------------//
@@ -184,6 +161,88 @@ public class TimeSignature
         return shape;
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //----------//
+    // addGlyph //
+    //----------//
+    /**
+     * Add a new glyph as part of this time signature
+     *
+     * @param glyph the new component glyph
+     */
+    public void addGlyph (Glyph glyph)
+    {
+        glyphs.add(glyph);
+        reset();
+    }
+
+    //-----------------//
+    // createDummyCopy //
+    //-----------------//
+    public TimeSignature createDummyCopy (Measure     measure,
+                                          SystemPoint center)
+    {
+        TimeSignature dummy = new TimeSignature(measure, null);
+        dummy.setCenter(center);
+
+        dummy.numerator = numerator;
+        dummy.denominator = denominator;
+        dummy.shape = shape;
+
+        return dummy;
+    }
+
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Populate the score with a time signature built from the provided glyph
+     *
+     * @param glyph the source glyph
+     * @param measure containing measure
+     * @param staff the related staff
+     * @param center the glyph center wrt system
+     *
+     * @return true if population is successful, false otherwise
+     */
+    public static boolean populate (Glyph       glyph,
+                                    Measure     measure,
+                                    Staff       staff,
+                                    SystemPoint center)
+    {
+        // First, some basic tests
+        // Horizontal distance since beginning of measure
+        int unitDx = center.x - measure.getLeftX();
+
+        if (unitDx < measure.getScale()
+                            .toUnits(constants.minTimeOffset)) {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Too small offset for time signature" + " (glyph #" +
+                    glyph.getId() + ")");
+            }
+
+            return false;
+        }
+
+        // Then, processing depends on single/multi time signature
+        Shape shape = glyph.getShape();
+
+        if (SingleTimes.contains(shape)) {
+            return populateSingleTime(glyph, measure, staff);
+        } else {
+            return populateMultiTime(glyph, measure, staff);
+        }
+    }
+
     //-------//
     // reset //
     //-------//
@@ -254,47 +313,54 @@ public class TimeSignature
         setCenter(computeGlyphsCenter(glyphs));
     }
 
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Populate the score with a time signature built from the provided glyph
-     *
-     * @param glyph the source glyph
-     * @param measure containing measure
-     * @param staff the related staff
-     * @param center the glyph center wrt system
-     *
-     * @return true if population is successful, false otherwise
-     */
-    public static boolean populate (Glyph       glyph,
-                                    Measure     measure,
-                                    Staff       staff,
-                                    SystemPoint center)
+    //-----------------//
+    // getNumericValue //
+    //-----------------//
+    private Integer getNumericValue (Glyph glyph)
     {
-        // First, some basic tests
-        // Horizontal distance since beginning of measure
-        int unitDx = center.x - measure.getLeftX();
-
-        if (unitDx < measure.getScale()
-                            .toUnits(constants.minTimeOffset)) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Too small offset for time signature" + " (glyph #" +
-                    glyph.getId() + ")");
-            }
-
-            return false;
-        }
-
-        // Then, processing depends on single/multi time signature
         Shape shape = glyph.getShape();
 
-        if (SingleTimes.contains(shape)) {
-            return populateSingleTime(glyph, measure, staff);
-        } else {
-            return populateMultiTime(glyph, measure, staff);
+        if (shape != null) {
+            switch (shape) {
+            case TIME_ZERO :
+                return 0;
+
+            case TIME_ONE :
+                return 1;
+
+            case TIME_TWO :
+                return 2;
+
+            case TIME_THREE :
+                return 3;
+
+            case TIME_FOUR :
+                return 4;
+
+            case TIME_FIVE :
+                return 5;
+
+            case TIME_SIX :
+                return 6;
+
+            case TIME_SEVEN :
+                return 7;
+
+            case TIME_EIGHT :
+                return 8;
+
+            case TIME_NINE :
+                return 9;
+
+            case TIME_TWELVE :
+                return 12;
+
+            case TIME_SIXTEEN :
+                return 16;
+            }
         }
+
+        return null;
     }
 
     //----------------//
@@ -416,56 +482,6 @@ public class TimeSignature
                     "numerator=" + numerator + " denominator=" + denominator);
             }
         }
-    }
-
-    //-----------------//
-    // getNumericValue //
-    //-----------------//
-    private Integer getNumericValue (Glyph glyph)
-    {
-        Shape shape = glyph.getShape();
-
-        if (shape != null) {
-            switch (shape) {
-            case TIME_ZERO :
-                return 0;
-
-            case TIME_ONE :
-                return 1;
-
-            case TIME_TWO :
-                return 2;
-
-            case TIME_THREE :
-                return 3;
-
-            case TIME_FOUR :
-                return 4;
-
-            case TIME_FIVE :
-                return 5;
-
-            case TIME_SIX :
-                return 6;
-
-            case TIME_SEVEN :
-                return 7;
-
-            case TIME_EIGHT :
-                return 8;
-
-            case TIME_NINE :
-                return 9;
-
-            case TIME_TWELVE :
-                return 12;
-
-            case TIME_SIXTEEN :
-                return 16;
-            }
-        }
-
-        return null;
     }
 
     //-------------------//

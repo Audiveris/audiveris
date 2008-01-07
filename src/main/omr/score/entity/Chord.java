@@ -12,7 +12,6 @@ package omr.score.entity;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
-import omr.glyph.Shape;
 
 import omr.score.common.DurationFactor;
 import omr.score.common.SystemPoint;
@@ -35,7 +34,7 @@ import java.util.*;
 /**
  * Class <code>Chord</code> represents an ensemble of entities (rests, notes)
  * attached to the same stem if any, and that occur on the same time in a staff.
- * <p><b>NB</>We assume that all notes of a chord have the same duration,
+ * <p><b>NB</>We assume that all notes of a chord have the same rawDuration,
  * otherwise the chord should be split (this split is not yet implemented)
  *
  * @author Herv&eacute Bitteur
@@ -65,6 +64,8 @@ public class Chord
         }
     };
 
+    /** A specific duration value to indicate that we have a whole/multi rest */
+    public static final Integer WHOLE_DURATION = new Integer(0);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -89,16 +90,8 @@ public class Chord
     /** Number of flags (a beam is not a flag) */
     private int flagsNumber;
 
-    /** Ratio to get actual duration wrt graphical notation */
+    /** Ratio to get actual rawDuration wrt graphical notation */
     private DurationFactor tupletFactor;
-
-    /**
-     * Duration (assumed to be the same for all notes of this chord, otherwise
-     * the chord must be split. This may be too restrictive, TBD).
-     * This includes the local information (flags, dots) but not the tuplet
-     * impact if any.
-     */
-    private Integer duration;
 
     /** Start time of this chord */
     private Integer startTime;
@@ -220,17 +213,23 @@ public class Chord
     // getDuration //
     //-------------//
     /**
-     * Report the real duration computed for this chord, including the tuplet
-     * impact if any
+     * Report the real rawDuration computed for this chord, including the tuplet
+     * impact if any, with special value for whole/multi rest.
      *
-     * @return The real chord/note duration
+     * @return The real chord/note rawDuration, which may be WHOLE_DURATION
+     * @see #getRawDuration
      */
     public Integer getDuration ()
     {
-        if (tupletFactor != null) {
-            return (getRawDuration() * tupletFactor.getNumerator()) / tupletFactor.getDenominator();
+        Integer raw = getRawDuration();
+
+        if ((tupletFactor == null) || (raw == WHOLE_DURATION)) {
+            return raw;
         } else {
-            return getRawDuration();
+            final int num = tupletFactor.getNumerator();
+            final int den = tupletFactor.getDenominator();
+
+            return (raw * num) / den;
         }
     }
 
@@ -266,14 +265,20 @@ public class Chord
     /**
      * Report the time when this chord ends
      *
-     * @return chord ending time
+     * @return chord ending time, since beginning of the measure
      */
     public Integer getEndTime ()
     {
-        if (getDuration() == null) {
+        Integer chordDur = getDuration();
+
+        if (chordDur == null) {
             return null;
         } else {
-            return startTime + getDuration();
+            if (chordDur == WHOLE_DURATION) {
+                return WHOLE_DURATION;
+            } else {
+                return startTime + chordDur;
+            }
         }
     }
 
@@ -382,50 +387,6 @@ public class Chord
         }
 
         return null;
-    }
-
-    //----------------//
-    // getRawDuration //
-    //---------------//
-    /**
-     * Report the intrinsic time duration of this chord, taking flag/beams and
-     * dots into account, but not the tuplet impact if any
-     *
-     * @return the intrinsic chord duration
-     * @see #getDuration
-     */
-    public Integer getRawDuration ()
-    {
-        if (duration == null) {
-            if (getNotes()
-                    .size() > 0) {
-                // All note heads are assumed to be the same within one chord
-                Note note = (Note) getNotes()
-                                       .get(0);
-
-                if (!note.getShape()
-                         .isWholeRest()) {
-                    duration = Note.getTypeDuration(note.getShape());
-
-                    // Apply fraction
-                    int fbn = getFlagsNumber() + getBeams()
-                                                     .size();
-
-                    for (int i = 0; i < fbn; i++) {
-                        duration /= 2;
-                    }
-
-                    // Apply augmentation
-                    if (dotsNumber == 1) {
-                        duration += (duration / 2);
-                    } else if (dotsNumber == 2) {
-                        duration += ((duration * 3) / 4);
-                    }
-                }
-            }
-        }
-
-        return duration;
     }
 
     //----------//
@@ -604,9 +565,9 @@ public class Chord
             }
         } else {
             if (!this.voice.equals(voice)) {
-                addError(
-                    "Reassigning voice from " + this.voice + " to " + voice +
-                    " in " + this);
+//                addError(
+//                    "Chord. Reassigning voice from " + this.voice + " to " +
+//                    voice + " in " + this);
             }
         }
     }
@@ -1056,8 +1017,14 @@ public class Chord
 
             sb.append(" dur=");
 
-            if (getRawDuration() != null) {
-                sb.append(Note.quarterValueOf(duration));
+            Integer chordDur = getDuration();
+
+            if (chordDur != null) {
+                if (chordDur == WHOLE_DURATION) {
+                    sb.append("W");
+                } else {
+                    sb.append(Note.quarterValueOf(chordDur));
+                }
             } else {
                 sb.append("none");
             }
@@ -1181,6 +1148,62 @@ public class Chord
         return 0;
     }
 
+    //----------------//
+    // getRawDuration //
+    //---------------//
+    /**
+     * Report the intrinsic duration of this chord, taking flag/beams and dots
+     * into account, but not the tuplet impact if any
+     * Duration (assumed to be the same for all notes of this chord, otherwise
+     * the chord must be split.
+     * This includes the local information (flags, dots) but not the tuplet
+     * impact if any.
+     * A specific value (WHOLE_DURATION) indicates the whole/multi rest chord.
+     *
+     * Nota: this value is not cached, but computed at every time
+     *
+     * @return the intrinsic chord rawDuration
+     * @see #getDuration
+     */
+    private Integer getRawDuration ()
+    {
+        Integer rawDuration = null;
+
+        if (getNotes()
+                .size() > 0) {
+            // All note heads are assumed to be the same within one chord
+            Note note = (Note) getNotes()
+                                   .get(0);
+
+            if (note.getShape()
+                    .isWholeRest()) {
+                // Specific value for Whole/Multi rest
+                rawDuration = WHOLE_DURATION;
+            } else {
+                rawDuration = Note.getTypeDuration(note.getShape());
+
+                // Apply fraction
+                int fbn = getFlagsNumber() + getBeams()
+                                                 .size();
+
+                for (int i = 0; i < fbn; i++) {
+                    rawDuration /= 2;
+                }
+
+                // Apply augmentation
+                if (dotsNumber == 1) {
+                    rawDuration += (rawDuration / 2);
+                } else if (dotsNumber == 2) {
+                    rawDuration += ((rawDuration * 3) / 4);
+                }
+            }
+        } else {
+            ///logger.warning("Chord with no note");
+        }
+
+        return rawDuration;
+    }
+
     //-----------------//
     // tryAugmentation //
     //-----------------//
@@ -1231,7 +1254,7 @@ public class Chord
             }
         }
 
-        // Assign the dot to the candidate with longest duration, which boils
+        // Assign the dot to the candidate with longest rawDuration, which boils
         // down to smallest number of flags/beams, as the note head is the same
         if (logger.isFineEnabled()) {
             logger.info(candidates.size() + " Candidates=" + candidates);
@@ -1387,7 +1410,7 @@ public class Chord
                 headLocation = new SystemPoint(
                     tailLocation.x,
                     staff.getTopLeft().y - bestNote.getSystem().getTopLeft().y +
-                    staff.pitchToUnit(Math.rint(bestNote.getPitchPosition())));
+                    Staff.pitchToUnit(Math.rint(bestNote.getPitchPosition())));
             } else {
                 Note note = (Note) getNotes()
                                        .get(0);
@@ -1410,7 +1433,7 @@ public class Chord
     {
         headLocation = null;
         tailLocation = null;
-        duration = null;
+        ///rawDuration = null;
         startTime = null;
     }
 

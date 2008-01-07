@@ -18,8 +18,6 @@ import omr.math.GCD;
 
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
-import omr.score.entity.Chord;
-import omr.score.entity.Clef;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
@@ -402,7 +400,8 @@ public class Note
     /**
      * Report the duration of this note, based purely on its shape and the
      * number of beams or flags. This does not take into account the potential
-     * augmentation dots, nor tuplets
+     * augmentation dots, nor tuplets. The purpose of this method is to find out
+     * the name of the note ("eighth" versus "quarter" for example)
      *
      * @return the intrinsic note duration
      */
@@ -436,8 +435,10 @@ public class Note
         if (octave == null) {
             Clef  clef = getMeasure()
                              .getClefBefore(getCenter());
-            Shape shape = (clef != null) ? clef.getShape() : Shape.G_CLEF;
-            octave = Clef.octaveOf((int) Math.rint(getPitchPosition()), shape);
+            Shape clefShape = (clef != null) ? clef.getShape() : Shape.G_CLEF;
+            octave = Clef.octaveOf(
+                (int) Math.rint(getPitchPosition()),
+                clefShape);
         }
 
         return octave;
@@ -571,8 +572,10 @@ public class Note
         if (step == null) {
             Clef  clef = getMeasure()
                              .getClefBefore(getCenter());
-            Shape shape = (clef != null) ? clef.getShape() : Shape.G_CLEF;
-            step = Clef.noteStepOf((int) Math.rint(getPitchPosition()), shape);
+            Shape clefShape = (clef != null) ? clef.getShape() : Shape.G_CLEF;
+            step = Clef.noteStepOf(
+                (int) Math.rint(getPitchPosition()),
+                clefShape);
         }
 
         return step;

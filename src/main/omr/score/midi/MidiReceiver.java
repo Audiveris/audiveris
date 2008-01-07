@@ -8,6 +8,7 @@
 //----------------------------------------------------------------------------//
 package omr.score.midi;
 
+import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.entity.Measure;
 import omr.score.entity.Note;
@@ -60,6 +61,9 @@ public class MidiReceiver
 
     /** The maximum measure id, for the current score */
     private int maxMeasureId;
+
+    /** Offset when playback does not start from measure 1 */
+    private long tickOffset;
 
     /** The last midiTick value received for the current score */
     private long currentMidiTick;
@@ -224,6 +228,7 @@ public class MidiReceiver
         // Set to default values
         midiLength = -1;
         maxMeasureId = -1;
+        tickOffset = 0;
         currentMidiTick = -1;
         lastSystemMeasureId = null;
         currentSystem = null;
@@ -243,9 +248,24 @@ public class MidiReceiver
     //--------------//
     private Double getTickRatio ()
     {
-        int  divisor = score.getDurationDivisor();
-        long midiTicks = agent.getLengthInTicks();
-        long scoreTicks = score.getLastSoundTime() / divisor;
+        int          divisor = score.getDurationDivisor();
+        long         midiTicks = agent.getLengthInTicks();
+        long         scoreTicks;
+        MeasureRange measureRange = score.getMeasureRange();
+
+        if (measureRange != null) {
+            long startTime = measureRange.getFirstMeasure()
+                                         .getStartTime() +
+                             measureRange.getFirstSystem()
+                                         .getStartTime();
+            tickOffset = startTime / divisor;
+            logger.info(measureRange + " tickOffset=" + tickOffset);
+            scoreTicks = (score.getLastSoundTime(measureRange.getLastId()) -
+                         startTime) / divisor;
+        } else {
+            scoreTicks = score.getLastSoundTime(null) / divisor;
+            tickOffset = 0;
+        }
 
         if (midiTicks != scoreTicks) {
             logger.warning(
@@ -297,6 +317,8 @@ public class MidiReceiver
      */
     private boolean retrieveSlot (long scoreTick)
     {
+        scoreTick += tickOffset;
+
         if (logger.isFineEnabled()) {
             logger.fine("retrieveSlot for score tick " + scoreTick);
         }

@@ -462,13 +462,20 @@ public abstract class Dumper
         @Override
         public String toString ()
         {
-            sb.append("<style> ")
-              .append("td {font-family: Lucida Console, Verdana, sans-serif;")
+            // Style
+            sb.append("<style> td {")
+              .append(" font-family: Lucida Console, Verdana, sans-serif;")
               .append(" font-size: 9px;")
               .append(" font-style: normal;")
               .append("} </style>");
+
+            // Table begin
             sb.append("<table border=0 cellpadding=3>");
+
+            // The object
             super.processObject();
+
+            // Table end
             sb.append("</table>");
 
             // Return the final content of string buffer
