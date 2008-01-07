@@ -34,8 +34,7 @@ import java.util.*;
 /**
  * Class <code>Chord</code> represents an ensemble of entities (rests, notes)
  * attached to the same stem if any, and that occur on the same time in a staff.
- * <p><b>NB</>We assume that all notes of a chord have the same rawDuration,
- * otherwise the chord should be split (this split is not yet implemented)
+ * <p><b>NB</>We assume that all notes of a chord have the same duration.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
