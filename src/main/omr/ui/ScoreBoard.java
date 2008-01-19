@@ -340,7 +340,7 @@ public class ScoreBoard
             // Part name
             if (name.getText()
                     .trim()
-                    .isEmpty()) {
+                    .length() > 0) {
                 logger.warning("Please supply a non empty part name");
 
                 return false;
