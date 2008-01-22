@@ -385,8 +385,8 @@ public class ScoreView
         {
             super.pointSelected(e, pt);
 
-            // This is more like a debug feature, so disable it by default
-            if (!constants.contextEnabled.getValue()) {
+            // Let the user disable this popup feature if so desired
+            if (!constants.popupEnabled.getValue()) {
                 return;
             }
 
@@ -468,8 +468,8 @@ public class ScoreView
         PixelCount       measureMargin = new PixelCount(
             10,
             "Number of pixels as margin when highlighting a measure");
-        Constant.Boolean contextEnabled = new Constant.Boolean(
-            false,
-            "Should we handle right-click selection in score view?");
+        Constant.Boolean popupEnabled = new Constant.Boolean(
+            true,
+            "Should we allow popup menu in score view?");
     }
 }
