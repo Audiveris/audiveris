@@ -34,6 +34,7 @@ import omr.score.entity.Ornament;
 import omr.score.entity.Pedal;
 import omr.score.entity.ScorePart;
 import omr.score.entity.Segno;
+import omr.score.entity.Slot;
 import omr.score.entity.Slur;
 import omr.score.entity.Staff;
 import omr.score.entity.System;
@@ -41,6 +42,8 @@ import omr.score.entity.SystemPart;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.entity.Tuplet;
+import omr.score.entity.Voice;
+import omr.score.entity.Voice.ChordInfo;
 import omr.score.entity.Wedge;
 import omr.score.midi.MidiAbstractions;
 import static omr.score.visitor.MusicXML.*;
@@ -741,7 +744,7 @@ public class ScoreExporter
         try {
             int timeCounter = 0;
 
-            for (int voice = 1; voice <= measure.getVoicesNumber(); voice++) {
+            for (Voice voice : measure.getVoices()) {
                 current.voice = voice;
 
                 // Need a backup ?
@@ -750,44 +753,46 @@ public class ScoreExporter
                     timeCounter = 0;
                 }
 
-                Chord lastChord = null;
+                if (voice.isWhole()) {
+                    // Delegate to the chord children directly
+                    voice.getWholeChord()
+                         .acceptChildren(this);
+                    timeCounter = measure.getExpectedDuration();
+                } else {
+                    for (Slot slot : measure.getSlots()) {
+                        ChordInfo info = voice.getSlotInfo(slot);
 
-                for (TreeNode nc : measure.getChords()) {
-                    Chord chord = (Chord) nc;
+                        if (info != null) { // Skip free slots
 
-                    if (chord.getVoice() == voice) {
-                        // Need a forward before this chord ?
-                        int startTime = chord.getStartTime();
+                            if (info.getStatus() == Voice.Status.BEGIN) {
+                                Chord chord = info.getChord();
 
-                        if (timeCounter < startTime) {
-                            insertForward(startTime - timeCounter, chord);
-                            timeCounter = startTime;
-                        }
+                                // Need a forward before this chord ?
+                                int startTime = chord.getStartTime();
 
-                        // Delegate to the chord children directly
-                        chord.acceptChildren(this);
-                        lastChord = chord;
+                                if (timeCounter < startTime) {
+                                    insertForward(
+                                        startTime - timeCounter,
+                                        chord);
+                                    timeCounter = startTime;
+                                }
 
-                        Integer chordDur = chord.getDuration();
-
-                        if ((chordDur == null) ||
-                            (chordDur == Chord.WHOLE_DURATION)) {
-                            timeCounter = measure.getExpectedDuration();
-                        } else {
-                            timeCounter += chord.getDuration();
+                                // Delegate to the chord children directly
+                                chord.acceptChildren(this);
+                                timeCounter += chord.getDuration();
+                            }
                         }
                     }
-                }
 
-                // Need an ending forward ?
-                if ((lastChord != null) &&
-                    !measure.isImplicit() &&
-                    !measure.isPartial() &&
-                    (timeCounter < measure.getExpectedDuration())) {
-                    insertForward(
-                        measure.getExpectedDuration() - timeCounter,
-                        lastChord);
-                    timeCounter = measure.getExpectedDuration();
+                    // Need an ending forward ?
+                    if (!measure.isImplicit() &&
+                        !measure.isPartial() &&
+                        (timeCounter < measure.getExpectedDuration())) {
+                        insertForward(
+                            measure.getExpectedDuration() - timeCounter,
+                            voice.getLastChord());
+                        timeCounter = measure.getExpectedDuration();
+                    }
                 }
             }
         } catch (InvalidTimeSignature ex) {
@@ -891,12 +896,13 @@ public class ScoreExporter
         // Duration
         try {
             Duration duration = new Duration();
+            Integer  dur = null;
 
-            Integer  dur = chord.getDuration();
-
-            if ((dur == null) || (dur == Chord.WHOLE_DURATION)) { // Case of whole rests
+            if (chord.isWholeDuration()) {
                 dur = chord.getMeasure()
                            .getExpectedDuration();
+            } else {
+                dur = chord.getDuration();
             }
 
             duration.setContent("" + score.simpleDurationOf(dur));
@@ -908,9 +914,9 @@ public class ScoreExporter
         }
 
         // Voice
-        Voice voice = new Voice();
+        proxymusic.Voice voice = new proxymusic.Voice();
         current.pmNote.setVoice(voice);
-        voice.setContent("" + chord.getVoice());
+        voice.setContent("" + chord.getVoice().getId());
 
         // Type
         Type type = new Type();
@@ -1784,9 +1790,9 @@ public class ScoreExporter
             forward.setDuration(duration);
             duration.setContent("" + score.simpleDurationOf(delta));
 
-            Voice voice = new Voice();
+            proxymusic.Voice voice = new proxymusic.Voice();
             forward.setVoice(voice);
-            voice.setContent("" + current.voice);
+            voice.setContent("" + current.voice.getId());
             current.pmMeasure.getNoteOrBackupOrForward()
                              .add(forward);
 
@@ -1849,7 +1855,7 @@ public class ScoreExporter
         // Measure dependent
         Measure               measure;
         proxymusic.Measure    pmMeasure;
-        Integer               voice;
+        Voice                 voice;
 
         // Note dependent
         omr.score.entity.Note note;

@@ -104,7 +104,7 @@ public class InjectionSolver
                     System.arraycopy(config, 0, bestConfig, 0, domainSize);
                     bestCost = newCost;
 
-                    //                    dump();
+                    // dump();
                 }
 
                 free[ir] = true;
@@ -112,6 +112,9 @@ public class InjectionSolver
         }
     }
 
+    //------//
+    // dump //
+    //------//
     private void dump ()
     {
         StringBuilder sb = new StringBuilder();

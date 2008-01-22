@@ -28,9 +28,6 @@ import omr.selection.SelectionTag;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
-import omr.step.Step;
-import omr.step.StepException;
-
 import omr.ui.ActionManager;
 import omr.ui.UIDressing;
 import omr.ui.util.FileFilter;
@@ -41,7 +38,6 @@ import omr.util.Logger;
 
 import java.awt.event.*;
 import java.io.*;
-import java.util.logging.Level;
 
 import javax.sound.midi.*;
 import javax.swing.*;
@@ -73,7 +69,7 @@ public class MidiActions
     }
 
     // PlayAction instance
-    private static Action      playAction = ActionManager.getInstance()
+    public static Action      playAction = ActionManager.getInstance()
                                                          .getActionInstance(
         PlayAction.class.getName());
     private static Icon        playIcon = (Icon) playAction.getValue(

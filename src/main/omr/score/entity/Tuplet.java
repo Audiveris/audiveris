@@ -14,9 +14,6 @@ import omr.glyph.Shape;
 
 import omr.score.common.DurationFactor;
 import omr.score.common.SystemPoint;
-import omr.score.entity.AbstractNotation;
-import omr.score.entity.Beam;
-import omr.score.entity.Chord;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Logger;

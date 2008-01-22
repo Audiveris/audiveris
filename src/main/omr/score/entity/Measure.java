@@ -10,7 +10,6 @@
 package omr.score.entity;
 
 import omr.glyph.Glyph;
-import omr.glyph.Shape;
 
 import omr.score.common.SystemPoint;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
@@ -94,9 +93,6 @@ public class Measure
     /** Groups of beams in this measure */
     private List<BeamGroup> beamGroups;
 
-    /** Number of voices */
-    private Integer voicesNumber;
-
     /** Start time of this measure since beginning of the system */
     private Integer startTime;
 
@@ -109,14 +105,9 @@ public class Measure
     /** Flag to indicate a excess duration */
     private Integer excess;
 
-    /**
-     * Final duration per voice:
-     * 0=perfect, -n=too_short, +n=overlast, null=whole_rest/multi_rest
-     */
-    private Map<Integer, Integer> finalDurations = new HashMap<Integer, Integer>();
-
-    /** Final chord of each voice */
-    private Map<Integer, Chord> finalChords = new HashMap<Integer, Chord>();
+    /** Voices within this measure, sorted by increasing voice id */
+    @Children
+    private List<Voice> voices;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -506,6 +497,19 @@ public class Measure
     }
 
     //-----------//
+    // setExcess //
+    //-----------//
+    /**
+     * Assign an excess duration for this measure
+     *
+     * @param excess the duration in excess
+     */
+    public void setExcess (Integer excess)
+    {
+        this.excess = excess;
+    }
+
+    //-----------//
     // getExcess //
     //-----------//
     /**
@@ -552,21 +556,6 @@ public class Measure
         } catch (NullPointerException npe) {
             throw new InvalidTimeSignature();
         }
-    }
-
-    //------------------//
-    // getFinalDuration //
-    //------------------//
-    /**
-     * Report how a given voice terminates in this measure
-     *
-     * @param voice the given voice
-     * @return the duration delta at end of the measure
-     * (or null for whole/multi rest)
-     */
-    public Integer getFinalDuration (int voice)
-    {
-        return finalDurations.get(voice);
     }
 
     //-------//
@@ -832,47 +821,49 @@ public class Measure
     public void setPartial (int shortening)
     {
         // Remove any final forward mark consistent with the shortening
-        for (int voice = 1; voice <= getVoicesNumber(); voice++) {
-            Integer duration = finalDurations.get(voice);
+        for (Voice voice : voices) {
+            Integer duration = voice.getFinalDuration();
 
             if (duration != null) {
                 if (duration == shortening) {
-                    Chord chord = finalChords.get(voice);
+                    if (!voice.isWhole()) {
+                        Chord chord = voice.getLastChord();
 
-                    if (chord != null) {
-                        int nbMarks = chord.getMarks()
-                                           .size();
+                        if (chord != null) {
+                            int nbMarks = chord.getMarks()
+                                               .size();
 
-                        if (nbMarks > 0) {
-                            Mark mark = chord.getMarks()
-                                             .get(nbMarks - 1);
+                            if (nbMarks > 0) {
+                                Mark mark = chord.getMarks()
+                                                 .get(nbMarks - 1);
 
-                            if (logger.isFineEnabled()) {
-                                logger.fine(
-                                    getContextString() +
-                                    " Removing final forward: " +
-                                    Note.quarterValueOf(
-                                        (Integer) mark.getData()));
+                                if (logger.isFineEnabled()) {
+                                    logger.fine(
+                                        getContextString() +
+                                        " Removing final forward: " +
+                                        Note.quarterValueOf(
+                                            (Integer) mark.getData()));
+                                }
+
+                                chord.getMarks()
+                                     .remove(mark);
+                            } else {
+                                chord.addError(
+                                    "No final mark to remove in a partial measure");
+
+                                return;
                             }
-
-                            chord.getMarks()
-                                 .remove(mark);
                         } else {
-                            chord.addError(
-                                "No final mark to remove in a partial measure");
+                            addError("No final chord in " + voice);
 
                             return;
                         }
-                    } else {
-                        addError("No final chord in voice " + voice);
-
-                        return;
                     }
                 } else {
                     addError(
                         "Non consistent partial measure shortening:" +
-                        Note.quarterValueOf(-shortening) + " voice #" + voice +
-                        ": " + Note.quarterValueOf(-duration));
+                        Note.quarterValueOf(-shortening) + " " + voice + ": " +
+                        Note.quarterValueOf(-duration));
 
                     return;
                 }
@@ -991,17 +982,12 @@ public class Measure
         return null; // Not found
     }
 
-    //-----------------//
-    // setVoicesNumber //
-    //-----------------//
-    /**
-     * Assign the number of voices in this measure
-     *
-     * @param voicesNumber total number of voices
-     */
-    public void setVoicesNumber (int voicesNumber)
+    //-----------//
+    // getVoices //
+    //-----------//
+    public List<Voice> getVoices ()
     {
-        this.voicesNumber = voicesNumber;
+        return voices;
     }
 
     //-----------------//
@@ -1014,7 +1000,7 @@ public class Measure
      */
     public int getVoicesNumber ()
     {
-        return (voicesNumber == null) ? 0 : voicesNumber;
+        return voices.size();
     }
 
     //----------------//
@@ -1103,6 +1089,14 @@ public class Measure
         beamGroups.add(group);
     }
 
+    //----------//
+    // addVoice //
+    //----------//
+    public void addVoice (Voice voice)
+    {
+        voices.add(voice);
+    }
+
     //---------------//
     // checkDuration //
     //---------------//
@@ -1112,61 +1106,9 @@ public class Measure
      */
     public void checkDuration ()
     {
-        // As a first attempt, make all forward stuff explicit & visible
-        for (int voice = 1; voice <= getVoicesNumber(); voice++) {
-            try {
-                int   timeCounter = 0;
-                Chord lastChord = null;
-
-                for (Slot slot : getSlots()) {
-                    for (Chord chord : slot.getChords()) {
-                        if (chord.getVoice() == voice) {
-                            // Need a forward before this chord ?
-                            if (timeCounter < slot.getStartTime()) {
-                                insertForward(
-                                    slot.getStartTime() - timeCounter,
-                                    Mark.Position.BEFORE,
-                                    chord);
-                                timeCounter = slot.getStartTime();
-                            }
-
-                            lastChord = chord;
-
-                            Integer chordDur = chord.getDuration();
-
-                            if (chordDur == Chord.WHOLE_DURATION) {
-                                timeCounter = getExpectedDuration();
-                            } else {
-                                timeCounter += chordDur;
-                            }
-                        }
-                    }
-                }
-
-                // Need an ending forward ?
-                if (lastChord != null) {
-                    finalChords.put(voice, lastChord);
-
-                    int delta = timeCounter - getExpectedDuration();
-                    finalDurations.put(voice, delta);
-
-                    if (delta < 0) {
-                        // Insert a forward mark
-                        insertForward(-delta, Mark.Position.AFTER, lastChord);
-                    } else if (delta > 0) {
-                        // Flag the measure as too long
-                        addError(
-                            "Voice #" + voice + " too long for " +
-                            Note.quarterValueOf(delta));
-                        excess = delta;
-                    } else if (lastChord.isWholeDuration()) {
-                        // Remember we can't tell anything
-                        finalDurations.put(voice, null);
-                    }
-                }
-            } catch (Exception ex) {
-                // User has been informed
-            }
+        // Check duration of each voice
+        for (Voice voice : voices) {
+            voice.checkDuration();
         }
     }
 
@@ -1194,9 +1136,8 @@ public class Measure
                 Measure    measure = (Measure) part.getMeasures()
                                                    .get(im);
 
-                for (int voice = 1; voice <= measure.getVoicesNumber();
-                     voice++) {
-                    Integer voiceFinal = measure.getFinalDuration(voice);
+                for (Voice voice : measure.getVoices()) {
+                    Integer voiceFinal = voice.getFinalDuration();
 
                     if (voiceFinal != null) {
                         if (measureFinal == null) {
@@ -1231,6 +1172,58 @@ public class Measure
                     measure.setPartial(measureFinal);
                 }
             }
+        }
+    }
+
+    //-------------//
+    // buildVoices //
+    //-------------//
+    /**
+     * Browse the slots and chords, in order to compute the various voices and
+     * start times
+     */
+    public void buildVoices ()
+    {
+        // Debug
+        if (logger.isFineEnabled()) {
+            printChords("Initial chords for ");
+        }
+
+        // The 'activeChords' collection gathers the chords that are "active"
+        // (not terminated) at the time slot being considered. Initially, it
+        // contains just the whole chords.
+        List<Chord> activeChords = new ArrayList<Chord>(getWholeChords());
+        Collections.sort(activeChords);
+
+        // Create voices for whole chords
+        for (Chord chord : activeChords) {
+            chord.setStartTime(0);
+            Voice.createWholeVoice(chord);
+        }
+
+        // Process slot after slot, if any
+        for (Slot slot : getSlots()) {
+            slot.buildVoices(activeChords);
+        }
+
+        // Debug
+        if (logger.isFineEnabled()) {
+            printVoices("Final voices for ");
+        }
+    }
+
+    //-----------------//
+    // checkTiedChords //
+    //-----------------//
+    /**
+     * Check ties for all chords of this measure
+     */
+    public void checkTiedChords ()
+    {
+        // Use a copy of chords collection, to avoid concurrent modifications
+        for (TreeNode cn : chords.getChildrenCopy()) {
+            Chord chord = (Chord) cn;
+            chord.checkTies();
         }
     }
 
@@ -1273,6 +1266,7 @@ public class Measure
         slots = new TreeSet<Slot>();
         beamGroups = new ArrayList<BeamGroup>();
         wholeChords = new ArrayList<Chord>();
+        voices = new ArrayList<Voice>();
     }
 
     //-------------------//
@@ -1377,6 +1371,98 @@ public class Measure
         return (slots != null) & (slots.size() > 0);
     }
 
+    //-------------//
+    // printChords //
+    //-------------//
+    public void printChords (String title)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        if (title != null) {
+            sb.append(title);
+        }
+
+        sb.append(this);
+
+        for (TreeNode cn : getChords()) {
+            Chord chord = (Chord) cn;
+            sb.append("\n")
+              .append(chord);
+        }
+
+        logger.info(sb.toString());
+    }
+
+    //------------//
+    // printSlots //
+    //------------//
+    /**
+     * Print the slots of this measure on standard output
+     */
+    public void printSlots (String title)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        if (title != null) {
+            sb.append(title);
+        }
+
+        sb.append(this);
+
+        for (Slot slot : this.getSlots()) {
+            sb.append("\n")
+              .append(slot.toChordString());
+        }
+
+        logger.info(sb.toString());
+    }
+
+    //------------//
+    // printVoices//
+    //------------//
+    /**
+     * Print the voices of this measure on standard output
+     * 
+     * @param title a potential title for this printout, or null
+     */
+    public void printVoices (String title)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        // Title
+        if (title != null) {
+            sb.append(title);
+        }
+
+        // Measure
+        sb.append(this);
+
+        // Slot headers
+        if (slots.size() > 0) {
+            sb.append("\n    ");
+
+            for (Slot slot : slots) {
+                if (slot.getStartTime() != null) {
+                    sb.append("|")
+                      .append(
+                        String.format(
+                            "%-5s",
+                            Note.quarterValueOf(slot.getStartTime())));
+                }
+            }
+
+            sb.append("|")
+              .append(getCurrentDuration());
+        }
+
+        for (Voice voice : voices) {
+            sb.append("\n")
+              .append(voice.toStrip());
+        }
+
+        logger.info(sb.toString());
+    }
+
     //----------------//
     // resetAbscissae //
     //----------------//
@@ -1396,7 +1482,7 @@ public class Measure
     @Override
     public String toString ()
     {
-        return "{Measure id=" + id + "}";
+        return "{Measure#" + id + "}";
     }
 
     //---------------//
@@ -1422,38 +1508,36 @@ public class Measure
      */
     void addWholeChord (Glyph glyph)
     {
-        Chord chord = new Chord(this);
+        Chord chord = new Chord(this, null);
 
         // No slot for this chord, but a whole rest
-        Note note = new Note(chord, glyph); // Records note in chord 
+        Note note = new Note(chord, glyph); // Records note in chord
         wholeChords.add(chord);
     }
 
-    //---------------//
-    // insertForward //
-    //---------------//
-    private void insertForward (int           duration,
-                                Mark.Position position,
-                                Chord         chord)
+    //--------------------//
+    // getCurrentDuration //
+    //--------------------//
+    private String getCurrentDuration ()
     {
-        SystemPoint point = new SystemPoint(
-            chord.getHeadLocation().x,
-            (chord.getHeadLocation().y + chord.getTailLocation().y) / 2);
+        int measureDur = 0;
 
-        if (position == Mark.Position.AFTER) {
-            point.x += 10;
-        } else if (position == Mark.Position.BEFORE) {
-            point.x -= 10;
+        for (Slot slot : getSlots()) {
+            if (slot.getStartTime() != null) {
+                for (Chord chord : slot.getChords()) {
+                    measureDur = Math.max(
+                        measureDur,
+                        slot.getStartTime() + chord.getDuration());
+                }
+            }
         }
 
-        Mark mark = new Mark(
-            chord.getSystem(),
-            point,
-            position,
-            Shape.FORWARD,
-            duration);
+        if ((measureDur == 0) && !getWholeChords()
+                                      .isEmpty()) {
+            return "W";
+        }
 
-        chord.addMark(mark);
+        return String.format("%-5s", Note.quarterValueOf(measureDur));
     }
 
     //~ Inner Classes ----------------------------------------------------------

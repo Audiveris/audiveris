@@ -267,12 +267,15 @@ public class MidiReceiver
             tickOffset = 0;
         }
 
+        ///logger.info("Score ticks = " + scoreTicks);
+
         if (midiTicks != scoreTicks) {
             logger.warning(
                 "Midi & score ticks don't match (" + midiTicks + "-" +
                 scoreTicks + "=" +
                 Note.quarterValueOf((int) (midiTicks - scoreTicks) * divisor) +
-                ")");
+                ") division=" +
+                score.simpleDurationOf(omr.score.entity.Note.QUARTER_DURATION));
 
             return new Double((double) midiTicks / (double) scoreTicks);
         } else {

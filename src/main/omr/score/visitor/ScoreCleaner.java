@@ -65,8 +65,8 @@ public class ScoreCleaner
         }
 
         system.acceptChildren(this);
-
-        system.setActualDuration(null);
+        system.resetStartTime();
+        system.resetActualDuration();
 
         return false;
     }

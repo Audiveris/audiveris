@@ -52,8 +52,8 @@ public class BeamGroup
     /** Ordered collection of contained beams */
     private SortedSet<Beam> beams = new TreeSet<Beam>();
 
-    /** Same voice id for all chords of this beam group */
-    private Integer voice;
+    /** Same voice for all chords of this beam group */
+    private Voice voice;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -266,11 +266,11 @@ public class BeamGroup
     // setVoice //
     //----------//
     /**
-     * Assign a voice id to this beam group
+     * Assign a voice to this beam group
      *
-     * @param voice the voice id
+     * @param voice the voice to assign
      */
-    public void setVoice (Integer voice)
+    public void setVoice (Voice voice)
     {
         // Already done?
         if (this.voice == null) {
@@ -294,14 +294,12 @@ public class BeamGroup
                 chord.setVoice(voice);
                 prevChord = chord;
             }
-        } else {
-            if (!this.voice.equals(voice)) {
-//                getChords()
-//                    .first()
-//                    .addError(
-//                    "Group. Reassigning voice from " + this.voice + " to " +
-//                    voice + " in " + this);
-            }
+        } else if (!this.voice.equals(voice)) {
+            getChords()
+                .first()
+                .addError(
+                "Group. Reassigning voice from " + this.voice + " to " + voice +
+                " in " + this);
         }
     }
 
@@ -568,12 +566,13 @@ public class BeamGroup
             "Maximum number of loops allowed for splitting beam groups");
     }
 
-    //-------//
-    // Split //
-    //-------//
+    //------------//
+    // SplitOrder //
+    //------------//
     /**
-     * Class <code>SplitOrder</code> records a split order. Splitting must be
-     * separate from browsing to avoid concurrent modification of collections
+     * Class <code>SplitOrder</code> records a beam group split order. 
+     * Splitting must be separate from browsing to avoid concurrent modification
+     * of collections
      */
     private static class SplitOrder
     {

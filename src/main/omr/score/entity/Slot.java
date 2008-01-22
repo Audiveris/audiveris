@@ -33,7 +33,7 @@ import java.util.*;
  * the same time because their abscissae are roughly the same.
  *
  * <p>The slot embraces all the staves of this part measure. Perhaps we should
- * consider merging slots between parts as well? TBD.
+ * consider merging slots between parts as well?
  *
  * <p>On the following picture, slots are indicated by vertical blue lines <br/>
  * <img src="doc-files/Slot.png" alt="diagram">
@@ -52,8 +52,8 @@ public class Slot
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Slot.class);
 
-    /** Specific comparator to sort chords vertically within a slot */
-    private static final Comparator<Chord> chordComparator = new Comparator<Chord>() {
+    /** Chord comparator to sort chords vertically within the same slot */
+    public static final Comparator<Chord> chordComparator = new Comparator<Chord>() {
         public int compare (Chord c1,
                             Chord c2)
         {
@@ -159,7 +159,7 @@ public class Slot
             try {
                 Integer chordDur = chord.getDuration();
 
-                if (chordDur == Chord.WHOLE_DURATION) {
+                if (chord.isWholeDuration()) {
                     chordDur = measure.getExpectedDuration();
                 }
 
@@ -189,7 +189,8 @@ public class Slot
         if (this.startTime == null) {
             if (logger.isFineEnabled()) {
                 logger.fine(
-                    "setStartTime " + startTime + " for Slot #" + getId());
+                    "setStartTime " + Note.quarterValueOf(startTime) +
+                    " for Slot #" + getId());
             }
 
             this.startTime = startTime;
@@ -206,6 +207,11 @@ public class Slot
                 if (group != null) {
                     group.computeStartTimes();
                 }
+            }
+
+            // Update all voices
+            for (Voice voice : measure.getVoices()) {
+                voice.updateSlotTable();
             }
         } else {
             if (!this.startTime.equals(startTime)) {
@@ -298,169 +304,11 @@ public class Slot
                     Note.createPack(chord, glyph);
                 }
             } else {
-                Chord chord = new Chord(measure);
+                Chord chord = new Chord(measure, this);
                 chords.add(chord);
                 Note.createPack(chord, glyph);
             }
         }
-    }
-
-    //-------------//
-    // buildVoices //
-    //-------------//
-    /**
-     * This static method browses a measure with its slots and chords, in order
-     * to compute the various voices and start times for all chords
-     *
-     * @param measure the measure to process
-     */
-    public static void buildVoices (Measure measure)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "buildVoices for " + measure.getContextString() + " chords=" +
-                measure.getChords());
-        }
-
-        // To compute the maximum number of voices in this measure
-        int         maxVoice = 0;
-
-        // The 'activeChords' collection gathers the chords that are "active"
-        // (not terminated) at the time slot being considered. Initially, it
-        // contains just the whole chords.
-        List<Chord> activeChords = new ArrayList<Chord>(
-            measure.getWholeChords());
-
-        for (Chord chord : activeChords) {
-            chord.setStartTime(0);
-        }
-
-        // Set of voices for the current slot
-        SortedSet<Integer> slotVoices = new TreeSet<Integer>();
-
-        // Process slot after slot, if any
-        for (Slot slot : measure.getSlots()) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Processing " + slot + " Active chords=" + activeChords);
-            }
-
-            slotVoices.clear();
-
-            // Sort chords vertically  within the slot
-            Collections.sort(slot.getChords(), chordComparator);
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Slot chords=" + slot.getChords());
-            }
-
-            // Use the active chords before this slot to compute start time
-            slot.computeStartTime(activeChords);
-
-            // Separate the chords that end right at this slot and whose
-            // voices are available, from the ones that continue past the
-            // current slot with their voice.
-
-            // Chords that are ending, with their voice available
-            List<Chord> endingChords = new ArrayList<Chord>();
-
-            // Chords that are ending, with voice not available (beam group)
-            List<Chord> passingChords = new ArrayList<Chord>();
-
-            for (Chord chord : activeChords) {
-                BeamGroup group = chord.getBeamGroup();
-
-                // Chord that finishes at the slot at hand
-                // Make sure voice is really available
-                Integer endTime = chord.getEndTime();
-
-                if ((endTime != null) && (endTime <= slot.getStartTime())) {
-                    if ((group == null) || (chord == group.getChords()
-                                                          .last())) {
-                        endingChords.add(chord);
-                    } else {
-                        passingChords.add(chord);
-
-                        if (chord.getVoice() != null) {
-                            slotVoices.add(chord.getVoice());
-                        }
-                    }
-                } else {
-                    // Chord (and its voice) continues past the slot at hand
-                    if (chord.getVoice() != null) {
-                        slotVoices.add(chord.getVoice());
-                    }
-                }
-            }
-
-            // 'starting Chords' are the chords that come to life at current slot
-            List<Chord> startingChords = new ArrayList<Chord>(slot.getChords());
-            Collections.sort(startingChords, chordComparator);
-
-            for (Chord chord : startingChords) {
-                if (chord.getVoice() != null) {
-                    slotVoices.add(chord.getVoice());
-                }
-            }
-
-            if (logger.isFineEnabled()) {
-                logger.fine("endingChords=" + endingChords);
-                logger.fine("passingChords=" + passingChords);
-                logger.fine("startingChords=" + startingChords);
-            }
-
-            InjectionSolver solver = new InjectionSolver(
-                startingChords.size(),
-                endingChords.size() + startingChords.size(),
-                new MyDistance(startingChords, endingChords));
-            int[]           links = solver.solve();
-
-            for (int i = 0; i < links.length; i++) {
-                int index = links[i];
-
-                // Map new chord to an ending chord?
-                if (index < endingChords.size()) {
-                    int voice = endingChords.get(index)
-                                            .getVoice();
-                    slot.getChords()
-                        .get(i)
-                        .setVoice(voice);
-                    slotVoices.add(voice);
-                }
-            }
-
-            // Assign remaining non-mapped chords, using 1st voice available
-            if (logger.isFineEnabled()) {
-                logger.fine("slot #" + slot.id + " slotVoices" + slotVoices);
-            }
-
-            assignVoices(startingChords, slotVoices);
-
-            if (slotVoices.size() > 0) {
-                maxVoice = Math.max(maxVoice, slotVoices.last());
-            }
-
-            // Purge collection of active chords for this slot
-            // Add the chords that start with this slot
-            activeChords.removeAll(endingChords);
-            activeChords.removeAll(passingChords);
-            activeChords.addAll(startingChords);
-            Collections.sort(activeChords, chordComparator);
-        }
-
-        // Some processing is needed, even if we have no slot in this measure
-        if (logger.isFineEnabled()) {
-            logger.fine("last slotVoices" + slotVoices);
-        }
-
-        assignVoices(activeChords, slotVoices);
-
-        if (slotVoices.size() > 0) {
-            maxVoice = Math.max(maxVoice, slotVoices.last());
-        }
-
-        // Remember the maximum number of voices in that measure
-        measure.setVoicesNumber(maxVoice);
     }
 
     //-----------//
@@ -641,6 +489,133 @@ public class Slot
         }
     }
 
+    //-------------//
+    // BuildVoices //
+    //-------------//
+    /**
+     * Compute the various voices and start times in this slot
+     *
+     * @param activeChords the chords which were active right before this slot
+     */
+    public void buildVoices (List<Chord> activeChords)
+    {
+        // Sort chords vertically  within the slot
+        Collections.sort(chords, chordComparator);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "buildVoices for Slot#" + getId() + " Actives=" + activeChords +
+                " Chords=" + chords);
+        }
+
+        // Use the active chords before this slot to compute start time
+        computeStartTime(activeChords);
+
+        // Chords that are ending, with their voice available
+        List<Chord> endingChords = new ArrayList<Chord>();
+
+        // Chords that are ending, with voice not available (beam group)
+        List<Chord> passingChords = new ArrayList<Chord>();
+
+        for (Chord chord : activeChords) {
+            // Look for chord that finishes at the slot at hand
+            // Make sure voice is really available
+            if (!chord.isWholeDuration()) {
+                if ((chord.getEndTime() <= startTime)) {
+                    BeamGroup group = chord.getBeamGroup();
+
+                    if ((group == null) || (chord == group.getChords()
+                                                          .last())) {
+                        endingChords.add(chord);
+                    } else {
+                        passingChords.add(chord);
+                    }
+                }
+            } else {
+                // Chord (and its voice) continues past the slot at hand
+            }
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine("endingChords=" + endingChords);
+            logger.fine("passingChords=" + passingChords);
+            logger.fine("Chords=" + chords);
+        }
+
+        InjectionSolver solver = new InjectionSolver(
+            chords.size(),
+            endingChords.size() + chords.size(),
+            new MyDistance(chords, endingChords));
+        int[]           links = solver.solve();
+
+        for (int i = 0; i < links.length; i++) {
+            int index = links[i];
+
+            // Map new chord to an ending chord?
+            if (index < endingChords.size()) {
+                Voice voice = endingChords.get(index)
+                                          .getVoice();
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Slot#" + getId() + " Reusing voice#" + voice.getId());
+                }
+
+                chords.get(i)
+                      .setVoice(voice);
+            }
+        }
+
+        // Assign remaining non-mapped chords, using 1st voice available
+        assignVoices(chords);
+
+        // Purge collection of active chords for this slot
+        // Add the chords that start with this slot
+        activeChords.removeAll(endingChords);
+        activeChords.removeAll(passingChords); // ?????
+        activeChords.addAll(chords);
+        Collections.sort(activeChords, chordComparator);
+
+        // Debug
+        //        if (this != measure.getSlots()
+        //                           .last()) {
+        //            measure.printVoices("At end of slot#" + getId() + " for ");
+        //        }
+    }
+
+    //---------------//
+    // toChordString //
+    //---------------//
+    public String toChordString ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("slot#")
+          .append(getId());
+
+        if (getStartTime() != null) {
+            sb.append(" start=")
+              .append(
+                String.format("%5s", Note.quarterValueOf(getStartTime())));
+        }
+
+        sb.append(" [");
+
+        boolean started = false;
+
+        for (Chord chord : getChords()) {
+            if (started) {
+                sb.append(",");
+            }
+
+            sb.append(chord);
+            started = true;
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
     //----------//
     // toString //
     //----------//
@@ -675,48 +650,77 @@ public class Slot
         return sb.toString();
     }
 
-    /**
-     * Assign available voices to the chords that have yet no voice assigned
-     *
-     * @param chords the collection of chords to process
-     * @param voices the set of voices, both an input (it may be already
-     *                partly filled) and an output
-     */
-    private static void assignVoices (Collection<Chord>  chords,
-                                      SortedSet<Integer> voices)
+    //---------------//
+    // toVoiceString //
+    //---------------//
+    public String toVoiceString ()
     {
-        try {
-            // Assign remaining non-mapped chords, using 1st voice available
-            for (Chord chord : chords) {
-                // Process only the chords that have no voice assigned yet
-                if (chord.getVoice() == null) {
-                    int voice;
+        StringBuilder sb = new StringBuilder();
+        sb.append("slot#")
+          .append(getId())
+          .append(" start=")
+          .append(String.format("%5s", Note.quarterValueOf(getStartTime())))
+          .append(" [");
 
-                    if (voices.isEmpty()) {
-                        voice = 1;
-                    } else {
-                        // Use the first voice available
-                        for (voice = 1; voice <= voices.last(); voice++) {
-                            if (!voices.contains(voice)) {
-                                break; // The voice is available
-                            }
-                        }
-                    }
+        SortedMap<Integer, Chord> voiceChords = new TreeMap<Integer, Chord>();
 
-                    chord.setVoice(voice);
-                    voices.add(voice);
-                }
-            }
-
-            if (logger.isFineEnabled()) {
-                for (Chord chord : chords) {
-                    logger.fine(".. " + chord);
-                }
-            }
-        } catch (Exception ex) {
-            logger.warning("BINGO voices=" + voices);
+        for (Chord chord : getChords()) {
+            voiceChords.put(chord.getVoice().getId(), chord);
         }
+
+        boolean started = false;
+        int     voiceMax = measure.getVoicesNumber();
+
+        for (int iv = 1; iv <= voiceMax; iv++) {
+            if (started) {
+                sb.append(", ");
+            } else {
+                started = true;
+            }
+
+            Chord chord = voiceChords.get(iv);
+
+            if (chord != null) {
+                sb.append("V")
+                  .append(chord.getVoice().getId());
+                sb.append(" Ch#")
+                  .append(String.format("%02d", chord.getId()));
+                sb.append(" St")
+                  .append(chord.getStaff().getId());
+                sb.append(" Dur=")
+                  .append(
+                    String.format(
+                        "%5s",
+                        Note.quarterValueOf(chord.getDuration())));
+            } else {
+                sb.append("----------------------");
+            }
+        }
+
+        sb.append("]");
+
+        return sb.toString();
     }
+
+    //    //-------------------//
+    //    // getAvailableVoice //
+    //    //-------------------//
+    //    /**
+    //     * Retrieve the first available voice for this slot
+    //     *
+    //     * @return the first available slot, which may be allocated for this
+    //     */
+    //    private Voice getAvailableVoice ()
+    //    {
+    //        for (Voice voice : measure.getVoices()) {
+    //            if (voice.isFree(this)) {
+    //                return voice;
+    //            }
+    //        }
+    //
+    //        // Nothing found, let's add one
+    //        return new Voice(measure, measure.getVoicesNumber() + 1);
+    //    }
 
     //--------------//
     // getStemChord //
@@ -738,12 +742,49 @@ public class Slot
         }
 
         // Not found, let's create it
-        Chord chord = new Chord(measure);
+        Chord chord = new Chord(measure, this);
         chords.add(chord);
         chord.setStem(stem);
         stem.setTranslation(chord);
 
         return chord;
+    }
+
+    /**
+     * Assign available voices to the chords that have yet no voice assigned
+     *
+     * @param chords the collection of chords to process for this slot
+     */
+    private void assignVoices (Collection<Chord> chords)
+    {
+        try {
+            // Assign remaining non-mapped chords, using 1st voice available
+            for (Chord chord : chords) {
+                // Process only the chords that have no voice assigned yet
+                if (chord.getVoice() == null) {
+                    for (Voice voice : measure.getVoices()) {
+                        if (voice.isFree(this)) {
+                            chord.setVoice(voice);
+
+                            break;
+                        }
+                    }
+
+                    if (chord.getVoice() == null) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                chord.getContextString() + " Slot#" + id +
+                                " creating voice for Ch#" + chord.getId());
+                        }
+
+                        // Add a new voice
+                        Voice voice = new Voice(chord);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            logger.warning("Error assigning voices", ex);
+        }
     }
 
     //------------------//
@@ -756,11 +797,13 @@ public class Slot
         int slotTime = Integer.MAX_VALUE;
 
         for (Chord chord : activeChords) {
-            // Skip the "whole" chords which return a specific duration
-            Integer endTime = chord.getEndTime();
+            if (!chord.isWholeDuration()) { // Skip the "whole" chords 
 
-            if ((endTime != Chord.WHOLE_DURATION) && (endTime < slotTime)) {
-                slotTime = endTime;
+                Integer endTime = chord.getEndTime();
+
+                if (endTime < slotTime) {
+                    slotTime = endTime;
+                }
             }
         }
 
@@ -803,6 +846,7 @@ public class Slot
 
         private static final int  NO_LINK = 20;
         private static final int  STAFF_DIFF = 40;
+        private static final int  INCOMPATIBLE_VOICES = 10000; // Forbidden
 
         //~ Instance fields ----------------------------------------------------
 
@@ -831,7 +875,11 @@ public class Slot
             Chord newChord = news.get(in);
             Chord oldChord = olds.get(ip);
 
-            if (newChord.getStaff() != oldChord.getStaff()) {
+            if ((newChord.getVoice() != null) &&
+                (oldChord.getVoice() != null) &&
+                (newChord.getVoice() != oldChord.getVoice())) {
+                return INCOMPATIBLE_VOICES;
+            } else if (newChord.getStaff() != oldChord.getStaff()) {
                 return STAFF_DIFF;
             } else {
                 int dy = Math.abs(

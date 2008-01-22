@@ -332,7 +332,7 @@ public class ScoreBuilder
             // Tuplets
             translate(new TupletTranslator());
 
-            // Finalize measure voices & durations
+            // Finalize measure ties, voices & durations
             translate(new MeasureTranslator());
 
             // Local impact
@@ -954,8 +954,11 @@ public class ScoreBuilder
             @Override
             public void browse (Measure measure)
             {
+                // Check that a chord is not tied to different slots
+                measure.checkTiedChords();
+
                 // Determine the voices within this measure
-                Slot.buildVoices(measure);
+                measure.buildVoices();
 
                 // Check duration sanity in this measure
                 measure.checkDuration();

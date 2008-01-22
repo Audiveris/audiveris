@@ -587,20 +587,23 @@ public class Sheet
     public SortedSet<SystemInfo> getImpactedSystems (Collection<Glyph> glyphs,
                                                      Collection<Shape> shapes)
     {
-        boolean persistent = false;
+        // We are now more conservative: All the systems that contain or follow
+        // a modification are considered as impacted, regardless of the shape
+        boolean               persistent = true; 
 
-        if (shapes != null) {
-            for (Shape shape : shapes) {
-                if (shape.isPersistent()) {
-                    persistent = true;
-
-                    break;
-                }
-            }
-        } else {
-            persistent = true; // safer
-        }
-
+        //        boolean persistent = false;
+        //
+        //        if (shapes != null) {
+        //            for (Shape shape : shapes) {
+        //                if (shape.isPersistent()) {
+        //                    persistent = true;
+        //
+        //                    break;
+        //                }
+        //            }
+        //        } else {
+        //            persistent = true; // safer
+        //        }
         SortedSet<SystemInfo> impacted = new TreeSet<SystemInfo>();
 
         if (glyphs != null) {

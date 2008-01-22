@@ -27,7 +27,6 @@ import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * Class <code>System</code> encapsulates a system in a score.
@@ -110,14 +109,6 @@ public class System
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------------//
-    // setActualDuration //
-    //-------------------//
-    public void setActualDuration (Integer actualDuration)
-    {
-        this.actualDuration = actualDuration;
-    }
 
     //-------------------//
     // getActualDuration //
@@ -262,7 +253,7 @@ public class System
      * Report the time, counted from beginning of this system, when sound stops,
      * which means that ending rests are not counted.
      *
-     * @param measureId potential constraint on measure id, 
+     * @param measureId potential constraint on measure id,
      * null for no constraint
      * @return the relative time of last Midi "note off" in this part
      */
@@ -463,6 +454,22 @@ public class System
         }
 
         return 0;
+    }
+
+    //---------------------//
+    // resetActualDuration //
+    //---------------------//
+    public void resetActualDuration ()
+    {
+        actualDuration = null;
+    }
+
+    //----------------//
+    // resetStartTime //
+    //----------------//
+    public void resetStartTime ()
+    {
+        startTime = null;
     }
 
     //-------------//

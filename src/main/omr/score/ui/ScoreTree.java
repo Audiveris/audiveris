@@ -17,6 +17,7 @@ import omr.score.entity.ScoreNode;
 
 import omr.util.Dumper;
 import omr.util.Implement;
+import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.awt.*;
@@ -40,6 +41,9 @@ public class ScoreTree
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ScoreTree.class);
 
     /** Default window height in pixels */
     private static final int WINDOW_HEIGHT = 700;
@@ -98,8 +102,8 @@ public class ScoreTree
                         TreePath p = e.getNewLeadSelectionPath();
 
                         if (p != null) {
-                            ScoreNode node = (ScoreNode) p.getLastPathComponent();
-                            htmlPane.setText(Dumper.htmlDumpOf(node));
+                            htmlPane.setText(
+                                Dumper.htmlDumpOf(p.getLastPathComponent()));
                         }
                     }
                 });
@@ -122,27 +126,6 @@ public class ScoreTree
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //     //------//
-    //     // main //
-    //     //------//
-    //     /**
-    //      * This class can be used in stand-alone, to browse a score specified
-    //      * in the command line
-    //      *
-    //      * @param argv only one argument : the name of the score XML file
-    //      */
-    //     public static void main (String[] argv)
-    //     {
-    //         // Global OMR properties
-    //         //Constant.loadResource ("/User.properties");
-    //         // Load score from an XML file
-    //         Score score = ScoreManager.getInstance().load(new File(argv[0]));
-
-    //         // Build the display frame
-    //         JFrame frame = makeFrame(argv[0], score);
-    //         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    //     }
 
     //-----------//
     // makeFrame //
@@ -203,8 +186,8 @@ public class ScoreTree
         public Object getChild (Object parent,
                                 int    index)
         {
-            return (ScoreNode) getRelevantChildren(parent)
-                                   .get(index);
+            return getRelevantChildren(parent)
+                       .get(index);
         }
 
         //---------------//
@@ -236,9 +219,7 @@ public class ScoreTree
         {
             // Determines whether the icon shows up to the left.
             // Return true for any node with no children
-            ScoreNode scoreNode = (ScoreNode) node;
-
-            return getChildCount(scoreNode) == 0;
+            return getChildCount(node) == 0;
         }
 
         //---------//
@@ -297,10 +278,7 @@ public class ScoreTree
             // We display dummy containers only when they are not empty
             if (constants.hideEmptyDummies.getValue() &&
                 (node.getClass().getDeclaredFields().length == 0)) {
-                ScoreNode scoreNode = (ScoreNode) node;
-
-                return scoreNode.getChildren()
-                                .size() > 0;
+                return getChildCount(node) > 0;
             } else {
                 return true;
             }
@@ -309,15 +287,48 @@ public class ScoreTree
         //---------------------//
         // getRelevantChildren //
         //---------------------//
-        private List<TreeNode> getRelevantChildren (Object node)
+        private List getRelevantChildren (Object node)
         {
-            List<TreeNode> relevantChildren = new ArrayList<TreeNode>();
-            ScoreNode      scoreNode = (ScoreNode) node;
+            List relevantChildren = new ArrayList();
 
-            for (TreeNode n : scoreNode.getChildren()) {
-                if (isRelevant(n)) {
-                    relevantChildren.add(n);
+            if (node instanceof ScoreNode) {
+                // Standard ScoreNode hierarchy
+                ScoreNode scoreNode = (ScoreNode) node;
+
+                for (TreeNode n : scoreNode.getChildren()) {
+                    if (isRelevant(n)) {
+                        relevantChildren.add(n);
+                    }
                 }
+
+                //                // Use of Child / Children annotations
+                //                for (Field field : node.getClass()
+                //                                       .getDeclaredFields()) {
+                //                    if (field.getAnnotation(Child.class) != null) {
+                //                        try {
+                //                            field.setAccessible(true);
+                //                            relevantChildren.add(field.get(node));
+                //                        } catch (Exception ex) {
+                //                            logger.warning("Error in accessing field", ex);
+                //                        }
+                //                    } else if (field.getAnnotation(Children.class) != null) {
+                //                        try {
+                //                            field.setAccessible(true);
+                //                            relevantChildren.add(field.get(node));
+                ////
+                ////                            Object object = field.get(node);
+                ////
+                ////                            if (object instanceof Collection) {
+                ////                                relevantChildren.addAll((Collection) object);
+                ////                            }
+                //                        } catch (Exception ex) {
+                //                            logger.warning("Error in accessing field", ex);
+                //                        }
+                //                    }
+                //                }
+                //            } else if (node instanceof Collection) {
+                //                relevantChildren.addAll((Collection) node);
+                //            }
             }
 
             return relevantChildren;

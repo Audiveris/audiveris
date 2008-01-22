@@ -61,13 +61,15 @@ public class ScoreReductor
     @Override
     public boolean visit (Chord chord)
     {
-        Integer duration = chord.getDuration();
+        Integer duration = null;
 
         try {
             // Special case for whole chords
-            if (duration == Chord.WHOLE_DURATION) {
+            if (chord.isWholeDuration()) {
                 duration = chord.getMeasure()
                                 .getExpectedDuration();
+            } else {
+                duration = chord.getDuration();
             }
 
             if (duration != null) {

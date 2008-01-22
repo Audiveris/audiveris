@@ -359,10 +359,12 @@ public class ScorePainter
                 final Chord prev = chord.getPreviousChordInVoice();
 
                 if (prev != null) {
+                    ////logger.info("from " + prev.getHeadLocation() + " to " + chord.getHeadLocation());
                     final Stroke oldStroke = g.getStroke();
 
                     try {
-                        g.setColor(voiceColors[chord.getVoice() - 1]);
+                        g.setColor(voiceColors[chord.getVoice()
+                                                    .getId() - 1]);
                         g.setStroke(voiceStroke);
                         paintLine(
                             chord.getDisplayOrigin(),

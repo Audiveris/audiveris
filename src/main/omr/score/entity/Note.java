@@ -135,13 +135,16 @@ public class Note
     //------//
     // Note //
     //------//
-    /** Create a note as a clone of another Note
+    /**
+     * Create a note as a clone of another Note, into another chord
      *
+     * @param chord the chord to host the newly created note
      * @param other the note to clone
      */
-    public Note (Note other)
+    public Note (Chord chord,
+                 Note  other)
     {
-        super(other.getChord());
+        super(chord);
         glyph = other.glyph;
         packCard = other.packCard;
         packIndex = other.packIndex;
@@ -203,11 +206,75 @@ public class Note
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------------//
+    // getTypeDuration //
+    //-----------------//
+    /**
+     * Report the duration indicated by the shape of the note head (regardless
+     * of any beam, flag, dot or tuplet)
+     *
+     * @param shape the shape of the note head
+     * @return the corresponding duration
+     */
+    public static int getTypeDuration (Shape shape)
+    {
+        switch (baseShapeOf(shape)) {
+        // Rests
+        //
+        case WHOLE_REST :
+            return 4 * QUARTER_DURATION;
+
+        case HALF_REST :
+            return 2 * QUARTER_DURATION;
+
+        case QUARTER_REST :
+            return QUARTER_DURATION;
+
+        case EIGHTH_REST :
+            return QUARTER_DURATION / 2;
+
+        case SIXTEENTH_REST :
+            return QUARTER_DURATION / 4;
+
+        case THIRTY_SECOND_REST :
+            return QUARTER_DURATION / 8;
+
+        case SIXTY_FOURTH_REST :
+            return QUARTER_DURATION / 16;
+
+        case ONE_HUNDRED_TWENTY_EIGHTH_REST :
+            return QUARTER_DURATION / 32;
+
+        // Notehead
+        //
+        case VOID_NOTEHEAD :
+            return 2 * QUARTER_DURATION;
+
+        case NOTEHEAD_BLACK :
+            return QUARTER_DURATION;
+
+        // Notes
+        //
+        case BREVE :
+            return 8 * QUARTER_DURATION;
+
+        case WHOLE_NOTE :
+            return 4 * QUARTER_DURATION;
+
+        default :
+            // Error
+            logger.severe("Illegal note type " + shape);
+
+            return 0;
+        }
+    }
+
     //------------//
     // createPack //
     //------------//
     /**
      * Create a bunch of Note instances for one note pack
+     *
      * @param chord the containing chord
      * @param glyph the underlying glyph of the note pack
      */
@@ -457,6 +524,19 @@ public class Note
         return pitchPosition;
     }
 
+    //--------//
+    // isRest //
+    //--------//
+    /**
+     * Check whether this note is a rest (or a 'real' note)
+     *
+     * @return true if a rest, false otherwise
+     */
+    public boolean isRest ()
+    {
+        return isRest;
+    }
+
     //----------//
     // getShape //
     //----------//
@@ -481,82 +561,6 @@ public class Note
     public List<Slur> getSlurs ()
     {
         return slurs;
-    }
-
-    //-----------------//
-    // getTypeDuration //
-    //-----------------//
-    /**
-     * Report the duration indicated by the shape of the note head (regardless
-     * of any beam, flag, dot or tuplet)
-     *
-     * @param shape the shape of the note head
-     * @return the corresponding duration
-     */
-    public static int getTypeDuration (Shape shape)
-    {
-        switch (baseShapeOf(shape)) {
-        // Rests
-        //
-        case WHOLE_REST :
-            return 4 * QUARTER_DURATION;
-
-        case HALF_REST :
-            return 2 * QUARTER_DURATION;
-
-        case QUARTER_REST :
-            return QUARTER_DURATION;
-
-        case EIGHTH_REST :
-            return QUARTER_DURATION / 2;
-
-        case SIXTEENTH_REST :
-            return QUARTER_DURATION / 4;
-
-        case THIRTY_SECOND_REST :
-            return QUARTER_DURATION / 8;
-
-        case SIXTY_FOURTH_REST :
-            return QUARTER_DURATION / 16;
-
-        case ONE_HUNDRED_TWENTY_EIGHTH_REST :
-            return QUARTER_DURATION / 32;
-
-        // Notehead
-        //
-        case VOID_NOTEHEAD :
-            return 2 * QUARTER_DURATION;
-
-        case NOTEHEAD_BLACK :
-            return QUARTER_DURATION;
-
-        // Notes
-        //
-        case BREVE :
-            return 8 * QUARTER_DURATION;
-
-        case WHOLE_NOTE :
-            return 4 * QUARTER_DURATION;
-
-        default :
-            // Error
-            logger.severe("Illegal note type " + shape);
-
-            return 0;
-        }
-    }
-
-    //--------//
-    // isRest //
-    //--------//
-    /**
-     * Check whether this note is a rest (or a 'real' note)
-     *
-     * @return true if a rest, false otherwise
-     */
-    public boolean isRest ()
-    {
-        return isRest;
     }
 
     //---------//
@@ -592,6 +596,23 @@ public class Note
     public void addSlur (Slur slur)
     {
         slurs.add(slur);
+    }
+
+    //--------//
+    // moveTo //
+    //--------//
+    /**
+     * Move this note from its current chord to the provided chord
+     *
+     * @param chord the new hosting chord
+     */
+    public void moveTo (Chord chord)
+    {
+        getParent()
+            .getChildren()
+            .remove(this);
+        chord.addChild(this);
+        glyph.setTranslation(this);
     }
 
     //--------------------//
@@ -748,6 +769,9 @@ public class Note
         sb.append("{Note");
         sb.append(" ")
           .append(shape);
+
+        sb.append(" Ch#")
+          .append(getChord().getId());
 
         if (packCard != 1) {
             sb.append(" [")

@@ -18,12 +18,9 @@ import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
 import omr.score.common.UnitDimension;
-import omr.score.entity.Chord;
 import omr.score.entity.Measure;
-import omr.score.entity.Note;
 import omr.score.entity.Slot;
 import omr.score.entity.System;
-import omr.score.entity.SystemPart;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScorePainter;
 
@@ -97,6 +94,9 @@ public class ScoreView
     /** Mouse rubber */
     private final Rubber rubber = new Rubber(zoom);
 
+    /** Related popup menu */
+    private final ScoreMenu scoreMenu;
+
     //~ Constructors -----------------------------------------------------------
 
     //-----------//
@@ -132,6 +132,9 @@ public class ScoreView
         // Cross referencing between score and its view
         this.score = score;
         score.setView(this);
+
+        // Popup
+        scoreMenu = new ScoreMenu(score);
 
         // Compute origin of all members
         computeModelSize();
@@ -299,9 +302,9 @@ public class ScoreView
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-------//
-    // Panel //
-    //-------//
+    //---------//
+    // MyPanel //
+    //---------//
     public class MyPanel
         extends RubberZoomedPanel
     {
@@ -310,10 +313,6 @@ public class ScoreView
         // Currently highlighted slot & measure
         private Slot    highlightedSlot;
         private Measure highlightedMeasure;
-
-        // Selected slot & measure
-        private Slot    selectedSlot;
-        private Measure selectedMeasure;
 
         //~ Constructors -------------------------------------------------------
 
@@ -333,37 +332,6 @@ public class ScoreView
         }
 
         //~ Methods ------------------------------------------------------------
-
-        //-----------------//
-        // contextSelected //
-        //-----------------//
-        @Override
-        public void contextSelected (MouseEvent e,
-                                     Point      pt)
-        {
-            // This is more like a debug feature, so disable it by default
-            if (!constants.contextEnabled.getValue()) {
-                return;
-            }
-
-            // Find the nearest slot
-            ScorePoint  scrPt = new ScorePoint(pt.x, pt.y);
-            System      system = score.scoreLocateSystem(scrPt);
-            PagePoint   pagPt = system.toPagePoint(scrPt);
-            SystemPoint sysPt = system.toSystemPoint(pagPt);
-            SystemPart  part = system.getPartAt(sysPt);
-            Measure     measure = part.getMeasureAt(sysPt);
-            Slot        slot = measure.getClosestSlot(sysPt);
-
-            if ((measure != selectedMeasure) || (slot != selectedSlot)) {
-                selectedMeasure = measure;
-                selectedSlot = slot;
-
-                logger.info(
-                    "M" + measure.getId() + " " +
-                    ((slot != null) ? printSlot(measure, slot) : ""));
-            }
-        }
 
         //-----------//
         // highLight //
@@ -388,7 +356,7 @@ public class ScoreView
             Point         origin = measure.getDisplayOrigin();
             ZoomedPanel   zp = (ZoomedPanel) this;
 
-            // If the current measure is at the beginning of a system, 
+            // If the current measure is at the beginning of a system,
             // make the most of this (new) system as visible as possible
             if (measure.getPreviousSibling() == null) {
                 Rectangle rect = new Rectangle(
@@ -408,6 +376,31 @@ public class ScoreView
             zp.showFocusLocation(rect);
         }
 
+        //---------------//
+        // pointSelected //
+        //---------------//
+        @Override
+        public void pointSelected (MouseEvent e,
+                                   Point      pt)
+        {
+            super.pointSelected(e, pt);
+
+            // This is more like a debug feature, so disable it by default
+            if (!constants.contextEnabled.getValue()) {
+                return;
+            }
+
+            // Context parameters
+            ScorePoint scrPt = new ScorePoint(pt.x, pt.y);
+
+            // Update the popup menu according to selected scores
+            scoreMenu.updateMenu(scrPt);
+
+            // Show the popup menu
+            scoreMenu.getPopup()
+                     .show(this, e.getX() + 20, e.getY() + 30);
+        }
+
         //--------//
         // render //
         //--------//
@@ -423,10 +416,6 @@ public class ScoreView
                     highlightedMeasure,
                     highlightedSlot,
                     Color.MAGENTA);
-
-                //                logger.info(
-                //                    "M" + highlightedMeasure.getId() + " " +
-                //                    printSlot(highlightedMeasure, highlightedSlot));
             }
         }
 
@@ -465,60 +454,6 @@ public class ScoreView
                     tellPoint(null, null, null);
                 }
             }
-        }
-
-        //-----------//
-        // printSlot //
-        //-----------//
-        private String printSlot (Measure measure,
-                                  Slot    slot)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("slot#")
-              .append(slot.getId())
-              .append(" start=")
-              .append(
-                String.format("%5s", Note.quarterValueOf(slot.getStartTime())))
-              .append(" [");
-
-            SortedMap<Integer, Chord> chords = new TreeMap<Integer, Chord>();
-
-            for (Chord chord : slot.getChords()) {
-                chords.put(chord.getVoice(), chord);
-            }
-
-            boolean started = false;
-            int     voiceMax = measure.getVoicesNumber();
-
-            for (int iv = 1; iv <= voiceMax; iv++) {
-                if (started) {
-                    sb.append(", ");
-                } else {
-                    started = true;
-                }
-
-                Chord chord = chords.get(iv);
-
-                if (chord != null) {
-                    sb.append("V")
-                      .append(chord.getVoice());
-                    sb.append(" Ch#")
-                      .append(String.format("%02d", chord.getId()));
-                    sb.append(" St")
-                      .append(chord.getStaff().getId());
-                    sb.append(" Dur=")
-                      .append(
-                        String.format(
-                            "%5s",
-                            Note.quarterValueOf(chord.getDuration())));
-                } else {
-                    sb.append("----------------------");
-                }
-            }
-
-            sb.append("]");
-
-            return sb.toString();
         }
     }
 
