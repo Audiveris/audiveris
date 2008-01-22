@@ -106,7 +106,6 @@ public class Measure
     private Integer excess;
 
     /** Voices within this measure, sorted by increasing voice id */
-    @Children
     private List<Voice> voices;
 
     //~ Constructors -----------------------------------------------------------
