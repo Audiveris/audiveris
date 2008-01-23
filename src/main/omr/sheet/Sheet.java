@@ -62,7 +62,7 @@ import java.util.List;
  * @version $Id$
  */
 public class Sheet
-    implements java.io.Serializable, Visitable
+    implements Visitable
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -589,7 +589,7 @@ public class Sheet
     {
         // We are now more conservative: All the systems that contain or follow
         // a modification are considered as impacted, regardless of the shape
-        boolean               persistent = true; 
+        boolean               persistent = true;
 
         //        boolean persistent = false;
         //
@@ -892,6 +892,9 @@ public class Sheet
         return selectionManager;
     }
 
+    //---------------//
+    // getSheetSteps //
+    //---------------//
     public SheetSteps getSheetSteps ()
     {
         return sheetSteps;
@@ -980,7 +983,7 @@ public class Sheet
     {
         int res = Collections.binarySearch(
             getStaves(),
-            new Integer(y),
+            Integer.valueOf(y),
             new Comparator<Object>() {
                     public int compare (Object o1,
                                         Object o2)
@@ -1261,24 +1264,6 @@ public class Sheet
     public int getWidth ()
     {
         return width;
-    }
-
-    // Temporary kludge
-    public boolean BarsAreDone ()
-    {
-        return sheetSteps.isDone(BARS);
-    }
-
-    // Temporary kludge
-    public boolean HorizontalsAreDone ()
-    {
-        return sheetSteps.isDone(HORIZONTALS);
-    }
-
-    // Temporary kludge
-    public boolean LinesAreDone ()
-    {
-        return sheetSteps.isDone(LINES);
     }
 
     //--------//

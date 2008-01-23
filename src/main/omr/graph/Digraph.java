@@ -34,7 +34,6 @@ import java.util.*;
  * @version $Id$
  */
 public class Digraph<D extends Digraph<D, V>, V extends Vertex>
-    implements java.io.Serializable
 {
     //~ Static fields/initializers ---------------------------------------------
 

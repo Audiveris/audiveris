@@ -258,7 +258,7 @@ public class ScoreBuilder
      * system only. Additional work that needs availability of several
      * systems is performed at higher level by the translateSystem() method.
      */
-    private class SystemBuilder
+    private static class SystemBuilder
     {
         //~ Instance fields ----------------------------------------------------
 

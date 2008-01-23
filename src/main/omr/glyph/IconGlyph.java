@@ -101,13 +101,11 @@ public class IconGlyph
             setShape(shape);
 
             // Ordinate (approximate value)
-            Rectangle  box = getContourBox();
-            int        y = box.y;
+            Rectangle box = getContourBox();
+            int       y = box.y;
 
             // Mass center
-            PixelPoint centroid = getCentroid();
-            Scale      scale = new Scale(interline, 1);
-            PagePoint  pgCentroid = scale.toPagePoint(centroid);
+            centroid = getCentroid();
 
             // Number of connected stems
             if (icon.getStemNumber() != null) {
@@ -135,19 +133,6 @@ public class IconGlyph
     //~ Methods ----------------------------------------------------------------
 
     //---------//
-    // getIcon //
-    //---------//
-    /**
-     * Report the related icon
-     *
-     * @return the icon
-     */
-    public SymbolIcon getIcon ()
-    {
-        return icon;
-    }
-
-    //---------//
     // setIcon //
     //---------//
     /**
@@ -158,5 +143,18 @@ public class IconGlyph
     public void setIcon (SymbolIcon val)
     {
         this.icon = val;
+    }
+
+    //---------//
+    // getIcon //
+    //---------//
+    /**
+     * Report the related icon
+     *
+     * @return the icon
+     */
+    public SymbolIcon getIcon ()
+    {
+        return icon;
     }
 }

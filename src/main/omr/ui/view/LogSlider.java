@@ -103,7 +103,7 @@ public class LogSlider
 
         for (int i = min; i <= max; i++) {
             labelTable.put(
-                new Integer(i * unit),
+                Integer.valueOf(i * unit),
                 new JLabel(
                     (i < 0) ? ("1/" + (int) expOf(-i * unit))
                                         : ("" + (int) expOf(i * unit))));

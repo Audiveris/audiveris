@@ -742,7 +742,7 @@ public class Picture
                         (pt.x < getWidth()) &&
                         (pt.y >= 0) &&
                         (pt.y < getHeight())) {
-                        level = new Integer(getPixel(pt.x, pt.y));
+                        level = Integer.valueOf(getPixel(pt.x, pt.y));
                     }
                 }
             }
@@ -783,6 +783,23 @@ public class Picture
             "bandcombine",
             new ParameterBlock().addSource(image).add(matrix),
             null);
+    }
+
+    //----------//
+    // loadFile //
+    //----------//
+    private static RenderedImage loadFile (File imgFile)
+    {
+        logger.info("Loading image from " + imgFile + " ...");
+
+        RenderedImage image = loadImageIO(imgFile);
+
+        if (image == null) {
+            logger.fine("Using JAI");
+            image = (JAI.create("fileload", imgFile.getPath()));
+        }
+
+        return image;
     }
 
     //-------------//
@@ -844,23 +861,6 @@ public class Picture
             } catch (IOException e) {
             }
         }
-    }
-
-    //----------//
-    // loadFile //
-    //----------//
-    private static RenderedImage loadFile (File imgFile)
-    {
-        logger.info("Loading image from " + imgFile + " ...");
-
-        RenderedImage image = loadImageIO(imgFile);
-
-        if (image == null) {
-            logger.fine("Using JAI");
-            image = (JAI.create("fileload", imgFile.getPath()));
-        }
-
-        return image;
     }
 
     //------------------//

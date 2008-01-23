@@ -155,6 +155,26 @@ public class UnitModel
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------------//
+    // isCellEditable //
+    //----------------//
+    /**
+     * Predicate on cell being editable
+     *
+     * @param node the related tree node
+     * @param column the related table column
+     *
+     * @return true if editable
+     */
+    @Override
+    public boolean isCellEditable (Object node,
+                                   int    column)
+    {
+        Column col = Column.values()[column];
+
+        return col.editable;
+    }
+
     //----------//
     // getChild //
     //----------//
@@ -273,145 +293,6 @@ public class UnitModel
         return Column.values()[column].header;
     }
 
-    //------------//
-    // getValueAt //
-    //------------//
-    /**
-     * Report the valu of a cell
-     *
-     * @param node the desired node
-     * @param col the related column
-     *
-     * @return the cell value
-     */
-    public Object getValueAt (Object node,
-                              int    col)
-    {
-        Column column = Column.values()[col];
-
-        switch (column) {
-        case LOGGER :
-
-            if (node instanceof UnitNode) {
-                UnitNode unit = (UnitNode) node;
-                Logger   logger = unit.getLogger();
-
-                if (logger != null) {
-                    return logger.getEffectiveLevel();
-                } else {
-                    return "";
-                }
-            } else if (node instanceof PackageNode) {
-                return "--";
-            } else {
-                return "";
-            }
-
-        case VALUE :
-
-            if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
-                if (constant instanceof Constant.Boolean) {
-                    Constant.Boolean cb = (Constant.Boolean) constant;
-
-                    return Boolean.valueOf(cb.getValue());
-                } else {
-                    return constant.getCurrentString();
-                }
-            } else {
-                return "";
-            }
-
-        case TYPE :
-
-            if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
-                return constant.getShortTypeName();
-            } else {
-                return "";
-            }
-
-        case UNIT :
-
-            if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
-                return (constant.getQuantityUnit() != null)
-                       ? constant.getQuantityUnit() : "";
-            } else {
-                return "";
-            }
-
-        case PIXEL :
-
-            if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
-                if (constant instanceof Scale.Fraction ||
-                    constant instanceof Scale.AreaFraction) {
-                    // Compute the equivalent in pixels of this interline-based
-                    // fraction or area fraction, provided that we have a 
-                    // current sheet and its scale is available.
-                    Sheet sheet = SheetManager.getSelectedSheet();
-
-                    if ((sheet != null) &&
-                        sheet.getSheetSteps()
-                             .isDone(Step.SCALE)) {
-                        Scale scale = sheet.getScale();
-
-                        if (constant instanceof Scale.Fraction) {
-                            return new Integer(
-                                scale.toPixels((Scale.Fraction) constant));
-                        }
-
-                        if (constant instanceof Scale.AreaFraction) {
-                            return new Integer(
-                                scale.toPixels((Scale.AreaFraction) constant));
-                        }
-                    } else {
-                        return "?"; // Cannot compute the value
-                    }
-                }
-            }
-
-            return "";
-
-        case MODIF :
-
-            if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
-                return Boolean.valueOf(constant.isModified());
-            } else {
-                return null;
-            }
-        }
-
-        return null; // For the compiler
-    }
-
-    //----------------//
-    // isCellEditable //
-    //----------------//
-    /**
-     * Predicate on cell being editable
-     *
-     * @param node the related tree node
-     * @param column the related table column
-     *
-     * @return true if editable
-     */
-    @Override
-    public boolean isCellEditable (Object node,
-                                   int    column)
-    {
-        Column col = Column.values()[column];
-
-        return col.editable;
-    }
-
     //--------//
     // isLeaf //
     //--------//
@@ -501,5 +382,124 @@ public class UnitModel
                 break;
             }
         }
+    }
+
+    //------------//
+    // getValueAt //
+    //------------//
+    /**
+     * Report the valu of a cell
+     *
+     * @param node the desired node
+     * @param col the related column
+     *
+     * @return the cell value
+     */
+    public Object getValueAt (Object node,
+                              int    col)
+    {
+        Column column = Column.values()[col];
+
+        switch (column) {
+        case LOGGER :
+
+            if (node instanceof UnitNode) {
+                UnitNode unit = (UnitNode) node;
+                Logger   logger = unit.getLogger();
+
+                if (logger != null) {
+                    return logger.getEffectiveLevel();
+                } else {
+                    return "";
+                }
+            } else if (node instanceof PackageNode) {
+                return "--";
+            } else {
+                return "";
+            }
+
+        case VALUE :
+
+            if (node instanceof Constant) {
+                Constant constant = (Constant) node;
+
+                if (constant instanceof Constant.Boolean) {
+                    Constant.Boolean cb = (Constant.Boolean) constant;
+
+                    return Boolean.valueOf(cb.getValue());
+                } else {
+                    return constant.getCurrentString();
+                }
+            } else {
+                return "";
+            }
+
+        case TYPE :
+
+            if (node instanceof Constant) {
+                Constant constant = (Constant) node;
+
+                return constant.getShortTypeName();
+            } else {
+                return "";
+            }
+
+        case UNIT :
+
+            if (node instanceof Constant) {
+                Constant constant = (Constant) node;
+
+                return (constant.getQuantityUnit() != null)
+                       ? constant.getQuantityUnit() : "";
+            } else {
+                return "";
+            }
+
+        case PIXEL :
+
+            if (node instanceof Constant) {
+                Constant constant = (Constant) node;
+
+                if (constant instanceof Scale.Fraction ||
+                    constant instanceof Scale.AreaFraction) {
+                    // Compute the equivalent in pixels of this interline-based
+                    // fraction or area fraction, provided that we have a 
+                    // current sheet and its scale is available.
+                    Sheet sheet = SheetManager.getSelectedSheet();
+
+                    if ((sheet != null) &&
+                        sheet.getSheetSteps()
+                             .isDone(Step.SCALE)) {
+                        Scale scale = sheet.getScale();
+
+                        if (constant instanceof Scale.Fraction) {
+                            return Integer.valueOf(
+                                scale.toPixels((Scale.Fraction) constant));
+                        }
+
+                        if (constant instanceof Scale.AreaFraction) {
+                            return Integer.valueOf(
+                                scale.toPixels((Scale.AreaFraction) constant));
+                        }
+                    } else {
+                        return "?"; // Cannot compute the value
+                    }
+                }
+            }
+
+            return "";
+
+        case MODIF :
+
+            if (node instanceof Constant) {
+                Constant constant = (Constant) node;
+
+                return Boolean.valueOf(constant.isModified());
+            } else {
+                return null;
+            }
+        }
+
+        return null; // For the compiler
     }
 }

@@ -33,7 +33,6 @@ import javax.swing.*;
  * @version $Id$
  */
 public enum Shape
-    implements java.io.Serializable
 {
     //~ Static variables/initializers ------------------------------------------
 
@@ -504,19 +503,19 @@ public enum Shape
     }
 
     //~ Methods ----------------------------------------------------------------
-    
+
     /**
-     * Report whether the impact of this shape persists across system (actually 
+     * Report whether the impact of this shape persists across system (actually
      * measure) borders (clefs, time signatures, key signatures).
-     * Based on just the shape, we cannot tell whether an accidental is part of 
+     * Based on just the shape, we cannot tell whether an accidental is part of
      * a key signature or not, so we take a conservative approach.
      *
      * @return true if persistent, false otherwise
      */
     public boolean isPersistent()
     {
-        return Clefs.contains(this) || 
-                Times.contains(this) || 
+        return Clefs.contains(this) ||
+                Times.contains(this) ||
                 Accidentals.contains(this);
     }
 
@@ -554,14 +553,14 @@ public enum Shape
     /**
      * Check whether the shape is a whole (or multi) rest, for which no duration
      * can be specified
-     * 
+     *
      * @return true if whole or multi rest
      */
     public boolean isWholeRest()
     {
         return this == WHOLE_REST || this == MULTI_REST;
     }
-    
+
     //----------------//
     // getDescription //
     //----------------//

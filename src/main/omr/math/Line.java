@@ -19,7 +19,6 @@ package omr.math;
  * @version $Id$
  */
 public interface Line
-    extends java.io.Serializable
 {
     //~ Methods ----------------------------------------------------------------
 

@@ -52,6 +52,14 @@ public class SlurGlyph
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------------------//
+    // getMaxCircleDistance //
+    //----------------------//
+    public static double getMaxCircleDistance ()
+    {
+        return constants.maxCircleDistance.getValue();
+    }
+
     //---------------//
     // computeCircle //
     //---------------//
@@ -119,14 +127,6 @@ public class SlurGlyph
         } else {
             return fixLargeSlur(glyph, system);
         }
-    }
-
-    //----------------------//
-    // getMaxCircleDistance //
-    //----------------------//
-    public static double getMaxCircleDistance ()
-    {
-        return constants.maxCircleDistance.getValue();
     }
 
     //--------------//
@@ -427,9 +427,6 @@ public class SlurGlyph
         /** The scale around the slur */
         private final Scale scale;
 
-        /** The seed being considered */
-        private Glyph seed;
-
         //~ Constructors -------------------------------------------------------
 
         public SlurCompoundAdapter (Scale scale)
@@ -484,11 +481,6 @@ public class SlurGlyph
             Circle circle = computeCircle(compound);
 
             return circle.isValid(SlurGlyph.getMaxCircleDistance());
-        }
-
-        public void setSeed (Glyph seed)
-        {
-            this.seed = seed;
         }
     }
 }

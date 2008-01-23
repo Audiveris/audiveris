@@ -259,7 +259,6 @@ public class GlyphRegression
      * recognize the shape of a glyph
      */
     private static class ShapeDesc
-        implements java.io.Serializable
     {
         //~ Instance fields ----------------------------------------------------
 

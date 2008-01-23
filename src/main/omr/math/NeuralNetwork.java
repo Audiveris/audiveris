@@ -37,7 +37,6 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "neural-network")
 public class NeuralNetwork
-    implements java.io.Serializable
 {
     //~ Static fields/initializers ---------------------------------------------
 

@@ -431,7 +431,6 @@ public class TimeSignature
 
                     default :
                         addError(glyphs.first(), "Weird single time component");
-                        shape = NO_LEGAL_SHAPE;
                         throw new InvalidTimeSignature();
                     }
                 }

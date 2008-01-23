@@ -211,7 +211,6 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      */
     public List<S> getSectionsIn (Rectangle rect)
     {
-        int     maxPos = rect.y + rect.height;
         List<S> found = new ArrayList<S>();
 
         // Iterate on (all?) sections

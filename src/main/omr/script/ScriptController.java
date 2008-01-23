@@ -76,11 +76,6 @@ public class ScriptController
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Default directory for saved scripts */
-        Constant.String defaultScriptDirectory = new Constant.String(
-            "",
-            "Default directory for saved scripts");
-
         /** User confirmation for closing unsaved script */
         Constant.Boolean closeConfirmation = new Constant.Boolean(
             true,

@@ -21,7 +21,6 @@ import omr.util.Logger;
  * @version $Id$
  */
 public class Moments
-    implements java.io.Serializable
 {
     //~ Static fields/initializers ---------------------------------------------
 

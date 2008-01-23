@@ -272,7 +272,6 @@ public class Circle
             }
         } else {
             final double bottom = emptyIdx * bucketSize;
-            final double top = (emptyIdx + 1) * bucketSize;
             double       start = 2 * PI;
             double       stop = 0;
 

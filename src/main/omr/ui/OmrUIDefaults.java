@@ -18,7 +18,8 @@ import javax.swing.*;
  * Class <code>OmrUIDefaults</code> handles all the user interface defaults for
  * the OMR application
  *
- * @author Herv&eacute Bitteur and Brenton Partridge
+ * @author Herv&eacute Bitteur
+ * @author Brenton Partridge
  * @version $Id$
  */
 public class OmrUIDefaults
@@ -55,7 +56,7 @@ public class OmrUIDefaults
     {
         KeyStroke ks = getKeyStroke(key);
 
-        return (ks != null) ? new Integer(ks.getKeyCode()) : null;
+        return (ks != null) ? ks.getKeyCode() : null;
     }
 
     //--------------//
@@ -73,9 +74,20 @@ public class OmrUIDefaults
     }
 
     /**
+     * Load UI strings from a Properties object.
+     * @param properties properties
+     */
+    public void loadFrom (Properties properties)
+    {
+        for (Map.Entry<Object, Object> e : properties.entrySet()) {
+            this.put(e.getKey(), e.getValue());
+        }
+    }
+
+    /**
      * Load UI strings from a properties file (.properties).
-     * @param file properties file path
-     * without locale or country information
+     *
+     * @param file properties file path without locale or country information
      * or .properties extension
      * @throws FileNotFoundException
      * @throws IOException
@@ -100,19 +112,10 @@ public class OmrUIDefaults
             file = new File(path + ".properties");
         }
 
-        Properties p = new Properties();
-        p.load(new FileInputStream(file));
+        Properties  p = new Properties();
+        InputStream in = new FileInputStream(file);
+        p.load(in);
+        in.close();
         loadFrom(p);
-    }
-
-    /**
-     * Load UI strings from a Properties object.
-     * @param properties properties
-     */
-    public void loadFrom (Properties properties)
-    {
-        for (Map.Entry<Object, Object> e : properties.entrySet()) {
-            this.put(e.getKey(), e.getValue());
-        }
     }
 }

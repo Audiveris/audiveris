@@ -83,7 +83,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     protected final Constant.Boolean showingSpecifics;
 
     /** Index of this view in the ordered list of views of the related lag */
-    protected final transient int viewIndex;
+    protected final int viewIndex;
 
     /** Output selection for specific run if any */
     protected Selection runSelection;

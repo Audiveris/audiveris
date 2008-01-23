@@ -22,6 +22,8 @@ import omr.sheet.Sheet;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 
+import omr.step.Step;
+
 import omr.stick.Stick;
 
 import omr.ui.view.Zoom;
@@ -160,14 +162,16 @@ public class SheetPainter
             score.accept(this);
         } else {
             // Render what we have got so far
-            if (sheet.LinesAreDone()) {
+            if (sheet.getSheetSteps()
+                     .isDone(Step.LINES)) {
                 for (StaffInfo staff : sheet.getStaves()) {
                     staff.render(g, z);
                 }
             }
         }
 
-        if (sheet.BarsAreDone()) {
+        if (sheet.getSheetSteps()
+                 .isDone(Step.BARS)) {
             for (SystemInfo system : sheet.getSystems()) {
                 // Check that this system is visible
                 Rectangle box = new Rectangle(
@@ -208,7 +212,8 @@ public class SheetPainter
             }
         } else {
             // Horizontals
-            if (sheet.HorizontalsAreDone()) {
+            if (sheet.getSheetSteps()
+                     .isDone(Step.HORIZONTALS)) {
                 // Ledgers
                 for (Ledger ledger : sheet.getHorizontals()
                                           .getLedgers()) {

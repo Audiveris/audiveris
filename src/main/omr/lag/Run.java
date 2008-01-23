@@ -22,7 +22,6 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class Run
-    implements java.io.Serializable
 {
     //~ Instance fields --------------------------------------------------------
 

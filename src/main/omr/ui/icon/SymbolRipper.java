@@ -77,8 +77,6 @@ public class SymbolRipper
                 // New font name
                 defineFont();
             } else {
-                int val = (Integer) s.getValue();
-
                 if (s == fontBase) {
                     // New font base
                     changeCode();

@@ -98,21 +98,23 @@ public class ScrollView
      */
     public Point getRubberFocus ()
     {
-        Point center = view.rubber.getCenter();
+        if (view != null) {
+            Point center = view.rubber.getCenter();
 
-        if (center != null) {
-            if (logger.isFineEnabled()) {
-                logger.fine("getRubberFocus rubber center=" + center);
+            if (center != null) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("getRubberFocus rubber center=" + center);
+                }
+
+                return center; // Of rubber band
+            } else {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "getRubberFocus panelcenter=" + view.getPanelCenter());
+                }
+
+                return view.getPanelCenter(); // Of visible rectangle
             }
-
-            return center; // Of rubber band
-        } else if (view != null) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "getRubberFocus panelcenter=" + view.getPanelCenter());
-            }
-
-            return view.getPanelCenter(); // Of visible rectangle
         } else {
             logger.warning("getRubberFocus : no rubber, no view ???");
 

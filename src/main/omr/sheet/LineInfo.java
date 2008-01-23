@@ -25,7 +25,6 @@ import java.util.List;
  * @version $Id$
  */
 public class LineInfo
-    implements java.io.Serializable
 {
     //~ Instance fields --------------------------------------------------------
 

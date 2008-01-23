@@ -780,7 +780,7 @@ public class Slot
                         }
 
                         // Add a new voice
-                        Voice voice = new Voice(chord);
+                        new Voice(chord);
                     }
                 }
             }

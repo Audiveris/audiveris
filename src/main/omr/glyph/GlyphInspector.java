@@ -318,8 +318,6 @@ public class GlyphInspector
     public int verifySlurs (SystemInfo system)
     {
         int         fixedNb = 0;
-        List<Glyph> oldGlyphs = new ArrayList<Glyph>();
-        List<Glyph> newGlyphs = new ArrayList<Glyph>();
 
         // First, make up a list of all slur glyphs in this system
         // (So as to free the system glyph list for on-the-fly modifications)

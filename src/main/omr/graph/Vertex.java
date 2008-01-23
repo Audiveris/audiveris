@@ -36,7 +36,6 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class Vertex<D extends Digraph, V extends Vertex<D, V>>
-    implements java.io.Serializable
 {
     //~ Static fields/initializers ---------------------------------------------
 

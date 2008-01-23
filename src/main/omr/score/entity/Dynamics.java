@@ -146,27 +146,6 @@ public class Dynamics
         return visitor.visit(this);
     }
 
-    //--------------//
-    // computeShape //
-    //--------------//
-    @Override
-    protected Shape computeShape ()
-    {
-        String sig = "";
-
-        for (Glyph glyph : getGlyphs()) {
-            sig += sigs.get(glyph.getShape());
-        }
-
-        Shape shape = shapes.get(sig);
-
-        if (shape == null) {
-            addError("Invalid dynamics signature:" + sig);
-        }
-
-        return shape;
-    }
-
     //----------//
     // populate //
     //----------//
@@ -198,6 +177,27 @@ public class Dynamics
         // Create a brand new instance
         glyph.setTranslation(
             new Dynamics(measure, point, findChord(measure, point), glyph));
+    }
+
+    //--------------//
+    // computeShape //
+    //--------------//
+    @Override
+    protected Shape computeShape ()
+    {
+        StringBuilder sig = new StringBuilder();
+
+        for (Glyph glyph : getGlyphs()) {
+            sig.append(sigs.get(glyph.getShape()));
+        }
+
+        Shape shape = shapes.get(sig.toString());
+
+        if (shape == null) {
+            addError("Invalid dynamics signature:" + sig);
+        }
+
+        return shape;
     }
 
     //------------------//

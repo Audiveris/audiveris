@@ -102,9 +102,6 @@ class ShapeFocusBoard
     /** Popup menu to allow shape selection */
     private JPopupMenu pm = new JPopupMenu();
 
-    /** The current shape used for display focus */
-    private Shape currentShape;
-
     //~ Constructors -----------------------------------------------------------
 
     //-----------------//
@@ -196,7 +193,6 @@ class ShapeFocusBoard
      */
     public void setCurrentShape (Shape currentShape)
     {
-        this.currentShape = currentShape;
         assignedCounter.resetIds();
 
         if (currentShape != null) {
@@ -217,6 +213,38 @@ class ShapeFocusBoard
         }
 
         assignedCounter.refresh();
+    }
+
+    //-------------//
+    // isDisplayed //
+    //-------------//
+    /**
+     * Report whether the glyph at hand is to be displayed, according to the
+     * current filter
+     * @param glyph the glyph at hande
+     * @return true if to be displayed
+     */
+    public boolean isDisplayed (Glyph glyph)
+    {
+        switch ((Filter) filterButton.getSelectedItem()) {
+        case ALL :
+            return true;
+
+        case KNOWN :
+            return glyph.isKnown();
+
+        case UNKNOWN :
+            return !glyph.isKnown();
+
+        case TRANSLATED :
+            return glyph.isKnown() && glyph.isTranslated();
+
+        case UNTRANSLATED :
+            return glyph.isKnown() && !glyph.isTranslated();
+        }
+
+        // To please the compiler
+        return true;
     }
 
     //--------//
@@ -252,38 +280,6 @@ class ShapeFocusBoard
 
         default :
         }
-    }
-
-    //-------------//
-    // isDisplayed //
-    //-------------//
-    /**
-     * Report whether the glyph at hand is to be displayed, according to the
-     * current filter
-     * @param glyph the glyph at hande
-     * @return true if to be displayed
-     */
-    public boolean isDisplayed (Glyph glyph)
-    {
-        switch ((Filter) filterButton.getSelectedItem()) {
-        case ALL :
-            return true;
-
-        case KNOWN :
-            return glyph.isKnown();
-
-        case UNKNOWN :
-            return !glyph.isKnown();
-
-        case TRANSLATED :
-            return glyph.isKnown() && glyph.isTranslated();
-
-        case UNTRANSLATED :
-            return glyph.isKnown() && !glyph.isTranslated();
-        }
-
-        // To please the compiler
-        return true;
     }
 
     //--------------//

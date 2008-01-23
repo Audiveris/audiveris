@@ -20,7 +20,6 @@ package omr.sheet;
  * @version $Id$
  */
 public class Skew
-    implements java.io.Serializable
 {
     //~ Instance fields --------------------------------------------------------
 

@@ -18,7 +18,6 @@ package omr.check;
  * @version $Id$
  */
 public abstract class Result
-    implements java.io.Serializable
 {
     //~ Instance fields --------------------------------------------------------
 

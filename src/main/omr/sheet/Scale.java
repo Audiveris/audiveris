@@ -48,7 +48,6 @@ import java.awt.Rectangle;
  * @version $Id$
  */
 public class Scale
-    implements java.io.Serializable
 {
     //~ Static fields/initializers ---------------------------------------------
 

@@ -29,6 +29,7 @@ import omr.util.Logger;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 
 import javax.xml.bind.*;
 
@@ -174,82 +175,92 @@ public class GlyphRepository
     public void recordSheetGlyphs (Sheet   sheet,
                                    boolean emptyStructures)
     {
-        try {
-            // Prepare target directory
-            File sheetDir = new File(getSheetsFolder(), sheet.getRadix());
+        // Prepare target directory
+        File sheetDir = new File(getSheetsFolder(), sheet.getRadix());
 
-            // Make sure related directory chain exists
-            if (sheetDir.mkdirs()) {
-                logger.info("Creating directory " + sheetDir);
-            } else {
-                deleteXmlFiles(sheetDir);
-            }
+        // Make sure related directory chain exists
+        if (sheetDir.mkdirs()) {
+            logger.info("Creating directory " + sheetDir);
+        } else {
+            deleteXmlFiles(sheetDir);
+        }
 
-            // Prepare structures directory
-            File structuresDir = new File(
-                getSheetsFolder(),
-                sheet.getRadix() + STRUCTURES_NAME);
+        // Prepare structures directory
+        File structuresDir = new File(
+            getSheetsFolder(),
+            sheet.getRadix() + STRUCTURES_NAME);
 
-            // Make sure related structure subdirectory exists
-            if (structuresDir.mkdirs()) {
-                logger.info("Creating subdirectory " + structuresDir);
-            } else if (emptyStructures) {
-                deleteXmlFiles(structuresDir);
-            }
+        // Make sure related structure subdirectory exists
+        if (structuresDir.mkdirs()) {
+            logger.info("Creating subdirectory " + structuresDir);
+        } else if (emptyStructures) {
+            deleteXmlFiles(structuresDir);
+        }
 
-            // Now record each relevant glyph
-            int glyphNb = 0;
-            int structuresNb = 0;
+        // Now record each relevant glyph
+        int glyphNb = 0;
+        int structuresNb = 0;
 
-            ///final long startTime = System.currentTimeMillis();
-            for (Glyph glyph : sheet.getActiveGlyphs()) {
-                if (glyph.getShape() != null) {
-                    Shape shape = glyph.getShape()
-                                       .getTrainingShape();
+        ///final long startTime = System.currentTimeMillis();
+        for (Glyph glyph : sheet.getActiveGlyphs()) {
+            if (glyph.getShape() != null) {
+                Shape shape = glyph.getShape()
+                                   .getTrainingShape();
 
-                    if (shape.isTrainable() && (shape != Shape.NOISE)) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine("Storing " + glyph);
+                if (shape.isTrainable() && (shape != Shape.NOISE)) {
+                    {
+                        OutputStream os = null;
+
+                        try {
+                            if (logger.isFineEnabled()) {
+                                logger.fine("Storing " + glyph);
+                            }
+
+                            StringBuffer sb = new StringBuffer();
+                            sb.append(shape);
+                            sb.append(".");
+                            sb.append(String.format("%04d", glyph.getId()));
+                            sb.append(FILE_EXTENSION);
+
+                            File glyphFile;
+
+                            if (shape != Shape.STRUCTURE) {
+                                glyphFile = new File(sheetDir, sb.toString());
+                            } else {
+                                structuresNb++;
+                                glyphFile = new File(
+                                    structuresDir,
+                                    sb.toString());
+                            }
+
+                            os = new FileOutputStream(glyphFile);
+                            jaxbMarshal(glyph, os);
+                            glyphNb++;
+                        } catch (FileNotFoundException ex) {
+                            logger.warning(null, ex);
+                        } catch (JAXBException ex) {
+                            logger.warning(null, ex);
+                        } finally {
+                            try {
+                                if (os != null) {
+                                    os.close();
+                                }
+                            } catch (IOException ex) {
+                                logger.warning(null, ex);
+                            }
                         }
-
-                        // Build the proper glyph file
-                        StringBuffer sb = new StringBuffer();
-                        sb.append(shape);
-                        sb.append(".");
-                        sb.append(String.format("%04d", glyph.getId()));
-                        sb.append(FILE_EXTENSION);
-
-                        File glyphFile;
-
-                        if (shape != Shape.STRUCTURE) {
-                            glyphFile = new File(sheetDir, sb.toString());
-                        } else {
-                            structuresNb++;
-                            glyphFile = new File(structuresDir, sb.toString());
-                        }
-
-                        OutputStream os = new FileOutputStream(glyphFile);
-
-                        // Store the glyph
-                        jaxbMarshal(glyph, os);
-
-                        glyphNb++;
                     }
                 }
             }
-
-            // Refresh glyph populations
-            refreshBases();
-
-            logger.info(
-                glyphNb + " glyphs stored from " + sheet.getRadix() +
-                ((structuresNb == 0) ? ""
-                 : (" (including " + structuresNb + " structures)")));
-
-            /// + " in " + (System.currentTimeMillis() - startTime) + " ms");
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
+
+        // Refresh glyph populations
+        refreshBases();
+
+        logger.info(
+            glyphNb + " glyphs stored from " + sheet.getRadix() +
+            ((structuresNb == 0) ? ""
+             : (" (including " + structuresNb + " structures)")));
     }
 
     //--------------//

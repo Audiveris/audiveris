@@ -121,6 +121,26 @@ public abstract class Constant
         return description;
     }
 
+    //------------//
+    // isModified //
+    //------------//
+    /**
+     * Checks whether the current value is different from the original one.
+     * NOTA_BENE: The test is made on string literal, which may result in false
+     * modification signals, simply because the string for example contains an
+     * additional space
+     *
+     * @return The modification status
+     */
+    public synchronized boolean isModified ()
+    {
+        if (currentString == null) {
+            return false;
+        } else {
+            return !currentString.equals(initialString);
+        }
+    }
+
     //---------//
     // getName //
     //---------//
@@ -180,26 +200,6 @@ public abstract class Constant
             return typeName.substring(separator + 1);
         } else {
             return typeName;
-        }
-    }
-
-    //------------//
-    // isModified //
-    //------------//
-    /**
-     * Checks whether the current value is different from the original one.
-     * NOTA_BENE: The test is made on string literal, which may result in false
-     * modification signals, simply because the string for example contains an
-     * additional space
-     *
-     * @return The modification status
-     */
-    public synchronized boolean isModified ()
-    {
-        if (currentString == null) {
-            return false;
-        } else {
-            return !currentString.equals(initialString);
         }
     }
 
@@ -311,7 +311,7 @@ public abstract class Constant
     protected char toChar ()
     {
         if (cachedValue == null) {
-            cachedValue = new Character(getCurrentString().charAt(0));
+            cachedValue = Character.valueOf(getCurrentString().charAt(0));
         }
 
         return ((Character) cachedValue).charValue();
@@ -584,16 +584,6 @@ public abstract class Constant
         //~ Methods ------------------------------------------------------------
 
         /**
-         * Retrieve the current constant value
-         *
-         * @return the current (boolean) value
-         */
-        public boolean getValue ()
-        {
-            return toBoolean();
-        }
-
-        /**
          * Allows to set a new boolean value (passed as a string) to this
          * constant. The string validity is actually checked.
          *
@@ -612,6 +602,16 @@ public abstract class Constant
         public void setValue (boolean val)
         {
             setString(java.lang.Boolean.toString(val));
+        }
+
+        /**
+         * Retrieve the current constant value
+         *
+         * @return the current (boolean) value
+         */
+        public boolean getValue ()
+        {
+            return toBoolean();
         }
     }
 
@@ -671,16 +671,6 @@ public abstract class Constant
         //~ Methods ------------------------------------------------------------
 
         /**
-         * Retrieve the current constant value
-         *
-         * @return the current (Color) value
-         */
-        public java.awt.Color getValue ()
-        {
-            return toColor();
-        }
-
-        /**
          * Allows to set a new int RGB value (passed as a string) to this
          * constant. The string validity is actually checked.
          *
@@ -701,6 +691,16 @@ public abstract class Constant
             // TBD : find a more readable format such as #RRGGBB
             //setString(java.lang.Integer.toString(val.getRGB(), 16));
             setString(java.lang.Integer.toString(val.getRGB()));
+        }
+
+        /**
+         * Retrieve the current constant value
+         *
+         * @return the current (Color) value
+         */
+        public java.awt.Color getValue ()
+        {
+            return toColor();
         }
     }
 
@@ -735,16 +735,6 @@ public abstract class Constant
         //~ Methods ------------------------------------------------------------
 
         /**
-         * Retrieve the current constant value
-         *
-         * @return the current (double) value
-         */
-        public double getValue ()
-        {
-            return toDouble();
-        }
-
-        /**
          * Allows to set a new double value (passed as a string) to this
          * constant. The string validity is actually checked.
          *
@@ -763,6 +753,16 @@ public abstract class Constant
         public void setValue (double val)
         {
             setString(java.lang.Double.toString(val));
+        }
+
+        /**
+         * Retrieve the current constant value
+         *
+         * @return the current (double) value
+         */
+        public double getValue ()
+        {
+            return toDouble();
         }
     }
 
@@ -797,16 +797,6 @@ public abstract class Constant
         //~ Methods ------------------------------------------------------------
 
         /**
-         * Retrieve the current constant value
-         *
-         * @return the current (int) value
-         */
-        public int getValue ()
-        {
-            return toInt();
-        }
-
-        /**
          * Allows to set a new int value (passed as a string) to this
          * constant. The string validity is actually checked.
          *
@@ -825,6 +815,16 @@ public abstract class Constant
         public void setValue (int val)
         {
             setString(java.lang.Integer.toString(val));
+        }
+
+        /**
+         * Retrieve the current constant value
+         *
+         * @return the current (int) value
+         */
+        public int getValue ()
+        {
+            return toInt();
         }
     }
 
@@ -896,6 +896,16 @@ public abstract class Constant
         //~ Methods ------------------------------------------------------------
 
         /**
+         * Set a new string value to the constant
+         *
+         * @param val the new (string) value
+         */
+        public void setValue (java.lang.String val)
+        {
+            setString(val);
+        }
+
+        /**
          * Retrieve the current constant value. Actually this is synonymous with
          * currentString()
          *
@@ -904,16 +914,6 @@ public abstract class Constant
         public java.lang.String getValue ()
         {
             return getCurrentString();
-        }
-
-        /**
-         * Set a new string value to the constant
-         *
-         * @param val the new (string) value
-         */
-        public void setValue (java.lang.String val)
-        {
-            setString(val);
         }
     }
 }

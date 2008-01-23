@@ -1704,7 +1704,7 @@ public class ScoreExporter
             key.getCenter());
 
         if (previousKey != null) {
-            return previousKey.getKey() != key.getKey();
+            return !previousKey.getKey().equals(key.getKey());
         }
 
         return true; // Since no previous key found

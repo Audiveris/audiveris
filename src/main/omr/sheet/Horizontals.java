@@ -23,7 +23,6 @@ import java.util.List;
  * @version $Id$
  */
 public class Horizontals
-    implements java.io.Serializable
 {
     //~ Instance fields --------------------------------------------------------
 

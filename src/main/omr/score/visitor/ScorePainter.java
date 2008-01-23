@@ -997,32 +997,6 @@ public class ScorePainter
      * @param center system-based bounding center in units
      * @param displayOrigin the related origin in score display
      * @param chord the chord stem to attach the symbol to
-     */
-    private void paintSymbol (Shape       shape,
-                              SystemPoint center,
-                              ScorePoint  displayOrigin,
-                              Chord       chord)
-    {
-        paintSymbol(
-            shape,
-            center,
-            displayOrigin,
-            chord,
-            VerticalAlignment.CENTER);
-    }
-
-    //-------------//
-    // paintSymbol //
-    //-------------//
-    /**
-     * Paint a symbol icon using the coordinates in units of its bounding center
-     * within the containing system part, forcing adjacency with provided chord
-     * stem.
-     *
-     * @param shape the shape whose icon must be painted
-     * @param center system-based bounding center in units
-     * @param displayOrigin the related origin in score display
-     * @param chord the chord stem to attach the symbol to
      * @param vAlign the vertical alignment wrt the point
      */
     private void paintSymbol (Shape             shape,

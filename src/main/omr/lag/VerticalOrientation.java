@@ -22,7 +22,7 @@ import java.awt.Rectangle;
  * @version $Id$
  */
 public class VerticalOrientation
-    implements Oriented, java.io.Serializable
+    implements Oriented
 {
     //~ Methods ----------------------------------------------------------------
 

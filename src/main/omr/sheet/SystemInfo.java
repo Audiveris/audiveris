@@ -86,9 +86,6 @@ public class SystemInfo
     /** Abscissa of beginning of system. */
     private int left = -1;
 
-    /** Width of widest glyph in this system */
-    private int maxGlyphWidth = -1;
-
     /** Width of widest Ledger in this system */
     private int maxLedgerWidth = -1;
 

@@ -34,7 +34,6 @@ import java.util.List;
  * @version $Id$
  */
 public class Dash
-    implements java.io.Serializable
 {
     //~ Instance fields --------------------------------------------------------
 

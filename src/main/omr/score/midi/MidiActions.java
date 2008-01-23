@@ -70,7 +70,7 @@ public class MidiActions
     }
 
     // PlayAction instance
-    public static Action       playAction = ActionManager.getInstance()
+    public static final Action playAction = ActionManager.getInstance()
                                                          .getActionInstance(
         PlayAction.class.getName());
     private static Icon        playIcon = (Icon) playAction.getValue(

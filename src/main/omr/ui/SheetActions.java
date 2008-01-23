@@ -349,11 +349,6 @@ public class SheetActions
             "",
             "Default directory for selection of sheet image files");
 
-        /** Initial zoom ratio for displayed sheet pictures */
-        Constant.Ratio initialZoomRatio = new Constant.Ratio(
-            1d,
-            "Initial zoom ratio for displayed sheet pictures");
-
         /** Valid extensions for image files */
         Constant.String validImageFiles = new Constant.String(
             ".bmp .gif .jpg .png .tif",

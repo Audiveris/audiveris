@@ -1361,19 +1361,6 @@ public class Measure
         }
     }
 
-    //----------//
-    // hasSlots //
-    //----------//
-    /**
-     * Checks whether there are slots in this measure
-     *
-     * @return true if there is at least one slot
-     */
-    public boolean hasSlots ()
-    {
-        return (slots != null) & (slots.size() > 0);
-    }
-
     //-------------//
     // printChords //
     //-------------//
@@ -1514,7 +1501,7 @@ public class Measure
         Chord chord = new Chord(this, null);
 
         // No slot for this chord, but a whole rest
-        Note note = new Note(chord, glyph); // Records note in chord
+        new Note(chord, glyph); // Records note in chord
         wholeChords.add(chord);
     }
 

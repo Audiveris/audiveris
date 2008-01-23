@@ -284,6 +284,21 @@ public class ScorePart
     }
 
     //----------//
+    // hashCode //
+    //----------//
+    /**
+     * To please FindBugs, because of overriding of equals method
+     * @return nothing
+     */
+    @Override
+    public int hashCode ()
+    {
+        assert false : "hashCode not designed";
+
+        return 42; // any arbitrary constant will do 
+    }
+
+    //----------//
     // toString //
     //----------//
     @Override

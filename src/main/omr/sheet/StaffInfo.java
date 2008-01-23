@@ -26,7 +26,6 @@ import java.util.List;
  * @version $Id$
  */
 public class StaffInfo
-    implements java.io.Serializable
 {
     //~ Static fields/initializers ---------------------------------------------
 

@@ -285,7 +285,7 @@ public class SheetSteps
     /**
      * Step to retrieve barlines, and thus systems and measures
      */
-    private class BarsTask
+    private static class BarsTask
         extends SheetTask
     {
         //~ Constructors -------------------------------------------------------
@@ -371,7 +371,7 @@ public class SheetSteps
     /**
      * Step to retrieve all horizontal dashes
      */
-    private class HorizontalsTask
+    private static class HorizontalsTask
         extends SheetTask
     {
         //~ Constructors -------------------------------------------------------
@@ -447,7 +447,7 @@ public class SheetSteps
     /**
      * Step to retrieve all staff lines, and remove them from the picture
      */
-    private class LinesTask
+    private static class LinesTask
         extends SheetTask
     {
         //~ Constructors -------------------------------------------------------
@@ -477,7 +477,7 @@ public class SheetSteps
      * Step to (re)load sheet picture. A brand new sheet is created with the
      * provided image file as parameter.
      */
-    private class LoadTask
+    private static class LoadTask
         extends SheetTask
     {
         //~ Constructors -------------------------------------------------------
@@ -535,7 +535,7 @@ public class SheetSteps
      * come from staff lines, and most frequent background runs come from inter
      * staff lines.
      */
-    private class ScaleTask
+    private static class ScaleTask
         extends SheetTask
     {
         //~ Constructors -------------------------------------------------------
@@ -636,7 +636,7 @@ public class SheetSteps
      * "deskewed", since this significantly eases the subsequent processing.
      * From this step on, we'll play only with the deskewed image.
      */
-    private class SkewTask
+    private static class SkewTask
         extends SheetTask
     {
         //~ Constructors -------------------------------------------------------
@@ -666,7 +666,7 @@ public class SheetSteps
      * Step to process all glyphs, built with connected sections from the
      * current collection of non-recognized sections.
      */
-    private class SymbolsTask
+    private static class SymbolsTask
         extends SystemTask
     {
         //~ Constructors -------------------------------------------------------

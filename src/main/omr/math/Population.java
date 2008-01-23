@@ -18,7 +18,6 @@ package omr.math;
  * @version $Id$
  */
 public class Population
-    implements java.io.Serializable
 {
     //~ Instance fields --------------------------------------------------------
 

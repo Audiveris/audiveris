@@ -16,7 +16,6 @@ import omr.score.Score;
 import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
-import omr.score.entity.Chord;
 import omr.score.entity.Measure;
 import omr.score.entity.Note;
 import omr.score.entity.Slot;
@@ -321,7 +320,7 @@ public class ScoreMenu
     /**
      * Used to host additional JMenuItem, without being directly updated
      */
-    private class AdditionalItem
+    private static class AdditionalItem
         extends JMenuItem
     {
         //~ Constructors -------------------------------------------------------

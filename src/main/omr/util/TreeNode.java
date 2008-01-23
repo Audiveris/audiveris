@@ -29,7 +29,6 @@ import java.util.List;
  * @version $Id$
  */
 public class TreeNode
-    implements java.io.Serializable
 {
     //~ Static fields/initializers ---------------------------------------------
 

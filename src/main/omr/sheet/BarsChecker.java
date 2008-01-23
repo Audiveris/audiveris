@@ -140,6 +140,36 @@ public class BarsChecker
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------------//
+    // isPartEmbraced //
+    //----------------//
+    /**
+     * Check whether the given part is within the vertical range of the given
+     * glyph (bar stick or brace glyph)
+     *
+     * @param part the given part
+     * @param glyph the given glyph
+     * @return true if part is embraced by the bar
+     */
+    public boolean isPartEmbraced (SystemPart part,
+                                   Glyph      glyph)
+    {
+        // Extrema of glyph
+        PageRectangle box = scale.toUnits(glyph.getContourBox());
+        int           top = box.y;
+        int           bot = box.y + box.height;
+
+        // Check that part and glyph overlap vertically
+        final int topPart = part.getFirstStaff()
+                                .getTopLeft().y;
+        final int botPart = part.getLastStaff()
+                                .getTopLeft().y +
+                            part.getLastStaff()
+                                .getHeight();
+
+        return Math.max(topPart, top) < Math.min(botPart, bot);
+    }
+
     //    //-----------------//
     //    // isStaffEmbraced //
     //    //-----------------//
@@ -229,36 +259,6 @@ public class BarsChecker
         return null;
     }
 
-    //----------------//
-    // isPartEmbraced //
-    //----------------//
-    /**
-     * Check whether the given part is within the vertical range of the given
-     * glyph (bar stick or brace glyph)
-     *
-     * @param part the given part
-     * @param glyph the given glyph
-     * @return true if part is embraced by the bar
-     */
-    public boolean isPartEmbraced (SystemPart part,
-                                   Glyph      glyph)
-    {
-        // Extrema of glyph
-        PageRectangle box = scale.toUnits(glyph.getContourBox());
-        int           top = box.y;
-        int           bot = box.y + box.height;
-
-        // Check that part and glyph overlap vertically
-        final int topPart = part.getFirstStaff()
-                                .getTopLeft().y;
-        final int botPart = part.getLastStaff()
-                                .getTopLeft().y +
-                            part.getLastStaff()
-                                .getHeight();
-
-        return Math.max(topPart, top) < Math.min(botPart, bot);
-    }
-
     //------------------//
     // retrieveMeasures //
     //------------------//
@@ -287,6 +287,28 @@ public class BarsChecker
 
         // Build Measures
         buildMeasures();
+    }
+
+    //------------//
+    // isThickBar //
+    //------------//
+    /**
+     * Check if the stick/bar is a thick one
+     *
+     * @param stick the bar stick to check
+     *
+     * @return true if thick
+     */
+    private boolean isThickBar (Stick stick)
+    {
+        // Max width of a thin bar line, otherwise this must be a thick bar
+        final int maxThinWidth = scale.toPixels(constants.maxThinWidth);
+
+        // Average width of the stick
+        final int meanWidth = (int) Math.rint(
+            (double) stick.getWeight() / (double) stick.getLength());
+
+        return meanWidth > maxThinWidth;
     }
 
     //---------------//
@@ -406,7 +428,7 @@ public class BarsChecker
                 // Allocate the staves in this part
                 for (StaffInfo staffInfo : partInfo.getStaves()) {
                     LineInfo line = staffInfo.getFirstLine();
-                    Staff    staff = new Staff(
+                    new Staff(
                         staffInfo,
                         part,
                         scale.toPagePoint(
@@ -442,12 +464,11 @@ public class BarsChecker
                                        int[] partStarts)
         throws StepException
     {
-        int            id = 0; // Id for created SystemInfo's
-        int            sStart = -1; // Current system start
-        SystemInfo     system = null; // Current system info
-        int            pStart = -1; // Current part start
-        PartInfo       part = null; // Current part info
-        List<PartInfo> parts = new ArrayList<PartInfo>(); // Temporary list
+        int        id = 0; // Id for created SystemInfo's
+        int        sStart = -1; // Current system start
+        SystemInfo system = null; // Current system info
+        int        pStart = -1; // Current part start
+        PartInfo   part = null; // Current part info
 
         for (int i = 0; i < systemStarts.length; i++) {
             // System break ?
@@ -494,28 +515,6 @@ public class BarsChecker
     private void createSuite ()
     {
         suite = new BarCheckSuite();
-    }
-
-    //------------//
-    // isThickBar //
-    //------------//
-    /**
-     * Check if the stick/bar is a thick one
-     *
-     * @param stick the bar stick to check
-     *
-     * @return true if thick
-     */
-    private boolean isThickBar (Stick stick)
-    {
-        // Max width of a thin bar line, otherwise this must be a thick bar
-        final int maxThinWidth = scale.toPixels(constants.maxThinWidth);
-
-        // Average width of the stick
-        final int meanWidth = (int) Math.rint(
-            (double) stick.getWeight() / (double) stick.getLength());
-
-        return meanWidth > maxThinWidth;
     }
 
     //------------------//
@@ -973,7 +972,6 @@ public class BarsChecker
         protected double getValue (Context context)
         {
             Stick stick = context.stick;
-            int   x = stick.getMidPos();
             int   height = Integer.MAX_VALUE;
 
             // Check wrt every staff in the stick range
