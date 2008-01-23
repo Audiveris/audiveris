@@ -39,6 +39,7 @@ import javax.swing.*;
  */
 public class ScoreBoard
     extends Board
+    implements ItemListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -59,6 +60,9 @@ public class ScoreBoard
     private final LIntegerField velocity = new LIntegerField(
         "Velocity",
         "Volume");
+
+    /** Range selection */
+    private final JCheckBox rangeBox = new JCheckBox();
 
     /** First measure Id */
     private final LIntegerField firstId = new LIntegerField(
@@ -82,6 +86,7 @@ public class ScoreBoard
      * Create a ScoreBoard
      *
      * @param unitName name of the unit which declares a score board
+     * @param score the related score
      */
     public ScoreBoard (String unitName,
                        Score  score)
@@ -89,6 +94,12 @@ public class ScoreBoard
         super(Board.Tag.SCORE, unitName + "-ScoreBoard");
         this.score = score;
 
+        // rangeBox
+        rangeBox.setText("Select");
+        rangeBox.setToolTipText("Check to enable measure selection");
+        rangeBox.addItemListener(this);
+
+        // Layout
         defineLayout();
 
         // Initial setting for tempo
@@ -105,11 +116,17 @@ public class ScoreBoard
         MeasureRange range = score.getMeasureRange();
 
         if (range != null) {
+            rangeBox.setSelected(true);
+            firstId.setEnabled(true);
             firstId.setValue(range.getFirstId());
+            lastId.setEnabled(true);
             lastId.setValue(range.getLastId());
         } else {
+            rangeBox.setSelected(false);
+            firstId.setEnabled(false);
             firstId.setValue(
                 score.getFirstSystem().getFirstPart().getFirstMeasure().getId());
+            lastId.setEnabled(false);
             lastId.setValue(
                 score.getLastSystem().getLastPart().getLastMeasure().getId());
         }
@@ -118,7 +135,7 @@ public class ScoreBoard
     //~ Methods ----------------------------------------------------------------
 
     //--------//
-    // commitPart //
+    // commit //
     //--------//
     /**
      * Checks the values and commitPart them if they are OK
@@ -139,12 +156,35 @@ public class ScoreBoard
             score.setVelocity(velocity.getValue());
 
             // Measure range
-            score.setMeasureRange(
-                new MeasureRange(score, firstId.getValue(), lastId.getValue()));
+            if (rangeBox.isSelected()) {
+                score.setMeasureRange(
+                    new MeasureRange(
+                        score,
+                        firstId.getValue(),
+                        lastId.getValue()));
+            } else {
+                score.setMeasureRange(null);
+            }
 
             return true;
         } else {
             return false;
+        }
+    }
+
+    //------------------//
+    // itemStateChanged //
+    //------------------//
+    public void itemStateChanged (ItemEvent e)
+    {
+        if (e.getItemSelectable() == rangeBox) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                firstId.setEnabled(true);
+                lastId.setEnabled(true);
+            } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+                firstId.setEnabled(false);
+                lastId.setEnabled(false);
+            }
         }
     }
 
@@ -154,7 +194,7 @@ public class ScoreBoard
     private Panel getGlobalPane ()
     {
         Panel        panel = new Panel();
-        FormLayout   layout = Panel.makeFormLayout(2, 2);
+        FormLayout   layout = Panel.makeFormLayout(2, 3);
         PanelBuilder builder = new PanelBuilder(layout, panel);
         builder.setDefaultDialogBorder();
 
@@ -162,10 +202,10 @@ public class ScoreBoard
         int             r = 1;
         builder.addSeparator("Global Data");
         r += 2;
-        builder.add(tempo.getLabel(), cst.xy(1, r));
-        builder.add(tempo.getField(), cst.xy(3, r));
-        builder.add(velocity.getLabel(), cst.xy(5, r));
-        builder.add(velocity.getField(), cst.xy(7, r));
+        builder.add(tempo.getLabel(), cst.xy(5, r));
+        builder.add(tempo.getField(), cst.xy(7, r));
+        builder.add(velocity.getLabel(), cst.xy(9, r));
+        builder.add(velocity.getField(), cst.xy(11, r));
 
         return panel;
     }
@@ -176,7 +216,7 @@ public class ScoreBoard
     private Panel getRangePane ()
     {
         Panel        panel = new Panel();
-        FormLayout   layout = Panel.makeFormLayout(2, 2);
+        FormLayout   layout = Panel.makeFormLayout(2, 3);
         PanelBuilder builder = new PanelBuilder(layout, panel);
         builder.setDefaultDialogBorder();
 
@@ -184,10 +224,11 @@ public class ScoreBoard
         int             r = 1;
         builder.addSeparator("Measure range");
         r += 2;
-        builder.add(firstId.getLabel(), cst.xy(1, r));
-        builder.add(firstId.getField(), cst.xy(3, r));
-        builder.add(lastId.getLabel(), cst.xy(5, r));
-        builder.add(lastId.getField(), cst.xy(7, r));
+        builder.add(rangeBox, cst.xy(3, r));
+        builder.add(firstId.getLabel(), cst.xy(5, r));
+        builder.add(firstId.getField(), cst.xy(7, r));
+        builder.add(lastId.getLabel(), cst.xy(9, r));
+        builder.add(lastId.getField(), cst.xy(11, r));
 
         return panel;
     }
@@ -212,23 +253,29 @@ public class ScoreBoard
         }
 
         // First Measure
-        if ((firstId.getValue() < 1) ||
-            (firstId.getValue() > score.getLastSystem()
-                                       .getLastPart()
-                                       .getLastMeasure()
-                                       .getId())) {
-            logger.warning("Illegal first measure Id");
+        int maxMeasureId = score.getLastSystem()
+                                .getLastPart()
+                                .getLastMeasure()
+                                .getId();
+
+        if ((firstId.getValue() < 1) || (firstId.getValue() > maxMeasureId)) {
+            logger.warning(
+                "First measure Id is not within [1.." + maxMeasureId + "]");
 
             return false;
         }
 
         // Last Measure
-        if ((lastId.getValue() < 0) ||
-            (lastId.getValue() > score.getLastSystem()
-                                      .getLastPart()
-                                      .getLastMeasure()
-                                      .getId())) {
-            logger.warning("Illegal last measure Id");
+        if ((lastId.getValue() < 1) || (lastId.getValue() > maxMeasureId)) {
+            logger.warning(
+                "Last measure Id is not within [1.." + maxMeasureId + "]");
+
+            return false;
+        }
+
+        // First & last consistency
+        if (firstId.getValue() > lastId.getValue()) {
+            logger.warning("First measure Id is greater than last measure Id");
 
             return false;
         }
@@ -340,7 +387,7 @@ public class ScoreBoard
             // Part name
             if (name.getText()
                     .trim()
-                    .length() > 0) {
+                    .length() == 0) {
                 logger.warning("Please supply a non empty part name");
 
                 return false;
@@ -369,7 +416,7 @@ public class ScoreBoard
         //--------------//
         private void defineLayout ()
         {
-            FormLayout   layout = Panel.makeFormLayout(3, 2);
+            FormLayout   layout = Panel.makeFormLayout(3, 3);
 
             PanelBuilder builder = new PanelBuilder(layout, this);
             builder.setDefaultDialogBorder();
@@ -381,16 +428,16 @@ public class ScoreBoard
 
             r += 2; // --
 
-            builder.add(id.getLabel(), cst.xy(1, r));
-            builder.add(id.getField(), cst.xy(3, r));
+            builder.add(id.getLabel(), cst.xy(5, r));
+            builder.add(id.getField(), cst.xy(7, r));
 
-            builder.add(name.getLabel(), cst.xy(5, r));
-            builder.add(name.getField(), cst.xy(7, r));
+            builder.add(name.getLabel(), cst.xy(9, r));
+            builder.add(name.getField(), cst.xy(11, r));
 
             r += 2; // --
 
-            builder.add(new JLabel("Midi"), cst.xy(1, r));
-            builder.add(midiBox, cst.xyw(3, r, 5));
+            builder.add(new JLabel("Midi"), cst.xy(5, r));
+            builder.add(midiBox, cst.xyw(7, r, 5));
         }
     }
 }

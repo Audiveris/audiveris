@@ -117,7 +117,7 @@ public class ScoreMenu
     //------------//
     /**
      * Update the popup menu according to the currently selected glyphs
-     * 
+     *
      * @param scrPt the point designated in the score display
      */
     public void updateMenu (ScorePoint scrPt)
@@ -177,6 +177,8 @@ public class ScoreMenu
     private abstract class DynAction
         extends AbstractAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public DynAction ()
         {
             // Record the instance
@@ -185,6 +187,8 @@ public class ScoreMenu
             // Initially update the action items
             update();
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public abstract void update ();
     }
@@ -198,6 +202,8 @@ public class ScoreMenu
     private class DumpMeasureAction
         extends DynAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public DumpMeasureAction ()
         {
             putValue(NAME, "Dump measure voices");
@@ -205,6 +211,8 @@ public class ScoreMenu
                 SHORT_DESCRIPTION,
                 "Dump the voices of the selected measure");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public void actionPerformed (ActionEvent e)
         {
@@ -227,11 +235,15 @@ public class ScoreMenu
     private class DumpSlotChordsAction
         extends DynAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public DumpSlotChordsAction ()
         {
             putValue(NAME, "Dump slot chords");
             putValue(SHORT_DESCRIPTION, "Dump the chords of the selected slot");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public void actionPerformed (ActionEvent e)
         {
@@ -254,11 +266,15 @@ public class ScoreMenu
     private class DumpSlotVoicesAction
         extends DynAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public DumpSlotVoicesAction ()
         {
             putValue(NAME, "Dump slot voices");
             putValue(SHORT_DESCRIPTION, "Dump the voices of the selected slot");
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public void actionPerformed (ActionEvent e)
         {
@@ -281,6 +297,8 @@ public class ScoreMenu
     private abstract class DynItem
         extends JMenuItem
     {
+        //~ Constructors -------------------------------------------------------
+
         public DynItem ()
         {
             // Record the instance
@@ -288,9 +306,11 @@ public class ScoreMenu
 
             // Initially update the item
             update();
-            
+
             setEnabled(false);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         public abstract void update ();
     }
@@ -304,6 +324,8 @@ public class ScoreMenu
     private class AdditionalItem
         extends JMenuItem
     {
+        //~ Constructors -------------------------------------------------------
+
         public AdditionalItem (String text)
         {
             super(text);
@@ -321,6 +343,8 @@ public class ScoreMenu
     private class ChordItem
         extends DynItem
     {
+        //~ Methods ------------------------------------------------------------
+
         public void update ()
         {
             // Remove all subsequent Chord additional items
@@ -380,6 +404,8 @@ public class ScoreMenu
     private class MeasureItem
         extends DynItem
     {
+        //~ Methods ------------------------------------------------------------
+
         public void update ()
         {
             setText(
@@ -397,6 +423,8 @@ public class ScoreMenu
     private class PlayMeasureAction
         extends DynAction
     {
+        //~ Constructors -------------------------------------------------------
+
         public PlayMeasureAction ()
         {
             putValue(NAME, "Play");
@@ -414,15 +442,20 @@ public class ScoreMenu
             }
         }
 
+        //~ Methods ------------------------------------------------------------
+
         public void actionPerformed (ActionEvent e)
         {
             try {
-                logger.info("Play " + measure);
-                score.setMeasureRange(
-                    new MeasureRange(score, measure.getId(), measure.getId()));
+                if (logger.isFineEnabled()) {
+                    logger.fine("Play " + measure);
+                }
+
                 MidiAgent.getInstance()
                          .reset();
-                MidiActions.play(score);
+                MidiActions.play(
+                    score,
+                    new MeasureRange(score, measure.getId(), measure.getId()));
             } catch (UnavailableException ex) {
                 logger.warning("Cannot play measure", ex);
             }
@@ -444,6 +477,8 @@ public class ScoreMenu
     private class SlotItem
         extends DynItem
     {
+        //~ Methods ------------------------------------------------------------
+
         public void update ()
         {
             setText(

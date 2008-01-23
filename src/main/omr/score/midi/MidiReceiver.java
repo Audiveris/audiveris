@@ -56,6 +56,9 @@ public class MidiReceiver
     /** The score being played */
     private Score score;
 
+    /** A specific measure range if any */
+    private MeasureRange measureRange;
+
     /** The length of the current sequence, in Midi ticks */
     private long midiLength;
 
@@ -118,12 +121,15 @@ public class MidiReceiver
      * score to the other.
      *
      * @param score the (new) current score
+     * @param measureRange if non null, specifies a measure range to be played
      */
-    public void setScore (Score score)
+    public void setScore (Score        score,
+                          MeasureRange measureRange)
     {
-        if (this.score != score) {
+        if ((this.score != score) || (this.measureRange != measureRange)) {
             reset();
             this.score = score;
+            this.measureRange = measureRange;
 
             if (score != null) {
                 // Remember global score information
@@ -138,6 +144,8 @@ public class MidiReceiver
                 currentMeasureId = 1;
             }
         }
+
+        ;
     }
 
     //-------//
@@ -241,6 +249,7 @@ public class MidiReceiver
         showSlot();
 
         score = null;
+        measureRange = null;
     }
 
     //--------------//
@@ -248,10 +257,13 @@ public class MidiReceiver
     //--------------//
     private Double getTickRatio ()
     {
-        int          divisor = score.getDurationDivisor();
-        long         midiTicks = agent.getLengthInTicks();
-        long         scoreTicks;
-        MeasureRange measureRange = score.getMeasureRange();
+        int  divisor = score.getDurationDivisor();
+        long midiTicks = agent.getLengthInTicks();
+        long scoreTicks;
+
+        if (measureRange == null) {
+            measureRange = score.getMeasureRange();
+        }
 
         if (measureRange != null) {
             long startTime = measureRange.getFirstMeasure()
@@ -259,7 +271,11 @@ public class MidiReceiver
                              measureRange.getFirstSystem()
                                          .getStartTime();
             tickOffset = startTime / divisor;
-            logger.info(measureRange + " tickOffset=" + tickOffset);
+
+            if (logger.isFineEnabled()) {
+                logger.fine(measureRange + " tickOffset=" + tickOffset);
+            }
+
             scoreTicks = (score.getLastSoundTime(measureRange.getLastId()) -
                          startTime) / divisor;
         } else {
@@ -268,7 +284,6 @@ public class MidiReceiver
         }
 
         ///logger.info("Score ticks = " + scoreTicks);
-
         if (midiTicks != scoreTicks) {
             logger.warning(
                 "Midi & score ticks don't match (" + midiTicks + "-" +

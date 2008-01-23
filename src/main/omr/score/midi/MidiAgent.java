@@ -84,6 +84,9 @@ public class MidiAgent
     /** The MusicXML document */
     private Document document;
 
+    /** Specific measure range if any */
+    private MeasureRange measureRange;
+
     /** In charge of receiving Midi events to update score display */
     private MidiReceiver receiver;
 
@@ -208,16 +211,22 @@ public class MidiAgent
     //------//
     /**
      * Start the playback from start (or continue if just paused)
+     *
+     * @param measureRange if a non null measure range is provided as a
+     * parameter it is taken into account, otherwise the measure range defined
+     * at score level, if any, is being considered
      */
-    public void play ()
+    public void play (MeasureRange measureRange)
     {
         if (ScoreActions.checkParameters(score)) {
-            logger.info("Playing " + score.getRadix() + "...");
+            logger.info(
+                "Playing " + score.getRadix() +
+                ((measureRange != null) ? (" " + measureRange) : " ") + "...");
             status = Status.PLAYING;
             MidiActions.updateActions();
 
             // Make sure the document (and the Midi sequence) is available
-            retrieveDocument();
+            retrieveDocument(measureRange);
 
             // We could adjust the tempo here
             ///sequencer.setTempoFactor(2.0f);
@@ -234,8 +243,7 @@ public class MidiAgent
                     logger.fine("Midi sequence length is " + ms + " ms");
                     logger.fine("Midi tick length is " + ticks);
 
-                    MeasureRange measureRange = score.getMeasureRange();
-                    int          lastTime = score.getLastSoundTime(
+                    int lastTime = score.getLastSoundTime(
                         (measureRange != null) ? measureRange.getLastId() : null);
                     lastTime /= score.getDurationDivisor();
                     logger.fine(
@@ -247,7 +255,7 @@ public class MidiAgent
             }
 
             // Hand it over to the player and the receiver
-            receiver.setScore(score);
+            receiver.setScore(score, measureRange);
             player.play();
         }
     }
@@ -285,6 +293,7 @@ public class MidiAgent
     public void reset ()
     {
         document = null;
+        measureRange = null;
 
         if (receiver != null) {
             receiver.reset();
@@ -392,18 +401,30 @@ public class MidiAgent
     //------------------//
     /**
      * Make sure the MusicXML document (and its Midi counterpart) is available
+     *
+     * @param measureRange a potential range of measure. If null, the range
+     * defined at score level, if any, will be taken into account. If no range
+     * is specified (either as a method parameter or as a score parameter) then
+     * the whole score is played.
      */
-    private void retrieveDocument ()
+    private void retrieveDocument (MeasureRange measureRange)
     {
-        if (document == null) {
+        if ((document == null) || (this.measureRange != measureRange)) {
             try {
+                this.measureRange = measureRange;
+
                 // Populate the document
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder        builder = factory.newDocumentBuilder();
                 document = builder.newDocument();
 
                 ScoreExporter exporter = new ScoreExporter(score);
-                exporter.setMeasureRange(score.getMeasureRange());
+
+                if (measureRange == null) {
+                    measureRange = score.getMeasureRange();
+                }
+
+                exporter.setMeasureRange(measureRange);
                 exporter.export(document);
 
                 // Hand it over directly to MusicXML reader

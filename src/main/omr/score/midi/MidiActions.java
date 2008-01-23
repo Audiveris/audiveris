@@ -14,6 +14,7 @@ import static omr.plugin.Dependency.*;
 import omr.plugin.Plugin;
 import static omr.plugin.PluginType.*;
 
+import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.ScoreManager;
 import static omr.score.midi.MidiAgent.Status.*;
@@ -69,7 +70,7 @@ public class MidiActions
     }
 
     // PlayAction instance
-    public static Action      playAction = ActionManager.getInstance()
+    public static Action       playAction = ActionManager.getInstance()
                                                          .getActionInstance(
         PlayAction.class.getName());
     private static Icon        playIcon = (Icon) playAction.getValue(
@@ -116,8 +117,10 @@ public class MidiActions
      * Launch the playback of Midi Agent on the provided score (if paused or
      * stopped), or stop the playback if playing.
      * @param score the provided score
+     * @param measureRange if non null, specifies a range of measures to play
      */
-    public static void play (final Score score)
+    public static void play (final Score        score,
+                             final MeasureRange measureRange)
     {
         if (score != null) {
             try {
@@ -131,8 +134,14 @@ public class MidiActions
                                 if (agent.getStatus() == PLAYING) {
                                     agent.pause();
                                 } else {
+                                    MeasureRange mr = measureRange;
+
+                                    if (mr == null) {
+                                        mr = score.getMeasureRange();
+                                    }
+
                                     agent.setScore(score);
-                                    agent.play();
+                                    agent.play(mr);
                                 }
                             }
                         });
@@ -279,19 +288,11 @@ public class MidiActions
             Sheet sheet = SheetManager.getSelectedSheet();
 
             if (sheet != null) {
-                //                try {
-                //                    sheet.getSheetSteps()
-                //                         .getResult(Step.SCORE);
-                //                    sheet.updateLastSteps(null, null);
                 Score score = sheet.getScore();
 
                 if ((score != null) && ScoreActions.checkParameters(score)) {
-                    play(score);
+                    play(score, null);
                 }
-
-                //                } catch (StepException ex) {
-                //                    logger.warning("Cannot get Score", ex);
-                //                }
             }
         }
     }

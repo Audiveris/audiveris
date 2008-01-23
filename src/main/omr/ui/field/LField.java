@@ -78,6 +78,19 @@ public class LField
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // setEnabled //
+    //------------//
+    /**
+     * Enable or disable the whole label + field structure
+     * @param bool
+     */
+    public void setEnabled (boolean bool)
+    {
+        label.setEnabled(bool);
+        field.setEnabled(bool);
+    }
+
     //----------//
     // getField //
     //----------//

@@ -9,8 +9,6 @@
 //-----------------------------------------------------------------------//
 package omr.ui.field;
 
-import javax.swing.JLabel;
-import javax.swing.JTextField;
 
 /**
  * Class <code>LIntegerField</code> is an {@link LField}, whose field is

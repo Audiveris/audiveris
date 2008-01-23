@@ -333,6 +333,31 @@ public class ScoreView
 
         //~ Methods ------------------------------------------------------------
 
+        //-----------------//
+        // contextSelected //
+        //-----------------//
+        @Override
+        public void contextSelected (MouseEvent e,
+                                     Point      pt)
+        {
+            super.pointSelected(e, pt);
+
+            // Let the user disable this popup feature if so desired
+            if (!constants.popupEnabled.getValue()) {
+                return;
+            }
+
+            // Context parameters
+            ScorePoint scrPt = new ScorePoint(pt.x, pt.y);
+
+            // Update the popup menu according to selected scores
+            scoreMenu.updateMenu(scrPt);
+
+            // Show the popup menu
+            scoreMenu.getPopup()
+                     .show(this, e.getX() + 20, e.getY() + 30);
+        }
+
         //-----------//
         // highLight //
         //-----------//
@@ -374,31 +399,6 @@ public class ScoreView
                 measure.getWidth() + (2 * margin),
                 dimension.height + STAFF_HEIGHT + (2 * margin));
             zp.showFocusLocation(rect);
-        }
-
-        //---------------//
-        // pointSelected //
-        //---------------//
-        @Override
-        public void pointSelected (MouseEvent e,
-                                   Point      pt)
-        {
-            super.pointSelected(e, pt);
-
-            // Let the user disable this popup feature if so desired
-            if (!constants.popupEnabled.getValue()) {
-                return;
-            }
-
-            // Context parameters
-            ScorePoint scrPt = new ScorePoint(pt.x, pt.y);
-
-            // Update the popup menu according to selected scores
-            scoreMenu.updateMenu(scrPt);
-
-            // Show the popup menu
-            scoreMenu.getPopup()
-                     .show(this, e.getX() + 20, e.getY() + 30);
         }
 
         //--------//
