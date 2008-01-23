@@ -16,7 +16,6 @@ import omr.glyph.Shape;
 
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
-import omr.score.entity.Chord;
 
 import omr.sheet.PixelRectangle;
 import omr.sheet.Scale;
@@ -90,19 +89,6 @@ public abstract class MeasureElement
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // addGlyph //
-    //----------//
-    public void addGlyph (Glyph glyph)
-    {
-        // Reset
-        shape = null;
-        point = null;
-        box = null;
-
-        glyphs.add(glyph);
-    }
-
     //--------//
     // getBox //
     //--------//
@@ -169,6 +155,19 @@ public abstract class MeasureElement
     public boolean isStart ()
     {
         return start;
+    }
+
+    //----------//
+    // addGlyph //
+    //----------//
+    public void addGlyph (Glyph glyph)
+    {
+        // Reset
+        shape = null;
+        point = null;
+        box = null;
+
+        glyphs.add(glyph);
     }
 
     //----------//

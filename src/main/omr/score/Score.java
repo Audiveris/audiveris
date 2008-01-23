@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.UnitDimension;
+import omr.score.entity.Children;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
 import omr.score.entity.System;
@@ -85,6 +86,7 @@ public class Score
     private Integer durationDivisor;
 
     /** ScorePart list for the whole score */
+    @Children
     private List<ScorePart> partList;
 
     /** The most recent system pointed at */
@@ -99,7 +101,7 @@ public class Score
     /** The specified velocity, if any */
     private transient Integer velocity;
 
-    /** Potential measure range, if not all score is to be exported */
+    /** Potential measure range, if not all score is to be played */
     private transient MeasureRange measureRange;
 
     //~ Constructors -----------------------------------------------------------
@@ -286,7 +288,7 @@ public class Score
      * Report the time, counted from beginning of the score, when sound stops,
      * which means that ending rests are not counted.
      *
-     * @param measureId a potential constraint on id of final measure, 
+     * @param measureId a potential constraint on id of final measure,
      * null for no constraint
      * @return the time of last Midi "note off"
      */

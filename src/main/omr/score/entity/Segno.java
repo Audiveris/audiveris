@@ -12,8 +12,6 @@ package omr.score.entity;
 import omr.glyph.Glyph;
 
 import omr.score.common.SystemPoint;
-import omr.score.entity.AbstractDirection;
-import omr.score.entity.Chord;
 import omr.score.visitor.ScoreVisitor;
 
 /**

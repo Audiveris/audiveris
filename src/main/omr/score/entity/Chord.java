@@ -107,6 +107,7 @@ public class Chord
     private SystemPoint tailLocation;
 
     /** Ordered collection of beams this chord is connected to */
+    @Children
     private SortedSet<Beam> beams = new TreeSet<Beam>();
 
     /** Number of augmentation dots */
@@ -125,12 +126,15 @@ public class Chord
     private Voice voice;
 
     /** Collection of marks for user */
+    @Children
     private List<Mark> marks = new ArrayList<Mark>();
 
     /** Notations related  to this chord */
+    @Children
     private List<Notation> notations = new ArrayList<Notation>();
 
     /** Directions (loosely) related to this chord */
+    @Children
     private List<Direction> directions = new ArrayList<Direction>();
 
     //~ Constructors -----------------------------------------------------------

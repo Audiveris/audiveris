@@ -71,6 +71,7 @@ public class Voice
     private Integer finalDuration;
 
     /** Whole chord of the voice, if any */
+    @Child
     private Chord wholeChord;
 
     //~ Constructors -----------------------------------------------------------

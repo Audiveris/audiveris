@@ -13,8 +13,6 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
 import omr.score.common.SystemPoint;
-import omr.score.entity.AbstractDirection;
-import omr.score.entity.Chord;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;

@@ -13,6 +13,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.score.Score;
+import omr.score.entity.Child;
+import omr.score.entity.Children;
 import omr.score.entity.ScoreNode;
 
 import omr.util.Dumper;
@@ -21,7 +23,9 @@ import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.awt.*;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.*;
@@ -276,8 +280,13 @@ public class ScoreTree
         private boolean isRelevant (Object node)
         {
             // We display dummy containers only when they are not empty
+            if (node instanceof NamedObject) {
+                return true;
+            }
+
             if (constants.hideEmptyDummies.getValue() &&
-                (node.getClass().getDeclaredFields().length == 0)) {
+                (node instanceof NamedCollection ||
+                (node.getClass().getDeclaredFields().length == 0))) {
                 return getChildCount(node) > 0;
             } else {
                 return true;
@@ -300,35 +309,48 @@ public class ScoreTree
                         relevantChildren.add(n);
                     }
                 }
+            } else if (node instanceof NamedCollection) {
+                NamedCollection nc = (NamedCollection) node;
 
-                //                // Use of Child / Children annotations
-                //                for (Field field : node.getClass()
-                //                                       .getDeclaredFields()) {
-                //                    if (field.getAnnotation(Child.class) != null) {
-                //                        try {
-                //                            field.setAccessible(true);
-                //                            relevantChildren.add(field.get(node));
-                //                        } catch (Exception ex) {
-                //                            logger.warning("Error in accessing field", ex);
-                //                        }
-                //                    } else if (field.getAnnotation(Children.class) != null) {
-                //                        try {
-                //                            field.setAccessible(true);
-                //                            relevantChildren.add(field.get(node));
-                ////
-                ////                            Object object = field.get(node);
-                ////
-                ////                            if (object instanceof Collection) {
-                ////                                relevantChildren.addAll((Collection) object);
-                ////                            }
-                //                        } catch (Exception ex) {
-                //                            logger.warning("Error in accessing field", ex);
-                //                        }
-                //                    }
-                //                }
-                //            } else if (node instanceof Collection) {
-                //                relevantChildren.addAll((Collection) node);
-                //            }
+                for (Object n : nc.collection) {
+                    if (isRelevant(n)) {
+                        relevantChildren.add(n);
+                    }
+                }
+            } else if (node instanceof NamedObject) {
+                if (isRelevant(node)) {
+                    relevantChildren.add(((NamedObject) node).object);
+                }
+            }
+
+            // Use of annotations
+            for (Field field : node.getClass()
+                                   .getDeclaredFields()) {
+                try {
+                    // Child
+                    if (field.getAnnotation(Child.class) != null) {
+                        field.setAccessible(true);
+
+                        Object object = field.get(node);
+
+                        if (object != null) {
+                            relevantChildren.add(
+                                new NamedObject(field.getName(), object));
+                        }
+                    } else if (field.getAnnotation(Children.class) != null) {
+                        // Children
+                        field.setAccessible(true);
+
+                        Collection coll = (Collection) field.get(node);
+
+                        if ((coll != null) && !coll.isEmpty()) {
+                            relevantChildren.add(
+                                new NamedCollection(field.getName(), coll));
+                        }
+                    }
+                } catch (Exception ex) {
+                    logger.warning("Error in accessing field", ex);
+                }
             }
 
             return relevantChildren;
@@ -347,5 +369,61 @@ public class ScoreTree
         Constant.Boolean hideEmptyDummies = new Constant.Boolean(
             true,
             "Should we hide empty dummy containers");
+    }
+
+    //-----------------//
+    // NamedCollection //
+    //-----------------//
+    private static class NamedCollection
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private String     name;
+        private Collection collection;
+
+        //~ Constructors -------------------------------------------------------
+
+        public NamedCollection (String     name,
+                                Collection collection)
+        {
+            this.name = name;
+            this.collection = collection;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            return name;
+        }
+    }
+
+    //-------------//
+    // NamedObject //
+    //-------------//
+    private static class NamedObject
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private String name;
+        private Object object;
+
+        //~ Constructors -------------------------------------------------------
+
+        public NamedObject (String name,
+                            Object object)
+        {
+            this.name = name;
+            this.object = object;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            return name;
+        }
     }
 }

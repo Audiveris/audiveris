@@ -85,12 +85,15 @@ public class Measure
     private int id;
 
     /** Identified time slots within the measure */
+    @Children
     private SortedSet<Slot> slots;
 
     /** Chords of just whole rest (thus handled outside slots) */
+    @Children
     private List<Chord> wholeChords;
 
     /** Groups of beams in this measure */
+    @Children
     private List<BeamGroup> beamGroups;
 
     /** Start time of this measure since beginning of the system */
@@ -106,6 +109,7 @@ public class Measure
     private Integer excess;
 
     /** Voices within this measure, sorted by increasing voice id */
+    @Children
     private List<Voice> voices;
 
     //~ Constructors -----------------------------------------------------------

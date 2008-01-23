@@ -50,9 +50,11 @@ public class BeamGroup
     private final Measure measure;
 
     /** Ordered collection of contained beams */
+    @Children
     private SortedSet<Beam> beams = new TreeSet<Beam>();
 
     /** Same voice for all chords of this beam group */
+    @Child
     private Voice voice;
 
     //~ Constructors -----------------------------------------------------------

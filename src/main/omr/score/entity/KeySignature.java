@@ -103,10 +103,8 @@ public class KeySignature
      * The glyph(s) that compose the key signature, a collection which is kept
      * sorted on glyph abscissa.
      */
+    @Children
     private SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
-
-    /** Unlucky glyphs candidates (not really used TBD) */
-    private SortedSet<Glyph> parias = new TreeSet<Glyph>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -316,8 +314,6 @@ public class KeySignature
                         "Glyph " + glyph.getId() +
                         " too far from previous key signature");
                 }
-
-                keysig.parias.add(glyph);
 
                 continue;
             } else if (((glyph.getShape() == SHARP) && (keysig.getKey() < 0)) ||

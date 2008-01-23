@@ -41,6 +41,7 @@ public class SystemPart
     private final int id;
 
     /** The corresponding ScorePart */
+    @Child
     private ScorePart scorePart;
 
     /** Specific child : sequence of staves that belong to this system */

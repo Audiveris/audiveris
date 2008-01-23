@@ -67,15 +67,19 @@ public class Slur
     private final CubicCurve2D curve;
 
     /** Note on left side */
+    @Child
     private final Note leftNote;
 
     /** Note on right side */
+    @Child
     private final Note rightNote;
 
     /** Extension on left side */
+    @Child
     private Slur leftExtension;
 
     /** Extension on right side */
+    @Child
     private Slur rightExtension;
 
     /** Placement / orientation */
