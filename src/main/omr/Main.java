@@ -582,6 +582,7 @@ public class Main
         // Interactive or Batch mode ?
         if (batchMode) {
             logger.info("Running in batch mode");
+            System.setProperty("java.awt.headless", "true");
         } else {
             logger.fine("Running in interactive mode");
 
