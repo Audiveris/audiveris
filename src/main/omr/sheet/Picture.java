@@ -24,6 +24,7 @@ import omr.util.JaiLoader;
 import omr.util.Logger;
 
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.image.*;
 import java.awt.image.renderable.ParameterBlock;
@@ -36,10 +37,12 @@ import java.util.NoSuchElementException;
 import javax.imageio.*;
 import javax.imageio.event.*;
 import javax.imageio.stream.ImageInputStream;
+import javax.media.jai.BorderExtender;
 import javax.media.jai.InterpolationBilinear;
 import javax.media.jai.InterpolationNearest;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedImageAdapter;
 import javax.media.jai.operator.MosaicDescriptor;
 
 /**
@@ -114,9 +117,6 @@ public class Picture
     private final AffineTransform scaleTransform = AffineTransform.getScaleInstance(
         1d,
         1d);
-
-    /** Direct access to image buffer (not used) */
-    private DataBuffer dataBuffer;
 
     /** Dimension of current image */
     private Dimension dimension;
@@ -265,7 +265,7 @@ public class Picture
                     double[] thetas)
         throws FileNotFoundException, IOException, ImageFormatException
     {
-        int           globalWidth = 0; // Width of resulting mosaic
+        //int           globalWidth = 0; // Width of resulting mosaic
         int           globalHeight = 0; // Height of resulting mosaic
 
         int           narrowestIndex = 0; // Index of narrowest image
@@ -756,180 +756,6 @@ public class Picture
         }
     }
 
-    //------------//
-    // RGBAToGray //
-    //------------//
-    private static PlanarImage RGBAToGray (PlanarImage image)
-    {
-        logger.fine("Discarding alpha band ...");
-
-        PlanarImage pi = JAI.create("bandselect", image, new int[] { 0, 1, 2 });
-
-        return RGBToGray(pi);
-    }
-
-    //-----------//
-    // RGBToGray //
-    //-----------//
-    private static PlanarImage RGBToGray (PlanarImage image)
-    {
-        logger.fine("Converting RGB image to gray ...");
-
-        double[][] matrix = {
-                                { 0.114d, 0.587d, 0.299d, 0.0d }
-                            };
-
-        return JAI.create(
-            "bandcombine",
-            new ParameterBlock().addSource(image).add(matrix),
-            null);
-    }
-
-    //----------//
-    // loadFile //
-    //----------//
-    private static RenderedImage loadFile (File imgFile)
-    {
-        logger.info("Loading image from " + imgFile + " ...");
-
-        RenderedImage image = loadImageIO(imgFile);
-
-        if (image == null) {
-            logger.fine("Using JAI");
-            image = (JAI.create("fileload", imgFile.getPath()));
-        }
-
-        return image;
-    }
-
-    //-------------//
-    // loadFileIIO //
-    //-------------//
-    private static BufferedImage loadImageIO (File imgFile)
-    {
-        ImageInputStream stream = null;
-
-        try {
-            try {
-                stream = ImageIO.createImageInputStream(imgFile);
-
-                if (stream == null) {
-                    logger.warning("No ImageIO input stream provider");
-                }
-            } catch (IOException e) {
-                stream = null;
-                logger.warning("Unable to make ImageIO stream", e);
-
-                return null;
-            }
-
-            Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
-
-            if (!readers.hasNext()) {
-                logger.warning("No ImageIO reader");
-
-                return null;
-            }
-
-            ImageReader reader = readers.next();
-
-            if (reader == null) {
-                throw new NoSuchElementException();
-            }
-
-            try {
-                reader.addIIOReadProgressListener(new Listener());
-                reader.setInput(stream, false);
-
-                if (reader.getNumImages(false) > 1) {
-                    logger.info("Using only first image in multi-image file");
-                }
-
-                return reader.read(0);
-            } catch (Exception ex) {
-                logger.warning("ImageIO failed", ex);
-
-                return null;
-            } finally {
-                reader.dispose();
-            }
-        } finally {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-            } catch (IOException e) {
-            }
-        }
-    }
-
-    //------------------//
-    // checkImageFormat //
-    //------------------//
-    /**
-     * Check if the image format (and especially its color model) is properly
-     * handled by Audiveris.
-     *
-     * @throws ImageFormatException is the format is not supported
-     */
-    private void checkImageFormat ()
-        throws ImageFormatException
-    {
-        // Check nb of bands
-        int numBands = image.getSampleModel()
-                            .getNumBands();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("checkImageFormat. numBands=" + numBands);
-        }
-
-        if (numBands != 1) {
-            if (numBands == 3) {
-                image = RGBToGray(image);
-            } else if (numBands == 4) {
-                image = RGBAToGray(image);
-            } else {
-                throw new ImageFormatException(
-                    "Unsupported sample model" + " numBands=" + numBands);
-            }
-        }
-    }
-
-    //    //---------------//
-    //    // grayToGray256 //
-    //    //---------------//
-    //    private static PlanarImage grayToGray256 (PlanarImage image)
-    //    {
-    //        logger.info("Converting gray image to gray-256 ...");
-    //
-    //        ColorSpace colorSpace = ColorSpace.getInstance(
-    //            java.awt.color.ColorSpace.CS_GRAY);
-    //
-    //        return JAI.create("colorConvert", image, colorSpace, null);
-    //
-    //        //        ParameterBlock pb = new ParameterBlock();
-    //        //
-    //        //        pb.addSource(image);
-    //        //
-    //        //        ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-    //        //        ColorModel colorModel = new ColorModel
-    //        //        //pb.add(cs);
-    //        //
-    //        //        return JAI.create("ColorConvert", pb);
-    //    }
-
-    //--------//
-    // invert //
-    //--------//
-    private static PlanarImage invert (PlanarImage image)
-    {
-        return JAI.create(
-            "Invert",
-            new ParameterBlock().addSource(image).add(null).add(null).add(null).add(
-                null).add(null),
-            null);
-    }
-
     //----------//
     // setImage //
     //----------//
@@ -1040,6 +866,217 @@ public class Picture
         }
     }
 
+    //------------------//
+    // checkImageFormat //
+    //------------------//
+    /**
+     * Check if the image format (and especially its color model) is properly
+     * handled by Audiveris.
+     *
+     * @throws ImageFormatException is the format is not supported
+     */
+    private void checkImageFormat ()
+        throws ImageFormatException
+    {
+        // Check nb of bands
+        int numBands = image.getSampleModel()
+                            .getNumBands();
+
+        if (logger.isFineEnabled()) {
+            logger.fine("checkImageFormat. numBands=" + numBands);
+        }
+
+        int pixelSize = image.getColorModel()
+                             .getPixelSize();
+
+        if (pixelSize == 1) {
+            image = BinaryToGray(image);
+        }
+
+        if (numBands != 1) {
+            if (numBands == 3) {
+                image = RGBToGray(image);
+            } else if (numBands == 4) {
+                image = RGBAToGray(image);
+            } else {
+                throw new ImageFormatException(
+                    "Unsupported sample model" + " numBands=" + numBands);
+            }
+        }
+
+        pixelSize = image.getColorModel()
+                         .getPixelSize();
+    }
+
+    //------------//
+    // RGBAToGray //
+    //------------//
+    private static PlanarImage RGBAToGray (PlanarImage image)
+    {
+        logger.fine("Discarding alpha band ...");
+
+        PlanarImage pi = JAI.create("bandselect", image, new int[] { 0, 1, 2 });
+
+        return RGBToGray(pi);
+    }
+
+    //-----------//
+    // RGBToGray //
+    //-----------//
+    private static PlanarImage RGBToGray (PlanarImage image)
+    {
+        logger.fine("Converting RGB image to gray ...");
+
+        double[][]  matrix = {
+                                 { 0.114d, 0.587d, 0.299d, 0.0d }
+                             };
+
+        PlanarImage result = JAI.create(
+            "bandcombine",
+            new ParameterBlock().addSource(image).add(matrix),
+            null);
+
+        return result;
+    }
+
+    //--------------//
+    // BinaryToGray //
+    //--------------//
+    private static PlanarImage BinaryToGray (PlanarImage image)
+    {
+        logger.info("Converting binary image to gray ...");
+
+        // hint with border extender
+        RenderingHints hint = new RenderingHints(
+            JAI.KEY_BORDER_EXTENDER,
+            BorderExtender.createInstance(BorderExtender.BORDER_REFLECT));
+        float          subsample = (float) constants.binaryToGrayscaleSubsampling.getValue();
+
+        if ((subsample <= 0) || (subsample > 1)) {
+            throw new IllegalStateException(
+                "blackWhiteSubsampling must be > 0 and <= 1");
+        }
+
+        PlanarImage result = null;
+
+        if (subsample < 1) {
+            logger.info("Subsampling binary image");
+            result = JAI.create(
+                "subsamplebinarytogray",
+                new ParameterBlock().addSource(image).add(subsample).add(
+                    subsample),
+                hint);
+        } else {
+            logger.info("Buffering and converting binary image");
+
+            ColorConvertOp grayOp = new ColorConvertOp(
+                ColorSpace.getInstance(ColorSpace.CS_GRAY),
+                null);
+            BufferedImage  gray = grayOp.filter(
+                image.getAsBufferedImage(),
+                null);
+            result = new RenderedImageAdapter(gray);
+
+            //If the result has an alpha component, remove it
+            if (result.getColorModel()
+                      .hasAlpha()) {
+                result = JAI.create("bandselect", result, new int[] { 0 });
+            }
+        }
+
+        return result;
+    }
+
+    //--------//
+    // invert //
+    //--------//
+    private static PlanarImage invert (PlanarImage image)
+    {
+        return JAI.create(
+            "Invert",
+            new ParameterBlock().addSource(image).add(null).add(null).add(null).add(
+                null).add(null),
+            null);
+    }
+
+    //-------------//
+    // loadImageIO //
+    //-------------//
+    private static BufferedImage loadImageIO (File imgFile)
+    {
+        ImageInputStream stream = null;
+
+        try {
+            try {
+                stream = ImageIO.createImageInputStream(imgFile);
+
+                if (stream == null) {
+                    logger.warning("No ImageIO input stream provider");
+                }
+            } catch (IOException e) {
+                stream = null;
+                logger.warning("Unable to make ImageIO stream", e);
+
+                return null;
+            }
+
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+
+            if (!readers.hasNext()) {
+                logger.warning("No ImageIO reader");
+
+                return null;
+            }
+
+            ImageReader reader = readers.next();
+
+            if (reader == null) {
+                throw new NoSuchElementException();
+            }
+
+            try {
+                reader.addIIOReadProgressListener(new Listener());
+                reader.setInput(stream, false);
+
+                if (reader.getNumImages(false) > 1) {
+                    logger.info("Using only first image in multi-image file");
+                }
+
+                return reader.read(0);
+            } catch (Exception ex) {
+                logger.warning("ImageIO failed", ex);
+
+                return null;
+            } finally {
+                reader.dispose();
+            }
+        } finally {
+            try {
+                if (stream != null) {
+                    stream.close();
+                }
+            } catch (IOException e) {
+            }
+        }
+    }
+
+    //----------//
+    // loadFile //
+    //----------//
+    private static RenderedImage loadFile (File imgFile)
+    {
+        logger.info("Loading image from " + imgFile + " ...");
+
+        RenderedImage image = loadImageIO(imgFile);
+
+        if (image == null) {
+            logger.fine("Using JAI");
+            image = (JAI.create("fileload", imgFile.getPath()));
+        }
+
+        return image;
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -1054,6 +1091,9 @@ public class Picture
             "ByteLevel",
             200,
             "Maximum gray level for a pixel to be considered as foreground (black)");
+        Constant.Ratio   binaryToGrayscaleSubsampling = new Constant.Ratio(
+            1,
+            "Subsampling ratio between 0 and 1, or 1 for no subsampling (memory intensive)");
     }
 
     //----------//
