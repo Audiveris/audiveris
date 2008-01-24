@@ -11,8 +11,7 @@ package omr.sheet;
 
 
 /**
- * Class <code>Skew</code> handles the skew angle of a given sheet picture, and
- * provides rotation methods for easy conversion of point coordinates.
+ * Class <code>Skew</code> handles the skew angle of a given sheet picture.
  *
  * @see SkewBuilder
  *
@@ -28,14 +27,6 @@ public class Skew
 
     //~ Constructors -----------------------------------------------------------
 
-    //     // To perform (un)rotations: sine and cosine of the skew angle
-    //     private double sin;
-    //     private double cos;
-
-    //     // Shift of the origin due to image rotation
-    //     private int shiftDx;
-    //     private int shiftDy;
-
     //------//
     // Skew //
     //------//
@@ -48,10 +39,6 @@ public class Skew
     public Skew (double angle)
     {
         this.angle = angle;
-
-        // Computation of trigo values
-        //         computeTrigo(sheet.getPicture().getOrigWidth(),
-        //                      sheet.getPicture().getOrigHeight());
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -69,30 +56,12 @@ public class Skew
         return angle;
     }
 
-    //--------------//
-    // computeTrigo //
-    //--------------//
-    //     private void computeTrigo (int origwidth,
-    //                                int origheight)
-    //     {
-    //         // Compute the trigonometric parameters (sine and cosine), as well as
-    //         // the shift of origin.
-    //         sin = Math.sin(angle);
-    //         cos = Math.cos(angle);
-
-    //         // Origin shift if rotated
-    //         if (angle < 0) {
-    //             shiftDx = -(int) Math.rint(origheight * sin);
-
-    //             if (logger.isDebugEnabled()) {
-    //                 logger.debug("shiftDx=" + shiftDx);
-    //             }
-    //         } else if (angle > 0) {
-    //             shiftDy = (int) Math.rint(origwidth * sin);
-
-    //             if (logger.isDebugEnabled()) {
-    //                 logger.debug("shiftDy=" + shiftDy);
-    //             }
-    //         }
-    //     }
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "{Skew angle=" + angle + "}";
+    }
 }

@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.UnitDimension;
+import omr.score.entity.Child;
 import omr.score.entity.Children;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
@@ -68,6 +69,7 @@ public class Score
     private File imageFile;
 
     /** Link with image */
+    @Child
     private Sheet sheet;
 
     /** The related file radix (name w/o extension) */
