@@ -235,6 +235,7 @@ public class Picture
      *
      * @throws FileNotFoundException raised when the file is not found
      * @throws IOException           raised when an IO error occurred
+     * @throws ImageFormatException
      */
     public Picture (File imgFile)
         throws FileNotFoundException, IOException, ImageFormatException
@@ -260,6 +261,7 @@ public class Picture
      *
      * @throws FileNotFoundException
      * @throws IOException
+     * @throws ImageFormatException
      */
     public Picture (File[]   files,
                     double[] thetas)
@@ -643,6 +645,7 @@ public class Picture
      *
      * @param theta the desired rotation angle, in radians, positive for
      * clockwise, negative for counter-clockwise
+     * @throws ImageFormatException
      */
     public void rotate (double theta)
         throws ImageFormatException
@@ -667,10 +670,10 @@ public class Picture
 
                                                  .add(0f); // y
 
-        if (theta < 0d) { // clock wise
+        if (theta < 0d) { // counter-clock wise
             cpb.add((float) (dimension.width));
             cpb.add((float) ((dimension.height * Math.cos(theta)) - 1f));
-        } else { // counter-clock wise
+        } else { // clock wise
             cpb.add((float) ((dimension.width * Math.cos(theta)) - 1f));
             cpb.add((float) (dimension.height));
         }
@@ -679,12 +682,12 @@ public class Picture
 
         // de-Invert
         image = invert(image);
-        rotated = true;
 
         // Force immediate mode
         image.getTiles();
 
         // Update relevant parameters
+        rotated = true;
         updateParams();
 
         logger.info("Image rotated " + getWidth() + " x " + getHeight());
@@ -800,145 +803,6 @@ public class Picture
         checkImage();
     }
 
-    //------------//
-    // checkImage //
-    //------------//
-    private void checkImage ()
-        throws ImageFormatException
-    {
-        // Check that the whole image has been loaded
-        if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
-            throw new RuntimeException("Unusable image for Picture");
-        } else {
-            // Check & cache all parameters
-            updateParams();
-
-            // Remember original dimension
-            originalDimension = getDimension();
-        }
-    }
-
-    //--------------//
-    // updateParams //
-    //--------------//
-    private void updateParams ()
-        throws ImageFormatException
-    {
-        checkImageFormat();
-
-        // Cache dimensions
-        dimension = new java.awt.Dimension(image.getWidth(), image.getHeight());
-        ///dimensionWidth = dimension.width;
-        raster = Raster.createWritableRaster(
-            image.getData().getSampleModel(),
-            image.getData().getDataBuffer(),
-            null);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("raster=" + raster);
-        }
-
-        ///dataBuffer = raster.getDataBuffer();
-
-        // Check pixel size
-        ColorModel colorModel = image.getColorModel();
-        int        pixelSize = colorModel.getPixelSize();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("colorModel=" + colorModel + " pixelSize=" + pixelSize);
-        }
-
-        if (pixelSize == 8) {
-            grayFactor = 1;
-        } else if (pixelSize == 1) {
-            logger.warning(
-                "Images with pixels coded on 1 bit are expensive to process");
-            logger.warning(
-                "Consider converting to a format which codes pixels on 1 byte");
-            grayFactor = 255;
-        } else {
-            throw new java.lang.RuntimeException(
-                "Unsupported pixel size:" + pixelSize);
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine("grayFactor=" + grayFactor);
-        }
-    }
-
-    //------------------//
-    // checkImageFormat //
-    //------------------//
-    /**
-     * Check if the image format (and especially its color model) is properly
-     * handled by Audiveris.
-     *
-     * @throws ImageFormatException is the format is not supported
-     */
-    private void checkImageFormat ()
-        throws ImageFormatException
-    {
-        // Check nb of bands
-        int numBands = image.getSampleModel()
-                            .getNumBands();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("checkImageFormat. numBands=" + numBands);
-        }
-
-        int pixelSize = image.getColorModel()
-                             .getPixelSize();
-
-        if (pixelSize == 1) {
-            image = BinaryToGray(image);
-        }
-
-        if (numBands != 1) {
-            if (numBands == 3) {
-                image = RGBToGray(image);
-            } else if (numBands == 4) {
-                image = RGBAToGray(image);
-            } else {
-                throw new ImageFormatException(
-                    "Unsupported sample model" + " numBands=" + numBands);
-            }
-        }
-
-        pixelSize = image.getColorModel()
-                         .getPixelSize();
-    }
-
-    //------------//
-    // RGBAToGray //
-    //------------//
-    private static PlanarImage RGBAToGray (PlanarImage image)
-    {
-        logger.fine("Discarding alpha band ...");
-
-        PlanarImage pi = JAI.create("bandselect", image, new int[] { 0, 1, 2 });
-
-        return RGBToGray(pi);
-    }
-
-    //-----------//
-    // RGBToGray //
-    //-----------//
-    private static PlanarImage RGBToGray (PlanarImage image)
-    {
-        logger.fine("Converting RGB image to gray ...");
-
-        double[][]  matrix = {
-                                 { 0.114d, 0.587d, 0.299d, 0.0d }
-                             };
-
-        PlanarImage result = JAI.create(
-            "bandcombine",
-            new ParameterBlock().addSource(image).add(matrix),
-            null);
-
-        return result;
-    }
-
     //--------------//
     // BinaryToGray //
     //--------------//
@@ -987,6 +851,97 @@ public class Picture
         return result;
     }
 
+    //------------//
+    // RGBAToGray //
+    //------------//
+    private static PlanarImage RGBAToGray (PlanarImage image)
+    {
+        logger.fine("Discarding alpha band ...");
+
+        PlanarImage pi = JAI.create("bandselect", image, new int[] { 0, 1, 2 });
+
+        return RGBToGray(pi);
+    }
+
+    //-----------//
+    // RGBToGray //
+    //-----------//
+    private static PlanarImage RGBToGray (PlanarImage image)
+    {
+        logger.fine("Converting RGB image to gray ...");
+
+        double[][]  matrix = {
+                                 { 0.114d, 0.587d, 0.299d, 0.0d }
+                             };
+
+        PlanarImage result = JAI.create(
+            "bandcombine",
+            new ParameterBlock().addSource(image).add(matrix),
+            null);
+
+        return result;
+    }
+
+    //------------//
+    // checkImage //
+    //------------//
+    private void checkImage ()
+        throws ImageFormatException
+    {
+        // Check that the whole image has been loaded
+        if ((image.getWidth() == -1) || (image.getHeight() == -1)) {
+            throw new RuntimeException("Unusable image for Picture");
+        } else {
+            // Check & cache all parameters
+            updateParams();
+
+            // Remember original dimension
+            originalDimension = getDimension();
+        }
+    }
+
+    //------------------//
+    // checkImageFormat //
+    //------------------//
+    /**
+     * Check if the image format (and especially its color model) is properly
+     * handled by Audiveris.
+     *
+     * @throws ImageFormatException is the format is not supported
+     */
+    private void checkImageFormat ()
+        throws ImageFormatException
+    {
+        // Check nb of bands
+        int numBands = image.getSampleModel()
+                            .getNumBands();
+
+        if (logger.isFineEnabled()) {
+            logger.fine("checkImageFormat. numBands=" + numBands);
+        }
+
+        int pixelSize = image.getColorModel()
+                             .getPixelSize();
+
+        if (pixelSize == 1) {
+            image = BinaryToGray(image);
+        }
+
+        if (numBands != 1) {
+            if (numBands == 3) {
+                image = RGBToGray(image);
+            } else if (numBands == 4) {
+                image = RGBAToGray(image);
+            } else {
+                throw new ImageFormatException(
+                    "Unsupported sample model" + " numBands=" + numBands);
+            }
+        }
+
+        //        pixelSize = image.getColorModel()
+        //                         .getPixelSize();
+    }
+
     //--------//
     // invert //
     //--------//
@@ -997,6 +952,23 @@ public class Picture
             new ParameterBlock().addSource(image).add(null).add(null).add(null).add(
                 null).add(null),
             null);
+    }
+
+    //----------//
+    // loadFile //
+    //----------//
+    private static RenderedImage loadFile (File imgFile)
+    {
+        logger.info("Loading image from " + imgFile + " ...");
+
+        RenderedImage image = loadImageIO(imgFile);
+
+        if (image == null) {
+            logger.fine("Using JAI");
+            image = (JAI.create("fileload", imgFile.getPath()));
+        }
+
+        return image;
     }
 
     //-------------//
@@ -1060,21 +1032,52 @@ public class Picture
         }
     }
 
-    //----------//
-    // loadFile //
-    //----------//
-    private static RenderedImage loadFile (File imgFile)
+    //--------------//
+    // updateParams //
+    //--------------//
+    private void updateParams ()
+        throws ImageFormatException
     {
-        logger.info("Loading image from " + imgFile + " ...");
+        checkImageFormat();
 
-        RenderedImage image = loadImageIO(imgFile);
+        // Cache dimensions
+        dimension = new java.awt.Dimension(image.getWidth(), image.getHeight());
+        ///dimensionWidth = dimension.width;
+        raster = Raster.createWritableRaster(
+            image.getData().getSampleModel(),
+            image.getData().getDataBuffer(),
+            null);
 
-        if (image == null) {
-            logger.fine("Using JAI");
-            image = (JAI.create("fileload", imgFile.getPath()));
+        if (logger.isFineEnabled()) {
+            logger.fine("raster=" + raster);
         }
 
-        return image;
+        ///dataBuffer = raster.getDataBuffer();
+
+        // Check pixel size
+        ColorModel colorModel = image.getColorModel();
+        int        pixelSize = colorModel.getPixelSize();
+
+        if (logger.isFineEnabled()) {
+            logger.fine("colorModel=" + colorModel + " pixelSize=" + pixelSize);
+        }
+
+        if (pixelSize == 8) {
+            grayFactor = 1;
+        } else if (pixelSize == 1) {
+            logger.warning(
+                "Images with pixels coded on 1 bit are expensive to process");
+            logger.warning(
+                "Consider converting to a format which codes pixels on 1 byte");
+            grayFactor = 255;
+        } else {
+            throw new java.lang.RuntimeException(
+                "Unsupported pixel size:" + pixelSize);
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine("grayFactor=" + grayFactor);
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
