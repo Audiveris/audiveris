@@ -44,7 +44,7 @@ public class Dash
     private Rectangle box;
 
     /** The underlying stick if any */
-    private transient Stick stick;
+    private Stick stick;
 
     //~ Constructors -----------------------------------------------------------
 

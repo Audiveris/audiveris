@@ -65,7 +65,7 @@ public class Zoom
     //~ Instance fields --------------------------------------------------------
 
     /** Unique event, created lazily */
-    protected transient ChangeEvent changeEvent = null;
+    protected ChangeEvent changeEvent = null;
 
     /** Potential logarithmic slider to drive this zoom */
     protected LogSlider slider;

@@ -71,12 +71,7 @@ public class Sheet
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Sheet.class);
 
-    /** List of steps */
-    private static List<Step> steps;
-
     //~ Instance fields --------------------------------------------------------
-
-    // First: non-transient members
 
     /** Link with sheet original image file. Set by constructor. */
     private File imageFile;
@@ -113,40 +108,38 @@ public class Sheet
     /** Link with related score. Set by BARS. */
     private Score score;
 
-    // Below: transient members
-
     /** A bar line extractor for this sheet */
-    private transient BarsBuilder barsBuilder;
+    private BarsBuilder barsBuilder;
 
     /** A glyph extractor for this sheet */
-    private transient GlyphsBuilder glyphBuilder;
+    private GlyphsBuilder glyphBuilder;
 
     /** A glyph inspector for this sheet */
-    private transient GlyphInspector glyphInspector;
+    private GlyphInspector glyphInspector;
 
     /** Horizontal lag (built by LINES/LinesBuilder) */
-    private transient GlyphLag hLag;
+    private GlyphLag hLag;
 
     /** A staff line extractor for this sheet */
-    private transient LinesBuilder linesBuilder;
+    private LinesBuilder linesBuilder;
 
     /** A ledger line extractor for this sheet */
-    private transient HorizontalsBuilder horizontalsBuilder;
+    private HorizontalsBuilder horizontalsBuilder;
 
     /** All Current selections for this sheet */
-    private transient SelectionManager selectionManager;
+    private SelectionManager selectionManager;
 
     /** Dedicated skew builder */
-    private transient SkewBuilder skewBuilder;
+    private SkewBuilder skewBuilder;
 
     /** Score builder */
-    private transient ScoreBuilder scoreBuilder;
+    private volatile ScoreBuilder scoreBuilder;
 
     /** To avoid concurrent modifications */
-    private transient volatile boolean busy = false;
+    private volatile boolean busy = false;
 
     /** Related errors editor */
-    private transient ErrorsEditor errorsEditor;
+    private volatile ErrorsEditor errorsEditor;
 
     /** Steps for this instance */
     private final SheetSteps sheetSteps;
@@ -155,13 +148,13 @@ public class Sheet
     private Script script;
 
     /** Related assembly instance */
-    private transient volatile SheetAssembly assembly;
+    private volatile SheetAssembly assembly;
 
     /** Specific builder dealing with glyphs */
-    private transient volatile SymbolsBuilder symbolsBuilder;
+    private volatile SymbolsBuilder symbolsBuilder;
 
     /** Related verticals builder */
-    private transient volatile VerticalsBuilder verticalsBuilder;
+    private volatile VerticalsBuilder verticalsBuilder;
 
     //~ Constructors -----------------------------------------------------------
 

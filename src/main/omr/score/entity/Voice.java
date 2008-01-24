@@ -400,8 +400,6 @@ public class Voice
     //-----------------//
     /**
      * Update the slotTable
-     *
-     * @param tillSlot the provided slot
      */
     public void updateSlotTable ()
     {

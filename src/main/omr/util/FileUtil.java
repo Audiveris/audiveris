@@ -24,6 +24,11 @@ import java.nio.channels.FileChannel;
  */
 public class FileUtil
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(FileUtil.class);
+
     //~ Constructors -----------------------------------------------------------
 
     // Not meant to be instantiated
@@ -139,7 +144,9 @@ public class FileUtil
                 deleteAll(file.listFiles());
             }
 
-            file.delete();
+            if (!file.delete()) {
+                logger.warning("Could not delete file " + file);
+            }
         }
     }
 }

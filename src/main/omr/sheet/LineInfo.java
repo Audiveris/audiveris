@@ -29,7 +29,7 @@ public class LineInfo
     //~ Instance fields --------------------------------------------------------
 
     /** Related Builder */
-    private transient LineBuilder builder;
+    private LineBuilder builder;
 
     /** Best line equation */
     private Line line;

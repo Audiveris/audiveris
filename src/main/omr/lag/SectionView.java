@@ -99,7 +99,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
      * Last zoom ratio. The value is cached to save on the computation of the
      * display polygon.
      */
-    private transient double lastZoomRatio;
+    private double lastZoomRatio;
 
     //~ Constructors -----------------------------------------------------------
 

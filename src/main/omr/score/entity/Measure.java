@@ -72,9 +72,6 @@ public class Measure
     /** Left abscissa (in units, wrt system left side) of this measure */
     private Integer leftX;
 
-    /** For measure with no physical ending bar line */
-    private boolean lineInvented;
-
     /** Flag for implicit (introduction) measure */
     private boolean implicit;
 
@@ -123,12 +120,9 @@ public class Measure
      * @param part        the containing system part
      * @param lineInvented flag an artificial ending bar line if none existed
      */
-    public Measure (SystemPart part,
-                    boolean    lineInvented)
+    public Measure (SystemPart part)
     {
         super(part);
-
-        this.lineInvented = lineInvented;
         cleanupNode();
     }
 
@@ -1159,6 +1153,7 @@ public class Measure
             }
 
             if ((measureFinal != null) && (measureFinal < 0)) {
+
                 if (logger.isFineEnabled()) {
                     logger.fine(
                         system.getContextString() + "M" + im +

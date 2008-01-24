@@ -49,7 +49,7 @@ public class Panel
     private static final Logger logger = Logger.getLogger(Panel.class);
 
     /** Default Insets */
-    public static Insets DEFAULT_INSETS;
+    private static Insets DEFAULT_INSETS;
 
     //~ Instance fields --------------------------------------------------------
 

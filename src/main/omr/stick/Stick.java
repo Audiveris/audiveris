@@ -87,231 +87,6 @@ public class Stick
     //~ Methods ----------------------------------------------------------------
 
     //------------------//
-    // addGlyphSections //
-    //------------------//
-    /**
-     * Add another glyph (with its sections of points) to this one
-     *
-     * @param other The merged glyph
-     * @param linkSections Should we set the link from sections to glyph ?
-     */
-    @Override
-    public void addGlyphSections (Glyph   other,
-                                  boolean linkSections)
-    {
-        super.addGlyphSections(other, linkSections);
-        line = null;
-    }
-
-    //------------//
-    // addSection //
-    //------------//
-    /**
-     * Add a section as a member of this stick.
-     *
-     * @param section The section to be included
-     * @param link should the section point back to this stick?
-     */
-    public void addSection (StickSection section,
-                            boolean      link)
-    {
-        super.addSection(section, /* link => */
-                         true);
-
-        // Include the section points
-        getLine()
-            .includeLine(section.getLine());
-    }
-
-    //----------//
-    // colorize //
-    //----------//
-    /**
-     * Set the display color of all sections that compose this stick.
-     *
-     * @param lag the containing lag
-     * @param viewIndex index in the view list
-     * @param color     color for the whole stick
-     */
-    public void colorize (Lag   lag,
-                          int   viewIndex,
-                          Color color)
-    {
-        if (lag == this.lag) {
-            colorize(viewIndex, members, color);
-        }
-    }
-
-    //----------//
-    // colorize //
-    //----------//
-    /**
-     * Set the display color of all sections gathered by the provided list
-     *
-     * @param viewIndex the proper view index
-     * @param sections  the collection of sections
-     * @param color     the display color
-     */
-    public void colorize (int                      viewIndex,
-                          Collection<GlyphSection> sections,
-                          Color                    color)
-    {
-        for (GlyphSection section : sections) {
-            SectionView view = (SectionView) section.getView(viewIndex);
-            view.setColor(color);
-        }
-    }
-
-    //    //------------------//
-    //    // computeDensities //
-    //    //------------------//
-    //    /**
-    //     * Computes the densities around the stick mean line
-    //     */
-    //    public void computeDensities (int nWidth,
-    //                                  int nHeight)
-    //    {
-    //        final int maxDist = 20; // TBD of course
-    //
-    //        // Allocate and initialize density histograms
-    //        int[] histoLeft = new int[maxDist];
-    //        int[] histoRight = new int[maxDist];
-    //
-    //        for (int i = maxDist - 1; i >= 0; i--) {
-    //            histoLeft[i] = 0;
-    //            histoRight[i] = 0;
-    //        }
-    //
-    //        // Compute (horizontal) distances
-    //        Line line = getLine();
-    //
-    //        for (GlyphSection section : members) {
-    //            int pos = section.getFirstPos(); // Abscissa for vertical
-    //
-    //            for (Run run : section.getRuns()) {
-    //                int stop = run.getStop();
-    //
-    //                for (int coord = run.getStart(); coord <= stop; coord++) {
-    //                    int dist = (int) Math.rint(line.distanceOf(coord, pos));
-    //
-    //                    if ((dist < 0) && (dist > -maxDist)) {
-    //                        histoRight[-dist] += 1;
-    //                    }
-    //
-    //                    if ((dist >= 0) && (dist < maxDist)) {
-    //                        histoLeft[dist] += 1;
-    //                    }
-    //                }
-    //
-    //                pos++;
-    //            }
-    //        }
-    //
-    //        System.out.println("computeDensities for Stick #" + id);
-    //
-    //        int     length = getLength();
-    //        boolean started = false;
-    //        boolean stopped = false;
-    //
-    //        for (int i = maxDist - 1; i >= 0; i--) {
-    //            if (histoLeft[i] != 0) {
-    //                started = true;
-    //            }
-    //
-    //            if (started) {
-    //                System.out.println(i + " : " + ((histoLeft[i] * 100) / length));
-    //            }
-    //        }
-    //
-    //        for (int i = -1; i > -maxDist; i--) {
-    //            if (histoRight[-i] == 0) {
-    //                stopped = true;
-    //            }
-    //
-    //            if (!stopped) {
-    //                System.out.println(
-    //                    i + " : " + ((histoRight[-i] * 100) / length));
-    //            }
-    //        }
-    //
-    //        // Retrieve sections in the neighborhood
-    //        Rectangle neighborhood = new Rectangle(getBounds());
-    //        neighborhood.grow(nWidth, nHeight);
-    //
-    //        List<GlyphSection> neighbors = lag.getSectionsIn(neighborhood);
-    //
-    //        for (GlyphSection section : neighbors) {
-    //            // Keep only sections that are not part of the stick
-    //            if (section.getGlyph() != this) {
-    //                System.out.println(section.toString());
-    //            }
-    //        }
-    //    }
-
-    //-------------//
-    // computeLine //
-    //-------------//
-    /**
-     * Computes the least-square fitted line among all the section points of the
-     * stick.
-     */
-    public void computeLine ()
-    {
-        line = new BasicLine();
-
-        for (GlyphSection section : members) {
-            StickSection ss = (StickSection) section;
-            line.includeLine(ss.getLine());
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                line + " pointNb=" + line.getNumberOfPoints() +
-                " meanDistance=" + (float) line.getMeanDistance());
-        }
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Print out glyph internal data
-     */
-    @Override
-    public void dump ()
-    {
-        super.dump();
-        System.out.println("   line=" + getLine());
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Dump the stick as well as its contained sections is so desired
-     *
-     * @param withContent Flag to specify the dump of contained sections
-     */
-    public void dump (boolean withContent)
-    {
-        if (withContent) {
-            System.out.println();
-        }
-
-        System.out.println(
-            toString() + " pointNb=" + line.getNumberOfPoints() + " start=" +
-            getStart() + " stop=" + getStop() + " midPos=" + getMidPos());
-
-        if (withContent) {
-            System.out.println("-members:" + members.size());
-
-            for (GlyphSection sct : members) {
-                System.out.println(" " + sct.toString());
-            }
-        }
-    }
-
-    //------------------//
     // getAlienPixelsIn //
     //------------------//
     /**
@@ -781,6 +556,240 @@ public class Stick
     public int getThickness ()
     {
         return getBounds().height;
+    }
+
+    //------------------//
+    // addGlyphSections //
+    //------------------//
+    /**
+     * Add another glyph (with its sections of points) to this one
+     *
+     * @param other The merged glyph
+     * @param linkSections Should we set the link from sections to glyph ?
+     */
+    @Override
+    public void addGlyphSections (Glyph   other,
+                                  boolean linkSections)
+    {
+        super.addGlyphSections(other, linkSections);
+        line = null;
+    }
+
+    //------------//
+    // addSection //
+    //------------//
+    /**
+     * Add a section as a member of this stick.
+     *
+     * @param section The section to be included
+     * @param link should the section point back to this stick?
+     */
+    public void addSection (StickSection section,
+                            boolean      link)
+    {
+        super.addSection(section, /* link => */
+                         true);
+
+        // Include the section points
+        getLine()
+            .includeLine(section.getLine());
+    }
+
+    //----------//
+    // colorize //
+    //----------//
+    /**
+     * Set the display color of all sections that compose this stick.
+     *
+     * @param lag the containing lag
+     * @param viewIndex index in the view list
+     * @param color     color for the whole stick
+     */
+    public void colorize (Lag   lag,
+                          int   viewIndex,
+                          Color color)
+    {
+        if (lag == this.lag) {
+            colorize(viewIndex, members, color);
+        }
+    }
+
+    //----------//
+    // colorize //
+    //----------//
+    /**
+     * Set the display color of all sections gathered by the provided list
+     *
+     * @param viewIndex the proper view index
+     * @param sections  the collection of sections
+     * @param color     the display color
+     */
+    public void colorize (int                      viewIndex,
+                          Collection<GlyphSection> sections,
+                          Color                    color)
+    {
+        for (GlyphSection section : sections) {
+            SectionView view = (SectionView) section.getView(viewIndex);
+            view.setColor(color);
+        }
+    }
+
+    //    //------------------//
+    //    // computeDensities //
+    //    //------------------//
+    //    /**
+    //     * Computes the densities around the stick mean line
+    //     */
+    //    public void computeDensities (int nWidth,
+    //                                  int nHeight)
+    //    {
+    //        final int maxDist = 20; // TBD of course
+    //
+    //        // Allocate and initialize density histograms
+    //        int[] histoLeft = new int[maxDist];
+    //        int[] histoRight = new int[maxDist];
+    //
+    //        for (int i = maxDist - 1; i >= 0; i--) {
+    //            histoLeft[i] = 0;
+    //            histoRight[i] = 0;
+    //        }
+    //
+    //        // Compute (horizontal) distances
+    //        Line line = getLine();
+    //
+    //        for (GlyphSection section : members) {
+    //            int pos = section.getFirstPos(); // Abscissa for vertical
+    //
+    //            for (Run run : section.getRuns()) {
+    //                int stop = run.getStop();
+    //
+    //                for (int coord = run.getStart(); coord <= stop; coord++) {
+    //                    int dist = (int) Math.rint(line.distanceOf(coord, pos));
+    //
+    //                    if ((dist < 0) && (dist > -maxDist)) {
+    //                        histoRight[-dist] += 1;
+    //                    }
+    //
+    //                    if ((dist >= 0) && (dist < maxDist)) {
+    //                        histoLeft[dist] += 1;
+    //                    }
+    //                }
+    //
+    //                pos++;
+    //            }
+    //        }
+    //
+    //        System.out.println("computeDensities for Stick #" + id);
+    //
+    //        int     length = getLength();
+    //        boolean started = false;
+    //        boolean stopped = false;
+    //
+    //        for (int i = maxDist - 1; i >= 0; i--) {
+    //            if (histoLeft[i] != 0) {
+    //                started = true;
+    //            }
+    //
+    //            if (started) {
+    //                System.out.println(i + " : " + ((histoLeft[i] * 100) / length));
+    //            }
+    //        }
+    //
+    //        for (int i = -1; i > -maxDist; i--) {
+    //            if (histoRight[-i] == 0) {
+    //                stopped = true;
+    //            }
+    //
+    //            if (!stopped) {
+    //                System.out.println(
+    //                    i + " : " + ((histoRight[-i] * 100) / length));
+    //            }
+    //        }
+    //
+    //        // Retrieve sections in the neighborhood
+    //        Rectangle neighborhood = new Rectangle(getBounds());
+    //        neighborhood.grow(nWidth, nHeight);
+    //
+    //        List<GlyphSection> neighbors = lag.getSectionsIn(neighborhood);
+    //
+    //        for (GlyphSection section : neighbors) {
+    //            // Keep only sections that are not part of the stick
+    //            if (section.getGlyph() != this) {
+    //                System.out.println(section.toString());
+    //            }
+    //        }
+    //    }
+
+    //-------------//
+    // computeLine //
+    //-------------//
+    /**
+     * Computes the least-square fitted line among all the section points of the
+     * stick.
+     */
+    public void computeLine ()
+    {
+        line = new BasicLine();
+
+        for (GlyphSection section : members) {
+            StickSection ss = (StickSection) section;
+            line.includeLine(ss.getLine());
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                line + " pointNb=" + line.getNumberOfPoints() +
+                " meanDistance=" + (float) line.getMeanDistance());
+        }
+    }
+
+    //------//
+    // dump //
+    //------//
+    /**
+     * Print out glyph internal data
+     */
+    @Override
+    public void dump ()
+    {
+        super.dump();
+        System.out.println("   line=" + getLine());
+    }
+
+    //------//
+    // dump //
+    //------//
+    /**
+     * Dump the stick as well as its contained sections is so desired
+     *
+     * @param withContent Flag to specify the dump of contained sections
+     */
+    public void dump (boolean withContent)
+    {
+        if (withContent) {
+            System.out.println();
+        }
+
+        System.out.println(
+            toString() + " pointNb=" + line.getNumberOfPoints() + " start=" +
+            getStart() + " stop=" + getStop() + " midPos=" + getMidPos());
+
+        if (withContent) {
+            System.out.println("-members:" + members.size());
+
+            for (GlyphSection sct : members) {
+                System.out.println(" " + sct.toString());
+            }
+        }
+    }
+
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        return super.equals(obj);
     }
 
     //-------------//

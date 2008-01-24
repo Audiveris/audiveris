@@ -31,8 +31,8 @@ public class Moments
     public static final int size = 19;
 
     /** Labels for better display */
-    public static final String[] labels = {
-                                              /*  0 */ "weight", /*  1 */
+    private static final String[] labels = {
+                                               /*  0 */ "weight", /*  1 */
     "width", /*  2 */
     "height", /*  3 */
     "n20", /*  4 */
@@ -51,7 +51,7 @@ public class Moments
     "h7", /* 17 */
     "xBar", /* 18 */
     "yBar"
-                                          };
+                                           };
 
     //~ Instance fields --------------------------------------------------------
 
@@ -251,6 +251,20 @@ public class Moments
     public Double getHeight ()
     {
         return k[2];
+    }
+
+    //----------//
+    // getLabel //
+    //----------//
+    /**
+     * Report the label related to moment at specified index
+     *
+     * @param index the moment index
+     * @return the related index
+     */
+    public static String getLabel (int index)
+    {
+        return labels[index];
     }
 
     //-----------//

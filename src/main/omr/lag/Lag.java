@@ -70,13 +70,13 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     private List<List<Run>> runs;
 
     /** Selection object where selected pixel location is to be written */
-    protected transient Selection locationSelection;
+    protected Selection locationSelection;
 
     /** Selection object where selected Run is to be written */
-    protected transient Selection runSelection;
+    protected Selection runSelection;
 
     /** Selection object where selected Section is to be written */
-    protected transient Selection sectionSelection;
+    protected Selection sectionSelection;
 
     //~ Constructors -----------------------------------------------------------
 

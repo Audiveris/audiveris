@@ -82,7 +82,7 @@ public abstract class Evaluator
     };
 
     /** Descriptive labels for glyph characteristics */
-    static String[] labels;
+    private static volatile String[] labels;
 
     //~ Enumerations -----------------------------------------------------------
 
@@ -99,14 +99,6 @@ public abstract class Evaluator
 
     //~ Methods ----------------------------------------------------------------
 
-    //------//
-    // dump //
-    //------//
-    /**
-     * Dump the internals of the evaluator
-     */
-    public abstract void dump ();
-
     //---------//
     // getName //
     //---------//
@@ -116,6 +108,63 @@ public abstract class Evaluator
      * @return the evaluator declared name
      */
     public abstract String getName ();
+
+    //------//
+    // dump //
+    //------//
+    /**
+     * Dump the internals of the evaluator
+     */
+    public abstract void dump ();
+
+    //-------------//
+    // isBigEnough //
+    //-------------//
+    /**
+     * Use a threshold on glyph weight, to tell if the provided glyph is just
+     * {@link Shape#NOISE}, or a real glyph
+     *
+     * @param glyph the glyph to be checked
+     * @return true if not noise, false otherwise
+     */
+    public static boolean isBigEnough (Glyph glyph)
+    {
+        return glyph.getNormalizedWeight() >= constants.minWeight.getValue();
+    }
+
+    //-------------------//
+    // getParameterLabel //
+    //-------------------//
+    /**
+     * Report the label assigned to a given parameter
+     *
+     * @param index the paarameter index
+     * @return the assigned label
+     */
+    public static String getParameterLabel (int index)
+    {
+        if (labels == null) {
+            synchronized (Evaluator.class) {
+                if (labels == null) {
+                    labels = new String[inSize];
+
+                    // We take all the first moments
+                    for (int i = 0; i < inMoments; i++) {
+                        labels[i] = Moments.getLabel(i);
+                    }
+
+                    // We append flags and step position
+                    int i = inMoments;
+                    /* 10 */ labels[i++] = "ledger";
+                    /* 11 */ labels[i++] = "stemNb";
+
+                    ////* 12 */ labels[i++] = "pitch";
+                }
+            }
+        }
+
+        return labels[index];
+    }
 
     //-----------//
     // feedInput //
@@ -154,35 +203,6 @@ public abstract class Evaluator
 
         // We skip moments 17 & 18 (xMean and yMean) ???
         return ins;
-    }
-
-    //----------//
-    // getLabel //
-    //----------//
-    /**
-     * Report the label assigned to a given variable
-     *
-     * @param index the variable index
-     * @return the assigned label
-     */
-    public static String getLabel (int index)
-    {
-        return getLabels()[index];
-    }
-
-    //-------------//
-    // isBigEnough //
-    //-------------//
-    /**
-     * Use a threshold on glyph weight, to tell if the provided glyph is just
-     * {@link Shape#NOISE}, or a real glyph
-     *
-     * @param glyph the glyph to be checked
-     * @return true if not noise, false otherwise
-     */
-    public static boolean isBigEnough (Glyph glyph)
-    {
-        return glyph.getNormalizedWeight() >= constants.minWeight.getValue();
     }
 
     //-------------------//
@@ -357,28 +377,6 @@ public abstract class Evaluator
         } else {
             return 0d;
         }
-    }
-
-    //-----------//
-    // getLabels // Lazy initialization
-    //-----------//
-    private static String[] getLabels ()
-    {
-        if (labels == null) {
-            labels = new String[inSize];
-
-            // We take all the first moments
-            System.arraycopy(Moments.labels, 0, labels, 0, inMoments);
-
-            // We append flags and step position
-            int i = inMoments;
-            /* 10 */ labels[i++] = "ledger";
-            /* 11 */ labels[i++] = "stemNb";
-
-            ////* 12 */ labels[i++] = "pitch";
-        }
-
-        return labels;
     }
 
     //----------------//

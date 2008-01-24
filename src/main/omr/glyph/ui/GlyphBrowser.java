@@ -60,7 +60,6 @@ import javax.swing.event.*;
  * @version $Id$
  */
 class GlyphBrowser
-    extends JPanel
     implements ChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -78,6 +77,9 @@ class GlyphBrowser
     private static final int NO_INDEX = -1;
 
     //~ Instance fields --------------------------------------------------------
+
+    /** The concrete Swing component */
+    private JPanel component = new JPanel();
 
     /** Reference of GlyphVerifier */
     private final GlyphVerifier verifier;
@@ -138,12 +140,25 @@ class GlyphBrowser
         this.verifier = verifier;
 
         // Layout
-        setLayout(new BorderLayout());
+        component.setLayout(new BorderLayout());
         resetBrowser();
-        add(buildLeftPanel(), BorderLayout.WEST);
+        component.add(buildLeftPanel(), BorderLayout.WEST);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JPanel getComponent ()
+    {
+        return component;
+    }
 
     //----------------//
     // dumpSelections //
@@ -244,7 +259,7 @@ class GlyphBrowser
             // User confirmation is required ?
             if (constants.confirmDeletions.getValue()) {
                 if (JOptionPane.showConfirmDialog(
-                    GlyphBrowser.this,
+                    component,
                     "Delete glyph '" + gName + "' ?") != JOptionPane.YES_OPTION) {
                     return;
                 }
@@ -310,16 +325,16 @@ class GlyphBrowser
 
         // Reset display
         if (display != null) {
-            remove(display);
+            component.remove(display);
         }
 
         display = new Display();
-        add(display, BorderLayout.CENTER);
+        component.add(display, BorderLayout.CENTER);
 
         // Check if all this is really needed ... TBD
-        invalidate();
-        validate();
-        repaint();
+        component.invalidate();
+        component.validate();
+        component.repaint();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -728,7 +743,9 @@ class GlyphBrowser
         {
             CellConstraints cst = new CellConstraints();
             FormLayout      layout = Panel.makeFormLayout(4, 3);
-            PanelBuilder    builder = new PanelBuilder(layout, getComponent());
+            PanelBuilder    builder = new PanelBuilder(
+                layout,
+                super.getComponent());
             builder.setDefaultDialogBorder();
 
             int r = 1; // --------------------------------
@@ -748,46 +765,44 @@ class GlyphBrowser
             nameField.setHorizontalAlignment(JTextField.LEFT);
             builder.add(nameField, cst.xyw(3, r, 9));
         }
+    }
 
-        //~ Inner Classes ------------------------------------------------------
+    //------------//
+    // LoadAction //
+    //------------//
+    private class LoadAction
+        extends AbstractAction
+    {
+        //~ Constructors -------------------------------------------------------
 
-        //------------//
-        // LoadAction //
-        //------------//
-        private class LoadAction
-            extends AbstractAction
+        public LoadAction ()
         {
-            //~ Constructors ---------------------------------------------------
+            super("Load");
+        }
 
-            public LoadAction ()
-            {
-                super("Load");
-            }
+        //~ Methods ------------------------------------------------------------
 
-            //~ Methods --------------------------------------------------------
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            // Get a (shrinkable, to allow deletions) list of glyph names
+            names = new ArrayList<String>(
+                Arrays.asList(verifier.getGlyphNames()));
 
-            @Implement(ActionListener.class)
-            public void actionPerformed (ActionEvent e)
-            {
-                // Get a (shrinkable, to allow deletions) list of glyph names
-                names = new ArrayList<String>(
-                    Arrays.asList(verifier.getGlyphNames()));
+            // Reset lag & display
+            resetBrowser();
 
-                // Reset lag & display
-                resetBrowser();
-
-                // Set navigator on first glyph, if any
-                if (names.size() > 0) {
-                    setIndex(0, GLYPH_INIT);
-                } else {
-                    if (e != null) {
-                        logger.warning("No glyphs selected in Glyph Selector");
-                    }
-
-                    all.setEnabled(false);
-                    prev.setEnabled(false);
-                    next.setEnabled(false);
+            // Set navigator on first glyph, if any
+            if (names.size() > 0) {
+                navigator.setIndex(0, GLYPH_INIT);
+            } else {
+                if (e != null) {
+                    logger.warning("No glyphs selected in Glyph Selector");
                 }
+
+                navigator.all.setEnabled(false);
+                navigator.prev.setEnabled(false);
+                navigator.next.setEnabled(false);
             }
         }
     }

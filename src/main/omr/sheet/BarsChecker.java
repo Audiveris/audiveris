@@ -385,7 +385,7 @@ public class BarsChecker
                             part + " - Creating measure for bar-line " + bar);
                     }
 
-                    Measure measure = new Measure(part, false); // invented ?
+                    Measure measure = new Measure(part);
                     Barline barline = new Barline(measure);
                     bar.setShape(
                         isThickBar(bar) ? Shape.THICK_BAR_LINE

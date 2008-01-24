@@ -70,7 +70,7 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
     /**
      * Collection of views created on this vertex
      */
-    protected transient List<VertexView> views;
+    protected List<VertexView> views;
 
     //~ Constructors -----------------------------------------------------------
 

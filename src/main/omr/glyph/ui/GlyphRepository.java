@@ -29,7 +29,6 @@ import omr.util.Logger;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
 
 import javax.xml.bind.*;
 
@@ -548,7 +547,10 @@ public class GlyphRepository
 
         // Create the core directory if needed
         File coreDir = coreFolder;
-        coreDir.mkdirs();
+
+        if (!coreDir.mkdirs()) {
+            logger.warning("Could not create directory " + coreDir);
+        }
 
         // Empty the directory
         FileUtil.deleteAll(coreDir.listFiles());
@@ -697,7 +699,9 @@ public class GlyphRepository
         for (File file : files) {
             if (FileUtil.getExtension(file)
                         .equals(FILE_EXTENSION)) {
-                file.delete();
+                if (!file.delete()) {
+                    logger.warning("Could not delete " + file);
+                }
             }
         }
     }

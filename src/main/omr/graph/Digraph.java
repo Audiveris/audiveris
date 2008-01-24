@@ -50,7 +50,7 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     /**
      * All Views on this graph, handled by a sequential collection
      */
-    private transient List<DigraphView> views = new ArrayList<DigraphView>();
+    private List<DigraphView> views = new ArrayList<DigraphView>();
 
     /**
      * Name for debugging

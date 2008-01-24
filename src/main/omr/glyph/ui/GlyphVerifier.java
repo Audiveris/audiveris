@@ -101,7 +101,7 @@ public class GlyphVerifier
         frame.getContentPane()
              .add(getSelectorsPanel(), BorderLayout.NORTH);
         frame.getContentPane()
-             .add(glyphBrowser, BorderLayout.CENTER);
+             .add(glyphBrowser.getComponent(), BorderLayout.CENTER);
         frame.pack();
         frame.setBounds(new Rectangle(20, 20, 1000, 600));
         frame.setVisible(true);
@@ -210,6 +210,14 @@ public class GlyphVerifier
         glyphBrowser.loadGlyphNames();
     }
 
+    //---------------//
+    // getGlyphNames //
+    //---------------//
+    String[] getGlyphNames ()
+    {
+        return glyphSelector.list.getSelectedItems();
+    }
+
     //-----------------//
     // deleteGlyphName //
     //-----------------//
@@ -217,14 +225,6 @@ public class GlyphVerifier
     {
         // Remove entry from list
         glyphSelector.list.remove(gName);
-    }
-
-    //---------------//
-    // getGlyphNames //
-    //---------------//
-    String[] getGlyphNames ()
-    {
-        return glyphSelector.list.getSelectedItems();
     }
 
     //--------------//

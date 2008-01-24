@@ -57,7 +57,7 @@ public class Scale
     //~ Instance fields --------------------------------------------------------
 
     /** The utility to compute the scale */
-    private transient ScaleBuilder builder;
+    private ScaleBuilder builder;
 
     /** Most frequent vertical distance in pixels from one line to the other*/
     private int interline;

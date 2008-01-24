@@ -43,7 +43,7 @@ public class Barline
     private static final Logger logger = Logger.getLogger(Barline.class);
 
     /** Map of signature -> bar shape */
-    private static Map<String, Shape> sigs;
+    private static volatile Map<String, Shape> sigs;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -463,18 +463,22 @@ public class Barline
     private static Map<String, Shape> getSignatures ()
     {
         if (sigs == null) {
-            sigs = new HashMap<String, Shape>();
-            sigs.put("N", Shape.SINGLE_BARLINE);
-            sigs.put("NN", Shape.DOUBLE_BARLINE);
-            sigs.put("NK", Shape.FINAL_BARLINE);
-            sigs.put("KN", Shape.REVERSE_FINAL_BARLINE);
-            sigs.put("ONK", Shape.RIGHT_REPEAT_SIGN);
-            sigs.put("KNO", Shape.LEFT_REPEAT_SIGN);
+            synchronized (Barline.class) {
+                if (sigs == null) {
+                    sigs = new HashMap<String, Shape>();
+                    sigs.put("N", Shape.SINGLE_BARLINE);
+                    sigs.put("NN", Shape.DOUBLE_BARLINE);
+                    sigs.put("NK", Shape.FINAL_BARLINE);
+                    sigs.put("KN", Shape.REVERSE_FINAL_BARLINE);
+                    sigs.put("ONK", Shape.RIGHT_REPEAT_SIGN);
+                    sigs.put("KNO", Shape.LEFT_REPEAT_SIGN);
 
-            sigs.put("ONKNO", Shape.BACK_TO_BACK_REPEAT_SIGN);
-            sigs.put("NKNO", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
-            sigs.put("ONKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
-            sigs.put("NKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
+                    sigs.put("ONKNO", Shape.BACK_TO_BACK_REPEAT_SIGN);
+                    sigs.put("NKNO", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
+                    sigs.put("ONKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
+                    sigs.put("NKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
+                }
+            }
         }
 
         return sigs;

@@ -85,10 +85,10 @@ public class GlyphLag
     private volatile SortedSet<Glyph> activeGlyphs;
 
     /** Selection on glyph, output where found glyph is written */
-    private transient Selection glyphSelection;
+    private Selection glyphSelection;
 
     /** Selection on glyphs, output where found glyphs are written */
-    private transient Selection glyphSetSelection;
+    private Selection glyphSetSelection;
 
     /** Global id to uniquely identify a glyph */
     private int globalGlyphId = 0;
@@ -260,7 +260,7 @@ public class GlyphLag
         //for (Glyph glyph : glyphs.values()) {
         for (Glyph glyph : collection) {
             boolean inRect = true;
-            sectionTest: 
+            sectionTest:
             for (GlyphSection section : glyph.getMembers()) {
                 if (!rect.contains(section.getContourBox())) {
                     inRect = false;

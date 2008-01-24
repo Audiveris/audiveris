@@ -9,6 +9,7 @@
 //
 package omr.constant;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 /**
@@ -149,7 +150,7 @@ public abstract class Constant
      *
      * @return the constant name
      */
-    public java.lang.String getName ()
+    public synchronized java.lang.String getName ()
     {
         return name;
     }
@@ -162,7 +163,7 @@ public abstract class Constant
      *
      * @return the constant qualified name
      */
-    public java.lang.String getQualifiedName ()
+    public synchronized java.lang.String getQualifiedName ()
     {
         return qualifiedName;
     }
@@ -209,7 +210,7 @@ public abstract class Constant
     /**
      * Remove a given constant from memory
      */
-    public void remove ()
+    public synchronized void remove ()
     {
         // Remove the underlying property
         ConstantManager.removeProperty(qualifiedName);
@@ -457,9 +458,6 @@ public abstract class Constant
                             }
 
                             currentString = defaultString; // Use default
-                                                           // } else {
-                                                           //     logger.warning(
-                                                           //         "No value found for Property " + qualifiedName);
                         }
                     } else if (logger.isFineEnabled()) {
                         logger.fine(
@@ -484,7 +482,7 @@ public abstract class Constant
      *
      * @param name the constant name
      */
-    void setName (java.lang.String name)
+    synchronized void setName (java.lang.String name)
     {
         this.name = name;
 
@@ -503,7 +501,7 @@ public abstract class Constant
      *
      * @param unit the unit (class name) this constant belongs to
      */
-    void setUnit (java.lang.String unit)
+    synchronized void setUnit (java.lang.String unit)
     {
         this.unit = unit;
 
@@ -522,14 +520,6 @@ public abstract class Constant
             UnitManager.getInstance()
                        .checkDirtySets();
         }
-    }
-
-    //----------------//
-    // getCachedValue //
-    //----------------//
-    private Object getCachedValue ()
-    {
-        return cachedValue;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -589,6 +579,7 @@ public abstract class Constant
          *
          * @param string the boolean value as a string
          */
+        @Implement(Constant.class)
         public void setValue (java.lang.String string)
         {
             setValue(java.lang.Boolean.valueOf(string).booleanValue());
@@ -676,6 +667,7 @@ public abstract class Constant
          *
          * @param string the int value as a string
          */
+        @Implement(Constant.class)
         public void setValue (java.lang.String string)
         {
             setValue(java.awt.Color.decode(string));
@@ -740,6 +732,7 @@ public abstract class Constant
          *
          * @param string the double value as a string
          */
+        @Implement(Constant.class)
         public void setValue (java.lang.String string)
         {
             setValue(java.lang.Double.valueOf(string).doubleValue());
@@ -802,6 +795,7 @@ public abstract class Constant
          *
          * @param string the int value as a string
          */
+        @Implement(Constant.class)
         public void setValue (java.lang.String string)
         {
             setValue(java.lang.Integer.valueOf(string).intValue());
@@ -900,6 +894,7 @@ public abstract class Constant
          *
          * @param val the new (string) value
          */
+        @Implement(Constant.class)
         public void setValue (java.lang.String val)
         {
             setString(val);

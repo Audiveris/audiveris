@@ -83,7 +83,7 @@ public class GlyphLagView
     protected final Collection<?extends Glyph> specificGlyphs;
 
     /** Directory of Glyphs */
-    protected final transient GlyphModel model;
+    protected final GlyphModel model;
 
     /** Output selection for Glyph information */
     protected Selection glyphSelection;

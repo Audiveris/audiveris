@@ -800,7 +800,7 @@ public enum Shape
     public static class Range
     {
         // Map for all defined ranges
-        private static Map<String, Range> rangeMap;
+        private static volatile Map<String, Range> rangeMap;
         private String                    name; // Name of the range
         private final EnumSet<Shape>      shapes; // Contained shapes
         private Color                     color; // For current color
@@ -899,15 +899,19 @@ public enum Shape
         {
             // Build the range map in a lazy way
             if (rangeMap == null) {
-                rangeMap = new HashMap<String, Range>();
+                synchronized(Range.class) {
+                    if (rangeMap == null) {
+                        rangeMap = new HashMap<String, Range>();
 
-                for (Field field : Shape.class.getDeclaredFields()) {
-                    if (field.getType() == Range.class) {
-                        try {
-                            Range range = (Range) field.get(null);
-                            rangeMap.put(field.getName(), range);
-                        } catch (IllegalAccessException ex) {
-                            ex.printStackTrace();
+                        for (Field field : Shape.class.getDeclaredFields()) {
+                            if (field.getType() == Range.class) {
+                                try {
+                                    Range range = (Range) field.get(null);
+                                    rangeMap.put(field.getName(), range);
+                                } catch (IllegalAccessException ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
                         }
                     }
                 }

@@ -92,19 +92,19 @@ public class Score
     private List<ScorePart> partList;
 
     /** The most recent system pointed at */
-    private transient System recentSystem = null;
+    private System recentSystem = null;
 
     /** The view on this score if any */
-    private transient ScoreView view;
+    private ScoreView view;
 
     /** The specified tempo, if any */
-    private transient Integer tempo;
+    private Integer tempo;
 
     /** The specified velocity, if any */
-    private transient Integer velocity;
+    private Integer velocity;
 
     /** Potential measure range, if not all score is to be played */
-    private transient MeasureRange measureRange;
+    private MeasureRange measureRange;
 
     //~ Constructors -----------------------------------------------------------
 

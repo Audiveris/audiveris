@@ -354,7 +354,7 @@ public class GlyphRegression
                     System.out.printf(
                         "%2d %7s -> mean=% e std=% e wgt=% e\n",
                         c,
-                        getLabel(c),
+                        getParameterLabel(c),
                         means[c],
                         populations[c].getStandardDeviation(),
                         weights[c]);
