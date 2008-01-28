@@ -130,7 +130,6 @@
                 <globmapper from="*" to="lib/*"/>
             </chainedmapper>
         </pathconvert>
-	<echo message="jar.classpath=${jar.classpath}" /> 
 
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.buttons.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.music.jar}"/>
@@ -360,7 +359,7 @@
     <target name="save"
         depends="-init"
         description="Make a backup of all important files." >
-        
+	
         <mkdir dir="${backup.dir}/${ant.project.name}"/>
 
         <!-- Save relevant directories -->
@@ -376,14 +375,6 @@
                      includes="run.properties"/>
         </zip>
 
-	<!-- Backup on remote file server -->
-        <copy
-	    verbose="${verbose}"
-	    todir="${rembackup.dir}/${ant.project.name}">
-	    <fileset dir="${backup.dir}/${ant.project.name}">
-		<include name="**/${DSTAMP}-${machine.name}-*.zip"/>
-	    </fileset>
-	</copy>
     </target>
 
     <!-- ========= -->
