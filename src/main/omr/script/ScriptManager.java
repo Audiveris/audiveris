@@ -136,6 +136,7 @@ public class ScriptManager
                 if (jaxbContext == null) {
                     jaxbContext = JAXBContext.newInstance(
                         Script.class,
+                        SlurTask.class,
                         StepTask.class,
                         AssignTask.class,
                         DeassignTask.class,

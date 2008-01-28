@@ -14,12 +14,14 @@ import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
+import omr.glyph.SlurGlyph;
 import omr.glyph.SymbolsBuilder;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
 
@@ -154,6 +156,11 @@ public class GlyphMenu
                     }
                 });
         popup.add(compoundMenu);
+
+        popup.addSeparator(); //----------------------------------------------
+
+        // Cleanup large slur glyphs
+        popup.add(new JMenuItem(new LargeSlurAction()));
 
         popup.addSeparator(); //----------------------------------------------
 
@@ -471,6 +478,37 @@ public class GlyphMenu
                 setEnabled(false);
                 putValue(NAME, "Idem");
                 putValue(SHORT_DESCRIPTION, "No shape to assign again");
+            }
+        }
+    }
+
+    //-----------------//
+    // LargeSlurAction //
+    //-----------------//
+    /**
+     * Cleanup a glyph with focus on its slur shape
+     */
+    private class LargeSlurAction
+        extends DynAction
+    {
+        //~ Methods ------------------------------------------------------------
+
+        public void actionPerformed (ActionEvent e)
+        {
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning            
+            symbolsBuilder.fixLargeSlurs(glyphs, true);
+        }
+
+        public void update ()
+        {
+            putValue(NAME, "Cleanup large Slur");
+
+            if (glyphNb > 0) {
+                setEnabled(true);
+                putValue(SHORT_DESCRIPTION, "Extract slur from large glyph");
+            } else {
+                setEnabled(false);
+                putValue(SHORT_DESCRIPTION, "No slur to fix");
             }
         }
     }

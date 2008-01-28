@@ -68,7 +68,7 @@ class ShapeFocusBoard
     //~ Enumerations -----------------------------------------------------------
 
     /** Filter on which symbols should be displayed */
-    public static enum Filter {
+    private static enum Filter {
         //~ Enumeration constant initializers ----------------------------------
 
 

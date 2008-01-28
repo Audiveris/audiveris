@@ -227,18 +227,22 @@ public class Slur
      * entity that corresponds to this glyph.
      *
      * @param glyph The glyph to process
-     * @param system The system which will contain the allocate Slur
+     * @param system The system which will contain the allocated Slur
      */
     public static void populate (Glyph  glyph,
                                  System system)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Populating slur glyph#" + glyph.getId());
+        }
+
         // Compute (and check) the approximating circle
         Circle circle = SlurGlyph.computeCircle(glyph);
 
         if (!circle.isValid(SlurGlyph.getMaxCircleDistance())) {
             system.addError(glyph, "Still spurious slur glyph");
 
-            if (SlurGlyph.fixSpuriousSlur(glyph, system.getInfo())) {
+            if (SlurGlyph.fixSpuriousSlur(glyph, system.getInfo()) != null) {
                 logger.info("Slur fixed  ...");
 
                 //                system.getScore()

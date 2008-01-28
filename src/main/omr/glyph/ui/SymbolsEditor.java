@@ -100,6 +100,7 @@ public class SymbolsEditor
      * handling of glyphs
      *
      * @param sheet the sheet whose glyphs are considered
+     * @param symbolsBuilder the symbols builder for this sheet
      */
     public SymbolsEditor (Sheet          sheet,
                           SymbolsBuilder symbolsBuilder)

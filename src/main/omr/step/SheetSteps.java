@@ -14,6 +14,7 @@ import omr.Main;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
+import omr.glyph.SlurGlyph;
 
 import omr.score.visitor.ScoreChecker;
 
@@ -203,18 +204,19 @@ public class SheetSteps
     public void updateLastSteps (Collection<Glyph> glyphs,
                                  Collection<Shape> shapes)
     {
-        // Determine impacted systems, from the collection of modified glyphs
-        Collection<SystemInfo> impactedSystems = sheet.getImpactedSystems(
-            glyphs,
-            shapes);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Impact: " + SystemInfo.toString(impactedSystems));
-        }
+//        // Determine impacted systems, from the collection of modified glyphs
+//        Collection<SystemInfo> impactedSystems = sheet.getImpactedSystems(
+//            glyphs,
+//            shapes);
+//
+//        if (logger.isFineEnabled()) {
+//            logger.fine("Impact: " + SystemInfo.toString(impactedSystems));
+//        }
 
         // The re-processing is done sequentially (though LEAVES & CLEANUP could
         // be done on several systems in parallel)
-        for (SystemInfo info : impactedSystems) {
+//        for (SystemInfo info : impactedSystems) {
+        for (SystemInfo info : sheet.getSystems()) {
             final SystemInfo system = info;
 
             try {
@@ -357,8 +359,11 @@ public class SheetSteps
             getSystemResult(LEAVES, system);
             sheet.getGlyphInspector()
                  .verifyStems(system);
-            sheet.getGlyphInspector()
-                 .verifySlurs(system);
+            sheet.getGlyphsBuilder()
+                 .removeSystemInactives(system);
+            SlurGlyph.verifySlurs(system);
+            sheet.getGlyphsBuilder()
+                 .extractNewSystemGlyphs(system);
             sheet.getGlyphInspector()
                  .processGlyphs(system, GlyphInspector.getCleanupMaxDoubt());
             done(system);

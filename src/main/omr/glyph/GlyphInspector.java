@@ -9,10 +9,7 @@
 //
 package omr.glyph;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
-
-import omr.math.Circle;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -306,56 +303,6 @@ public class GlyphInspector
     }
 
     //-------------//
-    // verifySlurs //
-    //-------------//
-    /**
-     * Process all the slur glyphs in the given system, and try to correct the
-     * spurious ones if any
-     *
-     * @param system the system at hand
-     * @return the number of slurs fixed in this system
-     */
-    public int verifySlurs (SystemInfo system)
-    {
-        int         fixedNb = 0;
-
-        // First, make up a list of all slur glyphs in this system
-        // (So as to free the system glyph list for on-the-fly modifications)
-        List<Glyph> slurs = new ArrayList<Glyph>();
-        builder.removeSystemInactives(system);
-
-        for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.getShape() == Shape.SLUR) {
-                slurs.add(glyph);
-            }
-        }
-
-        // Then verify each slur seed in turn
-        for (Glyph seed : slurs) {
-            // Check this slur has not just been 'merged' with another one
-            if (seed.getFirstSection()
-                    .getGlyph() != seed) {
-                continue;
-            }
-
-            Circle circle = SlurGlyph.computeCircle(seed);
-
-            if (!circle.isValid(SlurGlyph.getMaxCircleDistance())) {
-                if (SlurGlyph.fixSpuriousSlur(seed, system)) {
-                    fixedNb++;
-                }
-            } else if (logger.isFineEnabled()) {
-                logger.finest("Valid slur " + seed.getId());
-            }
-        }
-
-        // Extract & evaluate brand new glyphs
-        builder.extractNewSystemGlyphs(system);
-
-        return fixedNb;
-    }
-
-    //-------------//
     // verifyStems //
     //-------------//
     /**
@@ -555,9 +502,9 @@ public class GlyphInspector
                         .toPixels(constants.boxWiden);
         }
 
-        public Evaluation getVote ()
+        public void setSeed (Glyph seed)
         {
-            return vote;
+            this.seed = seed;
         }
 
         @Implement(CompoundAdapter.class)
@@ -587,9 +534,9 @@ public class GlyphInspector
                    (!seed.isKnown() || (vote.doubt < seed.getDoubt()));
         }
 
-        public void setSeed (Glyph seed)
+        public Evaluation getVote ()
         {
-            this.seed = seed;
+            return vote;
         }
     }
 

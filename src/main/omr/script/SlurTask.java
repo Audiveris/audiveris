@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          D e a s s i g n T a s k                           //
+//                              S l u r T a s k                               //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
@@ -17,38 +17,37 @@ import omr.step.StepException;
 
 import java.util.Collection;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+
 /**
- * Class <code>DeassignTask</code> is a script task which deassigns a collection
- * of glyphs.
+ * Class <code>SlurTask</code> is a script task which attempts to fix a slur
+ * glyph (by extracting a new glyph out of some sections of the old glyph)
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class DeassignTask
+@XmlAccessorType(XmlAccessType.NONE)
+public class SlurTask
     extends GlyphTask
 {
     //~ Constructors -----------------------------------------------------------
 
-    //--------------//
-    // DeassignTask //
-    //--------------//
     /**
-     * Create a task to deassign glyphs
+     * Creates a new SlurTask object.
      *
-     * @param glyphs the glyphs to deassign
+     * @param glyphs the collection of glyphs to process
      */
-    public DeassignTask (Collection<Glyph> glyphs)
+    public SlurTask (Collection<Glyph> glyphs)
     {
         super(glyphs);
     }
 
-    //--------------//
-    // DeassignTask //
-    //--------------//
-    /**
-     * No-arg constructor needed for JAXB
-     */
-    private DeassignTask ()
+    //----------//
+    // SlurTask //
+    //----------//
+    /** No-arg constructor needed by JAXB */
+    private SlurTask ()
     {
     }
 
@@ -63,7 +62,7 @@ public class DeassignTask
     {
         super.run(sheet);
         sheet.getSymbolsBuilder()
-             .deassignSetShape(glyphs, true);
+             .fixLargeSlurs(glyphs, true);
     }
 
     //-----------------//
@@ -72,6 +71,9 @@ public class DeassignTask
     @Override
     protected String internalsString ()
     {
-        return " deassign" + super.internalsString();
+        StringBuilder sb = new StringBuilder();
+        sb.append(" slur");
+
+        return sb.toString() + super.internalsString();
     }
 }

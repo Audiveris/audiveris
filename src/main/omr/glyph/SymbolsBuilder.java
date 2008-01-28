@@ -19,6 +19,7 @@ import omr.score.entity.Note;
 import omr.script.AssignTask;
 import omr.script.DeassignTask;
 import omr.script.SegmentTask;
+import omr.script.SlurTask;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -355,6 +356,42 @@ public class SymbolsBuilder
                  .addTask(new DeassignTask(glyphs));
 
             sheet.updateLastSteps(glyphs, shapes);
+        }
+    }
+
+    //---------------//
+    // fixLargeSlurs //
+    //---------------//
+    public void fixLargeSlurs (List<Glyph> glyphs,
+                               boolean     record)
+    {
+        // Safer
+        if ((glyphs == null) || glyphs.isEmpty()) {
+            return;
+        }
+
+        List<Glyph> glyphsCopy = new ArrayList<Glyph>(glyphs);
+        List<Glyph> slurs = new ArrayList<Glyph>();
+
+        for (Glyph glyph : glyphsCopy) {
+            Glyph slur = SlurGlyph.fixLargeSlur(
+                glyph,
+                sheet.getSystemOf(glyph));
+
+            if (slur != null) {
+                slurs.add(slur);
+            }
+        }
+
+        if (!slurs.isEmpty()) {
+            this.assignSetShape(slurs, Shape.SLUR, false, false);
+        }
+
+        // Record this task to the sheet script?
+        if (record) {
+            sheet.getScript()
+                 .addTask(new SlurTask(glyphsCopy));
+            sheet.updateLastSteps(glyphsCopy, null);
         }
     }
 
