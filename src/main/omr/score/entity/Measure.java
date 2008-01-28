@@ -117,8 +117,7 @@ public class Measure
     /**
      * Create a measure with the specified parameters
      *
-     * @param part        the containing system part
-     * @param lineInvented flag an artificial ending bar line if none existed
+     * @param part the containing system part
      */
     public Measure (SystemPart part)
     {
@@ -814,6 +813,8 @@ public class Measure
     //------------//
     /**
      * Flag this measure as partial (shorter than expected duration)
+     * 
+     * @param shortening how much the measure duration is to be reduced
      */
     public void setPartial (int shortening)
     {
@@ -1359,6 +1360,11 @@ public class Measure
     //-------------//
     // printChords //
     //-------------//
+    /**
+     * Print the chords of this measure on standard output
+     * 
+     * @param title a specific title, or null
+     */
     public void printChords (String title)
     {
         StringBuilder sb = new StringBuilder();
@@ -1383,6 +1389,8 @@ public class Measure
     //------------//
     /**
      * Print the slots of this measure on standard output
+     * 
+     * @param title a specific title, or null
      */
     public void printSlots (String title)
     {
