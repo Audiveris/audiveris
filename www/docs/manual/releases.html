@@ -97,6 +97,12 @@
                     <TH>Distribution Changes</TH>
                     <TD>
                         <UL>
+			    <LI><u>Application</u>: During the 3.2 work, we plan
+				to switch to the Swing Application Framework, in
+				order to use a standard approach for such tasks
+				as: application lifecycle, resources, actions,
+				session persistency,... all in an OS-independent
+				way.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -185,7 +191,8 @@
                                 brought by this plugin mechanism. </LI>
                             <LI><u>Player</u>: A tight integration with Xenoage
                                 MIDI Player is provided. It enables to playback
-                                the whole score with default or customized
+                                the whole score, or a range of measure, or just
+                                one selected measure using default or customized
                                 parameters. The user can enter MIDI parameters
                                 to the score, such as tempo, velocity and
                                 instruments. Interface with Xenoage player has
@@ -203,12 +210,12 @@
                     <TH>Bug Fixes</TH>
                     <TD>
                         <UL>
-                            <LI><u>Image Format</u>: Not really a bug fix, but
-                                Audiveris now simply rejects image formats for
-                                which a pixel is not coded as one byte. This
-                                should be a temporary workaround, until we find
-                                a working implementation for one-bit
-                                formats.</LI>
+                            <LI><u>Image Format</u>: Audiveris now correctly
+                                handles black &amp; white image formats for
+                                which a pixel is coded as one bit. Note however
+                                that such image must be converted on-the-fly
+                                from 1-bit to 1-byte format, which requires
+                                additional memory resources.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -217,8 +224,9 @@
                     <TH>Known Issues</TH>
                     <TD>
                         <UL>
-                            <LI><u>OCR</u>: We are still looking for an
-                            OCR...</LI>
+                            <LI><u>OCR</u>: Audiveris is still lacking an OCR
+                            engine, but this should be fixed in 3.2
+                            release.</LI>
                         </UL>
                     </TD>
                 </TR>

@@ -305,20 +305,26 @@
 	    <h3>Score Parameters</h3>
 	</a>
 	<p>In order to write down the score using MusicXML format, or to play or
-	    write Midi information, the score needs some global information to be
-	    assigned beforehand. The user is prompted for these parameters
-	    through the following dialog window:</p><p><img alt="" title="Score
-	    parameters" src="../images/chula-parameters.png"/></p><ul><li>First
-	    some global data, to specify the tempo in quarters per minute, then
-	    the velocity (volume) in the range 0..127</li><li>Then, part by
-	    part, you can assign part parameters: the part Id, a part name and a
-	    Midi instrument</li></ul>Note that there are generally acceptable
-	    values for all the fields.<br/>This dialog is shown only the first
-	    time the score is used for some output, unless the constant
-	    "<i>promptParameters</i>" in unit "<i>score/ui/ScoreActions</i>" is
-	    set to false. It can always be explicitly opened from
-	    the <u><i>Score</i></u> menu by selecting the <u><i>Set
-	    parameters</i></u> menu item.
+	    write Midi information, the score needs some global information to
+	    be assigned beforehand. The user is prompted for these parameters
+	    through the following dialog window:</p>
+	<p><img alt="" title="Score parameters"
+		src="../images/chula-parameters.png"/></p>
+	<ul>
+	    <li>First some global data, to specify the tempo in quarters per
+		minute, then the velocity (volume) in the range 0..127</li>
+	    <li>Second, part by part, you can assign part parameters: the part
+		Id, a part name and a Midi instrument</li>
+	    <li>Third, the ability to define precisely a range of measure to be
+		played. If no selection is defined,, the whole score will be
+		played by default.</li>
+	</ul>
+	Note that there are generally acceptable values for all the fields.
+	<p> This dialog is shown only the first time the score is used for some
+	    output, unless the constant "<i>promptParameters</i>" in unit
+	    "<i>score/ui/ScoreActions</i>" is set to false. It can always be
+	    explicitly opened from the <u><i>Score</i></u> menu by selecting
+	    the <u><i>Set parameters</i></u> menu item.</p>
 	
 	
 	<a name="WRITING">
@@ -359,18 +365,27 @@
 	<p>All Midi features are available in the Score menu, and some of them
 	    are directly callable from the tool bar:<br/><img title="Icons for
 	    Play/Pause &amp; Stop" alt=""
-	    src="../images/chula-midi-play.png"/></p>There are two icons, the
-	    left one for starting/pausing/restarting the playback, and the right
-	    one for stopping the playback.<br/>During the playback, the Score
-	    display is kept in sync, using a (violet) vertical bar on the
-	    current time slot:<br/><img alt="" title="Time slot highlighted
-	    while playing" src="../images/chula-midi-playing.png"/><br/><br/>For
-	    the time being, you can only play the whole score (though you can
-	    pause/restart or stop at any time). You cannot play just a selected
-	    measure for example.<br/>Other limitations are due to the embedded
-	    MusicXML/Midi software which is more like a demo and does not yet
-	    handle repeat signs or similar coda information.
-
+	    src="../images/chula-midi-play.png"/></p>
+	<p>There are two icons, the left one for starting/pausing/restarting the
+	    playback, and the right one for stopping the playback.</p>
+	<p>During the playback, the Score display is kept in sync, using a
+	    (violet) vertical bar on the current time slot:<br/><img alt=""
+	    title="Time slot highlighted while playing"
+	    src="../images/chula-midi-playing.png"/></p>
+	<p>You can play the whole score or just a specific measure range of the
+	    score. The selected range can be defined through the score
+	    parameters dialog</p>
+	<p>You can also point with a right-click on a specific measure and in
+	    the popup menu, select the "Play measure" item as shown in the
+	    picture below. This is a contextual menu which shows the selected
+	    measure, information about the selected slot in the measure, and
+	    possibly the selected chord(s) and voice(s) in the slot.</p> <img
+	    src="../images/chula-measure-play.png"/>
+	<p><b>Nota</b>: Using the integrated Midi player has some limitations,
+	    due to the embedded MusicXML/Midi software which is more like a demo
+	    and does not yet handle repeat signs or similar coda
+	    information.</p>
+	
 	<a name="WRITE_MIDI">
 	    <h3>Writing Midi</h3>
 	</a>
