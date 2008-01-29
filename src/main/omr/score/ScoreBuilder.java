@@ -377,9 +377,10 @@ public class ScoreBuilder
          */
         private void translate (Translator translator)
         {
-            // Browse the system collection of glyphs
+            // Browse the system (copy) collection of glyphs
+            // A copy is needed since new glyphs may be inserted on-the-fly
             for (Glyph glyph : system.getInfo()
-                                     .getGlyphs()) {
+                                     .getGlyphsCopy()) {
                 Shape shape = glyph.getShape();
 
                 if (glyph.isWellKnown() &&
