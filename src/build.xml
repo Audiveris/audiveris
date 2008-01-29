@@ -141,6 +141,9 @@
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${proxymusic.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingworker.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${xenoplay.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai_codec.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai_core.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${mlibwrapper_jai.jar}"/>
 
     </target>
 	     
