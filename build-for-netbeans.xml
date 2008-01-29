@@ -125,6 +125,7 @@
 
     <!-- Load NetBeans implementation targets -->
     <import file="nbproject/build-impl.xml"/>
+<!--    <import file="nbproject/profiler-build-impl.xml"/> -->
 
     <!-- Next line will be inserted the first time you use the profiler -->
 <!--     <import file="nbproject/profiler-build-impl.xml"/> -->
