@@ -351,7 +351,7 @@ public class SheetActions
 
         /** Valid extensions for image files */
         Constant.String validImageFiles = new Constant.String(
-            ".bmp .gif .jpg .png .tif",
+            ".bmp .gif .jpg .png .tif .pdf",
             "Valid image file extensions, whitespace-separated");
     }
 }
