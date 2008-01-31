@@ -31,12 +31,7 @@ import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
-import javax.imageio.*;
-import javax.imageio.event.*;
-import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.BorderExtender;
 import javax.media.jai.InterpolationBilinear;
 import javax.media.jai.InterpolationNearest;
@@ -48,7 +43,7 @@ import javax.media.jai.operator.MosaicDescriptor;
 /**
  * Class <code>Picture</code> encapsulates an image, allowing modifications and
  * rendering. Its current implementation is based on JAI (Java Advanced
- * Imaging). JAI is not used outside of this class.
+ * Imaging).
  *
  * <p> Operations allow : <ul>
  *
@@ -240,7 +235,7 @@ public class Picture
     public Picture (File imgFile)
         throws FileNotFoundException, IOException, ImageFormatException
     {
-        setImage(loadFile(imgFile));
+        setImage(PictureLoader.loadFile(imgFile));
 
         logger.info(
             "Image loaded " + image.getWidth() + " x " + image.getHeight());
@@ -912,19 +907,19 @@ public class Picture
     private void checkImageFormat ()
         throws ImageFormatException
     {
+        int pixelSize = image.getColorModel()
+                             .getPixelSize();
+        
+        if (pixelSize == 1) {
+            image = BinaryToGray(image);
+        }
+
         // Check nb of bands
         int numBands = image.getSampleModel()
                             .getNumBands();
 
         if (logger.isFineEnabled()) {
             logger.fine("checkImageFormat. numBands=" + numBands);
-        }
-
-        int pixelSize = image.getColorModel()
-                             .getPixelSize();
-
-        if (pixelSize == 1) {
-            image = BinaryToGray(image);
         }
 
         if (numBands != 1) {
@@ -937,9 +932,6 @@ public class Picture
                     "Unsupported sample model" + " numBands=" + numBands);
             }
         }
-
-        //        pixelSize = image.getColorModel()
-        //                         .getPixelSize();
     }
 
     //--------//
@@ -952,84 +944,6 @@ public class Picture
             new ParameterBlock().addSource(image).add(null).add(null).add(null).add(
                 null).add(null),
             null);
-    }
-
-    //----------//
-    // loadFile //
-    //----------//
-    private static RenderedImage loadFile (File imgFile)
-    {
-        logger.info("Loading image from " + imgFile + " ...");
-
-        RenderedImage image = loadImageIO(imgFile);
-
-        if (image == null) {
-            logger.fine("Using JAI");
-            image = (JAI.create("fileload", imgFile.getPath()));
-        }
-
-        return image;
-    }
-
-    //-------------//
-    // loadImageIO //
-    //-------------//
-    private static BufferedImage loadImageIO (File imgFile)
-    {
-        ImageInputStream stream = null;
-
-        try {
-            try {
-                stream = ImageIO.createImageInputStream(imgFile);
-
-                if (stream == null) {
-                    logger.warning("No ImageIO input stream provider");
-                }
-            } catch (IOException e) {
-                stream = null;
-                logger.warning("Unable to make ImageIO stream", e);
-
-                return null;
-            }
-
-            Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
-
-            if (!readers.hasNext()) {
-                logger.warning("No ImageIO reader");
-
-                return null;
-            }
-
-            ImageReader reader = readers.next();
-
-            if (reader == null) {
-                throw new NoSuchElementException();
-            }
-
-            try {
-                reader.addIIOReadProgressListener(new Listener());
-                reader.setInput(stream, false);
-
-                if (reader.getNumImages(false) > 1) {
-                    logger.info("Using only first image in multi-image file");
-                }
-
-                return reader.read(0);
-            } catch (Exception ex) {
-                logger.warning("ImageIO failed", ex);
-
-                return null;
-            } finally {
-                reader.dispose();
-            }
-        } finally {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-            } catch (IOException e) {
-            }
-        }
     }
 
     //--------------//
@@ -1097,136 +1011,5 @@ public class Picture
         Constant.Ratio   binaryToGrayscaleSubsampling = new Constant.Ratio(
             1,
             "Subsampling ratio between 0 and 1, or 1 for no subsampling (memory intensive)");
-    }
-
-    //----------//
-    // Listener //
-    //----------//
-    /**
-     * Listener allows ImageIO to log image loading status.
-     */
-    private static class Listener
-        implements IIOReadProgressListener, IIOWriteProgressListener
-    {
-        //~ Static fields/initializers -----------------------------------------
-
-        /** Logging utility specifically for listener */
-        private static final Logger logger = Logger.getLogger(Listener.class);
-
-        //~ Instance fields ----------------------------------------------------
-
-        /** Previous progress state */
-        private volatile float lastProgress = 0;
-
-        //~ Methods ------------------------------------------------------------
-
-        public void imageComplete (ImageReader source)
-        {
-            logger.info("Image loading complete");
-
-            lastProgress = 0;
-        }
-
-        public void imageComplete (ImageWriter imagewriter)
-        {
-            logger.info("Image writing complete");
-
-            lastProgress = 0;
-        }
-
-        public void imageProgress (ImageReader source,
-                                   float       percentageDone)
-        {
-            if ((percentageDone - lastProgress) > 10) {
-                lastProgress = percentageDone;
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("Image loaded " + percentageDone + "%");
-                }
-
-                logger.info("");
-            }
-        }
-
-        public void imageProgress (ImageWriter imagewriter,
-                                   float       percentageDone)
-        {
-            if ((percentageDone - lastProgress) > 10) {
-                lastProgress = percentageDone;
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("Image written " + percentageDone + "%");
-                }
-
-                logger.info("");
-            }
-        }
-
-        public void imageStarted (ImageReader source,
-                                  int         imageIndex)
-        {
-            if (logger.isFineEnabled()) {
-                logger.fine("Image loading started");
-            }
-
-            logger.info("");
-        }
-
-        public void imageStarted (ImageWriter imagewriter,
-                                  int         i)
-        {
-            if (logger.isFineEnabled()) {
-                logger.fine("Image writing started");
-            }
-        }
-
-        public void readAborted (ImageReader source)
-        {
-            logger.warning("Image loading aborted");
-        }
-
-        public void sequenceComplete (ImageReader source)
-        {
-        }
-
-        public void sequenceStarted (ImageReader source,
-                                     int         minIndex)
-        {
-        }
-
-        public void thumbnailComplete (ImageReader source)
-        {
-        }
-
-        public void thumbnailComplete (ImageWriter imagewriter)
-        {
-        }
-
-        public void thumbnailProgress (ImageReader source,
-                                       float       percentageDone)
-        {
-        }
-
-        public void thumbnailProgress (ImageWriter imagewriter,
-                                       float       f)
-        {
-        }
-
-        public void thumbnailStarted (ImageReader source,
-                                      int         imageIndex,
-                                      int         thumbnailIndex)
-        {
-        }
-
-        public void thumbnailStarted (ImageWriter imagewriter,
-                                      int         i,
-                                      int         j)
-        {
-        }
-
-        public void writeAborted (ImageWriter imagewriter)
-        {
-            logger.warning("Image writing aborted");
-        }
     }
 }
