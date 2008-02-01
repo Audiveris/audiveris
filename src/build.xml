@@ -49,6 +49,9 @@
         <pathelement path="${proxymusic.jar}"/>
         <pathelement path="${swingworker.jar}"/>
         <pathelement path="${xenoplay.jar}"/>
+        <pathelement path="${java.home}/lib/ext/jai_codec.jar"/>
+        <pathelement path="${java.home}/lib/ext/jai_core.jar"/>
+        <pathelement path="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
     </path>
     
     <!-- Build classpath -->
@@ -141,9 +144,9 @@
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${proxymusic.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingworker.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${xenoplay.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai_codec.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai_core.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${mlibwrapper_jai.jar}"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_codec.jar"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_core.jar"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
 
     </target>
 	     
