@@ -259,7 +259,7 @@
         <!-- .bat file for windows -->
         <echo file="${dist.dir}/${name}.bat" append="false">@ECHO OFF
 REM ${name}.bat
-java -Xmx128M -Djava.util.logging.config.file=${config.dir}/logging.properties -jar ${full.name}.jar
+java -Xmx128M -Djava.util.logging.config.file=../config/logging.properties -jar ${full.name}.jar
         </echo>
         
     </target>
