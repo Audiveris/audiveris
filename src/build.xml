@@ -68,20 +68,23 @@
         <path refid="build.classpath"/>
     </path>
     
-    <!-- Run classpath -->
-    <path id="run.classpath">
-        <pathelement path="${dist.jar}"/>
+    <!-- Jar classpath -->
+    <path id="jar.classpath">
         <path refid="tools.classpath"/>
         <pathelement path="${icons.buttons.jar}"/>
         <pathelement path="${icons.music.jar}"/>
     </path>
-    <property name="run.string" refid="run.classpath"/>
+    
+    <!-- Run classpath -->
+    <path id="run.classpath">
+        <pathelement path="${dist.jar}"/>
+        <path refid="jar.classpath"/>
+    </path>
     
     <!-- Run Test classpath -->
     <path id="run.test.classpath">
         <path refid="build.test.classpath"/>
         <pathelement path="${dist.jar}"/>
-<!--         <path refid="run.classpath"/> -->
     </path>
     
     <!-- ================================================================ -->
@@ -126,13 +129,6 @@
     <!-- ===================== -->
     <target name="-copy-libs">
         <mkdir dir="${dist.dir}/lib"/>
-
-        <pathconvert pathsep=" " refid="run.classpath" property="jar.classpath">
-            <chainedmapper>
-                <flattenmapper/>
-                <globmapper from="*" to="lib/*"/>
-            </chainedmapper>
-        </pathconvert>
 
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.buttons.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.music.jar}"/>
@@ -287,6 +283,14 @@
         depends="-compile, -pre-jar, -copy-libs"
         description="Compile and generate the application jar file.">
 
+	<!-- Prepare the proper string of all companion jar files -->
+        <pathconvert pathsep=" " refid="jar.classpath" property="jar.string">
+            <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*" to="lib/*"/>
+            </chainedmapper>
+        </pathconvert>
+
         <!-- Put all ${build.classes.dir} into the application jar file -->
         <jar basedir="${build.classes.dir}"
 	     jarfile="${dist.jar}">
@@ -294,7 +298,7 @@
                 <attribute name="Main-Class"
                            value="${Name}"/>
                 <attribute name="Class-Path"
-                           value="${jar.classpath}"/>
+                           value="${jar.string}"/>
                 <attribute name="Built-By"
                            value="${build.owner}"/>
                 <attribute name="Specification-Title"
