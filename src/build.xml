@@ -158,6 +158,7 @@
         
         <!-- baseline classes -->
         <javac
+	    target       = "${javac.target}"
             classpathref = "build.classpath"
             debug        = "${build.compile.debug}"
             deprecation  = "${build.compile.deprecation}"
@@ -182,6 +183,7 @@
         <mkdir dir="${build.test.classes.dir}"/>
         
         <javac
+	    target       = "${javac.target}"
             classpathref = "build.test.classpath"
             debug        = "${build.compile.debug}"
             deprecation  = "${build.compile.deprecation}"
