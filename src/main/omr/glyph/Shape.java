@@ -382,6 +382,8 @@ public enum Shape
         // Augmentation dot
         /*1D16D*/ COMBINING_AUGMENTATION_DOT("Augmentation Dot"),
 
+        /*-----*/ TEXT("Sequence of letters & spaces"),
+
         // Alternate ending indication
         /*-----*/ ENDING("Alternate ending"),
 

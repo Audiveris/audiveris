@@ -1595,7 +1595,7 @@ public class Chord
         if (getNotes()
                 .size() > 0) {
             if (stem != null) {
-                SystemPoint middle = system.toSystemPoint(stem.getCenter());
+                SystemPoint middle = system.toSystemPoint(stem.getLocation());
                 Note        bestNote = null;
                 int         bestDy = Integer.MIN_VALUE;
 

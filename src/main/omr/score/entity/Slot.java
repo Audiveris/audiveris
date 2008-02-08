@@ -138,6 +138,9 @@ public class Slot
                                                     .toUnits(constants.maxDx);
     }
 
+    //-------//
+    // setId //
+    //-------//
     public void setId (int id)
     {
         this.id = id;
@@ -256,7 +259,7 @@ public class Slot
             for (Glyph glyph : glyphs) {
                 population.includeValue(
                     measure.getSystem()
-                           .toSystemPoint(glyph.getCenter()).x);
+                           .toSystemPoint(glyph.getLocation()).x);
             }
 
             if (population.getCardinality() > 0) {

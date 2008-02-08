@@ -25,6 +25,7 @@ import java.util.*;
 /**
  * Class <code>MeasureElement</code> is the basis for measure elements
  * (directions, notations, etc.)
+ *
  * <p>For some elements (such as wedge, dashes, pedal, slur, tuplet), we may
  * have two "events": the starting event and the stopping event.
  * Both will trigger the creation of a MeasureElement instance, the difference
@@ -39,7 +40,7 @@ public abstract class MeasureElement
     //~ Static fields/initializers ---------------------------------------------
 
     /** Specific application parameters */
-    protected static final Constants constants = new Constants();
+    private static final Constants constants = new Constants();
 
     //~ Instance fields --------------------------------------------------------
 
@@ -49,7 +50,7 @@ public abstract class MeasureElement
     /** The glyph(s) that compose this element, sorted by abscissa */
     private final SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
 
-    /** Is this a start (or a stop) */
+    /** Is this a start (rather than a stop) */
     private final boolean start;
 
     /** Bounding box */
@@ -126,6 +127,14 @@ public abstract class MeasureElement
     }
 
     //----------//
+    // setPoint //
+    //----------//
+    public void setPoint (SystemPoint point)
+    {
+        this.point = point;
+    }
+
+    //----------//
     // getPoint //
     //----------//
     public SystemPoint getPoint ()
@@ -164,7 +173,7 @@ public abstract class MeasureElement
     {
         // Reset
         shape = null;
-        point = null;
+        setPoint(null);
         box = null;
 
         glyphs.add(glyph);
@@ -220,7 +229,8 @@ public abstract class MeasureElement
             sb.append(" INVALID");
         }
 
-        sb.append("}");
+        sb.append(internalsString())
+          .append("}");
 
         return sb.toString();
     }
@@ -245,7 +255,7 @@ public abstract class MeasureElement
                         .getScale()
                         .toUnits(constants.slotShift);
 
-        return measure.findEventChord(new SystemPoint(point.x + dx, point.y));
+        return measure.getEventChord(new SystemPoint(point.x + dx, point.y));
     }
 
     //-----------------//
@@ -266,10 +276,25 @@ public abstract class MeasureElement
         if (pbox != null) {
             box = getSystem()
                       .toSystemRectangle(pbox);
-            point = new SystemPoint(
-                box.x + (box.width / 2),
-                box.y + (box.height / 2));
+            setPoint(
+                new SystemPoint(
+                    box.x + (box.width / 2),
+                    box.y + (box.height / 2)));
         }
+    }
+
+    //-----------------//
+    // internalsString //
+    //-----------------//
+    /**
+     * Return the string of the internals of this class, for inclusion in a
+     * toString
+     *
+     * @return the string of internals
+     */
+    protected String internalsString ()
+    {
+        return "";
     }
 
     //~ Inner Classes ----------------------------------------------------------

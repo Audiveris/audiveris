@@ -95,13 +95,15 @@ public class System
         id = getParent()
                  .getChildren()
                  .indexOf(this) + 1;
+
+        cleanupNode();
     }
 
     //--------//
     // System //
     //--------//
     /**
-     * Default constructor (needed by XML binder)
+     * Default constructor (needed by XML binder) Still needed? TBD...
      */
     private System ()
     {
@@ -315,6 +317,35 @@ public class System
         return (displayOrigin.x + dimension.width) - 1;
     }
 
+    //---------------//
+    // getStaffAbove //
+    //---------------//
+    /**
+     * Determine the staff which is just above the given system point
+     *
+     * @param sysPt the given system point
+     * @return the staff above
+     */
+    public Staff getStaffAbove (SystemPoint sysPt)
+    {
+        Staff best = null;
+
+        for (TreeNode node : getParts()) {
+            SystemPart part = (SystemPart) node;
+
+            for (TreeNode n : part.getStaves()) {
+                Staff staff = (Staff) n;
+                int   dy = sysPt.y - staff.getTopLeft().y + getTopLeft().y;
+
+                if (dy >= 0) {
+                    best = staff;
+                }
+            }
+        }
+
+        return best;
+    }
+
     //------------//
     // getStaffAt //
     //------------//
@@ -410,6 +441,15 @@ public class System
         return visitor.visit(this);
     }
 
+    //-------------//
+    // cleanupNode //
+    //-------------//
+    public void cleanupNode ()
+    {
+        actualDuration = null;
+        startTime = null;
+    }
+
     //--------//
     // locate //
     //--------//
@@ -454,22 +494,6 @@ public class System
         }
 
         return 0;
-    }
-
-    //---------------------//
-    // resetActualDuration //
-    //---------------------//
-    public void resetActualDuration ()
-    {
-        actualDuration = null;
-    }
-
-    //----------------//
-    // resetStartTime //
-    //----------------//
-    public void resetStartTime ()
-    {
-        startTime = null;
     }
 
     //-------------//

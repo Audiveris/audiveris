@@ -13,7 +13,6 @@ import omr.glyph.Glyph;
 
 import omr.score.Score;
 import omr.score.entity.Measure;
-import omr.score.entity.ScorePart;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
 
@@ -48,6 +47,17 @@ public class ScoreCleaner
 
     //~ Methods ----------------------------------------------------------------
 
+//    //-------------//
+//    // visit Score //
+//    //-------------//
+//    @Override
+//    public boolean visit (Score score)
+//    {
+//        score.cleanupNode();
+//
+//        return true;
+//    }
+
     //--------------//
     // visit System //
     //--------------//
@@ -65,8 +75,7 @@ public class ScoreCleaner
         }
 
         system.acceptChildren(this);
-        system.resetStartTime();
-        system.resetActualDuration();
+        system.cleanupNode();
 
         return false;
     }

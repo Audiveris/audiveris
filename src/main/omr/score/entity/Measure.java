@@ -813,7 +813,7 @@ public class Measure
     //------------//
     /**
      * Flag this measure as partial (shorter than expected duration)
-     * 
+     *
      * @param shortening how much the measure duration is to be reduced
      */
     public void setPartial (int shortening)
@@ -1154,7 +1154,6 @@ public class Measure
             }
 
             if ((measureFinal != null) && (measureFinal < 0)) {
-
                 if (logger.isFineEnabled()) {
                     logger.fine(
                         system.getContextString() + "M" + im +
@@ -1328,31 +1327,36 @@ public class Measure
         return dummyMeasure;
     }
 
-    //----------------//
-    // findEventChord //
-    //----------------//
+    //---------------//
+    // getEventChord //
+    //---------------//
     /**
      * Retrieve the most suitable chord to connect the event point to
      *
      * @param point the system-based location
      * @return the most suitable chord, or null
      */
-    public Chord findEventChord (SystemPoint point)
+    public Chord getEventChord (SystemPoint point)
     {
         // Choose the x-closest slot
         Slot slot = getClosestSlot(point);
 
         if (slot != null) {
-            // Choose the y-closest chord with normal (non-rest) note (WRONG !!!)
-            // TO BE IMPROVED !!! TBD
-            Chord chord = slot.getChordAbove(point);
+            // Choose the y-closest staff
+            Staff staff = getPart()
+                              .getStaffAt(point);
 
-            if (chord == null) {
-                chord = slot.getChordBelow(point);
+            int   staffY = staff.getTopLeft().y - getSystem()
+                                                      .getTopLeft().y +
+                           (staff.getHeight() / 2);
+
+            if (staffY <= point.y) {
+                return slot.getChordAbove(point);
+            } else {
+                return slot.getChordBelow(point);
             }
-
-            return chord;
         } else {
+            
             return null;
         }
     }
@@ -1362,7 +1366,7 @@ public class Measure
     //-------------//
     /**
      * Print the chords of this measure on standard output
-     * 
+     *
      * @param title a specific title, or null
      */
     public void printChords (String title)
@@ -1389,7 +1393,7 @@ public class Measure
     //------------//
     /**
      * Print the slots of this measure on standard output
-     * 
+     *
      * @param title a specific title, or null
      */
     public void printSlots (String title)
@@ -1415,7 +1419,7 @@ public class Measure
     //------------//
     /**
      * Print the voices of this measure on standard output
-     * 
+     *
      * @param title a potential title for this printout, or null
      */
     public void printVoices (String title)

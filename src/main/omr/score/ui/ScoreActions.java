@@ -271,7 +271,7 @@ public class ScoreActions
                     try {
                         SheetManager.getSelectedSheet()
                                     .getSheetSteps()
-                                    .doit(Step.SCORE);
+                                    .updateLastSteps(null, null);
                     } catch (Exception ex) {
                         logger.warning("Could not refresh score", ex);
                     }

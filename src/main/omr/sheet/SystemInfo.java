@@ -667,6 +667,7 @@ public class SystemInfo
      *
      * @return a description based on staff indices
      */
+    @Override
     public String toString ()
     {
         StringBuffer sb = new StringBuffer(80);

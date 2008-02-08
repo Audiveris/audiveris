@@ -21,6 +21,8 @@ import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
+import omr.score.entity.Text;
+import omr.score.entity.Text.CreatorText;
 import omr.score.ui.ScoreConstants;
 import omr.score.ui.ScoreTree;
 import omr.score.ui.ScoreView;
@@ -36,8 +38,10 @@ import omr.util.TreeNode;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 
 /**
  * Class <code>Score</code> handles a score hierarchy, composed of one or
@@ -106,6 +110,18 @@ public class Score
     /** Potential measure range, if not all score is to be played */
     private MeasureRange measureRange;
 
+    /** Potential work title */
+    private String workTitle;
+
+    /** Potential work number */
+    private String workNumber;
+
+    /** Potential copyright */
+    private String rights;
+
+    /** Set of creators, if any */
+    private Set<Text.CreatorText> creators = new HashSet<Text.CreatorText>();
+
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -167,6 +183,14 @@ public class Score
         System lastSystem = getLastSystem();
 
         return lastSystem.getStartTime() + lastSystem.getActualDuration();
+    }
+
+    //-------------//
+    // getCreators //
+    //-------------//
+    public Set<CreatorText> getCreators ()
+    {
+        return creators;
     }
 
     //-----------------//
@@ -438,6 +462,22 @@ public class Score
         return radix;
     }
 
+    //-----------//
+    // setRights //
+    //-----------//
+    public void setRights (String rights)
+    {
+        this.rights = rights;
+    }
+
+    //-----------//
+    // getRights //
+    //-----------//
+    public String getRights ()
+    {
+        return rights;
+    }
+
     //----------//
     // getScale //
     //----------//
@@ -599,6 +639,38 @@ public class Score
         return view;
     }
 
+    //---------------//
+    // setWorkNumber //
+    //---------------//
+    public void setWorkNumber (String workNumber)
+    {
+        this.workNumber = workNumber;
+    }
+
+    //---------------//
+    // getWorkNumber //
+    //---------------//
+    public String getWorkNumber ()
+    {
+        return workNumber;
+    }
+
+    //--------------//
+    // setWorkTitle //
+    //--------------//
+    public void setWorkTitle (String title)
+    {
+        this.workTitle = title;
+    }
+
+    //--------------//
+    // getWorkTitle //
+    //--------------//
+    public String getWorkTitle ()
+    {
+        return workTitle;
+    }
+
     //--------//
     // accept //
     //--------//
@@ -606,6 +678,25 @@ public class Score
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
+    }
+
+    //------------//
+    // addCreator //
+    //------------//
+    public void addCreator (CreatorText creatorText)
+    {
+        creators.add(creatorText);
+    }
+
+    //-------------//
+    // cleanupNode //
+    //-------------//
+    public void cleanupNode ()
+    {
+        workTitle = null;
+        workNumber = null;
+        rights = null;
+        creators.clear();
     }
 
     //-------//

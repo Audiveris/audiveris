@@ -56,6 +56,7 @@ public class Script
         , @XmlElement(name = "midi", type = MidiWriteTask.class)
         , @XmlElement(name = "play", type = PlayTask.class)
         , @XmlElement(name = "slur", type = SlurTask.class)
+        , @XmlElement(name = "text", type = TextTask.class)
     })
     private final List<Task> tasks = new ArrayList<Task>();
 

@@ -33,6 +33,8 @@ import omr.score.entity.Coda;
 import omr.score.entity.Dynamics;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
+import omr.score.entity.LyricItem;
+import omr.score.entity.LyricLine;
 import omr.score.entity.Mark;
 import omr.score.entity.Measure;
 import omr.score.entity.MeasureElement;
@@ -45,6 +47,7 @@ import omr.score.entity.Slur;
 import omr.score.entity.Staff;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
+import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.entity.Tuplet;
@@ -62,13 +65,10 @@ import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.CubicCurve2D;
+import java.awt.event.*;
+import java.awt.geom.*;
 
-import javax.swing.AbstractAction;
-import javax.swing.JCheckBoxMenuItem;
+import javax.swing.*;
 
 /**
  * Class <code>ScorePainter</code> defines for every node in Score hierarchy
@@ -142,13 +142,6 @@ public class ScorePainter
     private final Color slotColor = new Color(
         0,
         255,
-        0,
-        constants.slotAlpha.getValue());
-
-    /** Color for highlighted slot */
-    private final Color slotHighLightColor = new Color(
-        0,
-        0,
         0,
         constants.slotAlpha.getValue());
 
@@ -699,7 +692,7 @@ public class ScorePainter
     {
         // Check whether our system is impacted)
         final Rectangle clip = g.getClipBounds();
-        final int       xMargin = INTER_SYSTEM;
+        final int       xMargin = 2 * INTER_SYSTEM;
         final int       systemLeft = system.getRightPosition() + xMargin;
         final int       systemRight = system.getDisplayOrigin().x - xMargin;
 
@@ -709,6 +702,7 @@ public class ScorePainter
         } else {
             final UnitDimension dimension = system.getDimension();
             final Point         origin = system.getDisplayOrigin();
+            Color               oldColor = g.getColor();
             g.setColor(Color.lightGray);
 
             // Draw the system left edge
@@ -724,6 +718,7 @@ public class ScorePainter
                 zoom.scaled(origin.y),
                 zoom.scaled(origin.x + dimension.width),
                 zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
+            g.setColor(oldColor);
 
             return true;
         }
@@ -735,6 +730,36 @@ public class ScorePainter
     @Override
     public boolean visit (SystemPart part)
     {
+        Color oldColor = g.getColor();
+        Font  oldFont = g.getFont();
+
+        g.setColor(Color.BLUE);
+
+        // Text can be outside the boundaries of a system
+        for (Text text : part.getTexts()) {
+            int    y = text.getLocation().y;
+            String str = text.getContent();
+
+            // Force y alignment for lyrics of the same line
+            if (text instanceof LyricItem) {
+                LyricItem item = (LyricItem) text;
+                LyricLine line = item.getLine();
+
+                if (line != null) {
+                    y = line.getY();
+                }
+            }
+
+            g.setFont(text.getDisplayFont());
+            g.drawString(
+                str,
+                zoom.scaled(part.getDisplayOrigin().x + text.getLocation().x),
+                zoom.scaled(part.getDisplayOrigin().y + y));
+        }
+
+        g.setColor(oldColor);
+        g.setFont(oldFont);
+
         // Draw a brace if there is more than one stave in the part
         if (part.getStaves()
                 .size() > 1) {

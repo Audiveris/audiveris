@@ -90,10 +90,10 @@ public class ScoreConstants
             100,
             "Horizontal gutter between two systems");
         PixelCount       scoreInitX = new PixelCount(
-            100,
+            300,
             "Horizontal offset of the score origin");
         PixelCount       scoreInitY = new PixelCount(
-            150,
+            500,
             "Vertical offset of the score origin");
         PixelCount       staffAreaheight = new PixelCount(
             100,

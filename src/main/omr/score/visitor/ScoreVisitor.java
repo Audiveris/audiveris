@@ -35,6 +35,7 @@ import omr.score.entity.SystemPart;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
 import omr.score.entity.Wedge;
+import omr.score.entity.Words;
 
 /**
  * Interface <code>ScoreVisitor</code> is meant to visit any node of the Score
@@ -98,4 +99,6 @@ public interface ScoreVisitor
     boolean visit (Tuplet node);
 
     boolean visit (Wedge node);
+
+    boolean visit (Words node);
 }

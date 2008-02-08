@@ -131,7 +131,7 @@ public class GlyphBoard
     protected CellConstraints cst = new CellConstraints();
 
     /** The JGoodies/Form layout to be used by all subclasses  */
-    protected FormLayout layout = Panel.makeFormLayout(5, 3);
+    protected FormLayout layout = Panel.makeFormLayout(6, 3);
 
     /** The JGoodies/Form builder to be used by all subclasses  */
     protected PanelBuilder builder;
@@ -392,21 +392,25 @@ public class GlyphBoard
     protected void defineLayout ()
     {
         int r = 1; // --------------------------------
+                   // Glyph ---
+
         builder.addSeparator("Glyph", cst.xyw(1, r, 6));
         builder.add(active, cst.xy(7, r));
         builder.add(count, cst.xy(9, r));
         builder.add(new JButton(dumpAction), cst.xy(11, r));
 
         r += 2; // --------------------------------
-        r += 2; // --------------------------------
+                // Shape Icon (start, spans several rows)
 
-        builder.add(shapeIcon, cst.xy(1, r));
+        builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
+
+        r += 2; // --------------------------------
+                // Deassign
 
         JButton deassignButton = new JButton(deassignAction);
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
         deassignButton.setHorizontalAlignment(SwingConstants.RIGHT);
         builder.add(deassignButton, cst.xy(3, r));
-
         builder.add(shapeField, cst.xyw(5, r, 7));
     }
 

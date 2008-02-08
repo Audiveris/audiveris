@@ -14,6 +14,7 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
 import omr.score.common.SystemPoint;
+import omr.score.entity.LyricItem;
 import omr.score.entity.Note;
 import omr.score.entity.Staff;
 
@@ -84,74 +85,6 @@ public class MusicXML
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------------------//
-    // accidentalNameOf //
-    //------------------//
-    public static String accidentalNameOf (Shape shape)
-    {
-        ///sharp, natural, flat, double-sharp, sharp-sharp, flat-flat
-        switch (shape) {
-        case SHARP :
-            return "sharp";
-
-        case NATURAL :
-            return "natural";
-
-        case FLAT :
-            return "flat";
-
-        case DOUBLE_SHARP :
-            return "double-sharp";
-
-        case DOUBLE_FLAT :
-            return "flat-flat";
-        }
-
-        logger.warning("Illegal shape for accidental: " + shape);
-
-        return "";
-    }
-
-    //------------//
-    // barStyleOf //
-    //------------//
-    /**
-     * Report the MusicXML bar style for a recognized Barline shape
-     *
-     * @param shape the barline shape
-     * @return the bar style
-     */
-    public static String barStyleOf (Shape shape)
-    {
-        //      Bar-style contains style information. Choices are
-        //      regular, dotted, dashed, heavy, light-light,
-        //      light-heavy, heavy-light, heavy-heavy, and none.
-        switch (shape) {
-        case SINGLE_BARLINE :
-            return "light";
-
-        case DOUBLE_BARLINE :
-            return "light-light";
-
-        case FINAL_BARLINE :
-            return "light-heavy";
-
-        case REVERSE_FINAL_BARLINE :
-            return "heavy-light";
-
-        case LEFT_REPEAT_SIGN :
-            return "heavy-light";
-
-        case RIGHT_REPEAT_SIGN :
-            return "light-heavy";
-
-        case BACK_TO_BACK_REPEAT_SIGN :
-            return "heavy-heavy"; // ?
-        }
-
-        return "???";
-    }
 
     //-------------------//
     // getDynamicsObject //
@@ -278,6 +211,83 @@ public class MusicXML
         logger.severe("Unsupported ornament shape:" + shape);
 
         return null;
+    }
+
+    //-------------------//
+    // getSyllabicString //
+    //-------------------//
+    public static String getSyllabicString (LyricItem.SyllabicType type)
+    {
+        return type.toString()
+                   .toLowerCase();
+    }
+
+    //------------------//
+    // accidentalNameOf //
+    //------------------//
+    public static String accidentalNameOf (Shape shape)
+    {
+        ///sharp, natural, flat, double-sharp, sharp-sharp, flat-flat
+        switch (shape) {
+        case SHARP :
+            return "sharp";
+
+        case NATURAL :
+            return "natural";
+
+        case FLAT :
+            return "flat";
+
+        case DOUBLE_SHARP :
+            return "double-sharp";
+
+        case DOUBLE_FLAT :
+            return "flat-flat";
+        }
+
+        logger.warning("Illegal shape for accidental: " + shape);
+
+        return "";
+    }
+
+    //------------//
+    // barStyleOf //
+    //------------//
+    /**
+     * Report the MusicXML bar style for a recognized Barline shape
+     *
+     * @param shape the barline shape
+     * @return the bar style
+     */
+    public static String barStyleOf (Shape shape)
+    {
+        //      Bar-style contains style information. Choices are
+        //      regular, dotted, dashed, heavy, light-light,
+        //      light-heavy, heavy-light, heavy-heavy, and none.
+        switch (shape) {
+        case SINGLE_BARLINE :
+            return "light";
+
+        case DOUBLE_BARLINE :
+            return "light-light";
+
+        case FINAL_BARLINE :
+            return "light-heavy";
+
+        case REVERSE_FINAL_BARLINE :
+            return "heavy-light";
+
+        case LEFT_REPEAT_SIGN :
+            return "heavy-light";
+
+        case RIGHT_REPEAT_SIGN :
+            return "light-heavy";
+
+        case BACK_TO_BACK_REPEAT_SIGN :
+            return "heavy-heavy"; // ?
+        }
+
+        return "???";
     }
 
     //----------//

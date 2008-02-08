@@ -35,6 +35,7 @@ import omr.score.entity.SystemPart;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
 import omr.score.entity.Wedge;
+import omr.score.entity.Words;
 
 /**
  * Class <code>AbstractScoreVisitor</code> provides a default implementation of
@@ -264,6 +265,14 @@ public class AbstractScoreVisitor
     // visit Wedge //
     //-------------//
     public boolean visit (Wedge wedge)
+    {
+        return true;
+    }
+
+    //-------------//
+    // visit Words //
+    //-------------//
+    public boolean visit (Words words)
     {
         return true;
     }

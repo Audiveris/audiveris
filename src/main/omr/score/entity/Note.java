@@ -115,6 +115,9 @@ public class Note
     /** Tie / slurs */
     private List<Slur> slurs = new ArrayList<Slur>();
 
+    /** Lyric syllables (in different lines) */
+    private SortedSet<LyricItem> syllables;
+
     //~ Constructors -----------------------------------------------------------
 
     //------//
@@ -206,6 +209,14 @@ public class Note
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------------//
+    // getSyllables //
+    //--------------//
+    public SortedSet<LyricItem> getSyllables ()
+    {
+        return syllables;
+    }
+
     //-----------------//
     // getTypeDuration //
     //-----------------//
@@ -267,6 +278,18 @@ public class Note
 
             return 0;
         }
+    }
+
+    //-------------//
+    // addSyllable //
+    //-------------//
+    public void addSyllable (LyricItem item)
+    {
+        if (syllables == null) {
+            syllables = new TreeSet<LyricItem>(LyricItem.numberComparator);
+        }
+
+        syllables.add(item);
     }
 
     //------------//

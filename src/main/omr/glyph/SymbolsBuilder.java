@@ -12,6 +12,7 @@ package omr.glyph;
 
 import omr.Main;
 
+import omr.glyph.Glyph.TextType;
 import omr.glyph.ui.SymbolsEditor;
 
 import omr.score.entity.Note;
@@ -20,6 +21,7 @@ import omr.script.AssignTask;
 import omr.script.DeassignTask;
 import omr.script.SegmentTask;
 import omr.script.SlurTask;
+import omr.script.TextTask;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -197,6 +199,36 @@ public class SymbolsBuilder
                 shapes.add(shape);
                 sheet.updateLastSteps(glyphs, shapes);
             }
+        }
+    }
+
+    //------------//
+    // assignText //
+    //------------//
+    /**
+     * Assign text characteristics to a (collection of) textual glyphs
+     *
+     * @param glyphs the impacted glyphs
+     * @param textType the type(role) of this textual element
+     * @param textContent the content as a string
+     * @param record true if this task must be recorded
+     */
+    public void assignText (Collection<Glyph> glyphs,
+                            TextType          textType,
+                            String            textContent,
+                            boolean           record)
+    {
+        // Do the job
+        for (Glyph glyph : glyphs) {
+            glyph.setTextType(textType);
+            glyph.setTextContent(textContent);
+        }
+
+        // Record this task in the sheet script
+        if (record) {
+            sheet.getScript()
+                 .addTask(new TextTask(textType, textContent, glyphs));
+            sheet.updateLastSteps(glyphs, null);
         }
     }
 

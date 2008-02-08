@@ -216,6 +216,10 @@ public class SheetSteps
         // The re-processing is done sequentially (though LEAVES & CLEANUP could
         // be done on several systems in parallel)
 //        for (SystemInfo info : impactedSystems) {
+        
+        // Clean up score parameters
+        sheet.getScore().cleanupNode();
+        
         for (SystemInfo info : sheet.getSystems()) {
             final SystemInfo system = info;
 

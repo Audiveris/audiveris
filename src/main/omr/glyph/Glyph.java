@@ -65,6 +65,29 @@ public class Glyph
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Glyph.class);
 
+    //~ Enumerations -----------------------------------------------------------
+
+    /** Gives some indication about the role of a textual element */
+    public static enum TextType {
+        //~ Enumeration constant initializers ----------------------------------
+
+
+        /** Part or whole line of lyrics */
+        Lyrics,
+        /** Title of the work */
+        Title, 
+        /** Indication */
+        Direction, 
+        /** Number of the work */
+        Number, 
+        /** Part name */
+        Name, 
+        /** Composer, Lyricist, Arranger, ... */
+        Creator, 
+        /** Copyrights */
+        Rights;
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     /** Instance identifier (Unique in the containing GlyphLag) */
@@ -152,11 +175,17 @@ public class Glyph
      */
     protected Rectangle bounds;
 
+    /** Text content if any */
+    protected String textContent;
+
+    /** Text type if any */
+    protected TextType textType;
+
     /** Set of forbidden shapes, if any */
     protected Set<Shape> forbiddenShapes;
 
     /** Set of translation(s) of this glyph on the score side */
-    protected Set<Object> translations = new HashSet<Object>();
+    protected Collection<Object> translations = new ArrayList<Object>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -184,6 +213,38 @@ public class Glyph
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // setTextContent //
+    //----------------//
+    public void setTextContent (String textContent)
+    {
+        this.textContent = textContent;
+    }
+
+    //----------------//
+    // getTextContent //
+    //----------------//
+    public String getTextContent ()
+    {
+        return textContent;
+    }
+
+    //-------------//
+    // setTextType //
+    //-------------//
+    public void setTextType (TextType textType)
+    {
+        this.textType = textType;
+    }
+
+    //-------------//
+    // getTextType //
+    //-------------//
+    public TextType getTextType ()
+    {
+        return textType;
+    }
 
     //----------//
     // shapesOf //
@@ -246,6 +307,24 @@ public class Glyph
     public boolean isBar ()
     {
         return Shape.Barlines.contains(getShape());
+    }
+
+    //-------------//
+    // getCentroid //
+    //-------------//
+    /**
+     * Report the glyph centroid (mass center). The point is lazily evaluated.
+     *
+     * @return the mass center point
+     */
+    public PixelPoint getCentroid ()
+    {
+        if (centroid == null) {
+            centroid = getMoments()
+                           .getCentroid();
+        }
+
+        return centroid;
     }
 
     //----------//
@@ -378,8 +457,6 @@ public class Glyph
      */
     public boolean isKnown ()
     {
-        Shape shape = getShape();
-
         return (shape != null) && (shape != Shape.NOISE);
     }
 
@@ -915,6 +992,20 @@ public class Glyph
         return (shape != null) && shape.isWellKnown();
     }
 
+    //---------------//
+    // setWithLedger //
+    //---------------//
+    /**
+     * Remember info about ledger nearby
+     *
+     * @param withLedger true is there is such ledger
+     */
+    @XmlElement(name = "with-ledger")
+    public void setWithLedger (boolean withLedger)
+    {
+        this.withLedger = withLedger;
+    }
+
     //--------------//
     // isWithLedger //
     //--------------//
@@ -1163,7 +1254,7 @@ public class Glyph
         System.out.println("   pitchPosition=" + getPitchPosition());
         System.out.println("   withLedger=" + isWithLedger());
         System.out.println("   moments=" + getMoments());
-        System.out.println("   center=" + getCenter());
+        System.out.println("   location=" + getLocation());
         System.out.println("   centroid=" + getCentroid());
         System.out.println("   bounds=" + getBounds());
         System.out.println("   forbiddenShapes=" + forbiddenShapes);
@@ -1292,17 +1383,17 @@ public class Glyph
         return bounds;
     }
 
-    //-----------//
-    // getCenter //
-    //-----------//
+    //-------------//
+    // getLocation //
+    //-------------//
     /**
-     * Report the glyph (reference) center, which is the equivalent of the icon
+     * Report the glyph (reference) location, which is the equivalent of the icon
      * reference point if one such point exist, or the glyph area center
      * otherwise. The point is lazily evaluated.
      *
      * @return the reference center point
      */
-    public PixelPoint getCenter ()
+    public PixelPoint getLocation ()
     {
         if (shape == null) {
             return getAreaCenter();
@@ -1325,38 +1416,6 @@ public class Glyph
 
         // Default
         return getAreaCenter();
-    }
-
-    //-------------//
-    // getCentroid //
-    //-------------//
-    /**
-     * Report the glyph centroid (mass center). The point is lazily evaluated.
-     *
-     * @return the mass center point
-     */
-    public PixelPoint getCentroid ()
-    {
-        if (centroid == null) {
-            centroid = getMoments()
-                           .getCentroid();
-        }
-
-        return centroid;
-    }
-
-    //---------------//
-    // setWithLedger //
-    //---------------//
-    /**
-     * Remember info about ledger nearby
-     *
-     * @param withLedger true is there is such ledger
-     */
-    @XmlElement(name = "with-ledger")
-    public void setWithLedger (boolean withLedger)
-    {
-        this.withLedger = withLedger;
     }
 
     //----------//

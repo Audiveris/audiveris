@@ -414,7 +414,7 @@ public class Barline
                     if (letter.equals("O")) {
                         // DOT
                         Staff staff = system.getStaffAt(
-                            system.toSystemPoint(stick.getCenter()));
+                            system.toSystemPoint(stick.getLocation()));
 
                         if (staff != staffRef) {
                             continue;

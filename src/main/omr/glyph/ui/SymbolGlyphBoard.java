@@ -18,16 +18,24 @@ import omr.math.Moments;
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
+import omr.sheet.SheetManager;
+
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
+import omr.ui.field.SField;
 import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Predicate;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+
 import javax.swing.*;
+import javax.swing.event.*;
 
 /**
  * Class <code>SymbolGlyphBoard</code> defines an extended glyph board, with
@@ -63,6 +71,14 @@ class SymbolGlyphBoard
 
     /** Spinner just for symbol glyphs */
     private JSpinner symbolSpinner;
+
+    /** ComboBox for text type */
+    private JComboBox textCombo;
+
+    /** Input/Output : textual content */
+    protected final JTextField textField = new SField(
+        true,
+        "Content of a textual glyph");
 
     /** Glyph characteristics : position wrt staff */
     private LDoubleField pitchPosition = new LDoubleField(
@@ -117,6 +133,11 @@ class SymbolGlyphBoard
         }
     };
 
+    /** Handling of entered / selected values */
+    private final Action paramAction;
+
+    /** To avoid unwanted events */
+    private boolean selfUpdatingText;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -164,7 +185,24 @@ class SymbolGlyphBoard
             symbolSpinner.setToolTipText("Specific spinner for symbol glyphs");
         }
 
+        // Additional combo for text type
+        paramAction = new ParamAction();
+        textCombo = new JComboBox(Glyph.TextType.values());
+        textCombo.addActionListener(paramAction);
+        textCombo.setToolTipText("Type of the Text");
+
+        // Text field
+        textField.setHorizontalAlignment(JTextField.LEFT);
+
         defineSpecificLayout(true); // use of spinners
+
+        // Needed to process user input when RETURN/ENTER is pressed
+        getComponent()
+            .getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+            .put(KeyStroke.getKeyStroke("ENTER"), "TextAction");
+        getComponent()
+            .getActionMap()
+            .put("TextAction", paramAction);
     }
 
     //------------------//
@@ -179,6 +217,7 @@ class SymbolGlyphBoard
                              GlyphModel glyphModel)
     {
         super(unitName, glyphModel);
+        paramAction = null;
 
         defineSpecificLayout(false); // no use of spinners
     }
@@ -212,6 +251,32 @@ class SymbolGlyphBoard
             if (symbolSpinner != null) {
                 symbolSpinner.setValue(
                     symbolPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
+            }
+
+            // Text Information
+            if (textCombo != null) {
+                selfUpdatingText = true;
+
+                if ((glyph != null) && (glyph.getShape() == Shape.TEXT)) {
+                    textCombo.setEnabled(true);
+                    textField.setEnabled(true);
+
+                    if (glyph.getTextContent() != null) {
+                        textField.setText(glyph.getTextContent());
+                    } else {
+                        textField.setText("");
+                    }
+
+                    if (glyph.getTextType() != null) {
+                        textCombo.setSelectedItem(glyph.getTextType());
+                    }
+                } else {
+                    textCombo.setEnabled(false);
+                    textField.setEnabled(false);
+                    textField.setText("");
+                }
+
+                selfUpdatingText = false;
             }
 
             // Fill symbol characteristics
@@ -253,8 +318,10 @@ class SymbolGlyphBoard
     protected void defineSpecificLayout (boolean useSpinners)
     {
         int r = 1; // --------------------------------
+                   // Glyph ---
 
         r += 2; // --------------------------------
+                // Spinners
 
         if (useSpinners) {
             builder.addLabel("Id", cst.xy(1, r));
@@ -268,9 +335,17 @@ class SymbolGlyphBoard
         }
 
         r += 2; // --------------------------------
+                // Deassign, shape
 
-        // For glyph characteristics, first line
         r += 2; // --------------------------------
+                // For text information
+
+        builder.add(textCombo, cst.xyw(3, r, 3));
+        builder.add(textField, cst.xyw(7, r, 5));
+
+        r += 2; // --------------------------------
+                // Glyph characteristics, first line
+
         builder.add(pitchPosition.getLabel(), cst.xy(1, r));
         builder.add(pitchPosition.getField(), cst.xy(3, r));
 
@@ -280,8 +355,9 @@ class SymbolGlyphBoard
         builder.add(stems.getLabel(), cst.xy(9, r));
         builder.add(stems.getField(), cst.xy(11, r));
 
-        // For glyph characteristics, second line
         r += 2; // --------------------------------
+                // Glyph characteristics, second line
+
         builder.add(weight.getLabel(), cst.xy(1, r));
         builder.add(weight.getField(), cst.xy(3, r));
 
@@ -290,5 +366,48 @@ class SymbolGlyphBoard
 
         builder.add(height.getLabel(), cst.xy(9, r));
         builder.add(height.getField(), cst.xy(11, r));
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-------------//
+    // ParamAction //
+    //-------------//
+    private class ParamAction
+        extends AbstractAction
+    {
+        //~ Methods ------------------------------------------------------------
+
+        // Method run whenever user presses Return/Enter in one of the parameter
+        // fields
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            // Discard irrelevant action events
+            if (selfUpdatingText) {
+                return;
+            }
+
+            // TBD TBD: Need some secure way to retrieve glyphSetSelection !!!
+            Selection   glyphSetSelection = inputSelectionList.get(1);
+            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+
+            if (glyphs != null) {
+                // Read text information
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Text='" + textField.getText() + "' Type=" +
+                        textCombo.getSelectedItem());
+                }
+
+                SheetManager.getSelectedSheet()
+                            .getSymbolsBuilder()
+                            .assignText(
+                    glyphs,
+                    (Glyph.TextType) textCombo.getSelectedItem(),
+                    textField.getText(),
+                    true);
+            }
+        }
     }
 }

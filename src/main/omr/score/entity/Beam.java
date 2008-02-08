@@ -297,7 +297,7 @@ public class Beam
             if (other.chords.contains(chord)) {
                 int x = getMeasure()
                             .getSystem()
-                            .toSystemPoint(chord.getStem().getCenter()).x;
+                            .toSystemPoint(chord.getStem().getLocation()).x;
                 int y = getLine()
                             .yAt(x);
                 int yOther = other.getLine()

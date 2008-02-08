@@ -146,7 +146,7 @@ public abstract class SystemNode
     }
 
     //-----------//
-    // getCenter //
+    // getLocation //
     //-----------//
     /**
      * Report the center of this entity, wrt to the system top-left corner.

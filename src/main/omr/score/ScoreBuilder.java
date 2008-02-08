@@ -13,6 +13,7 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
 import omr.score.common.SystemPoint;
+import omr.score.common.SystemRectangle;
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.BeamGroup;
 import omr.score.entity.BeamItem;
@@ -33,6 +34,7 @@ import omr.score.entity.Slur;
 import omr.score.entity.Staff;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
+import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
 import omr.score.entity.Wedge;
@@ -47,8 +49,6 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
-import omr.util.OmrExecutors;
-import omr.util.SignallingRunnable;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -103,6 +103,7 @@ public class ScoreBuilder
     public void buildFinal ()
     {
         checkSlurConnections();
+        refineLyricSyllables();
         score.accept(new ScoreFixer());
         score.accept(new ScoreTimeFixer());
 
@@ -124,34 +125,36 @@ public class ScoreBuilder
         }
     }
 
-    //-----------//
-    // buildInfo //
-    //-----------//
-    /**
-     * Build the score information, system after system, glyph after glyph.
-     * Nota: Only local tests can be performed here, global ones are performed
-     * via the {@link omr.score.visitor.ScoreChecker}.
-     */
-    public void buildInfo ()
-    {
-        //        final long startTime = java.lang.System.currentTimeMillis();
-        sheet.getErrorsEditor()
-             .clear();
-
-        // Should we process systems in parallel or sequentially?
-        if (OmrExecutors.useParallelism() &&
-            (OmrExecutors.getNumberOfCpus() > 1)) {
-            buildParallelInfo();
-        } else {
-            buildSequentialInfo();
-        }
-
-        // Score processing once all systems are completed
-        buildFinal();
-
-        //        final long stopTime = java.lang.System.currentTimeMillis();
-        //        logger.info("Score translated in " + (stopTime - startTime) + " ms");
-    }
+    //    //-----------//
+    //    // buildInfo //
+    //    //-----------//
+    //    /**
+    //     * Build the score information, system after system, glyph after glyph.
+    //     * Nota: Only local tests can be performed here, global ones are performed
+    //     * via the {@link omr.score.visitor.ScoreChecker}.
+    //     */
+    //    public void buildInfo ()
+    //    {
+    //        //        final long startTime = java.lang.System.currentTimeMillis();
+    //        sheet.getErrorsEditor()
+    //             .clear();
+    //        
+    //        score.cleanupNode();
+    //
+    //        // Should we process systems in parallel or sequentially?
+    //        if (OmrExecutors.useParallelism() &&
+    //            (OmrExecutors.getNumberOfCpus() > 1)) {
+    //            buildParallelInfo();
+    //        } else {
+    //            buildSequentialInfo();
+    //        }
+    //
+    //        // Score processing once all systems are completed
+    //        buildFinal();
+    //
+    //        //        final long stopTime = java.lang.System.currentTimeMillis();
+    //        //        logger.info("Score translated in " + (stopTime - startTime) + " ms");
+    //    }
 
     //-------------//
     // buildSystem //
@@ -167,51 +170,51 @@ public class ScoreBuilder
         ///Measure.checkImplicitMeasures(system);
     }
 
-    //-------------------//
-    // buildParallelInfo //
-    //-------------------//
-    /**
-     * Systems are built in parallel
-     */
-    private void buildParallelInfo ()
-    {
-        Executor       executor = OmrExecutors.getHighExecutor();
-        CountDownLatch doneSignal = new CountDownLatch(
-            sheet.getSystems().size());
-
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            final System       system = systemInfo.getScoreSystem();
-            SignallingRunnable work = new SignallingRunnable(
-                doneSignal,
-                new Runnable() {
-                        public void run ()
-                        {
-                            buildSystem(system);
-                        }
-                    });
-            executor.execute(work);
-        }
-
-        // Wait for end of work
-        try {
-            doneSignal.await();
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    //---------------------//
-    // buildSequentialInfo //
-    //---------------------//
-    /**
-     * Systems are built in sequence
-     */
-    private void buildSequentialInfo ()
-    {
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            buildSystem(systemInfo.getScoreSystem());
-        }
-    }
+    //    //-------------------//
+    //    // buildParallelInfo //
+    //    //-------------------//
+    //    /**
+    //     * Systems are built in parallel
+    //     */
+    //    private void buildParallelInfo ()
+    //    {
+    //        Executor       executor = OmrExecutors.getHighExecutor();
+    //        CountDownLatch doneSignal = new CountDownLatch(
+    //            sheet.getSystems().size());
+    //
+    //        for (SystemInfo systemInfo : sheet.getSystems()) {
+    //            final System       system = systemInfo.getScoreSystem();
+    //            SignallingRunnable work = new SignallingRunnable(
+    //                doneSignal,
+    //                new Runnable() {
+    //                        public void run ()
+    //                        {
+    //                            buildSystem(system);
+    //                        }
+    //                    });
+    //            executor.execute(work);
+    //        }
+    //
+    //        // Wait for end of work
+    //        try {
+    //            doneSignal.await();
+    //        } catch (InterruptedException ex) {
+    //            ex.printStackTrace();
+    //        }
+    //    }
+    //
+    //    //---------------------//
+    //    // buildSequentialInfo //
+    //    //---------------------//
+    //    /**
+    //     * Systems are built in sequence
+    //     */
+    //    private void buildSequentialInfo ()
+    //    {
+    //        for (SystemInfo systemInfo : sheet.getSystems()) {
+    //            buildSystem(systemInfo.getScoreSystem());
+    //        }
+    //    }
 
     //----------------------//
     // checkSlurConnections //
@@ -224,6 +227,24 @@ public class ScoreBuilder
         for (SystemInfo systemInfo : sheet.getSystems()) {
             System system = systemInfo.getScoreSystem();
             Slur.retrieveSlurConnections(system);
+        }
+    }
+
+    //----------------------//
+    // refineLyricSyllables //
+    //----------------------//
+    /**
+     * Make attempts to connect lyric lines between systems
+     */
+    private void refineLyricSyllables ()
+    {
+        for (SystemInfo systemInfo : sheet.getSystems()) {
+            System system = systemInfo.getScoreSystem();
+
+            for (TreeNode node : system.getParts()) {
+                SystemPart part = (SystemPart) node;
+                part.refineLyricSyllables();
+            }
         }
     }
 
@@ -364,6 +385,9 @@ public class ScoreBuilder
 
             // Dynamics
             translate(new DynamicsTranslator());
+
+            // Text (-> Lyrics, Directions, etc...)
+            translate(new TextTranslator());
         }
 
         //-----------//
@@ -469,7 +493,7 @@ public class ScoreBuilder
              */
             public void computeLocation (Glyph glyph)
             {
-                currentCenter = system.toSystemPoint(glyph.getCenter());
+                currentCenter = system.toSystemPoint(glyph.getLocation());
                 currentStaff = system.getStaffAt(currentCenter);
                 currentPart = currentStaff.getPart();
                 currentMeasure = currentPart.getMeasureAt(currentCenter);
@@ -1087,6 +1111,74 @@ public class ScoreBuilder
             public void translate (Glyph glyph)
             {
                 Slur.populate(glyph, system);
+            }
+        }
+
+        //----------------//
+        // TextTranslator //
+        //----------------//
+        private class TextTranslator
+            extends Translator
+        {
+            //~ Instance fields ------------------------------------------------
+
+            SystemRectangle systemBox;
+
+            //~ Constructors ---------------------------------------------------
+
+            public TextTranslator ()
+            {
+                super("Text");
+            }
+
+            //~ Methods --------------------------------------------------------
+
+            public boolean isRelevant (Glyph glyph)
+            {
+                Shape shape = glyph.getShape();
+
+                return shape == Shape.TEXT;
+            }
+
+            @Override
+            public void completeSystem ()
+            {
+                for (TreeNode node : system.getParts()) {
+                    SystemPart part = (SystemPart) node;
+                    part.populateLyricLines();
+                    part.connectSyllablesToNotes();
+                }
+            }
+
+            @Override
+            public void computeLocation (Glyph glyph)
+            {
+                systemBox = system.toSystemRectangle(glyph.getContourBox());
+                currentCenter = new SystemPoint(
+                    systemBox.x + (systemBox.width / 2),
+                    systemBox.y + systemBox.height);
+
+                if (glyph.getTextType() == Glyph.TextType.Lyrics) {
+                    // Take the staff just above
+                    currentStaff = system.getStaffAbove(currentCenter);
+                } else {
+                    currentStaff = system.getStaffAt(currentCenter);
+                }
+
+                currentPart = currentStaff.getPart();
+            }
+
+            public void translate (Glyph glyph)
+            {
+                Text.populate(
+                    glyph,
+                    currentPart,
+                    currentCenter,
+                    
+                    // Take the left edge for x and the base line for y
+                    new SystemPoint(
+                        systemBox.x,
+                        systemBox.y + systemBox.height));
             }
         }
 

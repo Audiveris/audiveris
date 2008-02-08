@@ -17,8 +17,12 @@ import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.awt.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 
 /**
  * Class <code>SystemPart</code> handles the various parts found in one system,
@@ -53,8 +57,14 @@ public class SystemPart
     /** Specific child : list of slurs */
     private final SlurList slurs;
 
+    /** Specific child : list of lyric lines */
+    private final LyricList lyrics;
+
     /** Lonesome child : Starting barline (the others are linked to measures) */
     private Barline startingBarline;
+
+    /** Text entities within this system part */
+    private Set<Text> texts;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -77,6 +87,8 @@ public class SystemPart
         staves = new StaffList(this);
         measures = new MeasureList(this);
         slurs = new SlurList(this);
+        lyrics = new LyricList(this);
+        texts = new HashSet<Text>();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -143,7 +155,7 @@ public class SystemPart
      * Report the time, counted from beginning of this part, when sound stops,
      * which means that ending rests are not counted.
      *
-     * @param measureId potential constraint on measure id, 
+     * @param measureId potential constraint on measure id,
      * null for no constraint
      * @return the relative time of last Midi "note off" in this part
      */
@@ -179,6 +191,19 @@ public class SystemPart
     {
         return (Staff) getStaves()
                            .get(getStaves().size() - 1);
+    }
+
+    //-----------//
+    // getLyrics //
+    //-----------//
+    /**
+     * Report the collection of lyrics
+     *
+     * @return the lyrics list, which may be empty but not null
+     */
+    public List<TreeNode> getLyrics ()
+    {
+        return lyrics.getChildren();
     }
 
     //--------------//
@@ -346,6 +371,14 @@ public class SystemPart
         return (System) getParent();
     }
 
+    //----------//
+    // getTexts //
+    //----------//
+    public Set<Text> getTexts ()
+    {
+        return texts;
+    }
+
     //--------//
     // accept //
     //--------//
@@ -373,9 +406,19 @@ public class SystemPart
             measures.addChild(node);
         } else if (node instanceof Slur) {
             slurs.addChild(node);
+        } else if (node instanceof LyricLine) {
+            lyrics.addChild(node);
         } else {
             super.addChild(node);
         }
+    }
+
+    //---------//
+    // addText //
+    //---------//
+    public void addText (Text text)
+    {
+        texts.add(text);
     }
 
     //---------------//
@@ -402,6 +445,76 @@ public class SystemPart
     {
         getSlurs()
             .clear();
+        getLyrics()
+            .clear();
+        texts.clear();
+    }
+
+    //--------------------//
+    // populateLyricLines //
+    //--------------------//
+    /**
+     * Organize the various lyric items in aligned lyric lines
+     */
+    public void populateLyricLines ()
+    {
+        // Create the lyric lines as needed
+        for (Text text : texts) {
+            if (text instanceof LyricItem) {
+                LyricItem item = (LyricItem) text;
+                LyricLine.populate(item, this);
+            }
+        }
+
+        // Assign the lines id & related staff
+        Collections.sort(
+            getLyrics(),
+            new Comparator<TreeNode>() {
+                    public int compare (TreeNode tn1,
+                                        TreeNode tn2)
+                    {
+                        LyricLine l1 = (LyricLine) tn1;
+                        LyricLine l2 = (LyricLine) tn2;
+
+                        return Integer.signum(l1.getY() - l2.getY());
+                    }
+                });
+
+        for (TreeNode node : getLyrics()) {
+            LyricLine line = (LyricLine) node;
+            line.setId(lyrics.getChildren().indexOf(line) + 1);
+            line.setStaff(
+                getSystem().getStaffAbove(new SystemPoint(0, line.getY())));
+        }
+    }
+
+    //----------------------//
+    // refineLyricSyllables //
+    //----------------------//
+    /**
+     * Determine for each lyric item of syllable kind, its precise syllabic type
+     * (single, of part of a longer word)
+     */
+    public void refineLyricSyllables ()
+    {
+        for (TreeNode node : getLyrics()) {
+            LyricLine line = (LyricLine) node;
+            line.refineLyricSyllables();
+        }
+    }
+    
+    //-------------------------//
+    // connectSyllablesToNotes //
+    //-------------------------//
+    /**
+     * Assign each syllable to its related node
+     */
+    public void connectSyllablesToNotes()
+    {
+        for (TreeNode node : getLyrics()) {
+            LyricLine line = (LyricLine) node;
+            line.connectSyllablesToNotes();
+        }
     }
 
     //----------//
@@ -430,6 +543,20 @@ public class SystemPart
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // LyricList //
+    //-----------//
+    private static class LyricList
+        extends ScoreNode
+    {
+        //~ Constructors -------------------------------------------------------
+
+        LyricList (SystemPart container)
+        {
+            super(container);
+        }
+    }
 
     //-------------//
     // MeasureList //

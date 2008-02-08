@@ -39,7 +39,13 @@ public abstract class AbstractDirection
 
     //~ Constructors -----------------------------------------------------------
 
-    /** Creates a new instance of Direction */
+    /** Creates a new instance of Direction
+     *
+     * @param measure the containing measure
+     * @param point the reference point for this direction
+     * @param chord the related chord if any
+     * @param glyph the underlying glyph
+     */
     public AbstractDirection (Measure     measure,
                               SystemPoint point,
                               Chord       chord,
@@ -48,14 +54,21 @@ public abstract class AbstractDirection
         this(measure, true, point, chord, glyph);
     }
 
-    /** Creates a new instance of Direction */
+    /** Creates a new instance of Direction
+     *
+     * @param measure  the containing measure
+     * @param isStart true or false, to flag a start or a stop
+     * @param point the reference point for this direction
+     * @param chord the related chord if any
+     * @param glyph the underlying glyph
+     */
     public AbstractDirection (Measure     measure,
-                              boolean     start,
+                              boolean     isStart,
                               SystemPoint point,
                               Chord       chord,
                               Glyph       glyph)
     {
-        super(measure, start, point, chord, glyph);
+        super(measure, isStart, point, chord, glyph);
 
         // Register at its related chord
         if (chord != null) {

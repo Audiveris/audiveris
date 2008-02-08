@@ -28,6 +28,7 @@ import omr.score.entity.Coda;
 import omr.score.entity.Dynamics;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
+import omr.score.entity.LyricItem;
 import omr.score.entity.Measure;
 import omr.score.entity.Notation;
 import omr.score.entity.Ornament;
@@ -39,12 +40,14 @@ import omr.score.entity.Slur;
 import omr.score.entity.Staff;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
+import omr.score.entity.Text.CreatorText;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.entity.Tuplet;
 import omr.score.entity.Voice;
 import omr.score.entity.Voice.ChordInfo;
 import omr.score.entity.Wedge;
+import omr.score.entity.Words;
 import omr.score.midi.MidiAbstractions;
 import static omr.score.visitor.MusicXML.*;
 
@@ -817,7 +820,7 @@ public class ScoreExporter
 
         Chord chord = note.getChord();
 
-        // Chord direction  events for first note in chord
+        // Chord direction events for first note in chord
         if (chord.getNotes()
                  .indexOf(note) == 0) {
             for (omr.score.entity.Direction node : chord.getDirections()) {
@@ -964,7 +967,7 @@ public class ScoreExporter
 
             if (beam.isHook()) {
                 if (beam.getCenter().x > current.system.toSystemPoint(
-                    chord.getStem().getCenter()).x) {
+                    chord.getStem().getLocation()).x) {
                     pmBeam.setContent(FORWARD_HOOK);
                 } else {
                     pmBeam.setContent(BACKWARD_HOOK);
@@ -985,6 +988,29 @@ public class ScoreExporter
         // Ties / Slurs
         for (Slur slur : note.getSlurs()) {
             slur.accept(this);
+        }
+
+        // Lyrics ?
+        if (note.getSyllables() != null) {
+            for (LyricItem syllable : note.getSyllables()) {
+                Lyric pmLyric = new Lyric();
+                pmLyric.setDefaultY("" + yOf(syllable.getLocation(), staff));
+                pmLyric.setNumber("" + syllable.getLine().getId());
+
+                proxymusic.Text pmText = new proxymusic.Text();
+                pmText.setContent(syllable.getContent());
+                pmLyric.getElisionAndSyllabicAndText()
+                       .add(pmText);
+
+                Syllabic pmSyllabic = new Syllabic();
+                pmSyllabic.setContent(
+                    getSyllabicString(syllable.getSyllabicType()));
+                pmLyric.getElisionAndSyllabicAndText()
+                       .add(pmSyllabic);
+
+                current.pmNote.getLyric()
+                              .add(pmLyric);
+            }
         }
 
         // Safer...
@@ -1088,9 +1114,57 @@ public class ScoreExporter
         // No version inserted
         // Let the marshalling class handle it
 
+        // Work Number & work Title
+        Work pmWork = null;
+
+        if (score.getWorkNumber() != null) {
+            if (pmWork == null) {
+                pmWork = new Work();
+            }
+
+            WorkNumber pmNumber = new WorkNumber();
+            pmNumber.setContent(score.getWorkNumber());
+            pmWork.setWorkNumber(pmNumber);
+        }
+
+        if (score.getWorkTitle() != null) {
+            if (pmWork == null) {
+                pmWork = new Work();
+            }
+
+            WorkTitle pmTitle = new WorkTitle();
+            pmTitle.setContent(score.getWorkTitle());
+            pmWork.setWorkTitle(pmTitle);
+        }
+
+        if (pmWork != null) {
+            scorePartwise.setWork(pmWork);
+        }
+
         // Identification
         Identification identification = new Identification();
         scorePartwise.setIdentification(identification);
+
+        // Creators
+        for (CreatorText creator : score.getCreators()) {
+            Creator pmCreator = new Creator();
+            pmCreator.setContent(creator.getContent());
+
+            if (creator.getCreatorType() != null) {
+                pmCreator.setType(creator.getCreatorType().toString());
+            }
+
+            identification.getCreator()
+                          .add(pmCreator);
+        }
+
+        // Rights
+        if (score.getRights() != null) {
+            Rights pmRights = new Rights();
+            pmRights.setContent(score.getRights());
+            identification.getRights()
+                          .add(pmRights);
+        }
 
         // Source
         Source source = new Source();
@@ -1565,6 +1639,50 @@ public class ScoreExporter
         return true;
     }
 
+    //-------------//
+    // visit Words //
+    //-------------//
+    @Override
+    public boolean visit (Words words)
+    {
+        //	    <direction placement="above">
+        //		<direction-type>
+        //		    <words default-y="26" font-size="11" font-weight="bold" relative-x="-40" xml:lang="de" >Ziemlich langsam und mit Ausdruck</words>
+        //		</direction-type>
+        //		<sound tempo="60"/>
+        //	    </direction>
+        Direction direction = new Direction();
+        current.pmMeasure.getNoteOrBackupOrForward()
+                         .add(direction);
+
+        DirectionType directionType = new DirectionType();
+        direction.getDirectionType()
+                 .add(directionType);
+
+        proxymusic.Words pmWords = new proxymusic.Words();
+        directionType.getWords()
+                     .add(pmWords);
+        
+        pmWords.setContent(words.getText().getContent());
+
+        // Placement
+        direction.setPlacement(
+            (words.getPoint().y < current.note.getCenter().y) ? ABOVE : BELOW);
+
+        // default-y
+        Staff staff = current.note.getStaff();
+        pmWords.setDefaultY(yOf(words.getPoint(), staff));
+        
+        // font-size
+        pmWords.setFontSize("" + words.getText().getFontSize());
+
+        // relative-x
+        pmWords.setRelativeX(
+            toTenths(words.getPoint().x - current.note.getCenterLeft().x));
+
+        return true;
+    }
+
     //--------//
     // getDen //
     //--------//
@@ -1704,7 +1822,8 @@ public class ScoreExporter
             key.getCenter());
 
         if (previousKey != null) {
-            return !previousKey.getKey().equals(key.getKey());
+            return !previousKey.getKey()
+                               .equals(key.getKey());
         }
 
         return true; // Since no previous key found
