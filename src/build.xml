@@ -47,6 +47,7 @@
         <pathelement path="${jgoodies.forms.jar}"/>
         <pathelement path="${jgoodies.looks.jar}"/>
         <pathelement path="${proxymusic.jar}"/>
+        <pathelement path="${pdfrenderer.jar}"/>
         <pathelement path="${swingworker.jar}"/>
         <pathelement path="${xenoplay.jar}"/>
         <pathelement path="${java.home}/lib/ext/jai_codec.jar"/>
