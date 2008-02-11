@@ -228,7 +228,7 @@ public class SymbolsBuilder
         if (record) {
             sheet.getScript()
                  .addTask(new TextTask(textType, textContent, glyphs));
-            sheet.updateLastSteps(glyphs, null);
+            sheet.updateLastSteps(glyphs, new ArrayList<Shape>()); // No shapes
         }
     }
 

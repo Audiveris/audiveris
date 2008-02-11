@@ -40,7 +40,7 @@ public abstract class Text
     private static final Logger logger = Logger.getLogger(Text.class);
 
     /** The font used for text entities */
-    protected static Font textFont = new Font(
+    protected static Font lyricFont = new Font(
         constants.lyricFontName.getValue(),
         Font.PLAIN,
         constants.lyricFontSize.getValue());
@@ -52,7 +52,7 @@ public abstract class Text
 
     /** Font metrics */
     protected static FontMetrics fontMetrics = graphics.getFontMetrics(
-        textFont);
+        lyricFont);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -124,6 +124,14 @@ public abstract class Text
         return location;
     }
 
+    //--------------//
+    // getLyricFont //
+    //--------------//
+    public static Font getLyricFont ()
+    {
+        return lyricFont;
+    }
+
     //----------//
     // getWidth //
     //----------//
@@ -137,6 +145,9 @@ public abstract class Text
         return box.width;
     }
 
+    //----------//
+    // populate //
+    //----------//
     /**
      * Allocate the proper score entity (or entities) that correspond to this
      * textual glyph. This word or sequence of words may be: <ul>
@@ -259,6 +270,19 @@ public abstract class Text
         return (int) Math.rint(displayFont.getSize2D() / 1.8);
     }
 
+    //------------------//
+    // getLyricFontSize //
+    //------------------//
+    /**
+     * Report the font size to be exported for the lyrics
+     *
+     * @return the exported lyric font size
+     */
+    public static int getLyricFontSize ()
+    {
+        return (int) Math.rint(lyricFont.getSize2D() / 1.8);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -302,8 +326,8 @@ public abstract class Text
     {
         Rectangle2D rect = fontMetrics.getStringBounds(content, graphics);
         double      fontRatio = getWidth() / rect.getWidth();
-        displayFont = textFont.deriveFont(
-            new Float((fontRatio * textFont.getSize()) / 2));
+        displayFont = lyricFont.deriveFont(
+            new Float((fontRatio * lyricFont.getSize()) / 2));
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -313,7 +337,6 @@ public abstract class Text
     //-------------//
     public static class CreatorText
         extends Text
-        implements Comparable<CreatorText>
     {
         //~ Enumerations -------------------------------------------------------
 
@@ -340,8 +363,6 @@ public abstract class Text
                             SystemRectangle box)
         {
             super(systemPart, center, location, content, box);
-            systemPart.getScore()
-                      .addCreator(this);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -354,20 +375,6 @@ public abstract class Text
         public CreatorType getCreatorType ()
         {
             return creatorType;
-        }
-
-        public int compareTo (CreatorText that)
-        {
-            if (this.equals(that)) {
-                return 0;
-            } else {
-                return content.compareTo(that.content);
-            }
-        }
-
-        public boolean equals (CreatorText that)
-        {
-            return content.equals(that.content);
         }
 
         @Override
@@ -451,9 +458,6 @@ public abstract class Text
                            SystemRectangle box)
         {
             super(systemPart, center, location, content, box);
-
-            systemPart.getScore()
-                      .setWorkNumber(content);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -480,9 +484,6 @@ public abstract class Text
                            SystemRectangle box)
         {
             super(systemPart, center, location, content, box);
-
-            systemPart.getScore()
-                      .setRights(content);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -509,9 +510,6 @@ public abstract class Text
                           SystemRectangle box)
         {
             super(systemPart, center, location, content, box);
-
-            systemPart.getScore()
-                      .setWorkTitle(content);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -536,7 +534,7 @@ public abstract class Text
             17,
             "Standard font point size for lyrics");
         Constant.String  lyricFontName = new Constant.String(
-            "Serif",
+            "Sans Serif",
             "Standard font name for lyrics");
     }
 }

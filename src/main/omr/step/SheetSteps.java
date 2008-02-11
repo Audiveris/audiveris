@@ -30,14 +30,10 @@ import static omr.step.Step.*;
 
 import omr.util.Logger;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.io.*;
+import java.util.*;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 /**
  * Class <code>SheetSteps</code> handles the actual progress of steps for a
@@ -198,30 +194,28 @@ public class SheetSteps
      * Following the modification of a collection of glyphs, this method
      * launches the re-processing of the steps following VERTICALS on the
      * systems impacted by the modifications
+     *
      * @param glyphs the modified glyphs
      * @param shapes the previous shapes of these glyphs
      */
     public void updateLastSteps (Collection<Glyph> glyphs,
                                  Collection<Shape> shapes)
     {
-//        // Determine impacted systems, from the collection of modified glyphs
-//        Collection<SystemInfo> impactedSystems = sheet.getImpactedSystems(
-//            glyphs,
-//            shapes);
-//
-//        if (logger.isFineEnabled()) {
-//            logger.fine("Impact: " + SystemInfo.toString(impactedSystems));
-//        }
+        // Determine impacted systems, from the collection of modified glyphs
+        SortedSet<SystemInfo> impactedSystems = sheet.getImpactedSystems(
+            glyphs,
+            shapes);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Impact: " + SystemInfo.toString(impactedSystems));
+        }
 
         // The re-processing is done sequentially (though LEAVES & CLEANUP could
         // be done on several systems in parallel)
-//        for (SystemInfo info : impactedSystems) {
-        
-        // Clean up score parameters
-        sheet.getScore().cleanupNode();
-        
-        for (SystemInfo info : sheet.getSystems()) {
+        for (SystemInfo info : impactedSystems) {
             final SystemInfo system = info;
+            system.getScoreSystem()
+                  .cleanupNode();
 
             try {
                 if (isDone(LEAVES)) {
@@ -243,7 +237,7 @@ public class SheetSteps
         // Final cross-system translation tasks
         if (isDone(SCORE)) {
             sheet.getScoreBuilder()
-                 .buildFinal();
+                 .buildFinal(impactedSystems.first());
         }
 
         // Always refresh views if any
@@ -275,6 +269,7 @@ public class SheetSteps
     //---------//
     /**
      * Give access to the step task
+     *
      * @param step the provided step
      * @return the actual task (SheetTask or SystemTask)
      */
@@ -614,7 +609,7 @@ public class SheetSteps
 
             // Final cross-system translation tasks
             sheet.getScoreBuilder()
-                 .buildFinal();
+                 .buildFinal(null);
         }
 
         @Override
@@ -741,8 +736,8 @@ public class SheetSteps
                 logger.fine("VERTICALS displayUI");
             }
 
-            getTask(SYMBOLS)
-                .displayUI();
+//            getTask(SYMBOLS)
+//                .displayUI();
 
             // Create verticals display
             sheet.getVerticalsBuilder()

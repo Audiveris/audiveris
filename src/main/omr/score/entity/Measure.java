@@ -63,12 +63,6 @@ public class Measure
     /** Children: possibly several Beam's per staff */
     private BeamList beams;
 
-    //    /** Children: possibly several lines of lyrics */
-    //    private LyricList lyriclines;
-    //
-    //    /** Children: possibly several texts */
-    //    private TextList texts;
-
     /** Left abscissa (in units, wrt system left side) of this measure */
     private Integer leftX;
 
@@ -304,39 +298,14 @@ public class Measure
             }
         }
 
-        // Look in previous measures, with the same staff
-        Measure measure = (Measure) getPreviousSibling();
+        // Look in all preceding measures, with the same staff id
+        Measure measure = this;
 
-        for (; measure != null;
-             measure = (Measure) measure.getPreviousSibling()) {
+        while ((measure = measure = measure.getPreceding()) != null) {
             clef = measure.getLastMeasureClef(staffId);
 
             if (clef != null) {
                 return clef;
-            }
-        }
-
-        // Remember part index in system
-        final int partIndex = getPart()
-                                  .getId() - 1;
-
-        // Look in previous system(s) of the page
-        System system = (System) getSystem()
-                                     .getPreviousSibling();
-
-        for (; system != null; system = (System) system.getPreviousSibling()) {
-            SystemPart prt = (SystemPart) system.getParts()
-                                                .get(partIndex);
-
-            for (int im = prt.getMeasures()
-                             .size() - 1; im >= 0; im--) {
-                measure = (Measure) prt.getMeasures()
-                                       .get(im);
-                clef = measure.getLastMeasureClef(staffId);
-
-                if (clef != null) {
-                    return clef;
-                }
             }
         }
 
@@ -445,39 +414,14 @@ public class Measure
             return ts;
         }
 
-        // Look in previous measures in the system
-        Measure measure = (Measure) getPreviousSibling();
+        // Look in preceding measures in this system/part and before
+        Measure measure = this;
 
-        for (; measure != null;
-             measure = (Measure) measure.getPreviousSibling()) {
+        while ((measure = measure.getPreceding()) != null) {
             ts = measure.getTimeSignature();
 
             if (ts != null) {
                 return ts;
-            }
-        }
-
-        // Remember part index in system
-        final int partIndex = getPart()
-                                  .getId() - 1;
-
-        // Look in previous system(s) of the page
-        System system = (System) getSystem()
-                                     .getPreviousSibling();
-
-        for (; system != null; system = (System) system.getPreviousSibling()) {
-            SystemPart prt = (SystemPart) system.getParts()
-                                                .get(partIndex);
-
-            for (int im = prt.getMeasures()
-                             .size() - 1; im >= 0; im--) {
-                measure = (Measure) prt.getMeasures()
-                                       .get(im);
-                ts = measure.getTimeSignature();
-
-                if (ts != null) {
-                    return ts;
-                }
             }
         }
 
@@ -490,6 +434,39 @@ public class Measure
     public boolean isDummy ()
     {
         return isDummy;
+    }
+
+    //---------------//
+    // getEventChord //
+    //---------------//
+    /**
+     * Retrieve the most suitable chord to connect the event point to
+     *
+     * @param point the system-based location
+     * @return the most suitable chord, or null
+     */
+    public Chord getEventChord (SystemPoint point)
+    {
+        // Choose the x-closest slot
+        Slot slot = getClosestSlot(point);
+
+        if (slot != null) {
+            // Choose the y-closest staff
+            Staff staff = getPart()
+                              .getStaffAt(point);
+
+            int   staffY = staff.getTopLeft().y - getSystem()
+                                                      .getTopLeft().y +
+                           (staff.getHeight() / 2);
+
+            if (staffY <= point.y) {
+                return slot.getChordAbove(point);
+            } else {
+                return slot.getChordBelow(point);
+            }
+        } else {
+            return null;
+        }
     }
 
     //-----------//
@@ -635,39 +612,14 @@ public class Measure
             }
         }
 
-        // Look in previous measures in the system
-        Measure measure = (Measure) getPreviousSibling();
+        // Look in previous measures in the system part and the preceding ones
+        Measure measure = this;
 
-        for (; measure != null;
-             measure = (Measure) measure.getPreviousSibling()) {
+        while ((measure = measure.getPreceding()) != null) {
             ks = measure.getLastMeasureKey(staffId);
 
             if (ks != null) {
                 return ks;
-            }
-        }
-
-        // Remember part index in system
-        final int partIndex = getPart()
-                                  .getId() - 1;
-
-        // Look in previous system(s) of the page
-        System system = (System) getSystem()
-                                     .getPreviousSibling();
-
-        for (; system != null; system = (System) system.getPreviousSibling()) {
-            SystemPart prt = (SystemPart) system.getParts()
-                                                .get(partIndex);
-
-            for (int im = prt.getMeasures()
-                             .size() - 1; im >= 0; im--) {
-                measure = (Measure) prt.getMeasures()
-                                       .get(im);
-                ks = measure.getLastMeasureKey(staffId);
-
-                if (ks != null) {
-                    return ks;
-                }
             }
         }
 
@@ -882,6 +834,33 @@ public class Measure
     public boolean isPartial ()
     {
         return partial;
+    }
+
+    //--------------//
+    // getPreceding //
+    //--------------//
+    /**
+     * Report the preceding measure of this one, either in this system / part,
+     * or in the preceding system /part.
+     *
+     * @return the preceding measure, or null if none
+     */
+    public Measure getPreceding ()
+    {
+        Measure prevMeasure = (Measure) getPreviousSibling();
+
+        if (prevMeasure != null) {
+            return prevMeasure;
+        }
+
+        SystemPart precedingPart = getPart()
+                                       .getPreceding();
+
+        if (precedingPart != null) {
+            return precedingPart.getLastMeasure();
+        } else {
+            return null;
+        }
     }
 
     //----------//
@@ -1327,40 +1306,6 @@ public class Measure
         return dummyMeasure;
     }
 
-    //---------------//
-    // getEventChord //
-    //---------------//
-    /**
-     * Retrieve the most suitable chord to connect the event point to
-     *
-     * @param point the system-based location
-     * @return the most suitable chord, or null
-     */
-    public Chord getEventChord (SystemPoint point)
-    {
-        // Choose the x-closest slot
-        Slot slot = getClosestSlot(point);
-
-        if (slot != null) {
-            // Choose the y-closest staff
-            Staff staff = getPart()
-                              .getStaffAt(point);
-
-            int   staffY = staff.getTopLeft().y - getSystem()
-                                                      .getTopLeft().y +
-                           (staff.getHeight() / 2);
-
-            if (staffY <= point.y) {
-                return slot.getChordAbove(point);
-            } else {
-                return slot.getChordBelow(point);
-            }
-        } else {
-            
-            return null;
-        }
-    }
-
     //-------------//
     // printChords //
     //-------------//
@@ -1573,31 +1518,6 @@ public class Measure
             super(measure);
         }
     }
-
-    //    //-----------//
-    //    // LyricList //
-    //    //-----------//
-    //    private static class LyricList
-    //        extends MeasureNode
-    //    {
-    //        LyricList (Measure measure)
-    //        {
-    //            super(measure);
-    //        }
-    //    }
-
-    //----------//
-    // TextList //
-    //----------//
-    //    private static class TextList
-    //        extends MeasureNode
-    //    {
-    //        TextList (Measure measure)
-    //        {
-    //            super(measure);
-
-    //        }
-    //    }
 
     //-------------//
     // TimeSigList //

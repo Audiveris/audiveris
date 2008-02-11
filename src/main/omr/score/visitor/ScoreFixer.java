@@ -120,22 +120,14 @@ public class ScoreFixer
         // Adjust measure abscissae
         measure.resetAbscissae();
 
-        // Set measure id
-        Measure prevMeasure = (Measure) measure.getPreviousSibling();
+        // Set measure id, based on the preceding one
+        Measure precedingMeasure = measure.getPreceding();
 
-        if (prevMeasure != null) {
-            measure.setId(prevMeasure.getId() + 1);
+        if (precedingMeasure != null) {
+            measure.setId(precedingMeasure.getId() + 1);
         } else {
-            // Look for a previous system
-            System system = measure.getSystem();
-            System prevSystem = (System) system.getPreviousSibling();
-
-            if (prevSystem != null) {
-                measure.setId(
-                    prevSystem.getFirstPart().getLastMeasure().getId() + 1);
-            } else {
-                measure.setId(measure.isImplicit() ? 0 : 1);
-            }
+            // Very first measure
+            measure.setId(measure.isImplicit() ? 0 : 1);
         }
 
         return true;

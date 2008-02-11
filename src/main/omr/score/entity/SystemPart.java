@@ -14,9 +14,11 @@ import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Logger;
+import omr.util.Predicate;
 import omr.util.TreeNode;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -119,6 +121,22 @@ public class SystemPart
     {
         return (Staff) getStaves()
                            .get(0);
+    }
+
+    //--------------//
+    // getFollowing //
+    //--------------//
+    public SystemPart getFollowing ()
+    {
+        System nextSystem = (System) getSystem()
+                                         .getNextSibling();
+
+        if (nextSystem != null) {
+            return (SystemPart) nextSystem.getParts()
+                                          .get(id - 1);
+        } else {
+            return null;
+        }
     }
 
     //-------//
@@ -246,6 +264,22 @@ public class SystemPart
     }
 
     //--------------//
+    // getPreceding //
+    //--------------//
+    public SystemPart getPreceding ()
+    {
+        System prevSystem = (System) getSystem()
+                                         .getPreviousSibling();
+
+        if (prevSystem != null) {
+            return (SystemPart) prevSystem.getParts()
+                                          .get(id - 1);
+        } else {
+            return null;
+        }
+    }
+
+    //--------------//
     // setScorePart //
     //--------------//
     public void setScorePart (ScorePart scorePart)
@@ -272,6 +306,30 @@ public class SystemPart
     public List<TreeNode> getSlurs ()
     {
         return slurs.getChildren();
+    }
+
+    //----------//
+    // getSlurs //
+    //----------//
+    /**
+     * Report the collection of slurs for which the provided predicate is true
+     *
+     * @param predicate the check to run
+     * @return the collection of selected slurs, which may be empty
+     */
+    public List<Slur> getSlurs (Predicate<Slur> predicate)
+    {
+        List<Slur> selectedSlurs = new ArrayList<Slur>();
+
+        for (TreeNode sNode : getSlurs()) {
+            Slur slur = (Slur) sNode;
+
+            if (predicate.check(slur)) {
+                selectedSlurs.add(slur);
+            }
+        }
+
+        return selectedSlurs;
     }
 
     //------------//
@@ -450,6 +508,20 @@ public class SystemPart
         texts.clear();
     }
 
+    //-------------------------//
+    // connectSyllablesToNotes //
+    //-------------------------//
+    /**
+     * Assign each syllable to its related node
+     */
+    public void connectSyllablesToNotes ()
+    {
+        for (TreeNode node : getLyrics()) {
+            LyricLine line = (LyricLine) node;
+            line.connectSyllablesToNotes();
+        }
+    }
+
     //--------------------//
     // populateLyricLines //
     //--------------------//
@@ -502,18 +574,46 @@ public class SystemPart
             line.refineLyricSyllables();
         }
     }
-    
+
     //-------------------------//
-    // connectSyllablesToNotes //
+    // retrieveSlurConnections //
     //-------------------------//
     /**
-     * Assign each syllable to its related node
+     * Retrieve the connections between the (orphan) slurs at the beginning of
+     * this part and the (orphan) slurs at the end of the preceding part
      */
-    public void connectSyllablesToNotes()
+    public void retrieveSlurConnections ()
     {
-        for (TreeNode node : getLyrics()) {
-            LyricLine line = (LyricLine) node;
-            line.connectSyllablesToNotes();
+        // Orphans slurs at the beginning of the current system
+        List<Slur> orphans = getSlurs(Slur.isBeginningOrphan);
+        Collections.sort(orphans, Slur.verticalComparator);
+
+        // Ending orphans in preceding system/part
+        List<Slur> precedingOrphans = getPreceding()
+                                          .getSlurs(Slur.isEndingOrphan);
+        Collections.sort(precedingOrphans, Slur.verticalComparator);
+
+        // Connect the orphans as much as possible
+        SlurLoop: 
+        for (Slur slur : orphans) {
+            for (Slur prevSlur : precedingOrphans) {
+                if (slur.canExtend(prevSlur)) {
+                    slur.connectTo(prevSlur);
+
+                    continue SlurLoop;
+                }
+            }
+
+            // No connection for this orphan
+            slur.addError(" Could not left-connect slur #" + slur.getId());
+        }
+
+        // Check previous orphans
+        for (Slur prevSlur : precedingOrphans) {
+            if (prevSlur.getRightExtension() == null) {
+                prevSlur.addError(
+                    " Could not right-connect slur #" + prevSlur.getId());
+            }
         }
     }
 

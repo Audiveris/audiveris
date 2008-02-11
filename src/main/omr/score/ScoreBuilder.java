@@ -100,12 +100,31 @@ public class ScoreBuilder
     //------------//
     // buildFinal //
     //------------//
-    public void buildFinal ()
+    /**
+     * Final actions to be done, starting on first impacted system,
+     * until the very last system in the score
+     *
+     * @param fromInfo the first impacted system
+     */
+    public void buildFinal (SystemInfo fromInfo)
     {
-        checkSlurConnections();
-        refineLyricSyllables();
-        score.accept(new ScoreFixer());
-        score.accept(new ScoreTimeFixer());
+        logger.info("buildFinal from " + fromInfo);
+
+        // Get the (sub) list of all systems for final processing
+        List<SystemInfo> systems = (fromInfo == null) ? sheet.getSystems()
+                                   : sheet.getSystems()
+                                          .subList(
+            fromInfo.getId() - 1,
+            sheet.getSystems().size());
+
+        for (SystemInfo systemInfo : systems) {
+            System system = systemInfo.getScoreSystem();
+
+            system.retrieveSlurConnections();
+            system.accept(new ScoreFixer());
+            system.accept(new ScoreTimeFixer());
+            system.refineLyricSyllables();
+        }
 
         // Invalidate score data within MidiAgent, if needed
         try {
@@ -170,6 +189,8 @@ public class ScoreBuilder
         ///Measure.checkImplicitMeasures(system);
     }
 
+    //~ Inner Classes ----------------------------------------------------------
+
     //    //-------------------//
     //    // buildParallelInfo //
     //    //-------------------//
@@ -215,40 +236,6 @@ public class ScoreBuilder
     //            buildSystem(systemInfo.getScoreSystem());
     //        }
     //    }
-
-    //----------------------//
-    // checkSlurConnections //
-    //----------------------//
-    /**
-     * Make attempts to connect slurs between systems
-     */
-    private void checkSlurConnections ()
-    {
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            System system = systemInfo.getScoreSystem();
-            Slur.retrieveSlurConnections(system);
-        }
-    }
-
-    //----------------------//
-    // refineLyricSyllables //
-    //----------------------//
-    /**
-     * Make attempts to connect lyric lines between systems
-     */
-    private void refineLyricSyllables ()
-    {
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            System system = systemInfo.getScoreSystem();
-
-            for (TreeNode node : system.getParts()) {
-                SystemPart part = (SystemPart) node;
-                part.refineLyricSyllables();
-            }
-        }
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
 
     //------------------//
     // RebuildException //

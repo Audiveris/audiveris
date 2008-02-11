@@ -331,7 +331,7 @@ public class LyricItem
     @Override
     protected void determineFont ()
     {
-        displayFont = textFont;
+        displayFont = lyricFont;
     }
 
     //-----------------//

@@ -496,6 +496,59 @@ public class System
         return 0;
     }
 
+    //-------------------------//
+    // recomputeActualDuration //
+    //-------------------------//
+    /**
+     * Force recomputation of the system cached actual duration
+     */
+    public void recomputeActualDuration ()
+    {
+        actualDuration = null;
+        getActualDuration();
+    }
+
+    //--------------------//
+    // recomputeStartTime //
+    //--------------------//
+    /**
+     * Force recomputation of the system cached start time
+     */
+    public void recomputeStartTime ()
+    {
+        startTime = null;
+        getStartTime();
+    }
+
+    //----------------------//
+    // refineLyricSyllables //
+    //----------------------//
+    public void refineLyricSyllables ()
+    {
+        for (TreeNode node : getParts()) {
+            SystemPart part = (SystemPart) node;
+            part.refineLyricSyllables();
+        }
+    }
+
+    //-------------------------//
+    // retrieveSlurConnections //
+    //-------------------------//
+    /**
+     * Retrieve the connections between the (orphan) slurs at the beginning of
+     * this system and the (orphan) slurs at the end of the previous system
+     */
+    public void retrieveSlurConnections ()
+    {
+        if (getPreviousSibling() != null) {
+            // Examine every part in sequence
+            for (TreeNode pNode : getParts()) {
+                SystemPart part = (SystemPart) pNode;
+                part.retrieveSlurConnections();
+            }
+        }
+    }
+
     //-------------//
     // toPagePoint //
     //-------------//

@@ -82,15 +82,15 @@ public class LyricLine
         return id;
     }
 
-    //-------------//
-    // getNextLine //
-    //-------------//
+    //------------------//
+    // getFollowingLine //
+    //------------------//
     /**
      * Retrieve the corresponding lyric line in the next part, if any
      *
      * @return the next lyric line, or null
      */
-    public LyricLine getNextLine ()
+    public LyricLine getFollowingLine ()
     {
         LyricLine nextLine = null;
 
@@ -115,37 +115,31 @@ public class LyricLine
         return nextLine;
     }
 
-    //-----------------//
-    // getPreviousLine //
-    //-----------------//
+    //------------------//
+    // getPrecedingLine //
+    //------------------//
     /**
-     * Retrieve the corresponding lyric line in the previous part, if any
+     * Retrieve the corresponding lyric line in the p^receding part, if any
      *
-     * @return the previous lyric line, or null
+     * @return the preceding lyric line, or null
      */
-    public LyricLine getPreviousLine ()
+    public LyricLine getPrecedingLine ()
     {
-        LyricLine prevLine = null;
+        LyricLine  precedingLine = null;
 
-        // Check existence of similar line in previous system
-        System prevSystem = (System) getSystem()
-                                         .getPreviousSibling();
+        // Check existence of similar line in preceding system part
+        SystemPart part = getPart();
 
-        if (prevSystem != null) {
-            // We assume all systems have the same number of parts
-            SystemPart prevPart = (SystemPart) prevSystem.getParts()
-                                                         .get(
-                getPart().getId() - 1);
-
+        while ((part = part.getPreceding()) != null) {
             // Retrieve the same lyric line in the previous (system) part
-            if (prevPart.getLyrics()
-                        .size() >= id) {
-                prevLine = (LyricLine) prevPart.getLyrics()
-                                               .get(id - 1);
+            if (part.getLyrics()
+                    .size() >= id) {
+                precedingLine = (LyricLine) part.getLyrics()
+                                                .get(id - 1);
             }
         }
 
-        return prevLine;
+        return precedingLine;
     }
 
     //------//
@@ -218,12 +212,12 @@ public class LyricLine
     //----------------------//
     public void refineLyricSyllables ()
     {
-        // Last item of previous line is any
-        LyricItem prevItem = null;
-        LyricLine prevLine = getPreviousLine();
+        // Last item of preceding line is any
+        LyricItem precedingItem = null;
+        LyricLine precedingLine = getPrecedingLine();
 
-        if (prevLine != null) {
-            prevItem = prevLine.items.last();
+        if (precedingLine != null) {
+            precedingItem = precedingLine.items.last();
         }
 
         // Now browse sequentially all our line items
@@ -232,25 +226,25 @@ public class LyricLine
         for (int i = 0; i < itemArray.length; i++) {
             LyricItem item = itemArray[i];
 
-            // Next item (perhaps to be found in next line if needed)
-            LyricItem nextItem = null;
+            // Following item (perhaps to be found in following line if needed)
+            LyricItem followingItem = null;
 
             if (i < (itemArray.length - 1)) {
-                nextItem = itemArray[i + 1];
+                followingItem = itemArray[i + 1];
             } else {
-                LyricLine nextLine = getNextLine();
+                LyricLine followingLine = getFollowingLine();
 
-                if (nextLine != null) {
-                    nextItem = nextLine.items.first();
+                if (followingLine != null) {
+                    followingItem = followingLine.items.first();
                 }
             }
 
             // We process only syllable items
             if (item.getItemKind() == LyricItem.ItemKind.Syllable) {
-                item.defineSyllabicType(prevItem, nextItem);
+                item.defineSyllabicType(precedingItem, followingItem);
             }
 
-            prevItem = item;
+            precedingItem = item;
         }
     }
 

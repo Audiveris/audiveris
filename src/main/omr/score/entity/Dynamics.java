@@ -15,8 +15,6 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
 import omr.score.common.SystemPoint;
-import omr.score.entity.Chord;
-import omr.score.entity.Direction;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -177,6 +175,15 @@ public class Dynamics
         // Create a brand new instance
         glyph.setTranslation(
             new Dynamics(measure, point, findChord(measure, point), glyph));
+    }
+
+    //---------------//
+    // computeCenter //
+    //---------------//
+    @Override
+    protected void computeCenter ()
+    {
+        setCenter(computeGlyphsCenter(getGlyphs()));
     }
 
     //--------------//

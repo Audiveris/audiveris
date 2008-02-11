@@ -121,13 +121,13 @@ public class ScoreTimeFixer
         ///logger.info("Visiting " + system);
 
         // System time
-        system.getStartTime(); // Value is cached
+        system.recomputeStartTime();
 
         // Browse the SystemParts and the Measures
         system.acceptChildren(this);
 
         // System duration
-        system.getActualDuration(); // Value is cached
+        system.recomputeActualDuration();
 
         return false; // No default browsing this way
     }

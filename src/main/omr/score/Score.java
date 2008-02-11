@@ -110,18 +110,6 @@ public class Score
     /** Potential measure range, if not all score is to be played */
     private MeasureRange measureRange;
 
-    /** Potential work title */
-    private String workTitle;
-
-    /** Potential work number */
-    private String workNumber;
-
-    /** Potential copyright */
-    private String rights;
-
-    /** Set of creators, if any */
-    private Set<Text.CreatorText> creators = new HashSet<Text.CreatorText>();
-
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -183,14 +171,6 @@ public class Score
         System lastSystem = getLastSystem();
 
         return lastSystem.getStartTime() + lastSystem.getActualDuration();
-    }
-
-    //-------------//
-    // getCreators //
-    //-------------//
-    public Set<CreatorText> getCreators ()
-    {
-        return creators;
     }
 
     //-----------------//
@@ -462,22 +442,6 @@ public class Score
         return radix;
     }
 
-    //-----------//
-    // setRights //
-    //-----------//
-    public void setRights (String rights)
-    {
-        this.rights = rights;
-    }
-
-    //-----------//
-    // getRights //
-    //-----------//
-    public String getRights ()
-    {
-        return rights;
-    }
-
     //----------//
     // getScale //
     //----------//
@@ -639,38 +603,6 @@ public class Score
         return view;
     }
 
-    //---------------//
-    // setWorkNumber //
-    //---------------//
-    public void setWorkNumber (String workNumber)
-    {
-        this.workNumber = workNumber;
-    }
-
-    //---------------//
-    // getWorkNumber //
-    //---------------//
-    public String getWorkNumber ()
-    {
-        return workNumber;
-    }
-
-    //--------------//
-    // setWorkTitle //
-    //--------------//
-    public void setWorkTitle (String title)
-    {
-        this.workTitle = title;
-    }
-
-    //--------------//
-    // getWorkTitle //
-    //--------------//
-    public String getWorkTitle ()
-    {
-        return workTitle;
-    }
-
     //--------//
     // accept //
     //--------//
@@ -678,25 +610,6 @@ public class Score
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
-    }
-
-    //------------//
-    // addCreator //
-    //------------//
-    public void addCreator (CreatorText creatorText)
-    {
-        creators.add(creatorText);
-    }
-
-    //-------------//
-    // cleanupNode //
-    //-------------//
-    public void cleanupNode ()
-    {
-        workTitle = null;
-        workNumber = null;
-        rights = null;
-        creators.clear();
     }
 
     //-------//

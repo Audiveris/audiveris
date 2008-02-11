@@ -24,6 +24,7 @@ import omr.sheet.PixelPoint;
 import omr.sheet.Scale;
 
 import omr.util.Logger;
+import omr.util.Predicate;
 import omr.util.TreeNode;
 
 import java.awt.geom.*;
@@ -49,11 +50,61 @@ public class Slur
     private static final Logger logger = Logger.getLogger(Slur.class);
 
     /** To order slurs vertically within a measure */
-    private static final Comparator<Slur> slurComparator = new Comparator<Slur>() {
+    public static final Comparator<Slur> verticalComparator = new Comparator<Slur>() {
         public int compare (Slur s1,
                             Slur s2)
         {
             return Double.compare(s1.getCurve().getY1(), s2.getCurve().getY1());
+        }
+    };
+
+    /** Predicate for a orphan slur at the end of its system/part */
+    public static final Predicate<Slur> isEndingOrphan = new Predicate<Slur>() {
+        public boolean check (Slur slur)
+        {
+            if (slur.getRightNote() == null) {
+                // Check we are in last measure
+                Point2D p2 = slur.getCurve()
+                                 .getP2();
+                Measure measure = slur.getPart()
+                                      .getMeasureAt(
+                    new SystemPoint(p2.getX(), p2.getY()));
+
+                if (measure == slur.getPart()
+                                   .getLastMeasure()) {
+                    // Nullify a potential link to zombie slurs
+                    slur.rightExtension = null;
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    };
+
+    /** Predicate for a orphan slur at the beginning of its system/part */
+    public static final Predicate<Slur> isBeginningOrphan = new Predicate<Slur>() {
+        public boolean check (Slur slur)
+        {
+            if (slur.getLeftNote() == null) {
+                // Check we are in first measure
+                Point2D p1 = slur.getCurve()
+                                 .getP1();
+                Measure measure = slur.getPart()
+                                      .getMeasureAt(
+                    new SystemPoint(p1.getX(), p1.getY()));
+
+                if (measure == slur.getPart()
+                                   .getFirstMeasure()) {
+                    // Nullify a potential link to zombie slurs
+                    slur.leftExtension = null;
+
+                    return true;
+                }
+            }
+
+            return false;
         }
     };
 
@@ -145,6 +196,14 @@ public class Slur
         return curve;
     }
 
+    //-------//
+    // getId //
+    //-------//
+    public int getId ()
+    {
+        return glyph.getId();
+    }
+
     //------------------//
     // getLeftExtension //
     //------------------//
@@ -220,6 +279,25 @@ public class Slur
     }
 
     //----------//
+    // addError //
+    //----------//
+    @Override
+    public void addError (String text)
+    {
+        super.addError(glyph, text);
+    }
+
+    //-----------//
+    // canExtend //
+    //-----------//
+    public boolean canExtend (Slur prevSlur)
+    {
+        return (this.leftExtension == null) &&
+               (prevSlur.rightExtension == null) &&
+               this.isPositionCompatibleWith(prevSlur);
+    }
+
+    //----------//
     // populate //
     //----------//
     /**
@@ -243,14 +321,9 @@ public class Slur
             system.addError(glyph, "Still spurious slur glyph");
 
             if (SlurGlyph.fixSpuriousSlur(glyph, system.getInfo()) != null) {
-                logger.info("Slur fixed  ...");
-
-                //                system.getScore()
-                //                      .getSheet()
-                //                      .getGlyphsBuilder()
-                //                      .extractNewSystemGlyphs(system.getInfo());
-                //
-                //                throw new ScoreBuilder.RebuildException("Slur");
+                if (logger.isFineEnabled()) {
+                    logger.fine("Slur fixed  ...");
+                }
             }
         } else {
             // Build a curve using system-based coordinates
@@ -377,108 +450,29 @@ public class Slur
         return below;
     }
 
-    //-------------------------//
-    // retrieveSlurConnections //
-    //-------------------------//
+    //-----------//
+    // connectTo //
+    //-----------//
     /**
-     * Retrieve the connections between the (orphan) slurs at the beginning of
-     * this system and the (orphan) slurs at the end of the previous system
+     * Make the connection with another slur in the previous system
      *
-     * @param system the current system
+     * @param prevSlur slur at the end of previous system
      */
-    public static void retrieveSlurConnections (System system)
+    public void connectTo (Slur prevSlur)
     {
-        // Part by part,
-        // Check whether orphan slurs in first measure can be connected to
-        // corresponding orphans slurs in last leasure of previous system
-        System prevSystem = (System) system.getPreviousSibling();
+        // Cross-extensions
+        this.leftExtension = prevSlur;
+        prevSlur.rightExtension = this;
 
-        if (prevSystem == null) {
-            return;
-        }
+        // Tie ?
+        boolean isATie = haveSameHeight(prevSlur.leftNote, this.rightNote);
+        prevSlur.tie = isATie;
+        this.tie = isATie;
 
-        // Do we have slurs with no left note in current system ?
-        for (TreeNode pNode : system.getParts()) {
-            SystemPart part = (SystemPart) pNode;
-            List<Slur> orphans = new ArrayList<Slur>();
-
-            for (TreeNode sNode : part.getSlurs()) {
-                Slur slur = (Slur) sNode;
-
-                if (slur.getLeftNote() == null) {
-                    // Check we are in first measure
-                    Point2D p1 = slur.getCurve()
-                                     .getP1();
-                    Measure measure = part.getMeasureAt(
-                        new SystemPoint(p1.getX(), p1.getY()));
-
-                    if (measure == part.getFirstMeasure()) {
-                        orphans.add(slur);
-                    }
-                }
-            }
-
-            if (orphans.size() == 0) {
-                continue;
-            }
-
-            Collections.sort(orphans, slurComparator);
-
-            // Get orphans in previous measure
-            SystemPart prevPart = (SystemPart) prevSystem.getParts()
-                                                         .get(part.getId() - 1);
-            List<Slur> prevOrphans = new ArrayList<Slur>();
-
-            for (TreeNode sNode : prevPart.getSlurs()) {
-                Slur slur = (Slur) sNode;
-
-                if (slur.getRightNote() == null) {
-                    // Check we are in last measure
-                    Point2D p2 = slur.getCurve()
-                                     .getP2();
-                    Measure measure = prevPart.getMeasureAt(
-                        new SystemPoint(p2.getX(), p2.getY()));
-
-                    if (measure == prevPart.getLastMeasure()) {
-                        prevOrphans.add(slur);
-                    }
-                }
-            }
-
-            Collections.sort(prevOrphans, slurComparator);
-
-            // Connect the orphans as much as possible
-            SlurLoop: 
-            for (int i = 0; i < orphans.size(); i++) {
-                Slur slur = orphans.get(i);
-
-                for (int j = 0; j < prevOrphans.size(); j++) {
-                    Slur prevSlur = prevOrphans.get(j);
-
-                    if ((prevSlur.rightExtension == null) &&
-                        arePositionCompatible(prevPart, prevSlur, part, slur)) {
-                        connectSlurs(prevSlur, slur);
-
-                        continue SlurLoop;
-                    }
-                }
-
-                // No connection for this orphan
-                part.addError(
-                    slur.glyph,
-                    " Could not connect slur #" + slur.glyph.getId());
-            }
-
-            // Check previous orphans
-            for (int j = 0; j < prevOrphans.size(); j++) {
-                Slur prevSlur = prevOrphans.get(j);
-
-                if (prevSlur.rightExtension == null) {
-                    prevPart.addError(
-                        prevSlur.glyph,
-                        " Could not connect slur #" + prevSlur.glyph.getId());
-                }
-            }
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                (isATie ? "Tie" : "Slur") + " connection #" +
+                prevSlur.glyph.getId() + " -> #" + this.glyph.getId());
         }
     }
 
@@ -554,9 +548,9 @@ public class Slur
         return sb.toString();
     }
 
-    //-----------------------//
-    // arePositionCompatible //
-    //-----------------------//
+    //--------------------------//
+    // isPositionCompatibleWith //
+    //--------------------------//
     /**
      * Check whether two slurs to-be-connected are roughly compatible with each other
      *
@@ -566,23 +560,20 @@ public class Slur
      * @param slur the following slur
      * @return true if found compatible
      */
-    private static boolean arePositionCompatible (SystemPart prevPart,
-                                                  Slur       prevSlur,
-                                                  SystemPart part,
-                                                  Slur       slur)
+    private boolean isPositionCompatibleWith (Slur prevSlur)
     {
         // Retrieve prev position
         SystemPoint prevPt = new SystemPoint(
             prevSlur.curve.getX2(),
             prevSlur.curve.getY2());
-        Staff       prevStaff = prevPart.getStaffAt(prevPt);
+        Staff       prevStaff = prevSlur.getPart()
+                                        .getStaffAt(prevPt);
         double      prevPp = prevStaff.pitchPositionOf(prevPt);
 
         // Retrieve position
-        SystemPoint pt = new SystemPoint(
-            slur.curve.getX1(),
-            slur.curve.getY1());
-        Staff       staff = part.getStaffAt(pt);
+        SystemPoint pt = new SystemPoint(curve.getX1(), curve.getY1());
+        Staff       staff = getPart()
+                                .getStaffAt(pt);
         double      pp = staff.pitchPositionOf(pt);
 
         // Compare pitch positions (very roughly)
@@ -636,34 +627,6 @@ public class Slur
             c2.y,
             p2.x,
             p2.y);
-    }
-
-    //--------------//
-    // connectSlurs //
-    //--------------//
-    /**
-     * Actually connect two slur chunks over a system border
-     *
-     * @param prevSlur slur at the end of previous system
-     * @param slur slur at the beginning of the following system
-     */
-    private static void connectSlurs (Slur prevSlur,
-                                      Slur slur)
-    {
-        // Cross-extensions
-        slur.leftExtension = prevSlur;
-        prevSlur.rightExtension = slur;
-
-        // Tie ?
-        boolean isATie = haveSameHeight(prevSlur.leftNote, slur.rightNote);
-        prevSlur.tie = isATie;
-        slur.tie = isATie;
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                (isATie ? "Tie" : "Slur") + " connection #" +
-                prevSlur.glyph.getId() + " -> #" + slur.glyph.getId());
-        }
     }
 
     //-------------//

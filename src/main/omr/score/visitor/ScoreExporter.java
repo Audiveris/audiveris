@@ -17,6 +17,7 @@ import static omr.glyph.Shape.*;
 
 import omr.score.MeasureRange;
 import omr.score.Score;
+import omr.score.common.PagePoint;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.Arpeggiate;
@@ -41,6 +42,9 @@ import omr.score.entity.Staff;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
 import omr.score.entity.Text.CreatorText;
+import omr.score.entity.Text.NumberText;
+import omr.score.entity.Text.RightsText;
+import omr.score.entity.Text.TitleText;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.entity.Tuplet;
@@ -60,6 +64,7 @@ import proxymusic.*;
 
 import proxymusic.util.Marshalling;
 
+import java.awt.Font;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -1114,57 +1119,9 @@ public class ScoreExporter
         // No version inserted
         // Let the marshalling class handle it
 
-        // Work Number & work Title
-        Work pmWork = null;
-
-        if (score.getWorkNumber() != null) {
-            if (pmWork == null) {
-                pmWork = new Work();
-            }
-
-            WorkNumber pmNumber = new WorkNumber();
-            pmNumber.setContent(score.getWorkNumber());
-            pmWork.setWorkNumber(pmNumber);
-        }
-
-        if (score.getWorkTitle() != null) {
-            if (pmWork == null) {
-                pmWork = new Work();
-            }
-
-            WorkTitle pmTitle = new WorkTitle();
-            pmTitle.setContent(score.getWorkTitle());
-            pmWork.setWorkTitle(pmTitle);
-        }
-
-        if (pmWork != null) {
-            scorePartwise.setWork(pmWork);
-        }
-
         // Identification
         Identification identification = new Identification();
         scorePartwise.setIdentification(identification);
-
-        // Creators
-        for (CreatorText creator : score.getCreators()) {
-            Creator pmCreator = new Creator();
-            pmCreator.setContent(creator.getContent());
-
-            if (creator.getCreatorType() != null) {
-                pmCreator.setType(creator.getCreatorType().toString());
-            }
-
-            identification.getCreator()
-                          .add(pmCreator);
-        }
-
-        // Rights
-        if (score.getRights() != null) {
-            Rights pmRights = new Rights();
-            pmRights.setContent(score.getRights());
-            identification.getRights()
-                          .add(pmRights);
-        }
 
         // Source
         Source source = new Source();
@@ -1222,6 +1179,16 @@ public class ScoreExporter
         pageLayout.getContent()
                   .add(pageWidth);
         pageWidth.setContent(toTenths(score.getDimension().width));
+
+        // [Defaults]/LyricFont
+        Font      lyricFont = omr.score.entity.Text.getLyricFont();
+        LyricFont pmLyricFont = new LyricFont();
+        defaults.getLyricFont()
+                .add(pmLyricFont);
+        pmLyricFont.setFontFamily(lyricFont.getName());
+        pmLyricFont.setFontSize("" + omr.score.entity.Text.getLyricFontSize());
+        pmLyricFont.setFontStyle(
+            (lyricFont.getStyle() == Font.ITALIC) ? "italic" : "normal");
 
         // PartList
         PartList partList = new PartList();
@@ -1466,18 +1433,12 @@ public class ScoreExporter
     {
         ///logger.info("Visiting " + system);
         current.system = system;
+        isFirst.measure = true;
 
         SystemPart systemPart = (SystemPart) system.getParts()
                                                    .get(
             current.part.getId() - 1);
-
-        // Loop on measures
-        isFirst.measure = true;
-
-        for (TreeNode node : systemPart.getMeasures()) {
-            // Delegate to measure
-            ((Measure) node).accept(this);
-        }
+        systemPart.accept(this);
 
         // If we have exported a measure, we are no longer in the first system
         if (!isFirst.measure) {
@@ -1485,6 +1446,80 @@ public class ScoreExporter
         }
 
         return false; // No default browsing this way
+    }
+
+    //------------------//
+    // visit SystemPart //
+    //------------------//
+    @Override
+    public boolean visit (SystemPart systemPart)
+    {
+        // Browse specific text items
+        for (omr.score.entity.Text text : systemPart.getTexts()) {
+            if (text instanceof omr.score.entity.Text.TitleText) {
+                // Work Title
+                TitleText titleText = (TitleText) text;
+                WorkTitle pmTitle = new WorkTitle();
+                pmTitle.setContent(titleText.getContent());
+                getWork()
+                    .setWorkTitle(pmTitle);
+            } else if (text instanceof omr.score.entity.Text.NumberText) {
+                // Work Number
+                NumberText numberText = (NumberText) text;
+                WorkNumber pmNumber = new WorkNumber();
+                pmNumber.setContent(numberText.getContent());
+                getWork()
+                    .setWorkNumber(pmNumber);
+            } else if (text instanceof omr.score.entity.Text.RightsText) {
+                // Rights
+                RightsText rightsText = (RightsText) text;
+                Rights     pmRights = new Rights();
+                pmRights.setContent(rightsText.getContent());
+                scorePartwise.getIdentification()
+                             .getRights()
+                             .add(pmRights);
+            } else if (text instanceof omr.score.entity.Text.CreatorText) {
+                // Creator
+                CreatorText creatorText = (CreatorText) text;
+                Creator     pmCreator = new Creator();
+                pmCreator.setContent(creatorText.getContent());
+
+                if (creatorText.getCreatorType() != null) {
+                    pmCreator.setType(creatorText.getCreatorType().toString());
+                }
+
+                scorePartwise.getIdentification()
+                             .getCreator()
+                             .add(pmCreator);
+            } else { // Direction, LyricItem are addressed through Notes
+                continue;
+            }
+
+            // Credits
+            Credit      pmCredit = new Credit();
+            CreditWords pmCreditWords = new CreditWords();
+            pmCreditWords.setContent(text.getContent());
+            pmCreditWords.setFontSize("" + text.getFontSize());
+
+            // Position is wrt to page
+            PagePoint pt = systemPart.getSystem()
+                                     .toPagePoint(text.getLocation());
+            pmCreditWords.setDefaultX(toTenths(pt.x));
+            pmCreditWords.setDefaultY(
+                toTenths(score.getDimension().height - pt.y));
+            
+            pmCredit.setCreditWords(pmCreditWords);
+            scorePartwise.getCredit()
+                         .add(pmCredit);
+        }
+
+        // Delegate to measures
+        for (TreeNode node : systemPart.getMeasures()) {
+            // Delegate to measure
+            ((Measure) node).accept(this);
+        }
+
+        return false;
     }
 
     //---------------------//
@@ -1645,12 +1680,6 @@ public class ScoreExporter
     @Override
     public boolean visit (Words words)
     {
-        //	    <direction placement="above">
-        //		<direction-type>
-        //		    <words default-y="26" font-size="11" font-weight="bold" relative-x="-40" xml:lang="de" >Ziemlich langsam und mit Ausdruck</words>
-        //		</direction-type>
-        //		<sound tempo="60"/>
-        //	    </direction>
         Direction direction = new Direction();
         current.pmMeasure.getNoteOrBackupOrForward()
                          .add(direction);
@@ -1662,7 +1691,7 @@ public class ScoreExporter
         proxymusic.Words pmWords = new proxymusic.Words();
         directionType.getWords()
                      .add(pmWords);
-        
+
         pmWords.setContent(words.getText().getContent());
 
         // Placement
@@ -1672,7 +1701,7 @@ public class ScoreExporter
         // default-y
         Staff staff = current.note.getStaff();
         pmWords.setDefaultY(yOf(words.getPoint(), staff));
-        
+
         // font-size
         pmWords.setFontSize("" + words.getText().getFontSize());
 
@@ -1877,6 +1906,19 @@ public class ScoreExporter
         return ornaments;
     }
 
+    //---------//
+    // getWork //
+    //---------//
+    private Work getWork ()
+    {
+        if (current.pmWork == null) {
+            current.pmWork = new Work();
+            scorePartwise.setWork(current.pmWork);
+        }
+
+        return current.pmWork;
+    }
+
     //--------------//
     // insertBackup //
     //--------------//
@@ -1963,6 +2005,9 @@ public class ScoreExporter
     private static class Current
     {
         //~ Instance fields ----------------------------------------------------
+
+        // Score dependent
+        proxymusic.Work       pmWork;
 
         // Part dependent
         ScorePart             part;

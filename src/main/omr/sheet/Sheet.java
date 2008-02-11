@@ -578,29 +578,27 @@ public class Sheet
      * modification in the provided glyphs
      *
      * @param glyphs the glyphs for which we look for impacted systems
-     * @param shapes the collection of initial shapes of thes glyphs
+     * @param shapes the collection of initial shapes of these glyphs
      * @return the ordered collection of systems
      */
     public SortedSet<SystemInfo> getImpactedSystems (Collection<Glyph> glyphs,
                                                      Collection<Shape> shapes)
     {
-        // We are now more conservative: All the systems that contain or follow
-        // a modification are considered as impacted, regardless of the shape
-        boolean               persistent = true;
+        // Flag to indicate that the impact may persist on the following systems
+        boolean persistent = false;
 
-        //        boolean persistent = false;
-        //
-        //        if (shapes != null) {
-        //            for (Shape shape : shapes) {
-        //                if (shape.isPersistent()) {
-        //                    persistent = true;
-        //
-        //                    break;
-        //                }
-        //            }
-        //        } else {
-        //            persistent = true; // safer
-        //        }
+        if (shapes != null) {
+            for (Shape shape : shapes) {
+                if (shape.isPersistent()) {
+                    persistent = true;
+
+                    break;
+                }
+            }
+        } else {
+            persistent = true; // More expensive, but safer
+        }
+
         SortedSet<SystemInfo> impacted = new TreeSet<SystemInfo>();
 
         if (glyphs != null) {
