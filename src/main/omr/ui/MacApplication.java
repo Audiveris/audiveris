@@ -31,6 +31,17 @@ public class MacApplication
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MacApplication.class);
 
+    /** Cached ApplicationEvent class */
+    private static Class<?> eventClass;
+
+    static {
+        try {
+            eventClass = Class.forName("com.apple.eawt.ApplicationEvent");
+        } catch (Exception e) {
+            eventClass = null;
+        }
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     private final ActionListener options = new GuiActions.OptionsAction();
@@ -53,19 +64,72 @@ public class MacApplication
         throws Throwable
     {
         String name = method.getName();
+        String filename = null;
+
+        Object event = getEvent(args);
+
+        if (event != null) {
+            setHandled(event);
+            filename = getFilename(event);
+        }
+
+        logger.fine(name);
 
         if ("handlePreferences".equals(name)) {
-            logger.fine(name);
             options.actionPerformed(null);
         } else if ("handleQuit".equals(name)) {
-            logger.fine(name);
             exit.actionPerformed(null);
         } else if ("handleAbout".equals(name)) {
-            logger.fine(name);
             about.actionPerformed(null);
+        } else if ("handleOpen".equals(name)) {
+            logger.info(filename);
         }
 
         return null;
+    }
+
+    private static Object getEvent (Object[] args)
+    {
+        if (args.length > 0) {
+            Object arg = args[0];
+
+            if (arg != null) {
+                try {
+                    if ((eventClass != null) &&
+                        eventClass.isAssignableFrom(arg.getClass())) {
+                        return arg;
+                    }
+                } catch (Exception e) {
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static void setHandled (Object event)
+    {
+        try {
+            Method handled = eventClass.getMethod("setHandled", boolean.class);
+            handled.invoke(event, true);
+        } catch (Exception e) {
+        }
+    }
+
+    private static String getFilename (Object event)
+    {
+        try {
+            Method filename = eventClass.getMethod("getFilename");
+            Object rval = filename.invoke(event);
+
+            if (rval == null) {
+                return null;
+            } else {
+                return (String) rval;
+            }
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
