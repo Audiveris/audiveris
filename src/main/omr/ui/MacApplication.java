@@ -2,9 +2,9 @@
 //                                                                            //
 //                         M a c A p p l i c a t i o n                        //
 //                                                                            //
-//  Copyright (C) Brenton Partridge 2007. All rights reserved.                //
+//  Copyright (C) Brenton Partridge 2007-2008. All rights reserved.           //
 //  This software is released under the GNU General Public License.           //
-//  Contact herve.bitteur@laposte.net to report bugs & suggestions.           //
+//  Contact dev@audiveris.dev.java.net to report bugs & suggestions.          //
 //----------------------------------------------------------------------------//
 //
 package omr.ui;
