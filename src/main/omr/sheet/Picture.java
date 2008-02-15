@@ -372,6 +372,25 @@ public class Picture
         return image.getAsBufferedImage();
     }
 
+    //--------------------//
+    // getAsBufferedImage //
+    //--------------------//
+    /**
+     * Return a copy of a portion of the underlying image as a buffered image.
+     *
+     * @param rectangle the clip rectangle
+     * @return the proper buffered image
+     */
+    public final BufferedImage getAsBufferedImage (Rectangle rectangle)
+    {
+        if (!image.getBounds()
+                  .contains(rectangle)) {
+            throw new IllegalArgumentException("Rectangle not within image");
+        }
+
+        return image.getAsBufferedImage(rectangle, null);
+    }
+
     //--------------//
     // getDimension //
     //--------------//
@@ -909,7 +928,7 @@ public class Picture
     {
         int pixelSize = image.getColorModel()
                              .getPixelSize();
-        
+
         if (pixelSize == 1) {
             image = BinaryToGray(image);
         }
