@@ -9,6 +9,8 @@
 //
 package omr.glyph.ui;
 
+import omr.Main;
+
 import omr.constant.ConstantManager;
 
 import omr.glyph.GlyphNetwork;
@@ -17,7 +19,6 @@ import static omr.glyph.Shape.*;
 import omr.plugin.Plugin;
 import omr.plugin.PluginType;
 
-import omr.ui.icon.IconManager;
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
 
@@ -26,6 +27,8 @@ import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
+
+import org.jdesktop.application.ResourceMap;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -65,9 +68,6 @@ public class GlyphTrainer
     /** Standard width for fields/buttons in DLUs */
     private static final String standardWidth = "50dlu";
 
-    /** Title for the frame */
-    private static final String frameTitle = "Trainer";
-
     //~ Instance fields --------------------------------------------------------
 
     /** Related frame */
@@ -84,6 +84,9 @@ public class GlyphTrainer
 
     /** Current task */
     private final Task task = new Task();
+    
+    /** Frame title */
+    private String frameTitle;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -102,7 +105,7 @@ public class GlyphTrainer
         }
 
         frame = new JFrame();
-        frame.setTitle(frameTitle);
+        frame.setName("trainerFrame");
 
         // Listener on remaining error
         ChangeListener errorListener = new ChangeListener() {
@@ -139,6 +142,7 @@ public class GlyphTrainer
         if (standAlone) {
             frame.addWindowListener(
                 new WindowAdapter() {
+                        @Override
                         public void windowClosing (WindowEvent e)
                         {
                             // Store latest constant values
@@ -150,15 +154,12 @@ public class GlyphTrainer
                     });
         }
 
-        // Differ realization
-        EventQueue.invokeLater(
-            new Runnable() {
-                    public void run ()
-                    {
-                        frame.pack();
-                        frame.setVisible(true);
-                    }
-                });
+        // Resource injection
+        ResourceMap resource = Main.getInstance()
+                                   .getContext()
+                                   .getResourceMap(getClass());
+        resource.injectComponents(frame);
+        frameTitle = frame.getTitle();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -171,8 +172,8 @@ public class GlyphTrainer
      */
     public static void launch ()
     {
-        getInstance().frame.setVisible(true);
-        getInstance().frame.toFront();
+        Main.getInstance()
+            .show(getInstance().frame);
     }
 
     //------//
@@ -286,19 +287,6 @@ public class GlyphTrainer
         //~ Methods ------------------------------------------------------------
 
         //-------------//
-        // getActivity //
-        //-------------//
-        /**
-         * Report the current training activity
-         *
-         * @return current activity
-         */
-        public Activity getActivity ()
-        {
-            return activity;
-        }
-
-        //-------------//
         // setActivity //
         //-------------//
         /**
@@ -311,6 +299,19 @@ public class GlyphTrainer
             this.activity = activity;
             setChanged();
             notifyObservers();
+        }
+
+        //-------------//
+        // getActivity //
+        //-------------//
+        /**
+         * Report the current training activity
+         *
+         * @return current activity
+         */
+        public Activity getActivity ()
+        {
+            return activity;
         }
     }
 }

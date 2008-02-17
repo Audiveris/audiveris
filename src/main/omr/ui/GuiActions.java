@@ -28,9 +28,18 @@ import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Memory;
 
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.*;
 
@@ -51,11 +60,14 @@ public class GuiActions
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GuiActions.class);
 
-    /** Color chooser for shapes */
-    private static JFrame shapeColorFrame;
-
     /** Options UI */
     private static JFrame optionsFrame;
+
+    // Resource injection
+    private static ResourceMap resource = Application.getInstance()
+                                                     .getContext()
+                                                     .getResourceMap(
+        GuiActions.class);
 
     //~ Inner Classes ----------------------------------------------------------
 
@@ -73,47 +85,72 @@ public class GuiActions
     {
         //~ Instance fields ----------------------------------------------------
 
-        private StringBuilder sb = null;
+        // Dialog        
+        private JDialog                 aboutBox = null;
+        private Map<String, JTextField> fields = new HashMap<String, JTextField>();
 
         //~ Methods ------------------------------------------------------------
 
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            if (sb == null) {
-                sb = new StringBuilder();
-
-                sb.append("<HTML><TABLE BORDER='0'>");
-
-                // Application information
-                addTableRow("Application", Main.getToolName());
-
-                // Version information
-                addTableRow("Version", Main.getToolVersion());
-
-                // Build information, if available
-                addTableRow(
-                    "Build",
-                    (Main.getToolBuild() != null) ? Main.getToolBuild() : "");
-
-                // Launch information
-                addTableRow("Classes", Main.getClassesContainer());
-
-                sb.append("</TABLE></HTML>");
+            if (aboutBox == null) {
+                aboutBox = createAboutBox();
             }
 
-            Main.getGui()
-                .displayMessage(sb.toString());
+            Main.getInstance()
+                .show(aboutBox);
         }
 
-        private void addTableRow (String name,
-                                  Object value)
+        private JDialog createAboutBox ()
         {
-            sb.append("<TR><TH>")
-              .append(name)
-              .append("<TH><TD>")
-              .append(value)
-              .append("</TD></TR>");
+            // Layout
+            final FormLayout      layout = new FormLayout(
+                "right:pref, 5dlu, pref",
+                "pref,5dlu,pref,2dlu,pref,2dlu,pref,2dlu,pref,2dlu,pref,2dlu, pref");
+            final PanelBuilder    builder = new PanelBuilder(layout);
+            final CellConstraints cst = new CellConstraints();
+
+            int                   iRow = 1;
+            builder.setDefaultDialogBorder();
+
+            JLabel titleLabel = new JLabel();
+            titleLabel.setName("aboutTitleLabel");
+            builder.add(titleLabel, cst.xyw(1, iRow, 3));
+
+            for (String name : new String[] {
+                     "application", "description", "home", "version", "build",
+                     "classes"
+                 }) {
+                iRow += 2;
+
+                JLabel label = new JLabel();
+                label.setName(name + "Label");
+                builder.add(label, cst.xy(1, iRow));
+
+                JTextField textField = new JTextField();
+                textField.setName(name + "TextField");
+                textField.setEditable(false);
+                textField.setBorder(null);
+                builder.add(textField, cst.xy(3, iRow));
+                fields.put(name, textField);
+            }
+
+            JPanel panel = builder.getPanel();
+            panel.setName("panel");
+
+            JDialog dialog = new JDialog();
+            dialog.setName("aboutDialog");
+            dialog.add(panel, BorderLayout.CENTER);
+
+            // Manual injection
+            resource.injectComponents(dialog);
+            fields.get("build")
+                  .setText(Main.getToolBuild());
+            fields.get("classes")
+                  .setText(Main.getClassesContainer().toString());
+
+            return dialog;
         }
     }
 
@@ -153,7 +190,7 @@ public class GuiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            Main.getGui()
+            Main.getInstance()
                 .exit();
         }
     }
@@ -162,7 +199,7 @@ public class GuiActions
     // FineAction //
     //------------//
     /**
-     * Class <code>FineAction</code> allows to set looger level to FINE in the
+     * Class <code>FineAction</code> allows to set logger level to FINE in the
      * Selection mechanism
      *
      */
@@ -205,7 +242,8 @@ public class GuiActions
     // OperationAction //
     //-----------------//
     /**
-     * Class <code>OperationAction</code> launches a browser on Audiveris Operation manual
+     * Class <code>OperationAction</code> launches a browser on Audiveris
+     * Operation manual
      */
     @Plugin(type = PluginType.HELP, dependency = Dependency.NONE)
     public static class OperationAction
@@ -249,7 +287,8 @@ public class GuiActions
                 // Preload constant units
                 UnitManager.getInstance(Main.class.getName());
 
-                optionsFrame = new JFrame("Units Options");
+                optionsFrame = new JFrame();
+                optionsFrame.setName("optionsFrame");
                 optionsFrame.getContentPane()
                             .setLayout(new BorderLayout());
 
@@ -257,7 +296,7 @@ public class GuiActions
                 optionsFrame.getContentPane()
                             .add(toolBar, BorderLayout.NORTH);
 
-                JButton button = new JButton(
+                JButton dumpButton = new JButton(
                     new AbstractAction() {
                             public void actionPerformed (ActionEvent e)
                             {
@@ -265,21 +304,31 @@ public class GuiActions
                                            .dumpAllUnits();
                             }
                         });
-                button.setText("Dump all Units");
-                toolBar.add(button);
+                dumpButton.setName("optionsDumpButton");
+                toolBar.add(dumpButton);
+
+                JButton checkButton = new JButton(
+                    new AbstractAction() {
+                            public void actionPerformed (ActionEvent e)
+                            {
+                                UnitManager.getInstance()
+                                           .checkAllUnits();
+                            }
+                        });
+                checkButton.setName("optionsCheckButton");
+                toolBar.add(checkButton);
 
                 UnitModel  cm = new UnitModel();
                 JTreeTable jtt = new UnitTreeTable(cm);
                 optionsFrame.getContentPane()
                             .add(new JScrollPane(jtt));
 
-                optionsFrame.pack();
-                optionsFrame.setSize(
-                    constants.paramWidth.getValue(),
-                    constants.paramHeight.getValue());
+                // Resources injection
+                resource.injectComponents(optionsFrame);
             }
 
-            optionsFrame.setVisible(true);
+            Main.getInstance()
+                .show(optionsFrame);
         }
     }
 
@@ -300,19 +349,7 @@ public class GuiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            if (shapeColorFrame == null) {
-                shapeColorFrame = new JFrame("ShapeColorChooser");
-
-                // Create and set up the content pane.
-                JComponent newContentPane = new ShapeColorChooser().getComponent();
-                newContentPane.setOpaque(true); //content panes must be opaque
-                shapeColorFrame.setContentPane(newContentPane);
-
-                // Realize the window.
-                shapeColorFrame.pack();
-            }
-
-            shapeColorFrame.setVisible(true);
+            ShapeColorChooser.showFrame();
         }
     }
 
@@ -371,12 +408,6 @@ public class GuiActions
     {
         //~ Instance fields ----------------------------------------------------
 
-        PixelCount      paramHeight = new PixelCount(
-            500,
-            "Height of the Options frame");
-        PixelCount      paramWidth = new PixelCount(
-            900,
-            "Width of the Options frame");
         Constant.String webSiteUrl = new Constant.String(
             "https://audiveris.dev.java.net",
             "URL of Audiveris home page");

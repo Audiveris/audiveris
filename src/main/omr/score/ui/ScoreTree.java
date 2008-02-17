@@ -9,6 +9,8 @@
 //
 package omr.score.ui;
 
+import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -21,6 +23,8 @@ import omr.util.Dumper;
 import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.TreeNode;
+
+import org.jdesktop.application.ResourceMap;
 
 import java.awt.*;
 import java.lang.reflect.Field;
@@ -49,18 +53,6 @@ public class ScoreTree
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreTree.class);
 
-    /** Default window height in pixels */
-    private static final int WINDOW_HEIGHT = 700;
-
-    /** Default width in pixels for the left part (the tree) */
-    private static final int LEFT_WIDTH = 400;
-
-    /** Default width in pixels for the right part (the detail) */
-    private static final int RIGHT_WIDTH = 500;
-
-    /** Default windows width in pixels */
-    private static final int WINDOW_WIDTH = LEFT_WIDTH + RIGHT_WIDTH;
-
     //~ Instance fields --------------------------------------------------------
 
     /** Concrete UI component */
@@ -76,18 +68,16 @@ public class ScoreTree
         component = new JPanel();
 
         // Set up the tree
-        JTree       tree = new JTree(new Adapter(score));
+        JTree             tree = new JTree(new Adapter(score));
 
         // Build left-side view
-        JScrollPane treeView = new JScrollPane(tree);
-        treeView.setPreferredSize(new Dimension(LEFT_WIDTH, WINDOW_HEIGHT));
+        JScrollPane       treeView = new JScrollPane(tree);
 
         // Build right-side view
         final JEditorPane htmlPane = new JEditorPane("text/html", "");
         htmlPane.setEditable(false);
 
         JScrollPane htmlView = new JScrollPane(htmlPane);
-        htmlView.setPreferredSize(new Dimension(RIGHT_WIDTH, WINDOW_HEIGHT));
 
         // Allow only single selections
         tree.getSelectionModel()
@@ -117,12 +107,10 @@ public class ScoreTree
             JSplitPane.HORIZONTAL_SPLIT,
             treeView,
             htmlView);
+        splitPane.setName("treeHtmlSplitPane");
         splitPane.setContinuousLayout(true);
-        splitPane.setDividerLocation(LEFT_WIDTH);
         splitPane.setBorder(null);
         splitPane.setDividerSize(2);
-        splitPane.setPreferredSize(
-            new Dimension(WINDOW_WIDTH + 10, WINDOW_HEIGHT + 10));
 
         // Add GUI components
         component.setLayout(new BorderLayout());
@@ -146,16 +134,18 @@ public class ScoreTree
                                     Score  score)
     {
         // Set up a GUI framework
-        JFrame          frame = new JFrame("Tree of " + name);
+        JFrame frame = new JFrame();
+        frame.setName("scoreTreeFrame");
 
         // Set up the tree, the views, and display it all
-        final ScoreTree scoreTree = new ScoreTree(score);
-        frame.getContentPane()
-             .add("Center", scoreTree.component);
-        frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-        frame.pack();
-        frame.setLocation(100, 100);
-        frame.setVisible(true);
+        frame.add(new ScoreTree(score).component);
+
+        // Resources injection
+        ResourceMap resource = Main.getInstance()
+                                   .getContext()
+                                   .getResourceMap(ScoreTree.class);
+        resource.injectComponents(frame);
+        frame.setTitle(resource.getString("frameTitleMask", name));
 
         return frame;
     }

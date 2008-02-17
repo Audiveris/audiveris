@@ -157,14 +157,6 @@ public class SheetActions
 
             if (file != null) {
                 if (file.exists()) {
-                    // Register that as a user target
-                    try {
-                        Main.getGui()
-                            .setTarget(file.getCanonicalPath());
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-
                     // Actually load the sheet picture
                     Step.LOAD.performParallel(null, file);
 

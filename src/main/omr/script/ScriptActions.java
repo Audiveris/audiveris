@@ -72,7 +72,7 @@ public class ScriptActions
     //-------------//
     // checkStored //
     //-------------//
-    public static void checkStored (Script script)
+    public static boolean checkStored (Script script)
     {
         if (!script.isStored() && constants.closeConfirmation.getValue()) {
             int answer = JOptionPane.showConfirmDialog(
@@ -81,7 +81,17 @@ public class ScriptActions
 
             if (answer == JOptionPane.YES_OPTION) {
                 ScriptActions.storeScript(script);
+
+                return true;
             }
+
+            if (answer == JOptionPane.NO_OPTION) {
+                return true;
+            }
+
+            return false;
+        } else {
+            return true;
         }
     }
 

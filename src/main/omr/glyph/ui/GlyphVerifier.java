@@ -23,6 +23,8 @@ import omr.util.Logger;
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
+import org.jdesktop.application.ResourceMap;
+
 import java.awt.*;
 import java.awt.List;
 import java.awt.event.*;
@@ -95,19 +97,25 @@ public class GlyphVerifier
     private GlyphVerifier ()
     {
         frame = new JFrame();
-        frame.setTitle("Glyph Verifier");
+        frame.setName("glyphVerifierFrame");
         frame.getContentPane()
              .setLayout(new BorderLayout());
         frame.getContentPane()
              .add(getSelectorsPanel(), BorderLayout.NORTH);
         frame.getContentPane()
              .add(glyphBrowser.getComponent(), BorderLayout.CENTER);
-        frame.pack();
-        frame.setBounds(new Rectangle(20, 20, 1000, 600));
-        frame.setVisible(true);
+
+        // Resource injection
+        ResourceMap resource = Main.getInstance()
+                                   .getContext()
+                                   .getResourceMap(getClass());
+        resource.injectComponents(frame);
 
         if (standAlone) {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.pack();
+            frame.setBounds(new Rectangle(20, 20, 1000, 600));
+            frame.setVisible(true);
         }
     }
 
@@ -125,6 +133,8 @@ public class GlyphVerifier
     {
         if (INSTANCE == null) {
             INSTANCE = new GlyphVerifier();
+            Main.getInstance()
+                .show(INSTANCE.frame);
         }
 
         return INSTANCE;

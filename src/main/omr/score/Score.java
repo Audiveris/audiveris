@@ -21,8 +21,6 @@ import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
-import omr.score.entity.Text;
-import omr.score.entity.Text.CreatorText;
 import omr.score.ui.ScoreConstants;
 import omr.score.ui.ScoreTree;
 import omr.score.ui.ScoreView;
@@ -38,10 +36,9 @@ import omr.util.TreeNode;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
+import javax.swing.JFrame;
 
 /**
  * Class <code>Score</code> handles a score hierarchy, composed of one or
@@ -847,13 +844,14 @@ public class Score
     // viewScore //
     //-----------//
     /**
-     * Launch a dedicated frame, where all score elements can be browsed in the
+     * Create a dedicated frame, where all score elements can be browsed in the
      * tree hierarchy
+     * @return the created frame
      */
-    public void viewScore ()
+    public JFrame viewScore ()
     {
-        // Launch the ScoreTree application on the score
-        ScoreTree.makeFrame(getRadix(), this);
+        // Build the ScoreTree on the score
+        return ScoreTree.makeFrame(getRadix(), this);
     }
 
     //~ Inner Classes ----------------------------------------------------------

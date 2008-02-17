@@ -11,11 +11,14 @@ package omr.constant;
 
 import omr.util.Logger;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Class <code>UnitManager</code> manages all units (aka classes), for which we
@@ -106,6 +109,7 @@ public class UnitManager
      * Report the single instance of this package, after creating it with
      * default parameters if needed
      *
+     * @param main the name of the main class
      * @return the single instance
      */
     public static UnitManager getInstance (String main)
@@ -133,6 +137,50 @@ public class UnitManager
         //log ("addLogger logger=" + logger.getName());
         retrieveUnit(logger.getName())
             .setLogger(logger);
+    }
+
+    //---------------//
+    // checkAllUnits //
+    //---------------//
+    /**
+     * Check if all defined constants are used by at least one unit
+     */
+    public void checkAllUnits ()
+    {
+        SortedSet<String> constants = new TreeSet<String>();
+
+        for (Node node : mapOfNodes.values()) {
+            if (node instanceof UnitNode) {
+                UnitNode    unit = (UnitNode) node;
+                ConstantSet set = unit.getConstantSet();
+
+                if (set != null) {
+                    for (int i = 0; i < set.size(); i++) {
+                        Constant constant = set.getConstant(i);
+                        constants.add(
+                            unit.getName() + "." + constant.getName());
+                    }
+                }
+            }
+        }
+
+        dumpStrings("constants", constants);
+
+        SortedSet<String> props = new TreeSet<String>();
+
+        for (Object obj : ConstantManager.getUserProperties()
+                                         .keySet()) {
+            props.add((String) obj);
+        }
+
+        for (Object obj : ConstantManager.getDefaultProperties()
+                                         .keySet()) {
+            props.add((String) obj);
+        }
+
+        dumpStrings("properties", props);
+        props.removeAll(constants);
+        dumpStrings("orphan properties", props);
     }
 
     //--------------//
@@ -168,6 +216,34 @@ public class UnitManager
                 }
             }
         }
+    }
+
+    //---------//
+    // getNode //
+    //---------//
+    /**
+     * Retrieves a node object, knowing its path name
+     *
+     * @param path fully qyalified node name
+     *
+     * @return the node object, or null if not found
+     */
+    synchronized Node getNode (String path)
+    {
+        return mapOfNodes.get(path);
+    }
+
+    //---------//
+    // getRoot //
+    //---------//
+    /**
+     * Return the PackageNode at the root of the node hierarchy
+     *
+     * @return the root PackageNode
+     */
+    PackageNode getRoot ()
+    {
+        return root;
     }
 
     //--------//
@@ -248,34 +324,6 @@ public class UnitManager
         }
     }
 
-    //---------//
-    // getNode //
-    //---------//
-    /**
-     * Retrieves a node object, knowing its path name
-     *
-     * @param path fully qyalified node name
-     *
-     * @return the node object, or null if not found
-     */
-    synchronized Node getNode (String path)
-    {
-        return mapOfNodes.get(path);
-    }
-
-    //---------//
-    // getRoot //
-    //---------//
-    /**
-     * Return the PackageNode at the root of the node hierarchy
-     *
-     * @return the root PackageNode
-     */
-    PackageNode getRoot ()
-    {
-        return root;
-    }
-
     //---------------//
     // updateParents //
     //---------------//
@@ -320,6 +368,25 @@ public class UnitManager
         // No intermediate parent found, so hook it to the root itself
         getRoot()
             .addChild(prev);
+    }
+
+    //-------------//
+    // dumpStrings //
+    //-------------//
+    private void dumpStrings (String             title,
+                              Collection<String> strings)
+    {
+        System.out.println("\n" + title + ":");
+
+        for (int i = 0; i < title.length(); i++) {
+            System.out.print("-");
+        }
+
+        System.out.println();
+
+        for (String string : strings) {
+            System.out.println(string);
+        }
     }
 
     //-----//

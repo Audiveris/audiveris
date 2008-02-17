@@ -9,8 +9,6 @@
 //
 package omr.ui;
 
-import omr.Main;
-
 import omr.constant.*;
 
 import omr.score.ui.ScoreController;
@@ -34,9 +32,12 @@ import omr.ui.util.UIUtilities;
 import omr.util.Implement;
 import omr.util.Logger;
 
+import org.jdesktop.application.Application;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.util.EventObject;
 
 import javax.swing.*;
 
@@ -52,16 +53,13 @@ public class MainGui
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
-
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MainGui.class);
 
-    /** Fix internal split locations (workaround TBD) */
-    private static final int DELTA_DIVIDER = 10;
-
     //~ Instance fields --------------------------------------------------------
+
+    /** Cache the application */
+    private final Application app;
 
     /** Log pane, which displays logging info */
     public LogPane logPane;
@@ -88,9 +86,6 @@ public class MainGui
     /** The tool bar */
     private JToolBar toolBar;
 
-    /** Used to remember the current user desired target */
-    private Object target;
-
     /** Boards pane, which displays a specific set of boards per sheet */
     private BoardsPane boardsPane;
 
@@ -102,10 +97,13 @@ public class MainGui
     /**
      * Creates a new <code>MainGui</code> instance, to handle any user display
      * and interaction.
+     *
+     * @param frame the frame provided by SAF
      */
-    public MainGui ()
+    public MainGui (JFrame frame)
     {
-        frame = new JFrame();
+        this.frame = frame;
+        app = Application.getInstance();
 
         defineMenus();
 
@@ -120,17 +118,8 @@ public class MainGui
         SheetManager.getSelection()
                     .addObserver(this);
 
-        frame.addWindowListener(
-            new WindowAdapter() {
-                    @Override
-                    public void windowClosing (WindowEvent e)
-                    {
-                        exit(); // Needed for last wishes.
-                    }
-                });
-
-        // Differ realization
-        EventQueue.invokeLater(new FrameShower(frame));
+        // Exit listener
+        app.addExitListener(new MaybeExit());
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -188,72 +177,6 @@ public class MainGui
         return "MainGui";
     }
 
-    //-----------//
-    // setTarget //
-    //-----------//
-    /**
-     * Specify what the current interest of the user is, by means of the current
-     * score. Thus, when for example a sheet image is loaded sometime later,
-     * this information will be used to trigger or not the actual display of the
-     * sheet view.
-     *
-     * @param score the contextual score
-     */
-    public void setTarget (omr.score.Score score)
-    {
-        setObjectTarget(score);
-    }
-
-    //-----------//
-    // setTarget //
-    //-----------//
-    /**
-     * Specify what the current interest of the user is, by means of the desired
-     * sheet file name.
-     *
-     * @param name the (canonical) sheet file name
-     */
-    public void setTarget (String name)
-    {
-        setObjectTarget(name);
-    }
-
-    //----------//
-    // isTarget //
-    //----------//
-    /**
-     * Check whether the provided sheet file name is consistent with the
-     * recorded user target.
-     *
-     * @param name the (canonical) sheet file name
-     *
-     * @return true if the name is consistent with user target
-     */
-    public boolean isTarget (String name)
-    {
-        boolean result = false;
-
-        if (target instanceof omr.score.Score) {
-            omr.score.Score targetScore = (omr.score.Score) target;
-            result = targetScore.getImagePath()
-                                .equals(name);
-        } else if (target instanceof Sheet) {
-            Sheet targetSheet = (Sheet) target;
-            result = targetSheet.getPath()
-                                .equals(name);
-        } else if (target instanceof String) {
-            String targetString = (String) target;
-            result = targetString.equals(name);
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "isTarget this=" + target + " test=" + name + " -> " + result);
-        }
-
-        return result;
-    }
-
     //--------------//
     // addOnToolBar //
     //--------------//
@@ -277,7 +200,11 @@ public class MainGui
     {
         JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
         htmlPane.setEditable(false);
-        JOptionPane.showMessageDialog(frame, htmlPane);
+        JOptionPane.showMessageDialog(
+            frame,
+            htmlPane,
+            app.getContext().getResourceMap().getString("Application.name"),
+            JOptionPane.INFORMATION_MESSAGE);
     }
 
     //----------------//
@@ -296,7 +223,8 @@ public class MainGui
         JOptionPane.showMessageDialog(
             frame,
             htmlPane,
-            "Warning",
+            "Warning - " +
+            app.getContext().getResourceMap().getString("Application.name"),
             JOptionPane.WARNING_MESSAGE);
     }
 
@@ -381,72 +309,12 @@ public class MainGui
                         }
 
                         // Update frame title
-                        sb.append(Main.getToolName())
-                          .append(" ")
-                          .append(Main.getToolVersion());
+                        sb.append(
+                            app.getContext().getResourceMap().getString(
+                                "mainFrame.title"));
                         frame.setTitle(sb.toString());
                     }
                 });
-    }
-
-    //------//
-    // exit // 
-    //------//
-    /**
-     * Last wishes before application actually exits
-     */
-    void exit ()
-    {
-        // Save scripts for opened sheets?
-        SheetManager.getInstance()
-                    .closeAll();
-
-        // Remember latest gui frame parameters
-        final int state = frame.getExtendedState();
-        constants.frameState.setValue(state);
-
-        if (state == Frame.NORMAL) {
-            // Remember frame location?
-            Rectangle bounds = frame.getBounds();
-            constants.frameX.setValue(bounds.x);
-            constants.frameY.setValue(bounds.y);
-            constants.frameWidth.setValue(bounds.width);
-            constants.frameHeight.setValue(bounds.height);
-
-            // Remember internal split locations
-            constants.logDivider.setValue(splitPane.getDividerLocation());
-            constants.boardDivider.setValue(bigSplitPane.getDividerLocation());
-        } else { // Maximized/Iconified window
-
-            if (state == Frame.MAXIMIZED_BOTH) {
-                // Remember internal split locations
-                constants.logDivider.setValue(
-                    splitPane.getDividerLocation() - DELTA_DIVIDER);
-                constants.boardDivider.setValue(
-                    bigSplitPane.getDividerLocation() - DELTA_DIVIDER);
-            }
-        }
-
-        // Remember internal division of the bottom pane?
-        bottomPane.storeDivider();
-
-        // Store latest constant values on disk
-        ConstantManager.storeResource();
-
-        // That's all folks !
-        java.lang.System.exit(0);
-    }
-
-    //-----------------//
-    // setObjectTarget //
-    //-----------------//
-    private synchronized void setObjectTarget (Object target)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setObjectTarget " + target);
-        }
-
-        this.target = target;
     }
 
     //--------------//
@@ -491,17 +359,19 @@ public class MainGui
 
         // Boards
         boardsPane = new BoardsPane();
+        boardsPane.setName("boardsPane");
 
         // Bottom = Log & Errors
         bottomPane = new BottomPane(logPane.getComponent());
+        bottomPane.setName("bottomPane");
 
         splitPane = new JSplitPane(
             JSplitPane.VERTICAL_SPLIT,
             sheetController.getComponent(),
             bottomPane);
+        splitPane.setName("splitPane");
         splitPane.setBorder(null);
         splitPane.setDividerSize(2);
-        splitPane.setDividerLocation(constants.logDivider.getValue());
         splitPane.setResizeWeight(1d); // Give extra space to left part
 
         JPanel toolKeyPanel = new JPanel();
@@ -522,9 +392,9 @@ public class MainGui
             JSplitPane.HORIZONTAL_SPLIT,
             splitPane,
             boardsPane);
+        bigSplitPane.setName("bigSplitPane");
         bigSplitPane.setBorder(null);
         bigSplitPane.setDividerSize(2);
-        bigSplitPane.setDividerLocation(constants.boardDivider.getValue());
         bigSplitPane.setResizeWeight(1d); // Give extra space to left part
 
         // Global layout
@@ -569,41 +439,6 @@ public class MainGui
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        PixelCount       boardDivider = new PixelCount(
-            200,
-            "Where the separation on left of board pane should be");
-        PixelCount       bottomDivider = new PixelCount(
-            200,
-            "Where the separation on top of bottom pane should be");
-        PixelCount       frameHeight = new PixelCount(
-            740,
-            "Height of the main frame");
-        Constant.Integer frameState = new Constant.Integer(
-            null,
-            Frame.NORMAL,
-            "Initial frame state (0=normal, 1=iconified, 6=maximized)");
-        PixelCount       frameWidth = new PixelCount(
-            1024,
-            "Width of the main frame");
-        PixelCount       frameX = new PixelCount(
-            0,
-            "Left position of the main frame");
-        PixelCount       frameY = new PixelCount(
-            0,
-            "Top position of the main frame");
-        PixelCount       logDivider = new PixelCount(
-            622,
-            "Where the separation above log pane should be");
-    }
-
     //------------//
     // BoardsPane //
     //------------//
@@ -637,39 +472,6 @@ public class MainGui
         }
     }
 
-    //-------------//
-    // FrameShower //
-    //-------------//
-    private static class FrameShower
-        implements Runnable
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final Frame frame;
-
-        //~ Constructors -------------------------------------------------------
-
-        public FrameShower (Frame frame)
-        {
-            this.frame = frame;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(Runnable.class)
-        public void run ()
-        {
-            frame.pack();
-            frame.setBounds(
-                constants.frameX.getValue(),
-                constants.frameY.getValue(),
-                constants.frameWidth.getValue(),
-                constants.frameHeight.getValue());
-            frame.setExtendedState(constants.frameState.getValue());
-            frame.setVisible(true);
-        }
-    }
-
     //------------//
     // BottomPane //
     //------------//
@@ -681,10 +483,6 @@ public class MainGui
     private class BottomPane
         extends JSplitPane
     {
-        //~ Instance fields ----------------------------------------------------
-
-        PixelCount divider = constants.bottomDivider;
-
         //~ Constructors -------------------------------------------------------
 
         public BottomPane (JComponent left)
@@ -700,35 +498,13 @@ public class MainGui
         {
             removeErrors();
             setRightComponent(errorsPane);
-            loadDivider();
             revalidate();
             repaint();
         }
 
         public void removeErrors ()
         {
-            storeDivider();
             setRightComponent(null);
-        }
-
-        public void storeDivider ()
-        {
-            if (getRightComponent() != null) {
-                final int state = frame.getExtendedState();
-
-                if ((state == Frame.NORMAL) || (state == Frame.MAXIMIZED_BOTH)) {
-                    int val = getDividerLocation();
-
-                    if (val > 0) {
-                        divider.setValue(val);
-                    }
-                }
-            }
-        }
-
-        private void loadDivider ()
-        {
-            setDividerLocation(divider.getValue());
         }
     }
 
@@ -748,9 +524,29 @@ public class MainGui
         public void actionPerformed (ActionEvent e)
         {
             String fileName = e.getActionCommand();
-            Main.getGui()
-                .setTarget(fileName);
             Step.LOAD.performParallel(null, new File(fileName));
+        }
+    }
+
+    //-----------//
+    // MaybeExit //
+    //-----------//
+    private class MaybeExit
+        implements Application.ExitListener
+    {
+        //~ Methods ------------------------------------------------------------
+
+        public boolean canExit (EventObject e)
+        {
+            // Make sure all scripts are stored (or explicitly ignored)
+            return SheetManager.getInstance()
+                               .areAllScriptsStored();
+        }
+
+        public void willExit (EventObject e)
+        {
+            // Store latest constant values on disk
+            ConstantManager.storeResource();
         }
     }
 }

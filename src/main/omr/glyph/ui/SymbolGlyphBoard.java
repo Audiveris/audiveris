@@ -340,8 +340,10 @@ class SymbolGlyphBoard
         r += 2; // --------------------------------
                 // For text information
 
-        builder.add(textCombo, cst.xyw(3, r, 3));
-        builder.add(textField, cst.xyw(7, r, 5));
+        if (textCombo != null) {
+            builder.add(textCombo, cst.xyw(3, r, 3));
+            builder.add(textField, cst.xyw(7, r, 5));
+        }
 
         r += 2; // --------------------------------
                 // Glyph characteristics, first line

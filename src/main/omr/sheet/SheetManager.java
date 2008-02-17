@@ -18,6 +18,7 @@ import omr.util.NameSet;
 import java.util.*;
 
 import javax.swing.event.*;
+import omr.script.ScriptActions;
 
 /**
  * Class <code>SheetManager</code> handles the list of sheet instances in memory
@@ -116,6 +117,21 @@ public class SheetManager
     }
 
     //------------------//
+    // setSelectedSheet //
+    //------------------//
+    /**
+     * Convenient method to inform about the selected sheet if any
+     */
+    public static void setSelectedSheet (Sheet sheet)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("setSelectedSheet : " + sheet);
+        }
+
+        selection.setEntity(sheet, null);
+    }
+
+    //------------------//
     // getSelectedSheet //
     //------------------//
     /**
@@ -130,21 +146,6 @@ public class SheetManager
         }
 
         return (Sheet) selection.getEntity();
-    }
-
-    //------------------//
-    // setSelectedSheet //
-    //------------------//
-    /**
-     * Convenient method to inform about the selected sheet if any
-     */
-    public static void setSelectedSheet (Sheet sheet)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setSelectedSheet : " + sheet);
-        }
-
-        selection.setEntity(sheet, null);
     }
 
     //--------------//
@@ -176,6 +177,20 @@ public class SheetManager
     public List<Sheet> getSheets ()
     {
         return instances;
+    }
+
+    //---------------------//
+    // areAllScriptsStored //
+    //---------------------//
+    public boolean areAllScriptsStored ()
+    {
+        for (Sheet sheet : instances) {
+            
+            if (!ScriptActions.checkStored(sheet.getScript())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     //-------//

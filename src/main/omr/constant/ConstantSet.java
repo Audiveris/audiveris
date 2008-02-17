@@ -118,6 +118,7 @@ public abstract class ConstantSet
      *
      * @return just the (unqualified) name of the ConstantSet
      */
+    @Override
     public String toString ()
     {
         StringBuffer sb = new StringBuffer();

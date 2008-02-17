@@ -232,7 +232,7 @@ public class ConstantManager
      *
      * @return The global properties
      */
-    private static Properties getUserProperties ()
+    public static Properties getUserProperties ()
     {
         if (userProperties == null) {
             synchronized (ConstantManager.class) {
@@ -243,6 +243,18 @@ public class ConstantManager
         }
 
         return userProperties;
+    }
+    public static Properties getDefaultProperties ()
+    {
+        if (defaultProperties == null) {
+            synchronized (ConstantManager.class) {
+                if (defaultProperties == null) {
+                    loadResource();
+                }
+            }
+        }
+
+        return defaultProperties;
     }
 
     //--------------//

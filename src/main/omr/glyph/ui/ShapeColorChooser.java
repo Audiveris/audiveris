@@ -9,13 +9,17 @@
 //
 package omr.glyph.ui;
 
+import omr.Main;
+
 import omr.glyph.Shape;
 
 import omr.util.Implement;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import java.awt.*;
 import java.awt.event.*;
-import java.util.EnumSet;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -42,6 +46,10 @@ import javax.swing.event.*;
 public class ShapeColorChooser
     implements ChangeListener
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static JFrame frame;
+
     //~ Instance fields --------------------------------------------------------
 
     private Color         chosenColor;
@@ -59,7 +67,7 @@ public class ShapeColorChooser
      * Create an instance of ShapeColorChooser (should be improved to always
      * reuse the same instance. TBD)
      */
-    public ShapeColorChooser ()
+    private ShapeColorChooser ()
     {
         component = new JPanel(new BorderLayout());
 
@@ -87,36 +95,29 @@ public class ShapeColorChooser
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // getComponent //
-    //--------------//
+    //-----------//
+    // showFrame //
+    //-----------//
     /**
-     * Report the UI component
-     *
-     * @return the concrete component
+     * Display the UI frame
      */
-    public JComponent getComponent ()
+    public static void showFrame ()
     {
-        return component;
-    }
+        if (frame == null) {
+            frame = new JFrame();
+            frame.setName("shapeColorChooserFrame");
+            frame.add(new ShapeColorChooser().component);
 
-    //------//
-    // main //
-    //------//
-    /**
-     * For stand-alone use of this interface
-     *
-     * @param args not used
-     */
-    public static void main (String[] args)
-    {
-        javax.swing.SwingUtilities.invokeLater(
-            new Runnable() {
-                    public void run ()
-                    {
-                        createAndShowGUI();
-                    }
-                });
+            // Resources injection
+            ResourceMap resource = Application.getInstance()
+                                              .getContext()
+                                              .getResourceMap(
+                ShapeColorChooser.class);
+            resource.injectComponents(frame);
+        }
+
+        Main.getInstance()
+            .show(frame);
     }
 
     //--------------//
@@ -134,32 +135,6 @@ public class ShapeColorChooser
 
         ranges.colorChanged();
         shapes.colorChanged();
-    }
-
-    //------------------//
-    // createAndShowGUI //
-    //------------------//
-    /**
-     * Create the GUI and show it.  For thread safety, this method should be
-     * invoked from the event-dispatching thread.
-     */
-    private static void createAndShowGUI ()
-    {
-        //Make sure we have nice window decorations.
-        JFrame.setDefaultLookAndFeelDecorated(true);
-
-        //Create and set up the window.
-        JFrame frame = new JFrame("ShapeColorChooser");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        //Create and set up the content pane.
-        JComponent newContentPane = new ShapeColorChooser().getComponent();
-        newContentPane.setOpaque(true); //content panes must be opaque
-        frame.setContentPane(newContentPane);
-
-        //Display the window.
-        frame.pack();
-        frame.setVisible(true);
     }
 
     //~ Inner Classes ----------------------------------------------------------

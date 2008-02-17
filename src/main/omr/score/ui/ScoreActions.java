@@ -24,8 +24,6 @@ import omr.score.midi.MidiAgent.UnavailableException;
 
 import omr.sheet.SheetManager;
 
-import omr.step.Step;
-
 import omr.ui.ScoreBoard;
 
 import omr.util.Implement;
@@ -38,6 +36,7 @@ import java.beans.*;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
@@ -188,8 +187,9 @@ public class ScoreActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            ScoreController.getCurrentScore()
-                           .viewScore();
+            JFrame frame = ScoreController.getCurrentScore()
+                                          .viewScore();
+            Main.getInstance().show(frame);
         }
     }
 

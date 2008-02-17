@@ -20,17 +20,17 @@ import omr.score.visitor.ScoreExporter;
 import omr.script.Script;
 import omr.script.ScriptManager;
 
-import omr.step.Step;
-
 import omr.ui.MainGui;
 import omr.ui.OmrUIDefaults;
-import omr.ui.util.UILookAndFeel;
 
 import omr.util.Clock;
 import omr.util.Implement;
 import omr.util.JaiLoader;
 import omr.util.Logger;
 import omr.util.OmrExecutors;
+
+import org.jdesktop.application.Application;
+import org.jdesktop.application.SingleFrameApplication;
 
 import java.io.*;
 import java.util.*;
@@ -72,33 +72,30 @@ import javax.swing.*;
  * @version $Id$
  */
 public class Main
+    extends SingleFrameApplication
 {
     //~ Static fields/initializers ---------------------------------------------
 
     static {
-        // Time stamps
+        /** Time stamp */
         Clock.resetTime();
     }
 
     /** Classes container */
-    private static File container = new File(
+    private static final File container = new File(
         Main.class.getProtectionDomain().getCodeSource().getLocation().getFile());
 
     /** Installation folder (needs to be initialized before logger) */
     // .../build/classes
     // .../dist/audiveris.jar
-    // .../bin/audiveris.jar
-    private static File homeFolder = container.getParentFile()
-                                              .getParentFile();
+    private static final File homeFolder = container.getParentFile()
+                                                    .getParentFile();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Main.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
-
-    /** Singleton */
-    private static Main INSTANCE;
 
     /** Specific folder name for icons */
     public static final String ICONS_NAME = "icons";
@@ -108,31 +105,22 @@ public class Main
                                                  .toLowerCase()
                                                  .startsWith("mac os x");
 
-    //~ Instance fields --------------------------------------------------------
-
     /** Build reference of the application as displayed to the user */
-    private final String toolBuild;
+    private static String toolBuild;
 
     /** Name of the application as displayed to the user */
-    private final String toolName;
+    private static String toolName;
 
     /** Version of the application as displayed to the user */
-    private final String toolVersion;
+    private static String toolVersion;
 
     /** Master View */
-    private MainGui gui;
+    private static MainGui gui;
 
-    /** List of script file names to process */
-    private List<String> scriptNames = new ArrayList<String>();
+    //~ Instance fields --------------------------------------------------------
 
-    /** List of sheet file names to process */
-    private List<String> sheetNames = new ArrayList<String>();
-
-    /** Target step, LOAD by default */
-    private Step targetStep = Step.LOAD;
-
-    /** Batch mode if any */
-    private boolean batchMode = false;
+    /** Parameters read from CLI */
+    private CLI.Parameters parameters;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -141,32 +129,6 @@ public class Main
     //------//
     private Main ()
     {
-        // Locale  to be used in the whole application ?
-        checkLocale();
-
-        // Tool name
-        final Package thisPackage = Main.class.getPackage();
-        final String  name = thisPackage.getSpecificationTitle();
-
-        if (name != null) {
-            toolName = name;
-            constants.toolName.setValue(name);
-        } else {
-            toolName = constants.toolName.getValue();
-        }
-
-        // Tool version
-        final String version = thisPackage.getSpecificationVersion();
-
-        if (version != null) {
-            toolVersion = version;
-            constants.toolVersion.setValue(version);
-        } else {
-            toolVersion = constants.toolVersion.getValue();
-        }
-
-        // Tool build
-        toolBuild = thisPackage.getImplementationVersion();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -193,7 +155,7 @@ public class Main
      */
     public static File getConfigFolder ()
     {
-        return new File(getHomeFolder(), "config");
+        return new File(homeFolder, "config");
     }
 
     //--------//
@@ -206,11 +168,7 @@ public class Main
      */
     public static MainGui getGui ()
     {
-        if (INSTANCE == null) {
-            return null;
-        } else {
-            return INSTANCE.gui;
-        }
+        return gui;
     }
 
     //----------------//
@@ -223,7 +181,20 @@ public class Main
      */
     public static File getIconsFolder ()
     {
-        return new File(getHomeFolder(), ICONS_NAME);
+        return new File(homeFolder, ICONS_NAME);
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this application
+     *
+     * @return the SingleFrameApplication instance
+     */
+    public static SingleFrameApplication getInstance ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
     }
 
     //--------------//
@@ -236,7 +207,7 @@ public class Main
      */
     public static String getToolBuild ()
     {
-        return INSTANCE.toolBuild;
+        return toolBuild;
     }
 
     //-------------//
@@ -249,7 +220,7 @@ public class Main
      */
     public static String getToolName ()
     {
-        return INSTANCE.toolName;
+        return toolName;
     }
 
     //----------------//
@@ -262,7 +233,7 @@ public class Main
      */
     public static String getToolVersion ()
     {
-        return INSTANCE.toolVersion;
+        return toolVersion;
     }
 
     //----------------//
@@ -275,7 +246,7 @@ public class Main
      */
     public static File getTrainFolder ()
     {
-        return new File(getHomeFolder(), "train");
+        return new File(homeFolder, "train");
     }
 
     //------//
@@ -290,113 +261,119 @@ public class Main
      */
     public static void main (String[] args)
     {
-        // Problem, from Emacs all args are passed in one string sequence.  We
-        // recognize this by detecting a single argument starting with '-'
-        if ((args.length == 1) && (args[0].startsWith("-"))) {
-            // Redispatch the real args
-            StringTokenizer st = new StringTokenizer(args[0]);
-            int             argNb = 0;
+        launch(Main.class, args);
+    }
 
-            // First just count the number of real arguments
-            while (st.hasMoreTokens()) {
-                argNb++;
-                st.nextToken();
-            }
-
-            String[] newArgs = new String[argNb];
-
-            // Second copy all real arguments into newly
-            // allocated array
-            argNb = 0;
-            st = new StringTokenizer(args[0]);
-
-            while (st.hasMoreTokens()) {
-                newArgs[argNb++] = st.nextToken();
-            }
-
-            // Fake the args
-            args = newArgs;
-        }
-
-        // Launch the processing
-        INSTANCE = new Main();
-
+    //------------//
+    // initialize //
+    //------------//
+    @Override
+    protected void initialize (String[] args)
+    {
         if (logger.isFineEnabled()) {
             logger.fine("homeFolder=" + homeFolder);
             logger.fine("container=" + container);
             logger.fine("container.isDirectory=" + container.isDirectory());
         }
 
-        try {
-            INSTANCE.process(args);
-        } catch (Main.StopRequired ex) {
-            logger.info("Exiting.");
+        // Locale to be used in the whole application ?
+        checkLocale();
+
+        // Tool name
+        final Package thisPackage = Main.class.getPackage();
+        toolName = thisPackage.getSpecificationTitle();
+
+        if (toolName == null) {
+            toolName = getContext()
+                           .getResourceMap()
+                           .getString("Application.id");
         }
+
+        // Tool version
+        toolVersion = thisPackage.getSpecificationVersion();
+
+        if (toolVersion == null) {
+            toolVersion = getContext()
+                              .getResourceMap()
+                              .getString("Application.version");
+        }
+
+        // Tool build
+        toolBuild = thisPackage.getImplementationVersion();
+
+        if (toolBuild == null) {
+            toolBuild = getContext()
+                            .getResourceMap()
+                            .getString("Application.build");
+        }
+
+        // Process CLI arguments
+        process(args);
     }
 
-    //---------------//
-    // getHomeFolder //
-    //---------------//
-    private static File getHomeFolder ()
+    //-------//
+    // ready //
+    //-------//
+    @Override
+    protected void ready ()
     {
-        return homeFolder;
-    }
+        // Background task : Preload JAI
+        JaiLoader.preload();
 
-    //--------//
-    // addRef //
-    //--------//
-    private void addRef (String       ref,
-                         List<String> list)
-    {
-        // The ref may be a plain file name or the name of a pack that lists
-        // ref(s). This is signalled by a starting '@' character in ref
-        if (ref.startsWith("@")) {
-            // File with other refs inside
-            String pack = ref.substring(1);
+        // Background task : JaxbContext
+        OmrExecutors.getLowExecutor()
+                    .execute(
+            new Runnable() {
+                    @Implement(Runnable.class)
+                    public void run ()
+                    {
+                        ScoreExporter.preloadJaxbContext();
+                    }
+                });
 
-            try {
-                BufferedReader br = new BufferedReader(new FileReader(pack));
-                String         newRef;
+        // Background task : Midi Sequencer
+        OmrExecutors.getLowExecutor()
+                    .execute(
+            new Runnable() {
+                    @Implement(Runnable.class)
+                    public void run ()
+                    {
+                        MidiAgent.preloadAgent();
+                    }
+                });
 
-                try {
-                    while ((newRef = br.readLine()) != null) {
-                        addRef(newRef.trim(), list);
+        // Perform sheet and script actions
+        if ((parameters.sheetNames.size() > 0) ||
+            (parameters.scriptNames.size() > 0)) {
+            final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
+                @Override
+                protected Object doInBackground ()
+                {
+                    try {
+                        OmrExecutors.getLowExecutor()
+                                    .invokeAll(getTasks());
+                    } catch (InterruptedException ex) {
+                        logger.warning(
+                            "Error while running sheets & scripts",
+                            ex);
                     }
 
-                    br.close();
-                } catch (IOException ex) {
-                    logger.warning(
-                        "IO error while reading file '" + pack + "'");
+                    return null;
                 }
-            } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find file '" + pack + "'");
-            }
-        } else
-        // Plain file name
-        if (ref.length() > 0) {
-            list.add(ref);
+            };
+
+            worker.execute();
         }
     }
 
-    //-------------//
-    // checkLocale //
-    //-------------//
-    private void checkLocale ()
+    //---------//
+    // startup //
+    //---------//
+    @Override
+    protected void startup ()
     {
-        final String country = constants.localeCountry.getValue();
-
-        if (!country.equals("")) {
-            for (Locale locale : Locale.getAvailableLocales()) {
-                if (locale.getCountry()
-                          .equals(country)) {
-                    Locale.setDefault(locale);
-
-                    return;
-                }
-            }
-
-            logger.info("Cannot set locale country to " + country);
-        }
+        gui = new MainGui(this.getMainFrame());
+        show(gui.getFrame());
     }
 
     //----------//
@@ -407,7 +384,7 @@ public class Main
         List<Callable> callables = new ArrayList<Callable>();
 
         // Browse desired sheets in parallel
-        for (String name : sheetNames) {
+        for (String name : parameters.sheetNames) {
             final File file = new File(name);
 
             // Perform desired step on each sheet in parallel
@@ -416,13 +393,13 @@ public class Main
                     new Runnable() {
                             public void run ()
                             {
-                                targetStep.performSerial(null, file);
+                                parameters.targetStep.performSerial(null, file);
                             }
                         }));
         }
 
         // Browse desired scripts in parallel
-        for (String name : scriptNames) {
+        for (String name : parameters.scriptNames) {
             // Run each script in parallel
             final String scriptName = name;
             callables.add(
@@ -456,138 +433,49 @@ public class Main
         return callables;
     }
 
-    //----------------//
-    // parseArguments //
-    //----------------//
-    private void parseArguments (final String[] args)
-        throws StopRequired
+    //-------------//
+    // checkLocale //
+    //-------------//
+    private void checkLocale ()
     {
-        // Status of the finite state machine
-        final int STEP = 0;
-        final int SHEET = 1;
-        final int SCRIPT = 2;
-        boolean   paramNeeded = false; // Are we expecting a param?
-        int       status = SHEET; // By default
-        String    currentCommand = null;
+        final String country = constants.localeCountry.getValue();
 
-        // Parse all arguments from command line
-        for (int i = 0; i < args.length; i++) {
-            String token = args[i];
+        if (!country.equals("")) {
+            for (Locale locale : Locale.getAvailableLocales()) {
+                if (locale.getCountry()
+                          .equals(country)) {
+                    Locale.setDefault(locale);
 
-            if (token.startsWith("-")) {
-                // This is a command
-                // Check that we were not expecting param(s)
-                if (paramNeeded) {
-                    printCommandLine(args);
-                    stopUsage(
-                        "Found no parameter after command '" + currentCommand +
-                        "'");
-                }
-
-                if (token.equalsIgnoreCase("-help")) {
-                    stopUsage(null);
-                } else if (token.equalsIgnoreCase("-batch")) {
-                    batchMode = true;
-                    paramNeeded = false;
-                } else if (token.equalsIgnoreCase("-step")) {
-                    status = STEP;
-                    paramNeeded = true;
-                } else if (token.equalsIgnoreCase("-sheet")) {
-                    status = SHEET;
-                    paramNeeded = true;
-                } else if (token.equalsIgnoreCase("-script")) {
-                    status = SCRIPT;
-                    paramNeeded = true;
-                } else {
-                    printCommandLine(args);
-                    stopUsage("Unknown command '" + token + "'");
-                }
-
-                // Remember the current command
-                currentCommand = token;
-            } else {
-                // This is a parameter
-                switch (status) {
-                case STEP :
-                    // Read a step name
-                    targetStep = Step.valueOf(token.toUpperCase());
-
-                    if (targetStep == null) {
-                        printCommandLine(args);
-                        stopUsage(
-                            "Step name expected, found '" + token +
-                            "' instead");
-                    }
-
-                    // By default, sheets are now expected
-                    status = SHEET;
-                    paramNeeded = false;
-
-                    break;
-
-                case SHEET :
-                    addRef(token, sheetNames);
-                    paramNeeded = false;
-
-                    break;
-
-                case SCRIPT :
-                    addRef(token, scriptNames);
-                    paramNeeded = false;
-
-                    break;
+                    return;
                 }
             }
+
+            logger.info("Cannot set locale country to " + country);
         }
-
-        // Additional error checking
-        if (paramNeeded) {
-            printCommandLine(args);
-            stopUsage(
-                "Expecting a parameter after command '" + currentCommand + "'");
-        }
-
-        // Results
-        if (logger.isFineEnabled()) {
-            logger.fine("batchMode=" + batchMode);
-            logger.fine("targetStep=" + targetStep);
-            logger.fine("sheetNames=" + sheetNames);
-            logger.fine("scriptNames=" + scriptNames);
-        }
-    }
-
-    //------------------//
-    // printCommandLine //
-    //------------------//
-    private void printCommandLine (String[] args)
-    {
-        System.out.println("\nCommandParameters:");
-
-        for (String arg : args) {
-            System.out.print(" " + arg);
-        }
-
-        System.out.println();
     }
 
     //---------//
     // process //
     //---------//
     private void process (String[] args)
-        throws StopRequired
     {
         // First parse the provided arguments if any
-        parseArguments(args);
+        parameters = new CLI(toolName, args).parse();
+
+        if (parameters == null) {
+            logger.warning("Invalid CLI parameters, exiting ...");
+            exit();
+        }
 
         // Interactive or Batch mode ?
-        if (batchMode) {
+        if (parameters.batchMode) {
             logger.info("Running in batch mode");
             System.setProperty("java.awt.headless", "true");
         } else {
             logger.fine("Running in interactive mode");
 
             // UI Look and Feel
-            UILookAndFeel.setUI(null);
+            ///UILookAndFeel.setUI(null);
 
             // Make sure we have nice window decorations.
             JFrame.setDefaultLookAndFeelDecorated(true);
@@ -623,90 +511,12 @@ public class Main
                     logger.fine("No " + file);
                 }
             }
-
-            // Launch the GUI
-            gui = new MainGui();
-
-            // Background task : Preload JAI
-            JaiLoader.preload();
-
-            // Background task : JaxbContext
-            OmrExecutors.getLowExecutor()
-                        .execute(
-                new Runnable() {
-                        @Implement(Runnable.class)
-                        public void run ()
-                        {
-                            ScoreExporter.preloadJaxbContext();
-                        }
-                    });
-
-            // Background task : Midi Sequencer
-            OmrExecutors.getLowExecutor()
-                        .execute(
-                new Runnable() {
-                        @Implement(Runnable.class)
-                        public void run ()
-                        {
-                            MidiAgent.preloadAgent();
-                        }
-                    });
-        }
-
-        // Perform sheet and script actions
-        if ((sheetNames.size() > 0) || (scriptNames.size() > 0)) {
-            try {
-                OmrExecutors.getLowExecutor()
-                            .invokeAll(getTasks());
-            } catch (InterruptedException ex) {
-                logger.warning("Error while running sheets & scripts", ex);
-            }
         }
 
         // Batch closing
-        if (batchMode) {
+        if (parameters.batchMode) {
             OmrExecutors.shutdown();
         }
-    }
-
-    //-----------//
-    // stopUsage //
-    //-----------//
-    private void stopUsage (String msg)
-        throws StopRequired
-    {
-        // Print message if any
-        if (msg != null) {
-            logger.warning(msg);
-        }
-
-        StringBuffer buf = new StringBuffer(1024);
-
-        // Print standard command line syntax
-        buf.append("usage: java ")
-           .append(getToolName())
-           .append(" [-help]")
-           .append(" [-batch]")
-           .append(" [-step STEPNAME]")
-           .append(" [-sheet (SHEETNAME|@SHEETLIST)+]")
-           .append(" [-script (SCRIPTNAME|@SCRIPTLIST)+]");
-
-        // Print all allowed step names
-        buf.append("\n      Known step names are in order")
-           .append(" (non case-sensitive) :");
-
-        for (Step step : Step.values()) {
-            buf.append(
-                String.format(
-                    "%n%-11s : %s",
-                    step.toString().toUpperCase(),
-                    step.getDescription()));
-        }
-
-        logger.info(buf.toString());
-
-        // Stop application immediately
-        throw new StopRequired();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -723,23 +533,5 @@ public class Main
         Constant.String localeCountry = new Constant.String(
             "",
             "Locale country to be used in the whole application (US, FR, ...)");
-
-        /** Utility constant */
-        Constant.String toolName = new Constant.String(
-            "Audiveris",
-            "* DO NOT EDIT * - Name of this application");
-
-        /** Utility constant */
-        Constant.String toolVersion = new Constant.String(
-            "",
-            "* DO NOT EDIT * - Version of this application");
-    }
-
-    //--------------//
-    // StopRequired //
-    //--------------//
-    private static class StopRequired
-        extends Exception
-    {
     }
 }

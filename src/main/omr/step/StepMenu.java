@@ -119,8 +119,6 @@ public class StepMenu
         public void actionPerformed (ActionEvent e)
         {
             Sheet sheet = SheetManager.getSelectedSheet();
-            Main.getGui()
-                .setTarget(sheet.getPath());
             step.performParallel(sheet, null);
         }
     }

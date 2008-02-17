@@ -137,10 +137,10 @@ public class LogPane
                             if (record != null) {
                                 // Message text
                                 StringBuilder sb = new StringBuilder(256);
-                                sb.append(record.getLevel().toString());
-                                sb.append(" - ");
-                                sb.append(record.getMessage());
-                                sb.append("\n");
+                                sb.append(record.getLevel().toString())
+                                  .append(" - ")
+                                  .append(record.getMessage())
+                                  .append("\n");
 
                                 // Color
                                 StyleConstants.setForeground(

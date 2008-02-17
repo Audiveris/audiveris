@@ -108,7 +108,9 @@ public class ScoreBuilder
      */
     public void buildFinal (SystemInfo fromInfo)
     {
-        logger.info("buildFinal from " + fromInfo);
+        if (logger.isFineEnabled()) {
+            logger.fine("buildFinal from " + fromInfo);
+        }
 
         // Get the (sub) list of all systems for final processing
         List<SystemInfo> systems = (fromInfo == null) ? sheet.getSystems()
