@@ -22,6 +22,8 @@ import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAgent;
 import omr.score.midi.MidiAgent.UnavailableException;
 
+import omr.selection.SelectionObserver;
+
 import omr.sheet.SheetManager;
 
 import omr.ui.ScoreBoard;
@@ -29,15 +31,13 @@ import omr.ui.ScoreBoard;
 import omr.util.Implement;
 import omr.util.Logger;
 
-import org.jdesktop.swingworker.SwingWorker;
+import org.jdesktop.application.Action;
+import org.jdesktop.application.Task;
 
 import java.awt.event.*;
 import java.beans.*;
 
-import javax.swing.AbstractAction;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 /**
  * Class <code>ScoreActions</code> gathers actions related to scores
@@ -46,6 +46,7 @@ import javax.swing.JOptionPane;
  * @version $Id$
  */
 public class ScoreActions
+    extends ScoreDependent
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -55,7 +56,39 @@ public class ScoreActions
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreActions.class);
 
+    /** Singleton */
+    private static ScoreActions INSTANCE;
+
+    //~ Constructors -----------------------------------------------------------
+
+    //--------------//
+    // ScoreActions //
+    //--------------//
+    /**
+     * Creates a new ScoreActions object.
+     */
+    protected ScoreActions ()
+    {
+    }
+
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized ScoreActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new ScoreActions();
+        }
+
+        return INSTANCE;
+    }
 
     //-----------------//
     // checkParameters //
@@ -71,7 +104,7 @@ public class ScoreActions
     {
         if (score.getTempo() == null) {
             if (constants.promptParameters.getValue()) {
-                return defineParameters(score);
+                return parametersAreConfirmed(score);
             } else {
                 return setDefaultParameters(score);
             }
@@ -80,9 +113,9 @@ public class ScoreActions
         }
     }
 
-    //------------------//
-    // defineParameters //
-    //------------------//
+    //------------------------//
+    // parametersAreConfirmed //
+    //------------------------//
     /**
      * Prompts the user for interactive confirmation or modification of
      * score parameters
@@ -90,7 +123,7 @@ public class ScoreActions
      * @param score the provided score
      * @return true if parameters are accepted, false if not
      */
-    public static boolean defineParameters (Score score)
+    public static boolean parametersAreConfirmed (Score score)
     {
         final boolean[]   apply = new boolean[1];
         final ScoreBoard  scoreBoard = new ScoreBoard("Parameters", score);
@@ -146,6 +179,100 @@ public class ScoreActions
         return apply[0];
     }
 
+    //---------//
+    // getName //
+    //---------//
+    @Implement(SelectionObserver.class)
+    @Override
+    public String getName ()
+    {
+        return "ScoreActions";
+    }
+
+    //-------------//
+    // browseScore //
+    //-------------//
+    /**
+     * Launch the tree display of the current score.
+     * @param e
+     */
+    @Action(enabledProperty = "scoreAvailable")
+    public void browseScore (ActionEvent e)
+    {
+        JFrame frame = ScoreController.getCurrentScore()
+                                      .viewScore();
+        Main.getInstance()
+            .show(frame);
+    }
+
+    //------------------//
+    // defineParameters //
+    //------------------//
+    /**
+     * Launch the dialog to set up score parameters.
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = "scoreAvailable")
+    public void defineParameters (ActionEvent e)
+    {
+        Score score = ScoreController.getCurrentScore();
+
+        if (parametersAreConfirmed(score)) {
+            // Invalidate the midi sequence
+            try {
+                MidiAgent agent = MidiAgent.getInstance();
+
+                if (agent.getScore() == score) {
+                    agent.reset();
+                }
+            } catch (UnavailableException ex) {
+                logger.warning("Cannot reset Midi sequence", ex);
+            }
+        }
+    }
+
+    //-----------//
+    // dumpScore //
+    //-----------//
+    /**
+     * Dump the internals of a score to system output
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = "scoreAvailable")
+    public void dumpScore (ActionEvent e)
+    {
+        ScoreController.getCurrentScore()
+                       .dump();
+    }
+
+    //--------------//
+    // rebuildScore //
+    //--------------//
+    /**
+     * Re-translate all sheet glyphs to score entities.
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = "scoreAvailable")
+    public Task rebuildScore (ActionEvent e)
+    {
+        return new RebuildTask();
+    }
+
+    //------------//
+    // storeScore //
+    //------------//
+    /**
+     * Export the currently selected score, using MusicXML format
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = "scoreAvailable")
+    public Task storeScore (ActionEvent e)
+    {
+        return new StoreTask();
+    }
+
     //----------------------//
     // setDefaultParameters //
     //----------------------//
@@ -174,10 +301,7 @@ public class ScoreActions
     //--------------//
     // BrowseAction //
     //--------------//
-    /**
-     * Class <code>BrowseAction</code> launches the tree display of the current
-     * score.
-     */
+    @Deprecated
     @Plugin(type = SCORE_EDIT, dependency = SCORE_AVAILABLE, onToolbar = true)
     public static class BrowseAction
         extends AbstractAction
@@ -187,20 +311,15 @@ public class ScoreActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            JFrame frame = ScoreController.getCurrentScore()
-                                          .viewScore();
-            Main.getInstance().show(frame);
+            getInstance()
+                .browseScore(e);
         }
     }
 
     //------------//
     // DumpAction //
     //------------//
-    /**
-     * Class <code>DumpAction</code> dumps the internals of a score to system
-     * output
-     *
-     */
+    @Deprecated
     @Plugin(type = SCORE_EDIT, dependency = SCORE_AVAILABLE, onToolbar = true)
     public static class DumpAction
         extends AbstractAction
@@ -210,18 +329,15 @@ public class ScoreActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            ScoreController.getCurrentScore()
-                           .dump();
+            getInstance()
+                .dumpScore(e);
         }
     }
 
     //-------------//
     // ParamAction //
     //-------------//
-    /**
-     * Class <code>ParamAction</code> launches the dialog to set up score
-     * parameters.
-     */
+    @Deprecated
     @Plugin(type = SCORE_EDIT, dependency = SCORE_AVAILABLE, onToolbar = true)
     public static class ParamAction
         extends AbstractAction
@@ -231,30 +347,15 @@ public class ScoreActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            Score score = ScoreController.getCurrentScore();
-
-            if (defineParameters(score)) {
-                // Invalidate the midi sequence
-                try {
-                    MidiAgent agent = MidiAgent.getInstance();
-
-                    if (agent.getScore() == score) {
-                        agent.reset();
-                    }
-                } catch (UnavailableException ex) {
-                    logger.warning("Cannot reset Midi sequence", ex);
-                }
-            }
+            getInstance()
+                .defineParameters(e);
         }
     }
 
     //---------------//
     // RebuildAction //
     //---------------//
-    /**
-     * Class <code>RebuildAction</code> re-translates all sheet glyphs to score
-     * entities.
-     */
+    @Deprecated
     @Plugin(type = SCORE_EDIT, dependency = SCORE_AVAILABLE, onToolbar = true)
     public static class RebuildAction
         extends AbstractAction
@@ -264,33 +365,16 @@ public class ScoreActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
-                @Override
-                protected Object doInBackground ()
-                {
-                    try {
-                        SheetManager.getSelectedSheet()
-                                    .getSheetSteps()
-                                    .updateLastSteps(null, null);
-                    } catch (Exception ex) {
-                        logger.warning("Could not refresh score", ex);
-                    }
-
-                    return null;
-                }
-            };
-
-            worker.execute();
+            getInstance()
+                .rebuildScore(e)
+                .execute();
         }
     }
 
     //-------------//
     // StoreAction //
     //-------------//
-    /**
-     * Class <code>StoreAction</code> handles the saving of the currently
-     * selected score, using MusicXML format.
-     */
+    @Deprecated
     @Plugin(type = SCORE_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = true)
     public static class StoreAction
         extends AbstractAction
@@ -300,25 +384,9 @@ public class ScoreActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
-                @Override
-                protected Object doInBackground ()
-                {
-                    Score score = ScoreController.getCurrentScore();
-
-                    if (checkParameters(score)) {
-                        try {
-                            score.export();
-                        } catch (Exception ex) {
-                            logger.warning("Could not store " + score, ex);
-                        }
-                    }
-
-                    return null;
-                }
-            };
-
-            worker.execute();
+            getInstance()
+                .storeScore(e)
+                .execute();
         }
     }
 
@@ -333,5 +401,69 @@ public class ScoreActions
         Constant.Boolean promptParameters = new Constant.Boolean(
             true,
             "Should we prompt the user for score parameters?");
+    }
+
+    //-------------//
+    // RebuildTask //
+    //-------------//
+    private static class RebuildTask
+        extends Task<Void, Void>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        RebuildTask ()
+        {
+            super(Main.getInstance());
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
+        {
+            try {
+                SheetManager.getSelectedSheet()
+                            .getSheetSteps()
+                            .updateLastSteps(null, null);
+            } catch (Exception ex) {
+                logger.warning("Could not refresh score", ex);
+            }
+
+            return null;
+        }
+    }
+
+    //-----------//
+    // StoreTask //
+    //-----------//
+    private static class StoreTask
+        extends Task<Void, Void>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        StoreTask ()
+        {
+            super(Main.getInstance());
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
+        {
+            Score score = ScoreController.getCurrentScore();
+
+            if (checkParameters(score)) {
+                try {
+                    score.export();
+                } catch (Exception ex) {
+                    logger.warning("Could not store " + score, ex);
+                }
+            }
+
+            return null;
+        }
     }
 }

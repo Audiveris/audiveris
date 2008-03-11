@@ -15,13 +15,13 @@
 	Emacs / Ant building tasks
     </description>
     
-    <!-- Jalopy task definition -->
+    <!-- Jalopy task definition 
     <taskdef name="jalopy"
 	     classname="de.hunsicker.jalopy.plugin.ant.AntPlugin">
 	<classpath>
 	    <fileset dir="${jalopy.dir}" includes="*.jar" />
 	</classpath>
-    </taskdef>
+    </taskdef> -->
 
     <!-- ===================== -->
     <!--  P R O P E R T I E S  -->

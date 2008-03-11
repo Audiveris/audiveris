@@ -15,8 +15,6 @@ import omr.plugin.Plugin;
 import omr.plugin.PluginType;
 import static omr.selection.SelectionHint.*;
 
-import omr.ui.util.UILookAndFeel;
-
 import omr.util.Implement;
 import omr.util.Logger;
 
@@ -60,11 +58,8 @@ public class GlyphVerifier
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GlyphVerifier.class);
 
-    /** To differentiate the exit action */
-    private static boolean standAlone = false;
-
     /** The unique instance */
-    private static GlyphVerifier INSTANCE;
+    private static volatile GlyphVerifier INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -110,13 +105,6 @@ public class GlyphVerifier
                                    .getContext()
                                    .getResourceMap(getClass());
         resource.injectComponents(frame);
-
-        if (standAlone) {
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.pack();
-            frame.setBounds(new Rectangle(20, 20, 1000, 600));
-            frame.setVisible(true);
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -133,37 +121,9 @@ public class GlyphVerifier
     {
         if (INSTANCE == null) {
             INSTANCE = new GlyphVerifier();
-            Main.getInstance()
-                .show(INSTANCE.frame);
         }
 
         return INSTANCE;
-    }
-
-    //----------------//
-    // dumpSelections //
-    //----------------//
-    public void dumpSelections ()
-    {
-        glyphBrowser.dumpSelections();
-    }
-
-    //------//
-    // main //
-    //------//
-    /**
-     * Just to allow stand-alone testing of this class
-     *
-     * @param args not used
-     */
-    public static void main (String... args)
-    {
-        standAlone = true;
-
-        // UI Look and Feel
-        UILookAndFeel.setUI(null);
-
-        new GlyphVerifier();
     }
 
     //------------//
@@ -176,7 +136,16 @@ public class GlyphVerifier
      */
     public void setVisible (boolean bool)
     {
-        frame.setVisible(bool);
+        Main.getInstance()
+            .show(frame);
+    }
+
+    //----------------//
+    // dumpSelections //
+    //----------------//
+    public void dumpSelections ()
+    {
+        glyphBrowser.dumpSelections();
     }
 
     //--------//
@@ -297,11 +266,7 @@ public class GlyphVerifier
     //----------------//
     // MaterialAction //
     //----------------//
-    /**
-     * Class <code>MaterialAction</code> opens a windows dedicated to the
-     * management of collections of glyphs used as training material for the
-     * neural network
-     */
+    @Deprecated
     @Plugin(type = PluginType.TRAINING)
     public static class MaterialAction
         extends AbstractAction

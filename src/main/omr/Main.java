@@ -12,7 +12,7 @@ package omr;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.plugin.Plugins;
+import omr.plugin.Plugins2;
 
 import omr.score.midi.MidiAgent;
 import omr.score.visitor.ScoreExporter;
@@ -81,9 +81,17 @@ public class Main
         Clock.resetTime();
     }
 
-    /** Classes container */
-    private static final File container = new File(
-        Main.class.getProtectionDomain().getCodeSource().getLocation().getFile());
+    /** Classes container, beware of escaped blanks */
+    private static File container;
+
+    static {
+        try {
+            container = new File(
+                Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        } catch (Exception ex) {
+            System.err.println("Cannot decode container, " + ex);
+        }
+    }
 
     /** Installation folder (needs to be initialized before logger) */
     // .../build/classes
@@ -267,6 +275,7 @@ public class Main
     //------------//
     // initialize //
     //------------//
+    /** {@inheritDoc} */
     @Override
     protected void initialize (String[] args)
     {
@@ -481,34 +490,21 @@ public class Main
             JFrame.setDefaultLookAndFeelDecorated(true);
 
             // Application UI defaults
-            OmrUIDefaults defaults = OmrUIDefaults.getInstance();
-            defaults.addResourceBundle("config/ui");
+            if (!MainGui.useSwingApplicationFramework()) {
+                OmrUIDefaults defaults = OmrUIDefaults.getInstance();
+                defaults.addResourceBundle("config/ui");
 
-            if (defaults.isEmpty()) {
-                logger.fine(
-                    "No UI defaults as resource bundle, loading from config folder");
+                if (defaults.isEmpty()) {
+                    logger.fine(
+                        "No UI defaults as resource bundle, loading from config folder");
 
-                try {
-                    defaults.loadFrom(new File(getConfigFolder(), "ui"));
-                } catch (Exception ex) {
-                    logger.warning(
-                        "Unable to load resources from config folder",
-                        ex);
-                }
-            }
-
-            // Load classes first for system plugins, then for user plugins
-            for (String name : new String[] { "system.plugins", "user.plugins" }) {
-                File file = new File(getConfigFolder(), name);
-
-                if (file.exists()) {
                     try {
-                        Plugins.loadClasses(new FileInputStream(file));
+                        defaults.loadFrom(new File(getConfigFolder(), "ui"));
                     } catch (Exception ex) {
-                        logger.warning("Cannot load plugins from " + file, ex);
+                        logger.warning(
+                            "Unable to load resources from config folder",
+                            ex);
                     }
-                } else if (logger.isFineEnabled()) {
-                    logger.fine("No " + file);
                 }
             }
         }

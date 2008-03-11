@@ -20,13 +20,15 @@ import static omr.plugin.PluginType.*;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
+import omr.ui.SheetActions;
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
 import omr.util.Logger;
 
-import org.jdesktop.swingworker.SwingWorker;
+import org.jdesktop.application.Action;
+import org.jdesktop.application.Task;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,6 +48,7 @@ import javax.swing.JOptionPane;
  * @version $Id$
  */
 public class ScriptActions
+    extends SheetActions
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -55,6 +58,9 @@ public class ScriptActions
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScriptActions.class);
 
+    /** Singleton */
+    private static ScriptActions INSTANCE;
+
     //~ Constructors -----------------------------------------------------------
 
     //---------------//
@@ -63,11 +69,28 @@ public class ScriptActions
     /**
      * Not meant to be instantiated
      */
-    private ScriptActions ()
+    protected ScriptActions ()
     {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized ScriptActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new ScriptActions();
+        }
+
+        return INSTANCE;
+    }
 
     //-------------//
     // checkStored //
@@ -80,7 +103,8 @@ public class ScriptActions
                 "Save script for sheet " + script.getSheet().getRadix() + "?");
 
             if (answer == JOptionPane.YES_OPTION) {
-                ScriptActions.storeScript(script);
+                getInstance()
+                    .storeScript(null);
 
                 return true;
             }
@@ -95,11 +119,45 @@ public class ScriptActions
         }
     }
 
+    //------------//
+    // loadScript //
+    //------------//
+    @Action
+    public Task loadScript (ActionEvent e)
+    {
+        final File file = UIUtilities.fileChooser(
+            false,
+            Main.getGui().getFrame(),
+            new File(constants.defaultScriptDirectory.getValue()),
+            new FileFilter(
+                "Score script files",
+                new String[] { ScriptManager.SCRIPT_EXTENSION }));
+
+        if (file != null) {
+            return new LoadScriptTask(file);
+        } else {
+            return null;
+        }
+    }
+
     //-------------//
     // storeScript //
     //-------------//
-    static void storeScript (final Script script)
+    @Action(enabledProperty = "sheetAvailable")
+    public Task storeScript (ActionEvent e)
     {
+        final Sheet sheet = SheetManager.getSelectedSheet();
+
+        if (sheet == null) {
+            return null;
+        }
+
+        final Script script = sheet.getScript();
+
+        if (script == null) {
+            return null;
+        }
+
         // Where do we write the script file?
         File xmlFile = new File(
             constants.defaultScriptDirectory.getValue(),
@@ -114,41 +172,13 @@ public class ScriptActions
                 "Script files",
                 new String[] { ScriptManager.SCRIPT_EXTENSION }));
 
-        if (xmlFile != null) {
-            constants.defaultScriptDirectory.setValue(xmlFile.getParent());
-        } else {
-            return;
+        if (xmlFile == null) {
+            return null;
         }
 
-        if (xmlFile != null) {
-            final File                        file = xmlFile;
-            final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
-                @Override
-                protected Object doInBackground ()
-                {
-                    try {
-                        java.io.File folder = new java.io.File(
-                            file.getParent());
+        constants.defaultScriptDirectory.setValue(xmlFile.getParent());
 
-                        if (folder.mkdirs()) {
-                            logger.info("Creating folder " + folder);
-                        }
-
-                        omr.script.ScriptManager.getInstance()
-                                                .store(
-                            script,
-                            new java.io.FileOutputStream(file));
-                        logger.info("Script stored as " + file);
-                    } catch (FileNotFoundException ex) {
-                        logger.warning("Cannot find script file " + file, ex);
-                    }
-
-                    return null;
-                }
-            };
-
-            worker.execute();
-        }
+        return new StoreScriptTask(script, xmlFile);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -158,8 +188,10 @@ public class ScriptActions
     //------------//
     /**
      * Class <code>LoadAction</code> let the user select and load a script file
+     * @deprecated
      */
-    @Plugin(type = SCRIPT, dependency = NONE, onToolbar = false)
+    @Deprecated
+    @Plugin(type = SHEET_SCRIPT)
     public static class LoadAction
         extends AbstractAction
     {
@@ -168,43 +200,12 @@ public class ScriptActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            final File                        file = UIUtilities.fileChooser(
-                false,
-                Main.getGui().getFrame(),
-                new File(constants.defaultScriptDirectory.getValue()),
-                new FileFilter(
-                    "Score script files",
-                    new String[] { ScriptManager.SCRIPT_EXTENSION }));
+            Task task = getInstance()
+                            .loadScript(e);
 
-            final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
-                @Override
-                protected Object doInBackground ()
-                {
-                    // Actually load the script
-                    logger.info("Loading script file " + file + " ...");
-
-                    try {
-                        final Script script = ScriptManager.getInstance()
-                                                           .load(
-                            new FileInputStream(file));
-
-                        if (logger.isFineEnabled()) {
-                            script.dump();
-                        }
-
-                        // Remember (even across runs) the parent directory
-                        constants.defaultScriptDirectory.setValue(
-                            file.getParent());
-                        script.run();
-                    } catch (FileNotFoundException ex) {
-                        logger.warning("Cannot find script file " + file);
-                    }
-
-                    return null;
-                }
-            };
-
-            worker.execute();
+            if (task != null) {
+                task.execute();
+            }
         }
     }
 
@@ -214,8 +215,10 @@ public class ScriptActions
     /**
      * Class <code>StoreAction</code> handles the storing of the currently
      * selected script.
+     * @deprecated
      */
-    @Plugin(type = SCRIPT, dependency = SHEET_AVAILABLE, onToolbar = false)
+    @Deprecated
+    @Plugin(type = SHEET_SCRIPT, dependency = SHEET_AVAILABLE)
     public static class StoreAction
         extends AbstractAction
     {
@@ -224,19 +227,9 @@ public class ScriptActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            final Sheet sheet = SheetManager.getSelectedSheet();
-
-            if (sheet == null) {
-                return;
-            }
-
-            final Script script = sheet.getScript();
-
-            if (script == null) {
-                return;
-            }
-
-            storeScript(script);
+            getInstance()
+                .storeScript(e)
+                .execute();
         }
     }
 
@@ -257,5 +250,99 @@ public class ScriptActions
         Constant.Boolean closeConfirmation = new Constant.Boolean(
             true,
             "Should we ask confirmation for closing a sheet with unsaved script?");
+    }
+
+    //----------------//
+    // LoadScriptTask //
+    //----------------//
+    private static class LoadScriptTask
+        extends Task<Void, Void>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private File file;
+
+        //~ Constructors -------------------------------------------------------
+
+        LoadScriptTask (File file)
+        {
+            super(Main.getInstance());
+            this.file = file;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
+        {
+            // Actually load the script
+            logger.info("Loading script file " + file + " ...");
+
+            try {
+                final Script script = ScriptManager.getInstance()
+                                                   .load(
+                    new FileInputStream(file));
+
+                if (logger.isFineEnabled()) {
+                    script.dump();
+                }
+
+                // Remember (even across runs) the parent directory
+                constants.defaultScriptDirectory.setValue(file.getParent());
+                script.run();
+            } catch (FileNotFoundException ex) {
+                logger.warning("Cannot find script file " + file);
+            }
+
+            return null;
+        }
+    }
+
+    //-----------------//
+    // StoreScriptTask //
+    //-----------------//
+    private static class StoreScriptTask
+        extends Task<Void, Void>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private Script script;
+        private File   file;
+
+        //~ Constructors -------------------------------------------------------
+
+        StoreScriptTask (Script script,
+                         File   file)
+        {
+            super(Main.getInstance());
+            this.script = script;
+            this.file = file;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
+        {
+            try {
+                java.io.File folder = new java.io.File(file.getParent());
+
+                if (folder.mkdirs()) {
+                    logger.info("Creating folder " + folder);
+                }
+
+                omr.script.ScriptManager.getInstance()
+                                        .store(
+                    script,
+                    new java.io.FileOutputStream(file));
+                logger.info("Script stored as " + file);
+            } catch (FileNotFoundException ex) {
+                logger.warning("Cannot find script file " + file, ex);
+            }
+
+            return null;
+        }
     }
 }

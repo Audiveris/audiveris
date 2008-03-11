@@ -24,15 +24,16 @@ public enum PluginType {
     // Score
     SCORE_IMPORT, SCORE_EDIT, SCORE_EXPORT,
 
-    // Sheet
-    SHEET_IMPORT,SHEET_EDIT, SHEET_EXPORT,
+    // Sheet & Script
+    SHEET_IMPORT,SHEET_SCRIPT, SHEET_EDIT,
+    SHEET_EXPORT,
+    SHEET_END,
+    
+    // Midi
+    MIDI_EXPORT,
 
-    // Script
-    SCRIPT,
-    // Final
-    GENERAL_END, 
     // View
-    SCORE_VIEW, GLYPH_VIEW, LINE_VIEW,
+    SCORE_VIEW,GLYPH_VIEW, LINE_VIEW,
     LOG_VIEW,
 
     // Tools
@@ -57,6 +58,7 @@ public enum PluginType {
         /**
          * Create a Range from an EnumSet of types
          *
+         * @param name a name for this range (menu)
          * @param types the contained types
          */
         public Range (String              name,
@@ -83,6 +85,11 @@ public enum PluginType {
         //---------//
         // getName //
         //---------//
+        /**
+         * Report the (menu) name for this range
+         *
+         * @return the range name
+         */
         public String getName ()
         {
             return name;
@@ -95,7 +102,7 @@ public enum PluginType {
     // Sheet
     public static final Range SheetTypes = new Range(
         "File",
-        EnumSet.of(SHEET_IMPORT, SCRIPT, SHEET_EDIT, SHEET_EXPORT, GENERAL_END));
+        EnumSet.range(SHEET_IMPORT, SHEET_END));
 
     // Step
     public static final Range StepTypes = new Range(
@@ -106,6 +113,11 @@ public enum PluginType {
     public static final Range ScoreTypes = new Range(
         "Score",
         EnumSet.range(SCORE_IMPORT, SCORE_EXPORT));
+
+    // Midi
+    public static final Range MidiTypes = new Range(
+        "Midi",
+        EnumSet.range(MIDI_EXPORT, MIDI_EXPORT));
 
     // Views
     public static final Range ViewTypes = new Range(

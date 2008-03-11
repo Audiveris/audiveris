@@ -9,19 +9,12 @@
 //
 package omr.score.ui;
 
-import omr.plugin.PluginType;
-
 import omr.score.Score;
-import omr.score.ui.ScoreView;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
-import omr.ui.ActionManager;
-
 import omr.util.Logger;
-
-import javax.swing.*;
 
 /**
  * Class <code>ScoreController</code> encapsulates a set of user interface means
@@ -39,11 +32,6 @@ public class ScoreController
     private static final Logger logger = Logger.getLogger(
         ScoreController.class);
 
-    //~ Instance fields --------------------------------------------------------
-
-    /** Menu for score actions */
-    private final JMenu scoreMenu;
-
     //~ Constructors -----------------------------------------------------------
 
     //-----------------//
@@ -54,12 +42,6 @@ public class ScoreController
      */
     public ScoreController ()
     {
-        scoreMenu = ActionManager.getInstance()
-                                 .getMenu(PluginType.ScoreTypes.getName());
-
-        if (scoreMenu == null) {
-            logger.severe("scoreMenu not allocated");
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -81,18 +63,6 @@ public class ScoreController
         }
 
         return null;
-    }
-
-    //------------//
-    // setEnabled //
-    //------------//
-    /**
-     * Allow to enable or disable this whole menu
-     * @param bool true to enable, false to disable
-     */
-    public void setEnabled (boolean bool)
-    {
-        scoreMenu.setEnabled(bool);
     }
 
     //--------------//

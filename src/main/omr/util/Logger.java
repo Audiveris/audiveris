@@ -147,6 +147,20 @@ public class Logger
         return isLoggable(Level.FINE);
     }
 
+    //----------//
+    // setLevel //
+    //----------//
+    /**
+     * Set the logger level, using a level name
+     *
+     * @param levelStr the name of the level (case is irrelevant), such as Fine
+     *                 or INFO
+     */
+    public void setLevel (String levelStr)
+    {
+        setLevel(Level.parse(levelStr.toUpperCase()));
+    }
+
     //-----------//
     // logAssert //
     //-----------//
@@ -163,20 +177,6 @@ public class Logger
         if (!exp) {
             severe(msg);
         }
-    }
-
-    //----------//
-    // setLevel //
-    //----------//
-    /**
-     * Set the logger level, using a level name
-     *
-     * @param levelStr the name of the level (case is irrelevant), such as Fine
-     *                 or INFO
-     */
-    public void setLevel (String levelStr)
-    {
-        setLevel(Level.parse(levelStr.toUpperCase()));
     }
 
     //--------//
@@ -262,8 +262,7 @@ public class Logger
             topLogger.addHandler(consoleHandler);
         }
 
-        ///        consoleHandler.setFormatter(new SimpleFormatter());
-        ///        consoleHandler.setFormatter(new LogBasicFormatter());
+        consoleHandler.setFormatter(new LogBasicFormatter()); // Comment out?
         consoleHandler.setLevel(java.util.logging.Level.FINE);
         consoleHandler.setFilter(new LogEmptyMessageFilter());
 

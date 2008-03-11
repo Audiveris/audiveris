@@ -45,15 +45,16 @@ omr.score.ui.ScoreActions$StoreAction
 #-----
 omr.score.midi.MidiActions$WriteAction
 omr.score.midi.MidiActions$PlayAction
+omr.score.midi.MidiActions$PauseAction
 omr.score.midi.MidiActions$StopAction
 
 # Views
 #------
-omr.score.visitor.ScorePainter$SlotAction
-omr.score.visitor.ScorePainter$VoiceAction
-omr.score.visitor.ScorePainter$MarkAction
-omr.glyph.ui.GlyphLagView$StickLineAction            
-omr.glyph.ui.GlyphLagView$SlurCircleAction
+omr.score.visitor.PaintingParameters$SlotAction
+omr.score.visitor.PaintingParameters$VoiceAction
+omr.score.visitor.PaintingParameters$MarkAction
+omr.glyph.ui.ViewParameters$StickLineAction            
+omr.glyph.ui.ViewParameters$SlurCircleAction
 omr.sheet.LinesBuilder$LineAction
 omr.sheet.HorizontalsBuilder$LedgerAction
 omr.ui.GuiActions$ClearLogAction

@@ -16,6 +16,7 @@ import omr.constant.Constant.Ratio;
 import omr.constant.ConstantSet;
 
 import omr.sheet.Sheet;
+import omr.sheet.SheetManager;
 
 import omr.ui.util.UIUtilities;
 
@@ -92,18 +93,93 @@ public class StepMonitor
         return bar;
     }
 
+    //-----------//
+    // notifyMsg //
+    //-----------//
+    /**
+     * Call this to display a simple message in the progress window.
+     *
+     * @param msg the message to display
+     */
+    public void notifyMsg (final String msg)
+    {
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    @Implement(Runnable.class)
+                    public void run ()
+                    {
+                        bar.setString(msg);
+                    }
+                });
+    }
+
     //---------//
-    // animate //
+    // perform //
     //---------//
     /**
+     * Start the performance of a step, with an online display of a progress
+     * monitor.
      *
-     * @param animating If false, deactivates all animation of the progress
-     *                  bar.  If true, activates an indeterminate or
-     *                  pseudo-indeterminate animation.
+     * @param step the target step
+     * @param sheet the sheet being analyzed
+     * @param param an eventual parameter for targeted step
      */
-    private void animate (final boolean animating)
+    public void perform (Step   step,
+                         Sheet  sheet,
+                         Object param)
     {
-        animate(animating ? constants.ratio.getValue() : 0);
+        //        // Post the request
+        //        executor.execute(
+        //            new Runnable() {
+        //                    public void run ()
+        //                    {
+        //                        // This is supposed to run in the background, so...
+        //                        Thread.currentThread()
+        //                              .setPriority(Thread.MIN_PRIORITY);
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                step + " Executing sheet=" + sheet + " param=" + param +
+                " ...");
+        }
+
+        try {
+            // "Activate" the progress bar
+            if (bar != null) {
+                animate(true);
+            }
+
+            if (sheet != null) {
+                sheet.setBusy(true);
+            }
+
+            sheet = step.doStep(sheet, param);
+
+            // Update sheet (& score) dependent entities
+            SheetManager.setSelectedSheet(sheet);
+
+            Main.getGui()
+                .updateGui();
+
+            if (sheet != null) {
+                sheet.setBusy(false);
+            }
+        } catch (Exception ex) {
+            logger.warning("Processing aborted", ex);
+        } finally {
+            // Reset the progress bar
+            if (bar != null) {
+                notifyMsg("");
+                animate(false);
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    step + " Ending sheet=" + sheet + " param=" + param + ".");
+            }
+        }
+
+        //                    }
+        //                });
     }
 
     //---------//
@@ -158,91 +234,18 @@ public class StepMonitor
                 });
     }
 
-    //-----------//
-    // notifyMsg //
-    //-----------//
-    /**
-     * Call this to display a simple message in the progress window.
-     *
-     * @param msg the message to display
-     */
-    public void notifyMsg (final String msg)
-    {
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                    @Implement(Runnable.class)
-                    public void run ()
-                    {
-                        bar.setString(msg);
-                    }
-                });
-    }
-
     //---------//
-    // perform //
+    // animate //
     //---------//
     /**
-     * Start the performance of a step, with an online display of a progress
-     * monitor.
      *
-     * @param step the target step
-     * @param sheet the sheet being analyzed
-     * @param param an eventual parameter for targeted step
+     * @param animating If false, deactivates all animation of the progress
+     *                  bar.  If true, activates an indeterminate or
+     *                  pseudo-indeterminate animation.
      */
-    public void perform (final Step   step,
-                         final Sheet  sheet,
-                         final Object param)
+    private void animate (final boolean animating)
     {
-        //        // Post the request
-        //        executor.execute(
-        //            new Runnable() {
-        //                    public void run ()
-        //                    {
-        //                        // This is supposed to run in the background, so...
-        //                        Thread.currentThread()
-        //                              .setPriority(Thread.MIN_PRIORITY);
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                step + " Executing sheet=" + sheet + " param=" + param +
-                " ...");
-        }
-
-        try {
-            // "Activate" the progress bar
-            if (bar != null) {
-                animate(true);
-            }
-
-            if (sheet != null) {
-                sheet.setBusy(true);
-            }
-
-            step.doStep(sheet, param);
-
-            // Update title of the frame
-            Main.getGui()
-                .updateGui();
-
-            if (sheet != null) {
-                sheet.setBusy(false);
-            }
-        } catch (Exception ex) {
-            logger.warning("Processing aborted", ex);
-        } finally {
-            // Reset the progress bar
-            if (bar != null) {
-                notifyMsg("");
-                animate(false);
-            }
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    step + " Ending sheet=" + sheet + " param=" + param + ".");
-            }
-        }
-
-        //                    }
-        //                });
+        animate(animating ? constants.ratio.getValue() : 0);
     }
 
     //~ Inner Classes ----------------------------------------------------------

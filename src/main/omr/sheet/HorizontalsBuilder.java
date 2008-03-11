@@ -61,6 +61,8 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
+import org.jdesktop.application.AbstractBean;
+import org.jdesktop.application.Action;
 
 /**
  * Class <code>HorizontalsBuilder</code> is in charge of retrieving horizontal
@@ -411,7 +413,7 @@ public class HorizontalsBuilder
 
             if (ne > 0) {
                 if (sb.length() > 0) {
-                    sb.append(" ,");
+                    sb.append(", ");
                 }
 
                 sb.append(ne)
@@ -431,6 +433,80 @@ public class HorizontalsBuilder
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //------------------//
+    // LedgerParameters //
+    //------------------//
+    public static class LedgerParameters
+        extends AbstractBean
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        /** Singleton */
+        private static volatile LedgerParameters INSTANCE;
+
+        //~ Methods ------------------------------------------------------------
+
+        //-------------//
+        // getInstance //
+        //-------------//
+        public static LedgerParameters getInstance ()
+        {
+            if (INSTANCE == null) {
+                synchronized (LedgerParameters.class) {
+                    if (INSTANCE == null) {
+                        INSTANCE = new LedgerParameters();
+                    }
+                }
+            }
+
+            return INSTANCE;
+        }
+
+        //-----------------//
+        // setLinePainting //
+        //-----------------//
+        public void setLinePainting (boolean value)
+        {
+            boolean oldValue = constants.displayLedgerLines.getValue();
+            constants.displayLedgerLines.setValue(value);
+            firePropertyChange(
+                "linePainting",
+                oldValue,
+                constants.displayLedgerLines.getValue());
+        }
+
+        //----------------//
+        // isLinePainting //
+        //----------------//
+        public boolean isLinePainting ()
+        {
+            return constants.displayLedgerLines.getValue();
+        }
+
+        //-------------//
+        // toggleLines //
+        //-------------//
+        /**
+         * Action that toggles the display of original pixels for the staff
+         * lines
+         * @param e the event that triggered this action
+         */
+        @Action(selectedProperty = "linePainting")
+        public void toggleLines (ActionEvent e)
+        {
+            // Trigger a repaint if needed
+            Sheet currentSheet = SheetManager.getSelectedSheet();
+
+            if (currentSheet != null) {
+                HorizontalsBuilder builder = currentSheet.getHorizontalsBuilder();
+
+                if ((builder != null) && (builder.lagView != null)) {
+                    builder.lagView.repaint();
+                }
+            }
+        }
+    }
+
     //--------------//
     // LedgerAction //
     //--------------//
@@ -438,6 +514,7 @@ public class HorizontalsBuilder
      * Class <code>LedgerAction</code> toggles the display of original ledger
      * pixels
      */
+    @Deprecated
     @Plugin(type = PluginType.LINE_VIEW, item = JCheckBoxMenuItem.class)
     public static class LedgerAction
         extends AbstractAction

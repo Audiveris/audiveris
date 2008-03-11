@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- +=====================================================================+ -->
+<!-- |                                                                     | -->
+<!-- |                 s y s t e m - a c t i o n s . x m l                 | -->
+<!-- |                                                                     | -->
+<!-- |  Copyright (C) Herve Bitteur 2000=2007. All rights reserved.        | -->
+<!-- |  This software is released under the GNU General Public License.    | -->
+<!-- |  Contact dev@audiveris.dev.java.net to report bugs & suggestions.   | -->
+<!-- +=====================================================================+ -->
+
+<!--
+     This file gathers the classes to be loaded as UI actions.
+     This class collection can be augmented by classes in user-actions.xml file
+     
+     The order of menus in the menu bar and the order of sections in each menu 
+     are predefined, but the order of items within a section depends on this.
+     
+     Version $Id$
+     -->
+     
+<actions>
+    
+    <action domain="SHEET" section="IMPORT" class="omr.script.ScriptActions" method="loadScript"/>
+    <action domain="SHEET" section="IMPORT" class="omr.script.ScriptActions" method="storeScript"/>
+    <action domain="SHEET" section="IMPORT" class="omr.ui.SheetActions"      method="openSheet"    toolbar="true"/>
+    <action domain="SHEET" section="EDIT"   class="omr.ui.SheetActions"      method="zoomWidth"    toolbar="true"/>
+    <action domain="SHEET" section="EDIT"   class="omr.ui.SheetActions"      method="zoomHeight"   toolbar="true"/>
+    <action domain="SHEET" section="EDIT"   class="omr.ui.SheetActions"      method="plotLine"/>
+    <action domain="SHEET" section="EDIT"   class="omr.ui.SheetActions"      method="plotScale"/>
+    <action domain="SHEET" section="EDIT"   class="omr.ui.SheetActions"      method="plotSkew"/>
+    <action domain="SHEET" section="EXPORT" class="omr.ui.SheetActions"      method="recordGlyphs"/>
+    <action domain="SHEET" section="EXPORT" class="omr.ui.SheetActions"      method="closeSheet"   toolbar="true"/>
+    <action domain="SHEET" section="END"    class="omr.ui.GuiActions"        method="exit"/>
+
+    <action domain="SCORE" section="EDIT"   class="omr.score.ui.ScoreActions" method="rebuildScore" />
+    <action domain="SCORE" section="EDIT"   class="omr.score.ui.ScoreActions" method="defineParameters" />
+    <action domain="SCORE" section="EXPORT" class="omr.score.ui.ScoreActions" method="browseScore" />
+    <action domain="SCORE" section="EXPORT" class="omr.score.ui.ScoreActions" method="dumpScore" />
+    <action domain="SCORE" section="EXPORT" class="omr.score.ui.ScoreActions" method="storeScore" />
+    
+    <action domain="MIDI" section="EDIT"   class="omr.score.midi.MidiActions" method="playMidi"  toolbar="true"/>
+    <action domain="MIDI" section="EDIT"   class="omr.score.midi.MidiActions" method="pauseMidi" toolbar="true"/>
+    <action domain="MIDI" section="EDIT"   class="omr.score.midi.MidiActions" method="stopMidi"  toolbar="true"/>
+    <action domain="MIDI" section="EXPORT" class="omr.score.midi.MidiActions" method="writeMidi" />
+
+    <action domain="VIEW" section="IMPORT" class="omr.score.visitor.PaintingParameters"          method="toggleSlots"   item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="IMPORT" class="omr.score.visitor.PaintingParameters"          method="toggleVoices"  item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="IMPORT" class="omr.score.visitor.PaintingParameters"          method="toggleMarks"   item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="EDIT"   class="omr.glyph.ui.ViewParameters"                   method="toggleLines"   item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="EDIT"   class="omr.glyph.ui.ViewParameters"                   method="toggleCircles" item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="EXPORT" class="omr.sheet.LinesBuilder$LinesParameters"        method="toggleLines"   item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="EXPORT" class="omr.sheet.HorizontalsBuilder$LedgerParameters" method="toggleLines"   item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="END"    class="omr.ui.GuiActions"                             method="clearLog" toolbar="true"/>
+
+    <action domain="TOOL" section="IMPORT" class="omr.ui.GuiActions" method="verifyTrainingMaterial" />
+    <action domain="TOOL" section="IMPORT" class="omr.ui.GuiActions" method="launchTrainer" />
+    <action domain="TOOL" section="EDIT"   class="omr.ui.GuiActions" method="defineShapeColors" />
+    <action domain="TOOL" section="END"    class="omr.ui.GuiActions" method="showMemory" />
+    <action domain="TOOL" section="END"    class="omr.ui.GuiActions" method="defineOptions" />
+
+    <action domain="HELP" section="EDIT" class="omr.ui.GuiActions" method="showManual" />
+    <action domain="HELP" section="EDIT" class="omr.ui.GuiActions" method="visitWebSite" />
+    <action domain="HELP" section="END"  class="omr.ui.GuiActions" method="showAbout" />
+
+</actions>

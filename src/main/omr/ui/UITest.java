@@ -43,7 +43,7 @@ public class UITest
         Score score = ScoreController.getCurrentScore();
 
         if (score != null) {
-            ScoreActions.defineParameters(score);
+            ScoreActions.parametersAreConfirmed(score);
         }
     }
 }

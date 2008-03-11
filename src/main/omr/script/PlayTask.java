@@ -46,7 +46,7 @@ public class PlayTask
     public void run (Sheet sheet)
         throws StepException
     {
-        MidiActions.play(sheet.getScore(), null);
+        new MidiActions.PlayTask(sheet.getScore(), null).execute();
     }
 
     //-----------------//

@@ -181,7 +181,7 @@ public class MidiReceiver
             if (agent.getStatus() == MidiAgent.Status.PLAYING) {
                 // Get the current midi tick value
                 long midiTick = agent.getPositionInTicks();
-
+                
                 // Have we moved since last call?
                 if (midiTick != currentMidiTick) {
                     currentMidiTick = midiTick;

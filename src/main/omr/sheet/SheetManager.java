@@ -9,6 +9,8 @@
 //
 package omr.sheet;
 
+import omr.script.ScriptActions;
+
 import omr.selection.Selection;
 
 import omr.util.Dumper;
@@ -18,7 +20,6 @@ import omr.util.NameSet;
 import java.util.*;
 
 import javax.swing.event.*;
-import omr.script.ScriptActions;
 
 /**
  * Class <code>SheetManager</code> handles the list of sheet instances in memory
@@ -38,7 +39,7 @@ public class SheetManager
     private static SheetManager INSTANCE;
 
     /** Current sheet selection */
-    private static final Selection selection = Selection.makeSheetSelection();
+    private static Selection selection;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -121,6 +122,7 @@ public class SheetManager
     //------------------//
     /**
      * Convenient method to inform about the selected sheet if any
+     * @param sheet the selected sheet, or null
      */
     public static void setSelectedSheet (Sheet sheet)
     {
@@ -128,7 +130,7 @@ public class SheetManager
             logger.fine("setSelectedSheet : " + sheet);
         }
 
-        selection.setEntity(sheet, null);
+        getSelection().setEntity(sheet, null);
     }
 
     //------------------//
@@ -142,10 +144,10 @@ public class SheetManager
     public static Sheet getSelectedSheet ()
     {
         if (logger.isFineEnabled()) {
-            logger.fine("getSelectedSheet : " + selection.getEntity());
+            logger.fine("getSelectedSheet : " + getSelection().getEntity());
         }
 
-        return (Sheet) selection.getEntity();
+        return (Sheet) getSelection().getEntity();
     }
 
     //--------------//
@@ -161,6 +163,14 @@ public class SheetManager
     {
         if (logger.isFineEnabled()) {
             logger.fine("getSelection called");
+        }
+
+        if (selection == null) {
+            synchronized (SheetManager.class) {
+                if (selection == null) {
+                    selection = Selection.makeSheetSelection();
+                }
+            }
         }
 
         return selection;
@@ -185,11 +195,11 @@ public class SheetManager
     public boolean areAllScriptsStored ()
     {
         for (Sheet sheet : instances) {
-            
             if (!ScriptActions.checkStored(sheet.getScript())) {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -215,8 +225,8 @@ public class SheetManager
         }
 
         // Remove from selection if needed
-        if (selection.getEntity() == sheet) {
-            selection.setEntity(null, null);
+        if (getSelection().getEntity() == sheet) {
+            getSelection().setEntity(null, null);
         }
     }
 

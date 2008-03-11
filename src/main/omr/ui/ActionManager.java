@@ -8,6 +8,8 @@
 //----------------------------------------------------------------------------//
 package omr.ui;
 
+import java.io.File;
+import java.io.FileInputStream;
 import omr.plugin.*;
 import omr.plugin.PluginType.Range;
 
@@ -30,6 +32,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.swing.*;
+import omr.Main;
 
 /**
  * Class <code>ActionManager</code> handles the instantiation and dressing of
@@ -241,6 +244,27 @@ public class ActionManager
             Sheet sheet = (Sheet) selection.getEntity();
             enableSheetActions(sheet != null);
             enableScoreActions((sheet != null) && (sheet.getScore() != null));
+        }
+    }
+
+    //----------------//
+    // loadAllClasses //
+    //----------------//
+    void loadAllClasses ()
+    {
+        // Load classes first for system plugins, then for user plugins
+        for (String name : new String[] { "system.plugins", "user.plugins" }) {
+            File file = new File(Main.getConfigFolder(), name);
+
+            if (file.exists()) {
+                try {
+                    Plugins.loadClasses(new FileInputStream(file));
+                } catch (Exception ex) {
+                    logger.warning("Cannot load plugins from " + file, ex);
+                }
+            } else if (logger.isFineEnabled()) {
+                logger.fine("No " + file);
+            }
         }
     }
 

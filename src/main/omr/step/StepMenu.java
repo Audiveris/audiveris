@@ -9,8 +9,6 @@
 //
 package omr.step;
 
-import omr.Main;
-
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
@@ -20,6 +18,7 @@ import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
+import omr.util.Logger;
 
 /**
  * Class <code>StepMenu</code> encapsulates the user interface needed to deal
@@ -34,6 +33,9 @@ public class StepMenu
 {
     //~ Instance fields --------------------------------------------------------
 
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(StepMenu.class);
+
     /** The concrete UI menu */
     private final JMenu menu;
 
@@ -43,14 +45,15 @@ public class StepMenu
     // StepMenu //
     //----------//
     /**
-     * Generates the sub-menu to be inserted in the application menu hierarchy.
+     * Generates the menu to be inserted in the application menu hierarchy.
      *
-     * @param label Name for the sub-menu
+     * @param menu the hosting menu, or null
      */
-    public StepMenu (String label)
+    public StepMenu (JMenu menu)
     {
-        menu = new JMenu(label);
-        menu.setToolTipText("Select processing step for the current sheet");
+        if (menu == null) {
+            menu = new JMenu();
+        }
 
         // List of Steps classes in proper order
         for (Step step : Step.values()) {
@@ -59,21 +62,11 @@ public class StepMenu
 
         // Listener to modify attributes on-the-fly
         menu.addMenuListener(new MyMenuListener());
+
+        this.menu = menu;
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------------//
-    // setEnabled //
-    //------------//
-    /**
-     * Allow to enable or disable this whole menu
-     * @param bool true to enable, false to disable
-     */
-    public void setEnabled (boolean bool)
-    {
-        menu.setEnabled(bool);
-    }
 
     //---------//
     // getMenu //

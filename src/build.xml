@@ -42,17 +42,18 @@
     <!-- Tools classpath -->
     <path id="tools.classpath">
         <pathelement path="${jama.jar}"/>
+        <pathelement path="${java.home}/lib/ext/jai_codec.jar"/>
+        <pathelement path="${java.home}/lib/ext/jai_core.jar"/>
+        <pathelement path="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
         <pathelement path="${jcommon.jar}"/>
         <pathelement path="${jfreechart.jar}"/>
         <pathelement path="${jgoodies.forms.jar}"/>
         <pathelement path="${jgoodies.looks.jar}"/>
-        <pathelement path="${proxymusic.jar}"/>
         <pathelement path="${pdfrenderer.jar}"/>
+        <pathelement path="${proxymusic.jar}"/>
+        <pathelement path="${swingappfwk.jar}"/>
         <pathelement path="${swingworker.jar}"/>
         <pathelement path="${xenoplay.jar}"/>
-        <pathelement path="${java.home}/lib/ext/jai_codec.jar"/>
-        <pathelement path="${java.home}/lib/ext/jai_core.jar"/>
-        <pathelement path="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
     </path>
     
     <!-- Build classpath -->
@@ -139,6 +140,7 @@
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.forms.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.looks.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${proxymusic.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingappfwk.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingworker.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${xenoplay.jar}"/>
         <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_codec.jar"/>

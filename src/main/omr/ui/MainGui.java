@@ -9,6 +9,11 @@
 //
 package omr.ui;
 
+import omr.Main;
+
+import omr.action.ActionManager;
+import omr.action.Actions;
+
 import omr.constant.*;
 
 import omr.score.ui.ScoreController;
@@ -33,6 +38,7 @@ import omr.util.Implement;
 import omr.util.Logger;
 
 import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -52,6 +58,9 @@ public class MainGui
     implements SelectionObserver
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MainGui.class);
@@ -73,12 +82,9 @@ public class MainGui
     /** The related concrete frame */
     private JFrame frame;
 
-    // Menus & tools in the frame
-    private final JMenu stepMenu = new StepMenu("Step").getMenu();
-
     /** The splitted panes */
     private JSplitPane bigSplitPane;
-    private JSplitPane  splitPane;
+    private JSplitPane splitPane;
 
     /** Bottom pane split betwen the logPane and the errorsPane */
     private BottomPane bottomPane;
@@ -292,20 +298,11 @@ public class MainGui
                         final StringBuilder sb = new StringBuilder();
 
                         if (sheet != null) {
-                            // Menus
-                            stepMenu.setEnabled(true);
-                            scoreController.setEnabled(
-                                sheet.getScore() != null);
-
                             // Frame title tells sheet name + step
                             sb.append(sheet.getRadix())
                               .append(" - ")
                               .append(sheet.currentStep())
                               .append(" - ");
-                        } else {
-                            // Menus
-                            stepMenu.setEnabled(false);
-                            scoreController.setEnabled(false);
                         }
 
                         // Update frame title
@@ -315,6 +312,14 @@ public class MainGui
                         frame.setTitle(sb.toString());
                     }
                 });
+    }
+
+    //------------------------------//
+    // useSwingApplicationFramework //
+    //------------------------------//
+    public static boolean useSwingApplicationFramework ()
+    {
+        return constants.useSwingApplicationFramework.getValue();
     }
 
     //--------------//
@@ -407,33 +412,58 @@ public class MainGui
     //-------------//
     private void defineMenus ()
     {
-        ActionManager mgr = ActionManager.getInstance();
-
         // Specific sheet menu
-        JMenu sheetMenu = new SeparableMenu("File");
-        UIDressing.dressUp(sheetMenu, getClass().getName() + ".sheetMenu");
+        JMenu     sheetMenu = new SeparableMenu();
 
-        // Specific history submenu
+        // Specific history sub-menu
         JMenuItem historyMenu = SheetManager.getInstance()
                                             .getHistory()
                                             .menu(
             "Sheet History",
             new HistoryListener());
-        UIDressing.dressUp(historyMenu, getClass().getName() + ".historyMenu");
         sheetMenu.add(historyMenu);
-        mgr.injectMenu("File", sheetMenu);
 
         // Specific step menu
-        UIDressing.dressUp(stepMenu, getClass().getName() + ".stepMenu");
-        mgr.injectMenu("Step", stepMenu);
+        JMenu stepMenu = new StepMenu(new SeparableMenu()).getMenu();
 
-        // All other commands
-        mgr.registerAllActions();
+        if (constants.useSwingApplicationFramework.getValue()) {
+            // For history sub-menu
+            ResourceMap resource = Main.getInstance()
+                                       .getContext()
+                                       .getResourceMap(Actions.class);
+            historyMenu.setName("historyMenu");
+            resource.injectComponents(historyMenu);
 
-        toolBar = mgr.getToolBar();
-        frame.setJMenuBar(mgr.getMenuBar());
+            // For some specific top-level menus
+            ActionManager mgr = ActionManager.getInstance();
+            mgr.injectMenu(Actions.Domain.SHEET.name(), sheetMenu);
+            mgr.injectMenu(Actions.Domain.STEP.name(), stepMenu);
 
-        //Mac Application menu
+            // All other commands
+            mgr.loadAllDescriptors();
+            mgr.registerAllActions();
+            toolBar = mgr.getToolBar();
+            frame.setJMenuBar(mgr.getMenuBar());
+        } else {
+            // Old implementation
+            UIDressing.dressUp(
+                historyMenu,
+                getClass().getName() + ".historyMenu");
+            UIDressing.dressUp(sheetMenu, getClass().getName() + ".sheetMenu");
+            UIDressing.dressUp(stepMenu, getClass().getName() + ".stepMenu");
+
+            omr.ui.ActionManager mgr = omr.ui.ActionManager.getInstance();
+            mgr.injectMenu("File", sheetMenu);
+            mgr.injectMenu("Step", stepMenu);
+
+            // All other commands
+            mgr.loadAllClasses();
+            mgr.registerAllActions();
+            toolBar = mgr.getToolBar();
+            frame.setJMenuBar(mgr.getMenuBar());
+        }
+
+        // Mac Application menu
         MacApplication.setupMacMenus();
     }
 
@@ -506,6 +536,19 @@ public class MainGui
         {
             setRightComponent(null);
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Boolean useSwingApplicationFramework = new Constant.Boolean(
+            true,
+            "Should we use the Swing Application Framework to define Actions?");
     }
 
     //-----------------//

@@ -8,6 +8,8 @@
 //----------------------------------------------------------------------------//
 package omr.score.midi;
 
+import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import static omr.plugin.Dependency.*;
@@ -20,6 +22,7 @@ import omr.score.ScoreManager;
 import static omr.score.midi.MidiAgent.Status.*;
 import omr.score.midi.MidiAgent.UnavailableException;
 import omr.score.ui.ScoreActions;
+import omr.score.ui.ScoreDependent;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -29,13 +32,15 @@ import omr.selection.SelectionTag;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
-import omr.ui.ActionManager;
-import omr.ui.UIDressing;
+import omr.ui.MainGui;
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
 import omr.util.Logger;
+
+import org.jdesktop.application.Action;
+import org.jdesktop.application.Task;
 
 import java.awt.event.*;
 import java.io.*;
@@ -45,14 +50,14 @@ import javax.swing.*;
 
 /**
  * Class <code>MidiActions</code> is merely a collection of UI actions that
- * drive the MidiAgent activity for Midi playback (Play/Pause, Stop) and for
+ * drive the MidiAgent activity for Midi playback (Play, Pause, Stop) and for
  * writing Midi files.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
 public class MidiActions
-    implements SelectionObserver
+    extends ScoreDependent
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -62,30 +67,25 @@ public class MidiActions
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MidiActions.class);
 
-    // PauseAction instance
-    private static Action pauseAction = new PauseAction();
+    /** Singleton */
+    private static volatile MidiActions INSTANCE;
 
-    static {
-        UIDressing.dressUp(pauseAction, pauseAction.getClass().getName());
-    }
+    //~ Instance fields --------------------------------------------------------
 
-    // PlayAction instance
-    public static final Action playAction = ActionManager.getInstance()
-                                                         .getActionInstance(
-        PlayAction.class.getName());
-    private static Icon        playIcon = (Icon) playAction.getValue(
-        Action.SMALL_ICON);
-    private static String      playShortDescription = (String) playAction.getValue(
-        Action.SHORT_DESCRIPTION);
-    private static Action      stopAction = ActionManager.getInstance()
-                                                         .getActionInstance(
-        StopAction.class.getName());
-    private static Action      writeAction = ActionManager.getInstance()
-                                                          .getActionInstance(
-        WriteAction.class.getName());
+    // Companion Midi Agent
+    private volatile MidiAgent agent;
 
-    /** A private instance, just to be notified of sheet selection */
-    private static MidiActions INSTANCE = new MidiActions();
+    // Action instances (to be removed ASAP)
+    private javax.swing.Action playAction;
+    private javax.swing.Action pauseAction;
+    private javax.swing.Action stopAction;
+    private javax.swing.Action writeAction;
+
+    // Status variables
+    private boolean midiPlayable = false;
+    private boolean midiPausable = false;
+    private boolean midiStoppable = false;
+    private boolean midiWritable = false;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -94,63 +94,156 @@ public class MidiActions
     //-------------//
     private MidiActions ()
     {
-        // Stay informed on sheet selection
-        SheetManager.getSelection()
-                    .addObserver(this);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    public static MidiActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            synchronized (MidiActions.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new MidiActions();
+                }
+            }
+        }
+
+        return INSTANCE;
+    }
+
+    //-----------------//
+    // setMidiPausable //
+    //-----------------//
+    public void setMidiPausable (boolean midiPausable)
+    {
+        boolean oldValue = this.midiPausable;
+        this.midiPausable = midiPausable;
+        firePropertyChange("midiPausable", oldValue, this.midiPausable);
+    }
+
+    //----------------//
+    // isMidiPausable//
+    //----------------//
+    public boolean isMidiPausable ()
+    {
+        return midiPausable;
+    }
+
+    //-----------------//
+    // setMidiPlayable //
+    //-----------------//
+    public void setMidiPlayable (boolean midiPlayable)
+    {
+        boolean oldValue = this.midiPlayable;
+        this.midiPlayable = midiPlayable;
+        firePropertyChange("midiPlayable", oldValue, this.midiPlayable);
+    }
+
+    //----------------//
+    // isMidiPlayable //
+    //----------------//
+    public boolean isMidiPlayable ()
+    {
+        return midiPlayable;
+    }
+
+    //------------------//
+    // setMidiStoppable //
+    //------------------//
+    public void setMidiStoppable (boolean midiStoppable)
+    {
+        boolean oldValue = this.midiStoppable;
+        this.midiStoppable = midiStoppable;
+        firePropertyChange("midiStoppable", oldValue, this.midiStoppable);
+    }
+
+    //-----------------//
+    // isMidiStoppable //
+    //-----------------//
+    public boolean isMidiStoppable ()
+    {
+        return midiStoppable;
+    }
+
+    //-----------------//
+    // setMidiWritable //
+    //-----------------//
+    public void setMidiWritable (boolean midiWritable)
+    {
+        boolean oldValue = this.midiWritable;
+        this.midiWritable = midiWritable;
+        firePropertyChange("midiWritable", oldValue, this.midiWritable);
+    }
+
+    //----------------//
+    // isMidiWritable //
+    //----------------//
+    public boolean isMidiWritable ()
+    {
+        return midiWritable;
+    }
 
     //---------//
     // getName //
     //---------//
     @Implement(SelectionObserver.class)
+    @Override
     public String getName ()
     {
         return "MidiActions";
     }
 
-    //------//
-    // play //
-    //------//
+    //-----------//
+    // pauseMidi //
+    //-----------//
     /**
-     * Launch the playback of Midi Agent on the provided score (if paused or
-     * stopped), or stop the playback if playing.
-     * @param score the provided score
-     * @param measureRange if non null, specifies a range of measures to play
+     * Action that allows to pause a Midi playback.
+     * @param e the event which triggered this action
      */
-    public static void play (final Score        score,
-                             final MeasureRange measureRange)
+    @Action(enabledProperty = "midiPausable")
+    public void pauseMidi (ActionEvent e)
     {
-        if (score != null) {
-            try {
-                final MidiAgent agent = MidiAgent.getInstance();
+        getAgent().pause();
+    }
 
-                // Processing depends on player status
-                Thread t = new Thread(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                if (agent.getStatus() == PLAYING) {
-                                    agent.pause();
-                                } else {
-                                    MeasureRange mr = measureRange;
+    //----------//
+    // playMidi //
+    //----------//
+    /**
+     * Action that allows to start or resume a Midi playback.
+     * @param e the event which triggered this action
+     * @return the asynchronous task, or null
+     */
+    @Action(enabledProperty = "midiPlayable")
+    public Task playMidi (ActionEvent e)
+    {
+        Sheet sheet = SheetManager.getSelectedSheet();
 
-                                    if (mr == null) {
-                                        mr = score.getMeasureRange();
-                                    }
+        if (sheet != null) {
+            Score score = sheet.getScore();
 
-                                    agent.setScore(score);
-                                    agent.play(mr);
-                                }
-                            }
-                        });
-
-                t.start();
-            } catch (UnavailableException ex) {
-                logger.warning("Cannot play", ex);
+            if ((score != null) && ScoreActions.checkParameters(score)) {
+                return new PlayTask(score, null);
             }
         }
+
+        return null;
+    }
+
+    //----------//
+    // stopMidi //
+    //----------//
+    /**
+     * Action that allows to stop a Midi playback.
+     * @param e the event which triggered this action
+     */
+    @Action(enabledProperty = "midiStoppable")
+    public void stopMidi (ActionEvent e)
+    {
+        getAgent().stop();
     }
 
     //--------//
@@ -163,9 +256,12 @@ public class MidiActions
      * @param hint processing hint (not used)
      */
     @Implement(SelectionObserver.class)
+    @Override
     public void update (Selection     selection,
                         SelectionHint hint)
     {
+        super.update(selection, hint);
+
         if (selection.getTag() == SelectionTag.SHEET) {
             updateActions();
         }
@@ -177,51 +273,73 @@ public class MidiActions
     /**
      * Refresh the various Midi actions, according to the current context
      */
-    static void updateActions ()
+    public void updateActions ()
     {
-        try {
-            Sheet sheet = SheetManager.getSelectedSheet();
+        MidiAgent.Status status = getAgent().getStatus();
+        ///logger.info("updateActions, status=" + status);
+        setMidiPlayable(isScoreAvailable() && (status != PLAYING));
+        setMidiPausable(isScoreAvailable() && (status == PLAYING));
+        setMidiStoppable(isScoreAvailable() && (status != STOPPED));
+        setMidiWritable(
+            isScoreAvailable() &&
+            ((status == STOPPED) || (getAgent().getScore() == getCurrentScore())));
 
-            if ((sheet == null) || (sheet.getScore() == null)) {
-                setPlay(true);
-                playAction.setEnabled(false);
-                stopAction.setEnabled(false);
-                writeAction.setEnabled(false);
-
-                return;
+        // To be removed ASAP
+        if (!MainGui.useSwingApplicationFramework()) {
+            if (playAction == null) {
+                // Action instances
+                omr.ui.ActionManager mgr = omr.ui.ActionManager.getInstance();
+                playAction = mgr.getActionInstance(PlayAction.class.getName());
+                pauseAction = mgr.getActionInstance(
+                    PauseAction.class.getName());
+                stopAction = mgr.getActionInstance(StopAction.class.getName());
+                writeAction = mgr.getActionInstance(
+                    WriteAction.class.getName());
             }
 
-            Score     score = sheet.getScore();
-            MidiAgent agent = MidiAgent.getInstance();
+            playAction.setEnabled(isMidiPlayable());
+            pauseAction.setEnabled(isMidiPausable());
+            stopAction.setEnabled(isMidiStoppable());
+            writeAction.setEnabled(isMidiWritable());
+        }
+    }
 
-            switch (agent.getStatus()) {
-            case STOPPED :
-                setPlay(true);
-                playAction.setEnabled(true);
-                stopAction.setEnabled(false);
-                writeAction.setEnabled(true);
+    //-----------//
+    // writeMidi //
+    //-----------//
+    /**
+     * Action that allows to write a Midi file.
+     * @param e the event that triggered this action
+     * @return the asynchronous task, or null
+     */
+    @Action(enabledProperty = "midiWritable")
+    public Task writeMidi (ActionEvent e)
+    {
+        Score score = getInstance()
+                          .getCurrentScore();
 
-                break;
+        if (score == null) {
+            return null;
+        }
 
-            case PLAYING :
-            case PAUSED :
-                setPlay(agent.getStatus() != PLAYING);
+        // Check whether global score parameters have been set
+        if (!ScoreActions.checkParameters(score)) {
+            return null;
+        }
 
-                // Playing/Pausing this score?
-                if (agent.getScore() == score) {
-                    playAction.setEnabled(true);
-                    stopAction.setEnabled(true);
-                    writeAction.setEnabled(true);
-                } else {
-                    playAction.setEnabled(false);
-                    stopAction.setEnabled(false);
-                    writeAction.setEnabled(false);
-                }
+        // Let the user select a score output file
+        File       midiFile = new File(
+            constants.defaultMidiDirectory.getValue(),
+            score.getRadix() + MidiAbstractions.MIDI_EXTENSION);
+        FileFilter filter = new FileFilter(
+            "Midi files",
+            new String[] { MidiAbstractions.MIDI_EXTENSION });
+        midiFile = UIUtilities.fileChooser(true, null, midiFile, filter);
 
-                break;
-            }
-        } catch (UnavailableException ex) {
-            logger.warning("Cannot update Midi actions", ex);
+        if (midiFile != null) {
+            return new WriteTask(score, midiFile);
+        } else {
+            return null;
         }
     }
 
@@ -232,7 +350,7 @@ public class MidiActions
      * Report the currently selected score, if any
      * @return the current score, or null
      */
-    private static Score getCurrentScore ()
+    private Score getCurrentScore ()
     {
         Sheet sheet = SheetManager.getSelectedSheet();
 
@@ -243,40 +361,47 @@ public class MidiActions
         }
     }
 
-    //---------//
-    // setPlay //
-    //---------//
-    /**
-     * Decorate the Play action for a real play (if boolean play is true) or
-     * for a pause (if boolean play is false)
-     *
-     * @param play true for a true play
-     */
-    private static void setPlay (boolean play)
+    //----------//
+    // getAgent //
+    //----------//
+    private MidiAgent getAgent ()
     {
-        if (play) { // A Play action
-            playAction.putValue(Action.SMALL_ICON, playIcon);
-            playAction.putValue(Action.SHORT_DESCRIPTION, playShortDescription);
-        } else { // A Pause action
-            playAction.putValue(
-                Action.SMALL_ICON,
-                pauseAction.getValue(Action.SMALL_ICON));
-            playAction.putValue(
-                Action.SHORT_DESCRIPTION,
-                pauseAction.getValue(Action.SHORT_DESCRIPTION));
+        if (agent == null) {
+            try {
+                agent = MidiAgent.getInstance();
+            } catch (UnavailableException ex) {
+                logger.severe("Cannot get MidiAgent", ex);
+            }
         }
+
+        return agent;
     }
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //-------------//
+    // PauseAction //
+    //-------------//
+    @Deprecated
+    @Plugin(type = MIDI_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = true)
+    public static class PauseAction
+        extends AbstractAction
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            getInstance()
+                .pauseMidi(e);
+        }
+    }
+
     //------------//
     // PlayAction //
     //------------//
-    /**
-     * Class <code>PlayAction</code> allows to start, pause or restart a Midi
-     * playback.
-     */
-    @Plugin(type = SCORE_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = true)
+    @Deprecated
+    @Plugin(type = MIDI_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = true)
     public static class PlayAction
         extends AbstractAction
     {
@@ -285,25 +410,68 @@ public class MidiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            Sheet sheet = SheetManager.getSelectedSheet();
+            Task task = getInstance()
+                            .playMidi(e);
 
-            if (sheet != null) {
-                Score score = sheet.getScore();
+            if (task != null) {
+                task.execute();
+            }
+        }
+    }
 
-                if ((score != null) && ScoreActions.checkParameters(score)) {
-                    play(score, null);
+    //----------//
+    // PlayTask //
+    //----------//
+    /**
+     * Asynchronous task to play the provided score
+     */
+    public static class PlayTask
+        extends Task<Void, Void>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final Score  score;
+        private MeasureRange measureRange;
+
+        //~ Constructors -------------------------------------------------------
+
+        public PlayTask (Score        score,
+                         MeasureRange measureRange)
+        {
+            super(Main.getInstance());
+            this.score = score;
+            this.measureRange = measureRange;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
+        {
+            if (score != null) {
+                try {
+                    if (measureRange == null) {
+                        measureRange = score.getMeasureRange();
+                    }
+
+                    MidiAgent agent = MidiAgent.getInstance();
+                    agent.setScore(score);
+                    agent.play(measureRange);
+                } catch (UnavailableException ex) {
+                    logger.warning("Cannot play", ex);
                 }
             }
+
+            return null;
         }
     }
 
     //------------//
     // StopAction //
     //------------//
-    /**
-     * Class <code>StopAction</code> allows to stop a Midi playback.
-     */
-    @Plugin(type = SCORE_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = true)
+    @Deprecated
+    @Plugin(type = MIDI_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = true)
     public static class StopAction
         extends AbstractAction
     {
@@ -312,30 +480,16 @@ public class MidiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            Thread t = new Thread(
-                new Runnable() {
-                        public void run ()
-                        {
-                            try {
-                                MidiAgent.getInstance()
-                                         .stop();
-                            } catch (UnavailableException ex) {
-                                logger.warning("Cannot stop", ex);
-                            }
-                        }
-                    });
-
-            t.start();
+            getInstance()
+                .stopMidi(e);
         }
     }
 
     //-------------//
     // WriteAction //
     //-------------//
-    /**
-     * Class <code>WriteAction</code> allows to write a Midi file.
-     */
-    @Plugin(type = SCORE_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = false)
+    @Deprecated
+    @Plugin(type = MIDI_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = false)
     public static class WriteAction
         extends AbstractAction
     {
@@ -344,39 +498,55 @@ public class MidiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            Score score = getCurrentScore();
+            Task task = getInstance()
+                            .writeMidi(e);
 
-            if (score == null) {
-                return;
+            if (task != null) {
+                task.execute();
+            }
+        }
+    }
+
+    //-----------//
+    // WriteTask //
+    //-----------//
+    /**
+     * Asynchronous task to write the provided score into a midi file
+     */
+    public static class WriteTask
+        extends Task<Void, Void>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final Score score;
+        private final File  midiFile;
+
+        //~ Constructors -------------------------------------------------------
+
+        WriteTask (Score score,
+                   File  midiFile)
+        {
+            super(Main.getInstance());
+            this.score = score;
+            this.midiFile = midiFile;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
+        {
+            try {
+                ScoreManager.getInstance()
+                            .midiWrite(score, midiFile);
+                // Remember (even across runs) the selected directory
+                constants.defaultMidiDirectory.setValue(midiFile.getParent());
+            } catch (Exception ignored) {
+                // User already informed
             }
 
-            // Check whether global score parameters have been set
-            if (!ScoreActions.checkParameters(score)) {
-                return;
-            }
-
-            // Where do we write the score midi file?
-            File       midiFile = new File(
-                constants.defaultMidiDirectory.getValue(),
-                score.getRadix() + MidiAbstractions.MIDI_EXTENSION);
-
-            // Let the user select a score output file
-            FileFilter filter = new FileFilter(
-                "Midi files",
-                new String[] { MidiAbstractions.MIDI_EXTENSION });
-            midiFile = UIUtilities.fileChooser(true, null, midiFile, filter);
-
-            if (midiFile != null) {
-                try {
-                    ScoreManager.getInstance()
-                                .midiWrite(score, midiFile);
-                    // Remember (even across runs) the selected directory
-                    constants.defaultMidiDirectory.setValue(
-                        midiFile.getParent());
-                } catch (Exception ignored) {
-                    // User already informed
-                }
-            }
+            return null;
         }
     }
 
@@ -391,26 +561,5 @@ public class MidiActions
         Constant.String defaultMidiDirectory = new Constant.String(
             "",
             "Default directory for writing Midi files");
-    }
-
-    //-------------//
-    // PauseAction //
-    //-------------//
-    /**
-     * Just a placeholder for related icon and description. The real behavior
-     * is implemented in agent.play() method.
-     */
-
-    //@Plugin(type = SCORE_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = false)
-    private static class PauseAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            logger.severe("Should not be called");
-        }
     }
 }

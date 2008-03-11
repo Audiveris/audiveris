@@ -46,6 +46,9 @@ import static omr.ui.field.SpinnerUtilities.*;
 import omr.util.Implement;
 import omr.util.Logger;
 
+import org.jdesktop.application.AbstractBean;
+import org.jdesktop.application.Action;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
@@ -158,17 +161,6 @@ public class LinesBuilder
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // displayChart //
-    //--------------//
-    /**
-     * Build and display the histogram of projections
-     */
-    public void displayChart ()
-    {
-        writePlot(histo, threshold);
-    }
-
     //-----------//
     // getStaves //
     //-----------//
@@ -180,6 +172,17 @@ public class LinesBuilder
     public List<StaffInfo> getStaves ()
     {
         return staves;
+    }
+
+    //--------------//
+    // displayChart //
+    //--------------//
+    /**
+     * Build and display the histogram of projections
+     */
+    public void displayChart ()
+    {
+        writePlot(histo, threshold);
     }
 
     //---------//
@@ -574,10 +577,7 @@ public class LinesBuilder
     //------------//
     // LineAction //
     //------------//
-    /**
-     * Class <code>LineAction</code> toggles the display of original pixels
-     * for the staff lines
-     */
+    @Deprecated
     @Plugin(type = PluginType.LINE_VIEW, item = JCheckBoxMenuItem.class)
     public static class LineAction
         extends AbstractAction
@@ -599,6 +599,80 @@ public class LinesBuilder
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
             constants.displayOriginalStaffLines.setValue(item.isSelected());
 
+            // Trigger a repaint if needed
+            Sheet currentSheet = SheetManager.getSelectedSheet();
+
+            if (currentSheet != null) {
+                LinesBuilder builder = currentSheet.getLinesBuilder();
+
+                if ((builder != null) && (builder.lagView != null)) {
+                    builder.lagView.repaint();
+                }
+            }
+        }
+    }
+
+    //-----------------//
+    // LinesParameters //
+    //-----------------//
+    public static class LinesParameters
+        extends AbstractBean
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        /** Singleton */
+        private static volatile LinesParameters INSTANCE;
+
+        //~ Methods ------------------------------------------------------------
+
+        //-------------//
+        // getInstance //
+        //-------------//
+        public static LinesParameters getInstance ()
+        {
+            if (INSTANCE == null) {
+                synchronized (LinesParameters.class) {
+                    if (INSTANCE == null) {
+                        INSTANCE = new LinesParameters();
+                    }
+                }
+            }
+
+            return INSTANCE;
+        }
+
+        //-----------------//
+        // setLinePainting //
+        //-----------------//
+        public void setLinePainting (boolean value)
+        {
+            boolean oldValue = constants.displayOriginalStaffLines.getValue();
+            constants.displayOriginalStaffLines.setValue(value);
+            firePropertyChange(
+                "linePainting",
+                oldValue,
+                constants.displayOriginalStaffLines.getValue());
+        }
+
+        //----------------//
+        // isLinePainting //
+        //----------------//
+        public boolean isLinePainting ()
+        {
+            return constants.displayOriginalStaffLines.getValue();
+        }
+
+        //-------------//
+        // toggleLines //
+        //-------------//
+        /**
+         * Action that toggles the display of original pixels for the staff
+         * lines
+         * @param e the event that triggered this action
+         */
+        @Action(selectedProperty = "linePainting")
+        public void toggleLines (ActionEvent e)
+        {
             // Trigger a repaint if needed
             Sheet currentSheet = SheetManager.getSelectedSheet();
 

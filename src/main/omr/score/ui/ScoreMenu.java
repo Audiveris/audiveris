@@ -452,9 +452,9 @@ public class ScoreMenu
 
                 MidiAgent.getInstance()
                          .reset();
-                MidiActions.play(
+                new MidiActions.PlayTask(
                     score,
-                    new MeasureRange(score, measure.getId(), measure.getId()));
+                    new MeasureRange(score, measure.getId(), measure.getId())).execute();
             } catch (UnavailableException ex) {
                 logger.warning("Cannot play measure", ex);
             }

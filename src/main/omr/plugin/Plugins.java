@@ -20,6 +20,14 @@ import javax.swing.Action;
  * Class <code>Plugins</code> handles the loading and sorting of a stream of
  * plugin classes.
  *
+ * <p>First, the application Main class calls the {@link #loadClasses} method is
+ * called on system.plugins and user.plugins in order to collect the set of all
+ * plugin classes.</p>
+ *
+ * <p>Then, the ActionManager class calls the {@link #getActions} method to get
+ * all actions related to a given type to fill the Menu and ToolBar with the
+ * related UI items.
+ *
  * @author Brenton Partridge
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -63,6 +71,10 @@ public class Plugins
      */
     public static Collection<Class<?extends Action>> getActions (PluginType type)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Entering getActions for " + type);
+        }
+
         Collection<Class<?extends Action>> typed = new LinkedHashSet<Class<?extends Action>>();
 
         for (Class<?extends Action> plugin : actions) {
@@ -87,11 +99,19 @@ public class Plugins
      */
     public static void loadClasses (InputStream is)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Entering loadClasses");
+        }
+
         Scanner scanner = new Scanner(is);
 
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine()
                                  .trim();
+
+            if (logger.isFineEnabled()) {
+                logger.fine("line='" + line + "'");
+            }
 
             if ((line.length() > 0) && !line.startsWith("#")) {
                 loadClass(line);
@@ -112,6 +132,10 @@ public class Plugins
     @SuppressWarnings("unchecked")
     private static void loadClass (String clazzName)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Entering loadClass for " + clazzName);
+        }
+
         try {
             Class<?extends Action> clazz = (Class<?extends Action>) classLoader.loadClass(
                 clazzName);

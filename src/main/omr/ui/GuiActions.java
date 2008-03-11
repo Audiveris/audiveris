@@ -16,6 +16,8 @@ import omr.constant.UnitManager;
 import omr.constant.UnitModel;
 import omr.constant.UnitTreeTable;
 
+import omr.glyph.ui.GlyphTrainer;
+import omr.glyph.ui.GlyphVerifier;
 import omr.glyph.ui.ShapeColorChooser;
 
 import omr.plugin.Dependency;
@@ -32,6 +34,8 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.jdesktop.application.AbstractBean;
+import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
@@ -51,6 +55,7 @@ import javax.swing.*;
  * @version $Id$
  */
 public class GuiActions
+    extends AbstractBean
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -69,6 +74,226 @@ public class GuiActions
                                                      .getResourceMap(
         GuiActions.class);
 
+    /** Singleton */
+    private static GuiActions INSTANCE;
+
+    //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized GuiActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new GuiActions();
+        }
+
+        return INSTANCE;
+    }
+
+    //--------------------//
+    // isBrowserSupported //
+    //--------------------//
+    /**
+     * Report whether the underlying platform can launch a browser
+     * @return true if it can
+     */
+    public boolean isBrowserSupported ()
+    {
+        return WebBrowser.getBrowser()
+                         .isSupported();
+    }
+
+    //----------//
+    // clearLog //
+    //----------//
+    /**
+     * Action to erase the content of the log display
+     * (but not the content of the log itself)
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void clearLog (ActionEvent e)
+    {
+        Main.getGui().logPane.clearLog();
+    }
+
+    //---------------//
+    // defineOptions //
+    //---------------//
+    /**
+     *  Action that opens a window where units options (logger level, constants)
+     * can be managed
+     * @param e the event that triggered this action
+     */
+    @Action
+    public void defineOptions (ActionEvent e)
+    {
+        if (optionsFrame == null) {
+            // Preload constant units
+            UnitManager.getInstance(Main.class.getName());
+
+            optionsFrame = new JFrame();
+            optionsFrame.setName("optionsFrame");
+            optionsFrame.getContentPane()
+                        .setLayout(new BorderLayout());
+
+            JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
+            optionsFrame.getContentPane()
+                        .add(toolBar, BorderLayout.NORTH);
+
+            JButton dumpButton = new JButton(
+                new AbstractAction() {
+                        public void actionPerformed (ActionEvent e)
+                        {
+                            UnitManager.getInstance()
+                                       .dumpAllUnits();
+                        }
+                    });
+            dumpButton.setName("optionsDumpButton");
+            toolBar.add(dumpButton);
+
+            JButton checkButton = new JButton(
+                new AbstractAction() {
+                        public void actionPerformed (ActionEvent e)
+                        {
+                            UnitManager.getInstance()
+                                       .checkAllUnits();
+                        }
+                    });
+            checkButton.setName("optionsCheckButton");
+            toolBar.add(checkButton);
+
+            UnitModel  cm = new UnitModel();
+            JTreeTable jtt = new UnitTreeTable(cm);
+            optionsFrame.getContentPane()
+                        .add(new JScrollPane(jtt));
+
+            // Resources injection
+            resource.injectComponents(optionsFrame);
+        }
+
+        Main.getInstance()
+            .show(optionsFrame);
+    }
+
+    //-------------------//
+    // defineShapeColors //
+    //-------------------//
+    /**
+     * Action that  allows to define the colors of predefined shapes
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void defineShapeColors (ActionEvent e)
+    {
+        ShapeColorChooser.showFrame();
+    }
+
+    //------//
+    // exit //
+    //------//
+    /**
+     * Action to exit the application
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void exit (ActionEvent e)
+    {
+        Main.getInstance()
+            .exit();
+    }
+
+    //---------------//
+    // launchTrainer //
+    //---------------//
+    /**
+     * Action that launches the window dedicated to the training of the neural
+     * network
+     *
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void launchTrainer (ActionEvent e)
+    {
+        GlyphTrainer.launch();
+    }
+
+    //-----------//
+    // showAbout //
+    //-----------//
+    /**
+     * Show the 'about' data
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void showAbout (ActionEvent e)
+    {
+        new AboutAction().actionPerformed(e);
+    }
+
+    //------------//
+    // showManual //
+    //------------//
+    /**
+     * Action to launch a browser on Audiveris Operation manual
+     * @param e the event which triggered this action
+     */
+    @Action(enabledProperty = "browserSupported")
+    public void showManual (ActionEvent e)
+    {
+        WebBrowser.getBrowser()
+                  .launch(constants.operationUrl.getValue());
+    }
+
+    //------------//
+    // showMemory //
+    //------------//
+    /**
+     * Action to desplay the current value of occupied  memory
+     * @param e the event that triggered this action
+     */
+    @Action
+    public void showMemory (ActionEvent e)
+    {
+        logger.info("Occupied memory is " + Memory.getValue() + " bytes");
+    }
+
+    //------------------------//
+    // verifyTrainingMaterial //
+    //------------------------//
+    /**
+     * Action that opens a windows dedicated to the management of collections
+     * of glyphs used as training material for the neural network
+     *
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void verifyTrainingMaterial (ActionEvent e)
+    {
+        GlyphVerifier.getInstance()
+                     .setVisible(true);
+    }
+
+    //--------------//
+    // visitWebSite //
+    //--------------//
+    /**
+     * Action to launch a browser on application web site
+     * @param e the event which triggered this action
+     */
+    @Action(enabledProperty = "browserSupported")
+    public void visitWebSite (ActionEvent e)
+    {
+        WebBrowser.getBrowser()
+                  .launch(constants.webSiteUrl.getValue());
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-------------//
@@ -85,7 +310,7 @@ public class GuiActions
     {
         //~ Instance fields ----------------------------------------------------
 
-        // Dialog        
+        // Dialog
         private JDialog                 aboutBox = null;
         private Map<String, JTextField> fields = new HashMap<String, JTextField>();
 
@@ -157,10 +382,7 @@ public class GuiActions
     //----------------//
     // ClearLogAction //
     //----------------//
-    /**
-     * Class <code>ClearLogAction</code> erases the content of the log display
-     * (but not the content of the log itself)
-     */
+    @Deprecated
     @Plugin(type = PluginType.LOG_VIEW, onToolbar = true)
     public static class ClearLogAction
         extends AbstractAction
@@ -170,18 +392,16 @@ public class GuiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            Main.getGui().logPane.clearLog();
+            getInstance()
+                .clearLog(e);
         }
     }
 
     //------------//
     // ExitAction //
     //------------//
-    /**
-     * Class <code>ExitAction</code> allows to exit the application
-     *
-     */
-    @Plugin(type = PluginType.GENERAL_END, dependency = Dependency.NONE, onToolbar = false)
+    @Deprecated
+    @Plugin(type = PluginType.SHEET_END)
     public static class ExitAction
         extends AbstractAction
     {
@@ -190,41 +410,15 @@ public class GuiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            Main.getInstance()
-                .exit();
-        }
-    }
-
-    //------------//
-    // FineAction //
-    //------------//
-    /**
-     * Class <code>FineAction</code> allows to set logger level to FINE in the
-     * Selection mechanism
-     *
-     */
-    @Plugin(type = PluginType.TEST, onToolbar = true)
-    public static class FineAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            Logger.getLogger(omr.selection.Selection.class)
-                  .setLevel("FINE");
+            getInstance()
+                .exit(e);
         }
     }
 
     //--------------//
     // MemoryAction //
     //--------------//
-    /**
-     * Class <code>MemoryAction</code> desplays the current value of occupied
-     * memory
-     *
-     */
+    @Deprecated
     @Plugin(type = PluginType.TOOL)
     public static class MemoryAction
         extends AbstractAction
@@ -234,17 +428,15 @@ public class GuiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            logger.info("Occupied memory is " + Memory.getValue() + " bytes");
+            getInstance()
+                .showMemory(e);
         }
     }
 
     //-----------------//
     // OperationAction //
     //-----------------//
-    /**
-     * Class <code>OperationAction</code> launches a browser on Audiveris
-     * Operation manual
-     */
+    @Deprecated
     @Plugin(type = PluginType.HELP, dependency = Dependency.NONE)
     public static class OperationAction
         extends AbstractAction
@@ -253,7 +445,7 @@ public class GuiActions
 
         public OperationAction ()
         {
-            setEnabled(WebBrowser.getBrowser().isSupported());
+            setEnabled(getInstance().isBrowserSupported());
         }
 
         //~ Methods ------------------------------------------------------------
@@ -261,19 +453,15 @@ public class GuiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            WebBrowser.getBrowser()
-                      .launch(constants.operationUrl.getValue());
+            getInstance()
+                .showManual(e);
         }
     }
 
     //---------------//
     // OptionsAction //
     //---------------//
-    /**
-     * Class <code>OptionsAction</code> opens a window where units options
-     * (logger level, constants) can be managed
-     *
-     */
+    @Deprecated
     @Plugin(type = PluginType.TOOL)
     public static class OptionsAction
         extends AbstractAction
@@ -283,63 +471,15 @@ public class GuiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            if (optionsFrame == null) {
-                // Preload constant units
-                UnitManager.getInstance(Main.class.getName());
-
-                optionsFrame = new JFrame();
-                optionsFrame.setName("optionsFrame");
-                optionsFrame.getContentPane()
-                            .setLayout(new BorderLayout());
-
-                JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
-                optionsFrame.getContentPane()
-                            .add(toolBar, BorderLayout.NORTH);
-
-                JButton dumpButton = new JButton(
-                    new AbstractAction() {
-                            public void actionPerformed (ActionEvent e)
-                            {
-                                UnitManager.getInstance()
-                                           .dumpAllUnits();
-                            }
-                        });
-                dumpButton.setName("optionsDumpButton");
-                toolBar.add(dumpButton);
-
-                JButton checkButton = new JButton(
-                    new AbstractAction() {
-                            public void actionPerformed (ActionEvent e)
-                            {
-                                UnitManager.getInstance()
-                                           .checkAllUnits();
-                            }
-                        });
-                checkButton.setName("optionsCheckButton");
-                toolBar.add(checkButton);
-
-                UnitModel  cm = new UnitModel();
-                JTreeTable jtt = new UnitTreeTable(cm);
-                optionsFrame.getContentPane()
-                            .add(new JScrollPane(jtt));
-
-                // Resources injection
-                resource.injectComponents(optionsFrame);
-            }
-
-            Main.getInstance()
-                .show(optionsFrame);
+            GuiActions.getInstance()
+                      .defineOptions(e);
         }
     }
 
     //------------------//
     // ShapeColorAction //
     //------------------//
-    /**
-     * Class <code>ShapeColorAction</code> allows to define the colors of
-     * predefined shapes
-     *
-     */
+    @Deprecated
     @Plugin(type = PluginType.TOOL)
     public static class ShapeColorAction
         extends AbstractAction
@@ -349,36 +489,15 @@ public class GuiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            ShapeColorChooser.showFrame();
-        }
-    }
-
-    //------------//
-    // TestAction //
-    //------------//
-    /**
-     * Class <code>TestAction</code> triggers a generic test methody
-     *
-     */
-    @Plugin(type = PluginType.TEST, onToolbar = true)
-    public static class TestAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            UITest.test();
+            getInstance()
+                .defineShapeColors(e);
         }
     }
 
     //---------------//
     // WebSiteAction //
     //---------------//
-    /**
-     * Class <code>WebSiteAction</code> launches a browser on Audiveris website
-     */
+    @Deprecated
     @Plugin(type = PluginType.HELP, dependency = Dependency.NONE)
     public static class WebSiteAction
         extends AbstractAction
@@ -387,7 +506,7 @@ public class GuiActions
 
         public WebSiteAction ()
         {
-            setEnabled(WebBrowser.getBrowser().isSupported());
+            setEnabled(getInstance().isBrowserSupported());
         }
 
         //~ Methods ------------------------------------------------------------
@@ -395,8 +514,8 @@ public class GuiActions
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            WebBrowser.getBrowser()
-                      .launch(constants.webSiteUrl.getValue());
+            getInstance()
+                .visitWebSite(e);
         }
     }
 

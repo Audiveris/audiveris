@@ -64,6 +64,9 @@ import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
+import org.jdesktop.application.AbstractBean;
+import org.jdesktop.application.Action;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
@@ -346,7 +349,8 @@ public class ScorePainter
         }
 
         // Voice indication ?
-        if (constants.voicePainting.getValue()) {
+        if (PaintingParameters.getInstance()
+                              .isVoicePainting()) {
             if (chord.getVoice() != null) {
                 // Link to previous chord with same voice
                 final Chord prev = chord.getPreviousChordInVoice();
@@ -375,7 +379,8 @@ public class ScorePainter
         }
 
         // Marks ?
-        if (constants.markPainting.getValue()) {
+        if (PaintingParameters.getInstance()
+                              .isMarkPainting()) {
             for (Mark mark : chord.getMarks()) {
                 final HorizontalAlignment hAlign = (mark.getPosition() == Mark.Position.BEFORE)
                                                    ? HorizontalAlignment.RIGHT
@@ -495,7 +500,8 @@ public class ScorePainter
         }
 
         // Draw slot vertical lines ?
-        if (constants.slotPainting.getValue()) {
+        if (PaintingParameters.getInstance()
+                              .isSlotPainting()) {
             for (Slot slot : measure.getSlots()) {
                 drawSlot(false, measure, slot, slotColor);
             }
@@ -923,6 +929,21 @@ public class ScorePainter
         return true;
     }
 
+    //----------------//
+    // repaintDisplay //
+    //----------------//
+    static void repaintDisplay ()
+    {
+        // Update current score display if any
+        final Score score = ScoreController.getCurrentScore();
+
+        if (score != null) {
+            score.getView()
+                 .getComponent()
+                 .repaint();
+        }
+    }
+
     //-----------//
     // paintLine //
     //-----------//
@@ -1164,21 +1185,6 @@ public class ScorePainter
         }
     }
 
-    //----------------//
-    // repaintDisplay //
-    //----------------//
-    private static void repaintDisplay ()
-    {
-        // Update current score display if any
-        final Score score = ScoreController.getCurrentScore();
-
-        if (score != null) {
-            score.getView()
-                 .getComponent()
-                 .repaint();
-        }
-    }
-
     //---------------//
     // toScaledPoint //
     //---------------//
@@ -1210,92 +1216,6 @@ public class ScorePainter
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //------------//
-    // MarkAction //
-    //------------//
-    /**
-     * Class <code>MarkAction</code> toggles the display of computed marks in
-     * the score
-     */
-    @Plugin(type = PluginType.SCORE_VIEW, item = JCheckBoxMenuItem.class)
-    public static class MarkAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public MarkAction ()
-        {
-            putValue("SwingSelectedKey", constants.markPainting.getValue());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.markPainting.setValue(item.isSelected());
-            repaintDisplay();
-        }
-    }
-
-    //------------//
-    // SlotAction //
-    //------------//
-    /**
-     * Class <code>SlotAction</code> toggles the display of vertical time slots
-     */
-    @Plugin(type = PluginType.SCORE_VIEW, item = JCheckBoxMenuItem.class)
-    public static class SlotAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public SlotAction ()
-        {
-            putValue("SwingSelectedKey", constants.slotPainting.getValue());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.slotPainting.setValue(item.isSelected());
-            repaintDisplay();
-        }
-    }
-
-    //-------------//
-    // VoiceAction //
-    //-------------//
-    /**
-     * Class <code>VoiceAction</code> toggles the display of voices with
-     * specific colors
-     */
-    @Plugin(type = PluginType.SCORE_VIEW, item = JCheckBoxMenuItem.class)
-    public static class VoiceAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public VoiceAction ()
-        {
-            putValue("SwingSelectedKey", constants.voicePainting.getValue());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.voicePainting.setValue(item.isSelected());
-            repaintDisplay();
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -1309,21 +1229,6 @@ public class ScorePainter
             "ByteLevel",
             20,
             "Alpha parameter for slot axis transparency (0 .. 255)");
-
-        /** Should the slots be painted */
-        final Constant.Boolean slotPainting = new Constant.Boolean(
-            true,
-            "Should the slots be painted");
-
-        /** Should the voices be painted */
-        final Constant.Boolean voicePainting = new Constant.Boolean(
-            false,
-            "Should the voices be painted");
-
-        /** Should the marks be painted */
-        final Constant.Boolean markPainting = new Constant.Boolean(
-            true,
-            "Should the marks be painted");
 
         /** dx between note and augmentation dot */
         final Scale.Fraction dotDx = new Scale.Fraction(

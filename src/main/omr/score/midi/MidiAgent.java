@@ -160,7 +160,8 @@ public class MidiAgent
 
             case PAUSED :
                 status = Status.STOPPED;
-                MidiActions.updateActions();
+                MidiActions.getInstance()
+                           .updateActions();
                 logger.info("Stopped.");
             }
         }
@@ -200,10 +201,10 @@ public class MidiAgent
      */
     public void pause ()
     {
-        logger.info("Paused " + score.getRadix() + "...");
         status = Status.PAUSED;
-        MidiActions.updateActions();
         player.pause();
+        MidiActions.getInstance()
+                   .updateActions();
     }
 
     //------//
@@ -222,8 +223,6 @@ public class MidiAgent
             logger.info(
                 "Playing " + score.getRadix() +
                 ((measureRange != null) ? (" " + measureRange) : " ") + "...");
-            status = Status.PLAYING;
-            MidiActions.updateActions();
 
             // Make sure the document (and the Midi sequence) is available
             retrieveDocument(measureRange);
@@ -257,6 +256,9 @@ public class MidiAgent
             // Hand it over to the player and the receiver
             receiver.setScore(score, measureRange);
             player.play();
+            status = Status.PLAYING;
+            MidiActions.getInstance()
+                       .updateActions();
         }
     }
 
@@ -310,10 +312,9 @@ public class MidiAgent
     {
         status = Status.STOPPED;
         player.stop();
-
         receiver.reset();
-        MidiActions.updateActions();
-        logger.info("Stopped.");
+        MidiActions.getInstance()
+                   .updateActions();
     }
 
     //-------//
@@ -325,6 +326,9 @@ public class MidiAgent
      */
     public void write (OutputStream os)
     {
+        // Make sure the document (and the Midi sequence) is available
+        retrieveDocument(null);
+
         player.saveSequence(os);
     }
 
@@ -393,7 +397,8 @@ public class MidiAgent
     {
         logger.info("Ended.");
         status = Status.STOPPED;
-        MidiActions.updateActions();
+        MidiActions.getInstance()
+                   .updateActions();
     }
 
     //------------------//
@@ -428,7 +433,7 @@ public class MidiAgent
                 exporter.export(document);
 
                 // Hand it over directly to MusicXML reader
-                player.openDocument(new MusicXMLDocument(document));
+                player.loadDocument(new MusicXMLDocument(document));
             } catch (Exception ex) {
                 logger.warning("Midi Agent error", ex);
                 document = null; // Safer

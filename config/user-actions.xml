@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- +=====================================================================+ -->
+<!-- |                                                                     | -->
+<!-- |                   u s e r - a c t i o n s . x m l                   | -->
+<!-- |                                                                     | -->
+<!-- |  Copyright (C) Herve Bitteur 2000=2007. All rights reserved.        | -->
+<!-- |  This software is released under the GNU General Public License.    | -->
+<!-- |  Contact dev@audiveris.dev.java.net to report bugs & suggestions.   | -->
+<!-- +=====================================================================+ -->
+
+<!--
+     This file gathers the user-addedclasses to be loaded as UI actions.
+     
+     The order of menus in the menu bar and the order of sections in each menu 
+     are predefined, but the order of items within a section depends on this.
+     
+     Version $Id$
+     -->
+     
+<actions>
+
+    <!-- 
+    <action domain="SCORE" section="END" class="MyClass" method="dumpCurrentScore" />
+     -->
+     
+</actions>
