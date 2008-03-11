@@ -113,6 +113,13 @@ public class ActionManager
     //-------------------//
     // getActionInstance //
     //-------------------//
+    /**
+     * Retrieve an action knowing its methodName
+     * 
+     * @param instance the instance of the hosting class
+     * @param methodName the method name
+     * @return the action found, or null if none
+     */
     public ApplicationAction getActionInstance (Object instance,
                                                 String methodName)
     {
@@ -190,6 +197,10 @@ public class ActionManager
     //--------------------//
     // loadAllDescriptors //
     //--------------------//
+    /**
+     * Load all descriptors as found in system and user configuration files,
+     * either in local config subdirectory or in the resource hierarchy.
+     */
     public void loadAllDescriptors ()
     {
         // Load classes first for system actions, then for user actions
