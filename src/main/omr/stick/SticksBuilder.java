@@ -19,7 +19,6 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 
-import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import static omr.stick.SectionRole.*;
 
