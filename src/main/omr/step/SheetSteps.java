@@ -237,7 +237,8 @@ public class SheetSteps
         // Final cross-system translation tasks
         if (isDone(SCORE)) {
             sheet.getScoreBuilder()
-                 .buildFinal(impactedSystems.first());
+                 .buildFinal(
+                (impactedSystems.size() > 0) ? impactedSystems.first() : null);
         }
 
         // Always refresh views if any
@@ -736,8 +737,8 @@ public class SheetSteps
                 logger.fine("VERTICALS displayUI");
             }
 
-//            getTask(SYMBOLS)
-//                .displayUI();
+            //            getTask(SYMBOLS)
+            //                .displayUI();
 
             // Create verticals display
             sheet.getVerticalsBuilder()
