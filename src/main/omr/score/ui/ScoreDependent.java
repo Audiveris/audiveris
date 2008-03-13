@@ -58,7 +58,7 @@ public abstract class ScoreDependent
     //---------//
     // getName //
     //---------//
-    /** 
+    /**
      * @inheritDoc
      */
     @Implement(SelectionObserver.class)
@@ -108,6 +108,8 @@ public abstract class ScoreDependent
     public void update (Selection     selection,
                         SelectionHint hint)
     {
+        super.update(selection, hint);
+
         if (selection.getTag() == SelectionTag.SHEET) {
             Sheet sheet = (Sheet) selection.getEntity();
             setScoreAvailable((sheet != null) && (sheet.getScore() != null));
