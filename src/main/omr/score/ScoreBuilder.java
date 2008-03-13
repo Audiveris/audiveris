@@ -186,7 +186,12 @@ public class ScoreBuilder
         sheet.getErrorsEditor()
              .clearSystem(system);
         new SystemBuilder(system).translateSystem();
-        Measure.checkPartialMeasures(system);
+
+        try {
+            Measure.checkPartialMeasures(system);
+        } catch (Exception ex) {
+            logger.warning("Error checking partial measures", ex);
+        }
 
         ///Measure.checkImplicitMeasures(system);
     }
@@ -931,7 +936,11 @@ public class ScoreBuilder
             @Override
             public void completeSystem ()
             {
-                KeySignature.verifySystemKeys(system);
+                try {
+                    KeySignature.verifySystemKeys(system);
+                } catch (Exception ex) {
+                    logger.warning("Error verifying keys for " + system, ex);
+                }
             }
 
             public void translate (Glyph glyph)
