@@ -45,7 +45,6 @@ import org.jdesktop.application.Task;
 import java.awt.event.*;
 import java.io.*;
 
-import javax.sound.midi.*;
 import javax.swing.*;
 
 /**
@@ -206,7 +205,8 @@ public class MidiActions
     @Action(enabledProperty = "midiPausable")
     public void pauseMidi (ActionEvent e)
     {
-        getAgent().pause();
+        getAgent()
+            .pause();
     }
 
     //----------//
@@ -243,7 +243,8 @@ public class MidiActions
     @Action(enabledProperty = "midiStoppable")
     public void stopMidi (ActionEvent e)
     {
-        getAgent().stop();
+        getAgent()
+            .stop();
     }
 
     //--------//
@@ -275,14 +276,17 @@ public class MidiActions
      */
     public void updateActions ()
     {
-        MidiAgent.Status status = getAgent().getStatus();
+        MidiAgent.Status status = getAgent()
+                                      .getStatus();
         ///logger.info("updateActions, status=" + status);
         setMidiPlayable(isScoreAvailable() && (status != PLAYING));
         setMidiPausable(isScoreAvailable() && (status == PLAYING));
         setMidiStoppable(isScoreAvailable() && (status != STOPPED));
         setMidiWritable(
             isScoreAvailable() &&
-            ((status == STOPPED) || (getAgent().getScore() == getCurrentScore())));
+            ((status == STOPPED) ||
+                        (getAgent()
+                             .getScore() == getCurrentScore())));
 
         // To be removed ASAP
         if (!MainGui.useSwingApplicationFramework()) {
