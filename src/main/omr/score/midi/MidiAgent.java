@@ -201,10 +201,12 @@ public class MidiAgent
      */
     public void pause ()
     {
-        status = Status.PAUSED;
-        player.pause();
-        MidiActions.getInstance()
-                   .updateActions();
+        if (status == Status.PLAYING) {
+            status = Status.PAUSED;
+            player.pause();
+            MidiActions.getInstance()
+                       .updateActions();
+        }
     }
 
     //------//
@@ -310,11 +312,13 @@ public class MidiAgent
      */
     public void stop ()
     {
-        status = Status.STOPPED;
-        player.stop();
-        receiver.reset();
-        MidiActions.getInstance()
-                   .updateActions();
+        if ((status == Status.PLAYING) || (status == Status.PAUSED)) {
+            status = Status.STOPPED;
+            player.stop();
+            receiver.reset();
+            MidiActions.getInstance()
+                       .updateActions();
+        }
     }
 
     //-------//
