@@ -52,7 +52,6 @@ import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.util.*;
-import java.util.concurrent.*;
 
 import javax.sound.midi.MidiUnavailableException;
 
@@ -190,7 +189,7 @@ public class ScoreBuilder
         try {
             Measure.checkPartialMeasures(system);
         } catch (Exception ex) {
-            logger.warning("Error checking partial measures", ex);
+            logger.warning("Error checking partial measures in " + system, ex);
         }
 
         ///Measure.checkImplicitMeasures(system);
