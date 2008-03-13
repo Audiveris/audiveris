@@ -482,67 +482,73 @@ public class StickUtil
             logger.fine("patchSection contact=" + sct);
         } else {
             for (int y = yBegin; y != yPast; y += direction) {
-                int start = -1;
+                try {
+                    int start = -1;
 
-                if (startTg != null) {
-                    start = startTg.xAt(y);
-                    length = stopTg.xAt(y) - start + 1;
+                    if (startTg != null) {
+                        start = startTg.xAt(y);
+                        length = stopTg.xAt(y) - start + 1;
+
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                "y=" + y + " start=" + start + " length=" +
+                                length);
+                        }
+
+                        if (length <= 0) { // We have decreased to nothing
+
+                            if (logger.isFineEnabled()) {
+                                logger.fine("* length is zero *");
+                            }
+
+                            break;
+                        }
+                    } else {
+                        if (axis != null) {
+                            x = axis.xAt(y);
+
+                            if (logger.isFineEnabled()) {
+                                logger.fine("x=" + x);
+                            }
+                        }
+
+                        start = (int) ((0.5 + x) - ((double) length / 2));
+                    }
 
                     if (logger.isFineEnabled()) {
                         logger.fine(
-                            "y=" + y + " start=" + start + " length=" + length);
+                            "y=" + y + ", start=" + start + ", length=" +
+                            length);
                     }
 
-                    if (length <= 0) { // We have decreased to nothing
+                    //Run newRun = new Run(start, length, Picture.FOREGROUND); // TBD
+                    Run newRun = new Run(start, length, 127); // TBD for the 127 value of course
 
-                        if (logger.isFineEnabled()) {
-                            logger.fine("* length is zero *");
+                    if (newSct == null) {
+                        newSct = lag.createSection(y, newRun);
+
+                        // Make the proper junction
+                        if (direction > 0) {
+                            StickSection.addEdge(sct, newSct);
+                        } else {
+                            StickSection.addEdge(newSct, sct);
                         }
 
-                        break;
-                    }
-                } else {
-                    if (axis != null) {
-                        x = axis.xAt(y);
-
-                        if (logger.isFineEnabled()) {
-                            logger.fine("x=" + x);
+                        patches.add(newSct);
+                    } else {
+                        // Extend newSct in proper direction
+                        if (direction > 0) {
+                            newSct.append(newRun);
+                        } else {
+                            newSct.prepend(newRun);
                         }
                     }
 
-                    start = (int) ((0.5 + x) - ((double) length / 2));
-                }
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "y=" + y + ", start=" + start + ", length=" + length);
-                }
-
-                //Run newRun = new Run(start, length, Picture.FOREGROUND); // TBD
-                Run newRun = new Run(start, length, 127); // TBD for the 127 value of course
-
-                if (newSct == null) {
-                    newSct = lag.createSection(y, newRun);
-
-                    // Make the proper junction
-                    if (direction > 0) {
-                        StickSection.addEdge(sct, newSct);
-                    } else {
-                        StickSection.addEdge(newSct, sct);
+                    if (logger.isFineEnabled()) {
+                        logger.fine("newSct=" + newSct);
                     }
-
-                    patches.add(newSct);
-                } else {
-                    // Extend newSct in proper direction
-                    if (direction > 0) {
-                        newSct.append(newRun);
-                    } else {
-                        newSct.prepend(newRun);
-                    }
-                }
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("newSct=" + newSct);
+                } catch (Exception ex) {
+                    logger.warning("Error patching " + stick, ex);
                 }
             }
 
