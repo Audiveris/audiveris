@@ -16,6 +16,7 @@ import omr.action.Actions;
 
 import omr.constant.*;
 
+import omr.score.midi.MidiActions;
 import omr.score.ui.ScoreController;
 
 import omr.selection.Selection;
@@ -446,6 +447,7 @@ public class MainGui
             frame.setJMenuBar(mgr.getMenuBar());
         } else {
             // Old implementation
+            MidiActions.getInstance();
             UIDressing.dressUp(
                 historyMenu,
                 getClass().getName() + ".historyMenu");
