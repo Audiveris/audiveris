@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                        S c o r e D e p e n d e n t                         //
+//                        S h e e t D e p e n d e n t                         //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
@@ -64,7 +64,7 @@ public abstract class SheetDependent
     // getName //
     //---------//
     /**
-     * @inheritDoc 
+     * @inheritDoc
      */
     @Implement(SelectionObserver.class)
     public String getName ()
