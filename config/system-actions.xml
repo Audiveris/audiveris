@@ -32,11 +32,11 @@
     <action domain="SHEET" section="EXPORT" class="omr.ui.SheetActions"      method="closeSheet"   toolbar="true"/>
     <action domain="SHEET" section="END"    class="omr.ui.GuiActions"        method="exit"/>
 
-    <action domain="SCORE" section="EDIT"   class="omr.score.ui.ScoreActions" method="rebuildScore" />
-    <action domain="SCORE" section="EDIT"   class="omr.score.ui.ScoreActions" method="defineParameters" />
-    <action domain="SCORE" section="EXPORT" class="omr.score.ui.ScoreActions" method="browseScore" />
-    <action domain="SCORE" section="EXPORT" class="omr.score.ui.ScoreActions" method="dumpScore" />
-    <action domain="SCORE" section="EXPORT" class="omr.score.ui.ScoreActions" method="storeScore" />
+    <action domain="SCORE" section="EDIT"   class="omr.score.ui.ScoreActions" method="rebuildScore"     toolbar="true"/>
+    <action domain="SCORE" section="EDIT"   class="omr.score.ui.ScoreActions" method="defineParameters" toolbar="true"/>
+    <action domain="SCORE" section="EXPORT" class="omr.score.ui.ScoreActions" method="browseScore"      toolbar="true"/>
+    <action domain="SCORE" section="EXPORT" class="omr.score.ui.ScoreActions" method="dumpScore"        toolbar="true"/>
+    <action domain="SCORE" section="EXPORT" class="omr.score.ui.ScoreActions" method="storeScore"       toolbar="true"/>
     
     <action domain="MIDI" section="EDIT"   class="omr.score.midi.MidiActions" method="playMidi"  toolbar="true"/>
     <action domain="MIDI" section="EDIT"   class="omr.score.midi.MidiActions" method="pauseMidi" toolbar="true"/>
