@@ -68,10 +68,7 @@ public class ViewParameters
     {
         boolean oldValue = constants.circlePainting.getValue();
         constants.circlePainting.setValue(value);
-        firePropertyChange(
-            "circlePainting",
-            oldValue,
-            constants.circlePainting.getValue());
+        firePropertyChange("circlePainting", oldValue, value);
     }
 
     //------------------//
@@ -89,10 +86,7 @@ public class ViewParameters
     {
         boolean oldValue = constants.linePainting.getValue();
         constants.linePainting.setValue(value);
-        firePropertyChange(
-            "linePainting",
-            oldValue,
-            constants.linePainting.getValue());
+        firePropertyChange("linePainting", oldValue, value);
     }
 
     //----------------//
@@ -120,8 +114,7 @@ public class ViewParameters
     // toggleLines //
     //-------------//
     /**
-     * Action that toggles toggles the display of mean line in selected
-     * sticks
+     * Action that toggles the display of mean line in selected sticks
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = "linePainting")
