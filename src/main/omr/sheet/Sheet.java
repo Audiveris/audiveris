@@ -1453,7 +1453,8 @@ public class Sheet
     public void updateLastSteps (Collection<Glyph> glyphs,
                                  Collection<Shape> shapes)
     {
-        sheetSteps.updateLastSteps(glyphs, shapes);
+        sheetSteps.updateLastSteps(glyphs, shapes, /* imposed => */
+                                   false);
     }
 
     //-------------------//

@@ -59,6 +59,11 @@ public class ScoreActions
     /** Singleton */
     private static ScoreActions INSTANCE;
 
+    //~ Instance fields --------------------------------------------------------
+
+    /** Flag to allow automatic score rebuild on every user edition action */
+    private boolean rebuildAllowed = true;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -296,6 +301,36 @@ public class ScoreActions
         return true;
     }
 
+    //-------------------//
+    // setRebuildAllowed //
+    //-------------------//
+    public void setRebuildAllowed (boolean value)
+    {
+        boolean oldValue = this.rebuildAllowed;
+        this.rebuildAllowed = value;
+        firePropertyChange("rebuildAllowed", oldValue, value);
+    }
+
+    //------------------//
+    // isRebuildAllowed //
+    //------------------//
+    public boolean isRebuildAllowed ()
+    {
+        return rebuildAllowed;
+    }
+
+    //---------------//
+    // toggleRebuild //
+    //---------------//
+    /**
+     * Action that toggles thr rebuild of score on every user edition
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = "rebuildAllowed")
+    public void toggleRebuild (ActionEvent e)
+    {
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //--------------//
@@ -425,7 +460,8 @@ public class ScoreActions
             try {
                 SheetManager.getSelectedSheet()
                             .getSheetSteps()
-                            .updateLastSteps(null, null);
+                            .updateLastSteps(null, null, /* imposed => */
+                                             true);
             } catch (Exception ex) {
                 logger.warning("Could not refresh score", ex);
             }
