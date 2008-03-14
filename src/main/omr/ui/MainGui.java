@@ -515,6 +515,11 @@ public class MainGui
     private class BottomPane
         extends JSplitPane
     {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Saves the current location of the divider */
+        private int dividerLocation = -1;
+
         //~ Constructors -------------------------------------------------------
 
         public BottomPane (JComponent left)
@@ -530,12 +535,22 @@ public class MainGui
         {
             removeErrors();
             setRightComponent(errorsPane);
+
+            if (dividerLocation == -1) {
+                dividerLocation = getWidth() / 2;
+            }
+
+            setDividerLocation(dividerLocation);
             revalidate();
             repaint();
         }
 
         public void removeErrors ()
         {
+            if (dividerLocation != -1) {
+                dividerLocation = getDividerLocation();
+            }
+
             setRightComponent(null);
         }
     }
