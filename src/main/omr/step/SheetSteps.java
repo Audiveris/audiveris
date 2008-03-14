@@ -16,6 +16,7 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
 import omr.glyph.SlurGlyph;
 
+import omr.score.ui.ScoreActions;
 import omr.score.visitor.ScoreChecker;
 
 import omr.sheet.HorizontalsBuilder;
@@ -197,17 +198,31 @@ public class SheetSteps
      *
      * @param glyphs the modified glyphs
      * @param shapes the previous shapes of these glyphs
+     * @param imposed true if update must occur, else depends on current mode
      */
     public void updateLastSteps (Collection<Glyph> glyphs,
-                                 Collection<Shape> shapes)
+                                 Collection<Shape> shapes,
+                                 boolean           imposed)
     {
+        // Check whether the update must really be done
+        if (!imposed && !ScoreActions.getInstance()
+                                     .isRebuildAllowed()) {
+            return;
+        }
+
         // Determine impacted systems, from the collection of modified glyphs
-        SortedSet<SystemInfo> impactedSystems = sheet.getImpactedSystems(
-            glyphs,
-            shapes);
+        SortedSet<SystemInfo> impactedSystems;
+
+        if (glyphs != null) {
+            impactedSystems = sheet.getImpactedSystems(glyphs, shapes);
+        } else {
+            impactedSystems = new TreeSet<SystemInfo>(sheet.getSystems());
+        }
 
         if (logger.isFineEnabled()) {
-            logger.fine("Impact: " + SystemInfo.toString(impactedSystems));
+            logger.fine(
+                "Score rebuild launched on" +
+                SystemInfo.toString(impactedSystems));
         }
 
         // The re-processing is done sequentially (though LEAVES & CLEANUP could
@@ -736,9 +751,6 @@ public class SheetSteps
             if (logger.isFineEnabled()) {
                 logger.fine("VERTICALS displayUI");
             }
-
-            //            getTask(SYMBOLS)
-            //                .displayUI();
 
             // Create verticals display
             sheet.getVerticalsBuilder()
