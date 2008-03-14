@@ -274,7 +274,7 @@ public class Glyph
     public boolean isActive ()
     {
         // Some sanity check, to be removed later
-        if (true) {
+        if (false) {
             boolean foundMembers = false;
             boolean foundAliens = false;
 
