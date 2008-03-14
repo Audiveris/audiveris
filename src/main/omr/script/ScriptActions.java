@@ -103,8 +103,12 @@ public class ScriptActions
                 "Save script for sheet " + script.getSheet().getRadix() + "?");
 
             if (answer == JOptionPane.YES_OPTION) {
-                getInstance()
-                    .storeScript(null);
+                Task task = getInstance()
+                                .storeScript(null);
+
+                if (task != null) {
+                    task.execute();
+                }
 
                 return true;
             }
