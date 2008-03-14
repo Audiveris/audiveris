@@ -1435,10 +1435,12 @@ public class ScoreExporter
         current.system = system;
         isFirst.measure = true;
 
-        SystemPart systemPart = (SystemPart) system.getParts()
-                                                   .get(
-            current.part.getId() - 1);
-        systemPart.accept(this);
+        SystemPart systemPart = (SystemPart) system.getPart(
+            current.part.getId());
+
+        if (systemPart != null) {
+            systemPart.accept(this);
+        }
 
         // If we have exported a measure, we are no longer in the first system
         if (!isFirst.measure) {
@@ -1492,6 +1494,7 @@ public class ScoreExporter
                              .getCreator()
                              .add(pmCreator);
             } else { // Direction, LyricItem are addressed through Notes
+
                 continue;
             }
 
@@ -1507,7 +1510,7 @@ public class ScoreExporter
             pmCreditWords.setDefaultX(toTenths(pt.x));
             pmCreditWords.setDefaultY(
                 toTenths(score.getDimension().height - pt.y));
-            
+
             pmCredit.setCreditWords(pmCreditWords);
             scorePartwise.getCredit()
                          .add(pmCredit);

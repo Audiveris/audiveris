@@ -213,6 +213,28 @@ public class System
                                 .get(0);
     }
 
+    //---------//
+    // getPart //
+    //---------//
+    /**
+     * Report the part with the provided id, if any
+     * 
+     * @param id the id of the desired part
+     * @return the part found or null
+     */
+    public SystemPart getPart (int id)
+    {
+        for (TreeNode node : getParts()) {
+            SystemPart part = (SystemPart) node;
+
+            if (part.getId() == id) {
+                return part;
+            }
+        }
+
+        return null;
+    }
+
     //-------//
     // getId //
     //-------//

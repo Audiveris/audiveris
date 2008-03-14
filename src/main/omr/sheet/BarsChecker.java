@@ -420,10 +420,8 @@ public class BarsChecker
             info.setScoreSystem(system);
 
             // Allocate the parts in the system
-            int partId = 0;
-
             for (PartInfo partInfo : info.getParts()) {
-                SystemPart part = new SystemPart(system, ++partId);
+                SystemPart part = new SystemPart(system);
 
                 // Allocate the staves in this part
                 for (StaffInfo staffInfo : partInfo.getStaves()) {

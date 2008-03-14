@@ -16,9 +16,6 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
-import omr.plugin.Plugin;
-import omr.plugin.PluginType;
-
 import omr.score.Score;
 import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
@@ -60,18 +57,11 @@ import omr.sheet.Scale;
 import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
 
-import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
-import org.jdesktop.application.AbstractBean;
-import org.jdesktop.application.Action;
-
 import java.awt.*;
-import java.awt.event.*;
 import java.awt.geom.*;
-
-import javax.swing.*;
 
 /**
  * Class <code>ScorePainter</code> defines for every node in Score hierarchy

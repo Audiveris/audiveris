@@ -58,7 +58,6 @@ import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Dumper;
 import omr.util.Logger;
@@ -409,92 +408,68 @@ public class BarsBuilder
     public void defineScoreParts ()
         throws StepException
     {
-        // First, make sure all the system are consistent wrt parts
-        Integer NbOfParts = null;
+        // Look for the largest system (according to its number of parts)
+        int        NbOfParts = 0;
+        SystemInfo refSystem = null;
 
         for (SystemInfo systemInfo : sheet.getSystems()) {
             int nb = systemInfo.getScoreSystem()
                                .getParts()
                                .size();
 
-            if (NbOfParts == null) {
+            if (nb > NbOfParts) {
                 NbOfParts = nb;
-            } else if (NbOfParts != nb) {
-                String msg = "Systems with different number of parts: " +
-                             NbOfParts + " vs " + nb;
-                logger.warning(msg);
-
-                if (Main.getGui() != null) {
-                    Main.getGui()
-                        .displayWarning(msg);
-                }
-
-                throw new StepException(msg);
+                refSystem = systemInfo;
             }
         }
 
-        // (Re)set the global ScorePart list accordingly
-        List<ScorePart> partList = null;
-        boolean         ok = true;
+        if (refSystem == null) {
+            throw new StepException("No system found");
+        }
 
+        // Build a ScorePart list based on the parts of the ref system
+        List<ScorePart> partList = new ArrayList<ScorePart>();
+
+        for (TreeNode node : refSystem.getScoreSystem()
+                                      .getParts()) {
+            SystemPart sp = (SystemPart) node;
+            ScorePart  scorePart = new ScorePart(sp, score);
+            logger.fine("Adding " + scorePart);
+            partList.add(scorePart);
+        }
+
+        // Assign id and default name to each part
+        int index = 0;
+
+        for (ScorePart part : partList) {
+            part.setId(++index);
+            part.setName("Part_" + index);
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Global " + part);
+            }
+        }
+
+        // This is now the global score part list
+        score.setPartList(partList);
+
+        // Now examine each system as compared with the ref system
         for (SystemInfo systemInfo : sheet.getSystems()) {
             logger.fine(systemInfo.getScoreSystem().toString());
 
-            if (partList == null) {
-                // Build a ScorePart list based on the SystemPart list
-                partList = new ArrayList<ScorePart>();
-
-                for (TreeNode node : systemInfo.getScoreSystem()
-                                               .getParts()) {
-                    SystemPart sp = (SystemPart) node;
-                    ScorePart  scorePart = new ScorePart(sp, score);
-                    logger.fine("Adding " + scorePart);
-                    partList.add(scorePart);
-                }
-            } else {
-                // Check our ScorePart list is still ok
-                int i = 0;
-
-                for (TreeNode node : systemInfo.getScoreSystem()
-                                               .getParts()) {
-                    SystemPart sp = (SystemPart) node;
-                    ScorePart  global = partList.get(i++);
-                    ScorePart  scorePart = new ScorePart(sp, score);
-                    logger.fine(
-                        "Comparing global " + global + " with " + scorePart);
-
-                    if (!global.equals(scorePart)) {
-                        logger.warning("Different SystemPart in system " + i);
-                        ok = false;
-                    }
-                }
-            }
-        }
-
-        if (ok) {
-            // Assign id and names (TBI)
-            int index = 0;
-
-            for (ScorePart part : partList) {
-                part.setId(++index);
-                part.setName("Part_" + index);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("Global " + part);
-                }
-            }
-
-            // This is now the global score part list
-            score.setPartList(partList);
-
-            // Link the SystemPart instances to their corresponding ScorePart
-            for (TreeNode node : score.getSystems()) {
-                System system = (System) node;
-
-                for (TreeNode n : system.getParts()) {
-                    SystemPart sp = (SystemPart) n;
-                    sp.setScorePart(score.getPartList().get(sp.getId() - 1));
-                }
+            for (int ip = 0;
+                 ip < systemInfo.getScoreSystem()
+                                .getParts()
+                                .size(); ip++) {
+                ScorePart  global = partList.get(partList.size() - 1 - ip);
+                SystemPart sp = (SystemPart) systemInfo.getScoreSystem()
+                                                       .getParts()
+                                                       .get(
+                    systemInfo.getScoreSystem()
+                              .getParts()
+                              .size() - 1 - ip);
+                    sp.setScorePart(global);
+                    sp.setId(global.getId());
             }
         }
     }
@@ -1021,6 +996,7 @@ public class BarsBuilder
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void update (Selection     selection,
                             SelectionHint hint)
         {
@@ -1072,6 +1048,7 @@ public class BarsBuilder
         //----------//
         // colorize //
         //----------//
+        @Override
         public void colorize ()
         {
             super.colorize();
@@ -1093,6 +1070,7 @@ public class BarsBuilder
         //-------------//
         // renderItems //
         //-------------//
+        @Override
         public void renderItems (Graphics g)
         {
             // Render all physical info known so far, which is just the staff

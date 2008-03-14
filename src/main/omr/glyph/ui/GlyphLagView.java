@@ -34,13 +34,9 @@ import omr.ui.view.Zoom;
 import omr.util.Logger;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.awt.geom.CubicCurve2D;
-import static java.lang.Math.*;
 import java.util.*;
 import java.util.List;
-
-import javax.swing.*;
 
 /**
  * Class <code>GlyphLagView</code> is a specific {@link omr.lag.LagView}

@@ -17,14 +17,7 @@ import omr.util.Logger;
 import omr.util.Predicate;
 import omr.util.TreeNode;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Class <code>SystemPart</code> handles the various parts found in one system,
@@ -44,7 +37,7 @@ public class SystemPart
     //~ Instance fields --------------------------------------------------------
 
     /** Id of this part within the system, starting at 1 */
-    private final int id;
+    private int id;
 
     /** The corresponding ScorePart */
     @Child
@@ -77,13 +70,10 @@ public class SystemPart
      * Create a new instance of SystemPart
      *
      * @param system the containing system
-     * @param id the part id within the system
      */
-    public SystemPart (System system,
-                       int    id)
+    public SystemPart (System system)
     {
         super(system);
-        this.id = id;
 
         // Allocate specific children
         staves = new StaffList(this);
@@ -132,8 +122,7 @@ public class SystemPart
                                          .getNextSibling();
 
         if (nextSystem != null) {
-            return (SystemPart) nextSystem.getParts()
-                                          .get(id - 1);
+            return nextSystem.getPart(id);
         } else {
             return null;
         }
@@ -150,6 +139,19 @@ public class SystemPart
     public int getId ()
     {
         return id;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Set the part id within the containing system, starting at 1
+     *
+     * @param id the id value
+     */
+    public void setId (int id)
+    {
+        this.id = id;
     }
 
     //----------------//
@@ -266,14 +268,19 @@ public class SystemPart
     //--------------//
     // getPreceding //
     //--------------//
+    /**
+     * Report the corresponding part (if any) in the previous system. Even if
+     * there is a previous system, there may be no part that corresponds to this
+     * one.
+     * @return the corresponding part, or null
+     */
     public SystemPart getPreceding ()
     {
         System prevSystem = (System) getSystem()
                                          .getPreviousSibling();
 
         if (prevSystem != null) {
-            return (SystemPart) prevSystem.getParts()
-                                          .get(id - 1);
+            return prevSystem.getPart(id);
         } else {
             return null;
         }
@@ -588,31 +595,35 @@ public class SystemPart
         List<Slur> orphans = getSlurs(Slur.isBeginningOrphan);
         Collections.sort(orphans, Slur.verticalComparator);
 
-        // Ending orphans in preceding system/part
-        List<Slur> precedingOrphans = getPreceding()
-                                          .getSlurs(Slur.isEndingOrphan);
-        Collections.sort(precedingOrphans, Slur.verticalComparator);
+        // Ending orphans in preceding system/part (if such part exists)
+        SystemPart precedingPart = getPreceding();
 
-        // Connect the orphans as much as possible
-        SlurLoop: 
-        for (Slur slur : orphans) {
-            for (Slur prevSlur : precedingOrphans) {
-                if (slur.canExtend(prevSlur)) {
-                    slur.connectTo(prevSlur);
+        if (precedingPart != null) {
+            List<Slur> precedingOrphans = precedingPart.getSlurs(
+                Slur.isEndingOrphan);
+            Collections.sort(precedingOrphans, Slur.verticalComparator);
 
-                    continue SlurLoop;
+            // Connect the orphans as much as possible
+            SlurLoop: 
+            for (Slur slur : orphans) {
+                for (Slur prevSlur : precedingOrphans) {
+                    if (slur.canExtend(prevSlur)) {
+                        slur.connectTo(prevSlur);
+
+                        continue SlurLoop;
+                    }
                 }
+
+                // No connection for this orphan
+                slur.addError(" Could not left-connect slur #" + slur.getId());
             }
 
-            // No connection for this orphan
-            slur.addError(" Could not left-connect slur #" + slur.getId());
-        }
-
-        // Check previous orphans
-        for (Slur prevSlur : precedingOrphans) {
-            if (prevSlur.getRightExtension() == null) {
-                prevSlur.addError(
-                    " Could not right-connect slur #" + prevSlur.getId());
+            // Check previous orphans
+            for (Slur prevSlur : precedingOrphans) {
+                if (prevSlur.getRightExtension() == null) {
+                    prevSlur.addError(
+                        " Could not right-connect slur #" + prevSlur.getId());
+                }
             }
         }
     }
