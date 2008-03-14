@@ -196,11 +196,7 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
         }
 
         // Remove from graph
-        try {
-            graph.removeVertex(this); // Compiler warning here
-        } catch (Exception ex) {
-            logger.warning("Error removing " + this);
-        }
+        graph.removeVertex(this); // Compiler warning here
     }
 
     //------//
