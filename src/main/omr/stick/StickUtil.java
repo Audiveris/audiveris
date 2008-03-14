@@ -218,7 +218,13 @@ public class StickUtil
             }
 
             // Delete the section itself
-            section.delete();
+            try {
+                section.delete();
+            } catch (Exception ex) {
+                // In some cases we try to remove a section several times
+                // So simply ignore this
+                ///logger.warning("Error removing " + section);
+            }
         }
 
         // Erase pixels from members
