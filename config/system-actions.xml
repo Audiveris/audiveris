@@ -32,7 +32,8 @@
     <action domain="SHEET" section="EXPORT" class="omr.ui.SheetActions"      method="closeSheet"   toolbar="true"/>
     <action domain="SHEET" section="END"    class="omr.ui.GuiActions"        method="exit"/>
 
-    <action domain="SCORE" section="EDIT"   class="omr.score.ui.ScoreActions" method="rebuildScore"     toolbar="true"/>
+    <action domain="SCORE" section="IMPORT" class="omr.score.ui.ScoreActions" method="rebuildScore"     toolbar="true"/>
+    <action domain="SCORE" section="IMPORT" class="omr.score.ui.ScoreActions" method="toggleRebuild" item="javax.swing.JCheckBoxMenuItem" />
     <action domain="SCORE" section="EDIT"   class="omr.score.ui.ScoreActions" method="defineParameters" toolbar="true"/>
     <action domain="SCORE" section="EXPORT" class="omr.score.ui.ScoreActions" method="browseScore"      toolbar="true"/>
     <action domain="SCORE" section="EXPORT" class="omr.score.ui.ScoreActions" method="dumpScore"        toolbar="true"/>
