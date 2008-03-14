@@ -13,12 +13,12 @@ import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
 import omr.util.Implement;
+import omr.util.Logger;
 
 import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import omr.util.Logger;
 
 /**
  * Class <code>StepMenu</code> encapsulates the user interface needed to deal
@@ -31,10 +31,12 @@ import omr.util.Logger;
  */
 public class StepMenu
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(StepMenu.class);
+
+    //~ Instance fields --------------------------------------------------------
 
     /** The concrete UI menu */
     private final JMenu menu;
@@ -190,10 +192,14 @@ public class StepMenu
             Sheet sheet = SheetManager.getSelectedSheet();
 
             for (int i = 0; i < menu.getItemCount(); i++) {
-                StepItem item = (StepItem) menu.getItem(i);
+                JMenuItem menuItem = menu.getItem(i);
 
-                // Adjust the status for each step
-                item.displayState(sheet);
+                if (menuItem instanceof StepItem) {
+                    StepItem item = (StepItem) menuItem;
+
+                    // Adjust the status for each step
+                    item.displayState(sheet);
+                }
             }
         }
     }
