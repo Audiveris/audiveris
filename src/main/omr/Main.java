@@ -12,8 +12,6 @@ package omr;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.plugin.Plugins2;
-
 import omr.score.midi.MidiAgent;
 import omr.score.visitor.ScoreExporter;
 
@@ -31,6 +29,7 @@ import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.swingworker.SwingWorker;
 
 import java.io.*;
 import java.util.*;
