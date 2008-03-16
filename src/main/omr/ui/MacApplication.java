@@ -9,10 +9,18 @@
 //
 package omr.ui;
 
+import omr.script.Script;
+import omr.script.ScriptManager;
+
+import omr.step.Step;
+
 import omr.util.Implement;
 import omr.util.Logger;
 
-import java.awt.event.ActionListener;
+import org.jdesktop.swingworker.SwingWorker;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.lang.reflect.*;
 
 /**
@@ -42,12 +50,6 @@ public class MacApplication
         }
     }
 
-    //~ Instance fields --------------------------------------------------------
-
-    private final ActionListener options = new GuiActions.OptionsAction();
-    private final ActionListener exit = new GuiActions.ExitAction();
-    private final ActionListener about = new GuiActions.AboutAction();
-
     //~ Methods ----------------------------------------------------------------
 
     /**
@@ -76,13 +78,50 @@ public class MacApplication
         logger.fine(name);
 
         if ("handlePreferences".equals(name)) {
-            options.actionPerformed(null);
+            GuiActions.getInstance()
+                      .defineOptions(null);
         } else if ("handleQuit".equals(name)) {
-            exit.actionPerformed(null);
+            GuiActions.getInstance()
+                      .exit(null);
         } else if ("handleAbout".equals(name)) {
-            about.actionPerformed(null);
-        } else if ("handleOpen".equals(name)) {
-            logger.info(filename);
+            GuiActions.getInstance()
+                      .showAbout(null);
+        } else if ("handleOpenFile".equals(name)) {
+            logger.fine(filename);
+
+            if (filename.toLowerCase()
+                        .endsWith(".script")) {
+                final File              file = new File(filename);
+                final SwingWorker<?, ?> worker = new SwingWorker<Object, Object>() {
+                    @Override
+                    protected Object doInBackground ()
+                    {
+                        // Actually load the script
+                        logger.info("Loading script file " + file + " ...");
+
+                        try {
+                            final Script script = ScriptManager.getInstance()
+                                                               .load(
+                                new FileInputStream(file));
+
+                            if (logger.isFineEnabled()) {
+                                script.dump();
+                            }
+
+                            script.run();
+                        } catch (Exception ex) {
+                            logger.warning("Error loading script file " + file);
+                        }
+
+                        return null;
+                    }
+                };
+
+                worker.execute();
+            } else {
+                // Actually load the sheet picture
+                Step.LOAD.performParallel(null, new File(filename));
+            }
         }
 
         return null;
