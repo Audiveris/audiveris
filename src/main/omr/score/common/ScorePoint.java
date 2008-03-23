@@ -51,4 +51,15 @@ public class ScorePoint
     {
         super(x, y);
     }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "ScorePoint[x=" + x + ",y=" + y + "]";
+    }
 }

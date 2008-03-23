@@ -53,4 +53,15 @@ public class UnitDimension
     {
         super(width, height);
     }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "UnitDimension[width=" + width + ",height=" + height + "]";
+    }
 }

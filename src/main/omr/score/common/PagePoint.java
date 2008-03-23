@@ -51,4 +51,15 @@ public class PagePoint
     {
         super(x, y);
     }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "PagePoint[x=" + x + ",y=" + y + "]";
+    }
 }
