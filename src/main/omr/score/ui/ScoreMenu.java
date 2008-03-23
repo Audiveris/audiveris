@@ -426,7 +426,7 @@ public class ScoreMenu
 
         public PlayMeasureAction ()
         {
-            putValue(NAME, "Play");
+            putValue(NAME, "Play measure");
             putValue(SHORT_DESCRIPTION, "Play the selected measure");
 
             // Retrieve icon
