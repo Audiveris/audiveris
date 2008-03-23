@@ -405,10 +405,44 @@ public class BarsBuilder
      * From system part, define the score parts
      * @throws StepException
      */
-    public void defineScoreParts ()
+    private void defineScoreParts ()
         throws StepException
     {
-        // Look for the largest system (according to its number of parts)
+        // Take the best representative system
+        System refSystem = chooseRefSystem()
+                               .getScoreSystem();
+
+        // Build the ScorePart list based on the parts of the ref system
+        score.createPartListFrom(refSystem);
+
+        // Now examine each system as compared with the ref system
+        // We browse through the parts "bottom up"
+        List<ScorePart> partList = score.getPartList();
+        final int       nbScoreParts = partList.size();
+
+        for (SystemInfo systemInfo : sheet.getSystems()) {
+            System system = systemInfo.getScoreSystem();
+            logger.fine(system.toString());
+
+            List<TreeNode> systemParts = system.getParts();
+            final int      nbp = systemParts.size();
+
+            for (int ip = 0; ip < nbp; ip++) {
+                ScorePart  global = partList.get(nbScoreParts - 1 - ip);
+                SystemPart sp = (SystemPart) systemParts.get(nbp - 1 - ip);
+                sp.setScorePart(global);
+                sp.setId(global.getId());
+            }
+        }
+    }
+
+    //-----------------//
+    // chooseRefSystem //
+    //-----------------//
+    private SystemInfo chooseRefSystem ()
+        throws StepException
+    {
+        // Look for the first largest system (according to its number of parts)
         int        NbOfParts = 0;
         SystemInfo refSystem = null;
 
@@ -427,51 +461,7 @@ public class BarsBuilder
             throw new StepException("No system found");
         }
 
-        // Build a ScorePart list based on the parts of the ref system
-        List<ScorePart> partList = new ArrayList<ScorePart>();
-
-        for (TreeNode node : refSystem.getScoreSystem()
-                                      .getParts()) {
-            SystemPart sp = (SystemPart) node;
-            ScorePart  scorePart = new ScorePart(sp, score);
-            logger.fine("Adding " + scorePart);
-            partList.add(scorePart);
-        }
-
-        // Assign id and default name to each part
-        int index = 0;
-
-        for (ScorePart part : partList) {
-            part.setId(++index);
-            part.setName("Part_" + index);
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Global " + part);
-            }
-        }
-
-        // This is now the global score part list
-        score.setPartList(partList);
-
-        // Now examine each system as compared with the ref system
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            logger.fine(systemInfo.getScoreSystem().toString());
-
-            for (int ip = 0;
-                 ip < systemInfo.getScoreSystem()
-                                .getParts()
-                                .size(); ip++) {
-                ScorePart  global = partList.get(partList.size() - 1 - ip);
-                SystemPart sp = (SystemPart) systemInfo.getScoreSystem()
-                                                       .getParts()
-                                                       .get(
-                    systemInfo.getScoreSystem()
-                              .getParts()
-                              .size() - 1 - ip);
-                    sp.setScorePart(global);
-                    sp.setId(global.getId());
-            }
-        }
+        return refSystem;
     }
 
     //--------------------//
