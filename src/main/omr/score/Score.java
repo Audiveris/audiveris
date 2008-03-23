@@ -19,6 +19,7 @@ import omr.score.entity.Child;
 import omr.score.entity.Children;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
+import omr.score.entity.Staff;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
 import omr.score.ui.ScoreConstants;
@@ -36,8 +37,10 @@ import omr.util.TreeNode;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+
 import javax.swing.JFrame;
 
 /**
@@ -390,6 +393,33 @@ public class Score
     public void setPartList (List<ScorePart> partList)
     {
         this.partList = partList;
+    }
+
+    //--------------------//
+    // createPartListFrom //
+    //--------------------//
+    /**
+     * Create the list of score parts, based on the provided reference system
+     *
+     * @param refSystem the system taken as reference
+     */
+    public void createPartListFrom (System refSystem)
+    {
+        // Build a ScorePart list based on the parts of the ref system
+        int index = 0;
+        partList = new ArrayList<ScorePart>();
+
+        for (TreeNode node : refSystem.getParts()) {
+            SystemPart sp = (SystemPart) node;
+            Staff      firstStaff = sp.getFirstStaff();
+            ScorePart  scorePart = new ScorePart(
+                sp,
+                this,
+                ++index,
+                firstStaff.getTopLeft().y - refSystem.getTopLeft().y);
+            scorePart.setName("Part_" + index);
+            partList.add(scorePart);
+        }
     }
 
     //-------------//

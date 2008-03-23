@@ -120,7 +120,7 @@ public class ScoreBuilder
 
         for (SystemInfo systemInfo : systems) {
             System system = systemInfo.getScoreSystem();
-
+            system.fillMissingParts();
             system.retrieveSlurConnections();
             system.accept(new ScoreFixer());
             system.accept(new ScoreTimeFixer());
@@ -144,37 +144,6 @@ public class ScoreBuilder
                  .repaint();
         }
     }
-
-    //    //-----------//
-    //    // buildInfo //
-    //    //-----------//
-    //    /**
-    //     * Build the score information, system after system, glyph after glyph.
-    //     * Nota: Only local tests can be performed here, global ones are performed
-    //     * via the {@link omr.score.visitor.ScoreChecker}.
-    //     */
-    //    public void buildInfo ()
-    //    {
-    //        //        final long startTime = java.lang.System.currentTimeMillis();
-    //        sheet.getErrorsEditor()
-    //             .clear();
-    //        
-    //        score.cleanupNode();
-    //
-    //        // Should we process systems in parallel or sequentially?
-    //        if (OmrExecutors.useParallelism() &&
-    //            (OmrExecutors.getNumberOfCpus() > 1)) {
-    //            buildParallelInfo();
-    //        } else {
-    //            buildSequentialInfo();
-    //        }
-    //
-    //        // Score processing once all systems are completed
-    //        buildFinal();
-    //
-    //        //        final long stopTime = java.lang.System.currentTimeMillis();
-    //        //        logger.info("Score translated in " + (stopTime - startTime) + " ms");
-    //    }
 
     //-------------//
     // buildSystem //
@@ -936,7 +905,7 @@ public class ScoreBuilder
             public void completeSystem ()
             {
                 try {
-                    KeySignature.verifySystemKeys(system);
+                  KeySignature.verifySystemKeys(system);
                 } catch (Exception ex) {
                     logger.warning("Error verifying keys for " + system, ex);
                 }
