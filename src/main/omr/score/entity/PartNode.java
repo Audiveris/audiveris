@@ -10,12 +10,11 @@
 package omr.score.entity;
 
 import omr.glyph.Glyph;
-import static omr.score.ui.ScoreConstants.*;
+
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
