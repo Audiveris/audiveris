@@ -120,7 +120,6 @@ public class ScoreExporter
      * @param score the score to export (cannot be null)
      */
     public ScoreExporter (Score score)
-        throws IOException, Exception
     {
         if (score == null) {
             throw new IllegalArgumentException("Trying to export a null score");
@@ -151,6 +150,7 @@ public class ScoreExporter
      * Export the score to a file
      *
      * @param xmlFile the xml file to write (cannot be null)
+     * @throws java.lang.Exception
      */
     public void export (File xmlFile)
         throws Exception
@@ -165,6 +165,8 @@ public class ScoreExporter
      * Export the score to an output stream
      *
      * @param os the output stream where XML data is written (cannot be null)
+     * @throws java.io.IOException
+     * @throws java.lang.Exception
      */
     public void export (OutputStream os)
         throws IOException, Exception
@@ -188,13 +190,15 @@ public class ScoreExporter
      * Export the score to DOM node
      *
      * @param node the DOM node to export to (cannot be null)
+     * @throws java.io.IOException
+     * @throws java.lang.Exception
      */
     public void export (Node node)
         throws IOException, Exception
     {
         if (node == null) {
             throw new IllegalArgumentException(
-                "Trying to export a score to a null Node");
+                "Trying to export a score to a null DOM Node");
         }
 
         // Let visited nodes fill the scorePartWise proxy
@@ -254,6 +258,11 @@ public class ScoreExporter
     public boolean visit (Barline barline)
     {
         ///logger.info("Visiting " + barline);
+
+        if (barline == null) {
+            return false;
+        }
+
         Shape shape = barline.getShape();
 
         if (shape != omr.glyph.Shape.SINGLE_BARLINE) {
@@ -323,6 +332,7 @@ public class ScoreExporter
     public boolean visit (Clef clef)
     {
         ///logger.info("Visiting " + clef);
+
         if (isNewClef(clef)) {
             proxymusic.Clef pmClef = new proxymusic.Clef();
             getMeasureAttributes()
@@ -450,7 +460,8 @@ public class ScoreExporter
     @Override
     public boolean visit (Dynamics dynamics)
     {
-        ///logger.info ("dynamics=" + dynamics);
+        ///logger.info("Visiting " + dynamics);
+
         try {
             Object    dynamicsObject = getDynamicsObject(dynamics.getShape());
             Direction direction = new Direction();
@@ -532,6 +543,7 @@ public class ScoreExporter
     public boolean visit (KeySignature keySignature)
     {
         ///logger.info("Visiting " + keySignature);
+
         if (isNewKeySignature(keySignature)) {
             Key    key = new Key();
             Fifths fifths = new Fifths();
@@ -560,8 +572,6 @@ public class ScoreExporter
     @Override
     public boolean visit (Measure measure)
     {
-        ///logger.info("Visiting " + measure);
-
         // Make sure this measure is to be exported
         if (!isDesired(measure)) {
             if (logger.isFineEnabled()) {
@@ -571,11 +581,13 @@ public class ScoreExporter
             return false;
         }
 
+        ///logger.info("Visiting " + measure);
+
         // Do we need to create & export a dummy initial measure?
-        if (((measureRange != null) && !measure.isDummy() &&
+        if (((measureRange != null) && !measure.isTemporary() &&
             (measure.getId() > 1)) &&
             (measure.getId() == measureRange.getFirstId())) {
-            visit(measure.createDummyBefore());
+            visit(measure.createTemporaryBefore());
         }
 
         if (logger.isFineEnabled()) {
@@ -590,7 +602,10 @@ public class ScoreExporter
         current.pmPart.getMeasure()
                       .add(current.pmMeasure);
         current.pmMeasure.setNumber("" + measure.getId());
-        current.pmMeasure.setWidth(toTenths(measure.getWidth()));
+
+        if (measure.getWidth() != null) {
+            current.pmMeasure.setWidth(toTenths(measure.getWidth()));
+        }
 
         if (measure.isImplicit()) {
             current.pmMeasure.setImplicit(YES);
@@ -604,7 +619,7 @@ public class ScoreExporter
         // Left barline ?
         Measure prevMeasure = (Measure) measure.getPreviousSibling();
 
-        if (prevMeasure != null) {
+        if ((prevMeasure != null) && !prevMeasure.isDummy()) {
             visit(prevMeasure.getBarline());
         }
 
@@ -713,30 +728,46 @@ public class ScoreExporter
                     Staff staff = (Staff) sNode;
 
                     if (!isFirst.part || (staff.getId() > 1)) {
-                        StaffLayout staffLayout = new StaffLayout();
-                        current.pmPrint.getStaffLayout()
-                                       .add(staffLayout);
-                        staffLayout.setNumber("" + staff.getId());
+                        try {
+                            StaffLayout staffLayout = new StaffLayout();
+                            staffLayout.setNumber("" + staff.getId());
 
-                        StaffDistance staffDistance = new StaffDistance();
-                        staffLayout.setStaffDistance(staffDistance);
+                            StaffDistance staffDistance = new StaffDistance();
+                            staffLayout.setStaffDistance(staffDistance);
 
-                        Staff prevStaff = (Staff) staff.getPreviousSibling();
+                            Staff prevStaff = (Staff) staff.getPreviousSibling();
 
-                        if (prevStaff == null) {
-                            SystemPart prevPart = (SystemPart) measure.getPart()
-                                                                      .getPreviousSibling();
-                            prevStaff = prevPart.getLastStaff();
+                            if (prevStaff == null) {
+                                SystemPart prevPart = (SystemPart) measure.getPart()
+                                                                          .getPreviousSibling();
+                                prevStaff = prevPart.getLastStaff();
+                            }
+
+                            staffDistance.setContent(
+                                toTenths(
+                                    staff.getTopLeft().y -
+                                    prevStaff.getTopLeft().y -
+                                    prevStaff.getHeight()));
+                            current.pmPrint.getStaffLayout()
+                                           .add(staffLayout);
+                        } catch (Exception ex) {
+                            logger.warning(
+                                "Error exporting staff layout system#" +
+                                current.system.getId() + " part#" +
+                                current.part.getId() + " staff#" +
+                                staff.getId(),
+                                ex);
                         }
-
-                        staffDistance.setContent(
-                            toTenths(
-                                staff.getTopLeft().y -
-                                prevStaff.getTopLeft().y -
-                                prevStaff.getHeight()));
                     }
                 }
             }
+
+            // Do not print artificial parts
+            StaffDetails staffDetails = new StaffDetails();
+            staffDetails.setPrintObject(measure.isDummy() ? NO : YES);
+            getMeasureAttributes()
+                .getStaffDetails()
+                .add(staffDetails);
         }
 
         // Specific browsing down the measure
@@ -820,7 +851,7 @@ public class ScoreExporter
     @Override
     public boolean visit (omr.score.entity.Note note)
     {
-        ///logger.info(note.getContextString() + " Visiting " + note);
+        ///logger.info("Visiting " + note);
         current.note = note;
 
         Chord chord = note.getChord();
@@ -882,9 +913,12 @@ public class ScoreExporter
         }
 
         // Default-x (use left side of the note wrt measure)
-        int noteLeft = note.getCenterLeft().x;
-        current.pmNote.setDefaultX(
-            toTenths(noteLeft - note.getMeasure().getLeftX()));
+        if (!note.getMeasure()
+                 .isDummy()) {
+            int noteLeft = note.getCenterLeft().x;
+            current.pmNote.setDefaultX(
+                toTenths(noteLeft - note.getMeasure().getLeftX()));
+        }
 
         // Tuplet factor ?
         if (chord.getTupletFactor() != null) {
@@ -908,7 +942,7 @@ public class ScoreExporter
 
             if (chord.isWholeDuration()) {
                 dur = chord.getMeasure()
-                           .getExpectedDuration();
+                           .getActualDuration();
             } else {
                 dur = chord.getDuration();
             }
@@ -1197,6 +1231,7 @@ public class ScoreExporter
 
         for (ScorePart p : score.getPartList()) {
             current.part = p;
+            ///logger.info("Processing " + p);
 
             // Scorepart in partList
             proxymusic.ScorePart scorePart = new proxymusic.ScorePart();
@@ -1440,6 +1475,12 @@ public class ScoreExporter
 
         if (systemPart != null) {
             systemPart.accept(this);
+        } else {
+            // Need to build an artificial system part
+            // Or simply delegating to the series of artificial measures
+            SystemPart dummyPart = system.getFirstRealPart()
+                                         .createDummyPart(current.part.getId());
+            visit(dummyPart);
         }
 
         // If we have exported a measure, we are no longer in the first system
@@ -1456,6 +1497,8 @@ public class ScoreExporter
     @Override
     public boolean visit (SystemPart systemPart)
     {
+        ///logger.info("Visiting " + systemPart);
+
         // Browse specific text items
         for (omr.score.entity.Text text : systemPart.getTexts()) {
             if (text instanceof omr.score.entity.Text.TitleText) {
@@ -1532,6 +1575,7 @@ public class ScoreExporter
     public boolean visit (TimeSignature timeSignature)
     {
         ///logger.info("Visiting " + timeSignature);
+
         try {
             Time  time = new Time();
 
@@ -1761,7 +1805,7 @@ public class ScoreExporter
     private boolean isDesired (Measure measure)
     {
         return (measureRange == null) || // No range : take all of them
-               (measure.isDummy()) || // A dummy measure for export
+               (measure.isTemporary()) || // A temporary measure for export
                measureRange.contains(measure.getId()); // Part of the range
     }
 

@@ -18,6 +18,7 @@ import omr.math.GCD;
 
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
+import omr.score.ui.ScoreConstants;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PixelPoint;
@@ -166,6 +167,52 @@ public class Note
     //------//
     // Note //
     //------//
+    /** Create a new instance of Note with no underlying glyph
+     *
+     * @param staff the containing staff
+     * @param chord the containing chord
+     * @param shape the provided shape
+     * @param pitchPosition the pitchPosition
+     * @param center the center (SystemPoint) of the note
+     */
+    private Note (Staff       staff,
+                  Chord       chord,
+                  Shape       shape,
+                  double      pitchPosition,
+                  SystemPoint center)
+    {
+        super(chord);
+        this.glyph = null;
+
+        this.packCard = 1;
+        this.packIndex = 0;
+
+        // Rest?
+        isRest = Shape.Rests.contains(shape);
+
+        // Staff
+        setStaff(staff);
+
+        // Pitch Position
+        this.pitchPosition = pitchPosition;
+
+        // Location center
+        setCenter(
+            new SystemPoint(
+                center.x,
+                (staff.getTopLeft().y - staff.getSystem().getTopLeft().y) +
+                ((ScoreConstants.INTER_LINE * (4d + pitchPosition)) / 2)));
+
+        // Note box
+        box = null;
+
+        // Shape of this note
+        this.shape = baseShapeOf(shape);
+    }
+
+    //------//
+    // Note //
+    //------//
     /** Create a new instance of Note, as a chunk of a larger note pack.
      *
      * @param chord the containing chord
@@ -208,6 +255,16 @@ public class Note
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------------//
+    // createWholeRest //
+    //-----------------//
+    public static Note createWholeRest (Staff       staff,
+                                        Chord       chord,
+                                        SystemPoint center)
+    {
+        return new Note(staff, chord, Shape.WHOLE_REST, -1.5, center);
+    }
 
     //--------------//
     // getSyllables //

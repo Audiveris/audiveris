@@ -455,12 +455,17 @@ public class ScorePainter
     @Override
     public boolean visit (KeySignature keySignature)
     {
-        if (keySignature.getPitchPosition() != null) {
-            paintSymbol(
-                keySignature.getShape(),
-                keySignature.getCenter(),
-                keySignature.getStaff(),
-                keySignature.getPitchPosition());
+        try {
+            if (keySignature.getPitchPosition() != null) {
+                paintSymbol(
+                    keySignature.getShape(),
+                    keySignature.getCenter(),
+                    keySignature.getStaff(),
+                    keySignature.getPitchPosition());
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                keySignature.getContextString() + " Cannot paint keySignature");
         }
 
         return true;
@@ -472,41 +477,55 @@ public class ScorePainter
     @Override
     public boolean visit (Measure measure)
     {
-        final Color      oldColor = g.getColor();
         final SystemPart part = measure.getPart();
+        final Color      oldColor = g.getColor();
 
-        // Write the measure id, on the first staff  of the first part only
-        if (part.getId() == 1) {
-            final ScorePoint staffOrigin = measure.getPart()
-                                                  .getFirstStaff()
-                                                  .getDisplayOrigin();
-            g.setColor(Color.lightGray);
-            g.drawString(
-                (measure.isPartial() ? "P" : "") +
-                (measure.isImplicit() ? "I" : "") +
-                Integer.toString(measure.getId()),
-                zoom.scaled(staffOrigin.x + measure.getLeftX()) - 5,
-                zoom.scaled(staffOrigin.y) - 15);
-        }
-
-        // Draw slot vertical lines ?
-        if (PaintingParameters.getInstance()
-                              .isSlotPainting()) {
-            for (Slot slot : measure.getSlots()) {
-                drawSlot(false, measure, slot, slotColor);
+        if (measure.isDummy()) {
+            // Draw left side
+            for (TreeNode node : measure.getPart()
+                                        .getStaves()) {
+                final Staff staff = (Staff) node;
+                paintSymbol(
+                    Shape.SINGLE_BARLINE,
+                    new SystemPoint(measure.getLeftX(), 0),
+                    staff,
+                    0);
             }
-        }
+        } else {
+            // Write the measure id, on first staff of the first real part only
+            if (part == measure.getSystem()
+                               .getFirstRealPart()) {
+                final ScorePoint staffOrigin = measure.getPart()
+                                                      .getFirstStaff()
+                                                      .getDisplayOrigin();
+                g.setColor(Color.lightGray);
+                g.drawString(
+                    (measure.isPartial() ? "P" : "") +
+                    (measure.isImplicit() ? "I" : "") +
+                    Integer.toString(measure.getId()),
+                    zoom.scaled(staffOrigin.x + measure.getLeftX()) - 5,
+                    zoom.scaled(staffOrigin.y) - 15);
+            }
 
-        // Flag for measure excess duration?
-        if (measure.getExcess() != null) {
-            final ScorePoint staffOrigin = measure.getPart()
-                                                  .getFirstStaff()
-                                                  .getDisplayOrigin();
-            g.setColor(Color.red);
-            g.drawString(
-                "Excess " + Note.quarterValueOf(measure.getExcess()),
-                zoom.scaled(staffOrigin.x + measure.getLeftX()) + 10,
-                zoom.scaled(staffOrigin.y) - 15);
+            // Draw slot vertical lines ?
+            if (PaintingParameters.getInstance()
+                                  .isSlotPainting()) {
+                for (Slot slot : measure.getSlots()) {
+                    drawSlot(false, measure, slot, slotColor);
+                }
+            }
+
+            // Flag for measure excess duration?
+            if (measure.getExcess() != null) {
+                final ScorePoint staffOrigin = measure.getPart()
+                                                      .getFirstStaff()
+                                                      .getDisplayOrigin();
+                g.setColor(Color.red);
+                g.drawString(
+                    "Excess " + Note.quarterValueOf(measure.getExcess()),
+                    zoom.scaled(staffOrigin.x + measure.getLeftX()) + 10,
+                    zoom.scaled(staffOrigin.y) - 15);
+            }
         }
 
         g.setColor(oldColor);
@@ -663,19 +682,32 @@ public class ScorePainter
     @Override
     public boolean visit (Staff staff)
     {
-        final Point origin = staff.getDisplayOrigin();
-        g.setColor(Color.black);
+        final Color oldColor = g.getColor();
 
-        // Draw the staff lines
-        for (int i = 0; i < LINE_NB; i++) {
-            // Y of this staff line
-            final int y = zoom.scaled(origin.y + (i * INTER_LINE));
-            g.drawLine(
-                zoom.scaled(origin.x),
-                y,
-                zoom.scaled(origin.x + staff.getWidth()),
-                y);
+        try {
+            final Point origin = staff.getDisplayOrigin();
+
+            if (staff.isDummy()) {
+                g.setColor(Color.LIGHT_GRAY);
+            } else {
+                g.setColor(Color.black);
+            }
+
+            // Draw the staff lines
+            for (int i = 0; i < LINE_NB; i++) {
+                // Y of this staff line
+                final int y = zoom.scaled(origin.y + (i * INTER_LINE));
+                g.drawLine(
+                    zoom.scaled(origin.x),
+                    y,
+                    zoom.scaled(origin.x + staff.getWidth()),
+                    y);
+            }
+        } catch (Exception ex) {
+            logger.warning("Cannot paint " + staff);
         }
+
+        g.setColor(oldColor);
 
         return true;
     }
@@ -1152,26 +1184,32 @@ public class ScorePainter
                               double              pitchPosition,
                               HorizontalAlignment hAlign)
     {
-        final SymbolIcon icon = (SymbolIcon) shape.getIcon();
+        try {
+            final SymbolIcon icon = (SymbolIcon) shape.getIcon();
 
-        if (icon != null) {
-            final Point topLeft = new Point(
-                zoom.scaled(staff.getDisplayOrigin().x + center.x),
-                zoom.scaled(
-                    staff.getDisplayOrigin().y +
-                    Staff.pitchToUnit(pitchPosition)));
+            if (icon != null) {
+                final Point topLeft = new Point(
+                    zoom.scaled(staff.getDisplayOrigin().x + center.x),
+                    zoom.scaled(
+                        staff.getDisplayOrigin().y +
+                        Staff.pitchToUnit(pitchPosition)));
 
-            // Horizontal alignment
-            if (hAlign == HorizontalAlignment.CENTER) {
-                topLeft.x -= (icon.getActualWidth() / 2);
-            } else if (hAlign == HorizontalAlignment.RIGHT) {
-                topLeft.x -= icon.getActualWidth();
+                // Horizontal alignment
+                if (hAlign == HorizontalAlignment.CENTER) {
+                    topLeft.x -= (icon.getActualWidth() / 2);
+                } else if (hAlign == HorizontalAlignment.RIGHT) {
+                    topLeft.x -= icon.getActualWidth();
+                }
+
+                // Specific vertical alignment
+                topLeft.y -= icon.getCenter().y;
+
+                g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
             }
-
-            // Specific vertical alignment
-            topLeft.y -= icon.getCenter().y;
-
-            g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
+        } catch (Exception ex) {
+            logger.warning(
+                "Cannot paint symbol " + shape + " at center " + center,
+                ex);
         }
     }
 

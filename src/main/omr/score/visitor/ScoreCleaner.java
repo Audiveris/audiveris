@@ -47,16 +47,16 @@ public class ScoreCleaner
 
     //~ Methods ----------------------------------------------------------------
 
-//    //-------------//
-//    // visit Score //
-//    //-------------//
-//    @Override
-//    public boolean visit (Score score)
-//    {
-//        score.cleanupNode();
-//
-//        return true;
-//    }
+    //    //-------------//
+    //    // visit Score //
+    //    //-------------//
+    //    @Override
+    //    public boolean visit (Score score)
+    //    {
+    //        score.cleanupNode();
+    //
+    //        return true;
+    //    }
 
     //--------------//
     // visit System //
@@ -86,10 +86,15 @@ public class ScoreCleaner
     @Override
     public boolean visit (SystemPart systemPart)
     {
-        // Remove slurs and wedges
-        systemPart.cleanupNode();
+        if (systemPart.isDummy()) {
+            systemPart.getParent().getChildren().remove(systemPart);
+            return false;
+        } else {
+            // Remove slurs and wedges
+            systemPart.cleanupNode();
 
-        return true;
+            return true;
+        }
     }
 
     //---------------//

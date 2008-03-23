@@ -20,8 +20,8 @@ import omr.util.TreeNode;
 import java.util.*;
 
 /**
- * Class <code>ScorePart</code> defines a part at score level. It is instantiated in
- * each System by a SystemPart.
+ * Class <code>ScorePart</code> defines a part at score level. It is
+ * instantiated in each System by a SystemPart.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -45,10 +45,13 @@ public class ScorePart
      * Distinguished id for this part (the same id is used by the corresponding
      * SystemPart in each System)
      */
-    private Integer id;
+    private final int id;
 
     /** Name for this part */
     private String name;
+
+    /** Typical ordinate for displaying this part in the score display */
+    private final int displayOrdinate;
 
     /** Instrument MIDI program, if any */
     private Integer midiProgram; // = 71;
@@ -69,11 +72,17 @@ public class ScorePart
      *
      * @param systemPart the concrete SystemPart
      * @param score the related score entity
+     * @param id the id for this part
+     * @param displayOrdinate the ordinate offset of this part wrt system
      */
     public ScorePart (SystemPart systemPart,
-                      Score      score)
+                      Score      score,
+                      int        id,
+                      int        displayOrdinate)
     {
         this.score = score;
+        this.id = id;
+        this.displayOrdinate = displayOrdinate;
 
         for (TreeNode node : systemPart.getStaves()) {
             Staff staff = (Staff) node;
@@ -85,6 +94,8 @@ public class ScorePart
     private ScorePart ()
     {
         score = null;
+        id = 0;
+        displayOrdinate = 0;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -127,19 +138,6 @@ public class ScorePart
         default :
             return constants.defaultPartProgram.getValue();
         }
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Assign an id to this part
-     *
-     * @param id the assigned id
-     */
-    public void setId (int id)
-    {
-        this.id = id;
     }
 
     //-------//
@@ -307,10 +305,8 @@ public class ScorePart
         StringBuilder sb = new StringBuilder();
         sb.append("{Part");
 
-        if (id != null) {
-            sb.append(" id=")
-              .append(id);
-        }
+        sb.append(" id=")
+          .append(id);
 
         if (name != null) {
             sb.append(" name=")
@@ -326,6 +322,14 @@ public class ScorePart
         sb.append("]}");
 
         return sb.toString();
+    }
+
+    //--------------------//
+    // getDisplayOrdinate //
+    //--------------------//
+    public int getDisplayOrdinate ()
+    {
+        return displayOrdinate;
     }
 
     //~ Inner Classes ----------------------------------------------------------

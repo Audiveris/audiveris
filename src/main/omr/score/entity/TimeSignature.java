@@ -23,6 +23,7 @@ import omr.sheet.Scale;
 import omr.util.Logger;
 
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Class <code>TimeSignature</code> encapsulates a time signature, which may be
@@ -87,6 +88,38 @@ public class TimeSignature
         setStaff(staff);
     }
 
+    //---------------//
+    // TimeSignature //
+    //--------------//
+    /**
+     * Create a time signature, with containing measure and related staff, and
+     * information copied from the provided time signature
+     *
+     * @param measure the containing measure
+     * @param staff the related staff
+     * @param other the other time signature to clone
+     */
+    public TimeSignature (Measure       measure,
+                          Staff         staff,
+                          TimeSignature other)
+    {
+        super(measure);
+        setStaff(staff);
+
+        try {
+            numerator = new Integer(other.getNumerator());
+            denominator = new Integer(other.getDenominator());
+            shape = other.getShape();
+            setCenter(
+                new SystemPoint(
+                    other.getCenter().x,
+                    other.getCenter().y - other.getStaff().getTopLeft().y +
+                    staff.getTopLeft().y));
+        } catch (InvalidTimeSignature ex) {
+            logger.severe("Cannot duplicate TimeSignature", ex);
+        }
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     //----------------//
@@ -96,7 +129,7 @@ public class TimeSignature
      * Report the bottom part of the time signature
      *
      * @return the bottom part
-     * @throws omr.score.TimeSignature.InvalidTimeSignature
+     * @throws omr.score.entity.TimeSignature.InvalidTimeSignature
      */
     public Integer getDenominator ()
         throws InvalidTimeSignature
@@ -127,7 +160,7 @@ public class TimeSignature
      * Report the top part of the time signature
      *
      * @return the top part
-     * @throws omr.score.TimeSignature.InvalidTimeSignature
+     * @throws omr.score.entity.TimeSignature.InvalidTimeSignature
      */
     public Integer getNumerator ()
         throws InvalidTimeSignature
@@ -150,7 +183,7 @@ public class TimeSignature
      * Report the shape of this time signature
      *
      * @return the (lazily determined) shape
-     * @throws omr.score.TimeSignature.InvalidTimeSignature
+     * @throws omr.score.entity.TimeSignature.InvalidTimeSignature
      */
     public Shape getShape ()
         throws InvalidTimeSignature
@@ -319,10 +352,10 @@ public class TimeSignature
     //-----------------//
     private Integer getNumericValue (Glyph glyph)
     {
-        Shape shape = glyph.getShape();
+        Shape theShape = glyph.getShape();
 
-        if (shape != null) {
-            switch (shape) {
+        if (theShape != null) {
+            switch (theShape) {
             case TIME_ZERO :
                 return 0;
 

@@ -76,6 +76,29 @@ public class Clef
         this.glyph = glyph;
     }
 
+    //------//
+    // Clef //
+    //------//
+    /**
+     * Create a Clef instance, by cloning another clef
+     *
+     * @param measure the containing measure
+     * @param staff the assigned staff
+     * @param other the existing clef to clone
+     */
+    public Clef (Measure measure,
+                 Staff   staff,
+                 Clef    other)
+    {
+        this(
+            measure,
+            staff,
+            other.getShape(),
+            other.getCenter(),
+            other.getPitchPosition(),
+            null);
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     //------------//

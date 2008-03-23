@@ -122,6 +122,40 @@ public class KeySignature
     {
         super(measure);
         setStaff(staff);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(getContextString() + " KeySignature created");
+        }
+    }
+
+    //---------------//
+    // KeySignature //
+    //--------------//
+    /**
+     * Create a key signature, with containing measure by cloning an other one
+     *
+     * @param measure the containing measure
+     * @param staff the related staff
+     * @param other the key sig to clone
+     */
+    public KeySignature (Measure      measure,
+                         Staff        staff,
+                         KeySignature other)
+    {
+        super(measure);
+        setStaff(staff);
+        key = other.getKey();
+        pitchPosition = other.getPitchPosition();
+        shape = other.getShape();
+        clefKind = other.guessClefKind();
+
+        // Nota: Center.y is irrelevant
+        setCenter(new SystemPoint(other.getCenter().x, 0));
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                getContextString() + " KeySignature created by cloning");
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -254,9 +288,6 @@ public class KeySignature
                                     Staff       staff,
                                     SystemPoint center)
     {
-        //        java.lang.System.out.println(
-        //            Thread.currentThread().getName() + " Populate start glyph#" +
-        //            glyph.getId() + " ...");
         if (logger.isFineEnabled()) {
             logger.fine("Populating keysig for " + glyph);
         }
@@ -296,7 +327,7 @@ public class KeySignature
             }
         }
 
-        // Do we have a key signature just before in the same measure ?
+        // Do we have a key signature just before in the same measure & staff?
         KeySignature keysig = null;
         boolean      found = false;
 
@@ -325,9 +356,6 @@ public class KeySignature
                         glyph.getId());
                 }
 
-                //                java.lang.System.out.println(
-                //                    Thread.currentThread().getName() +
-                //                    " Populate STOP2 glyph#" + glyph.getId());
                 return false;
             } else {
                 // Everything is OK
@@ -340,26 +368,10 @@ public class KeySignature
         // If not found create a brand new one
         if (!found) {
             // Check pitch position
-            Shape clefShape = null;
-            Clef  clef = measure.getClefBefore(
+            Clef clef = measure.getClefBefore(
                 measure.computeGlyphCenter(glyph));
 
-            if (clef != null) {
-                clefShape = clef.getShape();
-            } else {
-                // Assume G clef
-                clefShape = G_CLEF;
-            }
-
-            if (!checkPitchPosition(
-                glyph,
-                center,
-                staff,
-                0,
-                getClefKind(clefShape))) {
-                //                java.lang.System.out.println(
-                //                    Thread.currentThread().getName() +
-                //                    " Populate STOP3 glyph#" + glyph.getId());
+            if (!checkPitchPosition(glyph, center, staff, 0, clef)) {
                 return false;
             }
 
@@ -374,9 +386,6 @@ public class KeySignature
             logger.fine("key=" + keysig.getKey());
         }
 
-        //        java.lang.System.out.println(
-        //            Thread.currentThread().getName() + " Populate end   glyph#" +
-        //            glyph.getId());
         return true;
     }
 
@@ -409,7 +418,7 @@ public class KeySignature
             }
 
             sb.append("]");
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             sb.append(" INVALID");
         }
 
@@ -572,7 +581,8 @@ public class KeySignature
                             try {
                                 ks.copyKey(keysig);
                             } catch (Exception ex) {
-                                logger.warning("Cannot copy key", ex);
+                                ///logger.warning("Cannot copy key", ex);
+                                omr.util.Dumper.dump(ks);
                             }
 
                             // TBD deassign glyphs that do not contribute to the key ?
@@ -668,12 +678,12 @@ public class KeySignature
      * Report the delta in pitch position (wrt standard G_CLEF positions)
      * according to a given clef
      *
-     * @param clefKind the kind of clef
+     * @param clef the clef
      * @return the delta in pitch position
      */
-    private static int clefToDelta (Shape clefKind)
+    private static int clefToDelta (Shape clef)
     {
-        switch (clefKind) {
+        switch (getClefKind(clef)) {
         case G_CLEF :
             return 0;
 
@@ -824,14 +834,14 @@ public class KeySignature
      * @param center the (flat-corrected) glyph center
      * @param the containing staff
      * @param index index in signature
-     * @param clefKind kind of clef at this location
+     * @param clef clef at this location, if known
      * @return true if OK, false otherwise
      */
     private static boolean checkPitchPosition (Glyph       glyph,
                                                SystemPoint center,
                                                Staff       staff,
                                                int         index,
-                                               Shape       clefKind)
+                                               Clef        clef)
     {
         if (glyph.getShape() == SHARP) {
             return checkPosition(
@@ -840,7 +850,7 @@ public class KeySignature
                 staff,
                 sharpPositions,
                 index,
-                clefToDelta(clefKind));
+                clef);
         } else {
             return checkPosition(
                 glyph,
@@ -848,7 +858,7 @@ public class KeySignature
                 staff,
                 flatPositions,
                 index,
-                clefToDelta(clefKind));
+                clef);
         }
     }
 
@@ -864,7 +874,7 @@ public class KeySignature
      * @param the containing staff
      * @param positions the array of positions (for G clef kind)
      * @param index index of glyph within signature
-     * @param delta delta pitch position (based on clef kind)
+     * @param clef current clef, if known
      * @return true if OK, false otherwise
      */
     private static boolean checkPosition (Glyph       glyph,
@@ -872,22 +882,31 @@ public class KeySignature
                                           Staff       staff,
                                           double[]    positions,
                                           int         index,
-                                          int         delta)
+                                          Clef        clef)
     {
-        double dif = staff.pitchPositionOf(center) - positions[index] - delta;
+        int[] deltas = (clef != null)
+                       ? new int[] { clefToDelta(clef.getShape()) }
+                       : new int[] { 0, 2, 1 };
 
-        if (Math.abs(dif) > (constants.keyYMargin.getValue() * 2)) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Invalid pitch position for glyph " + glyph.getId());
+        for (int delta : deltas) {
+            double dif = staff.pitchPositionOf(center) - positions[index] -
+                         delta;
+
+            if (Math.abs(dif) <= (constants.keyYMargin.getValue() * 2)) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Correct pitch position for glyph " + glyph.getId());
+                }
+
+                return true;
             }
-
-            return false;
-        } else if (logger.isFineEnabled()) {
-            logger.fine("Correct pitch position for glyph " + glyph.getId());
         }
 
-        return true;
+        if (logger.isFineEnabled()) {
+            logger.fine("No valid pitch position for glyph " + glyph.getId());
+        }
+
+        return false;
     }
 
     //---------//
@@ -901,24 +920,24 @@ public class KeySignature
      */
     private void copyKey (KeySignature ks)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Copying " + ks + " to " + this);
-        }
+        //        if (logger.isFineEnabled()) {
+        //            logger.fine("Copying " + ks + " to " + this);
+        //        }
 
         // Nota: We don't touch to contour, nor centroid
 
         // key
         key = ks.getKey();
 
-        // Beware of different clef kinds
-        Measure measure = (Measure) getParent()
-                                        .getParent();
-        Clef    clef = measure.getClefBefore(ks.getCenter());
-        Measure ms = (Measure) ks.getParent()
-                                 .getParent();
-        Clef    c = ms.getClefBefore(ks.getCenter());
+        // Beware of different clef kinds. What if we ignore a clef?
+        Measure measure = getMeasure();
+        Clef    clef = measure.getClefBefore(getCenter());
         Shape   kind = getClefKind(clef.getShape());
+
+        Measure ms = ks.getMeasure();
+        Clef    c = ms.getClefBefore(ks.getCenter());
         Shape   k = getClefKind(c.getShape());
+
         int     delta = clefToDelta(kind) - clefToDelta(k);
 
         // center
@@ -962,7 +981,7 @@ public class KeySignature
     // guessClefKind //
     //---------------//
     /**
-     * Guess what the current clef kind (G,F or C) is, based on the pitch
+     * Guess what the current clef kind (G, F or C) is, based on the pitch
      * positions of the member glyphs
      *
      * @return the kind of clef

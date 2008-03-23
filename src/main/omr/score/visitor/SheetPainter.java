@@ -87,11 +87,9 @@ public class SheetPainter
     public boolean visit (Measure measure)
     {
         // Render the measure ending barline, if within the clipping area
-        try {
+        if (measure.getBarline() != null) {
             measure.getBarline()
                    .render(g, z);
-        } catch (Exception ex) {
-            logger.warning("Error painting measure " + measure, ex);
         }
 
         return true;

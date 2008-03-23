@@ -26,6 +26,8 @@ import omr.sheet.SystemInfo;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -140,6 +142,15 @@ public class System
     }
 
     //--------------//
+    // promoteChild //
+    //--------------//
+    public void promoteChild ()
+    {
+        TreeNode node = children.remove(children.size() - 1);
+        children.add(0, node);
+    }
+
+    //--------------//
     // setDimension //
     //--------------//
     /**
@@ -209,8 +220,29 @@ public class System
      */
     public SystemPart getFirstPart ()
     {
-        return (SystemPart) getChildren()
+        return (SystemPart) getParts()
                                 .get(0);
+    }
+
+    //------------------//
+    // getFirstRealPart //
+    //------------------//
+    /**
+     * Report the first non artificial part in this system
+     *
+     * @return the real first part entity
+     */
+    public SystemPart getFirstRealPart ()
+    {
+        for (TreeNode node : getParts()) {
+            SystemPart part = (SystemPart) node;
+
+            if (!part.isDummy()) {
+                return part;
+            }
+        }
+
+        return null;
     }
 
     //---------//
@@ -218,7 +250,7 @@ public class System
     //---------//
     /**
      * Report the part with the provided id, if any
-     * 
+     *
      * @param id the id of the desired part
      * @return the part found or null
      */
@@ -385,15 +417,18 @@ public class System
         for (TreeNode node : getParts()) {
             SystemPart part = (SystemPart) node;
 
-            for (TreeNode n : part.getStaves()) {
-                Staff staff = (Staff) n;
-                int   midY = (staff.getTopLeft().y + (staff.getHeight() / 2)) -
-                             this.getTopLeft().y;
-                int   dy = Math.abs(sysPt.y - midY);
+            if (!part.isDummy()) {
+                for (TreeNode n : part.getStaves()) {
+                    Staff staff = (Staff) n;
+                    int   midY = (staff.getTopLeft().y +
+                                 (staff.getHeight() / 2)) -
+                                 this.getTopLeft().y;
+                    int   dy = Math.abs(sysPt.y - midY);
 
-                if (dy < minDy) {
-                    minDy = dy;
-                    best = staff;
+                    if (dy < minDy) {
+                        minDy = dy;
+                        best = staff;
+                    }
                 }
             }
         }
@@ -571,6 +606,28 @@ public class System
         }
     }
 
+    //---------------//
+    // sortPartsOnId //
+    //---------------//
+    /**
+     * Sort the parts of this system according to their part id
+     */
+    public void sortPartsOnId ()
+    {
+        Collections.sort(
+            getParts(),
+            new Comparator<TreeNode>() {
+                    public int compare (TreeNode o1,
+                                        TreeNode o2)
+                    {
+                        SystemPart p1 = (SystemPart) o1;
+                        SystemPart p2 = (SystemPart) o2;
+
+                        return Integer.signum(p1.getId() - p2.getId());
+                    }
+                });
+    }
+
     //-------------//
     // toPagePoint //
     //-------------//
@@ -744,5 +801,25 @@ public class System
             pagRect.y - topLeft.y,
             pagRect.width,
             pagRect.height);
+    }
+
+    //------------------//
+    // fillMissingParts //
+    //------------------//
+    /**
+     * Check for missing parts in this system, and if needed create dummy parts
+     * filled with whole rests
+     */
+    public void fillMissingParts ()
+    {
+        // Check we have all the defined parts in this system
+        for (ScorePart scorePart : getScore()
+                                       .getPartList()) {
+            if (getPart(scorePart.getId()) == null) {
+                getFirstRealPart()
+                    .createDummyPart(scorePart.getId());
+                sortPartsOnId();
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@
 package omr.score.entity;
 
 import omr.glyph.Glyph;
+import omr.glyph.Shape;
 
 import omr.score.common.SystemPoint;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
@@ -43,7 +44,16 @@ public class Measure
     //~ Instance fields --------------------------------------------------------
 
     /** To flag dummy barline instances */
-    private boolean isDummy;
+    private boolean dummy;
+
+    /** To flag a temporary measure */
+    private boolean temporary;
+
+    /** Flag for implicit (introduction) measure */
+    private boolean implicit;
+
+    /** Flag for partial (short) measure */
+    private boolean partial;
 
     /** Child: Ending bar line */
     private Barline barline;
@@ -65,12 +75,6 @@ public class Measure
 
     /** Left abscissa (in units, wrt system left side) of this measure */
     private Integer leftX;
-
-    /** Flag for implicit (introduction) measure */
-    private boolean implicit;
-
-    /** Flag for partial (short) measure */
-    private boolean partial;
 
     /** Measure Id */
     private int id;
@@ -123,7 +127,7 @@ public class Measure
     // Measure //
     //---------//
     /**
-     * Default constructor (needed by XML Binder)
+     * Default constructor
      */
     private Measure ()
     {
@@ -156,7 +160,7 @@ public class Measure
      * @return the (actual) measure duration, or 0 if no rest / note exist in
      * this measure
      */
-    public int getActualDuration ()
+    public Integer getActualDuration ()
     {
         if (actualDuration != null) {
             return actualDuration;
@@ -301,7 +305,7 @@ public class Measure
         // Look in all preceding measures, with the same staff id
         Measure measure = this;
 
-        while ((measure = measure = measure.getPreceding()) != null) {
+        while ((measure = measure.getPreceding()) != null) {
             clef = measure.getLastMeasureClef(staffId);
 
             if (clef != null) {
@@ -310,6 +314,50 @@ public class Measure
         }
 
         return null; // No clef previously defined
+    }
+
+    //--------------//
+    // getClefAfter //
+    //--------------//
+    /**
+     * Report the first clef, if any, defined after this measure point
+     * (looking in end of the measure, then in next measures, then in
+     * next systems) while staying in the same logical staff
+     *
+     * @param point the point after which to look
+     * @return the first clef defined, or null
+     */
+    public Clef getClefAfter (SystemPoint point)
+    {
+        // Which staff we are in
+        Clef clef = null;
+        int  staffId = getPart()
+                           .getStaffAt(point)
+                           .getId();
+
+        // Look in this measure, with same staff, going forward
+        for (TreeNode cn : getClefs()) {
+            clef = (Clef) cn;
+
+            if ((clef.getStaff()
+                     .getId() == staffId) &&
+                (clef.getCenter().x >= point.x)) {
+                return clef;
+            }
+        }
+
+        // Look in all following measures, with the same staff id
+        Measure measure = this;
+
+        while ((measure = measure.getFollowing()) != null) {
+            clef = measure.getFirstMeasureClef(staffId);
+
+            if (clef != null) {
+                return clef;
+            }
+        }
+
+        return null; // No clef later defined
     }
 
     //-------------//
@@ -433,7 +481,7 @@ public class Measure
     //---------//
     public boolean isDummy ()
     {
-        return isDummy;
+        return dummy;
     }
 
     //---------------//
@@ -679,6 +727,31 @@ public class Measure
         return null;
     }
 
+    //---------------------//
+    // getFirstMeasureClef //
+    //---------------------//
+    /**
+     * Report the first clef (if any) in this measure, tagged  with the provided
+     * staff
+     *
+     * @param staffId the imposed related staff id
+     * @return the first clef, or null
+     */
+    public Clef getFirstMeasureClef (int staffId)
+    {
+        // Going forward
+        for (TreeNode cn : getClefs()) {
+            Clef clef = (Clef) cn;
+
+            if (clef.getStaff()
+                    .getId() == staffId) {
+                return clef;
+            }
+        }
+
+        return null;
+    }
+
     //-------------------//
     // getLastMeasureKey //
     //-------------------//
@@ -760,6 +833,14 @@ public class Measure
         return leftX;
     }
 
+    //----------//
+    // setLeftX //
+    //----------//
+    public void setLeftX (int val)
+    {
+        leftX = new Integer(val);
+    }
+
     //------------//
     // setPartial //
     //------------//
@@ -820,7 +901,7 @@ public class Measure
             }
         }
 
-        partial = true;
+        setPartial(true);
     }
 
     //-----------//
@@ -858,6 +939,33 @@ public class Measure
 
         if (precedingPart != null) {
             return precedingPart.getLastMeasure();
+        } else {
+            return null;
+        }
+    }
+
+    //--------------//
+    // getFollowing //
+    //--------------//
+    /**
+     * Report the following measure of this one, either in this system / part,
+     * or in the following system /part.
+     *
+     * @return the following measure, or null if none
+     */
+    public Measure getFollowing ()
+    {
+        Measure nextMeasure = (Measure) getNextSibling();
+
+        if (nextMeasure != null) {
+            return nextMeasure;
+        }
+
+        SystemPart followingPart = getPart()
+                                       .getFollowing();
+
+        if (followingPart != null) {
+            return followingPart.getFirstMeasure();
         } else {
             return null;
         }
@@ -999,12 +1107,12 @@ public class Measure
     /**
      * Report the width, in units, of the measure
      *
-     * @return the measure width
+     * @return the measure width, or null in case of dummy measure
      */
-    public int getWidth ()
+    public Integer getWidth ()
     {
         if (isDummy()) {
-            return 50;
+            return null;
         } else {
             return getBarline()
                        .getCenter().x - getLeftX();
@@ -1027,7 +1135,7 @@ public class Measure
      * Override normal behavior, so that a given child is stored in its proper
      * type collection (clef to clef list, etc...)
      *
-     * @param node the child to insert in the staff
+     * @param node the child to insert into the measure
      */
     @Override
     public void addChild (TreeNode node)
@@ -1101,7 +1209,7 @@ public class Measure
     public static void checkPartialMeasures (System system)
     {
         // Use a loop on measures, across system parts
-        final int imMax = system.getFirstPart()
+        final int imMax = system.getFirstRealPart()
                                 .getMeasures()
                                 .size();
 
@@ -1110,8 +1218,13 @@ public class Measure
             partLoop: 
             for (TreeNode node : system.getParts()) {
                 SystemPart part = (SystemPart) node;
-                Measure    measure = (Measure) part.getMeasures()
-                                                   .get(im);
+
+                if (part.isDummy()) {
+                    continue;
+                }
+
+                Measure measure = (Measure) part.getMeasures()
+                                                .get(im);
 
                 for (Voice voice : measure.getVoices()) {
                     Integer voiceFinal = voice.getFinalDuration();
@@ -1226,7 +1339,7 @@ public class Measure
         expectedDuration = null;
         excess = null;
         implicit = false;
-        partial = false;
+        setPartial(false);
 
         // (Re)Allocate specific children lists
         clefs = new ClefList(this);
@@ -1246,26 +1359,35 @@ public class Measure
         voices = new ArrayList<Voice>();
     }
 
-    //-------------------//
-    // createDummyBefore //
-    //-------------------//
+    //----------------//
+    // resetStartTime //
+    //----------------//
+    public void resetStartTime ()
+    {
+        startTime = null;
+    }
+
+    //-----------------------//
+    // createTemporaryBefore //
+    //-----------------------//
     /**
      * Create a temporary initial measure to be exported right before this
      * measure, just to set up global parameters (clef, time, key)
      *
      * @return the created dummy measure
      */
-    public Measure createDummyBefore ()
+    public Measure createTemporaryBefore ()
     {
         Measure dummyMeasure = new Measure();
-        dummyMeasure.isDummy = true; // Flag it explicitly as dummy
+        dummyMeasure.setTemporary(true);
+        dummyMeasure.setDummy(true);
 
         // Populate the dummy measure, staff per staff
         SystemPart part = this.getPart();
 
         for (TreeNode sn : part.getStaves()) {
             Staff       staff = (Staff) sn;
-            int         right = getLeftX();
+            int         right = getLeftX(); // Right of dummy = Left of current
             int         midY = (staff.getTopLeft().y + (staff.getHeight() / 2)) -
                                getSystem()
                                    .getTopLeft().y;
@@ -1415,7 +1537,10 @@ public class Measure
     public void resetAbscissae ()
     {
         leftX = null;
-        barline.reset();
+
+        if (barline != null) {
+            barline.reset();
+        }
     }
 
     //----------//
@@ -1457,6 +1582,21 @@ public class Measure
         wholeChords.add(chord);
     }
 
+    //--------------//
+    // addWholeRest //
+    //--------------//
+    /**
+     * Insert a whole rest at provided center
+     * @param center the location for the rest note
+     */
+    void addWholeRest (Staff       staff,
+                       SystemPoint center)
+    {
+        Chord chord = new Chord(this, null);
+        Note.createWholeRest(staff, chord, center);
+        wholeChords.add(chord);
+    }
+
     //--------------------//
     // getCurrentDuration //
     //--------------------//
@@ -1480,6 +1620,38 @@ public class Measure
         }
 
         return String.format("%-5s", Note.quarterValueOf(measureDur));
+    }
+
+    //----------//
+    // setDummy //
+    //----------//
+    public void setDummy (boolean dummy)
+    {
+        this.dummy = dummy;
+    }
+
+    //-------------//
+    // isTemporary //
+    //-------------//
+    public boolean isTemporary ()
+    {
+        return temporary;
+    }
+
+    //--------------//
+    // setTemporary //
+    //--------------//
+    public void setTemporary (boolean temporary)
+    {
+        this.temporary = temporary;
+    }
+
+    //------------//
+    // setPartial //
+    //------------//
+    public void setPartial (boolean partial)
+    {
+        this.partial = partial;
     }
 
     //~ Inner Classes ----------------------------------------------------------

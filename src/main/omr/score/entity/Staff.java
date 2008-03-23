@@ -20,8 +20,6 @@ import omr.sheet.StaffInfo;
 
 import omr.util.Logger;
 
-import java.awt.*;
-
 /**
  * Class <code>Staff</code> handles a staff in a system part. It is useful for
  * its geometric parameters (topLeft corner, width and height, ability to
@@ -61,6 +59,9 @@ public class Staff
 
     /** Staff width (units) */
     private int width;
+
+    /** Flag an artificial staff */
+    private boolean dummy;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -108,6 +109,18 @@ public class Staff
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------------//
+    // computeCenter //
+    //---------------//
+    @Override
+    protected void computeCenter ()
+    {
+        setCenter(
+            new SystemPoint(
+                width / 2,
+                topLeft.y - getSystem().getTopLeft().y + (height / 2)));
+    }
 
     //--------//
     // accept //
@@ -264,8 +277,24 @@ public class Staff
     public String toString ()
     {
         try {
-            return "{Staff" + " topLeft=" + topLeft + " width=" + width +
-                   " size=" + height + " origin=" + displayOrigin + "}";
+            StringBuilder sb = new StringBuilder();
+            sb.append("{Staff");
+
+            if (isDummy()) {
+                sb.append(" dummy");
+            }
+
+            sb.append(" topLeft=")
+              .append(topLeft);
+            sb.append(" width=")
+              .append(width);
+            sb.append(" size=")
+              .append(height);
+            sb.append(" origin=")
+              .append(displayOrigin);
+            sb.append("}");
+
+            return sb.toString();
         } catch (NullPointerException e) {
             return "{Staff INVALID}";
         }
@@ -315,5 +344,15 @@ public class Staff
     public double pitchPositionOf (SystemPoint pt)
     {
         return info.pitchPositionOf(getSystem().toPixelPoint(pt));
+    }
+
+    public boolean isDummy ()
+    {
+        return dummy;
+    }
+
+    public void setDummy (boolean dummy)
+    {
+        this.dummy = dummy;
     }
 }

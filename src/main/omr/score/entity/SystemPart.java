@@ -10,6 +10,7 @@
 package omr.score.entity;
 
 import omr.score.common.PagePoint;
+import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
@@ -60,6 +61,9 @@ public class SystemPart
 
     /** Text entities within this system part */
     private Set<Text> texts;
+
+    /** Flag to indicate this system part is just a placeholder */
+    private boolean dummy;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -128,6 +132,147 @@ public class SystemPart
         }
     }
 
+    //-----------------//
+    // createDummyPart //
+    //-----------------//
+    /**
+     * Create an dummy system part, parallel to this part, just to fill
+     * needed measures in another part. <ul>
+     * <li>Clef is taken from first real measure of part to be extended</li>
+     * <li>Key sig is taken from this part</li>
+     * <li>Time sig is taken from this part</li>
+     * <li>Measures are filled with just one whole rest</li>
+     * </ul>
+     * @param id the id for the desired dummy part
+     * @return the created dummy part, ready to be exported
+     */
+    public SystemPart createDummyPart (int id)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine(getContextString() + " createDummyPart for id=" + id);
+        }
+
+        // Find some concrete system part for the provided id
+        SystemPart nextPart = null;
+
+        do {
+            System nextSystem = (System) getSystem()
+                                             .getNextSibling();
+
+            if (nextSystem != null) {
+                SystemPart part = nextSystem.getPart(id);
+
+                if (part != null) {
+                    nextPart = part;
+
+                    break;
+                }
+            } else {
+                logger.warning("Cannot find real system part with id " + id);
+
+                return null;
+            }
+        } while (nextPart == null);
+
+        SystemPart dummyPart = new SystemPart(getSystem());
+        dummyPart.setId(id);
+        dummyPart.setDummy(true);
+        dummyPart.setScorePart(nextPart.getScorePart());
+
+        Measure nextMeasure = nextPart.getFirstMeasure();
+
+        // Loop on measures
+        boolean isFirstMeasure = true;
+
+        for (TreeNode mn : getMeasures()) {
+            Measure measure = (Measure) mn;
+            Measure dummyMeasure = new Measure(dummyPart);
+            dummyMeasure.setDummy(true);
+            dummyMeasure.setId(measure.getId());
+            dummyMeasure.setLeftX(measure.getLeftX());
+            dummyMeasure.setPartial(measure.isPartial());
+
+            // Loop on staves
+            int staffIndex = -1;
+
+            for (TreeNode sn : nextPart.getStaves()) {
+                Staff nextStaff = (Staff) sn;
+                staffIndex++;
+
+                Staff dummyStaff = null;
+                int   spaceStart = measure.getLeftX();
+
+                if (isFirstMeasure) {
+                    // Create dummy Staff
+                    dummyStaff = new Staff(
+                        null, // No staff info counterpart
+                        dummyPart,
+                        new PagePoint(
+                            getFirstStaff()
+                                .getTopLeft().x,
+                            getFirstStaff().getTopLeft().y -
+                            getScorePart().getDisplayOrdinate()),
+                        getFirstStaff().getWidth(),
+                        nextStaff.getHeight());
+                    dummyStaff.setDummy(true);
+                    dummyStaff.setDisplayOrigin(new ScorePoint());
+
+                    // Create dummy Clef
+                    Clef nextClef = nextMeasure.getFirstMeasureClef(
+                        nextStaff.getId());
+
+                    if (nextClef != null) {
+                        Clef dummyClef = new Clef(
+                            dummyMeasure,
+                            dummyStaff,
+                            nextClef);
+                        spaceStart = dummyStaff.getCenter().x;
+                    }
+
+                    isFirstMeasure = false;
+                } else {
+                    dummyStaff = (Staff) dummyPart.getStaves()
+                                                  .get(staffIndex);
+                }
+
+                // Replicate Key if any
+                if (!measure.getKeySignatures()
+                            .isEmpty()) {
+                    KeySignature dummyKey = new KeySignature(
+                        dummyMeasure,
+                        dummyStaff,
+                        (KeySignature) measure.getKeySignatures().get(0));
+                    spaceStart = dummyKey.getCenter().x;
+                }
+
+                // Replicate Time if any
+                TimeSignature ts = measure.getTimeSignature();
+
+                if (ts != null) {
+                    new TimeSignature(dummyMeasure, dummyStaff, ts);
+                    spaceStart = ts.getCenter().x;
+                }
+
+                // Create dummy Whole rest
+                dummyMeasure.addWholeRest(
+                    dummyStaff,
+                    new SystemPoint(
+                        (spaceStart + measure.getBarline().getCenter().x) / 2,
+                        nextStaff.getCenter().y -
+                        getScorePart().getDisplayOrdinate()));
+                dummyMeasure.buildVoices();
+            }
+        }
+
+        if (logger.isFineEnabled()) {
+            if (dummyPart.dumpNode()) {
+                dummyPart.dumpChildren(1);
+            }
+        }
+
+        return dummyPart;
+    }
+
     //-------//
     // getId //
     //-------//
@@ -164,8 +309,13 @@ public class SystemPart
      */
     public Measure getLastMeasure ()
     {
-        return (Measure) getMeasures()
-                             .get(getMeasures().size() - 1);
+        if (getMeasures()
+                .size() > 0) {
+            return (Measure) getMeasures()
+                                 .get(getMeasures().size() - 1);
+        } else {
+            return null;
+        }
     }
 
     //------------------//
@@ -651,6 +801,22 @@ public class SystemPart
         sb.append("]}");
 
         return sb.toString();
+    }
+
+    //---------//
+    // isDummy //
+    //---------//
+    public boolean isDummy ()
+    {
+        return dummy;
+    }
+
+    //----------//
+    // setDummy //
+    //----------//
+    public void setDummy (boolean dummy)
+    {
+        this.dummy = dummy;
     }
 
     //~ Inner Classes ----------------------------------------------------------

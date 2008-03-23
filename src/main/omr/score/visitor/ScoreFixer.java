@@ -73,15 +73,19 @@ public class ScoreFixer
         System     prevSystem = (System) system.getPreviousSibling();
         ScorePoint origin = new ScorePoint();
 
+        // Ordinate offset
+        origin.y = SCORE_INIT_Y +
+                   system.getFirstRealPart()
+                         .getScorePart()
+                         .getDisplayOrdinate();
+
         if (prevSystem == null) {
             // Very first system in the score
-            origin.move(SCORE_INIT_X, SCORE_INIT_Y);
+            origin.x = SCORE_INIT_X;
         } else {
             // Not the first system
-            origin.setLocation(prevSystem.getDisplayOrigin());
-            origin.translate(
-                prevSystem.getDimension().width - 1 + INTER_SYSTEM,
-                0);
+            origin.x = (prevSystem.getDisplayOrigin().x +
+                       prevSystem.getDimension().width) - 1 + INTER_SYSTEM;
         }
 
         system.setDisplayOrigin(origin);
@@ -90,7 +94,9 @@ public class ScoreFixer
             Dumper.dump(system, "Computed");
         }
 
-        return true;
+        system.acceptChildren(this);
+
+        return false;
     }
 
     //-------------//
@@ -118,10 +124,23 @@ public class ScoreFixer
     public boolean visit (Measure measure)
     {
         // Adjust measure abscissae
-        measure.resetAbscissae();
+        if (!measure.isDummy()) {
+            measure.resetAbscissae();
+        }
 
-        // Set measure id, based on the preceding one
+        // Set measure id, based on a preceding measure, whatever the part
         Measure precedingMeasure = measure.getPreceding();
+
+        // No preceding system?
+        if (precedingMeasure == null) {
+            System prevSystem = (System) measure.getSystem()
+                                                .getPreviousSibling();
+
+            if (prevSystem != null) { // No preceding part
+                precedingMeasure = prevSystem.getFirstRealPart()
+                                             .getLastMeasure();
+            }
+        }
 
         if (precedingMeasure != null) {
             measure.setId(precedingMeasure.getId() + 1);
