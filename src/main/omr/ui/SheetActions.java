@@ -281,7 +281,7 @@ public class SheetActions
     // recordGlyphs //
     //--------------//
     @Action(enabledProperty = "sheetAvailable")
-    private Task recordGlyphs ()
+    public Task recordGlyphs ()
     {
         int answer = JOptionPane.showConfirmDialog(
             null,
