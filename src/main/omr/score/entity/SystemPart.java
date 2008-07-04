@@ -41,26 +41,25 @@ public class SystemPart
     private int id;
 
     /** The corresponding ScorePart */
-    @Child
     private ScorePart scorePart;
 
     /** Specific child : sequence of staves that belong to this system */
-    private final StaffList staves;
+    private final Container staves;
 
     /** Specific child : sequence of measures that compose this system part */
-    private final MeasureList measures;
+    private final Container measures;
 
     /** Specific child : list of slurs */
-    private final SlurList slurs;
+    private final Container slurs;
 
     /** Specific child : list of lyric lines */
-    private final LyricList lyrics;
+    private final Container lyrics;
+
+    /** Specific child : list of text items */
+    private final Container texts;
 
     /** Lonesome child : Starting barline (the others are linked to measures) */
     private Barline startingBarline;
-
-    /** Text entities within this system part */
-    private Set<Text> texts;
 
     /** Flag to indicate this system part is just a placeholder */
     private boolean dummy;
@@ -80,14 +79,30 @@ public class SystemPart
         super(system);
 
         // Allocate specific children
-        staves = new StaffList(this);
-        measures = new MeasureList(this);
-        slurs = new SlurList(this);
-        lyrics = new LyricList(this);
-        texts = new HashSet<Text>();
+        staves = new Container(this, "Staves");
+        measures = new Container(this, "Measures");
+        slurs = new Container(this, "Slurs");
+        lyrics = new Container(this, "Lyrics");
+        texts = new Container(this, "Texts");
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // setDummy //
+    //----------//
+    public void setDummy (boolean dummy)
+    {
+        this.dummy = dummy;
+    }
+
+    //---------//
+    // isDummy //
+    //---------//
+    public boolean isDummy ()
+    {
+        return dummy;
+    }
 
     //-----------------//
     // getFirstMeasure //
@@ -132,145 +147,17 @@ public class SystemPart
         }
     }
 
-    //-----------------//
-    // createDummyPart //
-    //-----------------//
+    //-------//
+    // setId //
+    //-------//
     /**
-     * Create an dummy system part, parallel to this part, just to fill
-     * needed measures in another part. <ul>
-     * <li>Clef is taken from first real measure of part to be extended</li>
-     * <li>Key sig is taken from this part</li>
-     * <li>Time sig is taken from this part</li>
-     * <li>Measures are filled with just one whole rest</li>
-     * </ul>
-     * @param id the id for the desired dummy part
-     * @return the created dummy part, ready to be exported
+     * Set the part id within the containing system, starting at 1
+     *
+     * @param id the id value
      */
-    public SystemPart createDummyPart (int id)
+    public void setId (int id)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(getContextString() + " createDummyPart for id=" + id);
-        }
-
-        // Find some concrete system part for the provided id
-        SystemPart nextPart = null;
-
-        do {
-            System nextSystem = (System) getSystem()
-                                             .getNextSibling();
-
-            if (nextSystem != null) {
-                SystemPart part = nextSystem.getPart(id);
-
-                if (part != null) {
-                    nextPart = part;
-
-                    break;
-                }
-            } else {
-                logger.warning("Cannot find real system part with id " + id);
-
-                return null;
-            }
-        } while (nextPart == null);
-
-        SystemPart dummyPart = new SystemPart(getSystem());
-        dummyPart.setId(id);
-        dummyPart.setDummy(true);
-        dummyPart.setScorePart(nextPart.getScorePart());
-
-        Measure nextMeasure = nextPart.getFirstMeasure();
-
-        // Loop on measures
-        boolean isFirstMeasure = true;
-
-        for (TreeNode mn : getMeasures()) {
-            Measure measure = (Measure) mn;
-            Measure dummyMeasure = new Measure(dummyPart);
-            dummyMeasure.setDummy(true);
-            dummyMeasure.setId(measure.getId());
-            dummyMeasure.setLeftX(measure.getLeftX());
-            dummyMeasure.setPartial(measure.isPartial());
-
-            // Loop on staves
-            int staffIndex = -1;
-
-            for (TreeNode sn : nextPart.getStaves()) {
-                Staff nextStaff = (Staff) sn;
-                staffIndex++;
-
-                Staff dummyStaff = null;
-                int   spaceStart = measure.getLeftX();
-
-                if (isFirstMeasure) {
-                    // Create dummy Staff
-                    dummyStaff = new Staff(
-                        null, // No staff info counterpart
-                        dummyPart,
-                        new PagePoint(
-                            getFirstStaff()
-                                .getTopLeft().x,
-                            getFirstStaff().getTopLeft().y -
-                            getScorePart().getDisplayOrdinate()),
-                        getFirstStaff().getWidth(),
-                        nextStaff.getHeight());
-                    dummyStaff.setDummy(true);
-                    dummyStaff.setDisplayOrigin(new ScorePoint());
-
-                    // Create dummy Clef
-                    Clef nextClef = nextMeasure.getFirstMeasureClef(
-                        nextStaff.getId());
-
-                    if (nextClef != null) {
-                        Clef dummyClef = new Clef(
-                            dummyMeasure,
-                            dummyStaff,
-                            nextClef);
-                        spaceStart = dummyStaff.getCenter().x;
-                    }
-
-                    isFirstMeasure = false;
-                } else {
-                    dummyStaff = (Staff) dummyPart.getStaves()
-                                                  .get(staffIndex);
-                }
-
-                // Replicate Key if any
-                if (!measure.getKeySignatures()
-                            .isEmpty()) {
-                    KeySignature dummyKey = new KeySignature(
-                        dummyMeasure,
-                        dummyStaff,
-                        (KeySignature) measure.getKeySignatures().get(0));
-                    spaceStart = dummyKey.getCenter().x;
-                }
-
-                // Replicate Time if any
-                TimeSignature ts = measure.getTimeSignature();
-
-                if (ts != null) {
-                    new TimeSignature(dummyMeasure, dummyStaff, ts);
-                    spaceStart = ts.getCenter().x;
-                }
-
-                // Create dummy Whole rest
-                dummyMeasure.addWholeRest(
-                    dummyStaff,
-                    new SystemPoint(
-                        (spaceStart + measure.getBarline().getCenter().x) / 2,
-                        nextStaff.getCenter().y -
-                        getScorePart().getDisplayOrdinate()));
-                dummyMeasure.buildVoices();
-            }
-        }
-
-        if (logger.isFineEnabled()) {
-            if (dummyPart.dumpNode()) {
-                dummyPart.dumpChildren(1);
-            }
-        }
-
-        return dummyPart;
+        this.id = id;
     }
 
     //-------//
@@ -284,19 +171,6 @@ public class SystemPart
     public int getId ()
     {
         return id;
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Set the part id within the containing system, starting at 1
-     *
-     * @param id the id value
-     */
-    public void setId (int id)
-    {
-        this.id = id;
     }
 
     //----------------//
@@ -589,9 +463,9 @@ public class SystemPart
     //----------//
     // getTexts //
     //----------//
-    public Set<Text> getTexts ()
+    public List<TreeNode> getTexts ()
     {
-        return texts;
+        return texts.getChildren();
     }
 
     //--------//
@@ -623,17 +497,11 @@ public class SystemPart
             slurs.addChild(node);
         } else if (node instanceof LyricLine) {
             lyrics.addChild(node);
+        } else if (node instanceof Text) {
+            texts.addChild(node);
         } else {
             super.addChild(node);
         }
-    }
-
-    //---------//
-    // addText //
-    //---------//
-    public void addText (Text text)
-    {
-        texts.add(text);
     }
 
     //---------------//
@@ -662,20 +530,162 @@ public class SystemPart
             .clear();
         getLyrics()
             .clear();
-        texts.clear();
+        getTexts()
+            .clear();
     }
 
-    //-------------------------//
-    // connectSyllablesToNotes //
-    //-------------------------//
+    //-----------------//
+    // createDummyPart //
+    //-----------------//
+    /**
+     * Create an dummy system part, parallel to this part, just to fill
+     * needed measures in another part. <ul>
+     * <li>Clef is taken from first real measure of part to be extended</li>
+     * <li>Key sig is taken from this part</li>
+     * <li>Time sig is taken from this part</li>
+     * <li>Measures are filled with just one whole rest</li>
+     * </ul>
+     * @param id the id for the desired dummy part
+     * @return the created dummy part, ready to be exported
+     */
+    public SystemPart createDummyPart (int id)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine(getContextString() + " createDummyPart for id=" + id);
+        }
+
+        // Find some concrete system part for the provided id
+        SystemPart nextPart = null;
+
+        do {
+            System nextSystem = (System) getSystem()
+                                             .getNextSibling();
+
+            if (nextSystem != null) {
+                SystemPart part = nextSystem.getPart(id);
+
+                if (part != null) {
+                    nextPart = part;
+
+                    break;
+                }
+            } else {
+                logger.warning("Cannot find real system part with id " + id);
+
+                return null;
+            }
+        } while (nextPart == null);
+
+        SystemPart dummyPart = new SystemPart(getSystem());
+        dummyPart.setId(id);
+        dummyPart.setDummy(true);
+        dummyPart.setScorePart(nextPart.getScorePart());
+
+        Measure nextMeasure = nextPart.getFirstMeasure();
+
+        // Loop on measures
+        boolean isFirstMeasure = true;
+
+        for (TreeNode mn : getMeasures()) {
+            Measure measure = (Measure) mn;
+            Measure dummyMeasure = new Measure(dummyPart);
+            dummyMeasure.setDummy(true);
+            dummyMeasure.setId(measure.getId());
+            dummyMeasure.setLeftX(measure.getLeftX());
+            dummyMeasure.setPartial(measure.isPartial());
+
+            // Loop on staves
+            int staffIndex = -1;
+
+            for (TreeNode sn : nextPart.getStaves()) {
+                Staff nextStaff = (Staff) sn;
+                staffIndex++;
+
+                Staff dummyStaff = null;
+                int   spaceStart = measure.getLeftX();
+
+                if (isFirstMeasure) {
+                    // Create dummy Staff
+                    dummyStaff = new Staff(
+                        null, // No staff info counterpart
+                        dummyPart,
+                        new PagePoint(
+                            getFirstStaff()
+                                .getTopLeft().x,
+                            getFirstStaff().getTopLeft().y -
+                            getScorePart().getDisplayOrdinate()),
+                        getFirstStaff().getWidth(),
+                        nextStaff.getHeight());
+                    dummyStaff.setDummy(true);
+                    dummyStaff.setDisplayOrigin(new ScorePoint());
+
+                    // Create dummy Clef
+                    Clef nextClef = nextMeasure.getFirstMeasureClef(
+                        nextStaff.getId());
+
+                    if (nextClef != null) {
+                        Clef dummyClef = new Clef(
+                            dummyMeasure,
+                            dummyStaff,
+                            nextClef);
+                        spaceStart = dummyStaff.getCenter().x;
+                    }
+
+                    isFirstMeasure = false;
+                } else {
+                    dummyStaff = (Staff) dummyPart.getStaves()
+                                                  .get(staffIndex);
+                }
+
+                // Replicate Key if any
+                if (!measure.getKeySignatures()
+                            .isEmpty()) {
+                    KeySignature dummyKey = new KeySignature(
+                        dummyMeasure,
+                        dummyStaff,
+                        (KeySignature) measure.getKeySignatures().get(0));
+                    spaceStart = dummyKey.getCenter().x;
+                }
+
+                // Replicate Time if any
+                TimeSignature ts = measure.getTimeSignature();
+
+                if (ts != null) {
+                    new TimeSignature(dummyMeasure, dummyStaff, ts);
+                    spaceStart = ts.getCenter().x;
+                }
+
+                // Create dummy Whole rest
+                dummyMeasure.addWholeRest(
+                    dummyStaff,
+                    new SystemPoint(
+                        (spaceStart + measure.getBarline().getCenter().x) / 2,
+                        nextStaff.getCenter().y -
+                        getScorePart().getDisplayOrdinate()));
+                dummyMeasure.buildVoices();
+            }
+        }
+
+        if (logger.isFineEnabled()) {
+            if (dummyPart.dumpNode()) {
+                dummyPart.dumpChildren(1);
+            }
+        }
+
+        return dummyPart;
+    }
+
+    //--------------//
+    // mapSyllables //
+    //--------------//
     /**
      * Assign each syllable to its related node
      */
-    public void connectSyllablesToNotes ()
+    public void mapSyllables ()
     {
         for (TreeNode node : getLyrics()) {
             LyricLine line = (LyricLine) node;
-            line.connectSyllablesToNotes();
+            line.mapSyllables();
         }
     }
 
@@ -688,7 +698,9 @@ public class SystemPart
     public void populateLyricLines ()
     {
         // Create the lyric lines as needed
-        for (Text text : texts) {
+        for (TreeNode tn : getTexts()) {
+            Text text = (Text) tn;
+
             if (text instanceof LyricItem) {
                 LyricItem item = (LyricItem) text;
                 LyricLine.populate(item, this);
@@ -786,8 +798,13 @@ public class SystemPart
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{SystemPart #")
-          .append(getId())
-          .append(" [");
+          .append(getId());
+
+        if (dummy) {
+            sb.append(" dummy");
+        }
+
+        sb.append(" [");
 
         if (getStaves() != null) {
             for (TreeNode node : getStaves()) {
@@ -801,79 +818,5 @@ public class SystemPart
         sb.append("]}");
 
         return sb.toString();
-    }
-
-    //---------//
-    // isDummy //
-    //---------//
-    public boolean isDummy ()
-    {
-        return dummy;
-    }
-
-    //----------//
-    // setDummy //
-    //----------//
-    public void setDummy (boolean dummy)
-    {
-        this.dummy = dummy;
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // LyricList //
-    //-----------//
-    private static class LyricList
-        extends ScoreNode
-    {
-        //~ Constructors -------------------------------------------------------
-
-        LyricList (SystemPart container)
-        {
-            super(container);
-        }
-    }
-
-    //-------------//
-    // MeasureList //
-    //-------------//
-    private static class MeasureList
-        extends ScoreNode
-    {
-        //~ Constructors -------------------------------------------------------
-
-        MeasureList (SystemPart container)
-        {
-            super(container);
-        }
-    }
-
-    //----------//
-    // SlurList //
-    //----------//
-    private static class SlurList
-        extends ScoreNode
-    {
-        //~ Constructors -------------------------------------------------------
-
-        SlurList (SystemPart container)
-        {
-            super(container);
-        }
-    }
-
-    //-----------//
-    // StaffList //
-    //-----------//
-    private static class StaffList
-        extends ScoreNode
-    {
-        //~ Constructors -------------------------------------------------------
-
-        StaffList (SystemPart container)
-        {
-            super(container);
-        }
     }
 }
