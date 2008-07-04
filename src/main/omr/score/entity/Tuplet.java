@@ -41,7 +41,6 @@ public class Tuplet
     private final DurationFactor factor;
 
     /** Chord on last side */
-    @Child
     private final Chord lastChord;
 
     //~ Constructors -----------------------------------------------------------
