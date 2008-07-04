@@ -15,21 +15,22 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.score.Score;
-import omr.score.entity.Child;
-import omr.score.entity.Children;
-import omr.score.entity.ScoreNode;
+import omr.score.entity.Container;
 
 import omr.util.Dumper;
 import omr.util.Implement;
 import omr.util.Logger;
-import omr.util.TreeNode;
 
 import org.jdesktop.application.ResourceMap;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import javax.swing.*;
@@ -56,25 +57,52 @@ public class ScoreTree
     //~ Instance fields --------------------------------------------------------
 
     /** Concrete UI component */
-    private JPanel component;
+    private final JPanel component;
+
+    /** The right panel for HTML display */
+    private final JEditorPane htmlPane;
+
+    /** The related score */
+    private final Score score;
+
+    /** Cache to avoid recomputing sets of children */
+    private final HashMap<Object, LinkedHashSet<Object>> nodeMap = new HashMap<Object, LinkedHashSet<Object>>();
+
+    /** The tree entity */
+    private final JTree tree;
+
+    /** The tree model */
+    private final Model model;
+
+    /** The enclosing frame */
+    private JFrame frame;
 
     //~ Constructors -----------------------------------------------------------
 
     //-----------//
     // ScoreTree //
     //-----------//
-    private ScoreTree (Score score)
+    /**
+     * Creates a new ScoreTree object.
+     *
+     * @param score the related score
+     */
+    public ScoreTree (Score score)
     {
+        this.score = score;
+
         component = new JPanel();
 
         // Set up the tree
-        JTree             tree = new JTree(new Adapter(score));
+        model = new Model(score);
+        ///model.addTreeModelListener(new ModelListener()); // Debug
+        tree = new JTree(model);
 
         // Build left-side view
-        JScrollPane       treeView = new JScrollPane(tree);
+        JScrollPane treeView = new JScrollPane(tree);
 
         // Build right-side view
-        final JEditorPane htmlPane = new JEditorPane("text/html", "");
+        htmlPane = new JEditorPane("text/html", "");
         htmlPane.setEditable(false);
 
         JScrollPane htmlView = new JScrollPane(htmlPane);
@@ -89,18 +117,10 @@ public class ScoreTree
         // Wire the two views together. Use a selection listener
         // created with an anonymous inner-class adapter.
         // Listen for when the selection changes.
-        tree.addTreeSelectionListener(
-            new TreeSelectionListener() {
-                    public void valueChanged (TreeSelectionEvent e)
-                    {
-                        TreePath p = e.getNewLeadSelectionPath();
+        tree.addTreeSelectionListener(new SelectionListener());
 
-                        if (p != null) {
-                            htmlPane.setText(
-                                Dumper.htmlDumpOf(p.getLastPathComponent()));
-                        }
-                    }
-                });
+        // To be notified of expansion / collapse actions (debug ...)
+        tree.addTreeExpansionListener(new ExpansionListener());
 
         // Build split-pane view
         JSplitPane splitPane = new JSplitPane(
@@ -119,41 +139,93 @@ public class ScoreTree
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // makeFrame //
-    //-----------//
+    //----------//
+    // getFrame //
+    //----------//
     /**
-     * Create a frame for the score tree
-     *
-     * @param name  the score name
-     * @param score the score entity
-     *
-     * @return the created frame
+     * Report the enclosing frame of this entity
+     * @return the frame of the score browser
      */
-    public static JFrame makeFrame (String name,
-                                    Score  score)
+    public JFrame getFrame ()
     {
-        // Set up a GUI framework
-        JFrame frame = new JFrame();
-        frame.setName("scoreTreeFrame");
+        if (frame == null) {
+            // Set up a GUI framework
+            frame = new JFrame();
+            frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            frame.setName("scoreTreeFrame");
 
-        // Set up the tree, the views, and display it all
-        frame.add(new ScoreTree(score).component);
+            // Add a REFRESH button
+            JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
+            frame.getContentPane()
+                 .add(toolBar, BorderLayout.NORTH);
 
-        // Resources injection
-        ResourceMap resource = Main.getInstance()
-                                   .getContext()
-                                   .getResourceMap(ScoreTree.class);
-        resource.injectComponents(frame);
-        frame.setTitle(resource.getString("frameTitleMask", name));
+            // Set up the views, and display it all
+            JButton refreshButton = new JButton(
+                new AbstractAction() {
+                        public void actionPerformed (ActionEvent e)
+                        {
+                            refresh();
+                        }
+                    });
+            refreshButton.setName("refreshButton");
+            toolBar.add(refreshButton);
+            frame.add(component);
+
+            // Resources injection
+            ResourceMap resource = Main.getInstance()
+                                       .getContext()
+                                       .getResourceMap(ScoreTree.class);
+            resource.injectComponents(frame);
+            frame.setTitle(
+                resource.getString("frameTitleMask", score.getRadix()));
+        }
 
         return frame;
     }
 
+    //-------//
+    // close //
+    //-------//
+    public void close ()
+    {
+        if (frame != null) {
+            frame.dispose();
+            frame = null;
+        }
+    }
+
+    //---------//
+    // refresh //
+    //---------//
+    /**
+     * Refresh the whole display, to be in sync with latest data
+     */
+    public void refresh ()
+    {
+        model.refreshAll();
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Should we hide empty dummy containers */
+        Constant.Boolean hideEmptyDummies = new Constant.Boolean(
+            true,
+            "Should we hide empty dummy containers");
+    }
+
+    //-------//
+    // Model //
+    //-------//
     // This adapter converts the current Score into a JTree model.
-    private static class Adapter
+    private class Model
         implements TreeModel
     {
         //~ Instance fields ----------------------------------------------------
@@ -164,9 +236,9 @@ public class ScoreTree
         //~ Constructors -------------------------------------------------------
 
         //---------//
-        // Adapter //
+        // Model //
         //---------//
-        public Adapter (Score score)
+        public Model (Score score)
         {
             this.score = score;
         }
@@ -181,7 +253,7 @@ public class ScoreTree
                                 int    index)
         {
             return getRelevantChildren(parent)
-                       .get(index);
+                       .toArray()[index];
         }
 
         //---------------//
@@ -201,8 +273,19 @@ public class ScoreTree
         public int getIndexOfChild (Object parent,
                                     Object child)
         {
-            return getRelevantChildren(parent)
-                       .indexOf(child);
+            int i = 0;
+
+            for (Iterator it = getRelevantChildren(parent)
+                                   .iterator(); it.hasNext();) {
+                if (it.next() == child) {
+                    return i;
+                }
+
+                i++;
+            }
+
+            throw new RuntimeException(
+                "'" + child + "' not child of '" + parent + "'");
         }
 
         //--------//
@@ -213,6 +296,7 @@ public class ScoreTree
         {
             // Determines whether the icon shows up to the left.
             // Return true for any node with no children
+            ///logger.info("isLeaf. node=" + node);
             return getChildCount(node) == 0;
         }
 
@@ -225,11 +309,6 @@ public class ScoreTree
             return score;
         }
 
-        /*
-         * Use these methods to add and remove event listeners.
-         * (Needed to satisfy TreeModel interface, but not used.)
-         */
-
         //----------------------//
         // addTreeModelListener //
         //----------------------//
@@ -238,6 +317,34 @@ public class ScoreTree
         {
             if ((listener != null) && !listeners.contains(listener)) {
                 listeners.add(listener);
+            }
+        }
+
+        //------------//
+        // refreshAll //
+        //------------//
+        public void refreshAll ()
+        {
+            nodeMap.clear();
+
+            TreeModelEvent modelEvent = new TreeModelEvent(
+                this,
+                new Object[] { score });
+
+            for (TreeModelListener listener : listeners) {
+                listener.treeStructureChanged(modelEvent);
+            }
+        }
+
+        //-------------//
+        // refreshPath //
+        //-------------//
+        public void refreshPath (TreePath path)
+        {
+            TreeModelEvent modelEvent = new TreeModelEvent(this, path);
+
+            for (TreeModelListener listener : listeners) {
+                listener.treeStructureChanged(modelEvent);
             }
         }
 
@@ -270,13 +377,9 @@ public class ScoreTree
         private boolean isRelevant (Object node)
         {
             // We display dummy containers only when they are not empty
-            if (node instanceof NamedObject) {
-                return true;
-            }
-
             if (constants.hideEmptyDummies.getValue() &&
                 (node instanceof NamedCollection ||
-                (node.getClass().getDeclaredFields().length == 0))) {
+                (node instanceof Container))) {
                 return getChildCount(node) > 0;
             } else {
                 return true;
@@ -286,79 +389,115 @@ public class ScoreTree
         //---------------------//
         // getRelevantChildren //
         //---------------------//
-        private List getRelevantChildren (Object node)
+        /**
+         * Report the set of children of the provided node that are
+         * relevant for display in the tree hierarchy
+         * @param node the node to investigate
+         * @return the collection of relevant children
+         */
+        private LinkedHashSet<Object> getRelevantChildren (Object node)
         {
-            List relevantChildren = new ArrayList();
+            // First check the cache
+            LinkedHashSet<Object> relevants = null;
 
-            if (node instanceof ScoreNode) {
-                // Standard ScoreNode hierarchy
-                ScoreNode scoreNode = (ScoreNode) node;
+            // First, check the cache
+            relevants = nodeMap.get(node);
 
-                for (TreeNode n : scoreNode.getChildren()) {
-                    if (isRelevant(n)) {
-                        relevantChildren.add(n);
-                    }
-                }
-            } else if (node instanceof NamedCollection) {
+            if (relevants != null) {
+                return relevants;
+            }
+
+            // Not found, so let's build it
+            if (logger.isFineEnabled()) {
+                logger.fine("Retrieving relevants of " + node);
+            }
+
+            relevants = new LinkedHashSet<Object>();
+
+            Class cl = node.getClass();
+
+            if (node instanceof NamedCollection) {
+                ///System.out.println("named collection");
                 NamedCollection nc = (NamedCollection) node;
 
                 for (Object n : nc.collection) {
                     if (isRelevant(n)) {
-                        relevantChildren.add(n);
+                        relevants.add(n);
                     }
                 }
-            } else if (node instanceof NamedObject) {
-                if (isRelevant(node)) {
-                    relevantChildren.add(((NamedObject) node).object);
-                }
-            }
+            } else {
+                do {
+                    ///System.out.println("cl=" + cl);
 
-            // Use of annotations
-            for (Field field : node.getClass()
-                                   .getDeclaredFields()) {
-                try {
-                    // Child
-                    if (field.getAnnotation(Child.class) != null) {
-                        field.setAccessible(true);
+                    // Process the class at hand
+                    for (Field field : cl.getDeclaredFields()) {
+                        ///System.out.print("fieldName:" + field.getName());
+                        try {
+                            // No static or inner class
+                            if (!Dumper.isFieldRelevant(field)) {
+                                ///System.out.println(" [field not relevant]");
+                                continue;
+                            }
 
-                        Object object = field.get(node);
+                            field.setAccessible(true);
 
-                        if (object != null) {
-                            relevantChildren.add(
-                                new NamedObject(field.getName(), object));
-                        }
-                    } else if (field.getAnnotation(Children.class) != null) {
-                        // Children
-                        field.setAccessible(true);
+                            Object object = field.get(node);
 
-                        Collection coll = (Collection) field.get(node);
+                            // No null field
+                            if (object == null) {
+                                ///System.out.println(" [null]");
+                                continue;
+                            }
 
-                        if ((coll != null) && !coll.isEmpty()) {
-                            relevantChildren.add(
-                                new NamedCollection(field.getName(), coll));
+                            Class objClass = object.getClass();
+
+                            ///System.out.print(" objClass=" + objClass.getName());
+
+                            // Skip primitive members
+                            if (objClass.isPrimitive()) {
+                                ///System.out.println(" [primitive]");
+                                continue;
+                            }
+
+                            if (object instanceof Collection) {
+                                Collection coll = (Collection) object;
+
+                                if (!coll.isEmpty()) {
+                                    relevants.add(
+                                        new NamedCollection(
+                                            field.getName(),
+                                            coll));
+
+                                    ///System.out.println(" ...collection OK");
+                                } else {
+                                    ///System.out.println(" [empty collection]");
+                                }
+                            } else {
+                                if (!Dumper.isClassRelevant(objClass)) {
+                                    ///System.out.println(" [CLASS not relevant]");
+                                    continue;
+                                }
+
+                                relevants.add(object);
+
+                                ///System.out.println(" ...OK");
+                            }
+                        } catch (Exception ex) {
+                            logger.warning("Error in accessing field", ex);
                         }
                     }
-                } catch (Exception ex) {
-                    logger.warning("Error in accessing field", ex);
-                }
+
+                    // Walk up the inheritance tree
+                    cl = cl.getSuperclass();
+                } while (Dumper.isClassRelevant(cl));
             }
 
-            return relevantChildren;
+            // Cache the result
+            nodeMap.put(node, relevants);
+
+            ///System.out.println("nb=" + relevants.size());
+            return relevants;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Should we hide empty dummy containers */
-        Constant.Boolean hideEmptyDummies = new Constant.Boolean(
-            true,
-            "Should we hide empty dummy containers");
     }
 
     //-----------------//
@@ -389,31 +528,108 @@ public class ScoreTree
         }
     }
 
-    //-------------//
-    // NamedObject //
-    //-------------//
-    private static class NamedObject
+    //-------------------//
+    // ExpansionListener //
+    //-------------------//
+    private class ExpansionListener
+        implements TreeExpansionListener
     {
-        //~ Instance fields ----------------------------------------------------
-
-        private String name;
-        private Object object;
-
-        //~ Constructors -------------------------------------------------------
-
-        public NamedObject (String name,
-                            Object object)
-        {
-            this.name = name;
-            this.object = object;
-        }
-
         //~ Methods ------------------------------------------------------------
 
-        @Override
-        public String toString ()
+        public void treeCollapsed (TreeExpansionEvent e)
         {
-            return name;
+            ///logger.warning("treeCollapsed " + e.getPath());
+        }
+
+        public void treeExpanded (TreeExpansionEvent e)
+        {
+            ///logger.warning("treeExpanded " + e.getPath());
+
+            // Check that we don't duplicate nodes higher in the path
+            Object                node = e.getPath()
+                                          .getLastPathComponent();
+            LinkedHashSet<Object> set = model.getRelevantChildren(node);
+
+            boolean               modified = false;
+
+            for (TreePath path = e.getPath(); path != null;
+                 path = path.getParentPath()) {
+                if (path != e.getPath()) {
+                    Object                n = path.getLastPathComponent();
+                    LinkedHashSet<Object> s = model.getRelevantChildren(n);
+
+                    if (set.removeAll(s)) {
+                        modified = true;
+                    }
+                }
+
+                if (set.remove(path.getLastPathComponent())) {
+                    modified = true;
+                }
+            }
+
+//            // Remove also nodes that cannot be expanded (leaves)
+//            for (Iterator<Object> it = set.iterator(); it.hasNext();) {
+//                Object n = it.next();
+//
+//                if (model.isLeaf(n)) {
+//                    ///logger.warning("removing leaf " + n);
+//                    it.remove();
+//                    modified = true;
+//                }
+//            }
+
+            if (modified) {
+                nodeMap.put(node, set);
+                model.refreshPath(e.getPath());
+            }
+        }
+    }
+
+    //    //---------------//
+    //    // ModelListener //
+    //    //---------------//
+    //    private class ModelListener
+    //        implements TreeModelListener
+    //    {
+    //        //~ Methods ------------------------------------------------------------
+    //
+    //        public void treeNodesChanged (TreeModelEvent e)
+    //        {
+    //            logger.warning("treeNodesChanged " + e);
+    //        }
+    //
+    //        public void treeNodesInserted (TreeModelEvent e)
+    //        {
+    //            logger.warning("treeNodesInserted" + e);
+    //        }
+    //
+    //        public void treeNodesRemoved (TreeModelEvent e)
+    //        {
+    //            logger.warning("treeNodesRemoved " + e);
+    //        }
+    //
+    //        public void treeStructureChanged (TreeModelEvent e)
+    //        {
+    //            logger.warning("treeStructureChanged " + e);
+    //        }
+    //    }
+
+    //-------------------//
+    // SelectionListener //
+    //-------------------//
+    private class SelectionListener
+        implements TreeSelectionListener
+    {
+        //~ Methods ------------------------------------------------------------
+
+        public void valueChanged (TreeSelectionEvent e)
+        {
+            TreePath p = e.getNewLeadSelectionPath();
+
+            if (p != null) {
+                htmlPane.setText(Dumper.htmlDumpOf(p.getLastPathComponent()));
+            }
         }
     }
 }
