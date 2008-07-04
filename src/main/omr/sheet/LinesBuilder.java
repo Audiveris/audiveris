@@ -25,6 +25,7 @@ import omr.lag.JunctionDeltaPolicy;
 import omr.lag.Run;
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
+import omr.lag.Section;
 import omr.lag.SectionBoard;
 import omr.lag.SectionsBuilder;
 
@@ -41,7 +42,6 @@ import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
-import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Implement;
 import omr.util.Logger;
@@ -117,16 +117,18 @@ public class LinesBuilder
     public LinesBuilder (Sheet sheet)
         throws StepException
     {
-        super(sheet, new GlyphLag("hLag", new HorizontalOrientation()));
+        super(
+            sheet,
+            new GlyphLag(
+                "hLag",
+                StickSection.class,
+                new HorizontalOrientation()));
 
         // Check output needed from previous steps
         scale = sheet.getScale(); // Will run Scale if not yet done
         sheet.getSkew(); // Will run Skew  if not yet done
 
-        Picture picture = sheet.getPicture();
-
-        // Augment the horizontal lag of runs
-        lag.setVertexClass(StickSection.class);
+        Picture                                 picture = sheet.getPicture();
 
         // Populate the lag
         SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
@@ -377,9 +379,9 @@ public class LinesBuilder
         return peaks;
     }
 
-    //---------------//
+    //----------------//
     // retrieveStaves //
-    //---------------//
+    //----------------//
     /**
      * Staff are detected in the list of (raw) peaks, simply by looking for
      * regular series of peaks.
@@ -390,9 +392,11 @@ public class LinesBuilder
         throws StepException
     {
         // One single iterator, since from peak area to peak area, we keep
-        // moving forward in the ordered list of vertices
-        ArrayList<GlyphSection>    vertices = new ArrayList<GlyphSection>(
+        // moving forward in an ordered list of vertices
+        ArrayList<GlyphSection> vertices = new ArrayList<GlyphSection>(
             lag.getVertices());
+        Collections.sort(vertices, Section.idComparator);
+
         ListIterator<GlyphSection> vi = vertices.listIterator();
 
         // Maximum deviation accepted in the series of peaks in a staff
@@ -630,15 +634,7 @@ public class LinesBuilder
         //-------------//
         public static LinesParameters getInstance ()
         {
-            if (INSTANCE == null) {
-                synchronized (LinesParameters.class) {
-                    if (INSTANCE == null) {
-                        INSTANCE = new LinesParameters();
-                    }
-                }
-            }
-
-            return INSTANCE;
+            return Holder.INSTANCE;
         }
 
         //-----------------//
@@ -683,6 +679,15 @@ public class LinesBuilder
                     builder.lagView.repaint();
                 }
             }
+        }
+
+        //~ Inner Classes ------------------------------------------------------
+
+        private static class Holder
+        {
+            //~ Static fields/initializers -------------------------------------
+
+            public static final LinesParameters INSTANCE = new LinesParameters();
         }
     }
 
