@@ -383,10 +383,19 @@ public class Rubber
             g.setColor(ruleColor);
 
             Rectangle vr = component.getVisibleRect();
+
             int       x = scaled(rect.x + (rect.width / 2));
             int       y = scaled(rect.y + (rect.height / 2));
-            g.drawLine(x, vr.y, x, vr.y + vr.height);
-            g.drawLine(vr.x, y, vr.x + vr.width, y);
+
+            if (false) {
+                // Draw just a small cross (fast!)
+                g.drawLine(x, y - 20, x, y + 20); // Vertical
+                g.drawLine(x - 20, y, x + 20, y); // Horizontal
+            } else {
+                // Draw full vertical & horizontal lines (slow!)
+                g.drawLine(x, vr.y, x, (vr.y + vr.height-1)); // Vertical
+                g.drawLine(vr.x, y, (vr.x + vr.width-1), y); // Horizontal
+            }
         }
     }
 
