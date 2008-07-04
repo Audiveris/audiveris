@@ -16,6 +16,7 @@ import omr.score.entity.Beam;
 import omr.score.entity.Chord;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
+import omr.score.entity.DirectionStatement;
 import omr.score.entity.Dynamics;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
@@ -32,14 +33,21 @@ import omr.score.entity.Slur;
 import omr.score.entity.Staff;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
+import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
+import omr.score.entity.VisitableNode;
 import omr.score.entity.Wedge;
-import omr.score.entity.Words;
 
 /**
  * Interface <code>ScoreVisitor</code> is meant to visit any node of the Score
- * hierarchy
+ * hierarchy.
+ * <p>All the polymorphic visit(node) methods return a boolean which
+ * tells whether the visit shall continue to the children of this class.
+ * It is true by default (the whole visitable hierarchy is meant to be visited).
+ * Returning false avoids the automatic visit of the children of the class
+ * for the specific visitor, it is then up to the caller to potentially handle
+ * the children by another way if any.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -59,6 +67,8 @@ public interface ScoreVisitor
     boolean visit (Clef node);
 
     boolean visit (Coda node);
+
+    boolean visit (DirectionStatement node);
 
     boolean visit (Dynamics node);
 
@@ -94,11 +104,13 @@ public interface ScoreVisitor
 
     boolean visit (SystemPart node);
 
+    boolean visit (Text node);
+
     boolean visit (TimeSignature node);
 
     boolean visit (Tuplet node);
 
-    boolean visit (Wedge node);
+    boolean visit (VisitableNode node);
 
-    boolean visit (Words node);
+    boolean visit (Wedge node);
 }

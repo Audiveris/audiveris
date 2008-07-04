@@ -13,6 +13,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
+import omr.glyph.Sentence;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
@@ -30,8 +31,6 @@ import omr.score.entity.Coda;
 import omr.score.entity.Dynamics;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
-import omr.score.entity.LyricItem;
-import omr.score.entity.LyricLine;
 import omr.score.entity.Mark;
 import omr.score.entity.Measure;
 import omr.score.entity.MeasureElement;
@@ -167,7 +166,7 @@ public class ScorePainter
     // drawSlot //
     //----------//
     /**
-     *
+     * Draw a time slot in the score display
      *
      * @param wholeSystem if true, the slot will embrace the whole system,
      * otherwise only the part is embraced
@@ -240,7 +239,7 @@ public class ScorePainter
             g.drawRenderedImage(icon.getImage(), transform);
         }
 
-        return false;
+        return true;
     }
 
     //---------------//
@@ -464,8 +463,7 @@ public class ScorePainter
                     keySignature.getPitchPosition());
             }
         } catch (Exception ex) {
-            logger.warning(
-                keySignature.getContextString() + " Cannot paint keySignature");
+            keySignature.addError("Cannot paint keySignature");
         }
 
         return true;
@@ -758,36 +756,6 @@ public class ScorePainter
     @Override
     public boolean visit (SystemPart part)
     {
-        Color oldColor = g.getColor();
-        Font  oldFont = g.getFont();
-
-        g.setColor(Color.BLUE);
-
-        // Text can be outside the boundaries of a system
-        for (Text text : part.getTexts()) {
-            int    y = text.getLocation().y;
-            String str = text.getContent();
-
-            // Force y alignment for lyrics of the same line
-            if (text instanceof LyricItem) {
-                LyricItem item = (LyricItem) text;
-                LyricLine line = item.getLine();
-
-                if (line != null) {
-                    y = line.getY();
-                }
-            }
-
-            g.setFont(text.getDisplayFont());
-            g.drawString(
-                str,
-                zoom.scaled(part.getDisplayOrigin().x + text.getLocation().x),
-                zoom.scaled(part.getDisplayOrigin().y + y));
-        }
-
-        g.setColor(oldColor);
-        g.setFont(oldFont);
-
         // Draw a brace if there is more than one stave in the part
         if (part.getStaves()
                 .size() > 1) {
@@ -824,6 +792,55 @@ public class ScorePainter
             part.getStartingBarline()
                 .accept(this);
         }
+
+        return true;
+    }
+
+    //------------//
+    // visit Text //
+    //------------//
+    @Override
+    public boolean visit (Text text)
+    {
+        Color oldColor = g.getColor();
+        Font  oldFont = g.getFont();
+
+        g.setColor(Color.BLUE);
+
+        // Text can be outside the boundaries of a system
+        g.setFont(text.getDisplayFont());
+
+        // Force y alignment for items of the same sentence
+        Sentence sentence = text.getSentence();
+        int      y = sentence.getLocation().y;
+
+        if (text.getContent() != null) {
+            g.drawString(
+                text.getContent(),
+                zoom.scaled(text.getDisplayOrigin().x + text.getLocation().x),
+                zoom.scaled(text.getDisplayOrigin().y + y));
+        } else {
+            // Use the (pseudo)content of contained glyphs
+            for (Glyph item : sentence.getGlyphs()) {
+                String str = item.getTextContent();
+
+                if (str == null) {
+                    str = item.getPseudoContent();
+                }
+
+                if (str != null) {
+                    g.drawString(
+                        str,
+                        zoom.scaled(
+                            text.getDisplayOrigin().x +
+                            text.getSystem().toSystemPoint(item.getLocation()).x),
+                        zoom.scaled(text.getDisplayOrigin().y + y));
+                }
+            }
+        }
+
+        g.setColor(oldColor);
+        g.setFont(oldFont);
 
         return true;
     }
@@ -954,6 +971,10 @@ public class ScorePainter
     //----------------//
     // repaintDisplay //
     //----------------//
+    /**
+     * A poorman's way to trigger a display repaint of the current score
+     * (typically when a score display parameter has been modified by the user)
+     */
     static void repaintDisplay ()
     {
         // Update current score display if any
