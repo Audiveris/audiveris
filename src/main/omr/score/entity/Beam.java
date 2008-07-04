@@ -56,11 +56,9 @@ public class Beam
     private BeamGroup group;
 
     /** Items that compose this beam, ordered by abscissa */
-    @Children
     private SortedSet<BeamItem> items = new TreeSet<BeamItem>();
 
     /** Sequence of Chords that are linked by this beam, ordered by abscissa */
-    @Children
     private SortedSet<Chord> chords = new TreeSet<Chord>();
 
     /** Line equation for the beam */

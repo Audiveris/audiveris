@@ -19,8 +19,8 @@ import omr.score.common.SystemRectangle;
 import omr.score.entity.Voice.ChordInfo;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.PixelPoint;
-import omr.sheet.PixelRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 
 import omr.stick.Stick;
@@ -107,7 +107,6 @@ public class Chord
     private SystemPoint tailLocation;
 
     /** Ordered collection of beams this chord is connected to */
-    @Children
     private SortedSet<Beam> beams = new TreeSet<Beam>();
 
     /** Number of augmentation dots */
@@ -126,15 +125,12 @@ public class Chord
     private Voice voice;
 
     /** Collection of marks for user */
-    @Children
     private List<Mark> marks = new ArrayList<Mark>();
 
     /** Notations related  to this chord */
-    @Children
     private List<Notation> notations = new ArrayList<Notation>();
 
     /** Directions (loosely) related to this chord */
-    @Children
     private List<Direction> directions = new ArrayList<Direction>();
 
     //~ Constructors -----------------------------------------------------------
@@ -1634,7 +1630,7 @@ public class Chord
                 tailLocation = headLocation;
             }
         } else {
-            logger.warning("No notes in chord");
+            logger.warning("No notes in chord " + this);
         }
     }
 

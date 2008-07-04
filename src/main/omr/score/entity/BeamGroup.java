@@ -50,11 +50,9 @@ public class BeamGroup
     private final Measure measure;
 
     /** Ordered collection of contained beams */
-    @Children
     private SortedSet<Beam> beams = new TreeSet<Beam>();
 
     /** Same voice for all chords of this beam group */
-    @Child
     private Voice voice;
 
     //~ Constructors -----------------------------------------------------------
@@ -234,7 +232,7 @@ public class BeamGroup
 
         while ((split = checkBeamGroups(measure)) != null) {
             if (--loopNb < 0) {
-                logger.warning("Loop detected in BeamGroup split");
+                measure.addError("Loop detected in BeamGroup split");
 
                 break;
             }
