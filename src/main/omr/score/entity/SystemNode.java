@@ -16,7 +16,7 @@ import omr.score.common.SystemPoint;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.PixelPoint;
+import omr.score.common.PixelPoint;
 
 import omr.util.TreeNode;
 
@@ -62,12 +62,87 @@ public abstract class SystemNode
             if (c instanceof System) {
                 system = (System) c;
 
+                if (c != this) {
+                    system.setDirty();
+                }
+
                 break;
             }
         }
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------//
+    // setCenter //
+    //-----------//
+    /**
+     * Remember the center of this system node
+     *
+     * @param center the system-based center of the system node
+     */
+    public void setCenter (SystemPoint center)
+    {
+        this.center = center;
+    }
+
+    //-------------//
+    // getLocation //
+    //-------------//
+    /**
+     * Report the center of this entity, wrt to the system top-left corner.
+     *
+     * @return the center, in units, wrt system top-left
+     */
+    public SystemPoint getCenter ()
+    {
+        if (center == null) {
+            computeCenter();
+        }
+
+        return center;
+    }
+
+    //------------------//
+    // getContextString //
+    //------------------//
+    @Override
+    public String getContextString ()
+    {
+        StringBuilder sb = new StringBuilder(super.getContextString());
+        sb.append("S")
+          .append(system.getId());
+
+        return sb.toString();
+    }
+
+    //------------------//
+    // getDisplayOrigin //
+    //------------------//
+    /**
+     * Report the origin for the containing system, in the horizontal score
+     * display, since coordinates use SystemPoint.
+     *
+     * @return the (system) display origin
+     */
+    public ScorePoint getDisplayOrigin ()
+    {
+        return getSystem()
+                   .getDisplayOrigin();
+    }
+
+    //-----------//
+    // getSystem //
+    //-----------//
+    /**
+     * Report the containing system
+     *
+     * @return the containing system
+     */
+    public System getSystem ()
+    {
+        return system;
+    }
 
     //--------//
     // accept //
@@ -143,76 +218,6 @@ public abstract class SystemNode
         }
 
         return computeRectangleCenter(rect);
-    }
-
-    //-----------//
-    // getLocation //
-    //-----------//
-    /**
-     * Report the center of this entity, wrt to the system top-left corner.
-     *
-     * @return the center, in units, wrt system top-left
-     */
-    public SystemPoint getCenter ()
-    {
-        if (center == null) {
-            computeCenter();
-        }
-
-        return center;
-    }
-
-    //------------------//
-    // getContextString //
-    //------------------//
-    @Override
-    public String getContextString ()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getSystem().getContextString());
-
-        return sb.toString();
-    }
-
-    //------------------//
-    // getDisplayOrigin //
-    //------------------//
-    /**
-     * Report the origin for the containing system, in the horizontal score
-     * display, since coordinates use SystemPoint.
-     *
-     * @return the (system) display origin
-     */
-    public ScorePoint getDisplayOrigin ()
-    {
-        return getSystem()
-                   .getDisplayOrigin();
-    }
-
-    //-----------//
-    // getSystem //
-    //-----------//
-    /**
-     * Report the containing system
-     *
-     * @return the containing system
-     */
-    public System getSystem ()
-    {
-        return system;
-    }
-
-    //-----------//
-    // setCenter //
-    //-----------//
-    /**
-     * Remember the center of this system node
-     *
-     * @param center the system-based center of the system node
-     */
-    public void setCenter (SystemPoint center)
-    {
-        this.center = center;
     }
 
     //---------------//
