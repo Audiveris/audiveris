@@ -11,7 +11,9 @@ package omr.ui;
 
 import omr.glyph.Glyph;
 
-import omr.score.common.ScorePoint;
+import omr.score.common.SystemPoint;
+import omr.score.entity.Measure;
+import omr.score.entity.MeasureNode;
 import omr.score.entity.System;
 import omr.score.entity.SystemNode;
 
@@ -97,6 +99,19 @@ public class ErrorsEditor
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Give access to the real component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent ()
+    {
+        return scrollPane;
+    }
 
     //----------//
     // addError //
@@ -191,19 +206,6 @@ public class ErrorsEditor
                 });
     }
 
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Give access to the real component
-     *
-     * @return the concrete component
-     */
-    public JComponent getComponent ()
-    {
-        return scrollPane;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //--------//
@@ -285,13 +287,35 @@ public class ErrorsEditor
                             record.glyph,
                             SelectionHint.GLYPH_INIT);
                     } else {
-                        // Otherwise use system node location
-                        System     system = record.node.getSystem();
-                        ScorePoint scrPt = system.toScorePoint(
-                            record.node.getCenter());
-                        scoreSelection.setEntity(
-                            new Rectangle(scrPt),
-                            SelectionHint.LOCATION_INIT);
+                        // Otherwise use system node location as possible
+                        try {
+                            System      system = record.node.getSystem();
+                            SystemPoint sysPt = null;
+
+                            try {
+                                sysPt = record.node.getCenter();
+                            } catch (Exception ex) {
+                            }
+
+                            if (sysPt == null) {
+                                if (record.node instanceof MeasureNode) {
+                                    MeasureNode mn = (MeasureNode) record.node;
+                                    Measure     measure = mn.getMeasure();
+
+                                    if (measure != null) {
+                                        sysPt = measure.getCenter();
+                                    }
+                                }
+                            }
+
+                            scoreSelection.setEntity(
+                                new Rectangle(system.toScorePoint(sysPt)),
+                                SelectionHint.LOCATION_INIT);
+                        } catch (Exception ex) {
+                            logger.warning(
+                                "Failed pointing to " + record.node,
+                                ex);
+                        }
                     }
                 }
             }
