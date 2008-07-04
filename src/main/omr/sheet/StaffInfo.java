@@ -9,6 +9,7 @@
 //
 package omr.sheet;
 
+import omr.score.common.PixelPoint;
 import omr.math.Line;
 
 import omr.ui.view.Zoom;
