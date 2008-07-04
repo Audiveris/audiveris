@@ -76,7 +76,7 @@ public abstract class AbstractDirection
         } else {
             // We have a direction item without any related chord/note
             // This is legal, however where do we store this item?
-            addError(glyph, "Direction " + this + " without related note");
+            addError(glyph, "Direction with no related note");
         }
     }
 }
