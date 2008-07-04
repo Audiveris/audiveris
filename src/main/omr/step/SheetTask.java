@@ -107,10 +107,6 @@ public abstract class SheetTask
             }
 
             doit();
-
-            if (logger.isFineEnabled()) {
-                logger.fine(step + " doit end");
-            }
         }
     }
 
@@ -123,7 +119,9 @@ public abstract class SheetTask
     public void done ()
     {
         if (logger.isFineEnabled()) {
-            logger.fine(step + " done");
+            if (!(this instanceof SystemTask)) {
+                logger.fine(step + " done");
+            }
         }
 
         stepDone = true;
