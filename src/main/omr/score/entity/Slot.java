@@ -96,11 +96,9 @@ public class Slot
     private Measure measure;
 
     /** Collection of glyphs in the slot */
-    @Children
     private List<Glyph> glyphs = new ArrayList<Glyph>();
 
     /** Collection of chords in this slot, order by staff, then by ordinate */
-    @Children
     private List<Chord> chords = new ArrayList<Chord>();
 
     /** Time offset since measure start */
