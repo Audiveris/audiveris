@@ -606,7 +606,7 @@ public class MainGui
         public void willExit (EventObject e)
         {
             // Store latest constant values on disk
-            ConstantManager.storeResource();
+            ConstantManager.getInstance().storeResource();
         }
     }
 }
