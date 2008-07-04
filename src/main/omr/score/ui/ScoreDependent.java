@@ -59,7 +59,7 @@ public abstract class ScoreDependent
     // getName //
     //---------//
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Implement(SelectionObserver.class)
     @Override
